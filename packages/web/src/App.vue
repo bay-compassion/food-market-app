@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 type Locale = 'en' | 'es';
 
 const locale = ref<Locale>('en');
-const mode = ref<'guest' | 'admin'>('guest');
 const isSubmitted = ref(false);
 const isSubmitting = ref(false);
 const submissionError = ref('');
@@ -72,6 +72,18 @@ const translations = {
 } as const;
 
 const t = computed(() => translations[locale.value]);
+const route = useRoute();
+const router = useRouter();
+const isAdmin = computed(() => route.name === 'admin');
+
+function showGuest() {
+	isSubmitted.value = false;
+	void router.push({ name: 'guest' });
+}
+
+function toggleMode() {
+	void router.push({ name: isAdmin.value ? 'guest' : 'admin' });
+}
 
 async function submitForm() {
 	isSubmitting.value = true;
@@ -97,7 +109,7 @@ async function submitForm() {
 <template>
 	<main class="app-shell">
 		<header class="topbar">
-			<a class="brand" href="#" @click.prevent="isSubmitted = false">
+			<a class="brand" href="/" @click.prevent="showGuest">
 				<span class="brand-mark" aria-hidden="true">
 					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
 						<path
@@ -119,7 +131,7 @@ async function submitForm() {
 				<button
 					class="mode-button"
 					type="button"
-					@click="mode = mode === 'guest' ? 'admin' : 'guest'"
+					@click="toggleMode"
 				>
 					<svg
 						viewBox="0 0 24 24"
@@ -130,12 +142,12 @@ async function submitForm() {
 					>
 						<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0" />
 					</svg>
-					{{ mode === 'guest' ? t.admin : t.guest }}
+					{{ isAdmin ? t.guest : t.admin }}
 				</button>
 			</div>
 		</header>
 
-		<section v-if="mode === 'guest'" class="guest-layout">
+		<section v-if="!isAdmin" class="guest-layout">
 			<div class="hero">
 				<p class="eyebrow"><span></span>Compassion Food</p>
 				<h1>{{ t.welcome }}</h1>
@@ -250,7 +262,7 @@ async function submitForm() {
 			<h1>{{ t.adminTitle }}</h1>
 			<p>{{ t.adminDescription }}</p>
 			<div class="admin-preview"><span>01</span><span>02</span><span>03</span><span>04</span></div>
-			<button class="secondary-button" type="button" @click="mode = 'guest'">
+			<button class="secondary-button" type="button" @click="showGuest">
 				{{ t.backToGuest }}
 			</button>
 		</section>

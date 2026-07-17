@@ -1,18 +1,31 @@
 import { mount } from '@vue/test-utils';
+import { createMemoryHistory, createRouter } from 'vue-router';
 import { describe, expect, it, vi } from 'vitest';
 
 import App from '../App.vue';
 
+function mountApp() {
+	const router = createRouter({
+		history: createMemoryHistory(),
+		routes: [
+			{ path: '/', name: 'guest', component: App },
+			{ path: '/admin', name: 'admin', component: App },
+		],
+	});
+
+	return mount(App, { global: { plugins: [router] } });
+}
+
 describe('App', () => {
 	it('renders the guest queue form', () => {
-		const wrapper = mount(App);
+		const wrapper = mountApp();
 
 		expect(wrapper.text()).toContain('Welcome to the community food market');
 		expect(wrapper.text()).toContain('Number of people in your household');
 	});
 
 	it('switches the guest copy to Spanish', async () => {
-		const wrapper = mount(App);
+		const wrapper = mountApp();
 
 		await wrapper.find('select').setValue('es');
 
@@ -22,7 +35,7 @@ describe('App', () => {
 	it('sends the guest check-in to the API', async () => {
 		const fetchMock = vi.fn().mockResolvedValue({ ok: true });
 		vi.stubGlobal('fetch', fetchMock);
-		const wrapper = mount(App);
+		const wrapper = mountApp();
 		const inputs = wrapper.findAll('input');
 
 		await inputs[0]!.setValue('Ada');
