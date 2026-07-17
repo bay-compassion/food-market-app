@@ -1,14 +1,14 @@
 [build]
-  command = "npm run build --workspace=web"
-  publish = "packages/web/dist"
+command = "npm run build"
+publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "22"
+NODE_VERSION = "24.15.0"
 
 [functions]
-  directory = "netlify/functions"
+directory = "netlify/functions"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200
