@@ -24,7 +24,7 @@ const translations = {
 		householdHint: 'Include yourself',
 		lastName: 'Last name',
 		language: 'Language',
-		marketName: 'Bay Compassion',
+		marketName: 'The Bay Compassion',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you today.',
 		submit: 'Join the queue',
@@ -48,7 +48,7 @@ const translations = {
 		householdHint: 'Inclúyase',
 		lastName: 'Apellido',
 		language: 'Idioma',
-		marketName: 'Bay Compassion',
+		marketName: 'The Bay Compassion',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
 		submit: 'Unirse a la fila',
@@ -108,13 +108,13 @@ function submitForm() {
 
 		<section v-if="mode === 'guest'" class="guest-layout">
 			<div class="hero">
-				<p class="eyebrow"><span></span>{{ t.marketName }}</p>
+				<p class="eyebrow"><span></span>Compassion Food</p>
 				<h1>{{ t.welcome }}</h1>
 				<p class="hero-copy">
 					{{
 						locale === 'en'
-							? 'We’re glad you’re here. Check in below and we’ll take care of the rest.'
-							: 'Nos alegra que esté aquí. Regístrese abajo y nosotros nos encargaremos del resto.'
+							? 'Together we flourish. Check in below, and our team will take care of the rest.'
+							: 'Juntos florecemos. Regístrese abajo y nuestro equipo se encargará del resto.'
 					}}
 				</p>
 				<div class="illustration" aria-hidden="true">
@@ -223,12 +223,12 @@ function submitForm() {
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap');
 
 :root {
-	font-family: 'DM Sans', sans-serif;
-	color: #183c31;
-	background: #f8f7f2;
+	font-family: Roboto, Arial, sans-serif;
+	color: #232323;
+	background: #fff;
 	font-synthesis: none;
 }
 * {
@@ -249,7 +249,7 @@ button {
 .app-shell {
 	min-height: 100vh;
 	overflow: hidden;
-	background: #f8f7f2;
+	background: #fff;
 }
 .topbar {
 	height: 76px;
@@ -257,15 +257,18 @@ button {
 	align-items: center;
 	justify-content: space-between;
 	padding: 0 5.5vw;
-	border-bottom: 1px solid #e6e4dc;
-	background: rgba(255, 255, 255, 0.72);
+	border-bottom: 1px solid #e2e2e2;
+	background: #fff;
 }
 .brand {
 	display: inline-flex;
 	gap: 10px;
 	align-items: center;
-	color: #1b553f;
+	color: #232323;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
 	font-weight: 700;
+	font-size: 17px;
+	text-transform: uppercase;
 	text-decoration: none;
 	letter-spacing: -0.03em;
 }
@@ -274,7 +277,7 @@ button {
 	height: 30px;
 	display: grid;
 	place-items: center;
-	color: #e5a840;
+	color: #035d65;
 }
 .brand-mark svg {
 	width: 28px;
@@ -286,7 +289,7 @@ button {
 }
 .language-picker select,
 .mode-button {
-	color: #315a4a;
+	color: #232323;
 	border: 0;
 	background: transparent;
 	font-size: 14px;
@@ -300,8 +303,10 @@ button {
 	align-items: center;
 	gap: 7px;
 	padding: 10px 13px;
-	border: 1px solid #d7ded8;
+	border: 1px solid #232323;
 	border-radius: 99px;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
+	text-transform: uppercase;
 }
 .mode-button svg {
 	width: 17px;
@@ -309,22 +314,26 @@ button {
 .guest-layout {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(410px, 520px);
-	gap: clamp(36px, 9vw, 150px);
-	width: min(1150px, 89vw);
+	gap: clamp(32px, 6vw, 100px);
+	width: min(1260px, 91vw);
 	margin: 0 auto;
 	padding: clamp(56px, 8vw, 110px) 0 64px;
 	align-items: center;
 }
 .hero {
-	max-width: 520px;
+	max-width: 585px;
+	padding: clamp(34px, 5vw, 70px);
+	color: #fff;
+	background: #035d65;
 }
 .eyebrow {
 	display: flex;
 	align-items: center;
 	gap: 9px;
-	color: #337558;
-	font-size: 12px;
-	font-weight: 700;
+	color: #fff;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
+	font-size: 13px;
+	font-weight: 600;
 	letter-spacing: 0.11em;
 	text-transform: uppercase;
 }
@@ -332,7 +341,7 @@ button {
 	display: block;
 	width: 24px;
 	height: 2px;
-	background: #e5a840;
+	background: #fff;
 }
 h1,
 h2,
@@ -342,14 +351,16 @@ p {
 h1 {
 	max-width: 500px;
 	margin-bottom: 20px;
-	font-family: 'Playfair Display', Georgia, serif;
-	font-size: clamp(42px, 4.7vw, 64px);
-	line-height: 1.07;
-	letter-spacing: -0.045em;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
+	font-size: clamp(48px, 5.2vw, 76px);
+	font-weight: 700;
+	line-height: 0.96;
+	letter-spacing: -0.035em;
+	text-transform: uppercase;
 }
 .hero-copy {
 	max-width: 415px;
-	color: #60746a;
+	color: rgba(255, 255, 255, 0.84);
 	font-size: 17px;
 	line-height: 1.6;
 }
@@ -358,8 +369,8 @@ h1 {
 	height: 190px;
 	margin-top: 36px;
 	overflow: hidden;
-	border-radius: 20px;
-	background: #e0eee2;
+	border-radius: 0;
+	background: #edc996;
 }
 .illustration svg {
 	position: absolute;
@@ -396,10 +407,10 @@ h1 {
 }
 .checkin-card {
 	padding: clamp(30px, 4vw, 44px);
-	border: 1px solid #e2e1da;
-	border-radius: 22px;
+	border: 1px solid #232323;
+	border-radius: 0;
 	background: #fff;
-	box-shadow: 0 15px 42px rgba(30, 72, 51, 0.07);
+	box-shadow: 11px 11px 0 #035d65;
 }
 .form-heading {
 	margin-bottom: 28px;
@@ -407,12 +418,14 @@ h1 {
 .form-heading h2,
 .success-state h2 {
 	margin-bottom: 7px;
-	font-size: 25px;
-	letter-spacing: -0.035em;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
+	font-size: 30px;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
 }
 .form-heading p,
 .success-state p {
-	color: #708079;
+	color: #5c5c5c;
 	font-size: 14px;
 	line-height: 1.55;
 }
@@ -423,7 +436,8 @@ form {
 label {
 	display: grid;
 	gap: 8px;
-	color: #385548;
+	color: #232323;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
 	font-size: 13px;
 	font-weight: 600;
 }
@@ -431,9 +445,9 @@ input {
 	width: 100%;
 	height: 47px;
 	padding: 0 14px;
-	color: #183c31;
-	border: 1px solid #d7ded8;
-	border-radius: 8px;
+	color: #232323;
+	border: 1px solid #909090;
+	border-radius: 0;
 	outline: 0;
 	background: #fff;
 	transition:
@@ -444,8 +458,8 @@ input::placeholder {
 	color: #a7b1ab;
 }
 input:focus {
-	border-color: #438466;
-	box-shadow: 0 0 0 3px #e1f0e6;
+	border-color: #035d65;
+	box-shadow: 0 0 0 3px rgba(3, 93, 101, 0.15);
 }
 .field-grid {
 	display: grid;
@@ -463,18 +477,22 @@ input:focus {
 	gap: 13px;
 	min-height: 51px;
 	border: 0;
-	border-radius: 8px;
-	color: #fff;
-	background: #246848;
+	border-radius: 99px;
+	color: #035d65;
+	background: #fff;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
 	font-weight: 700;
-	box-shadow: 0 5px 12px rgba(36, 104, 72, 0.18);
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	box-shadow: inset 0 0 0 1px #035d65;
 	transition:
 		transform 0.2s,
 		background 0.2s;
 }
 .submit-button:hover,
 .secondary-button:hover {
-	background: #1a573b;
+	color: #fff;
+	background: #035d65;
 	transform: translateY(-1px);
 }
 .submit-button span {
@@ -486,7 +504,7 @@ input:focus {
 	align-items: flex-start;
 	gap: 7px;
 	margin: 1px 0 0;
-	color: #89958f;
+	color: #5c5c5c;
 	font-size: 11px;
 	line-height: 1.4;
 }
@@ -508,9 +526,9 @@ input:focus {
 	place-self: center;
 	place-items: center;
 	margin-bottom: 19px;
-	border-radius: 50%;
+	border-radius: 0;
 	color: #fff;
-	background: #438466;
+	background: #035d65;
 	font-size: 29px;
 }
 .success-state p {
@@ -547,8 +565,8 @@ input:focus {
 	height: 65px;
 	place-items: center;
 	border-radius: 50%;
-	color: #337558;
-	background: #e0eee2;
+	color: #fff;
+	background: #035d65;
 	font-weight: 700;
 }
 .sr-only {
