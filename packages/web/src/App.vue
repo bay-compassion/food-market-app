@@ -2,8 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-type Locale = 'en' | 'es';
-
+import { languages, translations, type Locale } from './locales';
 const locale = ref<Locale>('en');
 const isSubmitted = ref(false);
 const isSubmitting = ref(false);
@@ -15,61 +14,6 @@ const guest = ref({
 	householdSize: '',
 	phone: '',
 });
-
-const translations = {
-	en: {
-		admin: 'Admin',
-		adminDescription: 'Queue management tools are coming soon.',
-		adminEyebrow: 'Market team',
-		adminTitle: 'A simpler way to welcome every neighbor.',
-		age: 'Age',
-		ageHint: 'In years',
-		backToGuest: 'Back to guest check-in',
-		firstName: 'First name',
-		formDescription: 'A few details help us prepare your visit.',
-		formTitle: 'Tell us about you',
-		guest: 'Guest',
-		household: 'Number of people in your household',
-		householdHint: 'Include yourself',
-		lastName: 'Last name',
-		language: 'Language',
-		marketName: 'The Bay Compassion',
-		phone: 'Phone number',
-		privacy: 'Your information is only used to help us serve you today.',
-		submissionError: 'We could not save your check-in. Please try again.',
-		submit: 'Join the queue',
-		submitting: 'Joining the queue…',
-		successDescription: 'We’ll let you know when it’s your turn. Thank you for being here.',
-		successTitle: 'You’re in the queue!',
-		welcome: 'Welcome to the community food market',
-	},
-	es: {
-		admin: 'Administración',
-		adminDescription: 'Las herramientas para gestionar la fila estarán disponibles pronto.',
-		adminEyebrow: 'Equipo del mercado',
-		adminTitle: 'Una forma más sencilla de recibir a cada vecino.',
-		age: 'Edad',
-		ageHint: 'En años',
-		backToGuest: 'Volver al registro',
-		firstName: 'Nombre',
-		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
-		formTitle: 'Cuéntenos sobre usted',
-		guest: 'Invitado',
-		household: 'Número de personas en su hogar',
-		householdHint: 'Inclúyase',
-		lastName: 'Apellido',
-		language: 'Idioma',
-		marketName: 'The Bay Compassion',
-		phone: 'Número de teléfono',
-		privacy: 'Su información solo se utiliza para atenderle hoy.',
-		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
-		submit: 'Unirse a la fila',
-		submitting: 'Uniéndose a la fila…',
-		successDescription: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
-		successTitle: '¡Ya está en la fila!',
-		welcome: 'Bienvenido al mercado comunitario de alimentos',
-	},
-} as const;
 
 const t = computed(() => translations[locale.value]);
 const route = useRoute();
@@ -107,7 +51,7 @@ async function submitForm() {
 </script>
 
 <template>
-	<main class="app-shell">
+	<main class="app-shell" :dir="locale === 'fa' || locale === 'ar' ? 'rtl' : 'ltr'">
 		<header class="topbar">
 			<a class="brand" href="/" @click.prevent="showGuest">
 				<span class="brand-mark" aria-hidden="true">
@@ -121,18 +65,7 @@ async function submitForm() {
 				<span>{{ t.marketName }}</span>
 			</a>
 			<div class="header-actions">
-				<label class="language-picker">
-					<span class="sr-only">{{ t.language }}</span>
-					<select v-model="locale" :aria-label="t.language">
-						<option value="en">English</option>
-						<option value="es">Español</option>
-					</select>
-				</label>
-				<button
-					class="mode-button"
-					type="button"
-					@click="toggleMode"
-				>
+				<button class="mode-button" type="button" @click="toggleMode">
 					<svg
 						viewBox="0 0 24 24"
 						fill="none"
@@ -151,13 +84,23 @@ async function submitForm() {
 			<div class="hero">
 				<p class="eyebrow"><span></span>Compassion Food</p>
 				<h1>{{ t.welcome }}</h1>
-				<p class="hero-copy">
-					{{
-						locale === 'en'
-							? 'Together we flourish. Check in below, and our team will take care of the rest.'
-							: 'Juntos florecemos. Regístrese abajo y nuestro equipo se encargará del resto.'
-					}}
-				</p>
+				<p class="hero-copy">{{ t.heroCopy }}</p>
+				<section class="language-selector" :aria-label="t.language">
+					<p>{{ t.languagePrompt }}</p>
+					<div class="language-list" role="group" :aria-label="t.languagePrompt">
+						<button
+							v-for="language in languages"
+							:key="language.code"
+							class="language-option"
+							:class="{ active: locale === language.code }"
+							type="button"
+							:aria-pressed="locale === language.code"
+							@click="locale = language.code"
+						>
+							{{ language.label }}
+						</button>
+					</div>
+				</section>
 				<div class="illustration" aria-hidden="true">
 					<div class="sun"></div>
 					<div class="hill hill-one"></div>
@@ -334,16 +277,12 @@ button {
 	gap: 9px;
 	align-items: center;
 }
-.language-picker select,
 .mode-button {
 	color: #232323;
 	border: 0;
 	background: transparent;
 	font-size: 14px;
 	font-weight: 600;
-}
-.language-picker select {
-	padding: 9px 19px 9px 7px;
 }
 .mode-button {
 	display: inline-flex;
@@ -410,6 +349,43 @@ h1 {
 	color: rgba(255, 255, 255, 0.84);
 	font-size: 17px;
 	line-height: 1.6;
+}
+.language-selector {
+	margin-top: 28px;
+	padding-top: 22px;
+	border-top: 1px solid rgba(255, 255, 255, 0.35);
+}
+.language-selector > p {
+	margin-bottom: 12px;
+	font-family: 'Roboto Condensed', Impact, sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+.language-list {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+}
+.language-option {
+	min-height: 39px;
+	padding: 6px 7px;
+	border: 1px solid rgba(255, 255, 255, 0.7);
+	border-radius: 0;
+	color: #fff;
+	background: transparent;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.15;
+	transition:
+		background 0.2s,
+		color 0.2s;
+}
+.language-option:hover,
+.language-option.active {
+	color: #035d65;
+	background: #fff;
 }
 .illustration {
 	position: relative;
@@ -670,9 +646,8 @@ input:focus {
 		padding: 8px 10px;
 		font-size: 13px;
 	}
-	.language-picker select {
-		max-width: 82px;
-		padding-right: 0;
+	.language-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 	.admin-view {
 		padding-top: 90px;
