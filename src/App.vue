@@ -3,7 +3,20 @@ import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { languages, translations, type Locale } from './locales';
-const locale = ref<Locale>('en');
+
+const localeStorageKey = 'bay-compassion.locale';
+const returningVisitorStorageKey = 'bay-compassion.returning-visitor';
+
+function getSavedLocale(): Locale {
+	const savedLocale = window.localStorage.getItem(localeStorageKey);
+
+	return languages.some((language) => language.code === savedLocale)
+		? (savedLocale as Locale)
+		: 'en';
+}
+
+const locale = ref<Locale>(getSavedLocale());
+const isReturningVisitor = ref(window.localStorage.getItem(returningVisitorStorageKey) === 'true');
 const isSubmitted = ref(false);
 const isSubmitting = ref(false);
 const submissionError = ref('');
@@ -29,6 +42,17 @@ function toggleMode() {
 	void router.push({ name: isAdmin.value ? 'guest' : 'admin' });
 }
 
+function selectLanguage(selectedLocale: Locale) {
+	locale.value = selectedLocale;
+	isReturningVisitor.value = true;
+	window.localStorage.setItem(localeStorageKey, selectedLocale);
+	window.localStorage.setItem(returningVisitorStorageKey, 'true');
+}
+
+function saveLocale() {
+	window.localStorage.setItem(localeStorageKey, locale.value);
+}
+
 async function submitForm() {
 	isSubmitting.value = true;
 	submissionError.value = '';
@@ -40,7 +64,9 @@ async function submitForm() {
 			body: JSON.stringify({ ...guest.value, locale: locale.value }),
 		});
 
-		if (!response.ok) throw new Error('Guest submission failed');
+		if (!response.ok) {
+			throw new Error('Guest submission failed');
+		}
 		isSubmitted.value = true;
 	} catch {
 		submissionError.value = t.value.submissionError;
@@ -54,20 +80,13 @@ async function submitForm() {
 	<main class="app-shell" :dir="locale === 'fa' || locale === 'ar' ? 'rtl' : 'ltr'">
 		<header class="topbar">
 			<a class="brand" href="/" @click.prevent="showGuest">
-				<span class="brand-mark" aria-hidden="true">
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-						<path
-							d="M12 21s-7-4.35-7-10.05C5 8.22 6.9 6.5 9.25 6.5c1.3 0 2.28.66 2.75 1.5.47-.84 1.45-1.5 2.75-1.5C17.1 6.5 19 8.22 19 10.95 19 16.65 12 21 12 21Z"
-						/>
-						<path d="M5 3.5c2.2-.25 3.94.48 5.14 2.06M19 3.5c-2.2-.25-3.94.48-5.14 2.06" />
-					</svg>
-				</span>
+				<img class="brand-mark" src="/bay-compassion-logo.png" alt="" />
 				<span>{{ t.marketName }}</span>
 			</a>
 			<div class="header-actions">
-				<label class="language-picker">
+				<label v-if="isReturningVisitor" class="language-picker">
 					<span class="sr-only">{{ t.language }}</span>
-					<select v-model="locale" :aria-label="t.language">
+					<select v-model="locale" :aria-label="t.language" @change="saveLocale">
 						<option v-for="language in languages" :key="language.code" :value="language.code">
 							{{ language.label }}
 						</option>
@@ -89,7 +108,7 @@ async function submitForm() {
 		</header>
 
 		<section v-if="!isAdmin" class="guest-layout">
-			<div class="hero">
+			<div v-if="!isReturningVisitor" class="hero">
 				<p class="eyebrow"><span></span>Compassion Food</p>
 				<h1>{{ t.welcome }}</h1>
 				<p class="hero-copy">{{ t.heroCopy }}</p>
@@ -103,7 +122,7 @@ async function submitForm() {
 							:class="{ active: locale === language.code }"
 							type="button"
 							:aria-pressed="locale === language.code"
-							@click="locale = language.code"
+							@click="selectLanguage(language.code)"
 						>
 							{{ language.label }}
 						</button>
@@ -234,7 +253,6 @@ async function submitForm() {
 }
 body {
 	margin: 0;
-	min-width: 320px;
 }
 button,
 input,
@@ -250,77 +268,74 @@ button {
 	background: #fff;
 }
 .topbar {
-	height: 76px;
+	height: 52px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 5.5vw;
-	border-bottom: 1px solid #e2e2e2;
-	background: #fff;
+	padding: 0 18px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+	background: #035d65;
 }
 .brand {
 	display: inline-flex;
-	gap: 10px;
+	gap: 7px;
 	align-items: center;
-	color: #232323;
+	color: #fff;
 	font-family: 'Roboto Condensed', Impact, sans-serif;
 	font-weight: 700;
-	font-size: 17px;
+	font-size: 14px;
 	text-transform: uppercase;
 	text-decoration: none;
 	letter-spacing: -0.03em;
 }
 .brand-mark {
-	width: 30px;
-	height: 30px;
-	display: grid;
-	place-items: center;
-	color: #035d65;
-}
-.brand-mark svg {
-	width: 28px;
+	width: 26px;
+	height: 26px;
+	object-fit: contain;
 }
 .header-actions {
 	display: flex;
-	gap: 9px;
+	gap: 2px;
 	align-items: center;
 }
 .language-picker select,
 .mode-button {
-	color: #232323;
+	color: #fff;
 	border: 0;
 	background: transparent;
 	font-size: 14px;
 	font-weight: 600;
 }
 .language-picker select {
-	padding: 9px 19px 9px 7px;
+	max-width: 82px;
+	padding: 8px 0 8px 5px;
+}
+.language-picker option {
+	color: #035d65;
+	background: #fff;
 }
 .mode-button {
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
-	padding: 10px 13px;
-	border: 1px solid #232323;
+	padding: 7px 9px;
+	border: 1px solid #fff;
 	border-radius: 99px;
 	font-family: 'Roboto Condensed', Impact, sans-serif;
 	text-transform: uppercase;
+	font-size: 12px;
 }
 .mode-button svg {
-	width: 17px;
+	width: 16px;
 }
 .guest-layout {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(410px, 520px);
-	gap: clamp(32px, 6vw, 100px);
-	width: min(1260px, 91vw);
+	width: min(100% - 36px, 560px);
 	margin: 0 auto;
-	padding: clamp(56px, 8vw, 110px) 0 64px;
-	align-items: center;
+	padding: 20px 0 32px;
 }
 .hero {
-	max-width: 585px;
-	padding: clamp(34px, 5vw, 70px);
+	margin-bottom: 24px;
+	padding: 25px 22px;
 	color: #fff;
 	background: #035d65;
 }
@@ -347,19 +362,17 @@ p {
 	margin-top: 0;
 }
 h1 {
-	max-width: 500px;
-	margin-bottom: 20px;
+	margin-bottom: 14px;
 	font-family: 'Roboto Condensed', Impact, sans-serif;
-	font-size: clamp(48px, 5.2vw, 76px);
+	font-size: 42px;
 	font-weight: 700;
 	line-height: 0.96;
 	letter-spacing: -0.035em;
 	text-transform: uppercase;
 }
 .hero-copy {
-	max-width: 415px;
 	color: rgba(255, 255, 255, 0.84);
-	font-size: 17px;
+	font-size: 16px;
 	line-height: 1.6;
 }
 .language-selector {
@@ -377,7 +390,7 @@ h1 {
 }
 .language-list {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 8px;
 }
 .language-option {
@@ -400,12 +413,7 @@ h1 {
 	background: #fff;
 }
 .illustration {
-	position: relative;
-	height: 190px;
-	margin-top: 36px;
-	overflow: hidden;
-	border-radius: 0;
-	background: #edc996;
+	display: none;
 }
 .illustration svg {
 	position: absolute;
@@ -441,11 +449,11 @@ h1 {
 	background: #bedac0;
 }
 .checkin-card {
-	padding: clamp(30px, 4vw, 44px);
+	padding: 27px 22px;
 	border: 1px solid #232323;
 	border-radius: 0;
 	background: #fff;
-	box-shadow: 11px 11px 0 #035d65;
+	box-shadow: 8px 8px 0 #035d65;
 }
 .form-heading {
 	margin-bottom: 28px;
@@ -587,9 +595,9 @@ input:focus {
 	padding: 0 20px;
 }
 .admin-view {
-	width: min(760px, 88vw);
+	width: min(100% - 36px, 560px);
 	margin: 0 auto;
-	padding: 13vh 0;
+	padding: 48px 0;
 }
 .admin-view h1 {
 	max-width: 650px;
@@ -624,65 +632,5 @@ input:focus {
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border: 0;
-}
-@media (max-width: 780px) {
-	.topbar {
-		height: 65px;
-		padding: 0 5vw;
-	}
-	.brand {
-		font-size: 15px;
-	}
-	.guest-layout {
-		display: block;
-		width: min(100% - 36px, 560px);
-		padding-top: 43px;
-	}
-	.hero {
-		margin-bottom: 34px;
-	}
-	.hero-copy {
-		font-size: 16px;
-	}
-	.illustration {
-		display: none;
-	}
-	.checkin-card {
-		padding: 27px 22px;
-		border-radius: 18px;
-	}
-	.header-actions {
-		gap: 2px;
-	}
-	.mode-button {
-		padding: 8px 10px;
-		font-size: 13px;
-	}
-	.language-picker select {
-		max-width: 82px;
-		padding-right: 0;
-	}
-	.language-list {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-	.admin-view {
-		padding-top: 90px;
-	}
-}
-@media (max-width: 390px) {
-	.field-grid,
-	.narrow-fields {
-		grid-template-columns: 1fr;
-		gap: 19px;
-	}
-	.topbar {
-		padding: 0 13px;
-	}
-	.brand-mark {
-		width: 24px;
-	}
-	.brand-mark svg {
-		width: 25px;
-	}
 }
 </style>
