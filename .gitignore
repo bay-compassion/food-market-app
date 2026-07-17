@@ -107,11 +107,6 @@ dist
 # TernJS port file
 .tern-port
 
-.nx/cache
-.nx/workspace-data
-
 .claude/worktrees
-.nx/polygraph
-.nx/self-healing
 # Local Netlify folder
 .netlify
