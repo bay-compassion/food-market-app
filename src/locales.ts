@@ -18,6 +18,7 @@ export interface Translation {
 	age: string;
 	ageHint: string;
 	backToGuest: string;
+	compassionFood: string;
 	firstName: string;
 	formDescription: string;
 	formTitle: string;
@@ -48,6 +49,7 @@ export const translations = {
 		age: 'Age',
 		ageHint: 'In years',
 		backToGuest: 'Back to guest check-in',
+		compassionFood: 'Compassion Food',
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
 		formTitle: 'Tell us about you',
@@ -76,6 +78,7 @@ export const translations = {
 		age: 'Edad',
 		ageHint: 'En años',
 		backToGuest: 'Volver al registro',
+		compassionFood: 'Alimentos con Compasión',
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
@@ -104,6 +107,7 @@ export const translations = {
 		age: 'سن',
 		ageHint: 'به سال',
 		backToGuest: 'بازگشت به ثبت‌نام مهمان',
+		compassionFood: 'غذای دلسوزانه',
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
 		formTitle: 'درباره خودتان بگویید',
@@ -132,6 +136,7 @@ export const translations = {
 		age: 'Edad',
 		ageHint: 'Sa taon',
 		backToGuest: 'Bumalik sa pag-check in ng bisita',
+		compassionFood: 'Pagkaing May Malasakit',
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
@@ -161,6 +166,7 @@ export const translations = {
 		age: 'Tuổi',
 		ageHint: 'Theo năm',
 		backToGuest: 'Quay lại đăng ký khách',
+		compassionFood: 'Thực Phẩm Nhân Ái',
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
@@ -190,6 +196,7 @@ export const translations = {
 		age: '年龄',
 		ageHint: '岁',
 		backToGuest: '返回访客登记',
+		compassionFood: '关爱食品',
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
 		formTitle: '请告诉我们您的信息',
@@ -218,6 +225,7 @@ export const translations = {
 		age: 'العمر',
 		ageHint: 'بالسنوات',
 		backToGuest: 'العودة إلى تسجيل الضيف',
+		compassionFood: 'طعام الرحمة',
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
 		formTitle: 'أخبرنا عنك',
