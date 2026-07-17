@@ -17,11 +17,11 @@
 
 - Use TypeScript and Vue's existing conventions. Keep components focused and avoid premature generalization.
 - Follow the repository formatter: tabs, single quotes, semicolons, and a 100-character print width. Run `npm run format` after edits when needed.
-- The repository is an npm-workspaces/Nx monorepo. App packages live in `packages/`; the Vue app is `packages/web`; database schema code is in `db/`; and Netlify functions are in `netlify/functions/`.
+- The repository uses npm workspaces. App packages live in `packages/`; the Vue app is `packages/web`; database schema code is in `db/`; and Netlify functions are in `netlify/functions/`.
 - This is currently a Netlify-targeted application. Keep deployment configuration and server-side work compatible with the Netlify setup in `netlify.toml` and `netlify/`.
-- Packages extend the root TypeScript configuration. Use `npx plop package` to scaffold a new package from the repository template when a new package is needed.
-- `oxlint` uses type-aware checks; treat warnings as worth resolving when they affect changed code. Conventional Commit messages are required, and the Husky pre-commit hook runs linting and formatting checks. Do not bypass hooks.
-- The project uses Node 24 (see `.nvmrc`). A local Postgres instance is available through `docker compose up -d` when database work requires it.
+- Packages extend the root TypeScript configuration.
+- `oxlint` uses type-aware checks; treat warnings as worth resolving when they affect changed code.
+- The project uses Node 24 (see `.nvmrc`).
 - Before handing off a change, run the relevant checks. For web-app changes, prefer:
 
   ```bash
