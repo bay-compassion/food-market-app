@@ -36,6 +36,7 @@ describe('App', () => {
 		const wrapper = mountApp();
 
 		expect(wrapper.findAll('.language-option')).toHaveLength(7);
+		expect(wrapper.find('select').findAll('option')).toHaveLength(7);
 		expect(wrapper.text()).toContain('فارسی');
 		expect(wrapper.text()).toContain('Tagalog');
 		expect(wrapper.text()).toContain('Tiếng Việt');

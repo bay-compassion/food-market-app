@@ -65,6 +65,14 @@ async function submitForm() {
 				<span>{{ t.marketName }}</span>
 			</a>
 			<div class="header-actions">
+				<label class="language-picker">
+					<span class="sr-only">{{ t.language }}</span>
+					<select v-model="locale" :aria-label="t.language">
+						<option v-for="language in languages" :key="language.code" :value="language.code">
+							{{ language.label }}
+						</option>
+					</select>
+				</label>
 				<button class="mode-button" type="button" @click="toggleMode">
 					<svg
 						viewBox="0 0 24 24"
@@ -277,12 +285,16 @@ button {
 	gap: 9px;
 	align-items: center;
 }
+.language-picker select,
 .mode-button {
 	color: #232323;
 	border: 0;
 	background: transparent;
 	font-size: 14px;
 	font-weight: 600;
+}
+.language-picker select {
+	padding: 9px 19px 9px 7px;
 }
 .mode-button {
 	display: inline-flex;
@@ -645,6 +657,10 @@ input:focus {
 	.mode-button {
 		padding: 8px 10px;
 		font-size: 13px;
+	}
+	.language-picker select {
+		max-width: 82px;
+		padding-right: 0;
 	}
 	.language-list {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
