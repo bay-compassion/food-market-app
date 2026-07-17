@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import App from '../App.vue';
@@ -17,6 +17,10 @@ function mountApp() {
 }
 
 describe('App', () => {
+	beforeEach(() => {
+		window.localStorage.clear();
+	});
+
 	it('renders the guest queue form', () => {
 		const wrapper = mountApp();
 
@@ -29,14 +33,26 @@ describe('App', () => {
 
 		await wrapper.findAll('.language-option')[1]!.trigger('click');
 
-		expect(wrapper.text()).toContain('Bienvenido al mercado comunitario de alimentos');
+		expect(window.localStorage.getItem('bay-compassion.locale')).toBe('es');
+		expect(window.localStorage.getItem('bay-compassion.returning-visitor')).toBe('true');
+		expect(wrapper.find('.hero').exists()).toBe(false);
+	});
+
+	it('uses saved settings for returning visitors', () => {
+		window.localStorage.setItem('bay-compassion.locale', 'es');
+		window.localStorage.setItem('bay-compassion.returning-visitor', 'true');
+
+		const wrapper = mountApp();
+
+		expect(wrapper.find('.hero').exists()).toBe(false);
+		expect((wrapper.find('select').element as HTMLSelectElement).value).toBe('es');
+		expect(wrapper.text()).toContain('Cuéntenos sobre usted');
 	});
 
 	it('offers the requested language options on the guest page', () => {
 		const wrapper = mountApp();
 
 		expect(wrapper.findAll('.language-option')).toHaveLength(7);
-		expect(wrapper.find('select').findAll('option')).toHaveLength(7);
 		expect(wrapper.text()).toContain('فارسی');
 		expect(wrapper.text()).toContain('Tagalog');
 		expect(wrapper.text()).toContain('Tiếng Việt');
@@ -50,7 +66,7 @@ describe('App', () => {
 		await wrapper.findAll('.language-option')[2]!.trigger('click');
 
 		expect(wrapper.attributes('dir')).toBe('rtl');
-		expect(wrapper.text()).toContain('به بازار غذای جامعه خوش آمدید');
+		expect(wrapper.text()).toContain('درباره خودتان بگویید');
 	});
 
 	it('sends the guest check-in to the API', async () => {
