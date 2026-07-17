@@ -2,6 +2,9 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import AppButton from './components/AppButton.vue';
+import EyebrowLabel from './components/EyebrowLabel.vue';
+import FormField from './components/FormField.vue';
 import { languages, translations, type Locale } from './locales';
 
 const localeStorageKey = 'bay-compassion.locale';
@@ -20,7 +23,13 @@ const isReturningVisitor = ref(window.localStorage.getItem(returningVisitorStora
 const isSubmitted = ref(false);
 const isSubmitting = ref(false);
 const submissionError = ref('');
-const guest = ref({
+const guest = ref<{
+	firstName: string;
+	lastName: string;
+	age: number | string;
+	householdSize: number | string;
+	phone: string;
+}>({
 	firstName: '',
 	lastName: '',
 	age: '',
@@ -109,7 +118,7 @@ async function submitForm() {
 
 		<section v-if="!isAdmin" class="guest-layout">
 			<div v-if="!isReturningVisitor" class="hero">
-				<p class="eyebrow"><span></span>Compassion Food</p>
+				<EyebrowLabel>{{ t.compassionFood }}</EyebrowLabel>
 				<h1>{{ t.welcome }}</h1>
 				<p class="hero-copy">{{ t.heroCopy }}</p>
 				<section class="language-selector" :aria-label="t.language">
@@ -128,29 +137,6 @@ async function submitForm() {
 						</button>
 					</div>
 				</section>
-				<div class="illustration" aria-hidden="true">
-					<div class="sun"></div>
-					<div class="hill hill-one"></div>
-					<div class="hill hill-two"></div>
-					<svg viewBox="0 0 330 210" fill="none">
-						<path
-							d="M28 189c42-42 79-17 111-70 30-50 67-60 105-41 25 12 41 35 61 51"
-							stroke="#5f9e78"
-							stroke-width="8"
-							stroke-linecap="round"
-						/>
-						<path
-							d="M47 174c7-26 21-43 39-52M94 191c3-20 10-35 25-47M240 177c-2-28-12-52-31-70"
-							stroke="#29735a"
-							stroke-width="5"
-							stroke-linecap="round"
-						/>
-						<path
-							d="M177 127c-12-32 3-66 28-72 7 24-4 54-28 72ZM205 144c7-31 35-50 57-43-7 25-31 43-57 43Z"
-							fill="#edb952"
-						/>
-					</svg>
-				</div>
 			</div>
 
 			<section class="checkin-card" aria-live="polite">
@@ -158,65 +144,62 @@ async function submitForm() {
 					<div class="checkmark">✓</div>
 					<h2>{{ t.successTitle }}</h2>
 					<p>{{ t.successDescription }}</p>
-					<button type="button" class="secondary-button" @click="isSubmitted = false">
+					<AppButton type="button" variant="secondary" @click="isSubmitted = false">
 						{{ t.guest }}
-					</button>
+					</AppButton>
 				</div>
 				<form v-else @submit.prevent="submitForm">
 					<div class="form-heading">
 						<h2>{{ t.formTitle }}</h2>
 						<p>{{ t.formDescription }}</p>
 					</div>
-					<div class="field-grid">
-						<label
-							><span>{{ t.firstName }}</span
-							><input v-model.trim="guest.firstName" required autocomplete="given-name"
-						/></label>
-						<label
-							><span>{{ t.lastName }}</span
-							><input v-model.trim="guest.lastName" required autocomplete="family-name"
-						/></label>
-					</div>
-					<div class="field-grid narrow-fields">
-						<label
-							><span>{{ t.age }}</span
-							><input
-								v-model.number="guest.age"
-								required
-								min="0"
-								max="120"
-								inputmode="numeric"
-								type="number"
-								:placeholder="t.ageHint"
-						/></label>
-						<label
-							><span>{{ t.household }}</span
-							><input
-								v-model.number="guest.householdSize"
-								required
-								min="1"
-								max="30"
-								inputmode="numeric"
-								type="number"
-								:placeholder="t.householdHint"
-						/></label>
-					</div>
-					<label
-						><span>{{ t.phone }}</span
-						><input
-							v-model.trim="guest.phone"
-							required
-							autocomplete="tel"
-							inputmode="tel"
-							type="tel"
-							placeholder="(555) 123-4567"
-					/></label>
+					<FormField
+						v-model="guest.firstName"
+						:label="t.firstName"
+						required
+						autocomplete="given-name"
+					/>
+					<FormField
+						v-model="guest.lastName"
+						:label="t.lastName"
+						required
+						autocomplete="family-name"
+					/>
+					<FormField
+						v-model="guest.age"
+						:label="t.age"
+						type="number"
+						required
+						:min="0"
+						:max="120"
+						inputmode="numeric"
+						:placeholder="t.ageHint"
+					/>
+					<FormField
+						v-model="guest.householdSize"
+						:label="t.household"
+						type="number"
+						required
+						:min="1"
+						:max="30"
+						inputmode="numeric"
+						:placeholder="t.householdHint"
+					/>
+					<FormField
+						v-model="guest.phone"
+						:label="t.phone"
+						required
+						autocomplete="tel"
+						inputmode="tel"
+						type="tel"
+						placeholder="(555) 123-4567"
+					/>
 					<p v-if="submissionError" class="submission-error" role="alert">
 						{{ submissionError }}
 					</p>
-					<button class="submit-button" type="submit" :disabled="isSubmitting">
+					<AppButton type="submit" :disabled="isSubmitting">
 						{{ isSubmitting ? t.submitting : t.submit }} <span aria-hidden="true">→</span>
-					</button>
+					</AppButton>
 					<p class="privacy">
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<rect x="5" y="10" width="14" height="10" rx="2" />
@@ -228,13 +211,13 @@ async function submitForm() {
 		</section>
 
 		<section v-else class="admin-view">
-			<p class="eyebrow"><span></span>{{ t.adminEyebrow }}</p>
+			<EyebrowLabel tone="brand">{{ t.adminEyebrow }}</EyebrowLabel>
 			<h1>{{ t.adminTitle }}</h1>
 			<p>{{ t.adminDescription }}</p>
 			<div class="admin-preview"><span>01</span><span>02</span><span>03</span><span>04</span></div>
-			<button class="secondary-button" type="button" @click="showGuest">
+			<AppButton type="button" variant="secondary" @click="showGuest">
 				{{ t.backToGuest }}
-			</button>
+			</AppButton>
 		</section>
 	</main>
 </template>
@@ -243,9 +226,27 @@ async function submitForm() {
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap');
 
 :root {
-	font-family: Roboto, Arial, sans-serif;
-	color: #232323;
-	background: #fff;
+	--font-body: Roboto, Arial, sans-serif;
+	--font-heading: 'Roboto Condensed', Impact, sans-serif;
+	--color-brand: #023940;
+	--color-brand-dark: #012a2f;
+	--color-on-brand: #fff;
+	--color-background: #fff;
+	--color-text: #101010;
+	--color-text-muted: #3d453f;
+	--color-text-subtle: #60746a;
+	--color-border: #5c655f;
+	--color-placeholder: #7c8880;
+	--color-focus: #ffb545;
+	--color-error: #a12622;
+	--radius-sm: 8px;
+	--radius-md: 16px;
+	--radius-lg: 24px;
+	--radius-pill: 999px;
+
+	font-family: var(--font-body);
+	color: var(--color-text);
+	background: var(--color-background);
 	font-synthesis: none;
 }
 * {
@@ -262,68 +263,75 @@ select {
 button {
 	cursor: pointer;
 }
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+	outline: 3px solid var(--color-focus);
+	outline-offset: 2px;
+}
 .app-shell {
 	min-height: 100vh;
-	overflow: hidden;
-	background: #fff;
+	background: var(--color-background);
 }
 .topbar {
-	height: 52px;
+	height: 60px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 18px;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.55);
-	background: #035d65;
+	padding: 0 20px;
+	background: var(--color-brand);
 }
 .brand {
 	display: inline-flex;
-	gap: 7px;
+	gap: 8px;
 	align-items: center;
-	color: #fff;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
+	color: var(--color-on-brand);
+	font-family: var(--font-heading);
 	font-weight: 700;
-	font-size: 14px;
+	font-size: 14.5px;
 	text-transform: uppercase;
 	text-decoration: none;
-	letter-spacing: -0.03em;
 }
 .brand-mark {
-	width: 26px;
-	height: 26px;
+	width: 28px;
+	height: 28px;
 	object-fit: contain;
+	border-radius: var(--radius-sm);
 }
 .header-actions {
 	display: flex;
-	gap: 2px;
+	gap: 10px;
 	align-items: center;
 }
-.language-picker select,
-.mode-button {
-	color: #fff;
+.language-picker select {
+	min-height: 46px;
+	padding: 0 8px;
 	border: 0;
+	border-radius: var(--radius-sm);
+	color: var(--color-on-brand);
 	background: transparent;
-	font-size: 14px;
+	font-size: 15px;
 	font-weight: 600;
 }
-.language-picker select {
-	max-width: 82px;
-	padding: 8px 0 8px 5px;
-}
 .language-picker option {
-	color: #035d65;
-	background: #fff;
+	color: var(--color-brand);
+	background: var(--color-background);
 }
 .mode-button {
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
-	padding: 7px 9px;
-	border: 1px solid #fff;
-	border-radius: 99px;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
+	min-height: 46px;
+	padding: 0 15px;
+	border: 1.5px solid var(--color-on-brand);
+	border-radius: var(--radius-pill);
+	color: var(--color-on-brand);
+	background: transparent;
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 13px;
 	text-transform: uppercase;
-	font-size: 12px;
 }
 .mode-button svg {
 	width: 16px;
@@ -331,59 +339,43 @@ button {
 .guest-layout {
 	width: min(100% - 36px, 560px);
 	margin: 0 auto;
-	padding: 20px 0 32px;
+	padding: 24px 0 40px;
 }
 .hero {
 	margin-bottom: 24px;
-	padding: 25px 22px;
-	color: #fff;
-	background: #035d65;
-}
-.eyebrow {
-	display: flex;
-	align-items: center;
-	gap: 9px;
-	color: #fff;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
-	font-size: 13px;
-	font-weight: 600;
-	letter-spacing: 0.11em;
-	text-transform: uppercase;
-}
-.eyebrow span {
-	display: block;
-	width: 24px;
-	height: 2px;
-	background: #fff;
+	padding: 32px 22px;
+	color: var(--color-on-brand);
+	background: var(--color-brand);
+	border-radius: var(--radius-lg);
 }
 h1,
 h2,
 p {
-	margin-top: 0;
+	margin: 0;
 }
 h1 {
 	margin-bottom: 14px;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
-	font-size: 42px;
+	font-family: var(--font-heading);
+	font-size: 38px;
 	font-weight: 700;
-	line-height: 0.96;
-	letter-spacing: -0.035em;
+	line-height: 1.05;
+	letter-spacing: -0.01em;
 	text-transform: uppercase;
 }
 .hero-copy {
-	color: rgba(255, 255, 255, 0.84);
-	font-size: 16px;
-	line-height: 1.6;
+	margin-bottom: 28px;
+	color: var(--color-on-brand);
+	font-size: 17px;
+	line-height: 1.65;
 }
 .language-selector {
-	margin-top: 28px;
-	padding-top: 22px;
-	border-top: 1px solid rgba(255, 255, 255, 0.35);
+	padding-top: 24px;
+	border-top: 2px solid rgba(255, 255, 255, 0.4);
 }
 .language-selector > p {
-	margin-bottom: 12px;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
-	font-size: 14px;
+	margin-bottom: 14px;
+	font-family: var(--font-heading);
+	font-size: 15px;
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -391,17 +383,17 @@ h1 {
 .language-list {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 8px;
+	gap: 12px;
 }
 .language-option {
-	min-height: 39px;
-	padding: 6px 7px;
-	border: 1px solid rgba(255, 255, 255, 0.7);
-	border-radius: 0;
-	color: #fff;
+	min-height: 60px;
+	padding: 8px;
+	border: 2px solid var(--color-on-brand);
+	border-radius: var(--radius-md);
+	color: var(--color-on-brand);
 	background: transparent;
-	font-size: 13px;
-	font-weight: 600;
+	font-size: 15px;
+	font-weight: 700;
 	line-height: 1.15;
 	transition:
 		background 0.2s,
@@ -409,167 +401,60 @@ h1 {
 }
 .language-option:hover,
 .language-option.active {
-	color: #035d65;
-	background: #fff;
-}
-.illustration {
-	display: none;
-}
-.illustration svg {
-	position: absolute;
-	z-index: 2;
-	width: 100%;
-	height: 100%;
-}
-.sun {
-	position: absolute;
-	top: 26px;
-	right: 23%;
-	width: 50px;
-	height: 50px;
-	border-radius: 50%;
-	background: #edb952;
-}
-.hill {
-	position: absolute;
-	border-radius: 50% 50% 0 0;
-}
-.hill-one {
-	width: 300px;
-	height: 110px;
-	left: -18px;
-	bottom: -25px;
-	background: #91c5a1;
-}
-.hill-two {
-	width: 280px;
-	height: 130px;
-	right: -25px;
-	bottom: -33px;
-	background: #bedac0;
+	color: var(--color-brand);
+	background: var(--color-background);
 }
 .checkin-card {
-	padding: 27px 22px;
-	border: 1px solid #232323;
-	border-radius: 0;
-	background: #fff;
-	box-shadow: 8px 8px 0 #035d65;
+	padding: 32px 22px;
+	border: 2px solid var(--color-brand);
+	border-radius: var(--radius-lg);
+	background: var(--color-background);
 }
 .form-heading {
-	margin-bottom: 28px;
+	margin-bottom: 8px;
 }
 .form-heading h2,
 .success-state h2 {
-	margin-bottom: 7px;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
-	font-size: 30px;
-	letter-spacing: -0.02em;
+	margin-bottom: 9px;
+	font-family: var(--font-heading);
+	font-size: 29px;
+	letter-spacing: -0.01em;
 	text-transform: uppercase;
+	color: var(--color-text);
 }
 .form-heading p,
 .success-state p {
-	color: #5c5c5c;
-	font-size: 14px;
+	color: var(--color-text-muted);
+	font-size: 16px;
 	line-height: 1.55;
 }
 form {
 	display: grid;
-	gap: 19px;
-}
-label {
-	display: grid;
-	gap: 8px;
-	color: #232323;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
-	font-size: 13px;
-	font-weight: 600;
-}
-input {
-	width: 100%;
-	height: 47px;
-	padding: 0 14px;
-	color: #232323;
-	border: 1px solid #909090;
-	border-radius: 0;
-	outline: 0;
-	background: #fff;
-	transition:
-		border 0.2s,
-		box-shadow 0.2s;
-}
-input::placeholder {
-	color: #a7b1ab;
-}
-input:focus {
-	border-color: #035d65;
-	box-shadow: 0 0 0 3px rgba(3, 93, 101, 0.15);
-}
-.field-grid {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 16px;
-}
-.narrow-fields {
-	grid-template-columns: 0.65fr 1.35fr;
-}
-.submit-button,
-.secondary-button {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: 13px;
-	min-height: 51px;
-	border: 0;
-	border-radius: 99px;
-	color: #035d65;
-	background: #fff;
-	font-family: 'Roboto Condensed', Impact, sans-serif;
-	font-weight: 700;
-	letter-spacing: 0.02em;
-	text-transform: uppercase;
-	box-shadow: inset 0 0 0 1px #035d65;
-	transition:
-		transform 0.2s,
-		background 0.2s;
-}
-.submit-button:hover,
-.secondary-button:hover {
-	color: #fff;
-	background: #035d65;
-	transform: translateY(-1px);
-}
-.submit-button:disabled {
-	cursor: wait;
-	opacity: 0.65;
-	transform: none;
-}
-.submit-button span {
-	font-size: 22px;
-	font-weight: 400;
+	gap: 18px;
 }
 .submission-error {
 	margin: 0;
-	color: #a12622;
+	color: var(--color-error);
 	font-size: 13px;
 	line-height: 1.4;
 }
 .privacy {
 	display: flex;
 	align-items: flex-start;
-	gap: 7px;
-	margin: 1px 0 0;
-	color: #5c5c5c;
-	font-size: 11px;
-	line-height: 1.4;
+	gap: 8px;
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: 13px;
+	line-height: 1.5;
 }
 .privacy svg {
 	flex: 0 0 auto;
-	width: 14px;
+	width: 16px;
 	margin-top: 1px;
 }
 .success-state {
 	display: grid;
-	min-height: 370px;
+	min-height: 340px;
 	place-content: center;
 	text-align: center;
 }
@@ -580,19 +465,14 @@ input:focus {
 	place-self: center;
 	place-items: center;
 	margin-bottom: 19px;
-	border-radius: 0;
-	color: #fff;
-	background: #035d65;
+	border-radius: var(--radius-md);
+	color: var(--color-on-brand);
+	background: var(--color-brand);
 	font-size: 29px;
 }
 .success-state p {
 	max-width: 280px;
-	margin-bottom: 27px;
-}
-.secondary-button {
-	min-width: 170px;
-	justify-self: center;
-	padding: 0 20px;
+	margin: 0 auto 27px;
 }
 .admin-view {
 	width: min(100% - 36px, 560px);
@@ -601,10 +481,11 @@ input:focus {
 }
 .admin-view h1 {
 	max-width: 650px;
+	color: var(--color-brand);
 }
 .admin-view > p:not(.eyebrow) {
 	max-width: 430px;
-	color: #60746a;
+	color: var(--color-text-subtle);
 	font-size: 17px;
 	line-height: 1.6;
 }
@@ -619,8 +500,8 @@ input:focus {
 	height: 65px;
 	place-items: center;
 	border-radius: 50%;
-	color: #fff;
-	background: #035d65;
+	color: var(--color-on-brand);
+	background: var(--color-brand);
 	font-weight: 700;
 }
 .sr-only {
