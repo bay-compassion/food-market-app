@@ -6,6 +6,15 @@ type Locale = 'en' | 'es';
 const locale = ref<Locale>('en');
 const mode = ref<'guest' | 'admin'>('guest');
 const isSubmitted = ref(false);
+const isSubmitting = ref(false);
+const submissionError = ref('');
+const guest = ref({
+	firstName: '',
+	lastName: '',
+	age: '',
+	householdSize: '',
+	phone: '',
+});
 
 const translations = {
 	en: {
@@ -27,7 +36,9 @@ const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you today.',
+		submissionError: 'We could not save your check-in. Please try again.',
 		submit: 'Join the queue',
+		submitting: 'Joining the queue…',
 		successDescription: 'We’ll let you know when it’s your turn. Thank you for being here.',
 		successTitle: 'You’re in the queue!',
 		welcome: 'Welcome to the community food market',
@@ -51,7 +62,9 @@ const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
+		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
 		submit: 'Unirse a la fila',
+		submitting: 'Uniéndose a la fila…',
 		successDescription: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
 		successTitle: '¡Ya está en la fila!',
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
@@ -60,8 +73,24 @@ const translations = {
 
 const t = computed(() => translations[locale.value]);
 
-function submitForm() {
-	isSubmitted.value = true;
+async function submitForm() {
+	isSubmitting.value = true;
+	submissionError.value = '';
+
+	try {
+		const response = await fetch('/api/guests', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ ...guest.value, locale: locale.value }),
+		});
+
+		if (!response.ok) throw new Error('Guest submission failed');
+		isSubmitted.value = true;
+	} catch {
+		submissionError.value = t.value.submissionError;
+	} finally {
+		isSubmitting.value = false;
+	}
 }
 </script>
 
@@ -159,17 +188,18 @@ function submitForm() {
 					<div class="field-grid">
 						<label
 							><span>{{ t.firstName }}</span
-							><input required autocomplete="given-name"
+							><input v-model.trim="guest.firstName" required autocomplete="given-name"
 						/></label>
 						<label
 							><span>{{ t.lastName }}</span
-							><input required autocomplete="family-name"
+							><input v-model.trim="guest.lastName" required autocomplete="family-name"
 						/></label>
 					</div>
 					<div class="field-grid narrow-fields">
 						<label
 							><span>{{ t.age }}</span
 							><input
+								v-model.number="guest.age"
 								required
 								min="0"
 								max="120"
@@ -180,6 +210,7 @@ function submitForm() {
 						<label
 							><span>{{ t.household }}</span
 							><input
+								v-model.number="guest.householdSize"
 								required
 								min="1"
 								max="30"
@@ -191,14 +222,18 @@ function submitForm() {
 					<label
 						><span>{{ t.phone }}</span
 						><input
+							v-model.trim="guest.phone"
 							required
 							autocomplete="tel"
 							inputmode="tel"
 							type="tel"
 							placeholder="(555) 123-4567"
 					/></label>
-					<button class="submit-button" type="submit">
-						{{ t.submit }} <span aria-hidden="true">→</span>
+					<p v-if="submissionError" class="submission-error" role="alert">
+						{{ submissionError }}
+					</p>
+					<button class="submit-button" type="submit" :disabled="isSubmitting">
+						{{ isSubmitting ? t.submitting : t.submit }} <span aria-hidden="true">→</span>
 					</button>
 					<p class="privacy">
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -495,9 +530,20 @@ input:focus {
 	background: #035d65;
 	transform: translateY(-1px);
 }
+.submit-button:disabled {
+	cursor: wait;
+	opacity: 0.65;
+	transform: none;
+}
 .submit-button span {
 	font-size: 22px;
 	font-weight: 400;
+}
+.submission-error {
+	margin: 0;
+	color: #a12622;
+	font-size: 13px;
+	line-height: 1.4;
 }
 .privacy {
 	display: flex;
