@@ -30,7 +30,7 @@ type Overview = {
 	counts: Partial<Record<GuestStatus, number>>;
 };
 
-const props = defineProps<{ locale: Locale }>();
+const props = defineProps<{ locale: Locale; getAccessToken: () => Promise<string> }>();
 const t = computed(() => adminTranslations[props.locale]);
 const base = computed(() => translations[props.locale]);
 const event = ref<MarketEvent | null>(null);
@@ -58,6 +58,13 @@ const statusLabels = computed<Record<GuestStatus, string>>(() => ({
 	not_placed: t.value.notPlaced,
 	no_show: t.value.noShow,
 }));
+
+async function authHeaders(includeJson = false) {
+	return {
+		Authorization: `Bearer ${await props.getAccessToken()}`,
+		...(includeJson ? { 'Content-Type': 'application/json' } : {}),
+	};
+}
 
 function toLocalDateTime(value: string | Date) {
 	const date = new Date(value);
@@ -91,7 +98,7 @@ function applyOverview(data: Overview) {
 }
 
 async function loadOverview() {
-	const response = await fetch('/api/market');
+	const response = await fetch('/api/market', { headers: await authHeaders() });
 	if (!response.ok) {
 		throw new Error('overview');
 	}
@@ -103,7 +110,7 @@ async function loadGuests() {
 	if (searchQuery.value.trim()) {
 		params.set('q', searchQuery.value.trim());
 	}
-	const response = await fetch(`/api/guests?${params}`);
+	const response = await fetch(`/api/guests?${params}`, { headers: await authHeaders() });
 	if (!response.ok) {
 		throw new Error('guests');
 	}
@@ -128,7 +135,7 @@ async function saveSettings() {
 	try {
 		const response = await fetch('/api/market', {
 			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
+			headers: await authHeaders(true),
 			body: JSON.stringify({
 				registrationOpensAt: new Date(settings.registrationOpensAt).toISOString(),
 				registrationClosesAt: new Date(settings.registrationClosesAt).toISOString(),
@@ -157,7 +164,7 @@ async function runMarketAction(action: 'close' | 'draw') {
 	try {
 		const response = await fetch('/api/market', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: await authHeaders(true),
 			body: JSON.stringify({ action }),
 		});
 		if (!response.ok) {
@@ -179,7 +186,7 @@ async function updateGuestStatus(guest: Guest, status: GuestStatus) {
 	try {
 		const response = await fetch('/api/guests', {
 			method: 'PATCH',
-			headers: { 'Content-Type': 'application/json' },
+			headers: await authHeaders(true),
 			body: JSON.stringify({ id: guest.id, status }),
 		});
 		if (!response.ok) {
@@ -198,7 +205,7 @@ async function addManualGuest() {
 	try {
 		const response = await fetch('/api/guests', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: await authHeaders(true),
 			body: JSON.stringify({
 				...manualGuest,
 				locale: props.locale,

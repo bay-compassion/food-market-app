@@ -43,6 +43,41 @@ npm run build
 
 The app is configured for Netlify in `netlify.toml`. Connect the repository to a Netlify site; Netlify builds the root app and publishes `dist`, while serving the functions in `netlify/functions/`.
 
+## Auth0 administration access
+
+The guest check-in is public. Auth0 protects the `/admin` route, guest records, and every
+administrative API operation that changes market or guest data.
+
+Configure Auth0 using [Netlify's Auth0 extension guide](https://docs.netlify.com/extend/install-and-use/setup-guides/auth0/):
+
+1. Deploy and link this repository to a Netlify site.
+2. As a Netlify Team Owner, install the **Auth0** extension from the team's Extensions page.
+3. In the site's **Access & security** settings, link an Auth0 tenant and add it under **Site
+   tenants**.
+4. Create or choose both an Auth0 Single-Page Application and an Auth0 API. The API is required
+   because the Netlify Functions validate access tokens using its audience.
+5. In the Auth0 application's **API Access** tab, edit the Bay Compassion API and grant
+   **User-delegated Access**. Without this grant, Auth0 rejects the SPA's audience request.
+6. Choose the **Vite** environment-variable preset and assign the configuration to the desired
+   deploy contexts. Confirm that Netlify created these values:
+   - `VITE_AUTH0_DOMAIN`
+   - `VITE_AUTH0_CLIENT_ID`
+   - `VITE_AUTH0_AUDIENCE`
+   - `VITE_AUTH0_ISSUER`
+
+7. Redeploy the site so Vite can include its `VITE_` variables in the frontend build.
+
+Netlify configures callback, logout, and web-origin URLs when the application is created through
+the extension. If you select an existing Auth0 application instead, add the deployed site origin
+and the local `netlify dev` origin to **Allowed Callback URLs**, **Allowed Logout URLs**, and
+**Allowed Web Origins** in Auth0. Auth0 matches callback URLs exactly, so include the trailing `/`.
+
+For local values not supplied by a linked Netlify site, copy `.env.example` to `.env` and replace
+the placeholders. Do not commit `.env`.
+
+Every Auth0 user who can sign in to this application has admin access. If the tenant also serves
+non-admin users, configure Auth0 API permissions and roles before inviting them to this application.
+
 ## Project structure
 
 - `src/` — Vue 3 frontend

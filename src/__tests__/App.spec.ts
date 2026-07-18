@@ -1,8 +1,21 @@
+import { AUTH0_INJECTION_KEY } from '@auth0/auth0-vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import App from '../App.vue';
+import { authReturnUrl } from '../auth';
+import AdminDashboard from '../components/AdminDashboard.vue';
+
+const authClient = {
+	isLoading: ref(false),
+	isAuthenticated: ref(false),
+	user: ref(undefined),
+	error: ref(null),
+	getAccessTokenSilently: vi.fn(),
+	logout: vi.fn(),
+};
 
 function mountApp() {
 	const router = createRouter({
@@ -13,7 +26,12 @@ function mountApp() {
 		],
 	});
 
-	return mount(App, { global: { plugins: [router] } });
+	return mount(App, {
+		global: {
+			plugins: [router],
+			provide: { [AUTH0_INJECTION_KEY as symbol]: authClient },
+		},
+	});
 }
 
 describe('App', () => {
@@ -26,6 +44,10 @@ describe('App', () => {
 
 		expect(wrapper.text()).toContain('Welcome to the community food market');
 		expect(wrapper.text()).toContain('Number of people in your household');
+	});
+
+	it('uses the exact root URL Auth0 expects for redirects', () => {
+		expect(authReturnUrl).toBe(`${window.location.origin}/`);
 	});
 
 	it('switches the guest copy to Spanish', async () => {
@@ -104,7 +126,16 @@ describe('App', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('renders the lottery administration surfaces', async () => {
+	it('shows an error when an admin session cannot be verified', async () => {
+		const wrapper = mountApp();
+
+		await wrapper.find('.mode-button').trigger('click');
+		await flushPromises();
+
+		expect(wrapper.text()).toContain('We could not verify your admin session');
+	});
+
+	it('sends an access token from the administration surfaces', async () => {
 		const fetchMock = vi.fn().mockImplementation((url: string) =>
 			Promise.resolve({
 				ok: true,
@@ -115,9 +146,10 @@ describe('App', () => {
 			}),
 		);
 		vi.stubGlobal('fetch', fetchMock);
-		const wrapper = mountApp();
-
-		await wrapper.find('.mode-button').trigger('click');
+		const getAccessToken = vi.fn().mockResolvedValue('admin-access-token');
+		const wrapper = mount(AdminDashboard, {
+			props: { locale: 'en', getAccessToken },
+		});
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Market dashboard');
@@ -125,6 +157,13 @@ describe('App', () => {
 		expect(wrapper.text()).toContain('Registration questions');
 		expect(wrapper.text()).toContain('Guest list');
 		expect(wrapper.text()).toContain('Add guest');
+		expect(getAccessToken).toHaveBeenCalled();
+		expect(fetchMock).toHaveBeenCalledWith(
+			'/api/market',
+			expect.objectContaining({
+				headers: expect.objectContaining({ Authorization: 'Bearer admin-access-token' }),
+			}),
+		);
 
 		vi.unstubAllGlobals();
 	});
