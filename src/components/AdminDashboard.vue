@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import { adminTranslations } from '../adminLocales';
 import { translations, type Locale } from '../locales';
@@ -16,6 +16,8 @@ type MarketEvent = {
 	capacity: number;
 	status: 'open' | 'closed' | 'drawn';
 };
+type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
+type HistoricalEvent = MarketEvent & { guestCount: number };
 type Guest = {
 	id: string;
 	firstName: string;
@@ -30,13 +32,19 @@ type Overview = {
 	counts: Partial<Record<GuestStatus, number>>;
 };
 
-const props = defineProps<{ locale: Locale; getAccessToken: () => Promise<string> }>();
+const props = withDefaults(
+	defineProps<{ locale: Locale; getAccessToken: () => Promise<string>; view?: AdminView }>(),
+	{ view: 'current-session' },
+);
+const emit = defineEmits<{ navigate: [view: AdminView] }>();
 const t = computed(() => adminTranslations[props.locale]);
 const base = computed(() => translations[props.locale]);
+const activeView = ref<AdminView>(props.view);
 const event = ref<MarketEvent | null>(null);
 const counts = ref<Overview['counts']>({});
 const questions = ref<Question[]>([]);
 const guests = ref<Guest[]>([]);
+const history = ref<HistoricalEvent[]>([]);
 const searchQuery = ref('');
 const feedback = ref('');
 const isBusy = ref(false);
@@ -58,6 +66,24 @@ const statusLabels = computed<Record<GuestStatus, string>>(() => ({
 	not_placed: t.value.notPlaced,
 	no_show: t.value.noShow,
 }));
+const navigation = computed<{ id: AdminView; label: string }[]>(() => [
+	{ id: 'current-session', label: t.value.currentSession },
+	{ id: 'question-bank', label: t.value.questionBank },
+	{ id: 'guest-database', label: t.value.guestDatabase },
+	{ id: 'session-history', label: t.value.historySessions },
+]);
+
+watch(
+	() => props.view,
+	(view) => {
+		activeView.value = view;
+	},
+);
+
+function navigate(view: AdminView) {
+	activeView.value = view;
+	emit('navigate', view);
+}
 
 async function authHeaders(includeJson = false) {
 	return {
@@ -106,7 +132,7 @@ async function loadOverview() {
 }
 
 async function loadGuests() {
-	const params = new URLSearchParams();
+	const params = new URLSearchParams({ scope: 'all' });
 	if (searchQuery.value.trim()) {
 		params.set('q', searchQuery.value.trim());
 	}
@@ -117,9 +143,24 @@ async function loadGuests() {
 	guests.value = (await response.json()) as Guest[];
 }
 
+async function loadHistory() {
+	const response = await fetch('/api/market?view=history', { headers: await authHeaders() });
+	if (!response.ok) {
+		throw new Error('history');
+	}
+	history.value = (await response.json()) as HistoricalEvent[];
+}
+
+function formatEventDate(value: string) {
+	return new Intl.DateTimeFormat(props.locale, {
+		dateStyle: 'medium',
+		timeStyle: 'short',
+	}).format(new Date(value));
+}
+
 async function loadDashboard() {
 	try {
-		await Promise.all([loadOverview(), loadGuests()]);
+		await Promise.all([loadOverview(), loadGuests(), loadHistory()]);
 	} catch {
 		feedback.value = t.value.error;
 	}
@@ -239,178 +280,253 @@ onMounted(loadDashboard);
 
 <template>
 	<section class="admin-dashboard">
-		<header class="admin-heading">
-			<div>
-				<EyebrowLabel tone="brand">{{ base.adminEyebrow }}</EyebrowLabel>
-				<h1>{{ t.adminTitle }}</h1>
-				<p>{{ t.adminDescription }}</p>
-			</div>
-			<span v-if="event" class="event-state" :class="event.status">
-				{{ event.status === 'drawn' ? t.drawn : event.status === 'closed' ? t.closed : t.open }}
-			</span>
-		</header>
+		<nav class="admin-navigation" :aria-label="t.adminTitle">
+			<button
+				v-for="item in navigation"
+				:key="item.id"
+				type="button"
+				:class="{ active: activeView === item.id }"
+				:aria-current="activeView === item.id ? 'page' : undefined"
+				@click="navigate(item.id)"
+			>
+				{{ item.label }}
+			</button>
+		</nav>
 
-		<p v-if="feedback" class="admin-feedback" role="status">{{ feedback }}</p>
-
-		<section class="admin-section">
-			<h2>{{ t.overview }}</h2>
-			<div class="stat-grid">
-				<article v-for="status in statuses" :key="status" class="stat-card">
-					<strong>{{ counts[status] ?? 0 }}</strong>
-					<span>{{ statusLabels[status] }}</span>
-				</article>
-			</div>
-		</section>
-
-		<section class="admin-section settings-card">
-			<div class="section-heading">
+		<div class="admin-content">
+			<header class="admin-heading">
 				<div>
+					<EyebrowLabel tone="brand">{{ base.adminEyebrow }}</EyebrowLabel>
+					<h1>{{ navigation.find((item) => item.id === activeView)?.label }}</h1>
+					<p>{{ t.adminDescription }}</p>
+				</div>
+				<span
+					v-if="event && activeView === 'current-session'"
+					class="event-state"
+					:class="event.status"
+				>
+					{{ event.status === 'drawn' ? t.drawn : event.status === 'closed' ? t.closed : t.open }}
+				</span>
+			</header>
+
+			<p v-if="feedback" class="admin-feedback" role="status">{{ feedback }}</p>
+
+			<template v-if="activeView === 'current-session'">
+				<section class="admin-section">
+					<h2>{{ t.overview }}</h2>
+					<div class="stat-grid">
+						<article v-for="status in statuses" :key="status" class="stat-card">
+							<strong>{{ counts[status] ?? 0 }}</strong>
+							<span>{{ statusLabels[status] }}</span>
+						</article>
+					</div>
+				</section>
+
+				<section class="admin-section settings-card">
 					<h2>{{ t.registrationSettings }}</h2>
 					<p>{{ t.settingsHelp }}</p>
-				</div>
-			</div>
-			<form @submit.prevent="saveSettings">
-				<div class="field-row">
-					<label
-						><span>{{ t.opensAt }}</span
-						><input v-model="settings.registrationOpensAt" type="datetime-local" required
-					/></label>
-					<label
-						><span>{{ t.closesAt }}</span
-						><input v-model="settings.registrationClosesAt" type="datetime-local" required
-					/></label>
-				</div>
-				<label
-					><span>{{ t.capacity }}</span
-					><input v-model.number="settings.capacity" type="number" min="1" max="10000" required
-				/></label>
+					<form @submit.prevent="saveSettings">
+						<div class="field-row">
+							<label
+								><span>{{ t.opensAt }}</span
+								><input v-model="settings.registrationOpensAt" type="datetime-local" required
+							/></label>
+							<label
+								><span>{{ t.closesAt }}</span
+								><input v-model="settings.registrationClosesAt" type="datetime-local" required
+							/></label>
+						</div>
+						<label
+							><span>{{ t.capacity }}</span
+							><input v-model.number="settings.capacity" type="number" min="1" max="10000" required
+						/></label>
+						<AppButton type="submit" :disabled="isBusy">{{ t.saveSettings }}</AppButton>
+					</form>
+				</section>
+
+				<section class="admin-section action-card">
+					<div>
+						<h2>{{ t.lotteryActions }}</h2>
+						<p>{{ t.settingsHelp }}</p>
+					</div>
+					<div class="action-buttons">
+						<AppButton
+							v-if="event?.status === 'open'"
+							type="button"
+							variant="secondary"
+							:disabled="isBusy"
+							@click="runMarketAction('close')"
+							>{{ t.closeRegistration }}</AppButton
+						>
+						<AppButton
+							v-if="event && event.status !== 'drawn'"
+							type="button"
+							:disabled="isBusy"
+							@click="runMarketAction('draw')"
+							>{{ t.runLottery }}</AppButton
+						>
+					</div>
+				</section>
+			</template>
+
+			<section v-else-if="activeView === 'question-bank'" class="admin-section settings-card">
 				<div class="questions-heading">
-					<h3>{{ t.questions }}</h3>
+					<h2>{{ t.questions }}</h2>
 					<button type="button" @click="addQuestion">+ {{ t.addQuestion }}</button>
 				</div>
-				<div
-					v-for="(question, index) in questions"
-					:key="question.id ?? index"
-					class="question-row"
-				>
-					<input v-model.trim="question.prompt" :placeholder="t.questionPlaceholder" required />
-					<select v-model="question.type">
-						<option value="text">{{ t.textAnswer }}</option>
-						<option value="scale">{{ t.scaleAnswer }}</option>
-					</select>
-					<label class="check-label"
-						><input v-model="question.required" type="checkbox" /> {{ t.required }}</label
+				<form @submit.prevent="saveSettings">
+					<div
+						v-for="(question, index) in questions"
+						:key="question.id ?? index"
+						class="question-row"
 					>
-					<button class="remove-button" type="button" @click="questions.splice(index, 1)">
-						{{ t.remove }}
+						<input v-model.trim="question.prompt" :placeholder="t.questionPlaceholder" required />
+						<select v-model="question.type">
+							<option value="text">{{ t.textAnswer }}</option>
+							<option value="scale">{{ t.scaleAnswer }}</option>
+						</select>
+						<label class="check-label"
+							><input v-model="question.required" type="checkbox" /> {{ t.required }}</label
+						>
+						<button class="remove-button" type="button" @click="questions.splice(index, 1)">
+							{{ t.remove }}
+						</button>
+					</div>
+					<AppButton type="submit" :disabled="isBusy">{{ t.saveSettings }}</AppButton>
+				</form>
+			</section>
+
+			<section v-else-if="activeView === 'guest-database'" class="admin-section guest-section">
+				<div class="section-heading">
+					<h2>{{ t.allGuests }}</h2>
+					<button
+						class="add-guest-button"
+						type="button"
+						:disabled="!event"
+						@click="showManualGuest = true"
+					>
+						+ {{ t.addGuest }}
 					</button>
 				</div>
-				<AppButton type="submit" :disabled="isBusy">{{ t.saveSettings }}</AppButton>
-			</form>
-		</section>
-
-		<section class="admin-section action-card">
-			<div>
-				<h2>{{ t.lotteryActions }}</h2>
-				<p>{{ t.settingsHelp }}</p>
-			</div>
-			<div class="action-buttons">
-				<AppButton
-					v-if="event?.status === 'open'"
-					type="button"
-					variant="secondary"
-					:disabled="isBusy"
-					@click="runMarketAction('close')"
-					>{{ t.closeRegistration }}</AppButton
-				>
-				<AppButton
-					v-if="event && event.status !== 'drawn'"
-					type="button"
-					:disabled="isBusy"
-					@click="runMarketAction('draw')"
-					>{{ t.runLottery }}</AppButton
-				>
-			</div>
-		</section>
-
-		<section class="admin-section guest-section">
-			<div class="section-heading">
-				<h2>{{ t.guestList }}</h2>
-				<button
-					class="add-guest-button"
-					type="button"
-					:disabled="!event"
-					@click="showManualGuest = true"
-				>
-					+ {{ t.addGuest }}
-				</button>
-			</div>
-			<form class="search-form" @submit.prevent="loadGuests">
-				<input
-					v-model="searchQuery"
-					type="search"
-					:placeholder="t.searchPlaceholder"
-					:aria-label="t.searchPlaceholder"
-				/><button type="submit">{{ t.search }}</button>
-			</form>
-			<form v-if="showManualGuest" class="manual-form" @submit.prevent="addManualGuest">
-				<h3>{{ t.manualGuestTitle }}</h3>
-				<FormField v-model="manualGuest.firstName" :label="base.firstName" required />
-				<FormField v-model="manualGuest.lastName" :label="base.lastName" required />
-				<div class="field-row">
-					<FormField
-						v-model="manualGuest.age"
-						:label="base.age"
-						type="number"
-						:min="0"
-						:max="120"
-						required
-					/><FormField
-						v-model="manualGuest.householdSize"
-						:label="base.household"
-						type="number"
-						:min="1"
-						:max="30"
-						required
-					/>
-				</div>
-				<FormField v-model="manualGuest.phone" :label="base.phone" type="tel" required />
-				<div class="manual-actions">
-					<button type="button" @click="showManualGuest = false">{{ t.cancel }}</button
-					><AppButton type="submit" :disabled="isBusy">{{ t.saveGuest }}</AppButton>
-				</div>
-			</form>
-			<div v-if="guests.length" class="guest-list">
-				<article v-for="guest in guests" :key="guest.id" class="guest-row">
-					<div>
-						<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
-						><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
+				<form class="search-form" @submit.prevent="loadGuests">
+					<input
+						v-model="searchQuery"
+						type="search"
+						:placeholder="t.searchPlaceholder"
+						:aria-label="t.searchPlaceholder"
+					/><button type="submit">{{ t.search }}</button>
+				</form>
+				<form v-if="showManualGuest" class="manual-form" @submit.prevent="addManualGuest">
+					<h3>{{ t.manualGuestTitle }}</h3>
+					<FormField v-model="manualGuest.firstName" :label="base.firstName" required />
+					<FormField v-model="manualGuest.lastName" :label="base.lastName" required />
+					<div class="field-row">
+						<FormField
+							v-model="manualGuest.age"
+							:label="base.age"
+							type="number"
+							:min="0"
+							:max="120"
+							required
+						/><FormField
+							v-model="manualGuest.householdSize"
+							:label="base.household"
+							type="number"
+							:min="1"
+							:max="30"
+							required
+						/>
 					</div>
-					<label
-						><span class="sr-only">{{ t.status }}</span
-						><select
-							:value="guest.status"
-							@change="
-								updateGuestStatus(guest, ($event.target as HTMLSelectElement).value as GuestStatus)
-							"
+					<FormField v-model="manualGuest.phone" :label="base.phone" type="tel" required />
+					<div class="manual-actions">
+						<button type="button" @click="showManualGuest = false">{{ t.cancel }}</button
+						><AppButton type="submit" :disabled="isBusy">{{ t.saveGuest }}</AppButton>
+					</div>
+				</form>
+				<div v-if="guests.length" class="guest-list">
+					<article v-for="guest in guests" :key="guest.id" class="guest-row">
+						<div>
+							<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
+							><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
+						</div>
+						<label
+							><span class="sr-only">{{ t.status }}</span
+							><select
+								:value="guest.status"
+								@change="
+									updateGuestStatus(
+										guest,
+										($event.target as HTMLSelectElement).value as GuestStatus,
+									)
+								"
+							>
+								<option v-for="status in statuses" :key="status" :value="status">
+									{{ statusLabels[status] }}
+								</option>
+							</select></label
 						>
-							<option v-for="status in statuses" :key="status" :value="status">
-								{{ statusLabels[status] }}
-							</option>
-						</select></label
-					>
-				</article>
-			</div>
-			<p v-else class="empty-state">{{ t.noGuests }}</p>
-		</section>
+					</article>
+				</div>
+				<p v-else class="empty-state">{{ t.noGuests }}</p>
+			</section>
+
+			<section v-else class="admin-section history-section">
+				<div v-if="history.length" class="history-list">
+					<article v-for="pastEvent in history" :key="pastEvent.id" class="history-row">
+						<div>
+							<strong>{{ formatEventDate(pastEvent.registrationOpensAt) }}</strong
+							><span>{{ formatEventDate(pastEvent.registrationClosesAt) }}</span>
+						</div>
+						<div>
+							<strong>{{ pastEvent.guestCount }}</strong
+							><span>{{ t.sessionGuests }}</span>
+						</div>
+						<span class="event-state" :class="pastEvent.status">{{
+							pastEvent.status === 'drawn'
+								? t.drawn
+								: pastEvent.status === 'closed'
+									? t.closed
+									: t.open
+						}}</span>
+					</article>
+				</div>
+				<p v-else class="empty-state">{{ t.noHistory }}</p>
+			</section>
+		</div>
 	</section>
 </template>
 
 <style scoped>
 .admin-dashboard {
-	width: min(100% - 32px, 760px);
+	width: min(100% - 32px, 1180px);
 	margin: 0 auto;
 	padding: 30px 0 60px;
+}
+.admin-navigation {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 28px;
+	padding-bottom: 4px;
+	overflow-x: auto;
+}
+.admin-navigation button {
+	flex: 0 0 auto;
+	min-height: 44px;
+	padding: 0 15px;
+	border: 1.5px solid #c7d2cc;
+	border-radius: var(--radius-pill);
+	color: var(--color-brand);
+	background: white;
+	font-weight: 700;
+	text-transform: capitalize;
+}
+.admin-navigation button.active {
+	color: var(--color-on-brand);
+	background: var(--color-brand);
+	border-color: var(--color-brand);
+}
+.admin-content {
+	min-width: 0;
 }
 .admin-heading {
 	display: flex;
@@ -426,6 +542,7 @@ onMounted(loadDashboard);
 }
 .admin-heading p,
 .section-heading p,
+.settings-card > p,
 .action-card p {
 	color: var(--color-text-subtle);
 	line-height: 1.5;
@@ -603,6 +720,34 @@ select {
 	display: grid;
 	margin-top: 18px;
 }
+.history-list {
+	display: grid;
+	gap: 12px;
+}
+.history-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 14px;
+	align-items: center;
+	padding: 18px;
+	border: 1.5px solid #c7d2cc;
+	border-radius: var(--radius-md);
+}
+.history-row > div {
+	display: grid;
+	gap: 4px;
+}
+.history-row > div:nth-child(2) {
+	text-align: end;
+}
+.history-row span:not(.event-state) {
+	color: var(--color-text-subtle);
+	font-size: 13px;
+}
+.history-row .event-state {
+	grid-column: 1 / -1;
+	justify-self: start;
+}
 .guest-row {
 	padding: 14px 0;
 	border-top: 1px solid #dce3df;
@@ -647,6 +792,35 @@ select {
 	}
 	.action-card {
 		align-items: center;
+	}
+}
+@media (min-width: 860px) {
+	.admin-dashboard {
+		display: grid;
+		grid-template-columns: 210px minmax(0, 1fr);
+		gap: 42px;
+		align-items: start;
+	}
+	.admin-navigation {
+		position: sticky;
+		top: 24px;
+		display: grid;
+		gap: 8px;
+		margin: 0;
+		overflow: visible;
+	}
+	.admin-navigation button {
+		width: 100%;
+		min-height: 50px;
+		border-radius: 12px;
+		text-align: start;
+	}
+	.history-row {
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+	.history-row .event-state {
+		grid-column: auto;
+		justify-self: end;
 	}
 }
 </style>

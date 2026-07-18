@@ -92,7 +92,10 @@ async function currentEventId() {
 async function listGuests(request: Request) {
 	const url = new URL(request.url);
 	const query = url.searchParams.get('q')?.trim() ?? '';
-	const eventId = url.searchParams.get('marketEventId') ?? (await currentEventId());
+	const eventId =
+		url.searchParams.get('scope') === 'all'
+			? null
+			: (url.searchParams.get('marketEventId') ?? (await currentEventId()));
 	const eventFilter = eventId ? eq(guests.marketEventId, eventId) : undefined;
 	const searchFilter = query
 		? or(

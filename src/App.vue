@@ -50,6 +50,20 @@ const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
 const isAdmin = computed(() => route.name === 'admin');
+type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
+const adminViews: AdminView[] = [
+	'current-session',
+	'question-bank',
+	'guest-database',
+	'session-history',
+];
+const adminView = computed<AdminView>(() => {
+	const view = route.params.view;
+
+	return typeof view === 'string' && adminViews.includes(view as AdminView)
+		? (view as AdminView)
+		: 'current-session';
+});
 
 function showGuest() {
 	isSubmitted.value = false;
@@ -58,6 +72,10 @@ function showGuest() {
 
 function toggleMode() {
 	void router.push({ name: isAdmin.value ? 'guest' : 'admin' });
+}
+
+function navigateAdmin(view: AdminView) {
+	void router.push({ name: 'admin', params: { view } });
 }
 
 function selectLanguage(selectedLocale: Locale) {
@@ -283,7 +301,7 @@ onMounted(loadRegistration);
 			</section>
 		</section>
 
-		<AdminAuthView v-else :locale="locale" />
+		<AdminAuthView v-else :locale="locale" :view="adminView" @navigate="navigateAdmin" />
 	</main>
 </template>
 

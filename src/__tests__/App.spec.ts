@@ -141,7 +141,9 @@ describe('App', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve(
-						url.startsWith('/api/guests') ? [] : { event: null, questions: [], counts: {} },
+						url.startsWith('/api/guests') || url.includes('view=history')
+							? []
+							: { event: null, questions: [], counts: {} },
 					),
 			}),
 		);
@@ -152,10 +154,15 @@ describe('App', () => {
 		});
 		await flushPromises();
 
-		expect(wrapper.text()).toContain('Market dashboard');
+		expect(wrapper.text()).toContain('Current session');
 		expect(wrapper.text()).toContain('Registration settings');
+		expect(wrapper.text()).not.toContain('Registration questions');
+
+		await wrapper.findAll('.admin-navigation button')[1]!.trigger('click');
 		expect(wrapper.text()).toContain('Registration questions');
-		expect(wrapper.text()).toContain('Guest list');
+
+		await wrapper.findAll('.admin-navigation button')[2]!.trigger('click');
+		expect(wrapper.text()).toContain('All guests');
 		expect(wrapper.text()).toContain('Add guest');
 		expect(getAccessToken).toHaveBeenCalled();
 		expect(fetchMock).toHaveBeenCalledWith(

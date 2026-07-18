@@ -6,7 +6,10 @@ import { authReturnUrl, isAuth0Configured } from '../auth';
 import { translations, type Locale } from '../locales';
 import AdminDashboard from './AdminDashboard.vue';
 
-const props = defineProps<{ locale: Locale }>();
+type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
+
+const props = defineProps<{ locale: Locale; view: AdminView }>();
+const emit = defineEmits<{ navigate: [view: AdminView] }>();
 const t = computed(() => translations[props.locale]);
 const auth = isAuth0Configured ? useAuth0() : null;
 
@@ -28,7 +31,12 @@ function signOut() {
 			<span>{{ t.signedInAs }} {{ auth.user.value?.email ?? auth.user.value?.name }}</span>
 			<button type="button" @click="signOut">{{ t.signOut }}</button>
 		</div>
-		<AdminDashboard :locale="locale" :get-access-token="auth.getAccessTokenSilently" />
+		<AdminDashboard
+			:locale="locale"
+			:view="view"
+			:get-access-token="auth.getAccessTokenSilently"
+			@navigate="emit('navigate', $event)"
+		/>
 	</template>
 	<section v-else class="auth-message" role="alert">
 		<p>{{ t.authError }}</p>
@@ -54,7 +62,7 @@ function signOut() {
 	justify-content: space-between;
 	align-items: center;
 	gap: 12px;
-	width: min(100% - 32px, 760px);
+	width: min(100% - 32px, 1180px);
 	margin: 20px auto 0;
 	font-size: 13px;
 	color: var(--color-text-subtle);

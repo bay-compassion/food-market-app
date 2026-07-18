@@ -44,6 +44,37 @@ async function marketOverview() {
 	});
 }
 
+async function marketHistory() {
+	const events = await db
+		.select()
+		.from(marketEvents)
+		.orderBy(desc(marketEvents.createdAt))
+		.limit(100);
+	const pastEvents = events.slice(1);
+	if (!pastEvents.length) {
+		return Response.json([]);
+	}
+
+	const rows = await db
+		.select({ marketEventId: guests.marketEventId, count: sql<number>`count(*)::int` })
+		.from(guests)
+		.where(
+			inArray(
+				guests.marketEventId,
+				pastEvents.map(({ id }) => id),
+			),
+		)
+		.groupBy(guests.marketEventId);
+	const guestCounts = new Map(rows.map((row) => [row.marketEventId, row.count]));
+
+	return Response.json(
+		pastEvents.map((event) => ({
+			...event,
+			guestCount: guestCounts.get(event.id) ?? 0,
+		})),
+	);
+}
+
 function parseSettings(value: unknown) {
 	if (!value || typeof value !== 'object') {
 		return null;
@@ -196,6 +227,15 @@ async function runAction(request: Request) {
 
 export default async (request: Request) => {
 	if (request.method === 'GET') {
+		if (new URL(request.url).searchParams.get('view') === 'history') {
+			const unauthorized = await requireAuth0(request);
+			if (unauthorized) {
+				return unauthorized;
+			}
+
+			return marketHistory();
+		}
+
 		return marketOverview();
 	}
 	if (request.method === 'PUT') {
