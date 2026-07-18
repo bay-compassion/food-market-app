@@ -263,21 +263,26 @@ describe('App', () => {
 		{
 			status: 'scheduled',
 			shown: ['Registration scheduled', 'Postpone registration', 'Open registration now'],
-			hidden: ['Registration settings', 'Today’s overview'],
+			hidden: ['Registration settings', 'Today’s overview', 'Broadcast notification'],
 		},
 		{
 			status: 'registration_open',
-			shown: ['Registration overrides', 'Extend registration by (minutes)', 'Close registration'],
+			shown: [
+				'Registration overrides',
+				'Extend registration by (minutes)',
+				'Close registration',
+				'Broadcast notification',
+			],
 			hidden: ['Today’s overview', 'Run lottery draw'],
 		},
 		{
 			status: 'registration_closed',
-			shown: ['Reopen registration', 'Run lottery draw'],
+			shown: ['Reopen registration', 'Run lottery draw', 'Broadcast notification'],
 			hidden: ['Registration settings', 'Today’s overview'],
 		},
 		{
 			status: 'service_started',
-			shown: ['Today’s overview', 'Add guest', 'Close session'],
+			shown: ['Today’s overview', 'Add guest', 'Close session', 'Broadcast notification'],
 			hidden: ['Registration settings', 'Run lottery draw'],
 		},
 	] as const)(

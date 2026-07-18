@@ -13,7 +13,14 @@ import AppButton from './AppButton.vue';
 import EyebrowLabel from './EyebrowLabel.vue';
 import FormField from './FormField.vue';
 
-type GuestStatus = 'registered' | 'waiting' | 'served' | 'not_placed' | 'no_show' | 'cancelled';
+type GuestStatus =
+	| 'registered'
+	| 'waiting'
+	| 'called'
+	| 'served'
+	| 'not_placed'
+	| 'no_show'
+	| 'cancelled';
 type Question = { id?: string; prompt: string; type: 'text' | 'scale'; required: boolean };
 type MarketEvent = {
 	id: string;
@@ -32,6 +39,7 @@ type Guest = {
 	lastName: string;
 	phone: string;
 	householdSize: number;
+	queuePosition: number | null;
 	status: GuestStatus;
 };
 type Overview = {
@@ -75,9 +83,11 @@ const manualGuest = reactive({
 	householdSize: 1 as string | number,
 	phone: '',
 });
+const broadcast = reactive({ title: '', body: '' });
 
 const statuses: GuestStatus[] = [
 	'waiting',
+	'called',
 	'served',
 	'registered',
 	'not_placed',
@@ -86,6 +96,7 @@ const statuses: GuestStatus[] = [
 ];
 const statusLabels = computed<Record<GuestStatus, string>>(() => ({
 	waiting: t.value.waiting,
+	called: base.value.statusCalled,
 	served: t.value.served,
 	registered: t.value.registered,
 	not_placed: t.value.notPlaced,
@@ -114,7 +125,13 @@ const sessionStatusLabel = computed(() => {
 	}
 });
 const currentSessionGuests = computed(() =>
-	sessionGuests.value.filter((guest) => guest.marketEventId === event.value?.id),
+	sessionGuests.value
+		.filter((guest) => guest.marketEventId === event.value?.id)
+		.sort(
+			(first, second) =>
+				(first.queuePosition ?? Number.MAX_SAFE_INTEGER) -
+				(second.queuePosition ?? Number.MAX_SAFE_INTEGER),
+		),
 );
 const registeredSessionGuests = computed(() =>
 	currentSessionGuests.value.filter((guest) => guest.status === 'registered'),
@@ -509,6 +526,36 @@ async function addManualGuest() {
 	}
 }
 
+async function sendBroadcast() {
+	if (!window.confirm(t.value.broadcastConfirm)) {
+		return;
+	}
+	isBusy.value = true;
+	feedback.value = '';
+	try {
+		const response = await fetch('/api/broadcast', {
+			method: 'POST',
+			headers: await authHeaders(true),
+			body: JSON.stringify(broadcast),
+		});
+		if (!response.ok) {
+			throw new Error('broadcast');
+		}
+		const result = (await response.json()) as { queued: number };
+		feedback.value = result.queued
+			? `${t.value.broadcastQueued} ${result.queued}`
+			: t.value.broadcastNoRecipients;
+		if (result.queued) {
+			broadcast.title = '';
+			broadcast.body = '';
+		}
+	} catch {
+		feedback.value = t.value.error;
+	} finally {
+		isBusy.value = false;
+	}
+}
+
 setDefaultSettings();
 onMounted(loadDashboard);
 onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
@@ -763,23 +810,36 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 							<div>
 								<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
 								><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
+								<span v-if="guest.queuePosition">
+									{{ t.queuePosition }}: {{ guest.queuePosition }}
+								</span>
 							</div>
-							<label
-								><span class="sr-only">{{ t.status }}</span
-								><select
-									:value="guest.status"
-									@change="
-										updateGuestStatus(
-											guest,
-											($event.target as HTMLSelectElement).value as GuestStatus,
-										)
-									"
+							<div class="guest-actions">
+								<AppButton
+									v-if="guest.status === 'waiting'"
+									type="button"
+									:disabled="isBusy"
+									@click="updateGuestStatus(guest, 'called')"
 								>
-									<option v-for="status in statuses" :key="status" :value="status">
-										{{ statusLabels[status] }}
-									</option>
-								</select></label
-							>
+									{{ t.callGuest }}
+								</AppButton>
+								<label
+									><span class="sr-only">{{ t.status }}</span
+									><select
+										:value="guest.status"
+										@change="
+											updateGuestStatus(
+												guest,
+												($event.target as HTMLSelectElement).value as GuestStatus,
+											)
+										"
+									>
+										<option v-for="status in statuses" :key="status" :value="status">
+											{{ statusLabels[status] }}
+										</option>
+									</select></label
+								>
+							</div>
 						</article>
 					</div>
 					<p v-else class="empty-state">{{ t.noGuests }}</p>
@@ -810,6 +870,28 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 						</article>
 					</div>
 					<p v-else class="empty-state">{{ t.noRegisteredGuests }}</p>
+				</section>
+
+				<section
+					v-if="
+						event &&
+						['registration_open', 'registration_closed', 'service_started'].includes(sessionState)
+					"
+					class="admin-section broadcast-card"
+				>
+					<h2>{{ t.broadcastTitle }}</h2>
+					<p>{{ t.broadcastHelp }}</p>
+					<form @submit.prevent="sendBroadcast">
+						<label>
+							<span>{{ t.broadcastTitleLabel }}</span>
+							<input v-model.trim="broadcast.title" type="text" maxlength="100" required />
+						</label>
+						<label>
+							<span>{{ t.broadcastMessageLabel }}</span>
+							<textarea v-model.trim="broadcast.body" maxlength="500" rows="4" required></textarea>
+						</label>
+						<AppButton type="submit" :disabled="isBusy">{{ t.broadcastSend }}</AppButton>
+					</form>
 				</section>
 
 				<section v-if="event" class="admin-section reset-card">
@@ -1288,6 +1370,9 @@ select {
 	font-size: 12px;
 }
 .guest-row label {
+	flex: 0 0 130px;
+}
+.guest-row .guest-actions {
 	flex: 0 0 130px;
 }
 .guest-row select {

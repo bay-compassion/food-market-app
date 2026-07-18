@@ -40,6 +40,22 @@ export interface Translation {
 	languagePrompt: string;
 	marketName: string;
 	newGuest: string;
+	notificationCalledBody: string;
+	notificationCalledTitle: string;
+	notificationNotSelectedBody: string;
+	notificationNotSelectedTitle: string;
+	notificationRegisteredBody: string;
+	notificationRegisteredTitle: string;
+	notificationRegistrationClosedBody: string;
+	notificationRegistrationClosedTitle: string;
+	notificationSelectedBody: string;
+	notificationSelectedTitle: string;
+	notificationsEnable: string;
+	notificationsDenied: string;
+	notificationsEnabled: string;
+	notificationsError: string;
+	notificationsIosInstall: string;
+	notificationsUnsupported: string;
 	pin: string;
 	pinHint: string;
 	pinMismatch: string;
@@ -58,6 +74,7 @@ export interface Translation {
 	successDescription: string;
 	successTitle: string;
 	statusCancelled: string;
+	statusCalled: string;
 	statusNoShow: string;
 	statusNotPlaced: string;
 	statusRegistered: string;
@@ -100,6 +117,23 @@ export const translations = {
 		languagePrompt: 'Choose your language',
 		marketName: 'The Bay Compassion',
 		newGuest: 'New guest',
+		notificationCalledBody: 'Please come up for service now.',
+		notificationCalledTitle: 'It’s your turn',
+		notificationNotSelectedBody: 'You were not selected for today’s service.',
+		notificationNotSelectedTitle: 'Lottery result',
+		notificationRegisteredBody: 'Your registration is confirmed.',
+		notificationRegisteredTitle: 'Registration confirmed',
+		notificationRegistrationClosedBody: 'Registration has closed. The lottery will begin soon.',
+		notificationRegistrationClosedTitle: 'Registration closed',
+		notificationSelectedBody: 'You were selected. Please wait until you are called.',
+		notificationSelectedTitle: 'You were selected',
+		notificationsEnable: 'Notify me about this visit',
+		notificationsDenied: 'Notifications are blocked. Enable them in your device settings.',
+		notificationsEnabled: 'Notifications are enabled for this visit.',
+		notificationsError: 'We could not enable notifications. Please try again.',
+		notificationsIosInstall:
+			'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
+		notificationsUnsupported: 'Push notifications are not available on this device.',
 		pin: 'PIN',
 		pinHint: '4–8 numbers',
 		pinMismatch: 'The PINs do not match.',
@@ -118,6 +152,7 @@ export const translations = {
 		successDescription: 'We’ll let you know when it’s your turn. Thank you for being here.',
 		successTitle: 'You’re in the queue!',
 		statusCancelled: 'Cancelled',
+		statusCalled: 'Called',
 		statusNoShow: 'No show',
 		statusNotPlaced: 'Not placed',
 		statusRegistered: 'Registered',
@@ -158,6 +193,24 @@ export const translations = {
 		languagePrompt: 'Elija su idioma',
 		marketName: 'The Bay Compassion',
 		newGuest: 'Invitado nuevo',
+		notificationCalledBody: 'Por favor, acérquese ahora para recibir el servicio.',
+		notificationCalledTitle: 'Es su turno',
+		notificationNotSelectedBody: 'No fue seleccionado para el servicio de hoy.',
+		notificationNotSelectedTitle: 'Resultado del sorteo',
+		notificationRegisteredBody: 'Su registro está confirmado.',
+		notificationRegisteredTitle: 'Registro confirmado',
+		notificationRegistrationClosedBody: 'El registro cerró. El sorteo comenzará pronto.',
+		notificationRegistrationClosedTitle: 'Registro cerrado',
+		notificationSelectedBody: 'Fue seleccionado. Espere hasta que le llamemos.',
+		notificationSelectedTitle: 'Fue seleccionado',
+		notificationsEnable: 'Notificarme sobre esta visita',
+		notificationsDenied:
+			'Las notificaciones están bloqueadas. Actívelas en la configuración de su dispositivo.',
+		notificationsEnabled: 'Las notificaciones están activadas para esta visita.',
+		notificationsError: 'No pudimos activar las notificaciones. Inténtelo de nuevo.',
+		notificationsIosInstall:
+			'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
+		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
 		pin: 'PIN',
 		pinHint: 'De 4 a 8 números',
 		pinMismatch: 'Los PIN no coinciden.',
@@ -176,6 +229,7 @@ export const translations = {
 		successDescription: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
 		successTitle: '¡Ya está en la fila!',
 		statusCancelled: 'Cancelado',
+		statusCalled: 'Llamado',
 		statusNoShow: 'No se presentó',
 		statusNotPlaced: 'Sin lugar',
 		statusRegistered: 'Registrado',
@@ -216,6 +270,23 @@ export const translations = {
 		languagePrompt: 'زبان خود را انتخاب کنید',
 		marketName: 'The Bay Compassion',
 		newGuest: 'مهمان جدید',
+		notificationCalledBody: 'لطفاً اکنون برای دریافت خدمات مراجعه کنید.',
+		notificationCalledTitle: 'نوبت شماست',
+		notificationNotSelectedBody: 'شما برای خدمات امروز انتخاب نشدید.',
+		notificationNotSelectedTitle: 'نتیجه قرعه‌کشی',
+		notificationRegisteredBody: 'ثبت‌نام شما تأیید شد.',
+		notificationRegisteredTitle: 'ثبت‌نام تأیید شد',
+		notificationRegistrationClosedBody: 'ثبت‌نام بسته شد. قرعه‌کشی به‌زودی آغاز می‌شود.',
+		notificationRegistrationClosedTitle: 'ثبت‌نام بسته شد',
+		notificationSelectedBody: 'شما انتخاب شدید. لطفاً تا زمان فراخوان منتظر بمانید.',
+		notificationSelectedTitle: 'شما انتخاب شدید',
+		notificationsEnable: 'درباره این مراجعه به من اطلاع دهید',
+		notificationsDenied: 'اعلان‌ها مسدود هستند. آن‌ها را در تنظیمات دستگاه فعال کنید.',
+		notificationsEnabled: 'اعلان‌ها برای این مراجعه فعال شدند.',
+		notificationsError: 'نتوانستیم اعلان‌ها را فعال کنیم. لطفاً دوباره تلاش کنید.',
+		notificationsIosInstall:
+			'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
+		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
 		pin: 'پین',
 		pinHint: '۴ تا ۸ رقم',
 		pinMismatch: 'پین‌ها یکسان نیستند.',
@@ -234,6 +305,7 @@ export const translations = {
 		successDescription: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
 		successTitle: 'شما در صف هستید!',
 		statusCancelled: 'لغوشده',
+		statusCalled: 'فراخوانده‌شده',
 		statusNoShow: 'غایب',
 		statusNotPlaced: 'انتخاب‌نشده',
 		statusRegistered: 'ثبت‌شده',
@@ -275,6 +347,24 @@ export const translations = {
 		languagePrompt: 'Piliin ang iyong wika',
 		marketName: 'The Bay Compassion',
 		newGuest: 'Bagong bisita',
+		notificationCalledBody: 'Mangyaring lumapit na para sa serbisyo.',
+		notificationCalledTitle: 'Oras mo na',
+		notificationNotSelectedBody: 'Hindi ka napili para sa serbisyo ngayong araw.',
+		notificationNotSelectedTitle: 'Resulta ng lottery',
+		notificationRegisteredBody: 'Kumpirmado na ang iyong pagpaparehistro.',
+		notificationRegisteredTitle: 'Kumpirmado ang pagpaparehistro',
+		notificationRegistrationClosedBody:
+			'Sarado na ang pagpaparehistro. Magsisimula na ang lottery.',
+		notificationRegistrationClosedTitle: 'Sarado na ang pagpaparehistro',
+		notificationSelectedBody: 'Napili ka. Mangyaring maghintay hanggang tawagin ka.',
+		notificationSelectedTitle: 'Napili ka',
+		notificationsEnable: 'Abisuhan ako tungkol sa pagbisitang ito',
+		notificationsDenied: 'Naka-block ang mga abiso. I-enable ang mga ito sa settings ng device.',
+		notificationsEnabled: 'Naka-enable ang mga abiso para sa pagbisitang ito.',
+		notificationsError: 'Hindi namin ma-enable ang mga abiso. Pakisubukang muli.',
+		notificationsIosInstall:
+			'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
+		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
 		pin: 'PIN',
 		pinHint: '4–8 numero',
 		pinMismatch: 'Hindi magkapareho ang mga PIN.',
@@ -293,6 +383,7 @@ export const translations = {
 		successDescription: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
 		successTitle: 'Nasa pila na kayo!',
 		statusCancelled: 'Kinansela',
+		statusCalled: 'Tinawag',
 		statusNoShow: 'Hindi dumating',
 		statusNotPlaced: 'Hindi napili',
 		statusRegistered: 'Nakarehistro',
@@ -334,6 +425,23 @@ export const translations = {
 		languagePrompt: 'Chọn ngôn ngữ của bạn',
 		marketName: 'The Bay Compassion',
 		newGuest: 'Khách mới',
+		notificationCalledBody: 'Vui lòng đến khu vực phục vụ ngay bây giờ.',
+		notificationCalledTitle: 'Đến lượt bạn',
+		notificationNotSelectedBody: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
+		notificationNotSelectedTitle: 'Kết quả xổ số',
+		notificationRegisteredBody: 'Đăng ký của bạn đã được xác nhận.',
+		notificationRegisteredTitle: 'Đã xác nhận đăng ký',
+		notificationRegistrationClosedBody: 'Đăng ký đã đóng. Xổ số sẽ sớm bắt đầu.',
+		notificationRegistrationClosedTitle: 'Đã đóng đăng ký',
+		notificationSelectedBody: 'Bạn đã được chọn. Vui lòng chờ đến khi được gọi.',
+		notificationSelectedTitle: 'Bạn đã được chọn',
+		notificationsEnable: 'Thông báo cho tôi về lượt ghé này',
+		notificationsDenied: 'Thông báo đang bị chặn. Hãy bật trong phần cài đặt thiết bị.',
+		notificationsEnabled: 'Đã bật thông báo cho lượt ghé này.',
+		notificationsError: 'Chúng tôi không thể bật thông báo. Vui lòng thử lại.',
+		notificationsIosInstall:
+			'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
+		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
 		pin: 'Mã PIN',
 		pinHint: '4–8 chữ số',
 		pinMismatch: 'Các mã PIN không khớp.',
@@ -352,6 +460,7 @@ export const translations = {
 		successDescription: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
 		successTitle: 'Bạn đã vào hàng đợi!',
 		statusCancelled: 'Đã hủy',
+		statusCalled: 'Đã gọi',
 		statusNoShow: 'Không đến',
 		statusNotPlaced: 'Không được chọn',
 		statusRegistered: 'Đã đăng ký',
@@ -392,6 +501,22 @@ export const translations = {
 		languagePrompt: '选择您的语言',
 		marketName: 'The Bay Compassion',
 		newGuest: '新访客',
+		notificationCalledBody: '请现在前往服务区。',
+		notificationCalledTitle: '轮到您了',
+		notificationNotSelectedBody: '您未被选中参加今天的服务。',
+		notificationNotSelectedTitle: '抽签结果',
+		notificationRegisteredBody: '您的登记已确认。',
+		notificationRegisteredTitle: '登记已确认',
+		notificationRegistrationClosedBody: '登记已关闭。抽签即将开始。',
+		notificationRegistrationClosedTitle: '登记已关闭',
+		notificationSelectedBody: '您已被选中。请等待叫号。',
+		notificationSelectedTitle: '您已被选中',
+		notificationsEnable: '通知我此次到访的状态',
+		notificationsDenied: '通知已被阻止。请在设备设置中启用。',
+		notificationsEnabled: '已为此次到访启用通知。',
+		notificationsError: '无法启用通知。请重试。',
+		notificationsIosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
+		notificationsUnsupported: '此设备不支持推送通知。',
 		pin: 'PIN',
 		pinHint: '4–8 位数字',
 		pinMismatch: '两次输入的 PIN 不一致。',
@@ -410,6 +535,7 @@ export const translations = {
 		successDescription: '轮到您时我们会通知您。感谢您的到来。',
 		successTitle: '您已加入队列！',
 		statusCancelled: '已取消',
+		statusCalled: '已叫号',
 		statusNoShow: '未到场',
 		statusNotPlaced: '未入选',
 		statusRegistered: '已登记',
@@ -450,6 +576,23 @@ export const translations = {
 		languagePrompt: 'اختر لغتك',
 		marketName: 'The Bay Compassion',
 		newGuest: 'ضيف جديد',
+		notificationCalledBody: 'يرجى التوجه الآن لتلقي الخدمة.',
+		notificationCalledTitle: 'حان دورك',
+		notificationNotSelectedBody: 'لم يتم اختيارك لخدمة اليوم.',
+		notificationNotSelectedTitle: 'نتيجة القرعة',
+		notificationRegisteredBody: 'تم تأكيد تسجيلك.',
+		notificationRegisteredTitle: 'تم تأكيد التسجيل',
+		notificationRegistrationClosedBody: 'أُغلق التسجيل. ستبدأ القرعة قريبًا.',
+		notificationRegistrationClosedTitle: 'أُغلق التسجيل',
+		notificationSelectedBody: 'تم اختيارك. يرجى الانتظار حتى يتم استدعاؤك.',
+		notificationSelectedTitle: 'تم اختيارك',
+		notificationsEnable: 'أبلغني بمستجدات هذه الزيارة',
+		notificationsDenied: 'الإشعارات محظورة. فعّلها من إعدادات جهازك.',
+		notificationsEnabled: 'تم تفعيل الإشعارات لهذه الزيارة.',
+		notificationsError: 'تعذر تفعيل الإشعارات. يرجى المحاولة مرة أخرى.',
+		notificationsIosInstall:
+			'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
+		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
 		pin: 'الرمز السري',
 		pinHint: 'من 4 إلى 8 أرقام',
 		pinMismatch: 'الرمزان السريان غير متطابقين.',
@@ -468,6 +611,7 @@ export const translations = {
 		successDescription: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
 		successTitle: 'أنت الآن في قائمة الانتظار!',
 		statusCancelled: 'ملغاة',
+		statusCalled: 'تم استدعاؤه',
 		statusNoShow: 'لم يحضر',
 		statusNotPlaced: 'لم يتم اختياره',
 		statusRegistered: 'مسجل',

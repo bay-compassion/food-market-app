@@ -8,9 +8,18 @@ export interface AdminTranslation {
 	adminDescription: string;
 	adminTitle: string;
 	allGuests: string;
+	broadcastConfirm: string;
+	broadcastHelp: string;
+	broadcastMessageLabel: string;
+	broadcastNoRecipients: string;
+	broadcastQueued: string;
+	broadcastSend: string;
+	broadcastTitle: string;
+	broadcastTitleLabel: string;
 	cancel: string;
 	capacity: string;
 	cancelled: string;
+	callGuest: string;
 	closeSession: string;
 	closeRegistration: string;
 	closed: string;
@@ -48,6 +57,7 @@ export interface AdminTranslation {
 	overview: string;
 	overridesHelp: string;
 	questionPlaceholder: string;
+	queuePosition: string;
 	questionBank: string;
 	questions: string;
 	registered: string;
@@ -96,9 +106,18 @@ export const adminTranslations = {
 		adminDescription: 'Configure registration, draw the lottery, and manage today’s guests.',
 		adminTitle: 'Market dashboard',
 		allGuests: 'All guests',
+		broadcastConfirm: 'Send this announcement to every subscribed guest in the current session?',
+		broadcastHelp: 'The message will be sent exactly as written to all subscribed guests.',
+		broadcastMessageLabel: 'Message',
+		broadcastNoRecipients: 'No subscribed guests are available for this broadcast.',
+		broadcastQueued: 'Broadcast queued for subscribed guests:',
+		broadcastSend: 'Send broadcast',
+		broadcastTitle: 'Broadcast notification',
+		broadcastTitleLabel: 'Notification title',
 		cancel: 'Cancel',
 		capacity: 'Queue capacity',
 		cancelled: 'Cancelled',
+		callGuest: 'Call guest',
 		closeSession: 'Close session',
 		closeRegistration: 'Close registration',
 		closed: 'Registration closed',
@@ -137,6 +156,7 @@ export const adminTranslations = {
 		overview: 'Today’s overview',
 		overridesHelp: 'Extend the registration window or change queue capacity.',
 		questionPlaceholder: 'Enter a question for guests',
+		queuePosition: 'Queue position',
 		questionBank: 'Question bank',
 		questions: 'Registration questions',
 		registered: 'Registered',
@@ -184,9 +204,19 @@ export const adminTranslations = {
 		adminDescription: 'Configure el registro, realice el sorteo y gestione a los invitados de hoy.',
 		adminTitle: 'Panel del mercado',
 		allGuests: 'Todos los invitados',
+		broadcastConfirm: '¿Enviar este anuncio a todos los invitados suscritos de la sesión actual?',
+		broadcastHelp:
+			'El mensaje se enviará exactamente como está escrito a todos los invitados suscritos.',
+		broadcastMessageLabel: 'Mensaje',
+		broadcastNoRecipients: 'No hay invitados suscritos disponibles para este anuncio.',
+		broadcastQueued: 'Anuncio en cola para invitados suscritos:',
+		broadcastSend: 'Enviar anuncio',
+		broadcastTitle: 'Notificación general',
+		broadcastTitleLabel: 'Título de la notificación',
 		cancel: 'Cancelar',
 		capacity: 'Capacidad de la fila',
 		cancelled: 'Cancelado',
+		callGuest: 'Llamar al invitado',
 		closeSession: 'Cerrar sesión',
 		closeRegistration: 'Cerrar registro',
 		closed: 'Registro cerrado',
@@ -225,6 +255,7 @@ export const adminTranslations = {
 		overview: 'Resumen de hoy',
 		overridesHelp: 'Amplíe el período de registro o cambie la capacidad de la fila.',
 		questionPlaceholder: 'Escriba una pregunta para los invitados',
+		queuePosition: 'Posición en la fila',
 		questionBank: 'Banco de preguntas',
 		questions: 'Preguntas de registro',
 		registered: 'Registrados',
@@ -272,9 +303,18 @@ export const adminTranslations = {
 		adminDescription: 'ثبت‌نام را تنظیم، قرعه‌کشی را اجرا و مهمانان امروز را مدیریت کنید.',
 		adminTitle: 'داشبورد بازار',
 		allGuests: 'همه مهمانان',
+		broadcastConfirm: 'این اطلاعیه برای همه مهمانان مشترک جلسه فعلی ارسال شود؟',
+		broadcastHelp: 'پیام دقیقاً به همان صورت نوشته‌شده برای همه مهمانان مشترک ارسال می‌شود.',
+		broadcastMessageLabel: 'پیام',
+		broadcastNoRecipients: 'هیچ مهمان مشترکی برای این اطلاعیه وجود ندارد.',
+		broadcastQueued: 'اطلاعیه برای مهمانان مشترک در صف ارسال قرار گرفت:',
+		broadcastSend: 'ارسال اطلاعیه',
+		broadcastTitle: 'اعلان همگانی',
+		broadcastTitleLabel: 'عنوان اعلان',
 		cancel: 'لغو',
 		capacity: 'ظرفیت صف',
 		cancelled: 'لغوشده',
+		callGuest: 'فراخوان مهمان',
 		closeSession: 'بستن جلسه',
 		closeRegistration: 'بستن ثبت‌نام',
 		closed: 'ثبت‌نام بسته است',
@@ -312,6 +352,7 @@ export const adminTranslations = {
 		overview: 'نمای کلی امروز',
 		overridesHelp: 'زمان ثبت‌نام را تمدید یا ظرفیت صف را تغییر دهید.',
 		questionPlaceholder: 'پرسشی برای مهمانان وارد کنید',
+		queuePosition: 'جایگاه در صف',
 		questionBank: 'بانک پرسش‌ها',
 		questions: 'پرسش‌های ثبت‌نام',
 		registered: 'ثبت‌شده',
@@ -359,9 +400,20 @@ export const adminTranslations = {
 			'Ihanda ang pagpaparehistro, isagawa ang lottery, at pamahalaan ang mga bisita ngayon.',
 		adminTitle: 'Dashboard ng pamilihan',
 		allGuests: 'Lahat ng bisita',
+		broadcastConfirm:
+			'Ipadala ang anunsyong ito sa lahat ng naka-subscribe na bisita sa kasalukuyang sesyon?',
+		broadcastHelp:
+			'Ipapadala ang mensahe nang eksakto sa pagkakasulat sa lahat ng naka-subscribe na bisita.',
+		broadcastMessageLabel: 'Mensahe',
+		broadcastNoRecipients: 'Walang naka-subscribe na bisita para sa broadcast na ito.',
+		broadcastQueued: 'Nakapila ang broadcast para sa mga naka-subscribe na bisita:',
+		broadcastSend: 'Ipadala ang broadcast',
+		broadcastTitle: 'Broadcast na abiso',
+		broadcastTitleLabel: 'Pamagat ng abiso',
 		cancel: 'Kanselahin',
 		capacity: 'Kapasidad ng pila',
 		cancelled: 'Kinansela',
+		callGuest: 'Tawagin ang bisita',
 		closeSession: 'Isara ang sesyon',
 		closeRegistration: 'Isara ang pagpaparehistro',
 		closed: 'Sarado ang pagpaparehistro',
@@ -400,6 +452,7 @@ export const adminTranslations = {
 		overview: 'Buod ngayong araw',
 		overridesHelp: 'Palawigin ang oras ng pagpaparehistro o baguhin ang kapasidad ng pila.',
 		questionPlaceholder: 'Maglagay ng tanong para sa mga bisita',
+		queuePosition: 'Puwesto sa pila',
 		questionBank: 'Bangko ng mga tanong',
 		questions: 'Mga tanong sa pagpaparehistro',
 		registered: 'Nakarehistro',
@@ -448,9 +501,19 @@ export const adminTranslations = {
 		adminDescription: 'Thiết lập đăng ký, quay xổ số và quản lý khách hôm nay.',
 		adminTitle: 'Bảng điều khiển chợ',
 		allGuests: 'Tất cả khách',
+		broadcastConfirm:
+			'Gửi thông báo này cho tất cả khách đã đăng ký nhận tin trong phiên hiện tại?',
+		broadcastHelp: 'Tin nhắn sẽ được gửi nguyên văn cho tất cả khách đã đăng ký nhận tin.',
+		broadcastMessageLabel: 'Tin nhắn',
+		broadcastNoRecipients: 'Không có khách đã đăng ký nhận tin cho thông báo này.',
+		broadcastQueued: 'Đã xếp hàng thông báo cho khách đăng ký nhận tin:',
+		broadcastSend: 'Gửi thông báo',
+		broadcastTitle: 'Thông báo chung',
+		broadcastTitleLabel: 'Tiêu đề thông báo',
 		cancel: 'Hủy',
 		capacity: 'Sức chứa hàng đợi',
 		cancelled: 'Đã hủy',
+		callGuest: 'Gọi khách',
 		closeSession: 'Đóng phiên',
 		closeRegistration: 'Đóng đăng ký',
 		closed: 'Đã đóng đăng ký',
@@ -488,6 +551,7 @@ export const adminTranslations = {
 		overview: 'Tổng quan hôm nay',
 		overridesHelp: 'Gia hạn thời gian đăng ký hoặc thay đổi sức chứa hàng đợi.',
 		questionPlaceholder: 'Nhập câu hỏi cho khách',
+		queuePosition: 'Vị trí trong hàng',
 		questionBank: 'Ngân hàng câu hỏi',
 		questions: 'Câu hỏi đăng ký',
 		registered: 'Đã đăng ký',
@@ -535,9 +599,18 @@ export const adminTranslations = {
 		adminDescription: '设置登记、进行抽签并管理今天的访客。',
 		adminTitle: '市场管理面板',
 		allGuests: '所有访客',
+		broadcastConfirm: '向当前场次中所有已订阅的访客发送此公告？',
+		broadcastHelp: '消息将按原文发送给所有已订阅的访客。',
+		broadcastMessageLabel: '消息',
+		broadcastNoRecipients: '没有可接收此公告的已订阅访客。',
+		broadcastQueued: '公告已为已订阅访客排队：',
+		broadcastSend: '发送公告',
+		broadcastTitle: '群发通知',
+		broadcastTitleLabel: '通知标题',
 		cancel: '取消',
 		capacity: '队列容量',
 		cancelled: '已取消',
+		callGuest: '叫号',
 		closeSession: '结束场次',
 		closeRegistration: '关闭登记',
 		closed: '登记已关闭',
@@ -575,6 +648,7 @@ export const adminTranslations = {
 		overview: '今日概览',
 		overridesHelp: '延长登记时间或更改队列容量。',
 		questionPlaceholder: '输入向访客提问的问题',
+		queuePosition: '队列位置',
 		questionBank: '问题库',
 		questions: '登记问题',
 		registered: '已登记',
@@ -621,9 +695,18 @@ export const adminTranslations = {
 		adminDescription: 'اضبط التسجيل وأجرِ القرعة وأدر ضيوف اليوم.',
 		adminTitle: 'لوحة تحكم السوق',
 		allGuests: 'جميع الضيوف',
+		broadcastConfirm: 'هل تريد إرسال هذا الإعلان إلى جميع الضيوف المشتركين في الجلسة الحالية؟',
+		broadcastHelp: 'ستُرسل الرسالة كما كُتبت تمامًا إلى جميع الضيوف المشتركين.',
+		broadcastMessageLabel: 'الرسالة',
+		broadcastNoRecipients: 'لا يوجد ضيوف مشتركون متاحون لهذا الإعلان.',
+		broadcastQueued: 'تمت إضافة الإعلان إلى قائمة الإرسال للضيوف المشتركين:',
+		broadcastSend: 'إرسال الإعلان',
+		broadcastTitle: 'إشعار جماعي',
+		broadcastTitleLabel: 'عنوان الإشعار',
 		cancel: 'إلغاء',
 		capacity: 'سعة قائمة الانتظار',
 		cancelled: 'ملغاة',
+		callGuest: 'استدعاء الضيف',
 		closeSession: 'إغلاق الجلسة',
 		closeRegistration: 'إغلاق التسجيل',
 		closed: 'التسجيل مغلق',
@@ -661,6 +744,7 @@ export const adminTranslations = {
 		overview: 'ملخص اليوم',
 		overridesHelp: 'مدّد فترة التسجيل أو غيّر سعة قائمة الانتظار.',
 		questionPlaceholder: 'أدخل سؤالًا للضيوف',
+		queuePosition: 'الموقع في قائمة الانتظار',
 		questionBank: 'بنك الأسئلة',
 		questions: 'أسئلة التسجيل',
 		registered: 'مسجّلون',

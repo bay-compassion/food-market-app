@@ -1,5 +1,16 @@
 import { sql } from 'drizzle-orm';
-import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	date,
+	index,
+	integer,
+	jsonb,
+	pgTable,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid,
+} from 'drizzle-orm/pg-core';
 
 import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine';
 
@@ -46,6 +57,8 @@ export const visits = pgTable('visits', {
 		.notNull()
 		.references(() => guests.id),
 	status: text('status').notNull().default('registered'),
+	queuePosition: integer('queue_position'),
+	calledAt: timestamp('called_at', { withTimezone: true }),
 	answers: jsonb('answers').$type<Record<string, string | number>>().notNull().default({}),
 	source: text('source').notNull().default('self'),
 	accessTokenHash: text('access_token_hash').notNull().unique(),
@@ -55,6 +68,48 @@ export const visits = pgTable('visits', {
 	isFirstVisit: boolean('is_first_visit').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const pushSubscriptions = pgTable(
+	'push_subscriptions',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		visitId: uuid('visit_id')
+			.notNull()
+			.references(() => visits.id, { onDelete: 'cascade' }),
+		endpoint: text('endpoint').notNull(),
+		p256dh: text('p256dh').notNull(),
+		auth: text('auth').notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex('push_subscriptions_visit_idx').on(table.visitId),
+		uniqueIndex('push_subscriptions_endpoint_idx').on(table.endpoint),
+	],
+);
+
+export const notificationDeliveries = pgTable(
+	'notification_deliveries',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		visitId: uuid('visit_id')
+			.notNull()
+			.references(() => visits.id, { onDelete: 'cascade' }),
+		type: text('type').notNull(),
+		dedupeKey: text('dedupe_key').notNull(),
+		title: text('title'),
+		body: text('body'),
+		status: text('status').notNull().default('pending'),
+		attempts: integer('attempts').notNull().default(0),
+		lastError: text('last_error'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		sentAt: timestamp('sent_at', { withTimezone: true }),
+	},
+	(table) => [
+		uniqueIndex('notification_deliveries_visit_dedupe_idx').on(table.visitId, table.dedupeKey),
+		index('notification_deliveries_status_idx').on(table.status, table.createdAt),
+	],
+);
 
 export const guestPinAttempts = pgTable('guest_pin_attempts', {
 	normalizedPhone: text('normalized_phone').primaryKey(),
