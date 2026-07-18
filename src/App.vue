@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { auth0 } from './auth';
@@ -8,9 +8,11 @@ import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
 import FormField from './components/FormField.vue';
 import { languages, translations, type Locale } from './locales';
+import type { SessionStatus } from './services/sessionStateMachine';
 
 const localeStorageKey = 'bay-compassion.locale';
 const returningVisitorStorageKey = 'bay-compassion.returning-visitor';
+let registrationRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 
 function getSavedLocale(): Locale {
 	const savedLocale = window.localStorage.getItem(localeStorageKey);
@@ -50,6 +52,20 @@ const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
 const isAdmin = computed(() => route.name === 'admin');
+type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
+const adminViews: AdminView[] = [
+	'current-session',
+	'question-bank',
+	'guest-database',
+	'session-history',
+];
+const adminView = computed<AdminView>(() => {
+	const view = route.params.view;
+
+	return typeof view === 'string' && adminViews.includes(view as AdminView)
+		? (view as AdminView)
+		: 'current-session';
+});
 
 function showGuest() {
 	isSubmitted.value = false;
@@ -58,6 +74,10 @@ function showGuest() {
 
 function toggleMode() {
 	void router.push({ name: isAdmin.value ? 'guest' : 'admin' });
+}
+
+function navigateAdmin(view: AdminView) {
+	void router.push({ name: 'admin', params: { view } });
 }
 
 function selectLanguage(selectedLocale: Locale) {
@@ -108,7 +128,7 @@ async function loadRegistration() {
 		const data = (await response.json()) as {
 			event: {
 				id: string;
-				status: 'open' | 'closed' | 'drawn';
+				status: SessionStatus;
 				registrationOpensAt: string;
 				registrationClosesAt: string;
 			} | null;
@@ -119,16 +139,32 @@ async function loadRegistration() {
 		const now = new Date();
 		registrationAvailable.value = Boolean(
 			data.event &&
-			data.event.status === 'open' &&
+			data.event.status === 'registration_open' &&
 			now >= new Date(data.event.registrationOpensAt) &&
 			now <= new Date(data.event.registrationClosesAt),
 		);
+		if (registrationRefreshTimer) {
+			clearTimeout(registrationRefreshTimer);
+		}
+		const nextTransitionAt =
+			data.event?.status === 'scheduled'
+				? new Date(data.event.registrationOpensAt)
+				: data.event?.status === 'registration_open'
+					? new Date(data.event.registrationClosesAt)
+					: null;
+		if (nextTransitionAt && nextTransitionAt > now) {
+			registrationRefreshTimer = setTimeout(
+				loadRegistration,
+				Math.min(nextTransitionAt.valueOf() - now.valueOf() + 250, 2_147_000_000),
+			);
+		}
 	} catch {
 		// Keep the form available when the optional configuration endpoint cannot be reached.
 	}
 }
 
 onMounted(loadRegistration);
+onBeforeUnmount(() => clearTimeout(registrationRefreshTimer));
 </script>
 
 <template>
@@ -283,7 +319,7 @@ onMounted(loadRegistration);
 			</section>
 		</section>
 
-		<AdminAuthView v-else :locale="locale" />
+		<AdminAuthView v-else :locale="locale" :view="adminView" @navigate="navigateAdmin" />
 	</main>
 </template>
 

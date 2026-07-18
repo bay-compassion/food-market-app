@@ -1,11 +1,14 @@
 import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
+import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine';
+
 export const marketEvents = pgTable('market_events', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	registrationOpensAt: timestamp('registration_opens_at', { withTimezone: true }).notNull(),
 	registrationClosesAt: timestamp('registration_closes_at', { withTimezone: true }).notNull(),
 	capacity: integer('capacity').notNull(),
-	status: text('status').notNull().default('open'),
+	sessionMode: text('session_mode').$type<SessionMode>().notNull().default('scheduled'),
+	status: text('status').$type<SessionStatus>().notNull().default('draft'),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -39,6 +42,9 @@ export const guests = pgTable('guests', {
 
 export const visits = pgTable('visits', {
 	id: uuid('id').defaultRandom().primaryKey(),
+	marketEventId: uuid('market_event_id')
+		.notNull()
+		.references(() => marketEvents.id),
 	guestId: uuid('guest_id')
 		.notNull()
 		.references(() => guests.id),
