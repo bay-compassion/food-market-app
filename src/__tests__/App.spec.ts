@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
@@ -92,11 +92,39 @@ describe('App', () => {
 					householdSize: 2,
 					phone: '(555) 123-4567',
 					locale: 'en',
+					marketEventId: null,
+					answers: {},
+					source: 'self',
 				}),
 				method: 'POST',
 			}),
 		);
 		expect(wrapper.text()).toContain('You’re in the queue!');
+
+		vi.unstubAllGlobals();
+	});
+
+	it('renders the lottery administration surfaces', async () => {
+		const fetchMock = vi.fn().mockImplementation((url: string) =>
+			Promise.resolve({
+				ok: true,
+				json: () =>
+					Promise.resolve(
+						url.startsWith('/api/guests') ? [] : { event: null, questions: [], counts: {} },
+					),
+			}),
+		);
+		vi.stubGlobal('fetch', fetchMock);
+		const wrapper = mountApp();
+
+		await wrapper.find('.mode-button').trigger('click');
+		await flushPromises();
+
+		expect(wrapper.text()).toContain('Market dashboard');
+		expect(wrapper.text()).toContain('Registration settings');
+		expect(wrapper.text()).toContain('Registration questions');
+		expect(wrapper.text()).toContain('Guest list');
+		expect(wrapper.text()).toContain('Add guest');
 
 		vi.unstubAllGlobals();
 	});

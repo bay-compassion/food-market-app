@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import AdminDashboard from './components/AdminDashboard.vue';
 import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
 import FormField from './components/FormField.vue';
@@ -23,6 +24,12 @@ const isReturningVisitor = ref(window.localStorage.getItem(returningVisitorStora
 const isSubmitted = ref(false);
 const isSubmitting = ref(false);
 const submissionError = ref('');
+const currentMarketEventId = ref<string | null>(null);
+const registrationAvailable = ref(true);
+const registrationQuestions = ref<
+	{ id: string; prompt: string; type: 'text' | 'scale'; required: boolean }[]
+>([]);
+const registrationAnswers = ref<Record<string, string | number>>({});
 const guest = ref<{
 	firstName: string;
 	lastName: string;
@@ -70,7 +77,13 @@ async function submitForm() {
 		const response = await fetch('/api/guests', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ ...guest.value, locale: locale.value }),
+			body: JSON.stringify({
+				...guest.value,
+				locale: locale.value,
+				marketEventId: currentMarketEventId.value,
+				answers: registrationAnswers.value,
+				source: 'self',
+			}),
 		});
 
 		if (!response.ok) {
@@ -83,6 +96,37 @@ async function submitForm() {
 		isSubmitting.value = false;
 	}
 }
+
+async function loadRegistration() {
+	try {
+		const response = await fetch('/api/market');
+		if (!response.ok) {
+			return;
+		}
+		const data = (await response.json()) as {
+			event: {
+				id: string;
+				status: 'open' | 'closed' | 'drawn';
+				registrationOpensAt: string;
+				registrationClosesAt: string;
+			} | null;
+			questions: { id: string; prompt: string; type: 'text' | 'scale'; required: boolean }[];
+		};
+		currentMarketEventId.value = data.event?.id ?? null;
+		registrationQuestions.value = data.questions;
+		const now = new Date();
+		registrationAvailable.value = Boolean(
+			data.event &&
+			data.event.status === 'open' &&
+			now >= new Date(data.event.registrationOpensAt) &&
+			now <= new Date(data.event.registrationClosesAt),
+		);
+	} catch {
+		// Keep the form available when the optional configuration endpoint cannot be reached.
+	}
+}
+
+onMounted(loadRegistration);
 </script>
 
 <template>
@@ -140,7 +184,12 @@ async function submitForm() {
 			</div>
 
 			<section class="checkin-card" aria-live="polite">
-				<div v-if="isSubmitted" class="success-state">
+				<div v-if="!registrationAvailable" class="closed-state">
+					<div class="closed-icon" aria-hidden="true">—</div>
+					<h2>{{ t.registrationClosed }}</h2>
+					<p>{{ t.registrationClosedDescription }}</p>
+				</div>
+				<div v-else-if="isSubmitted" class="success-state">
 					<div class="checkmark">✓</div>
 					<h2>{{ t.successTitle }}</h2>
 					<p>{{ t.successDescription }}</p>
@@ -148,7 +197,7 @@ async function submitForm() {
 						{{ t.guest }}
 					</AppButton>
 				</div>
-				<form v-else @submit.prevent="submitForm">
+				<form v-else-if="registrationAvailable" @submit.prevent="submitForm">
 					<div class="form-heading">
 						<h2>{{ t.formTitle }}</h2>
 						<p>{{ t.formDescription }}</p>
@@ -194,6 +243,27 @@ async function submitForm() {
 						type="tel"
 						placeholder="(555) 123-4567"
 					/>
+					<label
+						v-for="question in registrationQuestions"
+						:key="question.id"
+						class="dynamic-question"
+					>
+						<span>{{ question.prompt }}</span>
+						<select
+							v-if="question.type === 'scale'"
+							v-model.number="registrationAnswers[question.id]"
+							:required="question.required"
+						>
+							<option value="" disabled>{{ t.chooseAnswer }}</option>
+							<option v-for="value in 10" :key="value" :value="value">{{ value }}</option>
+						</select>
+						<textarea
+							v-else
+							v-model.trim="registrationAnswers[question.id]"
+							:required="question.required"
+							rows="3"
+						></textarea>
+					</label>
 					<p v-if="submissionError" class="submission-error" role="alert">
 						{{ submissionError }}
 					</p>
@@ -210,15 +280,7 @@ async function submitForm() {
 			</section>
 		</section>
 
-		<section v-else class="admin-view">
-			<EyebrowLabel tone="brand">{{ t.adminEyebrow }}</EyebrowLabel>
-			<h1>{{ t.adminTitle }}</h1>
-			<p>{{ t.adminDescription }}</p>
-			<div class="admin-preview"><span>01</span><span>02</span><span>03</span><span>04</span></div>
-			<AppButton type="button" variant="secondary" @click="showGuest">
-				{{ t.backToGuest }}
-			</AppButton>
-		</section>
+		<AdminDashboard v-else :locale="locale" />
 	</main>
 </template>
 
@@ -257,7 +319,8 @@ body {
 }
 button,
 input,
-select {
+select,
+textarea {
 	font: inherit;
 }
 button {
@@ -265,6 +328,7 @@ button {
 }
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 button:focus-visible,
 a:focus-visible {
 	outline: 3px solid var(--color-focus);
@@ -457,6 +521,52 @@ form {
 	min-height: 340px;
 	place-content: center;
 	text-align: center;
+}
+.closed-state {
+	display: grid;
+	min-height: 280px;
+	place-content: center;
+	text-align: center;
+}
+.closed-state h2 {
+	margin-bottom: 8px;
+	font-family: var(--font-heading);
+	font-size: 28px;
+	text-transform: uppercase;
+}
+.closed-state p {
+	max-width: 320px;
+	color: var(--color-text-muted);
+	line-height: 1.55;
+}
+.closed-icon {
+	display: grid;
+	width: 54px;
+	height: 54px;
+	place-self: center;
+	place-items: center;
+	margin-bottom: 16px;
+	border-radius: 50%;
+	color: white;
+	background: var(--color-brand);
+	font-size: 28px;
+}
+.dynamic-question {
+	display: grid;
+	gap: 8px;
+	font-family: var(--font-heading);
+	font-size: 14.5px;
+	font-weight: 700;
+}
+.dynamic-question select,
+.dynamic-question textarea {
+	width: 100%;
+	padding: 14px 16px;
+	border: 2px solid var(--color-border);
+	border-radius: var(--radius-md);
+	color: var(--color-text);
+	background: var(--color-background);
+	font-family: var(--font-body);
 }
 .checkmark {
 	display: grid;
