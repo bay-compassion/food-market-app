@@ -10,6 +10,7 @@ export interface AdminTranslation {
 	allGuests: string;
 	cancel: string;
 	capacity: string;
+	cancelled: string;
 	closeSession: string;
 	closeRegistration: string;
 	closed: string;
@@ -97,6 +98,7 @@ export const adminTranslations = {
 		allGuests: 'All guests',
 		cancel: 'Cancel',
 		capacity: 'Queue capacity',
+		cancelled: 'Cancelled',
 		closeSession: 'Close session',
 		closeRegistration: 'Close registration',
 		closed: 'Registration closed',
@@ -184,6 +186,7 @@ export const adminTranslations = {
 		allGuests: 'Todos los invitados',
 		cancel: 'Cancelar',
 		capacity: 'Capacidad de la fila',
+		cancelled: 'Cancelado',
 		closeSession: 'Cerrar sesión',
 		closeRegistration: 'Cerrar registro',
 		closed: 'Registro cerrado',
@@ -271,6 +274,7 @@ export const adminTranslations = {
 		allGuests: 'همه مهمانان',
 		cancel: 'لغو',
 		capacity: 'ظرفیت صف',
+		cancelled: 'لغوشده',
 		closeSession: 'بستن جلسه',
 		closeRegistration: 'بستن ثبت‌نام',
 		closed: 'ثبت‌نام بسته است',
@@ -357,6 +361,7 @@ export const adminTranslations = {
 		allGuests: 'Lahat ng bisita',
 		cancel: 'Kanselahin',
 		capacity: 'Kapasidad ng pila',
+		cancelled: 'Kinansela',
 		closeSession: 'Isara ang sesyon',
 		closeRegistration: 'Isara ang pagpaparehistro',
 		closed: 'Sarado ang pagpaparehistro',
@@ -445,6 +450,7 @@ export const adminTranslations = {
 		allGuests: 'Tất cả khách',
 		cancel: 'Hủy',
 		capacity: 'Sức chứa hàng đợi',
+		cancelled: 'Đã hủy',
 		closeSession: 'Đóng phiên',
 		closeRegistration: 'Đóng đăng ký',
 		closed: 'Đã đóng đăng ký',
@@ -531,6 +537,7 @@ export const adminTranslations = {
 		allGuests: '所有访客',
 		cancel: '取消',
 		capacity: '队列容量',
+		cancelled: '已取消',
 		closeSession: '结束场次',
 		closeRegistration: '关闭登记',
 		closed: '登记已关闭',
@@ -616,6 +623,7 @@ export const adminTranslations = {
 		allGuests: 'جميع الضيوف',
 		cancel: 'إلغاء',
 		capacity: 'سعة قائمة الانتظار',
+		cancelled: 'ملغاة',
 		closeSession: 'إغلاق الجلسة',
 		closeRegistration: 'إغلاق التسجيل',
 		closed: 'التسجيل مغلق',

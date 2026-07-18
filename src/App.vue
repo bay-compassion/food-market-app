@@ -12,7 +12,9 @@ import type { SessionStatus } from './services/sessionStateMachine';
 
 const localeStorageKey = 'bay-compassion.locale';
 const returningVisitorStorageKey = 'bay-compassion.returning-visitor';
+const visitTokenStorageKey = 'bay-compassion.visit-token';
 let registrationRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+let visitRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 
 function getSavedLocale(): Locale {
 	const savedLocale = window.localStorage.getItem(localeStorageKey);
@@ -26,7 +28,14 @@ const locale = ref<Locale>(getSavedLocale());
 const isReturningVisitor = ref(window.localStorage.getItem(returningVisitorStorageKey) === 'true');
 const isSubmitted = ref(false);
 const isSubmitting = ref(false);
+const isCancelling = ref(false);
 const submissionError = ref('');
+const registrationType = ref<'new' | 'returning'>('new');
+const pin = ref('');
+const pinConfirmation = ref('');
+const updateProfile = ref(false);
+type VisitStatus = 'registered' | 'waiting' | 'served' | 'not_placed' | 'no_show' | 'cancelled';
+const activeVisit = ref<{ id: string; status: VisitStatus } | null>(null);
 const currentMarketEventId = ref<string | null>(null);
 const registrationAvailable = ref(true);
 const registrationQuestions = ref<
@@ -48,6 +57,32 @@ const guest = ref<{
 });
 
 const t = computed(() => translations[locale.value]);
+const visitStatusLabel = computed(() => {
+	if (!activeVisit.value) {
+		return '';
+	}
+
+	return {
+		registered: t.value.statusRegistered,
+		waiting: t.value.statusWaiting,
+		served: t.value.statusServed,
+		not_placed: t.value.statusNotPlaced,
+		no_show: t.value.statusNoShow,
+		cancelled: t.value.statusCancelled,
+	}[activeVisit.value.status];
+});
+const canCancelVisit = computed(
+	() => activeVisit.value?.status === 'registered' || activeVisit.value?.status === 'waiting',
+);
+
+function scheduleVisitRefresh() {
+	if (visitRefreshTimer) {
+		clearTimeout(visitRefreshTimer);
+	}
+	if (canCancelVisit.value) {
+		visitRefreshTimer = setTimeout(loadActiveVisit, 15_000);
+	}
+}
 const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
@@ -96,6 +131,11 @@ async function submitForm() {
 	submissionError.value = '';
 
 	try {
+		if (registrationType.value === 'new' && pin.value !== pinConfirmation.value) {
+			submissionError.value = t.value.pinMismatch;
+
+			return;
+		}
 		const response = await fetch('/api/guests', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -105,17 +145,77 @@ async function submitForm() {
 				marketEventId: currentMarketEventId.value,
 				answers: registrationAnswers.value,
 				source: 'self',
+				registrationType: registrationType.value,
+				pin: pin.value,
+				updateProfile: registrationType.value === 'returning' && updateProfile.value,
 			}),
 		});
 
 		if (!response.ok) {
 			throw new Error('Guest submission failed');
 		}
+		const registration = (await response.json()) as {
+			id: string;
+			status: VisitStatus;
+			visitToken: string;
+		};
+		window.localStorage.setItem(visitTokenStorageKey, registration.visitToken);
+		activeVisit.value = { id: registration.id, status: registration.status };
 		isSubmitted.value = true;
+		scheduleVisitRefresh();
 	} catch {
 		submissionError.value = t.value.submissionError;
 	} finally {
 		isSubmitting.value = false;
+	}
+}
+
+async function loadActiveVisit() {
+	const token = window.localStorage.getItem(visitTokenStorageKey);
+	if (!token) {
+		return;
+	}
+	try {
+		const response = await fetch('/api/visit', {
+			headers: { Authorization: `Bearer ${token}` },
+		});
+		if (!response.ok) {
+			window.localStorage.removeItem(visitTokenStorageKey);
+
+			return;
+		}
+		const visit = (await response.json()) as { id: string; status: VisitStatus };
+		activeVisit.value = visit;
+		isSubmitted.value = true;
+		scheduleVisitRefresh();
+	} catch {
+		// Keep registration available if status refresh is temporarily unavailable.
+	}
+}
+
+async function cancelVisit() {
+	const token = window.localStorage.getItem(visitTokenStorageKey);
+	if (!token || !window.confirm(t.value.cancelVisitConfirm)) {
+		return;
+	}
+
+	isCancelling.value = true;
+	try {
+		const response = await fetch('/api/visit', {
+			method: 'PATCH',
+			headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+			body: JSON.stringify({ action: 'cancel' }),
+		});
+		if (!response.ok) {
+			throw new Error('cancel');
+		}
+
+		const visit = (await response.json()) as { id: string; status: VisitStatus };
+		activeVisit.value = visit;
+	} catch {
+		submissionError.value = t.value.visitError;
+	} finally {
+		isCancelling.value = false;
 	}
 }
 
@@ -163,8 +263,11 @@ async function loadRegistration() {
 	}
 }
 
-onMounted(loadRegistration);
-onBeforeUnmount(() => clearTimeout(registrationRefreshTimer));
+onMounted(() => Promise.all([loadRegistration(), loadActiveVisit()]));
+onBeforeUnmount(() => {
+	clearTimeout(registrationRefreshTimer);
+	clearTimeout(visitRefreshTimer);
+});
 </script>
 
 <template>
@@ -223,56 +326,91 @@ onBeforeUnmount(() => clearTimeout(registrationRefreshTimer));
 			</div>
 
 			<section class="checkin-card" aria-live="polite">
-				<div v-if="!registrationAvailable" class="closed-state">
+				<div v-if="activeVisit && isSubmitted" class="success-state">
+					<div class="checkmark">✓</div>
+					<h2>{{ t.successTitle }}</h2>
+					<p>
+						{{ t.currentStatus }}: <strong>{{ visitStatusLabel }}</strong>
+					</p>
+					<p>{{ t.successDescription }}</p>
+					<p v-if="submissionError" class="submission-error" role="alert">
+						{{ submissionError }}
+					</p>
+					<AppButton
+						v-if="canCancelVisit"
+						type="button"
+						variant="secondary"
+						:disabled="isCancelling"
+						@click="cancelVisit"
+					>
+						{{ t.cancelVisit }}
+					</AppButton>
+				</div>
+				<div v-else-if="!registrationAvailable" class="closed-state">
 					<div class="closed-icon" aria-hidden="true">—</div>
 					<h2>{{ t.registrationClosed }}</h2>
 					<p>{{ t.registrationClosedDescription }}</p>
-				</div>
-				<div v-else-if="isSubmitted" class="success-state">
-					<div class="checkmark">✓</div>
-					<h2>{{ t.successTitle }}</h2>
-					<p>{{ t.successDescription }}</p>
-					<AppButton type="button" variant="secondary" @click="isSubmitted = false">
-						{{ t.guest }}
-					</AppButton>
 				</div>
 				<form v-else-if="registrationAvailable" @submit.prevent="submitForm">
 					<div class="form-heading">
 						<h2>{{ t.formTitle }}</h2>
 						<p>{{ t.formDescription }}</p>
 					</div>
-					<FormField
-						v-model="guest.firstName"
-						:label="t.firstName"
-						required
-						autocomplete="given-name"
-					/>
-					<FormField
-						v-model="guest.lastName"
-						:label="t.lastName"
-						required
-						autocomplete="family-name"
-					/>
-					<FormField
-						v-model="guest.age"
-						:label="t.age"
-						type="number"
-						required
-						:min="0"
-						:max="120"
-						inputmode="numeric"
-						:placeholder="t.ageHint"
-					/>
-					<FormField
-						v-model="guest.householdSize"
-						:label="t.household"
-						type="number"
-						required
-						:min="1"
-						:max="30"
-						inputmode="numeric"
-						:placeholder="t.householdHint"
-					/>
+					<div class="registration-type" role="group" :aria-label="t.registrationType">
+						<button
+							type="button"
+							:class="{ active: registrationType === 'new' }"
+							:aria-pressed="registrationType === 'new'"
+							@click="registrationType = 'new'"
+						>
+							{{ t.newGuest }}
+						</button>
+						<button
+							type="button"
+							:class="{ active: registrationType === 'returning' }"
+							:aria-pressed="registrationType === 'returning'"
+							@click="registrationType = 'returning'"
+						>
+							{{ t.returningGuest }}
+						</button>
+					</div>
+					<p v-if="registrationType === 'returning'" class="form-help">
+						{{ t.returningGuestHelp }}
+					</p>
+					<template v-if="registrationType === 'new' || updateProfile">
+						<FormField
+							v-model="guest.firstName"
+							:label="t.firstName"
+							required
+							autocomplete="given-name"
+						/>
+						<FormField
+							v-model="guest.lastName"
+							:label="t.lastName"
+							required
+							autocomplete="family-name"
+						/>
+						<FormField
+							v-model="guest.age"
+							:label="t.age"
+							type="number"
+							required
+							:min="0"
+							:max="120"
+							inputmode="numeric"
+							:placeholder="t.ageHint"
+						/>
+						<FormField
+							v-model="guest.householdSize"
+							:label="t.household"
+							type="number"
+							required
+							:min="1"
+							:max="30"
+							inputmode="numeric"
+							:placeholder="t.householdHint"
+						/>
+					</template>
 					<FormField
 						v-model="guest.phone"
 						:label="t.phone"
@@ -282,6 +420,30 @@ onBeforeUnmount(() => clearTimeout(registrationRefreshTimer));
 						type="tel"
 						placeholder="(555) 123-4567"
 					/>
+					<FormField
+						v-model="pin"
+						:label="t.pin"
+						type="password"
+						required
+						:minlength="4"
+						:maxlength="8"
+						inputmode="numeric"
+						:placeholder="t.pinHint"
+					/>
+					<FormField
+						v-if="registrationType === 'new'"
+						v-model="pinConfirmation"
+						:label="t.confirmPin"
+						type="password"
+						required
+						:minlength="4"
+						:maxlength="8"
+						inputmode="numeric"
+					/>
+					<label v-if="registrationType === 'returning'" class="update-profile-option">
+						<input v-model="updateProfile" type="checkbox" />
+						<span>{{ t.updateInformation }}</span>
+					</label>
 					<label
 						v-for="question in registrationQuestions"
 						:key="question.id"
@@ -542,6 +704,39 @@ h1 {
 form {
 	display: grid;
 	gap: 18px;
+}
+.registration-type {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+.registration-type button {
+	min-height: 48px;
+	border: 2px solid var(--color-brand);
+	border-radius: var(--radius-md);
+	color: var(--color-brand);
+	background: var(--color-background);
+	font-weight: 700;
+}
+.registration-type button.active {
+	color: var(--color-on-brand);
+	background: var(--color-brand);
+}
+.form-help {
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: 14px;
+	line-height: 1.5;
+}
+.update-profile-option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-weight: 600;
+}
+.update-profile-option input {
+	width: 20px;
+	height: 20px;
 }
 .submission-error {
 	margin: 0;

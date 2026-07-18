@@ -1,12 +1,19 @@
 import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
-import { guests, marketEvents, registrationQuestions } from '../../db/schema.js';
+import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.js';
 import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
 import { requireAuth0 } from '../lib/auth.js';
+import {
+	authenticateGuest,
+	hashPin,
+	isValidPin,
+	issueVisitToken,
+	normalizePhone,
+} from '../services/guestCredentials.js';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
-const statuses = ['registered', 'waiting', 'served', 'not_placed', 'no_show'] as const;
+const statuses = ['registered', 'waiting', 'served', 'not_placed', 'no_show', 'cancelled'] as const;
 
 type GuestSubmission = {
 	firstName: string;
@@ -18,6 +25,9 @@ type GuestSubmission = {
 	marketEventId: string | null;
 	answers: Record<string, string | number>;
 	source: 'self' | 'admin';
+	registrationType: 'new' | 'returning';
+	pin: string;
+	updateProfile: boolean;
 };
 
 function error(message: string, status = 400) {
@@ -45,24 +55,33 @@ function parseSubmission(value: unknown): GuestSubmission | null {
 	const householdSize = Number(body.householdSize);
 	const locale = body.locale;
 	const source = body.source === 'admin' ? 'admin' : 'self';
+	const registrationType = body.registrationType === 'returning' ? 'returning' : 'new';
+	const pin = typeof body.pin === 'string' ? body.pin : '';
+	const updateProfile = body.updateProfile === true;
 	const marketEventId = typeof body.marketEventId === 'string' ? body.marketEventId : null;
 	const answers = body.answers ?? {};
+	const needsProfile = source === 'admin' || registrationType === 'new' || updateProfile;
+	const normalizedPhone = normalizePhone(phone);
 
 	if (
-		!firstName ||
-		!lastName ||
 		!phone ||
-		firstName.length > 100 ||
-		lastName.length > 100 ||
 		phone.length > 40 ||
-		!Number.isInteger(age) ||
-		age < 0 ||
-		age > 120 ||
-		!Number.isInteger(householdSize) ||
-		householdSize < 1 ||
-		householdSize > 30 ||
+		normalizedPhone.length < 8 ||
+		normalizedPhone.length > 16 ||
 		!locales.some((item) => item === locale) ||
-		!isAnswers(answers)
+		!isAnswers(answers) ||
+		(source === 'self' && !isValidPin(pin)) ||
+		(needsProfile &&
+			(!firstName ||
+				!lastName ||
+				firstName.length > 100 ||
+				lastName.length > 100 ||
+				!Number.isInteger(age) ||
+				age < 0 ||
+				age > 120 ||
+				!Number.isInteger(householdSize) ||
+				householdSize < 1 ||
+				householdSize > 30))
 	) {
 		return null;
 	}
@@ -77,6 +96,9 @@ function parseSubmission(value: unknown): GuestSubmission | null {
 		marketEventId,
 		answers,
 		source,
+		registrationType,
+		pin,
+		updateProfile,
 	};
 }
 
@@ -98,7 +120,7 @@ async function listGuests(request: Request) {
 		url.searchParams.get('scope') === 'all'
 			? null
 			: (url.searchParams.get('marketEventId') ?? (await currentEventId()));
-	const eventFilter = eventId ? eq(guests.marketEventId, eventId) : undefined;
+	const eventFilter = eventId ? eq(visits.marketEventId, eventId) : undefined;
 	const searchFilter = query
 		? or(
 				ilike(guests.firstName, `%${query}%`),
@@ -111,10 +133,27 @@ async function listGuests(request: Request) {
 
 	return Response.json(
 		await db
-			.select()
+			.select({
+				id: visits.id,
+				guestId: guests.id,
+				marketEventId: visits.marketEventId,
+				firstName: guests.firstName,
+				lastName: guests.lastName,
+				age: guests.age,
+				householdSize: guests.householdSize,
+				phone: guests.phone,
+				locale: guests.locale,
+				status: visits.status,
+				answers: visits.answers,
+				source: visits.source,
+				visitDate: visits.visitDate,
+				isFirstVisit: visits.isFirstVisit,
+				createdAt: visits.createdAt,
+			})
 			.from(guests)
+			.innerJoin(visits, eq(visits.guestId, guests.id))
 			.where(where)
-			.orderBy(desc(guests.createdAt))
+			.orderBy(desc(visits.createdAt))
 			.limit(eventId ? 10_000 : 100),
 	);
 }
@@ -194,15 +233,95 @@ async function createGuest(request: Request) {
 		}
 	}
 
-	const [guest] = await db
-		.insert(guests)
-		.values({
-			...submission,
-			status: submission.source === 'admin' ? 'waiting' : 'registered',
-		})
-		.returning({ id: guests.id });
+	let existingGuest: typeof guests.$inferSelect | null = null;
+	let existingVisit: { id: string; status: string } | null = null;
+	if (submission.source === 'self' && submission.registrationType === 'returning') {
+		existingGuest = await authenticateGuest(submission.phone, submission.pin);
+		if (!existingGuest) {
+			return error('The phone number or PIN could not be verified.', 401);
+		}
+		const [visit] = await db
+			.select({ id: visits.id, status: visits.status })
+			.from(visits)
+			.where(
+				and(
+					eq(visits.guestId, existingGuest.id),
+					eq(visits.marketEventId, submission.marketEventId!),
+				),
+			)
+			.limit(1);
+		existingVisit = visit ?? null;
+	}
 
-	return Response.json(guest, { status: 201 });
+	const pinHash =
+		submission.source === 'self' && submission.registrationType === 'new'
+			? await hashPin(submission.pin)
+			: null;
+	const visitCredential = issueVisitToken();
+	const registration = await db.transaction(async (tx) => {
+		let guest = existingGuest;
+		if (guest && submission.updateProfile) {
+			const [updated] = await tx
+				.update(guests)
+				.set({
+					firstName: submission.firstName,
+					lastName: submission.lastName,
+					age: submission.age,
+					householdSize: submission.householdSize,
+					locale: submission.locale,
+				})
+				.where(eq(guests.id, guest.id))
+				.returning();
+			guest = updated!;
+		}
+		if (!guest) {
+			const [created] = await tx
+				.insert(guests)
+				.values({
+					firstName: submission.firstName,
+					lastName: submission.lastName,
+					age: submission.age,
+					householdSize: submission.householdSize,
+					phone: submission.phone,
+					normalizedPhone: normalizePhone(submission.phone),
+					pinHash,
+					locale: submission.locale,
+				})
+				.returning();
+			guest = created!;
+		}
+		const [visit] = existingVisit
+			? await tx
+					.update(visits)
+					.set({
+						accessTokenHash: visitCredential.tokenHash,
+						answers: submission.answers,
+						status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
+					})
+					.where(eq(visits.id, existingVisit.id))
+					.returning({ id: visits.id, status: visits.status })
+			: await tx
+					.insert(visits)
+					.values({
+						guestId: guest.id,
+						marketEventId: submission.marketEventId!,
+						status: submission.source === 'admin' ? 'waiting' : 'registered',
+						answers: submission.answers,
+						source: submission.source,
+						accessTokenHash: visitCredential.tokenHash,
+						isFirstVisit: submission.registrationType === 'new',
+					})
+					.returning({ id: visits.id, status: visits.status });
+
+		return {
+			id: visit!.id,
+			guestId: guest.id,
+			status: visit!.status,
+			visitToken: submission.source === 'self' ? visitCredential.token : undefined,
+		};
+	});
+
+	return Response.json(registration, { status: existingVisit ? 200 : 201 });
 }
 
 async function updateGuest(request: Request) {
@@ -225,13 +344,13 @@ async function updateGuest(request: Request) {
 		return error('Invalid guest update.');
 	}
 
-	const [guest] = await db
-		.update(guests)
+	const [visit] = await db
+		.update(visits)
 		.set({ status })
-		.where(eq(guests.id, id))
-		.returning({ id: guests.id, status: guests.status });
+		.where(eq(visits.id, id))
+		.returning({ id: visits.id, status: visits.status });
 
-	return guest ? Response.json(guest) : error('Guest not found.', 404);
+	return visit ? Response.json(visit) : error('Visit not found.', 404);
 }
 
 export default async (request: Request) => {

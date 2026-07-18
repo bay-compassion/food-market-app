@@ -13,7 +13,7 @@ import AppButton from './AppButton.vue';
 import EyebrowLabel from './EyebrowLabel.vue';
 import FormField from './FormField.vue';
 
-type GuestStatus = 'registered' | 'waiting' | 'served' | 'not_placed' | 'no_show';
+type GuestStatus = 'registered' | 'waiting' | 'served' | 'not_placed' | 'no_show' | 'cancelled';
 type Question = { id?: string; prompt: string; type: 'text' | 'scale'; required: boolean };
 type MarketEvent = {
 	id: string;
@@ -76,13 +76,21 @@ const manualGuest = reactive({
 	phone: '',
 });
 
-const statuses: GuestStatus[] = ['waiting', 'served', 'registered', 'not_placed', 'no_show'];
+const statuses: GuestStatus[] = [
+	'waiting',
+	'served',
+	'registered',
+	'not_placed',
+	'no_show',
+	'cancelled',
+];
 const statusLabels = computed<Record<GuestStatus, string>>(() => ({
 	waiting: t.value.waiting,
 	served: t.value.served,
 	registered: t.value.registered,
 	not_placed: t.value.notPlaced,
 	no_show: t.value.noShow,
+	cancelled: t.value.cancelled,
 }));
 const navigation = computed<{ id: AdminView; label: string }[]>(() => [
 	{ id: 'current-session', label: t.value.currentSession },

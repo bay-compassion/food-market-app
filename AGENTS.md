@@ -16,6 +16,7 @@
 ## Code and verification
 
 - Use TypeScript and Vue's existing conventions. Keep components focused and avoid premature generalization.
+- Whenever practical, implement business logic in separate services rather than alongside presentation code.
 - Follow the repository formatter: tabs, single quotes, semicolons, and a 100-character print width. Run `npm run format` after edits when needed.
 - The Vue app lives in `src/`; static assets live in `public/`; database schema code is in `db/`; and Netlify functions are in `netlify/functions/`.
 - This is currently a Netlify-targeted application. Keep deployment configuration and server-side work compatible with the Netlify setup in `netlify.toml` and `netlify/`.
