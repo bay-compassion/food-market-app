@@ -34,8 +34,18 @@ const registrationType = ref<'new' | 'returning'>('new');
 const pin = ref('');
 const pinConfirmation = ref('');
 const updateProfile = ref(false);
-type VisitStatus = 'registered' | 'waiting' | 'served' | 'not_placed' | 'no_show' | 'cancelled';
+type VisitStatus =
+	| 'registered'
+	| 'waiting'
+	| 'called'
+	| 'served'
+	| 'not_placed'
+	| 'no_show'
+	| 'cancelled';
 const activeVisit = ref<{ id: string; status: VisitStatus } | null>(null);
+const pushPublicKey = ref<string | null>(null);
+const pushConfigured = ref(false);
+const notificationState = ref<'idle' | 'enabling' | 'enabled' | 'error'>('idle');
 const currentMarketEventId = ref<string | null>(null);
 const registrationAvailable = ref(true);
 const registrationQuestions = ref<
@@ -65,6 +75,7 @@ const visitStatusLabel = computed(() => {
 	return {
 		registered: t.value.statusRegistered,
 		waiting: t.value.statusWaiting,
+		called: t.value.statusCalled,
 		served: t.value.statusServed,
 		not_placed: t.value.statusNotPlaced,
 		no_show: t.value.statusNoShow,
@@ -74,6 +85,98 @@ const visitStatusLabel = computed(() => {
 const canCancelVisit = computed(
 	() => activeVisit.value?.status === 'registered' || activeVisit.value?.status === 'waiting',
 );
+const isIos = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches === true;
+const browserSupportsPush =
+	'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const notificationsDenied = computed(
+	() => browserSupportsPush && Notification.permission === 'denied',
+);
+const canEnableNotifications = computed(
+	() =>
+		pushConfigured.value &&
+		browserSupportsPush &&
+		!notificationsDenied.value &&
+		(!isIos || isStandalone),
+);
+
+function applicationServerKey(value: string) {
+	const padding = '='.repeat((4 - (value.length % 4)) % 4);
+	const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+	const bytes = window.atob(base64);
+
+	return Uint8Array.from(bytes, (character) => character.charCodeAt(0));
+}
+
+async function savePushSubscription(subscription: PushSubscription, token: string) {
+	const response = await fetch('/api/push-subscription', {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+		body: JSON.stringify(subscription.toJSON()),
+	});
+	if (!response.ok) {
+		throw new Error('subscription');
+	}
+	notificationState.value = 'enabled';
+}
+
+async function syncExistingPushSubscription(token: string) {
+	if (!browserSupportsPush || Notification.permission !== 'granted') {
+		return;
+	}
+	const registration = await navigator.serviceWorker.getRegistration('/');
+	const subscription = await registration?.pushManager.getSubscription();
+	if (subscription) {
+		await savePushSubscription(subscription, token);
+	}
+}
+
+async function loadPushConfiguration() {
+	try {
+		const response = await fetch('/api/push-subscription');
+		if (!response.ok) {
+			return;
+		}
+		const configuration = (await response.json()) as {
+			configured: boolean;
+			publicKey: string | null;
+		};
+		pushConfigured.value = configuration.configured;
+		pushPublicKey.value = configuration.publicKey;
+		if (browserSupportsPush && Notification.permission === 'granted') {
+			const token = window.localStorage.getItem(visitTokenStorageKey);
+			if (token) {
+				await syncExistingPushSubscription(token);
+			}
+		}
+	} catch {
+		// Notification opt-in remains hidden if configuration is unavailable.
+	}
+}
+
+async function enableNotifications() {
+	const token = window.localStorage.getItem(visitTokenStorageKey);
+	if (!token || !pushPublicKey.value || !canEnableNotifications.value) {
+		return;
+	}
+	notificationState.value = 'enabling';
+	try {
+		const registration = await navigator.serviceWorker.register('/service-worker.js');
+		const permission = await Notification.requestPermission();
+		if (permission !== 'granted') {
+			throw new Error('permission');
+		}
+		const subscription =
+			(await registration.pushManager.getSubscription()) ??
+			(await registration.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: applicationServerKey(pushPublicKey.value),
+			}));
+		await savePushSubscription(subscription, token);
+	} catch {
+		notificationState.value = 'error';
+	}
+}
 
 function scheduleVisitRefresh() {
 	if (visitRefreshTimer) {
@@ -162,6 +265,9 @@ async function submitForm() {
 		window.localStorage.setItem(visitTokenStorageKey, registration.visitToken);
 		activeVisit.value = { id: registration.id, status: registration.status };
 		isSubmitted.value = true;
+		void syncExistingPushSubscription(registration.visitToken).catch(() => {
+			notificationState.value = 'error';
+		});
 		scheduleVisitRefresh();
 	} catch {
 		submissionError.value = t.value.submissionError;
@@ -263,7 +369,7 @@ async function loadRegistration() {
 	}
 }
 
-onMounted(() => Promise.all([loadRegistration(), loadActiveVisit()]));
+onMounted(() => Promise.all([loadRegistration(), loadActiveVisit(), loadPushConfiguration()]));
 onBeforeUnmount(() => {
 	clearTimeout(registrationRefreshTimer);
 	clearTimeout(visitRefreshTimer);
@@ -333,6 +439,27 @@ onBeforeUnmount(() => {
 						{{ t.currentStatus }}: <strong>{{ visitStatusLabel }}</strong>
 					</p>
 					<p>{{ t.successDescription }}</p>
+					<div v-if="pushConfigured" class="notification-option">
+						<p v-if="notificationState === 'enabled'" class="notification-enabled">
+							{{ t.notificationsEnabled }}
+						</p>
+						<p v-else-if="notificationsDenied">{{ t.notificationsDenied }}</p>
+						<template v-else-if="canEnableNotifications">
+							<AppButton
+								type="button"
+								variant="secondary"
+								:disabled="notificationState === 'enabling'"
+								@click="enableNotifications"
+							>
+								{{ t.notificationsEnable }}
+							</AppButton>
+							<p v-if="notificationState === 'error'" class="submission-error" role="alert">
+								{{ t.notificationsError }}
+							</p>
+						</template>
+						<p v-else-if="isIos && !isStandalone">{{ t.notificationsIosInstall }}</p>
+						<p v-else>{{ t.notificationsUnsupported }}</p>
+					</div>
 					<p v-if="submissionError" class="submission-error" role="alert">
 						{{ submissionError }}
 					</p>
@@ -495,6 +622,7 @@ onBeforeUnmount(() => {
 	--color-brand-dark: #012a2f;
 	--color-on-brand: #fff;
 	--color-background: #fff;
+	--color-surface-soft: #f1f5f3;
 	--color-text: #101010;
 	--color-text-muted: #3d453f;
 	--color-text-subtle: #60746a;
@@ -825,6 +953,21 @@ form {
 .success-state p {
 	max-width: 280px;
 	margin: 0 auto 27px;
+}
+.notification-option {
+	display: grid;
+	gap: 12px;
+	margin-bottom: 22px;
+	padding: 18px;
+	border-radius: var(--radius-md);
+	background: var(--color-surface-soft);
+}
+.notification-option p {
+	margin-bottom: 0;
+	font-size: 14px;
+}
+.notification-enabled {
+	font-weight: 700;
 }
 .admin-view {
 	width: min(100% - 36px, 560px);

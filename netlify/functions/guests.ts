@@ -1,7 +1,13 @@
 import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
-import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.js';
+import {
+	guests,
+	marketEvents,
+	notificationDeliveries,
+	registrationQuestions,
+	visits,
+} from '../../db/schema.js';
 import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
 import { requireAuth0 } from '../lib/auth.js';
 import {
@@ -11,9 +17,18 @@ import {
 	issueVisitToken,
 	normalizePhone,
 } from '../services/guestCredentials.js';
+import { deliverPendingNotifications } from '../services/pushNotifications.js';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
-const statuses = ['registered', 'waiting', 'served', 'not_placed', 'no_show', 'cancelled'] as const;
+const statuses = [
+	'registered',
+	'waiting',
+	'called',
+	'served',
+	'not_placed',
+	'no_show',
+	'cancelled',
+] as const;
 
 type GuestSubmission = {
 	firstName: string;
@@ -144,6 +159,8 @@ async function listGuests(request: Request) {
 				phone: guests.phone,
 				locale: guests.locale,
 				status: visits.status,
+				queuePosition: visits.queuePosition,
+				calledAt: visits.calledAt,
 				answers: visits.answers,
 				source: visits.source,
 				visitDate: visits.visitDate,
@@ -344,11 +361,28 @@ async function updateGuest(request: Request) {
 		return error('Invalid guest update.');
 	}
 
-	const [visit] = await db
-		.update(visits)
-		.set({ status })
-		.where(eq(visits.id, id))
-		.returning({ id: visits.id, status: visits.status });
+	const visit = await db.transaction(async (tx) => {
+		const [updated] = await tx
+			.update(visits)
+			.set(status === 'called' ? { status, calledAt: new Date() } : { status })
+			.where(
+				status === 'called'
+					? and(eq(visits.id, id), eq(visits.status, 'waiting'))
+					: eq(visits.id, id),
+			)
+			.returning({ id: visits.id, status: visits.status });
+		if (updated && status === 'called') {
+			await tx
+				.insert(notificationDeliveries)
+				.values({ visitId: updated.id, type: 'called', dedupeKey: 'called' })
+				.onConflictDoNothing();
+		}
+
+		return updated ?? null;
+	});
+	if (visit && status === 'called') {
+		await deliverPendingNotifications({ visitIds: [visit.id], types: ['called'], limit: 1 });
+	}
 
 	return visit ? Response.json(visit) : error('Visit not found.', 404);
 }

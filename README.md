@@ -54,6 +54,23 @@ Production can also be deployed manually from GitHub without building the app on
 The workflow only triggers the hook. Netlify performs the build so its production environment
 variables are available to Vite and the serverless functions.
 
+### Push notifications
+
+Push notifications use standards-based Web Push with VAPID authentication. Generate the site's
+long-lived key pair once:
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Add `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` to the Netlify environment. The
+subject must be a `mailto:` address or an HTTPS URL. Keep the private key secret and keep the same
+key pair across deploys so existing browser subscriptions continue to work.
+
+The `notification-schedule` function runs once per minute on published deploys to close due
+registration windows and deliver queued notifications. Scheduled functions do not run
+automatically under `netlify dev`; invoke that function manually when testing locally.
+
 ## Auth0 administration access
 
 The guest check-in is public. Auth0 protects the `/admin` route, guest records, and every

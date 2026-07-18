@@ -1,7 +1,12 @@
 import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
-import { marketEvents, registrationQuestions, visits } from '../../db/schema.js';
+import {
+	marketEvents,
+	notificationDeliveries,
+	registrationQuestions,
+	visits,
+} from '../../db/schema.js';
 import {
 	automaticSessionStatus,
 	canRunSessionCommand,
@@ -38,11 +43,33 @@ async function getCurrentEvent() {
 	const now = new Date();
 	const automaticStatus = automaticSessionStatus(event, now);
 	if (automaticStatus !== event.status) {
-		const [updated] = await db
-			.update(marketEvents)
-			.set({ status: automaticStatus })
-			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
-			.returning();
+		const updated = await db.transaction(async (tx) => {
+			const [changed] = await tx
+				.update(marketEvents)
+				.set({ status: automaticStatus })
+				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
+				.returning();
+			if (changed && automaticStatus === 'registration_closed') {
+				const registrations = await tx
+					.select({ visitId: visits.id })
+					.from(visits)
+					.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+				if (registrations.length) {
+					await tx
+						.insert(notificationDeliveries)
+						.values(
+							registrations.map(({ visitId }) => ({
+								visitId,
+								type: 'registration_closed',
+								dedupeKey: 'registration_closed',
+							})),
+						)
+						.onConflictDoNothing();
+				}
+			}
+
+			return changed;
+		});
 		event = updated ?? (await getLatestActiveEvent()) ?? event;
 	}
 
@@ -401,9 +428,47 @@ async function runAction(request: Request) {
 	}
 
 	const transitions = {
-		close_registration: 'close_registration',
 		close_session: 'close_session',
 	} as const;
+	if (action === 'close_registration') {
+		const target = sessionCommandTarget('close_registration');
+		if (!target || !canRunSessionCommand(eventStatus, 'close_registration', eventMode)) {
+			return error('That session transition is not allowed from the current state.', 409);
+		}
+		const closed = await db.transaction(async (tx) => {
+			const [updated] = await tx
+				.update(marketEvents)
+				.set({ status: target })
+				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, eventStatus)))
+				.returning({ id: marketEvents.id });
+			if (!updated) {
+				return false;
+			}
+			const registrations = await tx
+				.select({ visitId: visits.id })
+				.from(visits)
+				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+			if (registrations.length) {
+				await tx
+					.insert(notificationDeliveries)
+					.values(
+						registrations.map(({ visitId }) => ({
+							visitId,
+							type: 'registration_closed',
+							dedupeKey: 'registration_closed',
+						})),
+					)
+					.onConflictDoNothing();
+			}
+
+			return true;
+		});
+		if (!closed) {
+			return error('That session transition is not allowed from the current state.', 409);
+		}
+
+		return marketOverview();
+	}
 	if (typeof action === 'string' && action in transitions) {
 		const command = transitions[action as keyof typeof transitions];
 		const target = sessionCommandTarget(command);
@@ -432,7 +497,8 @@ async function runAction(request: Request) {
 	if (!lotteryTarget) {
 		return error('The lottery transition is not configured.', 500);
 	}
-	const selected = shuffled.slice(0, event.capacity).map(({ id }) => id);
+	const selectedRegistrations = shuffled.slice(0, event.capacity);
+	const selected = selectedRegistrations.map(({ id }) => id);
 	const notPlaced = shuffled.slice(event.capacity).map(({ id }) => id);
 
 	await db
@@ -446,10 +512,38 @@ async function runAction(request: Request) {
 				throw new Error('INVALID_SESSION_TRANSITION');
 			}
 			if (selected.length) {
-				await tx.update(visits).set({ status: 'waiting' }).where(inArray(visits.id, selected));
+				const positions = selectedRegistrations.map(
+					(registration, index) => sql`(${registration.id}::uuid, ${index + 1}::integer)`,
+				);
+				await tx.execute(sql`
+					UPDATE ${visits} AS visit
+					SET status = 'waiting', queue_position = positions.position
+					FROM (VALUES ${sql.join(positions, sql`, `)}) AS positions(id, position)
+					WHERE visit.id = positions.id
+				`);
+				await tx
+					.insert(notificationDeliveries)
+					.values(
+						selected.map((visitId) => ({
+							visitId,
+							type: 'lottery_selected',
+							dedupeKey: 'lottery_selected',
+						})),
+					)
+					.onConflictDoNothing();
 			}
 			if (notPlaced.length) {
 				await tx.update(visits).set({ status: 'not_placed' }).where(inArray(visits.id, notPlaced));
+				await tx
+					.insert(notificationDeliveries)
+					.values(
+						notPlaced.map((visitId) => ({
+							visitId,
+							type: 'lottery_not_selected',
+							dedupeKey: 'lottery_not_selected',
+						})),
+					)
+					.onConflictDoNothing();
 			}
 		})
 		.catch((cause: unknown) => {
