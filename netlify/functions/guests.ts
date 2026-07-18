@@ -2,6 +2,7 @@ import { and, desc, eq, ilike, or } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { guests, marketEvents, registrationQuestions } from '../../db/schema.js';
+import { requireAuth0 } from '../lib/auth.js';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 const statuses = ['registered', 'waiting', 'served', 'not_placed', 'no_show'] as const;
@@ -120,6 +121,12 @@ async function createGuest(request: Request) {
 	if (!submission) {
 		return error('Please provide valid guest information.');
 	}
+	if (submission.source === 'admin') {
+		const unauthorized = await requireAuth0(request);
+		if (unauthorized) {
+			return unauthorized;
+		}
+	}
 	if (submission.source === 'admin' && !submission.marketEventId) {
 		return error('No market event has been configured.', 409);
 	}
@@ -202,12 +209,22 @@ async function updateGuest(request: Request) {
 
 export default async (request: Request) => {
 	if (request.method === 'GET') {
+		const unauthorized = await requireAuth0(request);
+		if (unauthorized) {
+			return unauthorized;
+		}
+
 		return listGuests(request);
 	}
 	if (request.method === 'POST') {
 		return createGuest(request);
 	}
 	if (request.method === 'PATCH') {
+		const unauthorized = await requireAuth0(request);
+		if (unauthorized) {
+			return unauthorized;
+		}
+
 		return updateGuest(request);
 	}
 

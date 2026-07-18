@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import AdminDashboard from './components/AdminDashboard.vue';
+import { auth0 } from './auth';
+import AdminAuthView from './components/AdminAuthView.vue';
 import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
 import FormField from './components/FormField.vue';
@@ -45,6 +46,7 @@ const guest = ref<{
 });
 
 const t = computed(() => translations[locale.value]);
+const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
 const isAdmin = computed(() => route.name === 'admin');
@@ -159,6 +161,7 @@ onMounted(loadRegistration);
 				</button>
 			</div>
 		</header>
+		<p v-if="authenticationError" class="auth-banner" role="alert">{{ t.authError }}</p>
 
 		<section v-if="!isAdmin" class="guest-layout">
 			<div v-if="!isReturningVisitor" class="hero">
@@ -280,7 +283,7 @@ onMounted(loadRegistration);
 			</section>
 		</section>
 
-		<AdminDashboard v-else :locale="locale" />
+		<AdminAuthView v-else :locale="locale" />
 	</main>
 </template>
 
@@ -345,6 +348,14 @@ a:focus-visible {
 	justify-content: space-between;
 	padding: 0 20px;
 	background: var(--color-brand);
+}
+.auth-banner {
+	padding: 12px 20px;
+	color: white;
+	background: var(--color-error);
+	font-size: 14px;
+	line-height: 1.4;
+	text-align: center;
 }
 .brand {
 	display: inline-flex;

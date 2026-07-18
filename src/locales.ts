@@ -17,6 +17,10 @@ export interface Translation {
 	adminTitle: string;
 	age: string;
 	ageHint: string;
+	authConfigurationDescription: string;
+	authConfigurationRequired: string;
+	authError: string;
+	authLoading: string;
 	backToGuest: string;
 	compassionFood: string;
 	chooseAnswer: string;
@@ -35,6 +39,8 @@ export interface Translation {
 	privacy: string;
 	registrationClosed: string;
 	registrationClosedDescription: string;
+	signedInAs: string;
+	signOut: string;
 	submissionError: string;
 	submit: string;
 	submitting: string;
@@ -51,6 +57,11 @@ export const translations = {
 		adminTitle: 'A simpler way to welcome every neighbor.',
 		age: 'Age',
 		ageHint: 'In years',
+		authConfigurationDescription:
+			'Add the Auth0 environment variables through the Netlify Auth0 extension, then redeploy the site.',
+		authConfigurationRequired: 'Admin sign-in is not configured',
+		authError: 'We could not verify your admin session. Please try signing in again.',
+		authLoading: 'Verifying your admin session…',
 		backToGuest: 'Back to guest check-in',
 		compassionFood: 'Compassion Food',
 		chooseAnswer: 'Choose an answer',
@@ -69,6 +80,8 @@ export const translations = {
 		privacy: 'Your information is only used to help us serve you today.',
 		registrationClosed: 'Registration is closed',
 		registrationClosedDescription: 'Please check with a market team member for help.',
+		signedInAs: 'Signed in as',
+		signOut: 'Sign out',
 		submissionError: 'We could not save your check-in. Please try again.',
 		submit: 'Join the queue',
 		submitting: 'Joining the queue…',
@@ -83,6 +96,11 @@ export const translations = {
 		adminTitle: 'Una forma más sencilla de recibir a cada vecino.',
 		age: 'Edad',
 		ageHint: 'En años',
+		authConfigurationDescription:
+			'Agregue las variables de entorno de Auth0 mediante la extensión Auth0 de Netlify y vuelva a implementar el sitio.',
+		authConfigurationRequired: 'El inicio de sesión de administración no está configurado',
+		authError: 'No pudimos verificar su sesión de administración. Intente iniciar sesión de nuevo.',
+		authLoading: 'Verificando su sesión de administración…',
 		backToGuest: 'Volver al registro',
 		compassionFood: 'Alimentos con Compasión',
 		chooseAnswer: 'Elija una respuesta',
@@ -101,6 +119,8 @@ export const translations = {
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
 		registrationClosed: 'El registro está cerrado',
 		registrationClosedDescription: 'Pida ayuda a un miembro del equipo del mercado.',
+		signedInAs: 'Sesión iniciada como',
+		signOut: 'Cerrar sesión',
 		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
 		submit: 'Unirse a la fila',
 		submitting: 'Uniéndose a la fila…',
@@ -115,6 +135,11 @@ export const translations = {
 		adminTitle: 'راهی ساده‌تر برای خوشامدگویی به هر همسایه.',
 		age: 'سن',
 		ageHint: 'به سال',
+		authConfigurationDescription:
+			'متغیرهای محیطی Auth0 را از طریق افزونه Auth0 نتلیفای اضافه کنید و سپس سایت را دوباره منتشر کنید.',
+		authConfigurationRequired: 'ورود مدیر پیکربندی نشده است',
+		authError: 'نتوانستیم نشست مدیریت شما را تأیید کنیم. لطفاً دوباره وارد شوید.',
+		authLoading: 'در حال تأیید نشست مدیریت…',
 		backToGuest: 'بازگشت به ثبت‌نام مهمان',
 		compassionFood: 'غذای دلسوزانه',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
@@ -133,6 +158,8 @@ export const translations = {
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی امروز استفاده می‌شود.',
 		registrationClosed: 'ثبت‌نام بسته است',
 		registrationClosedDescription: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
+		signedInAs: 'واردشده به‌عنوان',
+		signOut: 'خروج',
 		submissionError: 'ثبت‌نام شما ذخیره نشد. لطفاً دوباره تلاش کنید.',
 		submit: 'پیوستن به صف',
 		submitting: 'در حال پیوستن به صف…',
@@ -147,6 +174,11 @@ export const translations = {
 		adminTitle: 'Isang mas madaling paraan upang salubungin ang bawat kapitbahay.',
 		age: 'Edad',
 		ageHint: 'Sa taon',
+		authConfigurationDescription:
+			'Idagdag ang mga Auth0 environment variable gamit ang Netlify Auth0 extension, pagkatapos ay i-deploy muli ang site.',
+		authConfigurationRequired: 'Hindi pa naka-configure ang pag-sign in ng admin',
+		authError: 'Hindi namin ma-verify ang iyong admin session. Subukang mag-sign in muli.',
+		authLoading: 'Vine-verify ang iyong admin session…',
 		backToGuest: 'Bumalik sa pag-check in ng bisita',
 		compassionFood: 'Pagkaing May Malasakit',
 		chooseAnswer: 'Pumili ng sagot',
@@ -166,6 +198,8 @@ export const translations = {
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayo ngayon.',
 		registrationClosed: 'Sarado ang pagpaparehistro',
 		registrationClosedDescription: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
+		signedInAs: 'Naka-sign in bilang',
+		signOut: 'Mag-sign out',
 		submissionError: 'Hindi namin na-save ang inyong check-in. Pakisubukang muli.',
 		submit: 'Sumali sa pila',
 		submitting: 'Sumasali sa pila…',
@@ -180,6 +214,11 @@ export const translations = {
 		adminTitle: 'Một cách đơn giản hơn để chào đón mọi người hàng xóm.',
 		age: 'Tuổi',
 		ageHint: 'Theo năm',
+		authConfigurationDescription:
+			'Thêm các biến môi trường Auth0 bằng tiện ích Auth0 của Netlify, sau đó triển khai lại trang web.',
+		authConfigurationRequired: 'Chưa cấu hình đăng nhập quản trị',
+		authError: 'Không thể xác minh phiên quản trị của bạn. Vui lòng đăng nhập lại.',
+		authLoading: 'Đang xác minh phiên quản trị…',
 		backToGuest: 'Quay lại đăng ký khách',
 		compassionFood: 'Thực Phẩm Nhân Ái',
 		chooseAnswer: 'Chọn câu trả lời',
@@ -199,6 +238,8 @@ export const translations = {
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn hôm nay.',
 		registrationClosed: 'Đã đóng đăng ký',
 		registrationClosedDescription: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
+		signedInAs: 'Đã đăng nhập với tên',
+		signOut: 'Đăng xuất',
 		submissionError: 'Chúng tôi không thể lưu đăng ký của bạn. Vui lòng thử lại.',
 		submit: 'Vào hàng đợi',
 		submitting: 'Đang vào hàng đợi…',
@@ -213,6 +254,11 @@ export const translations = {
 		adminTitle: '用更简单的方式欢迎每一位邻居。',
 		age: '年龄',
 		ageHint: '岁',
+		authConfigurationDescription:
+			'请通过 Netlify Auth0 扩展添加 Auth0 环境变量，然后重新部署网站。',
+		authConfigurationRequired: '尚未配置管理员登录',
+		authError: '无法验证您的管理员会话。请重新登录。',
+		authLoading: '正在验证管理员会话…',
 		backToGuest: '返回访客登记',
 		compassionFood: '关爱食品',
 		chooseAnswer: '请选择答案',
@@ -231,6 +277,8 @@ export const translations = {
 		privacy: '您的信息仅用于帮助我们今天为您提供服务。',
 		registrationClosed: '登记已关闭',
 		registrationClosedDescription: '请向市场工作人员寻求帮助。',
+		signedInAs: '登录身份',
+		signOut: '退出登录',
 		submissionError: '无法保存您的登记信息。请重试。',
 		submit: '加入队列',
 		submitting: '正在加入队列…',
@@ -245,6 +293,11 @@ export const translations = {
 		adminTitle: 'طريقة أبسط للترحيب بكل جار.',
 		age: 'العمر',
 		ageHint: 'بالسنوات',
+		authConfigurationDescription:
+			'أضف متغيرات بيئة Auth0 من خلال إضافة Auth0 في Netlify، ثم أعد نشر الموقع.',
+		authConfigurationRequired: 'لم يتم إعداد تسجيل دخول الإدارة',
+		authError: 'تعذر التحقق من جلسة الإدارة. يرجى محاولة تسجيل الدخول مرة أخرى.',
+		authLoading: 'جارٍ التحقق من جلسة الإدارة…',
 		backToGuest: 'العودة إلى تسجيل الضيف',
 		compassionFood: 'طعام الرحمة',
 		chooseAnswer: 'اختر إجابة',
@@ -263,6 +316,8 @@ export const translations = {
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك اليوم.',
 		registrationClosed: 'التسجيل مغلق',
 		registrationClosedDescription: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
+		signedInAs: 'تم تسجيل الدخول باسم',
+		signOut: 'تسجيل الخروج',
 		submissionError: 'تعذر حفظ تسجيلك. يرجى المحاولة مرة أخرى.',
 		submit: 'انضم إلى قائمة الانتظار',
 		submitting: 'جارٍ الانضمام إلى قائمة الانتظار…',

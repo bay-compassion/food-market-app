@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { guests, marketEvents, registrationQuestions } from '../../db/schema.js';
+import { requireAuth0 } from '../lib/auth.js';
 
 type QuestionInput = { prompt: string; type: 'text' | 'scale'; required: boolean };
 
@@ -198,9 +199,19 @@ export default async (request: Request) => {
 		return marketOverview();
 	}
 	if (request.method === 'PUT') {
+		const unauthorized = await requireAuth0(request);
+		if (unauthorized) {
+			return unauthorized;
+		}
+
 		return saveSettings(request);
 	}
 	if (request.method === 'POST') {
+		const unauthorized = await requireAuth0(request);
+		if (unauthorized) {
+			return unauthorized;
+		}
+
 		return runAction(request);
 	}
 
