@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { auth0 } from './auth';
@@ -11,6 +11,7 @@ import { languages, translations, type Locale } from './locales';
 
 const localeStorageKey = 'bay-compassion.locale';
 const returningVisitorStorageKey = 'bay-compassion.returning-visitor';
+let registrationRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 
 function getSavedLocale(): Locale {
 	const savedLocale = window.localStorage.getItem(localeStorageKey);
@@ -126,7 +127,13 @@ async function loadRegistration() {
 		const data = (await response.json()) as {
 			event: {
 				id: string;
-				status: 'open' | 'closed' | 'drawn';
+				status:
+					| 'draft'
+					| 'scheduled'
+					| 'registration_open'
+					| 'registration_closed'
+					| 'service_started'
+					| 'ended';
 				registrationOpensAt: string;
 				registrationClosesAt: string;
 			} | null;
@@ -137,16 +144,32 @@ async function loadRegistration() {
 		const now = new Date();
 		registrationAvailable.value = Boolean(
 			data.event &&
-			data.event.status === 'open' &&
+			data.event.status === 'registration_open' &&
 			now >= new Date(data.event.registrationOpensAt) &&
 			now <= new Date(data.event.registrationClosesAt),
 		);
+		if (registrationRefreshTimer) {
+			clearTimeout(registrationRefreshTimer);
+		}
+		const nextTransitionAt =
+			data.event?.status === 'scheduled'
+				? new Date(data.event.registrationOpensAt)
+				: data.event?.status === 'registration_open'
+					? new Date(data.event.registrationClosesAt)
+					: null;
+		if (nextTransitionAt && nextTransitionAt > now) {
+			registrationRefreshTimer = setTimeout(
+				loadRegistration,
+				Math.min(nextTransitionAt.valueOf() - now.valueOf() + 250, 2_147_000_000),
+			);
+		}
 	} catch {
 		// Keep the form available when the optional configuration endpoint cannot be reached.
 	}
 }
 
 onMounted(loadRegistration);
+onBeforeUnmount(() => clearTimeout(registrationRefreshTimer));
 </script>
 
 <template>

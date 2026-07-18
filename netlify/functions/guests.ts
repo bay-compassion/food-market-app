@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, or } from 'drizzle-orm';
+import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { guests, marketEvents, registrationQuestions } from '../../db/schema.js';
@@ -83,6 +83,7 @@ async function currentEventId() {
 	const [event] = await db
 		.select({ id: marketEvents.id })
 		.from(marketEvents)
+		.where(ne(marketEvents.status, 'ended'))
 		.orderBy(desc(marketEvents.createdAt))
 		.limit(1);
 
@@ -108,7 +109,12 @@ async function listGuests(request: Request) {
 		eventFilter && searchFilter ? and(eventFilter, searchFilter) : (eventFilter ?? searchFilter);
 
 	return Response.json(
-		await db.select().from(guests).where(where).orderBy(desc(guests.createdAt)).limit(100),
+		await db
+			.select()
+			.from(guests)
+			.where(where)
+			.orderBy(desc(guests.createdAt))
+			.limit(eventId ? 10_000 : 100),
 	);
 }
 
@@ -133,6 +139,16 @@ async function createGuest(request: Request) {
 	if (submission.source === 'admin' && !submission.marketEventId) {
 		return error('No market event has been configured.', 409);
 	}
+	if (submission.source === 'admin') {
+		const [event] = await db
+			.select({ status: marketEvents.status })
+			.from(marketEvents)
+			.where(eq(marketEvents.id, submission.marketEventId!))
+			.limit(1);
+		if (event?.status !== 'service_started') {
+			return error('Guests can only be added to the queue after service starts.', 409);
+		}
+	}
 
 	if (submission.source === 'self') {
 		if (!submission.marketEventId) {
@@ -144,9 +160,12 @@ async function createGuest(request: Request) {
 			.where(eq(marketEvents.id, submission.marketEventId))
 			.limit(1);
 		const now = new Date();
+		const registrationStateIsOpen =
+			event?.status === 'registration_open' ||
+			(event?.status === 'scheduled' && now >= event.registrationOpensAt);
 		if (
 			!event ||
-			event.status !== 'open' ||
+			!registrationStateIsOpen ||
 			now < event.registrationOpensAt ||
 			now > event.registrationClosesAt
 		) {
@@ -176,7 +195,13 @@ async function createGuest(request: Request) {
 		}
 	}
 
-	const [guest] = await db.insert(guests).values(submission).returning({ id: guests.id });
+	const [guest] = await db
+		.insert(guests)
+		.values({
+			...submission,
+			status: submission.source === 'admin' ? 'waiting' : 'registered',
+		})
+		.returning({ id: guests.id });
 
 	return Response.json(guest, { status: 201 });
 }
