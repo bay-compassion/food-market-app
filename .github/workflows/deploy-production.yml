@@ -1,0 +1,39 @@
+name: Deploy production
+
+run-name: Deploy production requested by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Trigger Netlify production build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check deployment configuration
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: |
+          if [[ -z "$NETLIFY_BUILD_HOOK" ]]; then
+            echo "::error::Add the NETLIFY_BUILD_HOOK repository secret before deploying."
+            exit 1
+          fi
+
+      - name: Trigger Netlify build
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --data '{}' \
+            "$NETLIFY_BUILD_HOOK"
+
+      - name: Add deployment link
+        run: |
+          echo "### Netlify production deployment triggered" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Follow the deployment in Netlify](https://app.netlify.com/projects/baycompassion/deploys)" >> "$GITHUB_STEP_SUMMARY"

@@ -43,6 +43,17 @@ npm run build
 
 The app is configured for Netlify in `netlify.toml`. Connect the repository to a Netlify site; Netlify builds the root app and publishes `dist`, while serving the functions in `netlify/functions/`.
 
+Production can also be deployed manually from GitHub without building the app on a GitHub runner:
+
+1. In Netlify, open **Project configuration → Build & deploy → Continuous deployment → Build
+   hooks** and create a hook for the production branch.
+2. Add the hook URL to the GitHub repository as an Actions secret named
+   `NETLIFY_BUILD_HOOK`.
+3. In GitHub, open **Actions → Deploy production → Run workflow**.
+
+The workflow only triggers the hook. Netlify performs the build so its production environment
+variables are available to Vite and the serverless functions.
+
 ## Auth0 administration access
 
 The guest check-in is public. Auth0 protects the `/admin` route, guest records, and every
