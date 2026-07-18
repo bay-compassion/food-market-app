@@ -40,6 +40,10 @@ export default async (request: Request) => {
 		return error('Visit access could not be verified.', 401);
 	}
 	if (request.method === 'GET') {
+		if (visit.sessionStatus === 'ended') {
+			return error('This visit belongs to an ended session.', 410);
+		}
+
 		return Response.json(visit);
 	}
 	if (request.method === 'PATCH') {

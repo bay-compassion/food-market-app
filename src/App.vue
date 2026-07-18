@@ -287,6 +287,9 @@ async function loadActiveVisit() {
 		});
 		if (!response.ok) {
 			window.localStorage.removeItem(visitTokenStorageKey);
+			activeVisit.value = null;
+			isSubmitted.value = false;
+			scheduleVisitRefresh();
 
 			return;
 		}

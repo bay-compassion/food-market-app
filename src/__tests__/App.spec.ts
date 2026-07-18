@@ -202,6 +202,41 @@ describe('App', () => {
 		vi.unstubAllGlobals();
 	});
 
+	it('clears an expired visit from a previous session', async () => {
+		window.localStorage.setItem('bay-compassion.visit-token', 'expired-token');
+		const fetchMock = vi.fn().mockImplementation((url: string) =>
+			Promise.resolve(
+				url === '/api/market'
+					? {
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									event: {
+										id: 'event-2',
+										status: 'registration_open',
+										registrationOpensAt: '2020-01-01T00:00:00.000Z',
+										registrationClosesAt: '2099-01-01T00:00:00.000Z',
+									},
+									questions: [],
+								}),
+						}
+					: url === '/api/visit'
+						? { ok: false, status: 410 }
+						: { ok: false },
+			),
+		);
+		vi.stubGlobal('fetch', fetchMock);
+
+		const wrapper = mountApp();
+		await flushPromises();
+
+		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBeNull();
+		expect(wrapper.find('form').exists()).toBe(true);
+		expect(wrapper.text()).not.toContain('You’re in the queue!');
+
+		vi.unstubAllGlobals();
+	});
+
 	it('shows an error when an admin session cannot be verified', async () => {
 		const wrapper = mountApp();
 
