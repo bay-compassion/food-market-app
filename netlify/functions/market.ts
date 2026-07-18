@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
-import { guests, marketEvents, registrationQuestions } from '../../db/schema.js';
+import { marketEvents, registrationQuestions, visits } from '../../db/schema.js';
 import {
 	automaticSessionStatus,
 	canRunSessionCommand,
@@ -61,10 +61,10 @@ async function marketOverview() {
 		.where(eq(registrationQuestions.marketEventId, event.id))
 		.orderBy(asc(registrationQuestions.position));
 	const rows = await db
-		.select({ status: guests.status, count: sql<number>`count(*)::int` })
-		.from(guests)
-		.where(eq(guests.marketEventId, event.id))
-		.groupBy(guests.status);
+		.select({ status: visits.status, count: sql<number>`count(*)::int` })
+		.from(visits)
+		.where(eq(visits.marketEventId, event.id))
+		.groupBy(visits.status);
 
 	return Response.json({
 		event,
@@ -85,15 +85,15 @@ async function marketHistory() {
 	}
 
 	const rows = await db
-		.select({ marketEventId: guests.marketEventId, count: sql<number>`count(*)::int` })
-		.from(guests)
+		.select({ marketEventId: visits.marketEventId, count: sql<number>`count(*)::int` })
+		.from(visits)
 		.where(
 			inArray(
-				guests.marketEventId,
+				visits.marketEventId,
 				events.map(({ id }) => id),
 			),
 		)
-		.groupBy(guests.marketEventId);
+		.groupBy(visits.marketEventId);
 	const guestCounts = new Map(rows.map((row) => [row.marketEventId, row.count]));
 
 	return Response.json(
@@ -424,9 +424,9 @@ async function runAction(request: Request) {
 		return error('The lottery can only run after registration closes.', 409);
 	}
 	const registrations = await db
-		.select({ id: guests.id })
-		.from(guests)
-		.where(and(eq(guests.marketEventId, event.id), eq(guests.status, 'registered')));
+		.select({ id: visits.id })
+		.from(visits)
+		.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
 	const shuffled = shuffle(registrations);
 	const lotteryTarget = sessionCommandTarget('run_lottery');
 	if (!lotteryTarget) {
@@ -446,10 +446,10 @@ async function runAction(request: Request) {
 				throw new Error('INVALID_SESSION_TRANSITION');
 			}
 			if (selected.length) {
-				await tx.update(guests).set({ status: 'waiting' }).where(inArray(guests.id, selected));
+				await tx.update(visits).set({ status: 'waiting' }).where(inArray(visits.id, selected));
 			}
 			if (notPlaced.length) {
-				await tx.update(guests).set({ status: 'not_placed' }).where(inArray(guests.id, notPlaced));
+				await tx.update(visits).set({ status: 'not_placed' }).where(inArray(visits.id, notPlaced));
 			}
 		})
 		.catch((cause: unknown) => {

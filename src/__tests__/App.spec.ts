@@ -92,9 +92,32 @@ describe('App', () => {
 	});
 
 	it('sends the guest check-in to the API', async () => {
-		const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+		const fetchMock = vi.fn().mockImplementation((url: string) =>
+			Promise.resolve(
+				url === '/api/market'
+					? {
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									event: {
+										id: 'event-1',
+										status: 'registration_open',
+										registrationOpensAt: '2020-01-01T00:00:00.000Z',
+										registrationClosesAt: '2099-01-01T00:00:00.000Z',
+									},
+									questions: [],
+								}),
+						}
+					: {
+							ok: true,
+							json: () =>
+								Promise.resolve({ id: 'visit-1', status: 'registered', visitToken: 'token-1' }),
+						},
+			),
+		);
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mountApp();
+		await flushPromises();
 		const inputs = wrapper.findAll('input');
 
 		await inputs[0]!.setValue('Ada');
@@ -102,7 +125,10 @@ describe('App', () => {
 		await inputs[2]!.setValue('36');
 		await inputs[3]!.setValue('2');
 		await inputs[4]!.setValue('(555) 123-4567');
+		await inputs[5]!.setValue('1234');
+		await inputs[6]!.setValue('1234');
 		await wrapper.find('form').trigger('submit');
+		await flushPromises();
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/guests',
@@ -114,14 +140,64 @@ describe('App', () => {
 					householdSize: 2,
 					phone: '(555) 123-4567',
 					locale: 'en',
-					marketEventId: null,
+					marketEventId: 'event-1',
 					answers: {},
 					source: 'self',
+					registrationType: 'new',
+					pin: '1234',
+					updateProfile: false,
 				}),
 				method: 'POST',
 			}),
 		);
 		expect(wrapper.text()).toContain('You’re in the queue!');
+		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBe('token-1');
+
+		vi.unstubAllGlobals();
+	});
+
+	it('allows a returning guest to register with a phone number and PIN', async () => {
+		const fetchMock = vi.fn().mockImplementation((url: string) =>
+			Promise.resolve(
+				url === '/api/market'
+					? {
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									event: {
+										id: 'event-1',
+										status: 'registration_open',
+										registrationOpensAt: '2020-01-01T00:00:00.000Z',
+										registrationClosesAt: '2099-01-01T00:00:00.000Z',
+									},
+									questions: [],
+								}),
+						}
+					: {
+							ok: true,
+							json: () =>
+								Promise.resolve({ id: 'visit-2', status: 'registered', visitToken: 'token-2' }),
+						},
+			),
+		);
+		vi.stubGlobal('fetch', fetchMock);
+		const wrapper = mountApp();
+		await flushPromises();
+
+		await wrapper.findAll('.registration-type button')[1]!.trigger('click');
+		const inputs = wrapper.findAll('input');
+		await inputs[0]!.setValue('(555) 123-4567');
+		await inputs[1]!.setValue('1234');
+		await wrapper.find('form').trigger('submit');
+		await flushPromises();
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			'/api/guests',
+			expect.objectContaining({
+				body: expect.stringContaining('"registrationType":"returning"'),
+			}),
+		);
+		expect(wrapper.text()).toContain('Current status: Registered');
 
 		vi.unstubAllGlobals();
 	});

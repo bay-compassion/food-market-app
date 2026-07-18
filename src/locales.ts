@@ -22,7 +22,11 @@ export interface Translation {
 	authError: string;
 	authLoading: string;
 	backToGuest: string;
+	cancelVisit: string;
+	cancelVisitConfirm: string;
 	compassionFood: string;
+	confirmPin: string;
+	currentStatus: string;
 	chooseAnswer: string;
 	firstName: string;
 	formDescription: string;
@@ -35,10 +39,17 @@ export interface Translation {
 	language: string;
 	languagePrompt: string;
 	marketName: string;
+	newGuest: string;
+	pin: string;
+	pinHint: string;
+	pinMismatch: string;
 	phone: string;
 	privacy: string;
 	registrationClosed: string;
 	registrationClosedDescription: string;
+	registrationType: string;
+	returningGuest: string;
+	returningGuestHelp: string;
 	signedInAs: string;
 	signOut: string;
 	submissionError: string;
@@ -46,6 +57,14 @@ export interface Translation {
 	submitting: string;
 	successDescription: string;
 	successTitle: string;
+	statusCancelled: string;
+	statusNoShow: string;
+	statusNotPlaced: string;
+	statusRegistered: string;
+	statusServed: string;
+	statusWaiting: string;
+	updateInformation: string;
+	visitError: string;
 	welcome: string;
 }
 
@@ -63,7 +82,11 @@ export const translations = {
 		authError: 'We could not verify your admin session. Please try signing in again.',
 		authLoading: 'Verifying your admin session…',
 		backToGuest: 'Back to guest check-in',
+		cancelVisit: 'Cancel this visit',
+		cancelVisitConfirm: 'Cancel your place in the queue for this visit?',
 		compassionFood: 'Compassion Food',
+		confirmPin: 'Confirm PIN',
+		currentStatus: 'Current status',
 		chooseAnswer: 'Choose an answer',
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
@@ -76,10 +99,17 @@ export const translations = {
 		language: 'Language',
 		languagePrompt: 'Choose your language',
 		marketName: 'The Bay Compassion',
+		newGuest: 'New guest',
+		pin: 'PIN',
+		pinHint: '4–8 numbers',
+		pinMismatch: 'The PINs do not match.',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you today.',
 		registrationClosed: 'Registration is closed',
 		registrationClosedDescription: 'Please check with a market team member for help.',
+		registrationType: 'Guest type',
+		returningGuest: 'Returning guest',
+		returningGuestHelp: 'Enter the phone number and PIN you used before.',
 		signedInAs: 'Signed in as',
 		signOut: 'Sign out',
 		submissionError: 'We could not save your check-in. Please try again.',
@@ -87,6 +117,14 @@ export const translations = {
 		submitting: 'Joining the queue…',
 		successDescription: 'We’ll let you know when it’s your turn. Thank you for being here.',
 		successTitle: 'You’re in the queue!',
+		statusCancelled: 'Cancelled',
+		statusNoShow: 'No show',
+		statusNotPlaced: 'Not placed',
+		statusRegistered: 'Registered',
+		statusServed: 'Served',
+		statusWaiting: 'Waiting',
+		updateInformation: 'Update my information',
+		visitError: 'We could not update this visit. Please ask a market team member for help.',
 		welcome: 'Welcome to the community food market',
 	},
 	es: {
@@ -102,7 +140,11 @@ export const translations = {
 		authError: 'No pudimos verificar su sesión de administración. Intente iniciar sesión de nuevo.',
 		authLoading: 'Verificando su sesión de administración…',
 		backToGuest: 'Volver al registro',
+		cancelVisit: 'Cancelar esta visita',
+		cancelVisitConfirm: '¿Cancelar su lugar en la fila para esta visita?',
 		compassionFood: 'Alimentos con Compasión',
+		confirmPin: 'Confirmar PIN',
+		currentStatus: 'Estado actual',
 		chooseAnswer: 'Elija una respuesta',
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
@@ -115,10 +157,17 @@ export const translations = {
 		language: 'Idioma',
 		languagePrompt: 'Elija su idioma',
 		marketName: 'The Bay Compassion',
+		newGuest: 'Invitado nuevo',
+		pin: 'PIN',
+		pinHint: 'De 4 a 8 números',
+		pinMismatch: 'Los PIN no coinciden.',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
 		registrationClosed: 'El registro está cerrado',
 		registrationClosedDescription: 'Pida ayuda a un miembro del equipo del mercado.',
+		registrationType: 'Tipo de invitado',
+		returningGuest: 'Invitado que regresa',
+		returningGuestHelp: 'Ingrese el número de teléfono y el PIN que usó anteriormente.',
 		signedInAs: 'Sesión iniciada como',
 		signOut: 'Cerrar sesión',
 		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
@@ -126,6 +175,14 @@ export const translations = {
 		submitting: 'Uniéndose a la fila…',
 		successDescription: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
 		successTitle: '¡Ya está en la fila!',
+		statusCancelled: 'Cancelado',
+		statusNoShow: 'No se presentó',
+		statusNotPlaced: 'Sin lugar',
+		statusRegistered: 'Registrado',
+		statusServed: 'Atendido',
+		statusWaiting: 'En espera',
+		updateInformation: 'Actualizar mi información',
+		visitError: 'No pudimos actualizar esta visita. Pida ayuda al equipo del mercado.',
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
 	},
 	fa: {
@@ -141,7 +198,11 @@ export const translations = {
 		authError: 'نتوانستیم نشست مدیریت شما را تأیید کنیم. لطفاً دوباره وارد شوید.',
 		authLoading: 'در حال تأیید نشست مدیریت…',
 		backToGuest: 'بازگشت به ثبت‌نام مهمان',
+		cancelVisit: 'لغو این بازدید',
+		cancelVisitConfirm: 'جای خود را در صف این بازدید لغو می‌کنید؟',
 		compassionFood: 'غذای دلسوزانه',
+		confirmPin: 'تأیید پین',
+		currentStatus: 'وضعیت فعلی',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
@@ -154,10 +215,17 @@ export const translations = {
 		language: 'زبان',
 		languagePrompt: 'زبان خود را انتخاب کنید',
 		marketName: 'The Bay Compassion',
+		newGuest: 'مهمان جدید',
+		pin: 'پین',
+		pinHint: '۴ تا ۸ رقم',
+		pinMismatch: 'پین‌ها یکسان نیستند.',
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی امروز استفاده می‌شود.',
 		registrationClosed: 'ثبت‌نام بسته است',
 		registrationClosedDescription: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
+		registrationType: 'نوع مهمان',
+		returningGuest: 'مهمان بازگشتی',
+		returningGuestHelp: 'شماره تلفن و پینی را که قبلاً استفاده کرده‌اید وارد کنید.',
 		signedInAs: 'واردشده به‌عنوان',
 		signOut: 'خروج',
 		submissionError: 'ثبت‌نام شما ذخیره نشد. لطفاً دوباره تلاش کنید.',
@@ -165,6 +233,14 @@ export const translations = {
 		submitting: 'در حال پیوستن به صف…',
 		successDescription: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
 		successTitle: 'شما در صف هستید!',
+		statusCancelled: 'لغوشده',
+		statusNoShow: 'غایب',
+		statusNotPlaced: 'انتخاب‌نشده',
+		statusRegistered: 'ثبت‌شده',
+		statusServed: 'خدمت‌رسانی‌شده',
+		statusWaiting: 'در انتظار',
+		updateInformation: 'به‌روزرسانی اطلاعات من',
+		visitError: 'این بازدید به‌روزرسانی نشد. از یکی از اعضای تیم بازار کمک بخواهید.',
 		welcome: 'به بازار غذای جامعه خوش آمدید',
 	},
 	tl: {
@@ -180,7 +256,11 @@ export const translations = {
 		authError: 'Hindi namin ma-verify ang iyong admin session. Subukang mag-sign in muli.',
 		authLoading: 'Vine-verify ang iyong admin session…',
 		backToGuest: 'Bumalik sa pag-check in ng bisita',
+		cancelVisit: 'Kanselahin ang pagbisitang ito',
+		cancelVisitConfirm: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 		compassionFood: 'Pagkaing May Malasakit',
+		confirmPin: 'Kumpirmahin ang PIN',
+		currentStatus: 'Kasalukuyang katayuan',
 		chooseAnswer: 'Pumili ng sagot',
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
@@ -194,10 +274,17 @@ export const translations = {
 		language: 'Wika',
 		languagePrompt: 'Piliin ang iyong wika',
 		marketName: 'The Bay Compassion',
+		newGuest: 'Bagong bisita',
+		pin: 'PIN',
+		pinHint: '4–8 numero',
+		pinMismatch: 'Hindi magkapareho ang mga PIN.',
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayo ngayon.',
 		registrationClosed: 'Sarado ang pagpaparehistro',
 		registrationClosedDescription: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
+		registrationType: 'Uri ng bisita',
+		returningGuest: 'Bumabalik na bisita',
+		returningGuestHelp: 'Ilagay ang numero ng telepono at PIN na ginamit mo dati.',
 		signedInAs: 'Naka-sign in bilang',
 		signOut: 'Mag-sign out',
 		submissionError: 'Hindi namin na-save ang inyong check-in. Pakisubukang muli.',
@@ -205,6 +292,14 @@ export const translations = {
 		submitting: 'Sumasali sa pila…',
 		successDescription: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
 		successTitle: 'Nasa pila na kayo!',
+		statusCancelled: 'Kinansela',
+		statusNoShow: 'Hindi dumating',
+		statusNotPlaced: 'Hindi napili',
+		statusRegistered: 'Nakarehistro',
+		statusServed: 'Napagsilbihan',
+		statusWaiting: 'Naghihintay',
+		updateInformation: 'I-update ang aking impormasyon',
+		visitError: 'Hindi namin ma-update ang pagbisitang ito. Humingi ng tulong sa pangkat.',
 		welcome: 'Maligayang pagdating sa pamilihan ng pagkaing pangkomunidad',
 	},
 	vi: {
@@ -220,7 +315,11 @@ export const translations = {
 		authError: 'Không thể xác minh phiên quản trị của bạn. Vui lòng đăng nhập lại.',
 		authLoading: 'Đang xác minh phiên quản trị…',
 		backToGuest: 'Quay lại đăng ký khách',
+		cancelVisit: 'Hủy lượt ghé này',
+		cancelVisitConfirm: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 		compassionFood: 'Thực Phẩm Nhân Ái',
+		confirmPin: 'Xác nhận mã PIN',
+		currentStatus: 'Trạng thái hiện tại',
 		chooseAnswer: 'Chọn câu trả lời',
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
@@ -234,10 +333,17 @@ export const translations = {
 		language: 'Ngôn ngữ',
 		languagePrompt: 'Chọn ngôn ngữ của bạn',
 		marketName: 'The Bay Compassion',
+		newGuest: 'Khách mới',
+		pin: 'Mã PIN',
+		pinHint: '4–8 chữ số',
+		pinMismatch: 'Các mã PIN không khớp.',
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn hôm nay.',
 		registrationClosed: 'Đã đóng đăng ký',
 		registrationClosedDescription: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
+		registrationType: 'Loại khách',
+		returningGuest: 'Khách quay lại',
+		returningGuestHelp: 'Nhập số điện thoại và mã PIN bạn đã dùng trước đây.',
 		signedInAs: 'Đã đăng nhập với tên',
 		signOut: 'Đăng xuất',
 		submissionError: 'Chúng tôi không thể lưu đăng ký của bạn. Vui lòng thử lại.',
@@ -245,6 +351,14 @@ export const translations = {
 		submitting: 'Đang vào hàng đợi…',
 		successDescription: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
 		successTitle: 'Bạn đã vào hàng đợi!',
+		statusCancelled: 'Đã hủy',
+		statusNoShow: 'Không đến',
+		statusNotPlaced: 'Không được chọn',
+		statusRegistered: 'Đã đăng ký',
+		statusServed: 'Đã phục vụ',
+		statusWaiting: 'Đang chờ',
+		updateInformation: 'Cập nhật thông tin của tôi',
+		visitError: 'Không thể cập nhật lượt ghé này. Vui lòng nhờ nhân viên chợ hỗ trợ.',
 		welcome: 'Chào mừng đến với chợ thực phẩm cộng đồng',
 	},
 	zh: {
@@ -260,7 +374,11 @@ export const translations = {
 		authError: '无法验证您的管理员会话。请重新登录。',
 		authLoading: '正在验证管理员会话…',
 		backToGuest: '返回访客登记',
+		cancelVisit: '取消本次到访',
+		cancelVisitConfirm: '要取消本次到访的排队位置吗？',
 		compassionFood: '关爱食品',
+		confirmPin: '确认 PIN',
+		currentStatus: '当前状态',
 		chooseAnswer: '请选择答案',
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
@@ -273,10 +391,17 @@ export const translations = {
 		language: '语言',
 		languagePrompt: '选择您的语言',
 		marketName: 'The Bay Compassion',
+		newGuest: '新访客',
+		pin: 'PIN',
+		pinHint: '4–8 位数字',
+		pinMismatch: '两次输入的 PIN 不一致。',
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们今天为您提供服务。',
 		registrationClosed: '登记已关闭',
 		registrationClosedDescription: '请向市场工作人员寻求帮助。',
+		registrationType: '访客类型',
+		returningGuest: '再次到访',
+		returningGuestHelp: '请输入您之前使用的电话号码和 PIN。',
 		signedInAs: '登录身份',
 		signOut: '退出登录',
 		submissionError: '无法保存您的登记信息。请重试。',
@@ -284,6 +409,14 @@ export const translations = {
 		submitting: '正在加入队列…',
 		successDescription: '轮到您时我们会通知您。感谢您的到来。',
 		successTitle: '您已加入队列！',
+		statusCancelled: '已取消',
+		statusNoShow: '未到场',
+		statusNotPlaced: '未入选',
+		statusRegistered: '已登记',
+		statusServed: '已服务',
+		statusWaiting: '等待中',
+		updateInformation: '更新我的信息',
+		visitError: '无法更新本次到访。请向市场工作人员寻求帮助。',
 		welcome: '欢迎来到社区食品市场',
 	},
 	ar: {
@@ -299,7 +432,11 @@ export const translations = {
 		authError: 'تعذر التحقق من جلسة الإدارة. يرجى محاولة تسجيل الدخول مرة أخرى.',
 		authLoading: 'جارٍ التحقق من جلسة الإدارة…',
 		backToGuest: 'العودة إلى تسجيل الضيف',
+		cancelVisit: 'إلغاء هذه الزيارة',
+		cancelVisitConfirm: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
 		compassionFood: 'طعام الرحمة',
+		confirmPin: 'تأكيد الرمز السري',
+		currentStatus: 'الحالة الحالية',
 		chooseAnswer: 'اختر إجابة',
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
@@ -312,10 +449,17 @@ export const translations = {
 		language: 'اللغة',
 		languagePrompt: 'اختر لغتك',
 		marketName: 'The Bay Compassion',
+		newGuest: 'ضيف جديد',
+		pin: 'الرمز السري',
+		pinHint: 'من 4 إلى 8 أرقام',
+		pinMismatch: 'الرمزان السريان غير متطابقين.',
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك اليوم.',
 		registrationClosed: 'التسجيل مغلق',
 		registrationClosedDescription: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
+		registrationType: 'نوع الضيف',
+		returningGuest: 'ضيف عائد',
+		returningGuestHelp: 'أدخل رقم الهاتف والرمز السري اللذين استخدمتهما سابقًا.',
 		signedInAs: 'تم تسجيل الدخول باسم',
 		signOut: 'تسجيل الخروج',
 		submissionError: 'تعذر حفظ تسجيلك. يرجى المحاولة مرة أخرى.',
@@ -323,6 +467,14 @@ export const translations = {
 		submitting: 'جارٍ الانضمام إلى قائمة الانتظار…',
 		successDescription: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
 		successTitle: 'أنت الآن في قائمة الانتظار!',
+		statusCancelled: 'ملغاة',
+		statusNoShow: 'لم يحضر',
+		statusNotPlaced: 'لم يتم اختياره',
+		statusRegistered: 'مسجل',
+		statusServed: 'تمت خدمته',
+		statusWaiting: 'قيد الانتظار',
+		updateInformation: 'تحديث معلوماتي',
+		visitError: 'تعذر تحديث هذه الزيارة. يرجى طلب المساعدة من فريق السوق.',
 		welcome: 'مرحبًا بكم في سوق الطعام المجتمعي',
 	},
 } as const satisfies Record<Locale, Translation>;
