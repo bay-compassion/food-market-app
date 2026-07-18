@@ -2,11 +2,18 @@ import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { guests, marketEvents, registrationQuestions } from '../../db/schema.js';
+import {
+	automaticSessionStatus,
+	canRunSessionCommand,
+	openingWindow,
+	postponedWindow,
+	sessionCommandTarget,
+	type SessionMode,
+	type SessionStatus,
+} from '../../src/services/sessionStateMachine.js';
 import { requireAuth0 } from '../lib/auth.js';
 
 type QuestionInput = { prompt: string; type: 'text' | 'scale'; required: boolean };
-type SessionMode = 'scheduled' | 'ad_hoc';
-
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
 }
@@ -29,21 +36,14 @@ async function getCurrentEvent() {
 	}
 
 	const now = new Date();
-	if (event.status === 'scheduled' && event.registrationOpensAt <= now) {
-		const [opened] = await db
+	const automaticStatus = automaticSessionStatus(event, now);
+	if (automaticStatus !== event.status) {
+		const [updated] = await db
 			.update(marketEvents)
-			.set({ status: 'registration_open' })
-			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
+			.set({ status: automaticStatus })
+			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
 			.returning();
-		event = opened ?? (await getLatestActiveEvent()) ?? event;
-	}
-	if (event.status === 'registration_open' && event.registrationClosesAt <= now) {
-		const [closed] = await db
-			.update(marketEvents)
-			.set({ status: 'registration_closed' })
-			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_open')))
-			.returning();
-		event = closed ?? (await getLatestActiveEvent()) ?? event;
+		event = updated ?? (await getLatestActiveEvent()) ?? event;
 	}
 
 	return event;
@@ -246,7 +246,11 @@ function parseRegistrationOverride(value: unknown) {
 	return { registrationClosesAt, capacity };
 }
 
-async function transitionEvent(event: typeof marketEvents.$inferSelect, from: string, to: string) {
+async function transitionEvent(
+	event: typeof marketEvents.$inferSelect,
+	from: SessionStatus,
+	to: SessionStatus,
+) {
 	if (event.status !== from) {
 		return false;
 	}
@@ -271,10 +275,16 @@ async function runAction(request: Request) {
 	if (!event) {
 		return error('No market event has been configured.', 409);
 	}
+	const eventStatus = event.status;
+	const eventMode = event.sessionMode;
 	if (action === 'reset_session') {
+		const target = sessionCommandTarget('reset_session');
+		if (!target || !canRunSessionCommand(eventStatus, 'reset_session', eventMode)) {
+			return error('The current session could not be reset.', 409);
+		}
 		const [reset] = await db
 			.update(marketEvents)
-			.set({ status: 'ended' })
+			.set({ status: target })
 			.where(and(eq(marketEvents.id, event.id), ne(marketEvents.status, 'ended')))
 			.returning({ id: marketEvents.id });
 		if (!reset) {
@@ -287,6 +297,7 @@ async function runAction(request: Request) {
 	if (action === 'update_registration') {
 		const override = parseRegistrationOverride(body);
 		if (
+			!canRunSessionCommand(eventStatus, 'update_registration', eventMode) ||
 			!override ||
 			override.registrationClosesAt < event.registrationClosesAt ||
 			override.registrationClosesAt <= event.registrationOpensAt
@@ -305,14 +316,15 @@ async function runAction(request: Request) {
 		return marketOverview();
 	}
 	if (action === 'schedule_registration') {
+		const target = sessionCommandTarget('schedule_registration');
 		if (
-			event.status !== 'draft' ||
-			event.sessionMode !== 'scheduled' ||
+			!target ||
+			!canRunSessionCommand(eventStatus, 'schedule_registration', eventMode) ||
 			event.registrationOpensAt <= new Date()
 		) {
 			return error('Only a future scheduled session can be scheduled.', 409);
 		}
-		if (!(await transitionEvent(event, 'draft', 'scheduled'))) {
+		if (!(await transitionEvent(event, eventStatus, target))) {
 			return error('That session transition is not allowed from the current state.', 409);
 		}
 
@@ -321,7 +333,7 @@ async function runAction(request: Request) {
 	if (action === 'postpone_registration') {
 		const minutes = Number((body as Record<string, unknown>).minutes);
 		if (
-			event.status !== 'scheduled' ||
+			!canRunSessionCommand(eventStatus, 'postpone_registration', eventMode) ||
 			!Number.isInteger(minutes) ||
 			minutes < 1 ||
 			minutes > 1440
@@ -330,10 +342,7 @@ async function runAction(request: Request) {
 		}
 		const [updated] = await db
 			.update(marketEvents)
-			.set({
-				registrationOpensAt: new Date(event.registrationOpensAt.valueOf() + minutes * 60_000),
-				registrationClosesAt: new Date(event.registrationClosesAt.valueOf() + minutes * 60_000),
-			})
+			.set(postponedWindow({ ...event, status: eventStatus, sessionMode: eventMode }, minutes))
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
 			.returning({ id: marketEvents.id });
 		if (!updated) {
@@ -343,26 +352,21 @@ async function runAction(request: Request) {
 		return marketOverview();
 	}
 	if (action === 'open_registration') {
-		if (event.status !== 'draft' && event.status !== 'scheduled') {
+		const target = sessionCommandTarget('open_registration');
+		if (!target || !canRunSessionCommand(eventStatus, 'open_registration', eventMode)) {
 			return error('That session transition is not allowed from the current state.', 409);
 		}
 		const now = new Date();
-		const registrationClosesAt =
-			event.sessionMode === 'scheduled'
-				? new Date(
-						now.valueOf() +
-							(event.registrationClosesAt.valueOf() - event.registrationOpensAt.valueOf()),
-					)
-				: event.registrationClosesAt;
+		const window = openingWindow({ ...event, status: eventStatus, sessionMode: eventMode }, now);
+		const { registrationClosesAt } = window;
 		if (registrationClosesAt <= now) {
 			return error('Registration must close in the future.', 409);
 		}
 		const [updated] = await db
 			.update(marketEvents)
 			.set({
-				status: 'registration_open',
-				registrationOpensAt: now,
-				registrationClosesAt,
+				status: target,
+				...window,
 			})
 			.where(
 				and(eq(marketEvents.id, event.id), inArray(marketEvents.status, ['draft', 'scheduled'])),
@@ -375,14 +379,15 @@ async function runAction(request: Request) {
 		return marketOverview();
 	}
 	if (action === 'reopen_registration') {
-		if (event.status !== 'registration_closed') {
+		const target = sessionCommandTarget('reopen_registration');
+		if (!target || !canRunSessionCommand(eventStatus, 'reopen_registration', eventMode)) {
 			return error('That session transition is not allowed from the current state.', 409);
 		}
 		const minimumClose = new Date(Date.now() + 30 * 60_000);
 		const [updated] = await db
 			.update(marketEvents)
 			.set({
-				status: 'registration_open',
+				status: target,
 				registrationClosesAt:
 					event.registrationClosesAt > minimumClose ? event.registrationClosesAt : minimumClose,
 			})
@@ -396,12 +401,17 @@ async function runAction(request: Request) {
 	}
 
 	const transitions = {
-		close_registration: ['registration_open', 'registration_closed'],
-		close_session: ['service_started', 'ended'],
+		close_registration: 'close_registration',
+		close_session: 'close_session',
 	} as const;
 	if (typeof action === 'string' && action in transitions) {
-		const [from, to] = transitions[action as keyof typeof transitions];
-		if (!(await transitionEvent(event, from, to))) {
+		const command = transitions[action as keyof typeof transitions];
+		const target = sessionCommandTarget(command);
+		if (
+			!target ||
+			!canRunSessionCommand(eventStatus, command, eventMode) ||
+			!(await transitionEvent(event, eventStatus, target))
+		) {
 			return error('That session transition is not allowed from the current state.', 409);
 		}
 
@@ -410,7 +420,7 @@ async function runAction(request: Request) {
 	if (action !== 'run_lottery') {
 		return error('Invalid market action.');
 	}
-	if (event.status !== 'registration_closed') {
+	if (!canRunSessionCommand(eventStatus, 'run_lottery', eventMode)) {
 		return error('The lottery can only run after registration closes.', 409);
 	}
 	const registrations = await db
@@ -418,6 +428,10 @@ async function runAction(request: Request) {
 		.from(guests)
 		.where(and(eq(guests.marketEventId, event.id), eq(guests.status, 'registered')));
 	const shuffled = shuffle(registrations);
+	const lotteryTarget = sessionCommandTarget('run_lottery');
+	if (!lotteryTarget) {
+		return error('The lottery transition is not configured.', 500);
+	}
 	const selected = shuffled.slice(0, event.capacity).map(({ id }) => id);
 	const notPlaced = shuffled.slice(event.capacity).map(({ id }) => id);
 
@@ -425,7 +439,7 @@ async function runAction(request: Request) {
 		.transaction(async (tx) => {
 			const [started] = await tx
 				.update(marketEvents)
-				.set({ status: 'service_started' })
+				.set({ status: lotteryTarget })
 				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_closed')))
 				.returning({ id: marketEvents.id });
 			if (!started) {
@@ -445,7 +459,7 @@ async function runAction(request: Request) {
 			throw cause;
 		});
 	const refreshed = await getCurrentEvent();
-	if (refreshed?.status !== 'service_started') {
+	if (refreshed?.status !== lotteryTarget) {
 		return error('That session transition is not allowed from the current state.', 409);
 	}
 

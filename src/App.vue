@@ -8,6 +8,7 @@ import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
 import FormField from './components/FormField.vue';
 import { languages, translations, type Locale } from './locales';
+import type { SessionStatus } from './services/sessionStateMachine';
 
 const localeStorageKey = 'bay-compassion.locale';
 const returningVisitorStorageKey = 'bay-compassion.returning-visitor';
@@ -127,13 +128,7 @@ async function loadRegistration() {
 		const data = (await response.json()) as {
 			event: {
 				id: string;
-				status:
-					| 'draft'
-					| 'scheduled'
-					| 'registration_open'
-					| 'registration_closed'
-					| 'service_started'
-					| 'ended';
+				status: SessionStatus;
 				registrationOpensAt: string;
 				registrationClosesAt: string;
 			} | null;

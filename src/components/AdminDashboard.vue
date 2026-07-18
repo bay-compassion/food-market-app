@@ -3,12 +3,17 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 
 import { adminTranslations } from '../adminLocales';
 import { translations, type Locale } from '../locales';
+import {
+	currentSessionState,
+	type SessionCommand,
+	type SessionMode,
+	type SessionStatus,
+} from '../services/sessionStateMachine';
 import AppButton from './AppButton.vue';
 import EyebrowLabel from './EyebrowLabel.vue';
 import FormField from './FormField.vue';
 
 type GuestStatus = 'registered' | 'waiting' | 'served' | 'not_placed' | 'no_show';
-type SessionMode = 'scheduled' | 'ad_hoc';
 type Question = { id?: string; prompt: string; type: 'text' | 'scale'; required: boolean };
 type MarketEvent = {
 	id: string;
@@ -16,13 +21,7 @@ type MarketEvent = {
 	registrationClosesAt: string;
 	capacity: number;
 	sessionMode: SessionMode;
-	status:
-		| 'draft'
-		| 'scheduled'
-		| 'registration_open'
-		| 'registration_closed'
-		| 'service_started'
-		| 'ended';
+	status: SessionStatus;
 };
 type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
 type HistoricalEvent = MarketEvent & { guestCount: number };
@@ -40,12 +39,6 @@ type Overview = {
 	questions: Question[];
 	counts: Partial<Record<GuestStatus, number>>;
 };
-type CurrentSessionState =
-	| 'inactive'
-	| 'scheduled'
-	| 'registration_open'
-	| 'registration_closed'
-	| 'service_started';
 
 const props = withDefaults(
 	defineProps<{ locale: Locale; getAccessToken: () => Promise<string>; view?: AdminView }>(),
@@ -97,18 +90,7 @@ const navigation = computed<{ id: AdminView; label: string }[]>(() => [
 	{ id: 'guest-database', label: t.value.guestDatabase },
 	{ id: 'session-history', label: t.value.historySessions },
 ]);
-const sessionState = computed<CurrentSessionState>(() => {
-	if (
-		event.value?.status === 'scheduled' ||
-		event.value?.status === 'registration_open' ||
-		event.value?.status === 'registration_closed' ||
-		event.value?.status === 'service_started'
-	) {
-		return event.value.status;
-	}
-
-	return 'inactive';
-});
+const sessionState = computed(() => currentSessionState(event.value?.status));
 const sessionStatusLabel = computed(() => {
 	switch (sessionState.value) {
 		case 'scheduled':
@@ -335,14 +317,7 @@ async function saveSettings() {
 	}
 }
 
-type MarketAction =
-	| 'schedule_registration'
-	| 'open_registration'
-	| 'close_registration'
-	| 'reopen_registration'
-	| 'run_lottery'
-	| 'close_session'
-	| 'reset_session';
+type MarketAction = Exclude<SessionCommand, 'postpone_registration' | 'update_registration'>;
 
 async function runMarketAction(action: MarketAction, isConfirmed = false) {
 	const confirmations: Record<MarketAction, string> = {

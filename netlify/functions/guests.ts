@@ -2,6 +2,7 @@ import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { guests, marketEvents, registrationQuestions } from '../../db/schema.js';
+import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
 import { requireAuth0 } from '../lib/auth.js';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
@@ -160,12 +161,10 @@ async function createGuest(request: Request) {
 			.where(eq(marketEvents.id, submission.marketEventId))
 			.limit(1);
 		const now = new Date();
-		const registrationStateIsOpen =
-			event?.status === 'registration_open' ||
-			(event?.status === 'scheduled' && now >= event.registrationOpensAt);
+		const effectiveStatus = event ? automaticSessionStatus(event, now) : null;
 		if (
 			!event ||
-			!registrationStateIsOpen ||
+			effectiveStatus !== 'registration_open' ||
 			now < event.registrationOpensAt ||
 			now > event.registrationClosesAt
 		) {
