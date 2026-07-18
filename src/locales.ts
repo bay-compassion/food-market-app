@@ -19,6 +19,7 @@ export interface Translation {
 	ageHint: string;
 	backToGuest: string;
 	compassionFood: string;
+	chooseAnswer: string;
 	firstName: string;
 	formDescription: string;
 	formTitle: string;
@@ -32,6 +33,8 @@ export interface Translation {
 	marketName: string;
 	phone: string;
 	privacy: string;
+	registrationClosed: string;
+	registrationClosedDescription: string;
 	submissionError: string;
 	submit: string;
 	submitting: string;
@@ -50,6 +53,7 @@ export const translations = {
 		ageHint: 'In years',
 		backToGuest: 'Back to guest check-in',
 		compassionFood: 'Compassion Food',
+		chooseAnswer: 'Choose an answer',
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
 		formTitle: 'Tell us about you',
@@ -63,6 +67,8 @@ export const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you today.',
+		registrationClosed: 'Registration is closed',
+		registrationClosedDescription: 'Please check with a market team member for help.',
 		submissionError: 'We could not save your check-in. Please try again.',
 		submit: 'Join the queue',
 		submitting: 'Joining the queue…',
@@ -79,6 +85,7 @@ export const translations = {
 		ageHint: 'En años',
 		backToGuest: 'Volver al registro',
 		compassionFood: 'Alimentos con Compasión',
+		chooseAnswer: 'Elija una respuesta',
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
@@ -92,6 +99,8 @@ export const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
+		registrationClosed: 'El registro está cerrado',
+		registrationClosedDescription: 'Pida ayuda a un miembro del equipo del mercado.',
 		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
 		submit: 'Unirse a la fila',
 		submitting: 'Uniéndose a la fila…',
@@ -108,6 +117,7 @@ export const translations = {
 		ageHint: 'به سال',
 		backToGuest: 'بازگشت به ثبت‌نام مهمان',
 		compassionFood: 'غذای دلسوزانه',
+		chooseAnswer: 'یک پاسخ انتخاب کنید',
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
 		formTitle: 'درباره خودتان بگویید',
@@ -121,6 +131,8 @@ export const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی امروز استفاده می‌شود.',
+		registrationClosed: 'ثبت‌نام بسته است',
+		registrationClosedDescription: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
 		submissionError: 'ثبت‌نام شما ذخیره نشد. لطفاً دوباره تلاش کنید.',
 		submit: 'پیوستن به صف',
 		submitting: 'در حال پیوستن به صف…',
@@ -137,6 +149,7 @@ export const translations = {
 		ageHint: 'Sa taon',
 		backToGuest: 'Bumalik sa pag-check in ng bisita',
 		compassionFood: 'Pagkaing May Malasakit',
+		chooseAnswer: 'Pumili ng sagot',
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
@@ -151,6 +164,8 @@ export const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayo ngayon.',
+		registrationClosed: 'Sarado ang pagpaparehistro',
+		registrationClosedDescription: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
 		submissionError: 'Hindi namin na-save ang inyong check-in. Pakisubukang muli.',
 		submit: 'Sumali sa pila',
 		submitting: 'Sumasali sa pila…',
@@ -167,6 +182,7 @@ export const translations = {
 		ageHint: 'Theo năm',
 		backToGuest: 'Quay lại đăng ký khách',
 		compassionFood: 'Thực Phẩm Nhân Ái',
+		chooseAnswer: 'Chọn câu trả lời',
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
@@ -181,6 +197,8 @@ export const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn hôm nay.',
+		registrationClosed: 'Đã đóng đăng ký',
+		registrationClosedDescription: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
 		submissionError: 'Chúng tôi không thể lưu đăng ký của bạn. Vui lòng thử lại.',
 		submit: 'Vào hàng đợi',
 		submitting: 'Đang vào hàng đợi…',
@@ -197,6 +215,7 @@ export const translations = {
 		ageHint: '岁',
 		backToGuest: '返回访客登记',
 		compassionFood: '关爱食品',
+		chooseAnswer: '请选择答案',
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
 		formTitle: '请告诉我们您的信息',
@@ -210,6 +229,8 @@ export const translations = {
 		marketName: 'The Bay Compassion',
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们今天为您提供服务。',
+		registrationClosed: '登记已关闭',
+		registrationClosedDescription: '请向市场工作人员寻求帮助。',
 		submissionError: '无法保存您的登记信息。请重试。',
 		submit: '加入队列',
 		submitting: '正在加入队列…',
@@ -226,6 +247,7 @@ export const translations = {
 		ageHint: 'بالسنوات',
 		backToGuest: 'العودة إلى تسجيل الضيف',
 		compassionFood: 'طعام الرحمة',
+		chooseAnswer: 'اختر إجابة',
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
 		formTitle: 'أخبرنا عنك',
@@ -239,6 +261,8 @@ export const translations = {
 		marketName: 'The Bay Compassion',
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك اليوم.',
+		registrationClosed: 'التسجيل مغلق',
+		registrationClosedDescription: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
 		submissionError: 'تعذر حفظ تسجيلك. يرجى المحاولة مرة أخرى.',
 		submit: 'انضم إلى قائمة الانتظار',
 		submitting: 'جارٍ الانضمام إلى قائمة الانتظار…',
