@@ -67,6 +67,10 @@ Add `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` to the Netlify 
 subject must be a `mailto:` address or an HTTPS URL. Keep the private key secret and keep the same
 key pair across deploys so existing browser subscriptions continue to work.
 
+Set `NOTIFICATIONS_ENABLED=false` in the Netlify environment to hide notification opt-in, stop
+queueing and delivering notifications, and make the scheduled function return without accessing
+the database. Notifications remain enabled by default when the variable is unset.
+
 The `notification-schedule` function runs once per minute on published deploys to close due
 registration windows and deliver queued notifications. Scheduled functions do not run
 automatically under `netlify dev`; invoke that function manually when testing locally.

@@ -57,6 +57,9 @@ export default async (request: Request) => {
 	if (request.method === 'GET') {
 		return Response.json(pushConfiguration());
 	}
+	if (!pushConfiguration().configured) {
+		return error('Push notifications are not configured.', 503);
+	}
 	const visit = await authorizedVisit(request);
 	if (!visit) {
 		return error('Visit access could not be verified.', 401);
@@ -68,9 +71,6 @@ export default async (request: Request) => {
 	}
 	if (request.method !== 'POST') {
 		return error('Method not allowed', 405);
-	}
-	if (!pushConfiguration().configured) {
-		return error('Push notifications are not configured.', 503);
 	}
 
 	let body: unknown;

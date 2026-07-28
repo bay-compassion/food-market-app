@@ -17,7 +17,10 @@ import {
 	issueVisitToken,
 	normalizePhone,
 } from '../services/guestCredentials.js';
-import { deliverPendingNotifications } from '../services/pushNotifications.js';
+import {
+	deliverPendingNotifications,
+	notificationsEnabled,
+} from '../services/pushNotifications.js';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 const statuses = [
@@ -371,7 +374,7 @@ async function updateGuest(request: Request) {
 					: eq(visits.id, id),
 			)
 			.returning({ id: visits.id, status: visits.status });
-		if (updated && status === 'called') {
+		if (updated && status === 'called' && notificationsEnabled()) {
 			await tx
 				.insert(notificationDeliveries)
 				.values({ visitId: updated.id, type: 'called', dedupeKey: 'called' })
@@ -380,7 +383,7 @@ async function updateGuest(request: Request) {
 
 		return updated ?? null;
 	});
-	if (visit && status === 'called') {
+	if (visit && status === 'called' && notificationsEnabled()) {
 		await deliverPendingNotifications({ visitIds: [visit.id], types: ['called'], limit: 1 });
 	}
 

@@ -2,9 +2,15 @@ import { and, eq, inArray, lte } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { marketEvents, notificationDeliveries, visits } from '../../db/schema.js';
-import { deliverPendingNotifications } from '../services/pushNotifications.js';
+import {
+	deliverPendingNotifications,
+	notificationsEnabled,
+} from '../services/pushNotifications.js';
 
 export default async () => {
+	if (!notificationsEnabled()) {
+		return;
+	}
 	const now = new Date();
 	await db
 		.update(marketEvents)

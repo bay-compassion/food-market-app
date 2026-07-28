@@ -16,7 +16,14 @@ export const notificationTypes = [
 export type NotificationType = (typeof notificationTypes)[number];
 export type DeliveryType = NotificationType | 'broadcast';
 
+export function notificationsEnabled() {
+	return process.env.NOTIFICATIONS_ENABLED?.trim().toLowerCase() !== 'false';
+}
+
 function settings() {
+	if (!notificationsEnabled()) {
+		return null;
+	}
 	const publicKey = process.env.VAPID_PUBLIC_KEY;
 	const privateKey = process.env.VAPID_PRIVATE_KEY;
 	const subject = process.env.VAPID_SUBJECT;

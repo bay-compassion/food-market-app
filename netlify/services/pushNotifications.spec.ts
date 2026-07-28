@@ -4,7 +4,13 @@ vi.mock('../../db/index.js', () => ({ db: {} }));
 vi.mock('web-push', () => ({ default: {} }));
 
 import { languages } from '../../src/locales';
-import { deliveryCopy, notificationCopy, notificationTypes } from './pushNotifications';
+import {
+	deliveryCopy,
+	notificationCopy,
+	notificationsEnabled,
+	notificationTypes,
+	pushConfiguration,
+} from './pushNotifications';
 
 describe('push notification copy', () => {
 	it('provides localized title and body text for every notification and locale', () => {
@@ -31,5 +37,19 @@ describe('push notification copy', () => {
 			title: 'Market update',
 			body: 'Closing early',
 		});
+	});
+});
+
+describe('push notification configuration', () => {
+	it('disables notifications even when VAPID keys are configured', () => {
+		vi.stubEnv('NOTIFICATIONS_ENABLED', 'false');
+		vi.stubEnv('VAPID_PUBLIC_KEY', 'public-key');
+		vi.stubEnv('VAPID_PRIVATE_KEY', 'private-key');
+		vi.stubEnv('VAPID_SUBJECT', 'mailto:test@example.com');
+
+		expect(notificationsEnabled()).toBe(false);
+		expect(pushConfiguration()).toEqual({ configured: false, publicKey: null });
+
+		vi.unstubAllEnvs();
 	});
 });
