@@ -14,7 +14,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
-    "format:check": "oxfmt --check"
+    "format:check": "oxfmt --check",
+    "netlify:prune-deploys": "node scripts/prune-netlify-deploys.js"
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.8.0",

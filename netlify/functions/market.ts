@@ -17,6 +17,7 @@ import {
 	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
 import { requireAuth0 } from '../lib/auth.js';
+import { notificationsEnabled } from '../services/pushNotifications.js';
 
 type QuestionInput = { prompt: string; type: 'text' | 'scale'; required: boolean };
 function error(message: string, status = 400) {
@@ -49,7 +50,7 @@ async function getCurrentEvent() {
 				.set({ status: automaticStatus })
 				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
 				.returning();
-			if (changed && automaticStatus === 'registration_closed') {
+			if (changed && automaticStatus === 'registration_closed' && notificationsEnabled()) {
 				const registrations = await tx
 					.select({ visitId: visits.id })
 					.from(visits)
@@ -444,21 +445,23 @@ async function runAction(request: Request) {
 			if (!updated) {
 				return false;
 			}
-			const registrations = await tx
-				.select({ visitId: visits.id })
-				.from(visits)
-				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
-			if (registrations.length) {
-				await tx
-					.insert(notificationDeliveries)
-					.values(
-						registrations.map(({ visitId }) => ({
-							visitId,
-							type: 'registration_closed',
-							dedupeKey: 'registration_closed',
-						})),
-					)
-					.onConflictDoNothing();
+			if (notificationsEnabled()) {
+				const registrations = await tx
+					.select({ visitId: visits.id })
+					.from(visits)
+					.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+				if (registrations.length) {
+					await tx
+						.insert(notificationDeliveries)
+						.values(
+							registrations.map(({ visitId }) => ({
+								visitId,
+								type: 'registration_closed',
+								dedupeKey: 'registration_closed',
+							})),
+						)
+						.onConflictDoNothing();
+				}
 			}
 
 			return true;
@@ -521,29 +524,33 @@ async function runAction(request: Request) {
 					FROM (VALUES ${sql.join(positions, sql`, `)}) AS positions(id, position)
 					WHERE visit.id = positions.id
 				`);
-				await tx
-					.insert(notificationDeliveries)
-					.values(
-						selected.map((visitId) => ({
-							visitId,
-							type: 'lottery_selected',
-							dedupeKey: 'lottery_selected',
-						})),
-					)
-					.onConflictDoNothing();
+				if (notificationsEnabled()) {
+					await tx
+						.insert(notificationDeliveries)
+						.values(
+							selected.map((visitId) => ({
+								visitId,
+								type: 'lottery_selected',
+								dedupeKey: 'lottery_selected',
+							})),
+						)
+						.onConflictDoNothing();
+				}
 			}
 			if (notPlaced.length) {
 				await tx.update(visits).set({ status: 'not_placed' }).where(inArray(visits.id, notPlaced));
-				await tx
-					.insert(notificationDeliveries)
-					.values(
-						notPlaced.map((visitId) => ({
-							visitId,
-							type: 'lottery_not_selected',
-							dedupeKey: 'lottery_not_selected',
-						})),
-					)
-					.onConflictDoNothing();
+				if (notificationsEnabled()) {
+					await tx
+						.insert(notificationDeliveries)
+						.values(
+							notPlaced.map((visitId) => ({
+								visitId,
+								type: 'lottery_not_selected',
+								dedupeKey: 'lottery_not_selected',
+							})),
+						)
+						.onConflictDoNothing();
+				}
 			}
 		})
 		.catch((cause: unknown) => {
