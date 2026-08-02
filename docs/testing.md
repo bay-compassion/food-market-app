@@ -53,3 +53,9 @@ npm run test:unit -- --run
 This is also one of the four checks listed in [`AGENTS.md`](../AGENTS.md) that should pass before
 any change is considered finished — an agent following that file's instructions should already be
 running it, but it costs nothing to run it yourself and see the same pass/fail summary.
+
+You can also run all four in one go with **`npm run checks`** (`scripts/checks.js`), which prints a
+clear pass/fail summary instead of you having to run and interpret each command yourself. It's a
+plain script, not tied to any particular AI tool — it works the same whether you type it yourself,
+Codex runs it, or Claude Code does. If you're working with Claude Code specifically, typing
+**`/checks`** does the same thing as a slash-command shortcut.

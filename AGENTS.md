@@ -12,6 +12,7 @@
 - When adding or changing user-facing text, add or update its translation for **every** language listed in `src/locales.ts` in the same change.
 - Use the translation system in `src/locales.ts`; do not leave hard-coded fallback text in components. Keep the `Translation` interface and every locale dictionary in sync.
 - Preserve culturally appropriate scripts and writing direction for translated content. Do not translate proper names such as `The Bay Compassion` unless the product direction explicitly calls for it.
+- After touching either locale file, run `npm run check:translations` (`scripts/check-translations.js`). TypeScript already guarantees every language has every key; this instead flags values still identical to English — a likely missed translation. It's advisory, not a hard gate: review each flagged value rather than assuming it's wrong.
 
 ## Code and verification
 
@@ -32,5 +33,9 @@
   npm run test:unit -- --run
   npm run build
   ```
+
+  Or run all four at once with `npm run checks` (`scripts/checks.js`), which prints a clear
+  pass/fail summary for each one. This is a plain script, not a Claude-specific command — it works
+  the same for any agent, in CI, or run by hand.
 
 - Do not modify unrelated files or overwrite existing user changes.
