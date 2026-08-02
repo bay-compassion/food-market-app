@@ -20,6 +20,7 @@
 - Follow the repository formatter: tabs, single quotes, semicolons, and a 100-character print width. Run `npm run format` after edits when needed.
 - The Vue app lives in `src/`; static assets live in `public/`; database schema code is in `db/`; and Netlify functions are in `netlify/functions/`.
 - This is currently a Netlify-targeted application. Keep deployment configuration and server-side work compatible with the Netlify setup in `netlify.toml` and `netlify/`.
+- Before creating or editing anything under `netlify/database/migrations/`, read `docs/migrations.md` and complete its pre-merge checklist. Migrations apply automatically to production on the next build — never merge or deploy a migration yourself; a human must review and merge it.
 - TypeScript configuration is split by environment: `tsconfig.app.json`, `tsconfig.node.json`, and `tsconfig.vitest.json` are referenced from `tsconfig.json`.
 - `oxlint` uses type-aware checks; treat warnings as worth resolving when they affect changed code.
 - The project uses Node 24 (see `.nvmrc`).
