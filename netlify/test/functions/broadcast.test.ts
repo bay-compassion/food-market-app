@@ -1,17 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../test/dbStub.js';
+import { db, queueResult, resetDbStub } from '../dbStub.js';
 
-vi.mock('../../db/index.js', () => ({ db }));
-vi.mock('../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
-vi.mock('../services/pushNotifications.js', () => ({
+vi.mock('../../../db/index.js', () => ({ db }));
+vi.mock('../../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
+vi.mock('../../services/pushNotifications.js', () => ({
 	deliverPendingNotifications: vi.fn(),
 	pushConfiguration: vi.fn(),
 }));
 
-import { requireAuth0 } from '../lib/auth.js';
-import { deliverPendingNotifications, pushConfiguration } from '../services/pushNotifications.js';
-import handler from './broadcast.js';
+import handler from '../../functions/broadcast.js';
+import { requireAuth0 } from '../../lib/auth.js';
+import {
+	deliverPendingNotifications,
+	pushConfiguration,
+} from '../../services/pushNotifications.js';
 
 function request(body?: unknown, rawBody?: string) {
 	return new Request('https://example.com/api/broadcast', {
