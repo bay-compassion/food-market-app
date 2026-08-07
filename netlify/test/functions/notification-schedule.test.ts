@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../test/dbStub.js';
+import { db, queueResult, resetDbStub } from '../dbStub.js';
 
-vi.mock('../../db/index.js', () => ({ db }));
-vi.mock('../services/pushNotifications.js', () => ({
+vi.mock('../../../db/index.js', () => ({ db }));
+vi.mock('../../services/pushNotifications.js', () => ({
 	deliverPendingNotifications: vi.fn(),
 	notificationsEnabled: vi.fn(),
 }));
 
+import handler from '../../functions/notification-schedule.js';
 import {
 	deliverPendingNotifications,
 	notificationsEnabled,
-} from '../services/pushNotifications.js';
-import handler from './notification-schedule.js';
+} from '../../services/pushNotifications.js';
 
 afterEach(() => {
 	resetDbStub();

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../test/dbStub.js';
+import { db, queueResult, resetDbStub } from '../dbStub.js';
 
-vi.mock('../../db/index.js', () => ({ db }));
-vi.mock('../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
+vi.mock('../../../db/index.js', () => ({ db }));
+vi.mock('../../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
 
-import { requireAuth0 } from '../lib/auth.js';
-import handler from './guests.js';
+import handler from '../../functions/guests.js';
+import { requireAuth0 } from '../../lib/auth.js';
 
 function request(method: string, options: { path?: string; body?: unknown } = {}) {
 	return new Request(`https://example.com/api/guests${options.path ?? ''}`, {
