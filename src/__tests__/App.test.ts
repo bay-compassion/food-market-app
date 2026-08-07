@@ -8,6 +8,18 @@ import App from '../App.vue';
 import { authReturnUrl } from '../auth';
 import AdminDashboard from '../components/AdminDashboard.vue';
 
+// The real module only configures Auth0 when the VITE_AUTH0_* variables are set, which is true
+// locally but not in CI. Pretend it is configured so the admin surfaces use the client below.
+vi.mock('../auth', async (importOriginal) => {
+	const { ref } = await import('vue');
+
+	return {
+		...(await importOriginal<typeof import('../auth')>()),
+		auth0: { error: ref(null) },
+		isAuth0Configured: true,
+	};
+});
+
 const authClient = {
 	isLoading: ref(false),
 	isAuthenticated: ref(false),
