@@ -12,6 +12,7 @@
 - When adding or changing user-facing text, add or update its translation for **every** language listed in `src/locales.ts` in the same change.
 - Use the translation system in `src/locales.ts`; do not leave hard-coded fallback text in components. Keep the `Translation` interface and every locale dictionary in sync.
 - Preserve culturally appropriate scripts and writing direction for translated content. Do not translate proper names such as `The Bay Compassion` unless the product direction explicitly calls for it.
+- After touching either locale file, run `npm run check:translations` (`scripts/check-translations.js`). TypeScript already guarantees every language has every key; this instead flags values still identical to English — a likely missed translation. It's advisory, not a hard gate: review each flagged value rather than assuming it's wrong.
 
 ## Code and verification
 
@@ -20,6 +21,7 @@
 - Follow the repository formatter: tabs, single quotes, semicolons, and a 100-character print width. Run `npm run format` after edits when needed.
 - The Vue app lives in `src/`; static assets live in `public/`; database schema code is in `db/`; and Netlify functions are in `netlify/functions/`.
 - This is currently a Netlify-targeted application. Keep deployment configuration and server-side work compatible with the Netlify setup in `netlify.toml` and `netlify/`.
+- Before creating or editing anything under `netlify/database/migrations/`, read `docs/migrations.md` and complete its pre-merge checklist. Migrations apply automatically to production on the next build — never merge or deploy a migration yourself; a human must review and merge it.
 - TypeScript configuration is split by environment: `tsconfig.app.json`, `tsconfig.node.json`, and `tsconfig.vitest.json` are referenced from `tsconfig.json`.
 - `oxlint` uses type-aware checks; treat warnings as worth resolving when they affect changed code.
 - The project uses Node 24 (see `.nvmrc`).
@@ -31,5 +33,9 @@
   npm run test:unit -- --run
   npm run build
   ```
+
+  Or run all four at once with `npm run checks` (`scripts/checks.js`), which prints a clear
+  pass/fail summary for each one. This is a plain script, not a Claude-specific command — it works
+  the same for any agent, in CI, or run by hand.
 
 - Do not modify unrelated files or overwrite existing user changes.

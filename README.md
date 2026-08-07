@@ -4,6 +4,10 @@ The Bay Compassion is a mobile-first check-in app for a community food market. G
 
 The frontend is a Vue 3 app in `src/`. Guest submissions are handled by a Netlify Function and stored with Netlify DB through Drizzle.
 
+New to how apps like this are put together? Start with [`docs/concepts.md`](docs/concepts.md) —
+a primer on frontend/backend/database, frameworks, secrets, and migrations, written for a
+maintainer without a software background.
+
 ## Quickstart
 
 ### Prerequisites
@@ -39,6 +43,9 @@ npm run test:unit -- --run
 npm run build
 ```
 
+See [`docs/testing.md`](docs/testing.md) for why the automated tests matter, especially if you're
+relying on an AI coding agent to make changes.
+
 ## Deployment
 
 The app is configured for Netlify in `netlify.toml`. Connect the repository to a Netlify site; Netlify builds the root app and publishes `dist`, while serving the functions in `netlify/functions/`.
@@ -53,6 +60,10 @@ Production can also be deployed manually from GitHub without building the app on
 
 The workflow only triggers the hook. Netlify performs the build so its production environment
 variables are available to Vite and the serverless functions.
+
+Database migrations under `netlify/database/migrations/` apply automatically the moment a build
+runs, including production builds — there is no separate manual step. Read
+[`docs/migrations.md`](docs/migrations.md) before adding or changing a migration.
 
 ### Push notifications
 
@@ -115,5 +126,6 @@ non-admin users, configure Auth0 API permissions and roles before inviting them 
 - `src/` — Vue 3 frontend
 - `public/` — static frontend assets
 - `netlify/functions/` — API endpoints, including guest check-in
-- `netlify/database/migrations/` — Netlify DB migrations
+- `netlify/database/migrations/` — Netlify DB migrations; read [`docs/migrations.md`](docs/migrations.md)
+  before changing anything here
 - `db/` — Drizzle schema and database client
