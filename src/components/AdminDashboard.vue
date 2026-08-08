@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 import { adminTranslations } from '../adminLocales';
-import { translations, type Locale } from '../locales';
+import { languages, translations, type Locale } from '../locales';
 import {
 	currentSessionState,
 	type SessionCommand,
@@ -39,6 +39,7 @@ type Guest = {
 	lastName: string;
 	phone: string;
 	householdSize: number;
+	locale: Locale;
 	queuePosition: number | null;
 	status: GuestStatus;
 };
@@ -293,6 +294,10 @@ function formatEventDate(value: string) {
 		dateStyle: 'medium',
 		timeStyle: 'short',
 	}).format(new Date(value));
+}
+
+function guestLanguageLabel(locale: Locale) {
+	return languages.find((language) => language.code === locale)?.label ?? locale;
 }
 
 async function loadDashboard() {
@@ -810,6 +815,7 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 							<div>
 								<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
 								><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
+								<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
 								<span v-if="guest.queuePosition">
 									{{ t.queuePosition }}: {{ guest.queuePosition }}
 								</span>
@@ -866,6 +872,7 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 							<div>
 								<strong>{{ guest.firstName }} {{ guest.lastName }}</strong>
 								<span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
+								<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
 							</div>
 						</article>
 					</div>
@@ -993,6 +1000,7 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 						<div>
 							<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
 							><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
+							<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
 						</div>
 						<label
 							><span class="sr-only">{{ t.status }}</span
