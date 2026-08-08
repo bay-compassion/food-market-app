@@ -3,8 +3,10 @@ name: CI
 on:
   push:
     branches: [main]
+  # No `branches` filter: that filter matches a pull request's *base* branch, so it skipped every
+  # PR in a stack except the one based on main. Stacked PRs need checks too — they are reviewed
+  # and merged individually, and a broken middle layer would otherwise reach main unchecked.
   pull_request:
-    branches: [main]
 
 jobs:
   ci:
