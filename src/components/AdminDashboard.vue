@@ -9,18 +9,17 @@ import {
 	type SessionMode,
 	type SessionStatus,
 } from '../services/sessionStateMachine';
+import {
+	visitCommandTarget,
+	type VisitCommand,
+	type VisitStatus,
+} from '../services/visitStateMachine';
+import VisitCommandButtons from './admin/VisitCommandButtons.vue';
 import AppButton from './AppButton.vue';
 import EyebrowLabel from './EyebrowLabel.vue';
 import FormField from './FormField.vue';
 
-type GuestStatus =
-	| 'registered'
-	| 'waiting'
-	| 'called'
-	| 'served'
-	| 'not_placed'
-	| 'no_show'
-	| 'cancelled';
+type GuestStatus = VisitStatus;
 type Question = { id?: string; prompt: string; type: 'text' | 'scale'; required: boolean };
 type MarketEvent = {
 	id: string;
@@ -477,17 +476,17 @@ async function saveCapacityOverride() {
 	await updateRegistrationOverrides(event.value.registrationClosesAt, settings.capacity);
 }
 
-async function updateGuestStatus(guest: Guest, status: GuestStatus) {
+async function runGuestCommand(guest: Guest, command: VisitCommand) {
 	const previous = guest.status;
-	guest.status = status;
+	guest.status = visitCommandTarget(command);
 	try {
 		const response = await fetch('/api/guests', {
 			method: 'PATCH',
 			headers: await authHeaders(true),
-			body: JSON.stringify({ id: guest.id, status }),
+			body: JSON.stringify({ id: guest.id, command }),
 		});
 		if (!response.ok) {
-			throw new Error('status');
+			throw new Error('command');
 		}
 		await Promise.all([loadOverview(), loadSessionGuests()]);
 	} catch {
@@ -821,30 +820,13 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 								</span>
 							</div>
 							<div class="guest-actions">
-								<AppButton
-									v-if="guest.status === 'waiting'"
-									type="button"
+								<span class="guest-status">{{ statusLabels[guest.status] }}</span>
+								<VisitCommandButtons
+									:locale="locale"
+									:status="guest.status"
 									:disabled="isBusy"
-									@click="updateGuestStatus(guest, 'called')"
-								>
-									{{ t.callGuest }}
-								</AppButton>
-								<label
-									><span class="sr-only">{{ t.status }}</span
-									><select
-										:value="guest.status"
-										@change="
-											updateGuestStatus(
-												guest,
-												($event.target as HTMLSelectElement).value as GuestStatus,
-											)
-										"
-									>
-										<option v-for="status in statuses" :key="status" :value="status">
-											{{ statusLabels[status] }}
-										</option>
-									</select></label
-								>
+									@run="runGuestCommand(guest, $event)"
+								/>
 							</div>
 						</article>
 					</div>
@@ -1002,22 +984,15 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 							><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
 							<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
 						</div>
-						<label
-							><span class="sr-only">{{ t.status }}</span
-							><select
-								:value="guest.status"
-								@change="
-									updateGuestStatus(
-										guest,
-										($event.target as HTMLSelectElement).value as GuestStatus,
-									)
-								"
-							>
-								<option v-for="status in statuses" :key="status" :value="status">
-									{{ statusLabels[status] }}
-								</option>
-							</select></label
-						>
+						<div class="guest-actions">
+							<span class="guest-status">{{ statusLabels[guest.status] }}</span>
+							<VisitCommandButtons
+								:locale="locale"
+								:status="guest.status"
+								:disabled="isBusy"
+								@run="runGuestCommand(guest, $event)"
+							/>
+						</div>
 					</article>
 				</div>
 				<p v-else class="empty-state">{{ t.noGuests }}</p>
@@ -1377,15 +1352,19 @@ select {
 	color: var(--color-text-subtle);
 	font-size: 12px;
 }
-.guest-row label {
-	flex: 0 0 130px;
+.guest-row {
+	flex-wrap: wrap;
 }
 .guest-row .guest-actions {
-	flex: 0 0 130px;
+	display: grid;
+	flex: 1 1 100%;
+	gap: 8px;
+	justify-items: start;
 }
-.guest-row select {
-	min-height: 42px;
-	font-size: 13px;
+.guest-row .guest-status {
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
 }
 .empty-state {
 	padding: 30px 0 10px;

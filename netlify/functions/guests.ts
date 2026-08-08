@@ -1,23 +1,11 @@
 import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
-import { guests, marketEvents, notificationDeliveries, visits } from '../../db/schema.js';
+import { guests, marketEvents, visits } from '../../db/schema.js';
+import { isVisitCommand } from '../../src/services/visitStateMachine.js';
 import { requireAuth0 } from '../lib/auth.js';
 import { parseSubmission, registerGuest } from '../services/guestRegistration.js';
-import {
-	deliverPendingNotifications,
-	notificationsEnabled,
-} from '../services/pushNotifications.js';
-
-const statuses = [
-	'registered',
-	'waiting',
-	'called',
-	'served',
-	'not_placed',
-	'no_show',
-	'cancelled',
-] as const;
+import { runVisitCommand } from '../services/visitQueue.js';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
@@ -118,43 +106,14 @@ async function updateGuest(request: Request) {
 		return error('Invalid guest update.');
 	}
 
-	const { id, status } = body as Record<string, unknown>;
-	if (
-		typeof id !== 'string' ||
-		typeof status !== 'string' ||
-		!statuses.some((item) => item === status)
-	) {
+	const { id, command } = body as Record<string, unknown>;
+	if (typeof id !== 'string' || !isVisitCommand(command)) {
 		return error('Invalid guest update.');
 	}
 
-	// Only the transition into 'called' is guarded (must come from 'waiting'). Every other
-	// target status can be set from any prior status by an authenticated admin — a known gap,
-	// tracked as a follow-up rather than fixed here (see docs/migrations.md sibling test notes
-	// in netlify/functions/guests.test.ts and push-subscription.test.ts for the same pattern).
-	const visit = await db.transaction(async (tx) => {
-		const [updated] = await tx
-			.update(visits)
-			.set(status === 'called' ? { status, calledAt: new Date() } : { status })
-			.where(
-				status === 'called'
-					? and(eq(visits.id, id), eq(visits.status, 'waiting'))
-					: eq(visits.id, id),
-			)
-			.returning({ id: visits.id, status: visits.status });
-		if (updated && status === 'called' && notificationsEnabled()) {
-			await tx
-				.insert(notificationDeliveries)
-				.values({ visitId: updated.id, type: 'called', dedupeKey: 'called' })
-				.onConflictDoNothing();
-		}
+	const result = await runVisitCommand(id, command);
 
-		return updated ?? null;
-	});
-	if (visit && status === 'called' && notificationsEnabled()) {
-		await deliverPendingNotifications({ visitIds: [visit.id], types: ['called'], limit: 1 });
-	}
-
-	return visit ? Response.json(visit) : error('Visit not found.', 404);
+	return result.ok ? Response.json(result.visit) : error(result.error, result.status);
 }
 
 export default async (request: Request) => {

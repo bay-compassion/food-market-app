@@ -44,6 +44,9 @@ export interface AdminTranslation {
 	historySessions: string;
 	lotteryActions: string;
 	manualGuestTitle: string;
+	markServed: string;
+	markNoShow: string;
+	returnToQueue: string;
 	noActiveSession: string;
 	noGuests: string;
 	noRegisteredGuests: string;
@@ -143,6 +146,9 @@ export const adminTranslations = {
 		historySessions: 'Session history',
 		lotteryActions: 'Lottery actions',
 		manualGuestTitle: 'Manually add a guest',
+		markServed: 'Mark served',
+		markNoShow: 'Mark no show',
+		returnToQueue: 'Return to queue',
 		noActiveSession: 'Registration inactive',
 		noGuests: 'No guests found.',
 		noRegisteredGuests: 'No guests have registered for this session yet.',
@@ -242,6 +248,9 @@ export const adminTranslations = {
 		historySessions: 'Historial de sesiones',
 		lotteryActions: 'Acciones del sorteo',
 		manualGuestTitle: 'Agregar un invitado manualmente',
+		markServed: 'Marcar como atendido',
+		markNoShow: 'Marcar como ausente',
+		returnToQueue: 'Devolver a la fila',
 		noActiveSession: 'Registro inactivo',
 		noGuests: 'No se encontraron invitados.',
 		noRegisteredGuests: 'Aún no hay invitados registrados para esta sesión.',
@@ -339,6 +348,9 @@ export const adminTranslations = {
 		historySessions: 'تاریخچه جلسه‌ها',
 		lotteryActions: 'عملیات قرعه‌کشی',
 		manualGuestTitle: 'افزودن دستی مهمان',
+		markServed: 'ثبت خدمت‌رسانی',
+		markNoShow: 'ثبت غیبت',
+		returnToQueue: 'بازگرداندن به صف',
 		noActiveSession: 'ثبت‌نام غیرفعال است',
 		noGuests: 'مهمانی یافت نشد.',
 		noRegisteredGuests: 'هنوز مهمانی برای این جلسه ثبت‌نام نکرده است.',
@@ -439,6 +451,9 @@ export const adminTranslations = {
 		historySessions: 'Kasaysayan ng mga sesyon',
 		lotteryActions: 'Mga aksyon sa lottery',
 		manualGuestTitle: 'Manu-manong magdagdag ng bisita',
+		markServed: 'Markahang napagsilbihan',
+		markNoShow: 'Markahang hindi dumating',
+		returnToQueue: 'Ibalik sa pila',
 		noActiveSession: 'Hindi aktibo ang pagpaparehistro',
 		noGuests: 'Walang nahanap na bisita.',
 		noRegisteredGuests: 'Wala pang bisitang nakarehistro para sa sesyong ito.',
@@ -538,6 +553,9 @@ export const adminTranslations = {
 		historySessions: 'Lịch sử phiên',
 		lotteryActions: 'Thao tác xổ số',
 		manualGuestTitle: 'Thêm khách thủ công',
+		markServed: 'Đánh dấu đã phục vụ',
+		markNoShow: 'Đánh dấu không đến',
+		returnToQueue: 'Đưa lại vào hàng',
 		noActiveSession: 'Đăng ký chưa hoạt động',
 		noGuests: 'Không tìm thấy khách.',
 		noRegisteredGuests: 'Chưa có khách đăng ký cho phiên này.',
@@ -635,6 +653,9 @@ export const adminTranslations = {
 		historySessions: '历史场次',
 		lotteryActions: '抽签操作',
 		manualGuestTitle: '手动添加访客',
+		markServed: '标记已服务',
+		markNoShow: '标记未到场',
+		returnToQueue: '返回队列',
 		noActiveSession: '登记未启用',
 		noGuests: '未找到访客。',
 		noRegisteredGuests: '此场次尚无已登记访客。',
@@ -731,6 +752,9 @@ export const adminTranslations = {
 		historySessions: 'سجل الجلسات',
 		lotteryActions: 'إجراءات القرعة',
 		manualGuestTitle: 'إضافة ضيف يدويًا',
+		markServed: 'تسجيل الخدمة',
+		markNoShow: 'تسجيل عدم الحضور',
+		returnToQueue: 'إعادة إلى قائمة الانتظار',
 		noActiveSession: 'التسجيل غير نشط',
 		noGuests: 'لم يتم العثور على ضيوف.',
 		noRegisteredGuests: 'لم يسجل أي ضيوف لهذه الجلسة بعد.',

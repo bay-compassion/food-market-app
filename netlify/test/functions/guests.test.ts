@@ -56,7 +56,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
 		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
 
-		const response = await handler(request('PATCH', { body: { id: 'visit-1', status: 'served' } }));
+		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
 
 		expect(response).toBe(unauthorized);
 		expect(db.transaction).not.toHaveBeenCalled();
@@ -68,6 +68,44 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 		const response = await handler(request('PATCH', { body: { id: 'visit-1' } }));
 
 		expect(response.status).toBe(400);
+	});
+
+	it('rejects a status string now that transitions are expressed as commands', async () => {
+		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+
+		const response = await handler(request('PATCH', { body: { id: 'visit-1', status: 'served' } }));
+
+		expect(response.status).toBe(400);
+	});
+
+	it('applies a command that is legal from the current status', async () => {
+		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		queueResult([{ status: 'called' }]); // current visit status
+		queueResult([{ id: 'visit-1', status: 'served' }]); // the update
+
+		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ id: 'visit-1', status: 'served' });
+	});
+
+	it('rejects a command that is illegal from the current status', async () => {
+		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		queueResult([{ status: 'waiting' }]); // you cannot serve someone who was never called
+
+		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
+
+		expect(response.status).toBe(409);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+
+	it('returns 404 when the visit does not exist', async () => {
+		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		queueResult([]);
+
+		const response = await handler(request('PATCH', { body: { id: 'missing', command: 'call' } }));
+
+		expect(response.status).toBe(404);
 	});
 });
 

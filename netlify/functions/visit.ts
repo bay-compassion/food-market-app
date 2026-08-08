@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { marketEvents, visits } from '../../db/schema.js';
@@ -24,6 +24,8 @@ async function authorizedVisit(request: Request) {
 			id: visits.id,
 			status: visits.status,
 			marketEventId: visits.marketEventId,
+			queuePosition: visits.queuePosition,
+			calledAt: visits.calledAt,
 			sessionStatus: marketEvents.status,
 		})
 		.from(visits)
@@ -32,6 +34,32 @@ async function authorizedVisit(request: Request) {
 		.limit(1);
 
 	return visit ?? null;
+}
+
+/**
+ * How many guests are still ahead of this one in the queue. Only meaningful while waiting — a
+ * called or served guest has no one ahead of them, so the guest app shows nothing instead.
+ */
+async function guestsAhead(visit: {
+	status: string;
+	marketEventId: string;
+	queuePosition: number | null;
+}) {
+	if (visit.status !== 'waiting' || visit.queuePosition === null) {
+		return null;
+	}
+	const [ahead] = await db
+		.select({ count: sql<number>`count(*)::int` })
+		.from(visits)
+		.where(
+			and(
+				eq(visits.marketEventId, visit.marketEventId),
+				eq(visits.status, 'waiting'),
+				lt(visits.queuePosition, visit.queuePosition),
+			),
+		);
+
+	return ahead?.count ?? 0;
 }
 
 export default async (request: Request) => {
@@ -44,7 +72,7 @@ export default async (request: Request) => {
 			return error('This visit belongs to an ended session.', 410);
 		}
 
-		return Response.json(visit);
+		return Response.json({ ...visit, aheadOfYou: await guestsAhead(visit) });
 	}
 	if (request.method === 'PATCH') {
 		if (visit.sessionStatus === 'ended') {

@@ -17,6 +17,7 @@ import {
 	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
 import { notificationsEnabled } from './pushNotifications.js';
+import { resolveOutstandingVisits } from './visitQueue.js';
 
 export type MarketEventRow = typeof marketEvents.$inferSelect;
 export type QuestionInput = { prompt: string; type: 'text' | 'scale'; required: boolean };
@@ -457,11 +458,29 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 
 export async function closeSession(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('close_session');
-	if (
-		!target ||
-		!canRunSessionCommand(event.status, 'close_session', event.sessionMode) ||
-		!(await transitionEvent(event, event.status, target))
-	) {
+	if (!target || !canRunSessionCommand(event.status, 'close_session', event.sessionMode)) {
+		return {
+			ok: false,
+			status: 409,
+			error: 'That session transition is not allowed from the current state.',
+		};
+	}
+	// Guests still waiting or called are resolved in the same transaction as the transition, so
+	// ending a session never leaves someone in a status that implies service is still coming.
+	const closed = await db.transaction(async (tx) => {
+		const [updated] = await tx
+			.update(marketEvents)
+			.set({ status: target })
+			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
+			.returning({ id: marketEvents.id });
+		if (!updated) {
+			return false;
+		}
+		await resolveOutstandingVisits(tx, event.id);
+
+		return true;
+	});
+	if (!closed) {
 		return {
 			ok: false,
 			status: 409,
