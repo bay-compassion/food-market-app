@@ -33,6 +33,20 @@
 	font-weight: 700;
 }
 
+.admin-dashboard .settings-card,
+.admin-dashboard .action-card,
+.admin-dashboard .guest-section,
+.admin-dashboard .reset-card {
+	padding: 20px;
+	border: 1.5px solid #c7d2cc;
+	border-radius: var(--radius-lg);
+}
+.admin-dashboard .settings-card > p,
+.admin-dashboard .action-card p {
+	color: var(--color-text-subtle);
+	line-height: 1.5;
+}
+
 .admin-dashboard .guest-list {
 	display: grid;
 	margin-top: 18px;

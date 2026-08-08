@@ -1,0 +1,76 @@
+import { mount } from '@vue/test-utils';
+import { describe, expect, it } from 'vitest';
+
+import { adminTranslations } from '../adminLocales';
+import AddGuestSection from '../components/admin/AddGuestSection.vue';
+import type { GuestAdmission } from '../services/guestAdmission';
+
+const t = adminTranslations.en;
+
+function mountSection(admissions: GuestAdmission[]) {
+	return mount(AddGuestSection, { props: { locale: 'en' as const, admissions, busy: false } });
+}
+
+async function openForm(admissions: GuestAdmission[]) {
+	const wrapper = mountSection(admissions);
+	await wrapper.find('.add-guest-button').trigger('click');
+
+	return wrapper;
+}
+
+describe('AddGuestSection', () => {
+	it('renders nothing when the session cannot accept a guest', () => {
+		const wrapper = mountSection([]);
+
+		expect(wrapper.find('.add-guest-button').exists()).toBe(false);
+		expect(wrapper.text()).toBe('');
+	});
+
+	it('lets a worker choose the draw or a reserved spot before the lottery runs', async () => {
+		const wrapper = await openForm(['lottery', 'queue']);
+		const options = wrapper.findAll('select')[0]!.findAll('option');
+
+		expect(options.map((option) => option.text())).toEqual([t.admitToLottery, t.admitToQueue]);
+		// The first option leads, so the fair choice is what a worker gets by default.
+		expect(wrapper.text()).toContain(t.admitToLotteryHelp);
+	});
+
+	it('drops the choice when the session only allows one way in', async () => {
+		const wrapper = await openForm(['queue']);
+		const selects = wrapper.findAll('select');
+
+		// Just the queue placement — no point asking a question with a single answer.
+		expect(selects).toHaveLength(1);
+		expect(selects[0]!.findAll('option').map((option) => option.text())).toEqual([
+			t.placeEnd,
+			t.placeNext,
+		]);
+		expect(wrapper.text()).toContain(t.admitToQueueHelp);
+	});
+
+	it('hides the queue placement for an admission that never joins a line', async () => {
+		const wrapper = await openForm(['served']);
+
+		expect(wrapper.findAll('select')).toHaveLength(0);
+		expect(wrapper.text()).toContain(t.admitAsServedHelp);
+	});
+
+	it('emits the guest with the admission the worker picked', async () => {
+		const wrapper = await openForm(['lottery', 'queue']);
+		await wrapper.findAll('select')[0]!.setValue('queue');
+		await wrapper.find('form').trigger('submit');
+
+		expect(wrapper.emitted('addGuest')?.[0]?.[0]).toMatchObject({
+			admission: 'queue',
+			queuePlacement: 'end',
+		});
+	});
+
+	it('closes the form once the guest has been handed to the container', async () => {
+		const wrapper = await openForm(['queue']);
+		await wrapper.find('form').trigger('submit');
+
+		expect(wrapper.find('form').exists()).toBe(false);
+		expect(wrapper.find('.add-guest-button').exists()).toBe(true);
+	});
+});

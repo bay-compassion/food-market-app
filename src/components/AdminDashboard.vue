@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import { adminTranslations } from '../adminLocales';
-import { languages, translations, type Locale } from '../locales';
+import { translations, type Locale } from '../locales';
+import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
 import {
 	currentSessionState,
 	type SessionCommand,
-	type SessionMode,
 	type SessionStatus,
 } from '../services/sessionStateMachine';
 import {
@@ -14,33 +14,31 @@ import {
 	type VisitCommand,
 	type VisitStatus,
 } from '../services/visitStateMachine';
-import ManualGuestForm from './admin/ManualGuestForm.vue';
+import GuestDatabaseView from './admin/GuestDatabaseView.vue';
 import QueueView from './admin/QueueView.vue';
-import type { ManualGuest, QueueGuest } from './admin/types';
-import VisitCommandButtons from './admin/VisitCommandButtons.vue';
+import SessionHistoryView from './admin/SessionHistoryView.vue';
+import SessionView from './admin/SessionView.vue';
+import type {
+	AdminMarketEvent,
+	HistoricalEvent,
+	ManualGuest,
+	QueueGuest,
+	SessionSettings,
+} from './admin/types';
 import AppButton from './AppButton.vue';
 import EyebrowLabel from './EyebrowLabel.vue';
 
 type GuestStatus = VisitStatus;
 type Question = { id?: string; prompt: string; type: 'text' | 'scale'; required: boolean };
-type MarketEvent = {
-	id: string;
-	registrationOpensAt: string;
-	registrationClosesAt: string;
-	capacity: number;
-	sessionMode: SessionMode;
-	status: SessionStatus;
-};
 type AdminView =
 	| 'current-session'
 	| 'queue'
 	| 'question-bank'
 	| 'guest-database'
 	| 'session-history';
-type HistoricalEvent = MarketEvent & { guestCount: number };
 type Guest = QueueGuest & { marketEventId: string | null };
 type Overview = {
-	event: MarketEvent | null;
+	event: AdminMarketEvent | null;
 	questions: Question[];
 	counts: Partial<Record<GuestStatus, number>>;
 };
@@ -53,7 +51,7 @@ const emit = defineEmits<{ navigate: [view: AdminView] }>();
 const t = computed(() => adminTranslations[props.locale]);
 const base = computed(() => translations[props.locale]);
 const activeView = ref<AdminView>(props.view);
-const event = ref<MarketEvent | null>(null);
+const event = ref<AdminMarketEvent | null>(null);
 const counts = ref<Overview['counts']>({});
 const questions = ref<Question[]>([]);
 const guests = ref<Guest[]>([]);
@@ -62,9 +60,8 @@ const history = ref<HistoricalEvent[]>([]);
 const searchQuery = ref('');
 const feedback = ref('');
 const isBusy = ref(false);
-const showManualGuest = ref(false);
-const settings = reactive({
-	sessionMode: 'scheduled' as SessionMode,
+const settings = ref<SessionSettings>({
+	sessionMode: 'scheduled',
 	registrationOpensAt: '',
 	adHocClosesAt: '',
 	durationMinutes: 60,
@@ -73,7 +70,7 @@ const settings = reactive({
 const extensionMinutes = ref(30);
 const postponementMinutes = ref(30);
 let sessionRefreshTimer: ReturnType<typeof setTimeout> | undefined;
-const broadcast = reactive({ title: '', body: '' });
+const broadcast = ref({ title: '', body: '' });
 
 const statuses: GuestStatus[] = [
 	'waiting',
@@ -115,6 +112,10 @@ const sessionStatusLabel = computed(() => {
 			return t.value.noActiveSession;
 	}
 });
+/** With no session configured there is nothing to add a guest to. */
+const sessionAdmissions = computed(() =>
+	event.value ? admissionsFor(event.value.status) : ([] as GuestAdmission[]),
+);
 const currentSessionGuests = computed(() =>
 	sessionGuests.value
 		.filter((guest) => guest.marketEventId === event.value?.id)
@@ -163,19 +164,20 @@ function setDefaultSettings() {
 		opens.setMinutes(opens.getMinutes() + 15);
 	}
 	const closes = new Date(opens.valueOf() + 60 * 60_000);
-	settings.sessionMode = 'scheduled';
-	settings.registrationOpensAt = toLocalDateTime(opens);
-	settings.adHocClosesAt = toLocalDateTime(closes);
-	settings.durationMinutes = 60;
+	settings.value.sessionMode = 'scheduled';
+	settings.value.registrationOpensAt = toLocalDateTime(opens);
+	settings.value.adHocClosesAt = toLocalDateTime(closes);
+	settings.value.durationMinutes = 60;
 }
 
 function registrationClosesAt() {
-	if (settings.sessionMode === 'ad_hoc') {
-		return new Date(settings.adHocClosesAt).toISOString();
+	if (settings.value.sessionMode === 'ad_hoc') {
+		return new Date(settings.value.adHocClosesAt).toISOString();
 	}
 
 	return new Date(
-		new Date(settings.registrationOpensAt).valueOf() + settings.durationMinutes * 60_000,
+		new Date(settings.value.registrationOpensAt).valueOf() +
+			settings.value.durationMinutes * 60_000,
 	).toISOString();
 }
 
@@ -192,10 +194,10 @@ function applyOverview(data: Overview) {
 		required,
 	}));
 	if (data.event) {
-		settings.sessionMode = data.event.sessionMode ?? 'scheduled';
-		settings.registrationOpensAt = toLocalDateTime(data.event.registrationOpensAt);
-		settings.adHocClosesAt = toLocalDateTime(data.event.registrationClosesAt);
-		settings.durationMinutes = Math.max(
+		settings.value.sessionMode = data.event.sessionMode ?? 'scheduled';
+		settings.value.registrationOpensAt = toLocalDateTime(data.event.registrationOpensAt);
+		settings.value.adHocClosesAt = toLocalDateTime(data.event.registrationClosesAt);
+		settings.value.durationMinutes = Math.max(
 			1,
 			Math.round(
 				(new Date(data.event.registrationClosesAt).valueOf() -
@@ -203,7 +205,7 @@ function applyOverview(data: Overview) {
 					60_000,
 			),
 		);
-		settings.capacity = data.event.capacity;
+		settings.value.capacity = data.event.capacity;
 		const now = new Date();
 		const nextTransitionAt =
 			data.event.status === 'scheduled'
@@ -228,7 +230,7 @@ function applyOverview(data: Overview) {
 			sessionRefreshTimer = setTimeout(refreshCurrentSession, 15_000);
 		}
 	} else {
-		settings.capacity = 50;
+		settings.value.capacity = 50;
 		setDefaultSettings();
 	}
 }
@@ -284,17 +286,6 @@ async function loadHistory() {
 	history.value = (await response.json()) as HistoricalEvent[];
 }
 
-function formatEventDate(value: string) {
-	return new Intl.DateTimeFormat(props.locale, {
-		dateStyle: 'medium',
-		timeStyle: 'short',
-	}).format(new Date(value));
-}
-
-function guestLanguageLabel(locale: Locale) {
-	return languages.find((language) => language.code === locale)?.label ?? locale;
-}
-
 async function loadDashboard() {
 	try {
 		await loadOverview();
@@ -317,12 +308,12 @@ async function saveSettings() {
 			headers: await authHeaders(true),
 			body: JSON.stringify({
 				registrationOpensAt:
-					settings.sessionMode === 'ad_hoc'
+					settings.value.sessionMode === 'ad_hoc'
 						? new Date().toISOString()
-						: new Date(settings.registrationOpensAt).toISOString(),
+						: new Date(settings.value.registrationOpensAt).toISOString(),
 				registrationClosesAt: registrationClosesAt(),
-				capacity: settings.capacity,
-				sessionMode: settings.sessionMode,
+				capacity: settings.value.capacity,
+				sessionMode: settings.value.sessionMode,
 				questions: questions.value,
 			}),
 		});
@@ -384,7 +375,7 @@ async function runMarketAction(action: MarketAction, isConfirmed = false) {
 
 async function saveAndStartRegistration() {
 	const action: MarketAction =
-		settings.sessionMode === 'scheduled' ? 'schedule_registration' : 'open_registration';
+		settings.value.sessionMode === 'scheduled' ? 'schedule_registration' : 'open_registration';
 	const confirmation =
 		action === 'schedule_registration'
 			? t.value.confirmScheduleRegistration
@@ -473,7 +464,7 @@ async function saveCapacityOverride() {
 	if (!event.value) {
 		return;
 	}
-	await updateRegistrationOverrides(event.value.registrationClosesAt, settings.capacity);
+	await updateRegistrationOverrides(event.value.registrationClosesAt, settings.value.capacity);
 }
 
 async function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
@@ -495,7 +486,11 @@ async function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
 	}
 }
 
-async function addManualGuest(guest: ManualGuest) {
+/**
+ * Adds a guest by hand. `marketEventId` defaults to the live session, but the history view passes
+ * a finished session's id to record someone who was served outside the app.
+ */
+async function addManualGuest(guest: ManualGuest, marketEventId = event.value?.id ?? null) {
 	isBusy.value = true;
 	feedback.value = '';
 	try {
@@ -505,7 +500,7 @@ async function addManualGuest(guest: ManualGuest) {
 			body: JSON.stringify({
 				...guest,
 				locale: props.locale,
-				marketEventId: event.value?.id ?? null,
+				marketEventId,
 				answers: {},
 				source: 'admin',
 			}),
@@ -513,9 +508,8 @@ async function addManualGuest(guest: ManualGuest) {
 		if (!response.ok) {
 			throw new Error('guest');
 		}
-		showManualGuest.value = false;
 		await loadOverview();
-		await Promise.all([loadGuests(), loadSessionGuests()]);
+		await Promise.all([loadGuests(), loadSessionGuests(), loadHistory()]);
 	} catch {
 		feedback.value = t.value.error;
 	} finally {
@@ -557,7 +551,7 @@ async function sendBroadcast() {
 		const response = await fetch('/api/broadcast', {
 			method: 'POST',
 			headers: await authHeaders(true),
-			body: JSON.stringify(broadcast),
+			body: JSON.stringify(broadcast.value),
 		});
 		if (!response.ok) {
 			throw new Error('broadcast');
@@ -567,8 +561,7 @@ async function sendBroadcast() {
 			? `${t.value.broadcastQueued} ${result.queued}`
 			: t.value.broadcastNoRecipients;
 		if (result.queued) {
-			broadcast.title = '';
-			broadcast.body = '';
+			broadcast.value = { title: '', body: '' };
 		}
 	} catch {
 		feedback.value = t.value.error;
@@ -619,254 +612,31 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 
 			<p v-if="feedback" class="admin-feedback" role="status">{{ feedback }}</p>
 
-			<template v-if="activeView === 'current-session'">
-				<section v-if="sessionState === 'service_started'" class="admin-section">
-					<h2>{{ t.overview }}</h2>
-					<div class="stat-grid">
-						<article v-for="status in statuses" :key="status" class="stat-card">
-							<strong>{{ counts[status] ?? 0 }}</strong>
-							<span>{{ statusLabels[status] }}</span>
-						</article>
-					</div>
-				</section>
-
-				<section v-if="sessionState === 'inactive'" class="admin-section settings-card">
-					<h2>{{ t.registrationSettings }}</h2>
-					<p>{{ t.startSessionHelp }}</p>
-					<form @submit.prevent="saveSettings">
-						<label
-							><span>{{ t.sessionType }}</span
-							><select v-model="settings.sessionMode">
-								<option value="scheduled">{{ t.scheduledSession }}</option>
-								<option value="ad_hoc">{{ t.adHocSession }}</option>
-							</select></label
-						>
-						<p class="mode-help">
-							{{
-								settings.sessionMode === 'scheduled' ? t.scheduledSessionHelp : t.adHocSessionHelp
-							}}
-						</p>
-						<div v-if="settings.sessionMode === 'scheduled'" class="field-row">
-							<label
-								><span>{{ t.opensAt }}</span
-								><input v-model="settings.registrationOpensAt" type="datetime-local" required
-							/></label>
-							<label
-								><span>{{ t.registrationDurationMinutes }}</span
-								><input
-									v-model.number="settings.durationMinutes"
-									type="number"
-									min="1"
-									max="1440"
-									step="1"
-									list="registration-duration-options"
-									required
-							/></label>
-						</div>
-						<datalist id="registration-duration-options">
-							<option value="30"></option>
-							<option value="60"></option>
-							<option value="90"></option>
-							<option value="120"></option>
-						</datalist>
-						<label v-if="settings.sessionMode === 'ad_hoc'"
-							><span>{{ t.closesAt }}</span
-							><input v-model="settings.adHocClosesAt" type="datetime-local" required
-						/></label>
-						<label
-							><span>{{ t.capacity }}</span
-							><input v-model.number="settings.capacity" type="number" min="1" max="10000" required
-						/></label>
-						<div class="form-actions">
-							<AppButton type="submit" variant="secondary" :disabled="isBusy">
-								{{ t.saveSettings }}
-							</AppButton>
-							<AppButton type="button" :disabled="isBusy" @click="saveAndStartRegistration">
-								{{
-									settings.sessionMode === 'scheduled' ? t.scheduleRegistration : t.openRegistration
-								}}
-							</AppButton>
-						</div>
-					</form>
-				</section>
-
-				<section v-else-if="sessionState === 'scheduled'" class="admin-section settings-card">
-					<h2>{{ t.scheduled }}</h2>
-					<p>{{ t.scheduledFor }} {{ formatEventDate(event!.registrationOpensAt) }}</p>
-					<div class="override-grid">
-						<form @submit.prevent="postponeRegistration">
-							<label
-								><span>{{ t.postponeByMinutes }}</span
-								><input
-									v-model.number="postponementMinutes"
-									type="number"
-									min="1"
-									max="1440"
-									step="1"
-									required
-							/></label>
-							<AppButton type="submit" variant="secondary" :disabled="isBusy">
-								{{ t.postponeRegistration }}
-							</AppButton>
-						</form>
-					</div>
-					<div class="standalone-action">
-						<AppButton
-							type="button"
-							:disabled="isBusy"
-							@click="runMarketAction('open_registration')"
-						>
-							{{ t.openRegistrationNow }}
-						</AppButton>
-					</div>
-				</section>
-
-				<section
-					v-else-if="sessionState === 'registration_open'"
-					class="admin-section settings-card"
-				>
-					<h2>{{ t.registrationOverrides }}</h2>
-					<p>{{ t.overridesHelp }}</p>
-					<div class="override-grid">
-						<form @submit.prevent="extendRegistration">
-							<label
-								><span>{{ t.extendRegistrationMinutes }}</span
-								><input
-									v-model.number="extensionMinutes"
-									type="number"
-									min="1"
-									max="1440"
-									step="1"
-									list="registration-extension-options"
-									required
-							/></label>
-							<datalist id="registration-extension-options">
-								<option value="15"></option>
-								<option value="30"></option>
-								<option value="60"></option>
-							</datalist>
-							<AppButton type="submit" variant="secondary" :disabled="isBusy">
-								{{ t.extendRegistration }}
-							</AppButton>
-						</form>
-						<form @submit.prevent="saveCapacityOverride">
-							<label
-								><span>{{ t.capacity }}</span
-								><input
-									v-model.number="settings.capacity"
-									type="number"
-									min="1"
-									max="10000"
-									required
-							/></label>
-							<AppButton type="submit" variant="secondary" :disabled="isBusy">
-								{{ t.updateCapacity }}
-							</AppButton>
-						</form>
-					</div>
-					<div class="standalone-action">
-						<AppButton
-							type="button"
-							:disabled="isBusy"
-							@click="runMarketAction('close_registration')"
-						>
-							{{ t.closeRegistration }}
-						</AppButton>
-					</div>
-				</section>
-
-				<section
-					v-else-if="sessionState === 'registration_closed'"
-					class="admin-section action-card"
-				>
-					<div>
-						<h2>{{ t.lotteryActions }}</h2>
-						<p>{{ t.closed }}</p>
-					</div>
-					<div class="action-buttons">
-						<AppButton
-							type="button"
-							variant="secondary"
-							:disabled="isBusy"
-							@click="runMarketAction('reopen_registration')"
-							>{{ t.reopenRegistration }}</AppButton
-						>
-						<AppButton type="button" :disabled="isBusy" @click="runMarketAction('run_lottery')">{{
-							t.runLottery
-						}}</AppButton>
-					</div>
-				</section>
-
-				<section v-else class="admin-section action-card">
-					<div>
-						<h2>{{ t.serviceStarted }}</h2>
-						<p>{{ t.guestList }}</p>
-					</div>
-					<div class="action-buttons">
-						<AppButton type="button" @click="navigate('queue')">{{ t.goToQueue }}</AppButton>
-					</div>
-				</section>
-
-				<section
-					v-if="
-						event &&
-						(sessionState === 'registration_open' || sessionState === 'registration_closed')
-					"
-					class="admin-section guest-section registered-section"
-				>
-					<div class="section-heading">
-						<h2>{{ t.registeredGuests }}</h2>
-						<span class="session-count">{{ registeredSessionGuests.length }}</span>
-					</div>
-					<div v-if="registeredSessionGuests.length" class="guest-list">
-						<article v-for="guest in registeredSessionGuests" :key="guest.id" class="guest-row">
-							<div>
-								<strong>{{ guest.firstName }} {{ guest.lastName }}</strong>
-								<span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
-								<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
-							</div>
-						</article>
-					</div>
-					<p v-else class="empty-state">{{ t.noRegisteredGuests }}</p>
-				</section>
-
-				<section
-					v-if="
-						event &&
-						['registration_open', 'registration_closed', 'service_started'].includes(sessionState)
-					"
-					class="admin-section broadcast-card"
-				>
-					<h2>{{ t.broadcastTitle }}</h2>
-					<p>{{ t.broadcastHelp }}</p>
-					<form @submit.prevent="sendBroadcast">
-						<label>
-							<span>{{ t.broadcastTitleLabel }}</span>
-							<input v-model.trim="broadcast.title" type="text" maxlength="100" required />
-						</label>
-						<label>
-							<span>{{ t.broadcastMessageLabel }}</span>
-							<textarea v-model.trim="broadcast.body" maxlength="500" rows="4" required></textarea>
-						</label>
-						<AppButton type="submit" :disabled="isBusy">{{ t.broadcastSend }}</AppButton>
-					</form>
-				</section>
-
-				<section v-if="event" class="admin-section reset-card">
-					<div>
-						<h2>{{ t.resetSession }}</h2>
-						<p>{{ t.resetSessionHelp }}</p>
-					</div>
-					<AppButton
-						type="button"
-						variant="secondary"
-						:disabled="isBusy"
-						@click="runMarketAction('reset_session')"
-					>
-						{{ t.resetSession }}
-					</AppButton>
-				</section>
-			</template>
+			<SessionView
+				v-if="activeView === 'current-session'"
+				v-model:settings="settings"
+				v-model:extension-minutes="extensionMinutes"
+				v-model:postponement-minutes="postponementMinutes"
+				v-model:broadcast="broadcast"
+				:locale="locale"
+				:event="event"
+				:session-state="sessionState"
+				:statuses="statuses"
+				:counts="counts"
+				:status-labels="statusLabels"
+				:registered-guests="registeredSessionGuests"
+				:admissions="sessionAdmissions"
+				:busy="isBusy"
+				@save-settings="saveSettings"
+				@save-and-start-registration="saveAndStartRegistration"
+				@postpone-registration="postponeRegistration"
+				@extend-registration="extendRegistration"
+				@save-capacity-override="saveCapacityOverride"
+				@run="runMarketAction($event as MarketAction)"
+				@add-guest="addManualGuest"
+				@send-broadcast="sendBroadcast"
+				@navigate-queue="navigate('queue')"
+			/>
 
 			<QueueView
 				v-else-if="activeView === 'queue'"
@@ -875,6 +645,7 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 				:counts="counts"
 				:status-labels="statusLabels"
 				:service-started="sessionState === 'service_started'"
+				:admissions="sessionAdmissions"
 				:busy="isBusy"
 				@call-next="callNextGuests"
 				@run="runGuestCommand"
@@ -914,71 +685,26 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 				</form>
 			</section>
 
-			<section v-else-if="activeView === 'guest-database'" class="admin-section guest-section">
-				<div class="section-heading">
-					<h2>{{ t.allGuests }}</h2>
-					<button
-						class="add-guest-button"
-						type="button"
-						:disabled="event?.status !== 'service_started'"
-						@click="showManualGuest = true"
-					>
-						+ {{ t.addGuest }}
-					</button>
-				</div>
-				<form class="search-form" @submit.prevent="loadGuests">
-					<input
-						v-model="searchQuery"
-						type="search"
-						:placeholder="t.searchPlaceholder"
-						:aria-label="t.searchPlaceholder"
-					/><button type="submit">{{ t.search }}</button>
-				</form>
-				<ManualGuestForm
-					v-if="showManualGuest"
-					:locale="locale"
-					:busy="isBusy"
-					show-placement
-					@submit="addManualGuest"
-					@cancel="showManualGuest = false"
-				/>
-				<div v-if="guests.length" class="guest-list">
-					<article v-for="guest in guests" :key="guest.id" class="guest-row">
-						<div>
-							<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
-							><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
-							<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
-						</div>
-						<div class="guest-actions">
-							<span class="guest-status">{{ statusLabels[guest.status] }}</span>
-							<VisitCommandButtons
-								:locale="locale"
-								:status="guest.status"
-								:disabled="isBusy"
-								@run="runGuestCommand(guest, $event)"
-							/>
-						</div>
-					</article>
-				</div>
-				<p v-else class="empty-state">{{ t.noGuests }}</p>
-			</section>
+			<GuestDatabaseView
+				v-else-if="activeView === 'guest-database'"
+				v-model:search-query="searchQuery"
+				:locale="locale"
+				:guests="guests"
+				:status-labels="statusLabels"
+				:admissions="sessionAdmissions"
+				:busy="isBusy"
+				@search="loadGuests"
+				@run="runGuestCommand"
+				@add-guest="addManualGuest"
+			/>
 
-			<section v-else class="admin-section history-section">
-				<div v-if="history.length" class="history-list">
-					<article v-for="pastEvent in history" :key="pastEvent.id" class="history-row">
-						<div>
-							<strong>{{ formatEventDate(pastEvent.registrationOpensAt) }}</strong
-							><span>{{ formatEventDate(pastEvent.registrationClosesAt) }}</span>
-						</div>
-						<div>
-							<strong>{{ pastEvent.guestCount }}</strong
-							><span>{{ t.sessionGuests }}</span>
-						</div>
-						<span class="event-state ended">{{ t.closeSession }}</span>
-					</article>
-				</div>
-				<p v-else class="empty-state">{{ t.noHistory }}</p>
-			</section>
+			<SessionHistoryView
+				v-else
+				:locale="locale"
+				:history="history"
+				:busy="isBusy"
+				@add-guest="addManualGuest"
+			/>
 		</div>
 	</section>
 </template>
@@ -1027,9 +753,7 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	color: var(--color-brand);
 	margin-bottom: 8px;
 }
-.admin-heading p,
-.settings-card > p,
-.action-card p {
+.admin-heading p {
 	color: var(--color-text-subtle);
 	line-height: 1.5;
 }
@@ -1065,71 +789,14 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	background: #eef5f3;
 	color: var(--color-brand);
 }
-.stat-grid {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 10px;
-	margin-top: 14px;
-}
-.stat-card {
-	display: grid;
-	gap: 2px;
-	min-height: 92px;
-	padding: 15px;
-	border-radius: var(--radius-md);
-	color: white;
-	background: var(--color-brand);
-}
-.stat-card:first-child {
-	grid-column: span 2;
-}
-.stat-card strong {
-	font-family: var(--font-heading);
-	font-size: 32px;
-}
-.stat-card span {
-	font-size: 13px;
-}
-.settings-card,
-.action-card,
-.guest-section,
-.reset-card {
-	padding: 20px;
-	border: 1.5px solid #c7d2cc;
-	border-radius: var(--radius-lg);
-}
-.reset-card {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	align-items: center;
-	gap: 16px;
-}
-.reset-card p {
-	max-width: 560px;
-	color: var(--color-text-subtle);
-	line-height: 1.5;
-}
-.reset-card :deep(.app-button.secondary) {
-	color: var(--color-error);
-	box-shadow: inset 0 0 0 1.5px var(--color-error);
-}
-.reset-card :deep(.app-button.secondary:hover:not(:disabled)) {
-	color: white;
-	background: var(--color-error);
-}
-.questions-heading,
-.action-card {
+.questions-heading {
 	display: flex;
 	justify-content: space-between;
 	gap: 14px;
 	align-items: center;
-}
-.questions-heading {
 	margin-top: 5px;
 }
-.questions-heading h3,
-.manual-form h3 {
+.questions-heading h3 {
 	margin: 0;
 	font-family: var(--font-heading);
 	text-transform: uppercase;
@@ -1161,119 +828,9 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	color: var(--color-error);
 	padding: 5px 0;
 }
-.action-card {
-	align-items: flex-start;
-}
-.action-buttons {
-	display: grid;
-	gap: 10px;
-	width: 100%;
-}
-.standalone-action {
-	display: flex;
-	justify-content: flex-end;
-	margin-top: 18px;
-	padding-top: 18px;
-	border-top: 1px solid #dce3df;
-}
-.form-actions {
-	display: grid;
-	gap: 10px;
-}
-.override-grid {
-	display: grid;
-	gap: 18px;
-}
-.override-grid form {
-	margin-top: 0;
-	padding: 16px;
-	border-radius: var(--radius-md);
-	background: #f3f6f4;
-}
-.mode-help {
-	margin: -6px 0 0;
-	color: var(--color-text-subtle);
-	font-size: 14px;
-	line-height: 1.5;
-}
-.search-form {
-	display: grid;
-	grid-template-columns: 1fr auto;
-	gap: 8px;
-}
-.search-form button {
-	padding: 0 17px;
-	border: 0;
-	border-radius: 12px;
-	color: white;
-	background: var(--color-brand);
-	font-weight: 700;
-}
-.session-count {
-	display: grid;
-	place-items: center;
-	min-width: 38px;
-	height: 38px;
-	padding: 0 10px;
-	border-radius: var(--radius-pill);
-	color: var(--color-on-brand);
-	background: var(--color-brand);
-	font-family: var(--font-heading);
-	font-weight: 700;
-}
-.history-list {
-	display: grid;
-	gap: 12px;
-}
-.history-row {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	gap: 14px;
-	align-items: center;
-	padding: 18px;
-	border: 1.5px solid #c7d2cc;
-	border-radius: var(--radius-md);
-}
-.history-row > div {
-	display: grid;
-	gap: 4px;
-}
-.history-row > div:nth-child(2) {
-	text-align: end;
-}
-.history-row span:not(.event-state) {
-	color: var(--color-text-subtle);
-	font-size: 13px;
-}
-.history-row .event-state {
-	grid-column: 1 / -1;
-	justify-self: start;
-}
 @media (min-width: 560px) {
-	.stat-grid {
-		grid-template-columns: repeat(5, 1fr);
-	}
-	.stat-card:first-child {
-		grid-column: auto;
-	}
-	.field-row {
-		grid-template-columns: 1fr 1fr;
-	}
 	.question-row {
 		grid-template-columns: minmax(0, 2fr) 1fr auto auto;
-		align-items: center;
-	}
-	.action-buttons {
-		width: auto;
-	}
-	.form-actions {
-		grid-template-columns: auto auto;
-		justify-content: end;
-	}
-	.override-grid {
-		grid-template-columns: 1fr 1fr;
-	}
-	.action-card {
 		align-items: center;
 	}
 }
@@ -1297,13 +854,6 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 		min-height: 50px;
 		border-radius: 12px;
 		text-align: start;
-	}
-	.history-row {
-		grid-template-columns: minmax(0, 1fr) auto auto;
-	}
-	.history-row .event-state {
-		grid-column: auto;
-		justify-self: end;
 	}
 }
 </style>

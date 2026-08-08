@@ -557,9 +557,22 @@ export async function runLottery(
 	if (!lotteryTarget) {
 		return { ok: false, status: 500, error: 'The lottery transition is not configured.' };
 	}
-	const selectedRegistrations = shuffled.slice(0, event.capacity);
+	// A worker can place a guest straight into the line before the draw. Those guests are already
+	// `waiting` with a position, so they take up a slot and the winners have to queue behind them —
+	// otherwise the draw would hand out a position 1 that is already spoken for.
+	const [placed] = await db
+		.select({
+			count: sql<number>`count(*)::int`,
+			highestPosition: sql<number | null>`max(${visits.queuePosition})`,
+		})
+		.from(visits)
+		.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'waiting')));
+	const reservedCount = placed?.count ?? 0;
+	const positionOffset = placed?.highestPosition ?? 0;
+	const remainingCapacity = Math.max(0, event.capacity - reservedCount);
+	const selectedRegistrations = shuffled.slice(0, remainingCapacity);
 	const selected = selectedRegistrations.map(({ id }) => id);
-	const notPlaced = shuffled.slice(event.capacity).map(({ id }) => id);
+	const notPlaced = shuffled.slice(remainingCapacity).map(({ id }) => id);
 
 	await db
 		.transaction(async (tx) => {
@@ -573,7 +586,8 @@ export async function runLottery(
 			}
 			if (selected.length) {
 				const positions = selectedRegistrations.map(
-					(registration, index) => sql`(${registration.id}::uuid, ${index + 1}::integer)`,
+					(registration, index) =>
+						sql`(${registration.id}::uuid, ${index + 1 + positionOffset}::integer)`,
 				);
 				await tx.execute(sql`
 					UPDATE ${visits} AS visit

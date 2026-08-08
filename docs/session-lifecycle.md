@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=d72f11c7022f, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=682773da0fc7 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=ec3e08809438, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=f5c167b78676 -->
 
 # Session lifecycle
 
@@ -88,8 +88,9 @@ mis-tap cannot move a served guest back into the queue.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> registered : guest registers
-    [*] --> waiting : walk-in added<br/>during service
+    [*] --> registered : guest registers, or a worker<br/>enters them in the draw
+    [*] --> waiting : worker gives a guest<br/>a spot in the line
+    [*] --> served : worker records someone<br/>served outside the app
 
     registered --> waiting : select (lottery win)
     registered --> not_placed : skip (lottery loss)
@@ -113,7 +114,9 @@ stateDiagram-v2
 Who owns each transition matters:
 
 - **The lottery** owns `select` and `skip`. `run_lottery` shuffles the `registered` visits, gives the
-  first `capacity` of them a `queue_position`, and marks the rest `not_placed`.
+  first `capacity` of them a `queue_position`, and marks the rest `not_placed`. Any guest a worker
+  already placed in the line is `waiting` before the draw runs, so those spots come out of
+  `capacity` first and the winners are numbered behind them.
 - **The guest** owns `cancel`, from their own status screen, and only while `registered` or
   `waiting`.
 - **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the only four
@@ -129,5 +132,5 @@ queue order and calls them in a single statement, so two workers running the que
 cannot claim the same guest.
 
 `queue_position` is display ordering, not an identifier — there is no unique constraint on it. A
-walk-in added during service is placed either at the front of the waiting guests (shifting them
-down by one) or at the end.
+guest a worker places in the line goes either at the front of the waiting guests (shifting them
+down by one) or at the end, whether that happens during service or ahead of the draw.

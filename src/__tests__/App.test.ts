@@ -404,7 +404,8 @@ describe('App', () => {
 
 		await navigateTo('Guest database');
 		expect(wrapper.text()).toContain('All guests');
-		expect(wrapper.text()).toContain('Add guest');
+		// This fixture has no session configured, so there is nothing to add a guest to.
+		expect(wrapper.text()).not.toContain('Add guest');
 		expect(getAccessToken).toHaveBeenCalled();
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/market',
@@ -419,7 +420,12 @@ describe('App', () => {
 	it.each([
 		{
 			status: 'scheduled',
-			shown: ['Registration scheduled', 'Postpone registration', 'Open registration now'],
+			shown: [
+				'Registration scheduled',
+				'Postpone registration',
+				'Open registration now',
+				'Add guest',
+			],
 			hidden: ['Registration settings', 'Today’s overview', 'Broadcast notification'],
 		},
 		{
@@ -429,19 +435,20 @@ describe('App', () => {
 				'Extend registration by (minutes)',
 				'Close registration',
 				'Broadcast notification',
+				'Add guest',
 			],
 			hidden: ['Today’s overview', 'Run lottery draw'],
 		},
 		{
 			status: 'registration_closed',
-			shown: ['Reopen registration', 'Run lottery draw', 'Broadcast notification'],
+			shown: ['Reopen registration', 'Run lottery draw', 'Broadcast notification', 'Add guest'],
 			hidden: ['Registration settings', 'Today’s overview'],
 		},
 		{
 			// Queue management moved to its own view, so current-session only points at it.
 			status: 'service_started',
-			shown: ['Today’s overview', 'Manage the queue', 'Broadcast notification'],
-			hidden: ['Registration settings', 'Run lottery draw', 'Call next', 'Add guest'],
+			shown: ['Today’s overview', 'Manage the queue', 'Broadcast notification', 'Add guest'],
+			hidden: ['Registration settings', 'Run lottery draw', 'Call next'],
 		},
 	] as const)(
 		'shows only the $status current-session controls',

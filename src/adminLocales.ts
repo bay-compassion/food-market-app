@@ -5,6 +5,13 @@ export interface AdminTranslation {
 	adHocSessionHelp: string;
 	addGuest: string;
 	addQuestion: string;
+	admissionLabel: string;
+	admitAsServed: string;
+	admitAsServedHelp: string;
+	admitToLottery: string;
+	admitToLotteryHelp: string;
+	admitToQueue: string;
+	admitToQueueHelp: string;
 	adminDescription: string;
 	adminTitle: string;
 	allGuests: string;
@@ -125,6 +132,16 @@ export const adminTranslations = {
 		adHocSessionHelp: 'Open registration immediately and choose when it closes.',
 		addGuest: 'Add guest',
 		addQuestion: 'Add question',
+		admissionLabel: 'How should they join?',
+		admitAsServed: 'Record as already served',
+		admitAsServedHelp:
+			'For someone who was handed food outside the app. They join this session’s record without entering any line.',
+		admitToLottery: 'Enter the draw',
+		admitToLotteryHelp:
+			'The guest takes their chances in the lottery, the same as anyone who signed up on their own phone.',
+		admitToQueue: 'Give them a spot',
+		admitToQueueHelp:
+			'The guest skips the lottery and goes straight into the line. This uses one of the session’s spots.',
 		adminDescription: 'Configure registration, draw the lottery, and manage today’s guests.',
 		adminTitle: 'Market dashboard',
 		allGuests: 'All guests',
@@ -246,6 +263,16 @@ export const adminTranslations = {
 		adHocSessionHelp: 'Abra el registro inmediatamente y elija cuándo se cierra.',
 		addGuest: 'Agregar invitado',
 		addQuestion: 'Agregar pregunta',
+		admissionLabel: '¿Cómo debe unirse?',
+		admitAsServed: 'Registrar como ya atendido',
+		admitAsServedHelp:
+			'Para alguien que recibió alimentos fuera de la aplicación. Se agrega al registro de esta sesión sin entrar a ninguna fila.',
+		admitToLottery: 'Entrar al sorteo',
+		admitToLotteryHelp:
+			'El invitado participa en el sorteo igual que cualquiera que se haya inscrito desde su propio teléfono.',
+		admitToQueue: 'Darle un lugar',
+		admitToQueueHelp:
+			'El invitado se salta el sorteo y pasa directo a la fila. Esto ocupa uno de los lugares de la sesión.',
 		adminDescription: 'Configure el registro, realice el sorteo y gestione a los invitados de hoy.',
 		adminTitle: 'Panel del mercado',
 		allGuests: 'Todos los invitados',
@@ -368,6 +395,16 @@ export const adminTranslations = {
 		adHocSessionHelp: 'ثبت‌نام را بلافاصله باز کنید و زمان بسته شدن را انتخاب کنید.',
 		addGuest: 'افزودن مهمان',
 		addQuestion: 'افزودن پرسش',
+		admissionLabel: 'چگونه اضافه شود؟',
+		admitAsServed: 'ثبت به عنوان خدمت‌گرفته',
+		admitAsServedHelp:
+			'برای کسی که خارج از برنامه غذا دریافت کرده است. بدون ورود به هیچ صفی به سوابق این جلسه افزوده می‌شود.',
+		admitToLottery: 'ورود به قرعه‌کشی',
+		admitToLotteryHelp:
+			'مهمان مانند هر کسی که با تلفن خودش ثبت‌نام کرده است، در قرعه‌کشی شرکت می‌کند.',
+		admitToQueue: 'دادن جایگاه',
+		admitToQueueHelp:
+			'مهمان قرعه‌کشی را رد می‌کند و مستقیم در صف قرار می‌گیرد. این کار یکی از جایگاه‌های جلسه را اشغال می‌کند.',
 		adminDescription: 'ثبت‌نام را تنظیم، قرعه‌کشی را اجرا و مهمانان امروز را مدیریت کنید.',
 		adminTitle: 'داشبورد بازار',
 		allGuests: 'همه مهمانان',
@@ -487,6 +524,16 @@ export const adminTranslations = {
 		adHocSessionHelp: 'Buksan agad ang pagpaparehistro at piliin kung kailan ito magsasara.',
 		addGuest: 'Magdagdag ng bisita',
 		addQuestion: 'Magdagdag ng tanong',
+		admissionLabel: 'Paano sila sasali?',
+		admitAsServed: 'Itala bilang naserbisyuhan na',
+		admitAsServedHelp:
+			'Para sa taong nabigyan ng pagkain sa labas ng app. Idaragdag sila sa talaan ng sesyong ito nang hindi sumasali sa pila.',
+		admitToLottery: 'Isali sa palabunutan',
+		admitToLotteryHelp:
+			'Sasali ang bisita sa palabunutan, katulad ng sinumang nagparehistro gamit ang sariling telepono.',
+		admitToQueue: 'Bigyan ng puwesto',
+		admitToQueueHelp:
+			'Laktawan ng bisita ang palabunutan at diretso sa pila. Kumukuha ito ng isang puwesto sa sesyon.',
 		adminDescription:
 			'Ihanda ang pagpaparehistro, isagawa ang lottery, at pamahalaan ang mga bisita ngayon.',
 		adminTitle: 'Dashboard ng pamilihan',
@@ -612,6 +659,16 @@ export const adminTranslations = {
 		adHocSessionHelp: 'Mở đăng ký ngay và chọn thời gian đóng.',
 		addGuest: 'Thêm khách',
 		addQuestion: 'Thêm câu hỏi',
+		admissionLabel: 'Họ tham gia bằng cách nào?',
+		admitAsServed: 'Ghi nhận là đã phục vụ',
+		admitAsServedHelp:
+			'Dành cho người đã nhận thực phẩm bên ngoài ứng dụng. Họ được thêm vào hồ sơ buổi này mà không vào hàng chờ.',
+		admitToLottery: 'Vào vòng quay số',
+		admitToLotteryHelp:
+			'Khách sẽ tham gia quay số như bất kỳ ai đã tự đăng ký bằng điện thoại của mình.',
+		admitToQueue: 'Cho một chỗ',
+		admitToQueueHelp:
+			'Khách bỏ qua vòng quay số và vào thẳng hàng chờ. Việc này chiếm một chỗ của buổi phát.',
 		adminDescription: 'Thiết lập đăng ký, quay xổ số và quản lý khách hôm nay.',
 		adminTitle: 'Bảng điều khiển chợ',
 		allGuests: 'Tất cả khách',
@@ -733,6 +790,13 @@ export const adminTranslations = {
 		adHocSessionHelp: '立即开放登记，并选择关闭时间。',
 		addGuest: '添加访客',
 		addQuestion: '添加问题',
+		admissionLabel: '如何加入？',
+		admitAsServed: '记录为已服务',
+		admitAsServedHelp: '适用于在应用之外已领取食物的人。将其加入本场记录，但不进入任何队列。',
+		admitToLottery: '参加抽签',
+		admitToLotteryHelp: '访客将像自己用手机报名的人一样参加抽签。',
+		admitToQueue: '直接给名额',
+		admitToQueueHelp: '访客跳过抽签，直接进入队列。这会占用本场的一个名额。',
 		adminDescription: '设置登记、进行抽签并管理今天的访客。',
 		adminTitle: '市场管理面板',
 		allGuests: '所有访客',
@@ -852,6 +916,14 @@ export const adminTranslations = {
 		adHocSessionHelp: 'افتح التسجيل فورًا واختر وقت إغلاقه.',
 		addGuest: 'إضافة ضيف',
 		addQuestion: 'إضافة سؤال',
+		admissionLabel: 'كيف ينضم؟',
+		admitAsServed: 'تسجيله كمخدوم بالفعل',
+		admitAsServedHelp:
+			'لمن استلم الطعام خارج التطبيق. يُضاف إلى سجل هذه الجلسة دون الانضمام إلى أي صف.',
+		admitToLottery: 'الدخول في القرعة',
+		admitToLotteryHelp: 'يشارك الضيف في القرعة مثل أي شخص سجّل بنفسه عبر هاتفه.',
+		admitToQueue: 'منحه مكانًا',
+		admitToQueueHelp: 'يتخطى الضيف القرعة ويدخل مباشرة إلى الصف. يشغل ذلك أحد أماكن الجلسة.',
 		adminDescription: 'اضبط التسجيل وأجرِ القرعة وأدر ضيوف اليوم.',
 		adminTitle: 'لوحة تحكم السوق',
 		allGuests: 'جميع الضيوف',

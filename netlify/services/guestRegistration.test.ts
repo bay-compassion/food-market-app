@@ -125,14 +125,39 @@ describe('registerGuest eligibility', () => {
 		});
 	});
 
-	it('rejects an admin submission when the session has not started service', async () => {
-		queueResult([{ status: 'registration_open' }]);
+	it('rejects an admin submission naming a session that does not exist', async () => {
+		queueResult([]);
 		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
 
 		const result = await registerGuest(submission);
 
-		expect(result.ok).toBe(false);
-		expect((result as { error: string }).error).toMatch(/after service starts/);
+		expect(result).toEqual({
+			ok: false,
+			status: 409,
+			error: 'No market event has been configured.',
+		});
+	});
+
+	it.each([
+		// The lottery is over once service starts, so a guest can no longer be entered into it.
+		{ status: 'service_started', admission: 'lottery' },
+		// A live session is not a place to record someone as already served.
+		{ status: 'registration_open', admission: 'served' },
+		// A finished session can only take an after-the-fact record.
+		{ status: 'ended', admission: 'queue' },
+	])('rejects a $admission admission while the session is $status', async (scenario) => {
+		queueResult([{ status: scenario.status }]);
+		const submission = parseSubmission(
+			selfSubmission({ source: 'admin', admission: scenario.admission }),
+		)!;
+
+		const result = await registerGuest(submission);
+
+		expect(result).toEqual({
+			ok: false,
+			status: 409,
+			error: 'That way of adding a guest is not available while the session is in this state.',
+		});
 	});
 
 	it('rejects a self submission with no market event selected', async () => {
@@ -246,6 +271,14 @@ describe('registerGuest happy paths', () => {
 		registrationClosesAt: new Date(Date.now() + 60_000),
 	};
 
+	/** The row handed to `insert(visits).values(...)`, dug out of the stubbed insert calls. */
+	function insertedVisit() {
+		return db.insert.mock.results
+			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
+			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
+			.find((row) => row?.guestId);
+	}
+
 	it('creates a new guest and visit for a first-time self registration', async () => {
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions
@@ -306,11 +339,32 @@ describe('registerGuest happy paths', () => {
 		expect(submission.queuePlacement).toBe('end');
 		await registerGuest(submission);
 
-		const inserted = db.insert.mock.results
-			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
-			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
-			.find((row) => row?.status === 'waiting');
-		expect(inserted?.queuePosition).toBe(7);
+		expect(insertedVisit()?.queuePosition).toBe(7);
+	});
+
+	it('enters a pre-lottery guest into the draw with no queue position', async () => {
+		queueResult([{ status: 'registration_open' }]); // admin event status check
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
+		const submission = parseSubmission(selfSubmission({ source: 'admin', admission: 'lottery' }))!;
+
+		const result = await registerGuest(submission);
+
+		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'registered' } });
+		expect(insertedVisit()?.queuePosition).toBeNull();
+	});
+
+	it('records a guest served out of band once the session has ended', async () => {
+		queueResult([{ status: 'ended' }]); // admin event status check
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
+		const submission = parseSubmission(selfSubmission({ source: 'admin', admission: 'served' }))!;
+
+		const result = await registerGuest(submission);
+
+		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'served' } });
+		// A record of someone already fed never joins a line.
+		expect(insertedVisit()?.queuePosition).toBeNull();
 	});
 
 	it('puts a walk-in at the front of the queue when the worker asks for next up', async () => {
@@ -327,10 +381,6 @@ describe('registerGuest happy paths', () => {
 		expect(submission.queuePlacement).toBe('next');
 		await registerGuest(submission);
 
-		const inserted = db.insert.mock.results
-			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
-			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
-			.find((row) => row?.status === 'waiting');
-		expect(inserted?.queuePosition).toBe(3);
+		expect(insertedVisit()?.queuePosition).toBe(3);
 	});
 });
