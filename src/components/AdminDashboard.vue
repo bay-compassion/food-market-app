@@ -14,10 +14,12 @@ import {
 	type VisitCommand,
 	type VisitStatus,
 } from '../services/visitStateMachine';
+import ManualGuestForm from './admin/ManualGuestForm.vue';
+import QueueView from './admin/QueueView.vue';
+import type { ManualGuest, QueueGuest } from './admin/types';
 import VisitCommandButtons from './admin/VisitCommandButtons.vue';
 import AppButton from './AppButton.vue';
 import EyebrowLabel from './EyebrowLabel.vue';
-import FormField from './FormField.vue';
 
 type GuestStatus = VisitStatus;
 type Question = { id?: string; prompt: string; type: 'text' | 'scale'; required: boolean };
@@ -29,19 +31,14 @@ type MarketEvent = {
 	sessionMode: SessionMode;
 	status: SessionStatus;
 };
-type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
+type AdminView =
+	| 'current-session'
+	| 'queue'
+	| 'question-bank'
+	| 'guest-database'
+	| 'session-history';
 type HistoricalEvent = MarketEvent & { guestCount: number };
-type Guest = {
-	id: string;
-	marketEventId: string | null;
-	firstName: string;
-	lastName: string;
-	phone: string;
-	householdSize: number;
-	locale: Locale;
-	queuePosition: number | null;
-	status: GuestStatus;
-};
+type Guest = QueueGuest & { marketEventId: string | null };
 type Overview = {
 	event: MarketEvent | null;
 	questions: Question[];
@@ -76,13 +73,6 @@ const settings = reactive({
 const extensionMinutes = ref(30);
 const postponementMinutes = ref(30);
 let sessionRefreshTimer: ReturnType<typeof setTimeout> | undefined;
-const manualGuest = reactive({
-	firstName: '',
-	lastName: '',
-	age: '' as string | number,
-	householdSize: 1 as string | number,
-	phone: '',
-});
 const broadcast = reactive({ title: '', body: '' });
 
 const statuses: GuestStatus[] = [
@@ -105,6 +95,7 @@ const statusLabels = computed<Record<GuestStatus, string>>(() => ({
 }));
 const navigation = computed<{ id: AdminView; label: string }[]>(() => [
 	{ id: 'current-session', label: t.value.currentSession },
+	{ id: 'queue', label: t.value.queue },
 	{ id: 'question-bank', label: t.value.questionBank },
 	{ id: 'guest-database', label: t.value.guestDatabase },
 	{ id: 'session-history', label: t.value.historySessions },
@@ -136,6 +127,7 @@ const currentSessionGuests = computed(() =>
 const registeredSessionGuests = computed(() =>
 	currentSessionGuests.value.filter((guest) => guest.status === 'registered'),
 );
+const outstandingCount = computed(() => (counts.value.waiting ?? 0) + (counts.value.called ?? 0));
 
 watch(
 	() => props.view,
@@ -230,6 +222,10 @@ function applyOverview(data: Overview) {
 					2_147_000_000,
 				),
 			);
+		} else if (data.event.status === 'service_started') {
+			// Several workers can run the queue at once, so keep polling while service is live —
+			// otherwise one worker never sees the guests another has already called.
+			sessionRefreshTimer = setTimeout(refreshCurrentSession, 15_000);
 		}
 	} else {
 		settings.capacity = 50;
@@ -355,7 +351,11 @@ async function runMarketAction(action: MarketAction, isConfirmed = false) {
 		close_registration: t.value.confirmCloseRegistration,
 		reopen_registration: t.value.confirmReopenRegistration,
 		run_lottery: t.value.confirmRunLottery,
-		close_session: t.value.confirmCloseSession,
+		// Closing marks anyone still waiting or called as a no-show, so name the count first.
+		close_session:
+			outstandingCount.value > 0
+				? `${outstandingCount.value} ${t.value.confirmCloseSessionOutstanding}`
+				: t.value.confirmCloseSession,
 		reset_session: t.value.confirmResetSession,
 	};
 	if (!isConfirmed && !window.confirm(confirmations[action])) {
@@ -476,7 +476,7 @@ async function saveCapacityOverride() {
 	await updateRegistrationOverrides(event.value.registrationClosesAt, settings.capacity);
 }
 
-async function runGuestCommand(guest: Guest, command: VisitCommand) {
+async function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
 	const previous = guest.status;
 	guest.status = visitCommandTarget(command);
 	try {
@@ -495,7 +495,7 @@ async function runGuestCommand(guest: Guest, command: VisitCommand) {
 	}
 }
 
-async function addManualGuest() {
+async function addManualGuest(guest: ManualGuest) {
 	isBusy.value = true;
 	feedback.value = '';
 	try {
@@ -503,7 +503,7 @@ async function addManualGuest() {
 			method: 'POST',
 			headers: await authHeaders(true),
 			body: JSON.stringify({
-				...manualGuest,
+				...guest,
 				locale: props.locale,
 				marketEventId: event.value?.id ?? null,
 				answers: {},
@@ -513,16 +513,33 @@ async function addManualGuest() {
 		if (!response.ok) {
 			throw new Error('guest');
 		}
-		Object.assign(manualGuest, {
-			firstName: '',
-			lastName: '',
-			age: '',
-			householdSize: 1,
-			phone: '',
-		});
 		showManualGuest.value = false;
 		await loadOverview();
 		await Promise.all([loadGuests(), loadSessionGuests()]);
+	} catch {
+		feedback.value = t.value.error;
+	} finally {
+		isBusy.value = false;
+	}
+}
+
+async function callNextGuests(count: number) {
+	isBusy.value = true;
+	feedback.value = '';
+	try {
+		const response = await fetch('/api/queue', {
+			method: 'POST',
+			headers: await authHeaders(true),
+			body: JSON.stringify({ action: 'call_next', count }),
+		});
+		if (!response.ok) {
+			throw new Error('call_next');
+		}
+		const { called } = (await response.json()) as { called: string[] };
+		await Promise.all([loadOverview(), loadSessionGuests()]);
+		if (!called.length) {
+			feedback.value = t.value.noWaitingGuests;
+		}
 	} catch {
 		feedback.value = t.value.error;
 	} finally {
@@ -581,13 +598,21 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 		</nav>
 
 		<div class="admin-content">
-			<header class="admin-heading">
+			<!-- The queue view drops the eyebrow and description: during service this is the only
+			     screen a worker uses, and that chrome pushes the controls off a phone screen. -->
+			<header class="admin-heading" :class="{ compact: activeView === 'queue' }">
 				<div>
-					<EyebrowLabel tone="brand">{{ base.adminEyebrow }}</EyebrowLabel>
+					<EyebrowLabel v-if="activeView !== 'queue'" tone="brand">
+						{{ base.adminEyebrow }}
+					</EyebrowLabel>
 					<h1>{{ navigation.find((item) => item.id === activeView)?.label }}</h1>
-					<p>{{ t.adminDescription }}</p>
+					<p v-if="activeView !== 'queue'">{{ t.adminDescription }}</p>
 				</div>
-				<span v-if="activeView === 'current-session'" class="event-state" :class="sessionState">
+				<span
+					v-if="activeView === 'current-session' || activeView === 'queue'"
+					class="event-state"
+					:class="sessionState"
+				>
 					{{ sessionStatusLabel }}
 				</span>
 			</header>
@@ -772,69 +797,13 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 					</div>
 				</section>
 
-				<section v-else class="admin-section guest-section">
-					<div class="section-heading">
-						<div>
-							<h2>{{ t.guestList }}</h2>
-							<p>{{ t.serviceStarted }}</p>
-						</div>
-						<button class="add-guest-button" type="button" @click="showManualGuest = true">
-							+ {{ t.addGuest }}
-						</button>
+				<section v-else class="admin-section action-card">
+					<div>
+						<h2>{{ t.serviceStarted }}</h2>
+						<p>{{ t.guestList }}</p>
 					</div>
-					<form v-if="showManualGuest" class="manual-form" @submit.prevent="addManualGuest">
-						<h3>{{ t.manualGuestTitle }}</h3>
-						<FormField v-model="manualGuest.firstName" :label="base.firstName" required />
-						<FormField v-model="manualGuest.lastName" :label="base.lastName" required />
-						<div class="field-row">
-							<FormField
-								v-model="manualGuest.age"
-								:label="base.age"
-								type="number"
-								:min="0"
-								:max="120"
-								required
-							/><FormField
-								v-model="manualGuest.householdSize"
-								:label="base.household"
-								type="number"
-								:min="1"
-								:max="30"
-								required
-							/>
-						</div>
-						<FormField v-model="manualGuest.phone" :label="base.phone" type="tel" required />
-						<div class="manual-actions">
-							<button type="button" @click="showManualGuest = false">{{ t.cancel }}</button
-							><AppButton type="submit" :disabled="isBusy">{{ t.saveGuest }}</AppButton>
-						</div>
-					</form>
-					<div v-if="currentSessionGuests.length" class="guest-list">
-						<article v-for="guest in currentSessionGuests" :key="guest.id" class="guest-row">
-							<div>
-								<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
-								><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
-								<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
-								<span v-if="guest.queuePosition">
-									{{ t.queuePosition }}: {{ guest.queuePosition }}
-								</span>
-							</div>
-							<div class="guest-actions">
-								<span class="guest-status">{{ statusLabels[guest.status] }}</span>
-								<VisitCommandButtons
-									:locale="locale"
-									:status="guest.status"
-									:disabled="isBusy"
-									@run="runGuestCommand(guest, $event)"
-								/>
-							</div>
-						</article>
-					</div>
-					<p v-else class="empty-state">{{ t.noGuests }}</p>
-					<div class="standalone-action">
-						<AppButton type="button" :disabled="isBusy" @click="runMarketAction('close_session')">
-							{{ t.closeSession }}
-						</AppButton>
+					<div class="action-buttons">
+						<AppButton type="button" @click="navigate('queue')">{{ t.goToQueue }}</AppButton>
 					</div>
 				</section>
 
@@ -899,6 +868,21 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 				</section>
 			</template>
 
+			<QueueView
+				v-else-if="activeView === 'queue'"
+				:locale="locale"
+				:guests="currentSessionGuests"
+				:counts="counts"
+				:status-labels="statusLabels"
+				:service-started="sessionState === 'service_started'"
+				:busy="isBusy"
+				@call-next="callNextGuests"
+				@run="runGuestCommand"
+				@add-guest="addManualGuest"
+				@close-session="runMarketAction('close_session')"
+				@navigate-current-session="navigate('current-session')"
+			/>
+
 			<section v-else-if="activeView === 'question-bank'" class="admin-section settings-card">
 				<div class="questions-heading">
 					<h2>{{ t.questions }}</h2>
@@ -950,33 +934,14 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 						:aria-label="t.searchPlaceholder"
 					/><button type="submit">{{ t.search }}</button>
 				</form>
-				<form v-if="showManualGuest" class="manual-form" @submit.prevent="addManualGuest">
-					<h3>{{ t.manualGuestTitle }}</h3>
-					<FormField v-model="manualGuest.firstName" :label="base.firstName" required />
-					<FormField v-model="manualGuest.lastName" :label="base.lastName" required />
-					<div class="field-row">
-						<FormField
-							v-model="manualGuest.age"
-							:label="base.age"
-							type="number"
-							:min="0"
-							:max="120"
-							required
-						/><FormField
-							v-model="manualGuest.householdSize"
-							:label="base.household"
-							type="number"
-							:min="1"
-							:max="30"
-							required
-						/>
-					</div>
-					<FormField v-model="manualGuest.phone" :label="base.phone" type="tel" required />
-					<div class="manual-actions">
-						<button type="button" @click="showManualGuest = false">{{ t.cancel }}</button
-						><AppButton type="submit" :disabled="isBusy">{{ t.saveGuest }}</AppButton>
-					</div>
-				</form>
+				<ManualGuestForm
+					v-if="showManualGuest"
+					:locale="locale"
+					:busy="isBusy"
+					show-placement
+					@submit="addManualGuest"
+					@cancel="showManualGuest = false"
+				/>
 				<div v-if="guests.length" class="guest-list">
 					<article v-for="guest in guests" :key="guest.id" class="guest-row">
 						<div>
@@ -1063,7 +1028,6 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	margin-bottom: 8px;
 }
 .admin-heading p,
-.section-heading p,
 .settings-card > p,
 .action-card p {
 	color: var(--color-text-subtle);
@@ -1100,14 +1064,6 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	border-radius: var(--radius-sm);
 	background: #eef5f3;
 	color: var(--color-brand);
-}
-.admin-section {
-	margin-bottom: 20px;
-}
-.admin-section h2 {
-	font-family: var(--font-heading);
-	font-size: 23px;
-	text-transform: uppercase;
 }
 .stat-grid {
 	display: grid;
@@ -1162,42 +1118,12 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	color: white;
 	background: var(--color-error);
 }
-.section-heading,
 .questions-heading,
-.action-card,
-.guest-row,
-.manual-actions {
+.action-card {
 	display: flex;
 	justify-content: space-between;
 	gap: 14px;
 	align-items: center;
-}
-form {
-	display: grid;
-	gap: 15px;
-	margin-top: 18px;
-}
-label {
-	display: grid;
-	gap: 7px;
-	font-family: var(--font-heading);
-	font-size: 14px;
-	font-weight: 700;
-}
-input,
-select {
-	width: 100%;
-	min-height: 50px;
-	padding: 0 13px;
-	border: 1.5px solid var(--color-border);
-	border-radius: 12px;
-	background: white;
-	color: var(--color-text);
-}
-.field-row {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 12px;
 }
 .questions-heading {
 	margin-top: 5px;
@@ -1209,7 +1135,6 @@ select {
 	text-transform: uppercase;
 }
 .questions-heading button,
-.add-guest-button,
 .remove-button {
 	border: 0;
 	color: var(--color-brand);
@@ -1284,21 +1209,6 @@ select {
 	background: var(--color-brand);
 	font-weight: 700;
 }
-.manual-form {
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: #f3f6f4;
-}
-.manual-actions > button:first-child {
-	border: 0;
-	color: var(--color-brand);
-	background: transparent;
-	font-weight: 700;
-}
-.guest-list {
-	display: grid;
-	margin-top: 18px;
-}
 .session-count {
 	display: grid;
 	place-items: center;
@@ -1338,38 +1248,6 @@ select {
 .history-row .event-state {
 	grid-column: 1 / -1;
 	justify-self: start;
-}
-.guest-row {
-	padding: 14px 0;
-	border-top: 1px solid #dce3df;
-}
-.guest-row > div {
-	display: grid;
-	gap: 4px;
-	min-width: 0;
-}
-.guest-row span {
-	color: var(--color-text-subtle);
-	font-size: 12px;
-}
-.guest-row {
-	flex-wrap: wrap;
-}
-.guest-row .guest-actions {
-	display: grid;
-	flex: 1 1 100%;
-	gap: 8px;
-	justify-items: start;
-}
-.guest-row .guest-status {
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.03em;
-}
-.empty-state {
-	padding: 30px 0 10px;
-	text-align: center;
-	color: var(--color-text-subtle);
 }
 @media (min-width: 560px) {
 	.stat-grid {

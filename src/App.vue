@@ -190,9 +190,15 @@ const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
 const isAdmin = computed(() => route.name === 'admin');
-type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
+type AdminView =
+	| 'current-session'
+	| 'queue'
+	| 'question-bank'
+	| 'guest-database'
+	| 'session-history';
 const adminViews: AdminView[] = [
 	'current-session',
+	'queue',
 	'question-bank',
 	'guest-database',
 	'session-history',

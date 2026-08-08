@@ -289,10 +289,18 @@ describe('App', () => {
 		expect(wrapper.text()).toContain('Registration closes');
 		expect(wrapper.text()).not.toContain('Registration open for (minutes)');
 
-		await wrapper.findAll('.admin-navigation button')[1]!.trigger('click');
+		// Selected by label rather than index — the nav gained a Queue tab, and positional
+		// indexing silently points at a different view every time the nav changes.
+		const navigateTo = (label: string) =>
+			wrapper
+				.findAll('.admin-navigation button')
+				.find((button) => button.text() === label)!
+				.trigger('click');
+
+		await navigateTo('Question bank');
 		expect(wrapper.text()).toContain('Registration questions');
 
-		await wrapper.findAll('.admin-navigation button')[2]!.trigger('click');
+		await navigateTo('Guest database');
 		expect(wrapper.text()).toContain('All guests');
 		expect(wrapper.text()).toContain('Add guest');
 		expect(getAccessToken).toHaveBeenCalled();
@@ -328,9 +336,10 @@ describe('App', () => {
 			hidden: ['Registration settings', 'Today’s overview'],
 		},
 		{
+			// Queue management moved to its own view, so current-session only points at it.
 			status: 'service_started',
-			shown: ['Today’s overview', 'Add guest', 'Close session', 'Broadcast notification'],
-			hidden: ['Registration settings', 'Run lottery draw'],
+			shown: ['Today’s overview', 'Manage the queue', 'Broadcast notification'],
+			hidden: ['Registration settings', 'Run lottery draw', 'Call next', 'Add guest'],
 		},
 	] as const)(
 		'shows only the $status current-session controls',

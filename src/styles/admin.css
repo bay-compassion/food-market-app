@@ -1,0 +1,123 @@
+/**
+ * Layout primitives shared by the admin screens.
+ *
+ * These used to live in `AdminDashboard.vue`'s scoped block, but a scoped `<style>` does not reach
+ * inside child components, so anything used by more than one admin component has to live here.
+ * Every rule is scoped to `.admin-dashboard` — the wrapper on the admin tree's root — so none of
+ * it leaks into the guest app.
+ */
+
+.admin-dashboard .admin-section {
+	margin-bottom: 20px;
+}
+.admin-dashboard .admin-section h2 {
+	font-family: var(--font-heading);
+	font-size: 23px;
+	text-transform: uppercase;
+}
+.admin-dashboard .section-heading,
+.admin-dashboard .manual-actions {
+	display: flex;
+	justify-content: space-between;
+	gap: 14px;
+	align-items: center;
+}
+.admin-dashboard .section-heading p {
+	color: var(--color-text-subtle);
+	line-height: 1.5;
+}
+.admin-dashboard .add-guest-button {
+	border: 0;
+	color: var(--color-brand);
+	background: transparent;
+	font-weight: 700;
+}
+
+.admin-dashboard .guest-list {
+	display: grid;
+	margin-top: 18px;
+}
+.admin-dashboard .guest-row {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 14px;
+	align-items: center;
+	padding: 14px 0;
+	border-top: 1px solid #dce3df;
+}
+.admin-dashboard .guest-row > div {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+.admin-dashboard .guest-row span {
+	color: var(--color-text-subtle);
+	font-size: 12px;
+}
+.admin-dashboard .guest-row .guest-actions {
+	display: grid;
+	flex: 1 1 100%;
+	gap: 8px;
+	justify-items: start;
+}
+.admin-dashboard .guest-row .guest-status {
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+.admin-dashboard .empty-state {
+	padding: 30px 0 10px;
+	text-align: center;
+	color: var(--color-text-subtle);
+}
+
+.admin-dashboard form {
+	display: grid;
+	gap: 15px;
+	margin-top: 18px;
+}
+.admin-dashboard label {
+	display: grid;
+	gap: 7px;
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 700;
+}
+.admin-dashboard input,
+.admin-dashboard select {
+	width: 100%;
+	min-height: 50px;
+	padding: 0 13px;
+	border: 1.5px solid var(--color-border);
+	border-radius: 12px;
+	background: white;
+	color: var(--color-text);
+}
+.admin-dashboard .field-row {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px;
+}
+.admin-dashboard .manual-form {
+	padding: 18px;
+	border-radius: var(--radius-md);
+	background: #f3f6f4;
+}
+.admin-dashboard .manual-form h3 {
+	margin: 0;
+	font-family: var(--font-heading);
+	text-transform: uppercase;
+}
+.admin-dashboard .manual-actions > button:first-child {
+	border: 0;
+	color: var(--color-brand);
+	background: transparent;
+	font-weight: 700;
+}
+
+@media (min-width: 560px) {
+	.admin-dashboard .field-row {
+		grid-template-columns: 1fr 1fr;
+	}
+}

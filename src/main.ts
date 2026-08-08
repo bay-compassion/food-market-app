@@ -4,6 +4,8 @@ import App from './App.vue';
 import { auth0 } from './auth';
 import router from './router';
 
+import './styles/admin.css';
+
 const app = createApp(App).use(router);
 
 if (auth0) {
