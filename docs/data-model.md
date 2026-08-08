@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.ts=2b5e82a8c934 -->
+<!-- diagram-sources: db/schema.ts=6edc3dbe331f -->
 
 # Database structure
 
@@ -58,8 +58,8 @@ erDiagram
         uuid id PK
         uuid market_event_id FK
         uuid guest_id FK
-        text status "registered | waiting | called | served | not_placed | no_show | cancelled"
-        integer queue_position "set by the lottery"
+        text status "see session-lifecycle.md"
+        integer queue_position "lottery order; walk-ins placed on arrival"
         timestamptz called_at
         jsonb answers "registration question answers"
         text source "self | admin"

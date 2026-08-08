@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=265808ce579d -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=d72f11c7022f, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=682773da0fc7 -->
 
 # Session lifecycle
 
@@ -65,10 +65,69 @@ the future; `ad_hoc` sessions are opened by hand straight from `draft`.
   `registered` visit. Reaching this state queues a `registration_closed` notification for each of
   them.
 - **`service_started`** — the lottery has run. Up to `capacity` visits become `waiting` with a
-  `queue_position`; the rest become `not_placed`. Admins work the queue from here, moving visits to
-  `called`, `served`, or `no_show`.
+  `queue_position`; the rest become `not_placed`. Workers run the queue from here — see
+  [the visit lifecycle](#the-visit-lifecycle) below.
 - **`ended`** — the session is finished (or was reset) and is no longer the current session. Ended
-  sessions appear in the admin history view.
+  sessions appear in the admin history view. Closing a session also resolves every visit still
+  `waiting` or `called` to `no_show`, in the same transaction as the transition, so ending a session
+  never leaves a guest in a status that implies service is still coming.
 
 The frontend collapses `draft` and `ended` into a single `inactive` state (`currentSessionState`),
 because from a guest's point of view there is simply no session to join.
+
+## The visit lifecycle
+
+A session's status says what the market is doing; a **visit's** status says what is happening to one
+guest. Each guest who registers gets one row in `visits`, and its `status` column moves through its
+own small state machine, declared in
+[`src/services/visitStateMachine.ts`](../src/services/visitStateMachine.ts) and enforced on the
+server in [`netlify/services/visitQueue.ts`](../netlify/services/visitQueue.ts).
+
+Only the transitions below are possible. The server rejects anything else with a `409`, so a
+mis-tap cannot move a served guest back into the queue.
+
+```mermaid
+stateDiagram-v2
+    [*] --> registered : guest registers
+    [*] --> waiting : walk-in added<br/>during service
+
+    registered --> waiting : select (lottery win)
+    registered --> not_placed : skip (lottery loss)
+    registered --> cancelled : cancel (by the guest)
+
+    waiting --> called : call
+    waiting --> no_show : mark_no_show
+    waiting --> cancelled : cancel (by the guest)
+
+    called --> served : serve
+    called --> no_show : mark_no_show
+    called --> waiting : return_to_queue
+
+    no_show --> waiting : return_to_queue
+
+    served --> [*]
+    not_placed --> [*]
+    cancelled --> [*]
+```
+
+Who owns each transition matters:
+
+- **The lottery** owns `select` and `skip`. `run_lottery` shuffles the `registered` visits, gives the
+  first `capacity` of them a `queue_position`, and marks the rest `not_placed`.
+- **The guest** owns `cancel`, from their own status screen, and only while `registered` or
+  `waiting`.
+- **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the only four
+  the admin UI ever offers, and it offers only the ones legal from a visit's current status.
+
+Two of those are worth calling out. `call` also stamps `called_at`, which is what the queue screen
+counts up from to show how long a guest has been standing at the table — the signal for deciding a
+no-show. `return_to_queue` is the recovery path: a guest marked no-show who turns up after all, or
+one called by mistake, goes back to `waiting` and is notified again when re-called.
+
+Workers call guests in batches. `call_next` on `/api/queue` takes the next N waiting guests in
+queue order and calls them in a single statement, so two workers running the queue at the same time
+cannot claim the same guest.
+
+`queue_position` is display ordering, not an identifier — there is no unique constraint on it. A
+walk-in added during service is placed either at the front of the waiting guests (shifting them
+down by one) or at the end.

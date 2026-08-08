@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=9a487918a638, netlify/services/guestRegistration.ts=5c884d4a99fa, netlify/functions/visit.ts=b7eb1f2c7f5d -->
+<!-- diagram-sources: src/App.vue=9a487918a638, netlify/services/guestRegistration.ts=353c36828ec4, netlify/functions/visit.ts=dd21eb63d9e9 -->
 
 # Guest journey
 
@@ -45,9 +45,10 @@ flowchart TD
     lottery -- selected --> waiting[waiting, with a queue position<br/>push: lottery_selected]
     lottery -- not selected --> notPlaced([not_placed<br/>push: lottery_not_selected])
 
-    waiting --> called[Admin calls the guest: called<br/>push: called]
+    waiting --> called[Worker calls the guest: called<br/>push: called]
     called --> served([served])
     called --> noShow([no_show])
+    noShow -. "worker returns them<br/>to the queue" .-> waiting
 
     status -. "guest cancels while<br/>registered or waiting" .-> cancelled([cancelled])
 ```
@@ -67,9 +68,13 @@ flowchart TD
   without reloading.
 - **An admin can register a walk-up guest directly.** Those visits are created with `source: admin`
   and skip straight to `waiting` — they bypass the lottery entirely rather than starting at
-  `registered`.
+  `registered`. The worker chooses whether they go to the front of the waiting guests or the end.
 - **Notifications are best-effort.** Push requires a browser that supports it, and on iOS the app
   must be installed to the home screen first. Admins can also send a broadcast message to everyone
   in the session whose visit isn't cancelled.
 - **Cancelling is only possible before service.** The cancel button appears only while the visit is
   `registered` or `waiting`, and not at all once the session has ended.
+- **A closing session resolves anyone left over.** Ending a session marks every visit still
+  `waiting` or `called` as `no_show`, so nobody is left holding a status that implies service is
+  still coming. See [`session-lifecycle.md`](session-lifecycle.md#the-visit-lifecycle) for the full
+  set of visit transitions.
