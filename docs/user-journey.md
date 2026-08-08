@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=6d3af0115583, netlify/services/guestRegistration.ts=353c36828ec4, netlify/functions/visit.ts=dd21eb63d9e9 -->
+<!-- diagram-sources: src/App.vue=4aa03c2e0cdc, netlify/services/guestRegistration.ts=353c36828ec4, netlify/functions/visit.ts=dd21eb63d9e9 -->
 
 # Guest journey
 
@@ -42,10 +42,10 @@ flowchart TD
 
     status --> regClosed[Registration closes<br/>push: registration_closed]
     regClosed --> lottery{Lottery}
-    lottery -- selected --> waiting[waiting, with a queue position<br/>push: lottery_selected]
+    lottery -- selected --> waiting[waiting: guest sees their place in line<br/>and how many are ahead<br/>push: lottery_selected]
     lottery -- not selected --> notPlaced([not_placed<br/>push: lottery_not_selected])
 
-    waiting --> called[Worker calls the guest: called<br/>push: called]
+    waiting --> called["Worker calls the guest: called<br/>screen switches to 'it's your turn'<br/>push: called"]
     called --> served([served])
     called --> noShow([no_show])
     noShow -. "worker returns them<br/>to the queue" .-> waiting
@@ -62,10 +62,14 @@ flowchart TD
 - **A returning guest proves who they are with phone number plus PIN.** Repeated wrong PINs are
   rate-limited per phone number (`guest_pin_attempts`), and a returning guest can optionally update
   their stored profile while registering.
-- **The status screen polls.** It re-checks `/api/visit` on a timer, so the guest sees the lottery
-  result and the call even without notifications — push is a convenience, never the only channel.
-  It also re-checks `/api/market`, so a guest sitting on the closed screen sees registration open
-  without reloading.
+- **The status screen polls.** It re-checks `/api/visit` on a timer for as long as the visit is
+  live — `registered`, `waiting`, or `called` — so the guest sees the lottery result and the call
+  even without notifications. Push is a convenience, never the only channel. It also re-checks
+  `/api/market`, so a guest sitting on the closed screen sees registration open without reloading.
+- **A waiting guest is told where they stand.** `/api/visit` returns their `queue_position` and how
+  many waiting guests are ahead of them, so they can judge whether to stay by the door or sit down.
+  Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status
+  word — a guest glancing at their phone from across the room has to catch it.
 - **An admin can register a walk-up guest directly.** Those visits are created with `source: admin`
   and skip straight to `waiting` — they bypass the lottery entirely rather than starting at
   `registered`. The worker chooses whether they go to the front of the waiting guests or the end.
