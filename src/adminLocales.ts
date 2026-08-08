@@ -42,6 +42,7 @@ export interface AdminTranslation {
 	guestList: string;
 	guestDatabase: string;
 	historySessions: string;
+	householdCount: string;
 	lotteryActions: string;
 	manualGuestTitle: string;
 	markServed: string;
@@ -162,6 +163,7 @@ export const adminTranslations = {
 		guestList: 'Guest list',
 		guestDatabase: 'Guest database',
 		historySessions: 'Session history',
+		householdCount: 'Household',
 		lotteryActions: 'Lottery actions',
 		manualGuestTitle: 'Manually add a guest',
 		markServed: 'Mark served',
@@ -283,6 +285,7 @@ export const adminTranslations = {
 		guestList: 'Lista de invitados',
 		guestDatabase: 'Base de datos de invitados',
 		historySessions: 'Historial de sesiones',
+		householdCount: 'Hogar',
 		lotteryActions: 'Acciones del sorteo',
 		manualGuestTitle: 'Agregar un invitado manualmente',
 		markServed: 'Marcar como atendido',
@@ -402,6 +405,7 @@ export const adminTranslations = {
 		guestList: 'فهرست مهمانان',
 		guestDatabase: 'پایگاه داده مهمانان',
 		historySessions: 'تاریخچه جلسه‌ها',
+		householdCount: 'خانوار',
 		lotteryActions: 'عملیات قرعه‌کشی',
 		manualGuestTitle: 'افزودن دستی مهمان',
 		markServed: 'ثبت خدمت‌رسانی',
@@ -524,6 +528,7 @@ export const adminTranslations = {
 		guestList: 'Listahan ng bisita',
 		guestDatabase: 'Database ng bisita',
 		historySessions: 'Kasaysayan ng mga sesyon',
+		householdCount: 'Sambahayan',
 		lotteryActions: 'Mga aksyon sa lottery',
 		manualGuestTitle: 'Manu-manong magdagdag ng bisita',
 		markServed: 'Markahang napagsilbihan',
@@ -645,6 +650,7 @@ export const adminTranslations = {
 		guestList: 'Danh sách khách',
 		guestDatabase: 'Cơ sở dữ liệu khách',
 		historySessions: 'Lịch sử phiên',
+		householdCount: 'Hộ gia đình',
 		lotteryActions: 'Thao tác xổ số',
 		manualGuestTitle: 'Thêm khách thủ công',
 		markServed: 'Đánh dấu đã phục vụ',
@@ -764,6 +770,7 @@ export const adminTranslations = {
 		guestList: '访客名单',
 		guestDatabase: '访客数据库',
 		historySessions: '历史场次',
+		householdCount: '家庭人数',
 		lotteryActions: '抽签操作',
 		manualGuestTitle: '手动添加访客',
 		markServed: '标记已服务',
@@ -882,6 +889,7 @@ export const adminTranslations = {
 		guestList: 'قائمة الضيوف',
 		guestDatabase: 'قاعدة بيانات الضيوف',
 		historySessions: 'سجل الجلسات',
+		householdCount: 'الأسرة',
 		lotteryActions: 'إجراءات القرعة',
 		manualGuestTitle: 'إضافة ضيف يدويًا',
 		markServed: 'تسجيل الخدمة',

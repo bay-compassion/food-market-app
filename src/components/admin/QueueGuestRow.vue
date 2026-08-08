@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 import { adminTranslations } from '../../adminLocales';
-import { translations, type Locale } from '../../locales';
+import type { Locale } from '../../locales';
 import type { VisitCommand } from '../../services/visitStateMachine';
 import type { QueueGuest } from './types';
 import VisitCommandButtons from './VisitCommandButtons.vue';
@@ -19,7 +19,6 @@ const props = defineProps<{
 defineEmits<{ run: [command: VisitCommand] }>();
 
 const t = computed(() => adminTranslations[props.locale]);
-const base = computed(() => translations[props.locale]);
 const waitingTime = computed(() => {
 	if (!props.showWaitingTime || !props.guest.calledAt) {
 		return '';
@@ -39,7 +38,7 @@ const waitingTime = computed(() => {
 				<span v-if="guest.queuePosition" class="queue-number">{{ guest.queuePosition }}</span>
 				{{ guest.firstName }} {{ guest.lastName }}
 			</strong>
-			<span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
+			<span>{{ guest.phone }} · {{ t.householdCount }}: {{ guest.householdSize }}</span>
 			<span v-if="waitingTime" class="waiting-time">{{ waitingTime }}</span>
 		</div>
 		<div class="guest-actions">
