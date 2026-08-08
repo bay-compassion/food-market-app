@@ -8,6 +8,48 @@ New to how apps like this are put together? Start with [`docs/concepts.md`](docs
 a primer on frontend/backend/database, frameworks, secrets, and migrations, written for a
 maintainer without a software background.
 
+## Screenshots
+
+### Guest check-in
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/images/first-time.png" alt="Welcome screen with the language picker" width="100%"></td>
+    <td width="33%"><img src="docs/images/new-guest.png" alt="New guest form asking for name, age, household size, phone number, and PIN" width="100%"></td>
+    <td width="33%"><img src="docs/images/returning-guest.png" alt="Returning guest form asking for phone number and PIN" width="100%"></td>
+  </tr>
+  <tr>
+    <td>Choose a language to begin.</td>
+    <td>New guests share the details needed for their visit.</td>
+    <td>Returning guests sign in with their phone number and PIN.</td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="docs/images/spanish.png" alt="New guest form translated into Spanish" width="100%"></td>
+    <td width="33%"><img src="docs/images/farsi.png" alt="New guest form translated into Farsi and laid out right to left" width="100%"></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Every screen is translated — here in Spanish.</td>
+    <td>Right-to-left languages such as Farsi flip the whole layout.</td>
+    <td></td>
+  </tr>
+</table>
+
+### Market team admin
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/images/current-session.png" alt="Current session screen showing registration status and registration overrides" width="100%"></td>
+    <td width="33%"><img src="docs/images/guest-database.png" alt="Guest database screen listing guests with search and status controls" width="100%"></td>
+    <td width="33%"><img src="docs/images/broadcast-notification.png" alt="Registered guest list above a broadcast notification form and reset session control" width="100%"></td>
+  </tr>
+  <tr>
+    <td>Open registration, extend the window, and set queue capacity.</td>
+    <td>Search guests and update their status.</td>
+    <td>Send a broadcast notification, or reset the session.</td>
+  </tr>
+</table>
+
 ## Quickstart
 
 ### Prerequisites
