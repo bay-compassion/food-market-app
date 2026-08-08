@@ -6,7 +6,10 @@ The frontend is a Vue 3 app in `src/`. Guest submissions are handled by a Netlif
 
 New to how apps like this are put together? Start with [`docs/concepts.md`](docs/concepts.md) —
 a primer on frontend/backend/database, frameworks, secrets, and migrations, written for a
-maintainer without a software background.
+maintainer without a software background. For the shape of this app specifically, there are three
+diagrams: [`docs/data-model.md`](docs/data-model.md) (the database tables),
+[`docs/session-lifecycle.md`](docs/session-lifecycle.md) (the states a market session moves
+through), and [`docs/user-journey.md`](docs/user-journey.md) (a guest's path through the app).
 
 ## Screenshots
 
@@ -81,12 +84,19 @@ Run these commands from the repository root before opening a pull request:
 ```bash
 npm run lint
 npm run format:check
+npm run check:diagrams
 npm run test:unit -- --run
 npm run build
 ```
 
+Or run all of them at once with `npm run checks`.
+
 See [`docs/testing.md`](docs/testing.md) for why the automated tests matter, especially if you're
 relying on an AI coding agent to make changes.
+
+`npm run check:diagrams` is the odd one out: it doesn't test the app, it flags when a source file
+behind one of the diagrams in `docs/` has changed, so the pictures don't quietly drift out of date.
+Review the flagged diagram, then run `npm run check:diagrams -- --update` to record that you did.
 
 ## Deployment
 
@@ -170,4 +180,5 @@ non-admin users, configure Auth0 API permissions and roles before inviting them 
 - `netlify/functions/` — API endpoints, including guest check-in
 - `netlify/database/migrations/` — Netlify DB migrations; read [`docs/migrations.md`](docs/migrations.md)
   before changing anything here
-- `db/` — Drizzle schema and database client
+- `db/` — Drizzle schema and database client; [`docs/data-model.md`](docs/data-model.md) diagrams
+  the tables

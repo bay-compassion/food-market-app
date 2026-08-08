@@ -17,6 +17,9 @@ or "an admin wants to run the lottery." Each file corresponds to one API endpoin
 **The database** is where the actual data lives long-term — every guest, every market session,
 every visit. It's a separate system entirely (this app uses Netlify DB, backed by Postgres), and
 only the backend talks to it directly (`db/` holds the schema and connection code).
+[`data-model.md`](data-model.md) has a diagram of every table and how they relate;
+[`session-lifecycle.md`](session-lifecycle.md) and [`user-journey.md`](user-journey.md) diagram the
+states a market session moves through and the path a guest takes through the app.
 
 They're kept separate for a reason that matters a lot for security: **anything that runs in a
 browser can be read and tampered with by whoever is using that browser.** A guest could open their

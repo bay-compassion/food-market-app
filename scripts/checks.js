@@ -17,6 +17,7 @@ import { spawnSync } from 'node:child_process';
 const checks = [
 	{ label: 'lint', command: 'npm', args: ['run', 'lint'] },
 	{ label: 'format:check', command: 'npm', args: ['run', 'format:check'] },
+	{ label: 'check:diagrams', command: 'npm', args: ['run', 'check:diagrams'] },
 	{ label: 'test:unit', command: 'npm', args: ['run', 'test:unit', '--', '--run'] },
 	{ label: 'build', command: 'npm', args: ['run', 'build'] },
 ];
