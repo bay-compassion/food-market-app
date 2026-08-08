@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.js';
 import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
+import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import {
 	authenticateGuest,
 	hashPin,
@@ -10,6 +11,7 @@ import {
 	issueVisitToken,
 	normalizePhone,
 } from './guestCredentials.js';
+import { nextQueuePosition, type QueuePlacement } from './visitQueue.js';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 
@@ -26,6 +28,7 @@ export type GuestSubmission = {
 	registrationType: 'new' | 'returning';
 	pin: string;
 	updateProfile: boolean;
+	queuePlacement: QueuePlacement;
 };
 
 export type RegisterGuestResult =
@@ -60,6 +63,7 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 	const registrationType = body.registrationType === 'returning' ? 'returning' : 'new';
 	const pin = typeof body.pin === 'string' ? body.pin : '';
 	const updateProfile = body.updateProfile === true;
+	const queuePlacement: QueuePlacement = body.queuePlacement === 'next' ? 'next' : 'end';
 	const marketEventId = typeof body.marketEventId === 'string' ? body.marketEventId : null;
 	const answers = body.answers ?? {};
 	const needsProfile = source === 'admin' || registrationType === 'new' || updateProfile;
@@ -101,6 +105,7 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 		registrationType,
 		pin,
 		updateProfile,
+		queuePlacement,
 	};
 }
 
@@ -176,7 +181,7 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 	}
 
 	let existingGuest: typeof guests.$inferSelect | null = null;
-	let existingVisit: { id: string; status: string } | null = null;
+	let existingVisit: { id: string; status: VisitStatus } | null = null;
 	if (submission.source === 'self' && submission.registrationType === 'returning') {
 		existingGuest = await authenticateGuest(submission.phone, submission.pin);
 		if (!existingGuest) {
@@ -232,6 +237,12 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 				.returning();
 			guest = created!;
 		}
+		// Walk-ins join the running queue, so they need a position; self-registrations are still
+		// pre-lottery and get theirs from `runLottery`.
+		const queuePosition =
+			submission.source === 'admin'
+				? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
+				: null;
 		const [visit] = existingVisit
 			? await tx
 					.update(visits)
@@ -248,6 +259,7 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 						guestId: guest.id,
 						marketEventId: submission.marketEventId!,
 						status: submission.source === 'admin' ? 'waiting' : 'registered',
+						queuePosition,
 						answers: submission.answers,
 						source: submission.source,
 						accessTokenHash: visitCredential.tokenHash,

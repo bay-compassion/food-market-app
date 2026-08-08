@@ -56,6 +56,8 @@ describe('visit handler GET', () => {
 			id: 'visit-1',
 			status: 'registered',
 			marketEventId: 'event-1',
+			queuePosition: null,
+			calledAt: null,
 			sessionStatus: 'registration_open',
 		};
 		queueResult([visit]);
@@ -63,7 +65,43 @@ describe('visit handler GET', () => {
 		const response = await handler(request('GET', { token: validToken }));
 
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual(visit);
+		// A registered guest is still pre-lottery, so there is no queue to be ahead of.
+		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: null });
+	});
+
+	it('reports how many waiting guests are ahead of a waiting visit', async () => {
+		const visit = {
+			id: 'visit-1',
+			status: 'waiting',
+			marketEventId: 'event-1',
+			queuePosition: 4,
+			calledAt: null,
+			sessionStatus: 'service_started',
+		};
+		queueResult([visit]);
+		queueResult([{ count: 3 }]);
+
+		const response = await handler(request('GET', { token: validToken }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: 3 });
+	});
+
+	it('reports no queue position once the guest has been called', async () => {
+		const visit = {
+			id: 'visit-1',
+			status: 'called',
+			marketEventId: 'event-1',
+			queuePosition: 4,
+			calledAt: '2026-08-08T18:00:00.000Z',
+			sessionStatus: 'service_started',
+		};
+		queueResult([visit]);
+
+		const response = await handler(request('GET', { token: validToken }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: null });
 	});
 
 	it('returns 410 when the visit belongs to an ended session', async () => {

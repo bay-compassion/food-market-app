@@ -352,6 +352,7 @@ describe('remaining session actions: one legal and one illegal transition each',
 
 	it('closeSession: a started session can close; a draft session cannot', async () => {
 		queueResult([{ id: 'event-1' }]);
+		queueResult([]); // resolveOutstandingVisits — nobody left waiting or called
 		await expect(closeSession(baseEvent({ status: 'service_started' }))).resolves.toEqual({
 			ok: true,
 		});
@@ -360,5 +361,19 @@ describe('remaining session actions: one legal and one illegal transition each',
 			ok: false,
 			status: 409,
 		});
+	});
+
+	it('closeSession: resolves guests still waiting or called so nobody is stranded', async () => {
+		queueResult([{ id: 'event-1' }]);
+		queueResult([{ id: 'visit-1' }, { id: 'visit-2' }]);
+
+		await expect(closeSession(baseEvent({ status: 'service_started' }))).resolves.toEqual({
+			ok: true,
+		});
+
+		const noShowUpdate = db.update.mock.results
+			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
+			.find(({ set }) => set.mock.calls.some(([changes]) => changes?.status === 'no_show'));
+		expect(noShowUpdate).toBeDefined();
 	});
 });

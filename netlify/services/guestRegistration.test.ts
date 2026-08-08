@@ -286,6 +286,7 @@ describe('registerGuest happy paths', () => {
 	it('creates an admin-added guest directly into the waiting queue with no visit token', async () => {
 		queueResult([{ status: 'service_started' }]); // admin event status check
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ position: 6 }]); // nextQueuePosition — highest position so far
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
 
@@ -293,5 +294,43 @@ describe('registerGuest happy paths', () => {
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'waiting' } });
 		expect((result as { body: { visitToken?: string } }).body.visitToken).toBeUndefined();
+	});
+
+	it('appends a walk-in to the end of the queue by default', async () => {
+		queueResult([{ status: 'service_started' }]);
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
+		queueResult([{ position: 6 }]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
+
+		expect(submission.queuePlacement).toBe('end');
+		await registerGuest(submission);
+
+		const inserted = db.insert.mock.results
+			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
+			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
+			.find((row) => row?.status === 'waiting');
+		expect(inserted?.queuePosition).toBe(7);
+	});
+
+	it('puts a walk-in at the front of the queue when the worker asks for next up', async () => {
+		queueResult([{ status: 'service_started' }]);
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
+		queueResult([{ position: 6 }]); // highest position so far
+		queueResult([{ position: 3 }]); // front of the waiting guests
+		queueResult([]); // shift the waiting guests down by one
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+		const submission = parseSubmission(
+			selfSubmission({ source: 'admin', queuePlacement: 'next' }),
+		)!;
+
+		expect(submission.queuePlacement).toBe('next');
+		await registerGuest(submission);
+
+		const inserted = db.insert.mock.results
+			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
+			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
+			.find((row) => row?.status === 'waiting');
+		expect(inserted?.queuePosition).toBe(3);
 	});
 });

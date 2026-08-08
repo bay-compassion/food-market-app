@@ -13,6 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine';
+import type { VisitStatus } from '../src/services/visitStateMachine';
 
 export const marketEvents = pgTable('market_events', {
 	id: uuid('id').defaultRandom().primaryKey(),
@@ -56,7 +57,7 @@ export const visits = pgTable('visits', {
 	guestId: uuid('guest_id')
 		.notNull()
 		.references(() => guests.id),
-	status: text('status').notNull().default('registered'),
+	status: text('status').$type<VisitStatus>().notNull().default('registered'),
 	queuePosition: integer('queue_position'),
 	calledAt: timestamp('called_at', { withTimezone: true }),
 	answers: jsonb('answers').$type<Record<string, string | number>>().notNull().default({}),

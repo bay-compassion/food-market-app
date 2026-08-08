@@ -2,6 +2,7 @@ import { and, eq, ne } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.js';
+import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import { hashVisitToken } from '../services/guestCredentials.js';
 import {
 	deliverPendingNotifications,
@@ -111,15 +112,16 @@ export default async (request: Request) => {
 				},
 			});
 	});
+	// Statuses with no entry here are terminal (served, no_show, cancelled) — subscribing at that
+	// point should not replay a notification about a visit that is already over.
+	const catchUpNotifications: Partial<Record<VisitStatus, NotificationType>> = {
+		registered: 'registration_confirmed',
+		waiting: 'lottery_selected',
+		not_placed: 'lottery_not_selected',
+		called: 'called',
+	};
 	const currentNotification =
-		existingSubscription?.visitId === visit.id
-			? undefined
-			: ({
-					registered: 'registration_confirmed',
-					waiting: 'lottery_selected',
-					not_placed: 'lottery_not_selected',
-					called: 'called',
-				}[visit.status] as NotificationType | undefined);
+		existingSubscription?.visitId === visit.id ? undefined : catchUpNotifications[visit.status];
 	if (currentNotification) {
 		await db
 			.insert(notificationDeliveries)
