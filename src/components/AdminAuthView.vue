@@ -6,7 +6,12 @@ import { authReturnUrl, isAuth0Configured } from '../auth';
 import { translations, type Locale } from '../locales';
 import AdminDashboard from './AdminDashboard.vue';
 
-type AdminView = 'current-session' | 'question-bank' | 'guest-database' | 'session-history';
+type AdminView =
+	| 'current-session'
+	| 'queue'
+	| 'question-bank'
+	| 'guest-database'
+	| 'session-history';
 
 const props = defineProps<{ locale: Locale; view: AdminView }>();
 const emit = defineEmits<{ navigate: [view: AdminView] }>();

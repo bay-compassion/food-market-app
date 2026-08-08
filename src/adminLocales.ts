@@ -61,6 +61,25 @@ export interface AdminTranslation {
 	overridesHelp: string;
 	questionPlaceholder: string;
 	queuePosition: string;
+	queue: string;
+	callNext: string;
+	callNextCount: string;
+	waitingQueue: string;
+	calledNow: string;
+	resolvedGuests: string;
+	showResolved: string;
+	hideResolved: string;
+	calledMinutesAgo: string;
+	calledJustNow: string;
+	noWaitingGuests: string;
+	noCalledGuests: string;
+	queueNotStarted: string;
+	goToQueue: string;
+	goToCurrentSession: string;
+	queuePlacement: string;
+	placeNext: string;
+	placeEnd: string;
+	confirmCloseSessionOutstanding: string;
 	questionBank: string;
 	questions: string;
 	registered: string;
@@ -92,7 +111,6 @@ export interface AdminTranslation {
 	searchPlaceholder: string;
 	served: string;
 	settingsHelp: string;
-	status: string;
 	sessionGuests: string;
 	sessionType: string;
 	textAnswer: string;
@@ -163,6 +181,26 @@ export const adminTranslations = {
 		overridesHelp: 'Extend the registration window or change queue capacity.',
 		questionPlaceholder: 'Enter a question for guests',
 		queuePosition: 'Queue position',
+		queue: 'Queue',
+		callNext: 'Call next',
+		callNextCount: 'How many to call',
+		waitingQueue: 'Waiting',
+		calledNow: 'At the table',
+		resolvedGuests: 'Finished',
+		showResolved: 'Show finished guests',
+		hideResolved: 'Hide finished guests',
+		calledMinutesAgo: 'Called {minutes} min ago',
+		calledJustNow: 'Called just now',
+		noWaitingGuests: 'Nobody is waiting to be called.',
+		noCalledGuests: 'Nobody has been called up yet.',
+		queueNotStarted: 'The queue opens once you run the lottery and service starts.',
+		goToQueue: 'Manage the queue',
+		goToCurrentSession: 'Go to the current session',
+		queuePlacement: 'Place in the queue',
+		placeNext: 'Next up',
+		placeEnd: 'End of the queue',
+		confirmCloseSessionOutstanding:
+			'guests have not been served yet. Closing marks them as a no show. Close the session?',
 		questionBank: 'Question bank',
 		questions: 'Registration questions',
 		registered: 'Registered',
@@ -195,7 +233,6 @@ export const adminTranslations = {
 		searchPlaceholder: 'Search name or phone',
 		served: 'Served',
 		settingsHelp: 'Set the window and maximum number of guests who receive a queue spot.',
-		status: 'Status',
 		sessionGuests: 'Guests',
 		sessionType: 'How should registration start?',
 		textAnswer: 'Written answer',
@@ -265,6 +302,26 @@ export const adminTranslations = {
 		overridesHelp: 'Amplíe el período de registro o cambie la capacidad de la fila.',
 		questionPlaceholder: 'Escriba una pregunta para los invitados',
 		queuePosition: 'Posición en la fila',
+		queue: 'Fila',
+		callNext: 'Llamar a los siguientes',
+		callNextCount: 'Cuántos llamar',
+		waitingQueue: 'En espera',
+		calledNow: 'En el mostrador',
+		resolvedGuests: 'Finalizados',
+		showResolved: 'Mostrar invitados finalizados',
+		hideResolved: 'Ocultar invitados finalizados',
+		calledMinutesAgo: 'Llamado hace {minutes} min',
+		calledJustNow: 'Llamado ahora mismo',
+		noWaitingGuests: 'Nadie está esperando a que le llamen.',
+		noCalledGuests: 'Todavía no se ha llamado a nadie.',
+		queueNotStarted: 'La fila se abre cuando ejecuta el sorteo y comienza el servicio.',
+		goToQueue: 'Gestionar la fila',
+		goToCurrentSession: 'Ir a la sesión actual',
+		queuePlacement: 'Lugar en la fila',
+		placeNext: 'El siguiente',
+		placeEnd: 'Al final de la fila',
+		confirmCloseSessionOutstanding:
+			'invitados aún no han sido atendidos. Al cerrar se marcarán como ausentes. ¿Cerrar la sesión?',
 		questionBank: 'Banco de preguntas',
 		questions: 'Preguntas de registro',
 		registered: 'Registrados',
@@ -297,7 +354,6 @@ export const adminTranslations = {
 		searchPlaceholder: 'Buscar nombre o teléfono',
 		served: 'Atendidos',
 		settingsHelp: 'Defina el período y el máximo de invitados que reciben un lugar.',
-		status: 'Estado',
 		sessionGuests: 'Invitados',
 		sessionType: '¿Cómo debe comenzar el registro?',
 		textAnswer: 'Respuesta escrita',
@@ -365,6 +421,26 @@ export const adminTranslations = {
 		overridesHelp: 'زمان ثبت‌نام را تمدید یا ظرفیت صف را تغییر دهید.',
 		questionPlaceholder: 'پرسشی برای مهمانان وارد کنید',
 		queuePosition: 'جایگاه در صف',
+		queue: 'صف',
+		callNext: 'فراخوان نفرات بعدی',
+		callNextCount: 'چند نفر فراخوانده شوند',
+		waitingQueue: 'در انتظار',
+		calledNow: 'پای میز',
+		resolvedGuests: 'تمام‌شده',
+		showResolved: 'نمایش مهمانان تمام‌شده',
+		hideResolved: 'پنهان کردن مهمانان تمام‌شده',
+		calledMinutesAgo: '{minutes} دقیقه پیش فراخوانده شد',
+		calledJustNow: 'همین حالا فراخوانده شد',
+		noWaitingGuests: 'کسی در انتظار فراخوان نیست.',
+		noCalledGuests: 'هنوز کسی فراخوانده نشده است.',
+		queueNotStarted: 'صف پس از اجرای قرعه‌کشی و آغاز خدمت‌رسانی باز می‌شود.',
+		goToQueue: 'مدیریت صف',
+		goToCurrentSession: 'رفتن به جلسه جاری',
+		queuePlacement: 'جایگاه در صف',
+		placeNext: 'نفر بعدی',
+		placeEnd: 'انتهای صف',
+		confirmCloseSessionOutstanding:
+			'مهمان هنوز خدمت نگرفته‌اند. با بستن جلسه، غایب ثبت می‌شوند. جلسه بسته شود؟',
 		questionBank: 'بانک پرسش‌ها',
 		questions: 'پرسش‌های ثبت‌نام',
 		registered: 'ثبت‌شده',
@@ -396,7 +472,6 @@ export const adminTranslations = {
 		searchPlaceholder: 'جستجوی نام یا تلفن',
 		served: 'خدمت‌گرفته',
 		settingsHelp: 'بازه زمانی و بیشترین تعداد دریافت‌کنندگان جایگاه صف را تعیین کنید.',
-		status: 'وضعیت',
 		sessionGuests: 'مهمانان',
 		sessionType: 'ثبت‌نام چگونه شروع شود؟',
 		textAnswer: 'پاسخ نوشتاری',
@@ -468,6 +543,26 @@ export const adminTranslations = {
 		overridesHelp: 'Palawigin ang oras ng pagpaparehistro o baguhin ang kapasidad ng pila.',
 		questionPlaceholder: 'Maglagay ng tanong para sa mga bisita',
 		queuePosition: 'Puwesto sa pila',
+		queue: 'Pila',
+		callNext: 'Tawagin ang susunod',
+		callNextCount: 'Ilan ang tatawagin',
+		waitingQueue: 'Naghihintay',
+		calledNow: 'Nasa mesa',
+		resolvedGuests: 'Tapos na',
+		showResolved: 'Ipakita ang mga tapos nang bisita',
+		hideResolved: 'Itago ang mga tapos nang bisita',
+		calledMinutesAgo: 'Tinawag {minutes} min ang nakalipas',
+		calledJustNow: 'Katatawag lang',
+		noWaitingGuests: 'Walang naghihintay na tawagin.',
+		noCalledGuests: 'Wala pang tinatawag.',
+		queueNotStarted: 'Bubukas ang pila kapag pinatakbo mo ang lottery at nagsimula ang serbisyo.',
+		goToQueue: 'Pamahalaan ang pila',
+		goToCurrentSession: 'Pumunta sa kasalukuyang sesyon',
+		queuePlacement: 'Puwesto sa pila',
+		placeNext: 'Susunod na',
+		placeEnd: 'Dulo ng pila',
+		confirmCloseSessionOutstanding:
+			'na bisita ang hindi pa napagsilbihan. Sa pagsasara, mamarkahan silang hindi dumating. Isara ang sesyon?',
 		questionBank: 'Bangko ng mga tanong',
 		questions: 'Mga tanong sa pagpaparehistro',
 		registered: 'Nakarehistro',
@@ -501,7 +596,6 @@ export const adminTranslations = {
 		searchPlaceholder: 'Hanapin ang pangalan o telepono',
 		served: 'Napagsilbihan',
 		settingsHelp: 'Itakda ang oras at pinakamaraming bisitang makakakuha ng puwesto.',
-		status: 'Katayuan',
 		sessionGuests: 'Mga bisita',
 		sessionType: 'Paano magsisimula ang pagpaparehistro?',
 		textAnswer: 'Nakasulat na sagot',
@@ -570,6 +664,26 @@ export const adminTranslations = {
 		overridesHelp: 'Gia hạn thời gian đăng ký hoặc thay đổi sức chứa hàng đợi.',
 		questionPlaceholder: 'Nhập câu hỏi cho khách',
 		queuePosition: 'Vị trí trong hàng',
+		queue: 'Hàng đợi',
+		callNext: 'Gọi người tiếp theo',
+		callNextCount: 'Gọi bao nhiêu người',
+		waitingQueue: 'Đang chờ',
+		calledNow: 'Tại quầy',
+		resolvedGuests: 'Đã xong',
+		showResolved: 'Hiện khách đã xong',
+		hideResolved: 'Ẩn khách đã xong',
+		calledMinutesAgo: 'Đã gọi {minutes} phút trước',
+		calledJustNow: 'Vừa gọi xong',
+		noWaitingGuests: 'Không có ai đang chờ được gọi.',
+		noCalledGuests: 'Chưa gọi ai lên.',
+		queueNotStarted: 'Hàng đợi mở khi bạn chạy xổ số và bắt đầu phục vụ.',
+		goToQueue: 'Quản lý hàng đợi',
+		goToCurrentSession: 'Đến phiên hiện tại',
+		queuePlacement: 'Vị trí trong hàng',
+		placeNext: 'Kế tiếp',
+		placeEnd: 'Cuối hàng',
+		confirmCloseSessionOutstanding:
+			'khách chưa được phục vụ. Đóng phiên sẽ đánh dấu họ là không đến. Đóng phiên?',
 		questionBank: 'Ngân hàng câu hỏi',
 		questions: 'Câu hỏi đăng ký',
 		registered: 'Đã đăng ký',
@@ -602,7 +716,6 @@ export const adminTranslations = {
 		searchPlaceholder: 'Tìm tên hoặc điện thoại',
 		served: 'Đã phục vụ',
 		settingsHelp: 'Đặt thời gian và số khách tối đa nhận được vị trí trong hàng.',
-		status: 'Trạng thái',
 		sessionGuests: 'Khách',
 		sessionType: 'Đăng ký nên bắt đầu như thế nào?',
 		textAnswer: 'Câu trả lời viết',
@@ -670,6 +783,26 @@ export const adminTranslations = {
 		overridesHelp: '延长登记时间或更改队列容量。',
 		questionPlaceholder: '输入向访客提问的问题',
 		queuePosition: '队列位置',
+		queue: '队列',
+		callNext: '叫下一位',
+		callNextCount: '叫号人数',
+		waitingQueue: '等待中',
+		calledNow: '已叫号',
+		resolvedGuests: '已完成',
+		showResolved: '显示已完成的访客',
+		hideResolved: '隐藏已完成的访客',
+		calledMinutesAgo: '{minutes} 分钟前叫号',
+		calledJustNow: '刚刚叫号',
+		noWaitingGuests: '没有人在等待叫号。',
+		noCalledGuests: '尚未叫任何人。',
+		queueNotStarted: '抽签完成并开始服务后，队列即会开放。',
+		goToQueue: '管理队列',
+		goToCurrentSession: '前往当前场次',
+		queuePlacement: '排队位置',
+		placeNext: '下一位',
+		placeEnd: '队列末尾',
+		confirmCloseSessionOutstanding:
+			'位访客尚未获得服务。关闭后他们将被标记为未到场。要关闭本场次吗？',
 		questionBank: '问题库',
 		questions: '登记问题',
 		registered: '已登记',
@@ -701,7 +834,6 @@ export const adminTranslations = {
 		searchPlaceholder: '搜索姓名或电话',
 		served: '已服务',
 		settingsHelp: '设置登记时段和获得排队名额的最大访客数。',
-		status: '状态',
 		sessionGuests: '访客',
 		sessionType: '登记应如何开始？',
 		textAnswer: '文字回答',
@@ -769,6 +901,26 @@ export const adminTranslations = {
 		overridesHelp: 'مدّد فترة التسجيل أو غيّر سعة قائمة الانتظار.',
 		questionPlaceholder: 'أدخل سؤالًا للضيوف',
 		queuePosition: 'الموقع في قائمة الانتظار',
+		queue: 'قائمة الانتظار',
+		callNext: 'استدعاء التالي',
+		callNextCount: 'عدد من سيتم استدعاؤهم',
+		waitingQueue: 'في الانتظار',
+		calledNow: 'عند الطاولة',
+		resolvedGuests: 'منتهية',
+		showResolved: 'إظهار الضيوف المنتهين',
+		hideResolved: 'إخفاء الضيوف المنتهين',
+		calledMinutesAgo: 'تم الاستدعاء قبل {minutes} دقيقة',
+		calledJustNow: 'تم الاستدعاء للتو',
+		noWaitingGuests: 'لا أحد ينتظر الاستدعاء.',
+		noCalledGuests: 'لم يتم استدعاء أحد بعد.',
+		queueNotStarted: 'تُفتح قائمة الانتظار بعد إجراء القرعة وبدء الخدمة.',
+		goToQueue: 'إدارة قائمة الانتظار',
+		goToCurrentSession: 'الانتقال إلى الجلسة الحالية',
+		queuePlacement: 'الموضع في قائمة الانتظار',
+		placeNext: 'التالي',
+		placeEnd: 'نهاية قائمة الانتظار',
+		confirmCloseSessionOutstanding:
+			'ضيوف لم تتم خدمتهم بعد. الإغلاق يسجلهم كغير حاضرين. هل تريد إغلاق الجلسة؟',
 		questionBank: 'بنك الأسئلة',
 		questions: 'أسئلة التسجيل',
 		registered: 'مسجّلون',
@@ -800,7 +952,6 @@ export const adminTranslations = {
 		searchPlaceholder: 'البحث بالاسم أو الهاتف',
 		served: 'تمت خدمتهم',
 		settingsHelp: 'حدد الفترة والحد الأقصى للضيوف الذين يحصلون على مكان.',
-		status: 'الحالة',
 		sessionGuests: 'الضيوف',
 		sessionType: 'كيف يجب أن يبدأ التسجيل؟',
 		textAnswer: 'إجابة كتابية',
