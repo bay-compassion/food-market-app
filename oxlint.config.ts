@@ -5,6 +5,10 @@ export default defineConfig({
 		typeAware: true,
 		typeCheck: true,
 	},
+	// Matches the same exclusion in oxfmt.config.ts. Agent skills are vendored from upstream
+	// repos, so any script one ships is not ours to lint. Today's skills are Markdown only, which
+	// oxlint ignores anyway — this is here so a skill that ships a .ts helper cannot break CI.
+	ignorePatterns: ['.claude/skills', '.agents/skills'],
 	categories: {
 		correctness: 'warn',
 	},
