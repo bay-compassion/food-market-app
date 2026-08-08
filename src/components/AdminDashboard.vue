@@ -802,64 +802,8 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 						<h2>{{ t.serviceStarted }}</h2>
 						<p>{{ t.guestList }}</p>
 					</div>
-<<<<<<< HEAD
-					<form v-if="showManualGuest" class="manual-form" @submit.prevent="addManualGuest">
-						<h3>{{ t.manualGuestTitle }}</h3>
-						<FormField v-model="manualGuest.firstName" :label="base.firstName" required />
-						<FormField v-model="manualGuest.lastName" :label="base.lastName" required />
-						<div class="field-row">
-							<FormField
-								v-model="manualGuest.age"
-								:label="base.age"
-								type="number"
-								:min="0"
-								:max="120"
-								required
-							/><FormField
-								v-model="manualGuest.householdSize"
-								:label="base.household"
-								type="number"
-								:min="1"
-								:max="30"
-								required
-							/>
-						</div>
-						<FormField v-model="manualGuest.phone" :label="base.phone" type="tel" required />
-						<div class="manual-actions">
-							<button type="button" @click="showManualGuest = false">{{ t.cancel }}</button
-							><AppButton type="submit" :disabled="isBusy">{{ t.saveGuest }}</AppButton>
-						</div>
-					</form>
-					<div v-if="currentSessionGuests.length" class="guest-list">
-						<article v-for="guest in currentSessionGuests" :key="guest.id" class="guest-row">
-							<div>
-								<strong>{{ guest.firstName }} {{ guest.lastName }}</strong
-								><span>{{ guest.phone }} · {{ base.household }}: {{ guest.householdSize }}</span>
-								<span>{{ base.language }}: {{ guestLanguageLabel(guest.locale) }}</span>
-								<span v-if="guest.queuePosition">
-									{{ t.queuePosition }}: {{ guest.queuePosition }}
-								</span>
-							</div>
-							<div class="guest-actions">
-								<span class="guest-status">{{ statusLabels[guest.status] }}</span>
-								<VisitCommandButtons
-									:locale="locale"
-									:status="guest.status"
-									:disabled="isBusy"
-									@run="runGuestCommand(guest, $event)"
-								/>
-							</div>
-						</article>
-					</div>
-					<p v-else class="empty-state">{{ t.noGuests }}</p>
-					<div class="standalone-action">
-						<AppButton type="button" :disabled="isBusy" @click="runMarketAction('close_session')">
-							{{ t.closeSession }}
-						</AppButton>
-=======
 					<div class="action-buttons">
 						<AppButton type="button" @click="navigate('queue')">{{ t.goToQueue }}</AppButton>
->>>>>>> 592fabb (feat: give queue management its own admin view, above the fold)
 					</div>
 				</section>
 

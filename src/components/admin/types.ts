@@ -1,3 +1,4 @@
+import type { Locale } from '../../locales';
 import type { VisitStatus } from '../../services/visitStateMachine';
 
 /**
@@ -16,6 +17,7 @@ export type QueueGuest = {
 	lastName: string;
 	phone: string;
 	householdSize: number;
+	locale: Locale;
 	queuePosition: number | null;
 	calledAt: string | null;
 	status: VisitStatus;

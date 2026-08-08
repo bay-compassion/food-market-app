@@ -22,6 +22,7 @@ function guest(overrides: Partial<QueueGuest> & { id: string }): QueueGuest {
 		lastName: 'Guest',
 		phone: '555-0100',
 		householdSize: 2,
+		locale: 'en',
 		queuePosition: null,
 		calledAt: null,
 		status: 'waiting',
