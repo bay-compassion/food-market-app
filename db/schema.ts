@@ -59,6 +59,8 @@ export const visits = pgTable('visits', {
 		.references(() => guests.id),
 	status: text('status').$type<VisitStatus>().notNull().default('registered'),
 	queuePosition: integer('queue_position'),
+	/** Relative odds in the lottery: a visit weighted 2 is twice as likely to be drawn as a 1. */
+	lotteryWeight: integer('lottery_weight').notNull().default(1),
 	calledAt: timestamp('called_at', { withTimezone: true }),
 	answers: jsonb('answers').$type<Record<string, string | number>>().notNull().default({}),
 	source: text('source').notNull().default('self'),

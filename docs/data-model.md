@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.ts=6edc3dbe331f -->
+<!-- diagram-sources: db/schema.ts=eb711a98a39c -->
 
 # Database structure
 
@@ -60,6 +60,7 @@ erDiagram
         uuid guest_id FK
         text status "see session-lifecycle.md"
         integer queue_position "lottery order; walk-ins placed on arrival"
+        integer lottery_weight "relative odds in the draw; 1 unless a worker raised them"
         timestamptz called_at
         jsonb answers "registration question answers"
         text source "self | admin"

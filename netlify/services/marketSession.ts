@@ -254,14 +254,26 @@ export async function saveSettings(settings: ParsedSettings): Promise<ActionResu
 	return { ok: true };
 }
 
-export function shuffle<T>(items: T[]) {
-	for (let index = items.length - 1; index > 0; index -= 1) {
-		const random = crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32;
-		const swapIndex = Math.floor(random * (index + 1));
-		[items[index], items[swapIndex]] = [items[swapIndex]!, items[index]!];
-	}
+/**
+ * Orders visits for the draw, giving a heavier `lotteryWeight` proportionally better odds of
+ * landing near the front.
+ *
+ * Each visit gets the key `random^(1/weight)` and the list is sorted by that key, descending.
+ * Sorting by that key is equivalent to drawing entries one at a time without replacement, each
+ * time in proportion to the weights still in the pool (Efraimidis–Spirakis), so a visit weighted 2
+ * really is twice as likely as a 1 to come out ahead — not merely sorted ahead of it.
+ *
+ * With every weight left at the default 1 this is a plain uniform shuffle.
+ */
+export function weightedShuffle<T extends { lotteryWeight: number }>(items: T[]) {
+	return items
+		.map((item) => {
+			const random = crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32;
 
-	return items;
+			return { item, key: random ** (1 / Math.max(1, item.lotteryWeight)) };
+		})
+		.sort((first, second) => second.key - first.key)
+		.map(({ item }) => item);
 }
 
 export function parseRegistrationOverride(value: unknown) {
@@ -543,13 +555,13 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 
 export async function runLottery(
 	event: MarketEventRow,
-	shuffleFn: <T>(items: T[]) => T[] = shuffle,
+	shuffleFn: <T extends { lotteryWeight: number }>(items: T[]) => T[] = weightedShuffle,
 ): Promise<ActionResult> {
 	if (!canRunSessionCommand(event.status, 'run_lottery', event.sessionMode)) {
 		return { ok: false, status: 409, error: 'The lottery can only run after registration closes.' };
 	}
 	const registrations = await db
-		.select({ id: visits.id })
+		.select({ id: visits.id, lotteryWeight: visits.lotteryWeight })
 		.from(visits)
 		.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
 	const shuffled = shuffleFn(registrations);

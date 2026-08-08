@@ -4,6 +4,11 @@ import { computed, reactive, watch } from 'vue';
 import { adminTranslations } from '../../adminLocales';
 import { translations, type Locale } from '../../locales';
 import type { GuestAdmission } from '../../services/guestAdmission';
+import {
+	lotteryWeightFor,
+	lotteryWeightTiers,
+	type LotteryWeightTier,
+} from '../../services/lotteryWeight';
 import AppButton from '../AppButton.vue';
 import FormField from '../FormField.vue';
 import type { ManualGuest } from './types';
@@ -26,6 +31,7 @@ const guest = reactive<ManualGuest>({
 	phone: '',
 	queuePlacement: 'end',
 	admission: props.admissions[0] ?? 'queue',
+	lotteryWeightTier: 'standard',
 });
 
 const admissionLabels = computed<Record<GuestAdmission, string>>(() => ({
@@ -37,6 +43,11 @@ const admissionHelp = computed<Record<GuestAdmission, string>>(() => ({
 	lottery: t.value.admitToLotteryHelp,
 	queue: t.value.admitToQueueHelp,
 	served: t.value.admitAsServedHelp,
+}));
+const weightLabels = computed<Record<LotteryWeightTier, string>>(() => ({
+	standard: t.value.weightStandard,
+	higher: t.value.weightHigher,
+	highest: t.value.weightHighest,
 }));
 
 // The session can move on while the form sits open, so never leave an illegal choice selected.
@@ -86,6 +97,18 @@ function submit() {
 			</select>
 		</label>
 		<p class="admission-help">{{ admissionHelp[guest.admission] }}</p>
+		<!-- Odds only mean anything for a guest actually going into the draw. -->
+		<template v-if="guest.admission === 'lottery'">
+			<label>
+				<span>{{ t.lotteryWeightLabel }}</span>
+				<select v-model="guest.lotteryWeightTier">
+					<option v-for="tier in lotteryWeightTiers" :key="tier" :value="tier">
+						{{ weightLabels[tier] }} (×{{ lotteryWeightFor(tier) }})
+					</option>
+				</select>
+			</label>
+			<p class="admission-help">{{ t.lotteryWeightHelp }}</p>
+		</template>
 		<label v-if="guest.admission === 'queue'">
 			<span>{{ t.queuePlacement }}</span>
 			<select v-model="guest.queuePlacement">

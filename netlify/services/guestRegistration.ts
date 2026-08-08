@@ -10,6 +10,7 @@ import {
 	type GuestAdmission,
 	type QueuePlacement,
 } from '../../src/services/guestAdmission.js';
+import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
 import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import {
@@ -38,6 +39,7 @@ export type GuestSubmission = {
 	updateProfile: boolean;
 	queuePlacement: QueuePlacement;
 	admission: GuestAdmission;
+	lotteryWeight: number;
 };
 
 export type RegisterGuestResult =
@@ -75,6 +77,8 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 	const queuePlacement: QueuePlacement = body.queuePlacement === 'next' ? 'next' : 'end';
 	// `queue` keeps the original walk-in behaviour for any caller that predates the admission field.
 	const admission: GuestAdmission = isGuestAdmission(body.admission) ? body.admission : 'queue';
+	// Anything a caller omits or fudges lands on the default odds rather than failing the insert.
+	const lotteryWeight = normalizeLotteryWeight(body.lotteryWeight);
 	const marketEventId = typeof body.marketEventId === 'string' ? body.marketEventId : null;
 	const answers = body.answers ?? {};
 	const needsProfile = source === 'admin' || registrationType === 'new' || updateProfile;
@@ -118,6 +122,7 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 		updateProfile,
 		queuePlacement,
 		admission,
+		lotteryWeight,
 	};
 }
 
@@ -284,6 +289,11 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 						source: submission.source,
 						accessTokenHash: visitCredential.tokenHash,
 						isFirstVisit: submission.registrationType === 'new',
+						// Only a guest actually entering the draw can carry anything but the default odds.
+						lotteryWeight:
+							submission.source === 'admin' && submission.admission === 'lottery'
+								? submission.lotteryWeight
+								: 1,
 					})
 					.returning({ id: visits.id, status: visits.status });
 

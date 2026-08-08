@@ -55,6 +55,35 @@ describe('AddGuestSection', () => {
 		expect(wrapper.text()).toContain(t.admitAsServedHelp);
 	});
 
+	it('offers the draw odds only to a guest actually entering the draw', async () => {
+		const wrapper = await openForm(['lottery', 'queue']);
+
+		expect(wrapper.text()).toContain(t.lotteryWeightLabel);
+		// Switching to a reserved spot takes the guest out of the draw, so the odds go with it.
+		await wrapper.findAll('select')[0]!.setValue('queue');
+		expect(wrapper.text()).not.toContain(t.lotteryWeightLabel);
+	});
+
+	it('starts a weighted guest on even odds', async () => {
+		const wrapper = await openForm(['lottery']);
+		await wrapper.find('form').trigger('submit');
+
+		expect(wrapper.emitted('addGuest')?.[0]?.[0]).toMatchObject({
+			admission: 'lottery',
+			lotteryWeightTier: 'standard',
+		});
+	});
+
+	it('emits the weight tier the worker picked', async () => {
+		const wrapper = await openForm(['lottery']);
+		await wrapper.findAll('select')[0]!.setValue('highest');
+		await wrapper.find('form').trigger('submit');
+
+		expect(wrapper.emitted('addGuest')?.[0]?.[0]).toMatchObject({
+			lotteryWeightTier: 'highest',
+		});
+	});
+
 	it('emits the guest with the admission the worker picked', async () => {
 		const wrapper = await openForm(['lottery', 'queue']);
 		await wrapper.findAll('select')[0]!.setValue('queue');
