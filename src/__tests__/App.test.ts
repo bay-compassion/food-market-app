@@ -249,6 +249,108 @@ describe('App', () => {
 		vi.unstubAllGlobals();
 	});
 
+	function mountWithVisit(visit: Record<string, unknown>) {
+		window.localStorage.setItem('bay-compassion.visit-token', 'visit-token');
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation((url: string) =>
+				Promise.resolve(
+					url === '/api/visit'
+						? { ok: true, json: () => Promise.resolve(visit) }
+						: {
+								ok: true,
+								json: () =>
+									Promise.resolve({
+										event: {
+											id: 'event-1',
+											status: 'service_started',
+											registrationOpensAt: '2020-01-01T00:00:00.000Z',
+											registrationClosesAt: '2020-01-01T01:00:00.000Z',
+										},
+										questions: [],
+									}),
+							},
+				),
+			),
+		);
+
+		return mountApp();
+	}
+
+	it('shows a waiting guest their place in line and how many are ahead', async () => {
+		const wrapper = mountWithVisit({
+			id: 'visit-1',
+			status: 'waiting',
+			queuePosition: 7,
+			aheadOfYou: 3,
+		});
+		await flushPromises();
+
+		expect(wrapper.text()).toContain('Your place in line');
+		expect(wrapper.text()).toContain('7');
+		expect(wrapper.text()).toContain('Guests ahead of you');
+
+		vi.unstubAllGlobals();
+	});
+
+	it('tells a waiting guest when nobody is ahead of them', async () => {
+		const wrapper = mountWithVisit({
+			id: 'visit-1',
+			status: 'waiting',
+			queuePosition: 1,
+			aheadOfYou: 0,
+		});
+		await flushPromises();
+
+		expect(wrapper.text()).toContain('You are next');
+		expect(wrapper.text()).not.toContain('Guests ahead of you');
+
+		vi.unstubAllGlobals();
+	});
+
+	it('replaces the waiting copy with a call to the table once the guest is called', async () => {
+		const wrapper = mountWithVisit({
+			id: 'visit-1',
+			status: 'called',
+			queuePosition: 2,
+			aheadOfYou: null,
+		});
+		await flushPromises();
+
+		expect(wrapper.text()).toContain('It’s your turn');
+		expect(wrapper.text()).toContain('Please come to the table now.');
+		expect(wrapper.text()).not.toContain('Your place in line');
+		// A called guest has nothing left to cancel.
+		expect(wrapper.text()).not.toContain('Cancel this visit');
+
+		vi.unstubAllGlobals();
+	});
+
+	it('keeps refreshing after a guest has been called', async () => {
+		vi.useFakeTimers();
+		const wrapper = mountWithVisit({
+			id: 'visit-1',
+			status: 'called',
+			queuePosition: 2,
+			aheadOfYou: null,
+		});
+		await vi.runOnlyPendingTimersAsync();
+		const callsAfterLoad = vi
+			.mocked(fetch)
+			.mock.calls.filter(([url]) => url === '/api/visit').length;
+
+		await vi.advanceTimersByTimeAsync(15_000);
+
+		const callsAfterWait = vi
+			.mocked(fetch)
+			.mock.calls.filter(([url]) => url === '/api/visit').length;
+		expect(callsAfterWait).toBeGreaterThan(callsAfterLoad);
+
+		wrapper.unmount();
+		vi.useRealTimers();
+		vi.unstubAllGlobals();
+	});
+
 	it('shows an error when an admin session cannot be verified', async () => {
 		const wrapper = mountApp();
 

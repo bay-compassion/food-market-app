@@ -9,6 +9,7 @@ import EyebrowLabel from './components/EyebrowLabel.vue';
 import FormField from './components/FormField.vue';
 import { languages, translations, type Locale } from './locales';
 import type { SessionStatus } from './services/sessionStateMachine';
+import type { VisitStatus } from './services/visitStateMachine';
 
 const localeStorageKey = 'bay-compassion.locale';
 const returningVisitorStorageKey = 'bay-compassion.returning-visitor';
@@ -34,15 +35,13 @@ const registrationType = ref<'new' | 'returning'>('new');
 const pin = ref('');
 const pinConfirmation = ref('');
 const updateProfile = ref(false);
-type VisitStatus =
-	| 'registered'
-	| 'waiting'
-	| 'called'
-	| 'served'
-	| 'not_placed'
-	| 'no_show'
-	| 'cancelled';
-const activeVisit = ref<{ id: string; status: VisitStatus } | null>(null);
+type ActiveVisit = {
+	id: string;
+	status: VisitStatus;
+	queuePosition: number | null;
+	aheadOfYou: number | null;
+};
+const activeVisit = ref<ActiveVisit | null>(null);
 const pushPublicKey = ref<string | null>(null);
 const pushConfigured = ref(false);
 const notificationState = ref<'idle' | 'enabling' | 'enabled' | 'error'>('idle');
@@ -84,6 +83,23 @@ const visitStatusLabel = computed(() => {
 });
 const canCancelVisit = computed(
 	() => activeVisit.value?.status === 'registered' || activeVisit.value?.status === 'waiting',
+);
+/**
+ * A called guest still needs updates — refreshing only while the visit can be cancelled meant the
+ * screen froze on "Called" and never moved on.
+ */
+const isVisitActive = computed(
+	() =>
+		activeVisit.value?.status === 'registered' ||
+		activeVisit.value?.status === 'waiting' ||
+		activeVisit.value?.status === 'called',
+);
+const isCalled = computed(() => activeVisit.value?.status === 'called');
+const queuePosition = computed(() =>
+	activeVisit.value?.status === 'waiting' ? activeVisit.value.queuePosition : null,
+);
+const guestsAhead = computed(() =>
+	activeVisit.value?.status === 'waiting' ? activeVisit.value.aheadOfYou : null,
 );
 const isIos = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
 const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches === true;
@@ -182,7 +198,7 @@ function scheduleVisitRefresh() {
 	if (visitRefreshTimer) {
 		clearTimeout(visitRefreshTimer);
 	}
-	if (canCancelVisit.value) {
+	if (isVisitActive.value) {
 		visitRefreshTimer = setTimeout(loadActiveVisit, 15_000);
 	}
 }
@@ -269,7 +285,12 @@ async function submitForm() {
 			visitToken: string;
 		};
 		window.localStorage.setItem(visitTokenStorageKey, registration.visitToken);
-		activeVisit.value = { id: registration.id, status: registration.status };
+		activeVisit.value = {
+			id: registration.id,
+			status: registration.status,
+			queuePosition: null,
+			aheadOfYou: null,
+		};
 		isSubmitted.value = true;
 		void syncExistingPushSubscription(registration.visitToken).catch(() => {
 			notificationState.value = 'error';
@@ -299,8 +320,7 @@ async function loadActiveVisit() {
 
 			return;
 		}
-		const visit = (await response.json()) as { id: string; status: VisitStatus };
-		activeVisit.value = visit;
+		activeVisit.value = (await response.json()) as ActiveVisit;
 		isSubmitted.value = true;
 		scheduleVisitRefresh();
 	} catch {
@@ -326,7 +346,7 @@ async function cancelVisit() {
 		}
 
 		const visit = (await response.json()) as { id: string; status: VisitStatus };
-		activeVisit.value = visit;
+		activeVisit.value = { ...activeVisit.value!, ...visit };
 	} catch {
 		submissionError.value = t.value.visitError;
 	} finally {
@@ -442,12 +462,29 @@ onBeforeUnmount(() => {
 
 			<section class="checkin-card" aria-live="polite">
 				<div v-if="activeVisit && isSubmitted" class="success-state">
-					<div class="checkmark">✓</div>
-					<h2>{{ t.successTitle }}</h2>
-					<p>
-						{{ t.currentStatus }}: <strong>{{ visitStatusLabel }}</strong>
-					</p>
-					<p>{{ t.successDescription }}</p>
+					<template v-if="isCalled">
+						<div class="checkmark called-mark" aria-hidden="true">→</div>
+						<h2>{{ t.calledTitle }}</h2>
+						<p>{{ t.calledDescription }}</p>
+					</template>
+					<template v-else>
+						<div class="checkmark">✓</div>
+						<h2>{{ t.successTitle }}</h2>
+						<div v-if="queuePosition" class="queue-standing">
+							<p class="queue-position">
+								<span>{{ t.queuePositionLabel }}</span>
+								<strong>{{ queuePosition }}</strong>
+							</p>
+							<p v-if="guestsAhead === 0" class="queue-next">{{ t.youAreNext }}</p>
+							<p v-else-if="guestsAhead !== null">
+								{{ t.guestsAheadOfYou }}: <strong>{{ guestsAhead }}</strong>
+							</p>
+						</div>
+						<p v-else>
+							{{ t.currentStatus }}: <strong>{{ visitStatusLabel }}</strong>
+						</p>
+						<p>{{ t.successDescription }}</p>
+					</template>
 					<div v-if="pushConfigured" class="notification-option">
 						<p v-if="notificationState === 'enabled'" class="notification-enabled">
 							{{ t.notificationsEnabled }}
@@ -962,6 +999,33 @@ form {
 .success-state p {
 	max-width: 280px;
 	margin: 0 auto 27px;
+}
+.called-mark {
+	background: var(--color-error);
+	font-size: 34px;
+}
+.queue-standing {
+	margin-bottom: 27px;
+	padding: 18px;
+	border-radius: var(--radius-md);
+	background: var(--color-surface-soft);
+}
+.queue-standing p {
+	margin-bottom: 0;
+}
+.queue-position {
+	display: grid;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+.queue-position strong {
+	font-family: var(--font-heading);
+	font-size: 44px;
+	line-height: 1;
+	color: var(--color-brand);
+}
+.queue-next {
+	font-weight: 700;
 }
 .notification-option {
 	display: grid;

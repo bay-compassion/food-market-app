@@ -73,6 +73,11 @@ export interface Translation {
 	submitting: string;
 	successDescription: string;
 	successTitle: string;
+	queuePositionLabel: string;
+	guestsAheadOfYou: string;
+	youAreNext: string;
+	calledTitle: string;
+	calledDescription: string;
 	statusCancelled: string;
 	statusCalled: string;
 	statusNoShow: string;
@@ -151,6 +156,11 @@ export const translations = {
 		submitting: 'Joining the queue…',
 		successDescription: 'We’ll let you know when it’s your turn. Thank you for being here.',
 		successTitle: 'You’re in the queue!',
+		queuePositionLabel: 'Your place in line',
+		guestsAheadOfYou: 'Guests ahead of you',
+		youAreNext: 'You are next',
+		calledTitle: 'It’s your turn',
+		calledDescription: 'Please come to the table now.',
 		statusCancelled: 'Cancelled',
 		statusCalled: 'Called',
 		statusNoShow: 'No show',
@@ -228,6 +238,11 @@ export const translations = {
 		submitting: 'Uniéndose a la fila…',
 		successDescription: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
 		successTitle: '¡Ya está en la fila!',
+		queuePositionLabel: 'Su lugar en la fila',
+		guestsAheadOfYou: 'Invitados delante de usted',
+		youAreNext: 'Usted es el siguiente',
+		calledTitle: 'Es su turno',
+		calledDescription: 'Por favor, acérquese al mostrador ahora.',
 		statusCancelled: 'Cancelado',
 		statusCalled: 'Llamado',
 		statusNoShow: 'No se presentó',
@@ -304,6 +319,11 @@ export const translations = {
 		submitting: 'در حال پیوستن به صف…',
 		successDescription: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
 		successTitle: 'شما در صف هستید!',
+		queuePositionLabel: 'جایگاه شما در صف',
+		guestsAheadOfYou: 'مهمانان جلوتر از شما',
+		youAreNext: 'شما نفر بعدی هستید',
+		calledTitle: 'نوبت شماست',
+		calledDescription: 'لطفاً همین حالا به میز مراجعه کنید.',
 		statusCancelled: 'لغوشده',
 		statusCalled: 'فراخوانده‌شده',
 		statusNoShow: 'غایب',
@@ -382,6 +402,11 @@ export const translations = {
 		submitting: 'Sumasali sa pila…',
 		successDescription: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
 		successTitle: 'Nasa pila na kayo!',
+		queuePositionLabel: 'Ang inyong puwesto sa pila',
+		guestsAheadOfYou: 'Mga bisita bago kayo',
+		youAreNext: 'Kayo na ang susunod',
+		calledTitle: 'Kayo na po ang susunod',
+		calledDescription: 'Pumunta na po kayo sa mesa ngayon.',
 		statusCancelled: 'Kinansela',
 		statusCalled: 'Tinawag',
 		statusNoShow: 'Hindi dumating',
@@ -459,6 +484,11 @@ export const translations = {
 		submitting: 'Đang vào hàng đợi…',
 		successDescription: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
 		successTitle: 'Bạn đã vào hàng đợi!',
+		queuePositionLabel: 'Vị trí của bạn trong hàng',
+		guestsAheadOfYou: 'Số khách trước bạn',
+		youAreNext: 'Bạn là người tiếp theo',
+		calledTitle: 'Đã đến lượt bạn',
+		calledDescription: 'Vui lòng đến quầy ngay bây giờ.',
 		statusCancelled: 'Đã hủy',
 		statusCalled: 'Đã gọi',
 		statusNoShow: 'Không đến',
@@ -534,6 +564,11 @@ export const translations = {
 		submitting: '正在加入队列…',
 		successDescription: '轮到您时我们会通知您。感谢您的到来。',
 		successTitle: '您已加入队列！',
+		queuePositionLabel: '您的排队位置',
+		guestsAheadOfYou: '您前面的访客',
+		youAreNext: '下一位就是您',
+		calledTitle: '轮到您了',
+		calledDescription: '请现在到服务台来。',
 		statusCancelled: '已取消',
 		statusCalled: '已叫号',
 		statusNoShow: '未到场',
@@ -610,6 +645,11 @@ export const translations = {
 		submitting: 'جارٍ الانضمام إلى قائمة الانتظار…',
 		successDescription: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
 		successTitle: 'أنت الآن في قائمة الانتظار!',
+		queuePositionLabel: 'مكانك في الصف',
+		guestsAheadOfYou: 'الضيوف الذين أمامك',
+		youAreNext: 'أنت التالي',
+		calledTitle: 'حان دورك',
+		calledDescription: 'يرجى التوجه إلى الطاولة الآن.',
 		statusCancelled: 'ملغاة',
 		statusCalled: 'تم استدعاؤه',
 		statusNoShow: 'لم يحضر',
