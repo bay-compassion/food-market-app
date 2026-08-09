@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { auth0 } from './auth';
+import { isAdminView, type AdminView } from './components/admin/types';
 import AdminAuthView from './components/AdminAuthView.vue';
 import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
@@ -206,26 +207,9 @@ const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
 const isAdmin = computed(() => route.name === 'admin');
-type AdminView =
-	| 'current-session'
-	| 'queue'
-	| 'question-bank'
-	| 'guest-database'
-	| 'session-history';
-const adminViews: AdminView[] = [
-	'current-session',
-	'queue',
-	'question-bank',
-	'guest-database',
-	'session-history',
-];
-const adminView = computed<AdminView>(() => {
-	const view = route.params.view;
-
-	return typeof view === 'string' && adminViews.includes(view as AdminView)
-		? (view as AdminView)
-		: 'current-session';
-});
+const adminView = computed<AdminView>(() =>
+	isAdminView(route.params.view) ? route.params.view : 'current-session',
+);
 
 function showGuest() {
 	isSubmitted.value = false;

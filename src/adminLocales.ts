@@ -1,4 +1,5 @@
 import type { Locale } from './locales';
+import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports';
 
 export interface AdminTranslation {
 	adHocSession: string;
@@ -101,6 +102,21 @@ export interface AdminTranslation {
 	registrationSettings: string;
 	registrationOverrides: string;
 	reopenRegistration: string;
+	reports: string;
+	reportsDescription: string;
+	reportRangeFrom: string;
+	reportRangeTo: string;
+	reportRangeInvalid: string;
+	reportDownloadCsv: string;
+	reportExportVisits: string;
+	reportExportVisitsHelp: string;
+	reportPrivacyNote: string;
+	reportEmpty: string;
+	/** Keyed by the shared catalogue in `services/reports.ts` so a new report cannot ship untranslated. */
+	reportNames: Record<ReportId, string>;
+	reportDescriptions: Record<ReportId, string>;
+	reportColumnLabels: Record<ReportColumnKey, string>;
+	reportValueLabels: Record<ReportValueKey, string>;
 	resetSession: string;
 	resetSessionHelp: string;
 	postponeByMinutes: string;
@@ -239,6 +255,67 @@ export const adminTranslations = {
 		registrationSettings: 'Registration settings',
 		registrationOverrides: 'Registration overrides',
 		reopenRegistration: 'Reopen registration',
+		reports: 'Reports',
+		reportsDescription: 'See how sessions went, and pull the numbers a grant report asks for.',
+		reportRangeFrom: 'From',
+		reportRangeTo: 'To',
+		reportRangeInvalid: 'Choose an end date on or after the start date.',
+		reportDownloadCsv: 'Download CSV',
+		reportExportVisits: 'Export every visit',
+		reportExportVisitsHelp:
+			'One row per guest per session, names and phone numbers included, for questions these reports do not answer. Open it in a spreadsheet.',
+		reportPrivacyNote:
+			'Reports count people without naming them. Only the full export identifies guests, so share that file carefully.',
+		reportEmpty: 'No sessions in this date range.',
+		reportNames: {
+			'session-summary': 'Session summary',
+			'people-served': 'People served by month',
+			'guest-demographics': 'Who was served',
+			'lottery-outcomes': 'Lottery outcomes by odds',
+			'service-timing': 'Service timing',
+		},
+		reportDescriptions: {
+			'session-summary':
+				'One row per session: how many signed up, how many were served, and how full it ran.',
+			'people-served':
+				'Monthly totals for grant reporting. Guests and household members are counted once a month, however many times they came.',
+			'guest-demographics':
+				'Age, household size, and language of everyone served in the period, each guest counted once.',
+			'lottery-outcomes':
+				'How often guests at each weighting were placed in the line. Covers guests who signed up themselves and were entered in a draw.',
+			'service-timing': 'How long guests waited between being called and being served.',
+		},
+		reportColumnLabels: {
+			capacity: 'Capacity',
+			category: 'Category',
+			entries: 'Entries',
+			fillRate: 'Filled',
+			firstTime: 'First visit',
+			guests: 'Guests',
+			householdMembers: 'Household members',
+			longestWait: 'Longest wait',
+			medianWait: 'Median wait',
+			month: 'Month',
+			noShows: 'No shows',
+			notPlaced: 'Not placed',
+			placed: 'Placed',
+			placementRate: 'Placed rate',
+			served: 'Served',
+			sessionDate: 'Session',
+			sessions: 'Sessions',
+			share: 'Share',
+			signUps: 'Sign-ups',
+			uniqueGuests: 'Unique guests',
+			unrecorded: 'No timing',
+			value: 'Group',
+			walkIns: 'Added by a worker',
+			weight: 'Odds',
+		},
+		reportValueLabels: {
+			age: 'Age',
+			household: 'Household size',
+			language: 'Language',
+		},
 		resetSession: 'Reset session',
 		resetSessionHelp:
 			'Return to inactive setup. This session and its guest records will remain in history.',
@@ -377,6 +454,68 @@ export const adminTranslations = {
 		registrationSettings: 'Configuración del registro',
 		registrationOverrides: 'Modificaciones del registro',
 		reopenRegistration: 'Reabrir registro',
+		reports: 'Informes',
+		reportsDescription:
+			'Vea cómo salieron las sesiones y obtenga las cifras que pide un informe de subvención.',
+		reportRangeFrom: 'Desde',
+		reportRangeTo: 'Hasta',
+		reportRangeInvalid: 'Elija una fecha final igual o posterior a la fecha inicial.',
+		reportDownloadCsv: 'Descargar CSV',
+		reportExportVisits: 'Exportar todas las visitas',
+		reportExportVisitsHelp:
+			'Una fila por invitado y sesión, con nombres y teléfonos, para las preguntas que estos informes no responden. Ábralo en una hoja de cálculo.',
+		reportPrivacyNote:
+			'Los informes cuentan personas sin nombrarlas. Solo la exportación completa identifica a los invitados, así que comparta ese archivo con cuidado.',
+		reportEmpty: 'No hay sesiones en este rango de fechas.',
+		reportNames: {
+			'session-summary': 'Resumen de la sesión',
+			'people-served': 'Personas atendidas por mes',
+			'guest-demographics': 'Quiénes fueron atendidos',
+			'lottery-outcomes': 'Resultados del sorteo por probabilidad',
+			'service-timing': 'Tiempos de atención',
+		},
+		reportDescriptions: {
+			'session-summary':
+				'Una fila por sesión: cuántos se inscribieron, cuántos fueron atendidos y qué tan llena estuvo.',
+			'people-served':
+				'Totales mensuales para informes de subvenciones. Los invitados y los miembros del hogar se cuentan una vez al mes, sin importar cuántas veces vinieron.',
+			'guest-demographics':
+				'Edad, tamaño del hogar e idioma de todas las personas atendidas en el periodo, contando cada invitado una sola vez.',
+			'lottery-outcomes':
+				'Con qué frecuencia los invitados de cada ponderación obtuvieron lugar en la fila. Incluye a quienes se inscribieron por su cuenta y entraron en un sorteo.',
+			'service-timing': 'Cuánto esperaron los invitados entre ser llamados y ser atendidos.',
+		},
+		reportColumnLabels: {
+			capacity: 'Capacidad',
+			category: 'Categoría',
+			entries: 'Participaciones',
+			fillRate: 'Ocupación',
+			firstTime: 'Primera visita',
+			guests: 'Invitados',
+			householdMembers: 'Miembros del hogar',
+			longestWait: 'Espera más larga',
+			medianWait: 'Espera mediana',
+			month: 'Mes',
+			noShows: 'No se presentaron',
+			notPlaced: 'Sin lugar',
+			placed: 'Con lugar',
+			placementRate: 'Tasa con lugar',
+			served: 'Atendidos',
+			sessionDate: 'Sesión',
+			sessions: 'Sesiones',
+			share: 'Porcentaje',
+			signUps: 'Inscripciones',
+			uniqueGuests: 'Invitados únicos',
+			unrecorded: 'Sin tiempos',
+			value: 'Grupo',
+			walkIns: 'Agregados por personal',
+			weight: 'Probabilidad',
+		},
+		reportValueLabels: {
+			age: 'Edad',
+			household: 'Tamaño del hogar',
+			language: 'Idioma',
+		},
 		resetSession: 'Restablecer sesión',
 		resetSessionHelp:
 			'Vuelva a la configuración inactiva. La sesión y sus invitados permanecerán en el historial.',
@@ -513,6 +652,68 @@ export const adminTranslations = {
 		registrationSettings: 'تنظیمات ثبت‌نام',
 		registrationOverrides: 'تغییرات ثبت‌نام',
 		reopenRegistration: 'بازگشایی ثبت‌نام',
+		reports: 'گزارش‌ها',
+		reportsDescription:
+			'ببینید جلسه‌ها چگونه پیش رفتند و عددهایی را که گزارش کمک‌هزینه می‌خواهد بیرون بکشید.',
+		reportRangeFrom: 'از',
+		reportRangeTo: 'تا',
+		reportRangeInvalid: 'تاریخ پایان را برابر یا پس از تاریخ شروع انتخاب کنید.',
+		reportDownloadCsv: 'دریافت فایل CSV',
+		reportExportVisits: 'برون‌بری همه بازدیدها',
+		reportExportVisitsHelp:
+			'یک سطر برای هر مهمان در هر جلسه، همراه با نام و شماره تلفن، برای پرسش‌هایی که این گزارش‌ها پاسخ نمی‌دهند. آن را در صفحه‌گسترده باز کنید.',
+		reportPrivacyNote:
+			'گزارش‌ها افراد را می‌شمارند بدون آنکه نامشان را بیاورند. تنها برون‌بری کامل مهمانان را شناسایی می‌کند، پس آن فایل را با احتیاط به اشتراک بگذارید.',
+		reportEmpty: 'در این بازه تاریخی جلسه‌ای نیست.',
+		reportNames: {
+			'session-summary': 'خلاصه جلسه',
+			'people-served': 'افراد خدمت‌گرفته بر پایه ماه',
+			'guest-demographics': 'چه کسانی خدمت گرفتند',
+			'lottery-outcomes': 'نتیجه قرعه‌کشی بر پایه شانس',
+			'service-timing': 'زمان‌بندی خدمت',
+		},
+		reportDescriptions: {
+			'session-summary':
+				'یک سطر برای هر جلسه: چند نفر ثبت‌نام کردند، چند نفر خدمت گرفتند و جلسه چقدر پر شد.',
+			'people-served':
+				'مجموع‌های ماهانه برای گزارش کمک‌هزینه. مهمانان و اعضای خانوار هر ماه یک بار شمرده می‌شوند، هر چند بار که آمده باشند.',
+			'guest-demographics':
+				'سن، اندازه خانوار و زبان همه کسانی که در این دوره خدمت گرفتند؛ هر مهمان یک بار شمرده می‌شود.',
+			'lottery-outcomes':
+				'مهمانان با هر وزن چند بار در صف جا گرفتند. شامل کسانی که خودشان ثبت‌نام کردند و وارد قرعه‌کشی شدند.',
+			'service-timing': 'مهمانان از زمان صدا زدن تا زمان خدمت گرفتن چقدر منتظر ماندند.',
+		},
+		reportColumnLabels: {
+			capacity: 'ظرفیت',
+			category: 'دسته',
+			entries: 'شرکت‌ها',
+			fillRate: 'میزان پرشدن',
+			firstTime: 'نخستین بازدید',
+			guests: 'مهمانان',
+			householdMembers: 'اعضای خانوار',
+			longestWait: 'بلندترین انتظار',
+			medianWait: 'میانه انتظار',
+			month: 'ماه',
+			noShows: 'غایبان',
+			notPlaced: 'انتخاب‌نشده',
+			placed: 'جاگرفته',
+			placementRate: 'نرخ جاگرفتن',
+			served: 'خدمت‌گرفته',
+			sessionDate: 'جلسه',
+			sessions: 'جلسه‌ها',
+			share: 'سهم',
+			signUps: 'ثبت‌نام‌ها',
+			uniqueGuests: 'مهمانان یکتا',
+			unrecorded: 'بدون زمان',
+			value: 'گروه',
+			walkIns: 'افزوده به دست کارمند',
+			weight: 'شانس',
+		},
+		reportValueLabels: {
+			age: 'سن',
+			household: 'اندازه خانوار',
+			language: 'زبان',
+		},
 		resetSession: 'بازنشانی جلسه',
 		resetSessionHelp: 'به تنظیمات غیرفعال برگردید. جلسه و سوابق مهمانان در تاریخچه باقی می‌مانند.',
 		postponeByMinutes: 'تعویق به مدت (دقیقه)',
@@ -652,6 +853,70 @@ export const adminTranslations = {
 		registrationSettings: 'Mga setting ng pagpaparehistro',
 		registrationOverrides: 'Mga pagbabago sa pagpaparehistro',
 		reopenRegistration: 'Buksan muli ang pagpaparehistro',
+		reports: 'Mga ulat',
+		reportsDescription:
+			'Tingnan kung paano naganap ang mga sesyon, at kunin ang mga bilang na hinihingi ng ulat para sa grant.',
+		reportRangeFrom: 'Mula',
+		reportRangeTo: 'Hanggang',
+		reportRangeInvalid:
+			'Pumili ng petsang pagtatapos na kapareho o mas huli sa petsang pagsisimula.',
+		reportDownloadCsv: 'I-download ang CSV',
+		reportExportVisits: 'I-export ang lahat ng pagbisita',
+		reportExportVisitsHelp:
+			'Isang hilera bawat bisita bawat sesyon, kasama ang pangalan at numero ng telepono, para sa mga tanong na hindi nasasagot ng mga ulat na ito. Buksan ito sa spreadsheet.',
+		reportPrivacyNote:
+			'Binibilang ng mga ulat ang mga tao nang hindi pinapangalanan. Ang buong export lang ang nagpapakilala sa mga bisita, kaya mag-ingat sa pagbabahagi ng file na iyon.',
+		reportEmpty: 'Walang sesyon sa saklaw ng petsang ito.',
+		reportNames: {
+			'session-summary': 'Buod ng sesyon',
+			'people-served': 'Mga napagsilbihan bawat buwan',
+			'guest-demographics': 'Sino ang napagsilbihan',
+			'lottery-outcomes': 'Resulta ng loterya ayon sa tsansa',
+			'service-timing': 'Tagal ng pagsisilbi',
+		},
+		reportDescriptions: {
+			'session-summary':
+				'Isang hilera bawat sesyon: ilan ang nagparehistro, ilan ang napagsilbihan, at gaano ito kapuno.',
+			'people-served':
+				'Buwanang kabuuan para sa ulat ng grant. Ang mga bisita at kasapi ng sambahayan ay binibilang nang isang beses bawat buwan, gaano man sila kadalas dumating.',
+			'guest-demographics':
+				'Edad, laki ng sambahayan, at wika ng lahat ng napagsilbihan sa panahong ito; isang beses lang binibilang ang bawat bisita.',
+			'lottery-outcomes':
+				'Gaano kadalas nabigyan ng puwesto sa pila ang mga bisita sa bawat timbang. Sakop ang mga nagparehistro mismo at pumasok sa palabunutan.',
+			'service-timing':
+				'Gaano katagal naghintay ang mga bisita mula sa pagtawag hanggang sa pagsisilbi.',
+		},
+		reportColumnLabels: {
+			capacity: 'Kapasidad',
+			category: 'Kategorya',
+			entries: 'Mga lahok',
+			fillRate: 'Napuno',
+			firstTime: 'Unang pagbisita',
+			guests: 'Mga bisita',
+			householdMembers: 'Kasapi ng sambahayan',
+			longestWait: 'Pinakamahabang paghihintay',
+			medianWait: 'Gitnang paghihintay',
+			month: 'Buwan',
+			noShows: 'Hindi dumating',
+			notPlaced: 'Hindi napili',
+			placed: 'Nabigyan ng puwesto',
+			placementRate: 'Bahagdan ng napuwestuhan',
+			served: 'Napagsilbihan',
+			sessionDate: 'Sesyon',
+			sessions: 'Mga sesyon',
+			share: 'Porsyento',
+			signUps: 'Mga pagpaparehistro',
+			uniqueGuests: 'Natatanging bisita',
+			unrecorded: 'Walang oras',
+			value: 'Pangkat',
+			walkIns: 'Idinagdag ng manggagawa',
+			weight: 'Tsansa',
+		},
+		reportValueLabels: {
+			age: 'Edad',
+			household: 'Laki ng sambahayan',
+			language: 'Wika',
+		},
 		resetSession: 'I-reset ang sesyon',
 		resetSessionHelp:
 			'Bumalik sa hindi aktibong setup. Mananatili sa kasaysayan ang sesyon at mga bisita.',
@@ -790,6 +1055,68 @@ export const adminTranslations = {
 		registrationSettings: 'Cài đặt đăng ký',
 		registrationOverrides: 'Điều chỉnh đăng ký',
 		reopenRegistration: 'Mở lại đăng ký',
+		reports: 'Báo cáo',
+		reportsDescription:
+			'Xem các phiên đã diễn ra thế nào và lấy những con số mà báo cáo tài trợ yêu cầu.',
+		reportRangeFrom: 'Từ',
+		reportRangeTo: 'Đến',
+		reportRangeInvalid: 'Hãy chọn ngày kết thúc bằng hoặc sau ngày bắt đầu.',
+		reportDownloadCsv: 'Tải xuống CSV',
+		reportExportVisits: 'Xuất toàn bộ lượt đến',
+		reportExportVisitsHelp:
+			'Mỗi khách trong mỗi phiên là một dòng, kèm tên và số điện thoại, dành cho những câu hỏi mà các báo cáo này không trả lời. Hãy mở bằng bảng tính.',
+		reportPrivacyNote:
+			'Báo cáo đếm số người mà không nêu tên. Chỉ bản xuất đầy đủ mới nhận diện khách, vì vậy hãy chia sẻ tệp đó một cách thận trọng.',
+		reportEmpty: 'Không có phiên nào trong khoảng thời gian này.',
+		reportNames: {
+			'session-summary': 'Tóm tắt phiên',
+			'people-served': 'Số người được phục vụ theo tháng',
+			'guest-demographics': 'Ai đã được phục vụ',
+			'lottery-outcomes': 'Kết quả rút thăm theo tỉ lệ',
+			'service-timing': 'Thời gian phục vụ',
+		},
+		reportDescriptions: {
+			'session-summary':
+				'Mỗi phiên một dòng: bao nhiêu người đăng ký, bao nhiêu người được phục vụ và phiên đầy đến mức nào.',
+			'people-served':
+				'Tổng theo tháng cho báo cáo tài trợ. Khách và thành viên hộ gia đình chỉ được đếm một lần mỗi tháng, dù họ đến bao nhiêu lần.',
+			'guest-demographics':
+				'Tuổi, quy mô hộ gia đình và ngôn ngữ của tất cả những người được phục vụ trong kỳ, mỗi khách chỉ đếm một lần.',
+			'lottery-outcomes':
+				'Khách ở mỗi mức trọng số được xếp vào hàng bao nhiêu lần. Bao gồm những người tự đăng ký và đã vào một lượt rút thăm.',
+			'service-timing': 'Khách đã chờ bao lâu từ lúc được gọi đến lúc được phục vụ.',
+		},
+		reportColumnLabels: {
+			capacity: 'Sức chứa',
+			category: 'Nhóm mục',
+			entries: 'Lượt tham gia',
+			fillRate: 'Mức lấp đầy',
+			firstTime: 'Lần đầu đến',
+			guests: 'Khách',
+			householdMembers: 'Thành viên hộ gia đình',
+			longestWait: 'Chờ lâu nhất',
+			medianWait: 'Chờ trung vị',
+			month: 'Tháng',
+			noShows: 'Không đến',
+			notPlaced: 'Không được chọn',
+			placed: 'Được xếp chỗ',
+			placementRate: 'Tỉ lệ được xếp chỗ',
+			served: 'Đã phục vụ',
+			sessionDate: 'Phiên',
+			sessions: 'Số phiên',
+			share: 'Tỉ trọng',
+			signUps: 'Lượt đăng ký',
+			uniqueGuests: 'Khách riêng biệt',
+			unrecorded: 'Không có giờ',
+			value: 'Nhóm',
+			walkIns: 'Do nhân viên thêm',
+			weight: 'Tỉ lệ',
+		},
+		reportValueLabels: {
+			age: 'Tuổi',
+			household: 'Quy mô hộ gia đình',
+			language: 'Ngôn ngữ',
+		},
 		resetSession: 'Đặt lại phiên',
 		resetSessionHelp:
 			'Quay lại thiết lập chưa hoạt động. Phiên và hồ sơ khách vẫn ở trong lịch sử.',
@@ -922,6 +1249,62 @@ export const adminTranslations = {
 		registrationSettings: '登记设置',
 		registrationOverrides: '登记调整',
 		reopenRegistration: '重新开放登记',
+		reports: '报表',
+		reportsDescription: '查看各场次的情况，并导出资助报告所需的数据。',
+		reportRangeFrom: '起始',
+		reportRangeTo: '截止',
+		reportRangeInvalid: '请选择不早于起始日期的截止日期。',
+		reportDownloadCsv: '下载 CSV',
+		reportExportVisits: '导出全部到访记录',
+		reportExportVisitsHelp:
+			'每位访客每场次一行，包含姓名和电话，用于这些报表无法回答的问题。请用电子表格打开。',
+		reportPrivacyNote: '报表只统计人数，不显示姓名。只有完整导出会标明访客身份，请谨慎分享该文件。',
+		reportEmpty: '此日期范围内没有场次。',
+		reportNames: {
+			'session-summary': '场次汇总',
+			'people-served': '按月服务人数',
+			'guest-demographics': '服务对象构成',
+			'lottery-outcomes': '按中签概率的抽签结果',
+			'service-timing': '服务用时',
+		},
+		reportDescriptions: {
+			'session-summary': '每场次一行：多少人登记、多少人获得服务，以及场次的饱和程度。',
+			'people-served': '用于资助报告的每月汇总。访客与家庭成员每月只计一次，无论来过多少次。',
+			'guest-demographics': '本期内所有获得服务者的年龄、家庭人数和语言，每位访客只计一次。',
+			'lottery-outcomes': '各权重的访客获得排队位置的频率。涵盖自行登记并参与抽签的访客。',
+			'service-timing': '访客从被叫号到获得服务之间等待了多久。',
+		},
+		reportColumnLabels: {
+			capacity: '容量',
+			category: '类别',
+			entries: '参与次数',
+			fillRate: '饱和度',
+			firstTime: '首次到访',
+			guests: '访客',
+			householdMembers: '家庭成员',
+			longestWait: '最长等待',
+			medianWait: '等待中位数',
+			month: '月份',
+			noShows: '未到场',
+			notPlaced: '未入选',
+			placed: '已入选',
+			placementRate: '入选率',
+			served: '已服务',
+			sessionDate: '场次',
+			sessions: '场次数',
+			share: '占比',
+			signUps: '登记人数',
+			uniqueGuests: '独立访客',
+			unrecorded: '无用时记录',
+			value: '分组',
+			walkIns: '由工作人员添加',
+			weight: '中签概率',
+		},
+		reportValueLabels: {
+			age: '年龄',
+			household: '家庭人数',
+			language: '语言',
+		},
 		resetSession: '重置场次',
 		resetSessionHelp: '返回未启用设置。此场次及访客记录仍会保留在历史记录中。',
 		postponeByMinutes: '推迟（分钟）',
@@ -1055,6 +1438,67 @@ export const adminTranslations = {
 		registrationSettings: 'إعدادات التسجيل',
 		registrationOverrides: 'تعديلات التسجيل',
 		reopenRegistration: 'إعادة فتح التسجيل',
+		reports: 'التقارير',
+		reportsDescription: 'اطّلع على سير الجلسات، واستخرج الأرقام التي يطلبها تقرير المنحة.',
+		reportRangeFrom: 'من',
+		reportRangeTo: 'إلى',
+		reportRangeInvalid: 'اختر تاريخ نهاية مطابقًا لتاريخ البداية أو بعده.',
+		reportDownloadCsv: 'تنزيل ملف CSV',
+		reportExportVisits: 'تصدير كل الزيارات',
+		reportExportVisitsHelp:
+			'صف واحد لكل ضيف في كل جلسة، مع الأسماء وأرقام الهواتف، للأسئلة التي لا تجيب عنها هذه التقارير. افتحه في جدول بيانات.',
+		reportPrivacyNote:
+			'التقارير تحصي الأشخاص دون ذكر أسمائهم. التصدير الكامل وحده يكشف هوية الضيوف، لذا شارك ذلك الملف بحذر.',
+		reportEmpty: 'لا توجد جلسات في هذا النطاق الزمني.',
+		reportNames: {
+			'session-summary': 'ملخص الجلسة',
+			'people-served': 'عدد المستفيدين حسب الشهر',
+			'guest-demographics': 'من تمت خدمتهم',
+			'lottery-outcomes': 'نتائج القرعة حسب فرص الفوز',
+			'service-timing': 'توقيت الخدمة',
+		},
+		reportDescriptions: {
+			'session-summary':
+				'صف واحد لكل جلسة: كم عدد من سجّلوا، وكم عدد من تمت خدمتهم، ومدى امتلاء الجلسة.',
+			'people-served':
+				'إجماليات شهرية لتقارير المنح. يُحصى الضيوف وأفراد الأسرة مرة واحدة في الشهر مهما تكرر حضورهم.',
+			'guest-demographics':
+				'العمر وحجم الأسرة واللغة لكل من تمت خدمتهم في هذه الفترة، مع إحصاء كل ضيف مرة واحدة.',
+			'lottery-outcomes':
+				'كم مرة حصل الضيوف عند كل وزن على مكان في الصف. يشمل من سجّلوا بأنفسهم ودخلوا القرعة.',
+			'service-timing': 'كم انتظر الضيوف بين مناداتهم وتقديم الخدمة لهم.',
+		},
+		reportColumnLabels: {
+			capacity: 'السعة',
+			category: 'الفئة',
+			entries: 'المشاركات',
+			fillRate: 'نسبة الامتلاء',
+			firstTime: 'أول زيارة',
+			guests: 'الضيوف',
+			householdMembers: 'أفراد الأسرة',
+			longestWait: 'أطول انتظار',
+			medianWait: 'وسيط الانتظار',
+			month: 'الشهر',
+			noShows: 'لم يحضروا',
+			notPlaced: 'لم يتم اختيارهم',
+			placed: 'حصلوا على مكان',
+			placementRate: 'نسبة الحصول على مكان',
+			served: 'تمت خدمتهم',
+			sessionDate: 'الجلسة',
+			sessions: 'الجلسات',
+			share: 'النسبة',
+			signUps: 'التسجيلات',
+			uniqueGuests: 'ضيوف مختلفون',
+			unrecorded: 'بدون توقيت',
+			value: 'المجموعة',
+			walkIns: 'أضافهم موظف',
+			weight: 'فرص الفوز',
+		},
+		reportValueLabels: {
+			age: 'العمر',
+			household: 'حجم الأسرة',
+			language: 'اللغة',
+		},
 		resetSession: 'إعادة ضبط الجلسة',
 		resetSessionHelp: 'العودة إلى الإعداد غير النشط. ستبقى الجلسة وسجلات الضيوف في السجل.',
 		postponeByMinutes: 'التأجيل بمقدار (دقائق)',
