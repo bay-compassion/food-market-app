@@ -42,6 +42,25 @@ async function deliverCalledNotifications(visitIds: string[]) {
 }
 
 /**
+ * The columns a command writes besides the new status. `called_at` and `served_at` are the two
+ * timestamps reporting measures wait time from, so a transition that undoes a call has to clear
+ * the one it set. Nothing transitions out of `served`, so `served_at` is only ever written once.
+ */
+function visitCommandChanges(command: VisitCommand) {
+	const status = visitCommandTarget(command);
+	switch (command) {
+		case 'call':
+			return { status, calledAt: new Date() };
+		case 'return_to_queue':
+			return { status, calledAt: null };
+		case 'serve':
+			return { status, servedAt: new Date() };
+		default:
+			return { status };
+	}
+}
+
+/**
  * Applies a single visit transition, rejecting anything the state machine disallows. The update
  * re-checks the source status in its `WHERE`, so two workers acting on the same visit at once
  * cannot both succeed — the loser gets the same 409 as an illegal transition.
@@ -66,13 +85,7 @@ export async function runVisitCommand(
 		};
 	}
 
-	const target = visitCommandTarget(command);
-	const changes =
-		command === 'call'
-			? { status: target, calledAt: new Date() }
-			: command === 'return_to_queue'
-				? { status: target, calledAt: null }
-				: { status: target };
+	const changes = visitCommandChanges(command);
 
 	const updated = await db.transaction(async (tx) => {
 		const [visit] = await tx

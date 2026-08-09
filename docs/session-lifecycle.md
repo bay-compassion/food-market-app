@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=a1ee5c66c0c5, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=f5c167b78676 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=a1ee5c66c0c5, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=651f905be2e9 -->
 
 # Session lifecycle
 
@@ -125,10 +125,13 @@ Who owns each transition matters:
 - **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the only four
   the admin UI ever offers, and it offers only the ones legal from a visit's current status.
 
-Two of those are worth calling out. `call` also stamps `called_at`, which is what the queue screen
+Three of those also write a timestamp. `call` stamps `called_at`, which is what the queue screen
 counts up from to show how long a guest has been standing at the table — the signal for deciding a
-no-show. `return_to_queue` is the recovery path: a guest marked no-show who turns up after all, or
-one called by mistake, goes back to `waiting` and is notified again when re-called.
+no-show. `serve` stamps `served_at`, which is what reporting measures service against; the pair is
+the only timing the database keeps, since no log of status changes exists. `return_to_queue` is the
+recovery path — a guest marked no-show who turns up after all, or one called by mistake, goes back
+to `waiting` and is notified again when re-called — so it clears `called_at` on the way out.
+Nothing transitions out of `served`, so `served_at` is only ever written once.
 
 Workers call guests in batches. `call_next` on `/api/queue` takes the next N waiting guests in
 queue order and calls them in a single statement, so two workers running the queue at the same time
