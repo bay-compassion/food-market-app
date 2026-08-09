@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=4aa03c2e0cdc, netlify/services/guestRegistration.ts=353c36828ec4, netlify/functions/visit.ts=dd21eb63d9e9 -->
+<!-- diagram-sources: src/App.vue=4aa03c2e0cdc, netlify/services/guestRegistration.ts=3371e1963c01, netlify/functions/visit.ts=dd21eb63d9e9 -->
 
 # Guest journey
 
@@ -70,9 +70,16 @@ flowchart TD
   many waiting guests are ahead of them, so they can judge whether to stay by the door or sit down.
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status
   word — a guest glancing at their phone from across the room has to catch it.
-- **An admin can register a walk-up guest directly.** Those visits are created with `source: admin`
-  and skip straight to `waiting` — they bypass the lottery entirely rather than starting at
-  `registered`. The worker chooses whether they go to the front of the waiting guests or the end.
+- **An admin can add a guest directly, at any stage of the session.** Those visits are created with
+  `source: admin`, and how far the session has progressed decides what the worker may choose —
+  see `admissionsFor` in [`src/services/guestAdmission.ts`](../src/services/guestAdmission.ts):
+  - Before the draw, the worker picks between entering the guest in the lottery (`registered`, no
+    queue position, exactly like a self-registration) and handing them a spot outright (`waiting`,
+    at the front of the waiting guests or the end). A reserved spot comes out of `capacity`, so it
+    is one fewer place for the draw to give away.
+  - Once service has started the lottery is over, so a walk-in can only go straight into the line.
+  - Once the session has ended, the only thing left to record is `served` — someone who was handed
+    food outside the app. That visit never joins a queue.
 - **Notifications are best-effort.** Push requires a browser that supports it, and on iOS the app
   must be installed to the home screen first. Admins can also send a broadcast message to everyone
   in the session whose visit isn't cancelled.

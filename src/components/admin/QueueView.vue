@@ -3,9 +3,10 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
+import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
 import AppButton from '../AppButton.vue';
-import ManualGuestForm from './ManualGuestForm.vue';
+import AddGuestSection from './AddGuestSection.vue';
 import QueueCallNext from './QueueCallNext.vue';
 import QueueGuestRow from './QueueGuestRow.vue';
 import type { ManualGuest, QueueGuest } from './types';
@@ -16,6 +17,7 @@ const props = defineProps<{
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;
 	serviceStarted: boolean;
+	admissions: GuestAdmission[];
 	busy?: boolean;
 }>();
 const emit = defineEmits<{
@@ -29,7 +31,6 @@ const emit = defineEmits<{
 const t = computed(() => adminTranslations[props.locale]);
 const callBatchSize = ref(1);
 const showResolved = ref(false);
-const showManualGuest = ref(false);
 // Drives the "called N min ago" labels. A minute's resolution needs nothing finer than this.
 const now = ref(Date.now());
 let waitingTimeTimer: ReturnType<typeof setInterval> | undefined;
@@ -60,11 +61,6 @@ const summary = computed(() =>
 		`${props.counts.served ?? 0} ${t.value.served}`,
 	].join(' · '),
 );
-
-function addGuest(guest: ManualGuest) {
-	showManualGuest.value = false;
-	emit('addGuest', guest);
-}
 
 onMounted(() => {
 	waitingTimeTimer = setInterval(() => {
@@ -136,27 +132,12 @@ onBeforeUnmount(() => clearInterval(waitingTimeTimer));
 			<p v-else class="empty-state">{{ t.noWaitingGuests }}</p>
 		</section>
 
-		<section class="admin-section">
-			<div class="section-heading">
-				<h2>{{ t.addGuest }}</h2>
-				<button
-					v-if="!showManualGuest"
-					class="add-guest-button"
-					type="button"
-					@click="showManualGuest = true"
-				>
-					+ {{ t.addGuest }}
-				</button>
-			</div>
-			<ManualGuestForm
-				v-if="showManualGuest"
-				:locale="locale"
-				:busy="busy"
-				show-placement
-				@submit="addGuest"
-				@cancel="showManualGuest = false"
-			/>
-		</section>
+		<AddGuestSection
+			:locale="locale"
+			:admissions="admissions"
+			:busy="busy"
+			@add-guest="emit('addGuest', $event)"
+		/>
 
 		<section class="admin-section">
 			<button class="resolved-toggle" type="button" @click="showResolved = !showResolved">

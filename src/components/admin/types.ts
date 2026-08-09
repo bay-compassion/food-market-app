@@ -1,4 +1,6 @@
 import type { Locale } from '../../locales';
+import type { GuestAdmission, QueuePlacement } from '../../services/guestAdmission';
+import type { SessionMode, SessionStatus } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 
 /**
@@ -23,12 +25,35 @@ export type QueueGuest = {
 	status: VisitStatus;
 };
 
-/** What the manual guest form collects for a walk-in added during service. */
+/** What the manual guest form collects for a guest a worker adds by hand. */
 export type ManualGuest = {
 	firstName: string;
 	lastName: string;
 	age: string | number;
 	householdSize: string | number;
 	phone: string;
-	queuePlacement: 'next' | 'end';
+	queuePlacement: QueuePlacement;
+	admission: GuestAdmission;
 };
+
+/** The market event as the admin screens render it. */
+export type AdminMarketEvent = {
+	id: string;
+	registrationOpensAt: string;
+	registrationClosesAt: string;
+	capacity: number;
+	sessionMode: SessionMode;
+	status: SessionStatus;
+};
+
+/** The registration settings the session view edits before a session opens. */
+export type SessionSettings = {
+	sessionMode: SessionMode;
+	registrationOpensAt: string;
+	adHocClosesAt: string;
+	durationMinutes: number;
+	capacity: number;
+};
+
+/** A finished session as the history view renders it. */
+export type HistoricalEvent = AdminMarketEvent & { guestCount: number };

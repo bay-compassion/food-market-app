@@ -212,6 +212,20 @@ describe('getCurrentEvent', () => {
 describe('runLottery', () => {
 	const identity = <T>(items: T[]) => items;
 
+	/**
+	 * Pulls the interpolated values out of a Drizzle `sql` template, in order. Literal SQL is held
+	 * in `StringChunk` objects while interpolated values sit in the chunk list as-is, and
+	 * `sql.join` nests one template inside another — so collect the primitives and recurse.
+	 */
+	function sqlParameters(query: unknown): unknown[] {
+		if (typeof query === 'string' || typeof query === 'number') {
+			return [query];
+		}
+		const chunks = (query as { queryChunks?: unknown[] } | null)?.queryChunks;
+
+		return Array.isArray(chunks) ? chunks.flatMap((chunk) => sqlParameters(chunk)) : [];
+	}
+
 	it('returns 409 when the lottery cannot run from the current status', async () => {
 		const result = await runLottery(baseEvent({ status: 'draft' }));
 
@@ -226,6 +240,7 @@ describe('runLottery', () => {
 	it('selects up to capacity and marks the remainder not_placed, in shuffle order', async () => {
 		const event = baseEvent({ status: 'registration_closed', capacity: 2 });
 		queueResult([{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }]); // registered visits
+		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
 		queueResult(undefined); // tx.execute (bulk queue-position update for selected)
 		queueResult(undefined); // tx.insert notificationDeliveries (selected)
@@ -241,6 +256,7 @@ describe('runLottery', () => {
 	it('skips the bulk update and notification inserts when there are no registrations', async () => {
 		const event = baseEvent({ status: 'registration_closed', capacity: 5 });
 		queueResult([]); // no registered visits
+		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning
 		queueResult([baseEvent({ status: 'service_started' })]); // refresh
 
@@ -250,9 +266,33 @@ describe('runLottery', () => {
 		expect(db.execute).not.toHaveBeenCalled();
 	});
 
+	it('leaves room for guests a worker placed in the line before the draw', async () => {
+		// Capacity 3 with two spots already handed out: only one registration can still win, and it
+		// has to queue behind the reserved pair rather than reusing position 1.
+		const event = baseEvent({ status: 'registration_closed', capacity: 3 });
+		queueResult([{ id: 'v1' }, { id: 'v2' }]); // registered visits
+		queueResult([{ count: 2, highestPosition: 2 }]); // two guests already waiting
+		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
+		queueResult(undefined); // tx.execute (bulk queue-position update for the single winner)
+		queueResult(undefined); // tx.insert notificationDeliveries (selected)
+		queueResult(undefined); // tx.update visits set not_placed
+		queueResult(undefined); // tx.insert notificationDeliveries (not placed)
+		queueResult([baseEvent({ status: 'service_started' })]); // refresh getCurrentEvent
+
+		const result = await runLottery(event, identity);
+
+		expect(result).toEqual({ ok: true });
+		// Exactly one winner, and it takes position 3 — immediately after the two reserved spots,
+		// rather than reusing a position that is already spoken for.
+		// The stub declares `execute` as taking no arguments, so reach past its call signature.
+		const [positionUpdate] = db.execute.mock.calls[0] as unknown as [unknown];
+		expect(sqlParameters(positionUpdate)).toEqual(['v1', 3]);
+	});
+
 	it('returns 409 when a concurrent process already moved the session before the lottery started', async () => {
 		const event = baseEvent({ status: 'registration_closed', capacity: 5 });
 		queueResult([]); // registrations
+		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([]); // tx.update ... returning — no row matched, lost the race
 		queueResult([baseEvent({ status: 'registration_closed' })]); // refresh still shows the old status
 

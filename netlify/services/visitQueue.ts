@@ -2,6 +2,7 @@ import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { notificationDeliveries, visits } from '../../db/schema.js';
+import type { QueuePlacement } from '../../src/services/guestAdmission.js';
 import {
 	canRunVisitCommand,
 	outstandingVisitStatuses,
@@ -12,7 +13,6 @@ import { deliverPendingNotifications, notificationsEnabled } from './pushNotific
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export type QueuePlacement = 'next' | 'end';
 export type VisitCommandResult =
 	| { ok: true; visit: { id: string; status: string } }
 	| { ok: false; status: number; error: string };

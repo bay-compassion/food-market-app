@@ -38,6 +38,7 @@ function mountQueue(guests: QueueGuest[], serviceStarted = true) {
 			counts: { waiting: 2, called: 1, served: 4 },
 			statusLabels,
 			serviceStarted,
+			admissions: ['queue'],
 			busy: false,
 		},
 	});

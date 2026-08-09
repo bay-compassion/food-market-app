@@ -2,6 +2,14 @@ import { and, eq } from 'drizzle-orm';
 
 import { db } from '../../db/index.js';
 import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.js';
+import {
+	admissionNeedsQueuePosition,
+	admissionVisitStatus,
+	canAdmitGuest,
+	isGuestAdmission,
+	type GuestAdmission,
+	type QueuePlacement,
+} from '../../src/services/guestAdmission.js';
 import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import {
@@ -11,7 +19,7 @@ import {
 	issueVisitToken,
 	normalizePhone,
 } from './guestCredentials.js';
-import { nextQueuePosition, type QueuePlacement } from './visitQueue.js';
+import { nextQueuePosition } from './visitQueue.js';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 
@@ -29,6 +37,7 @@ export type GuestSubmission = {
 	pin: string;
 	updateProfile: boolean;
 	queuePlacement: QueuePlacement;
+	admission: GuestAdmission;
 };
 
 export type RegisterGuestResult =
@@ -64,6 +73,8 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 	const pin = typeof body.pin === 'string' ? body.pin : '';
 	const updateProfile = body.updateProfile === true;
 	const queuePlacement: QueuePlacement = body.queuePlacement === 'next' ? 'next' : 'end';
+	// `queue` keeps the original walk-in behaviour for any caller that predates the admission field.
+	const admission: GuestAdmission = isGuestAdmission(body.admission) ? body.admission : 'queue';
 	const marketEventId = typeof body.marketEventId === 'string' ? body.marketEventId : null;
 	const answers = body.answers ?? {};
 	const needsProfile = source === 'admin' || registrationType === 'new' || updateProfile;
@@ -106,6 +117,7 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 		pin,
 		updateProfile,
 		queuePlacement,
+		admission,
 	};
 }
 
@@ -124,11 +136,16 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 			.from(marketEvents)
 			.where(eq(marketEvents.id, submission.marketEventId!))
 			.limit(1);
-		if (event?.status !== 'service_started') {
+		if (!event) {
+			return { ok: false, status: 409, error: 'No market event has been configured.' };
+		}
+		// A worker can add a guest at any stage, but what "adding" means changes as the session
+		// progresses — see `admissionsFor` for which options each stage allows.
+		if (!canAdmitGuest(event.status, submission.admission)) {
 			return {
 				ok: false,
 				status: 409,
-				error: 'Guests can only be added to the queue after service starts.',
+				error: 'That way of adding a guest is not available while the session is in this state.',
 			};
 		}
 	}
@@ -237,10 +254,10 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 				.returning();
 			guest = created!;
 		}
-		// Walk-ins join the running queue, so they need a position; self-registrations are still
-		// pre-lottery and get theirs from `runLottery`.
+		// Only a guest going straight into the line needs a position now. Everyone else is either
+		// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
 		const queuePosition =
-			submission.source === 'admin'
+			submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
 				? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
 				: null;
 		const [visit] = existingVisit
@@ -258,7 +275,10 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 					.values({
 						guestId: guest.id,
 						marketEventId: submission.marketEventId!,
-						status: submission.source === 'admin' ? 'waiting' : 'registered',
+						status:
+							submission.source === 'admin'
+								? admissionVisitStatus(submission.admission)
+								: 'registered',
 						queuePosition,
 						answers: submission.answers,
 						source: submission.source,
