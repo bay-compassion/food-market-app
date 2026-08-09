@@ -3,10 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.js';
 
 vi.mock('../../../db/index.js', () => ({ db }));
-vi.mock('../../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
+vi.mock('../../lib/auth.js', () => ({ requirePermission: vi.fn() }));
 
 import handler from '../../functions/market.js';
-import { requireAuth0 } from '../../lib/auth.js';
+import { requirePermission } from '../../lib/auth.js';
 
 function request(method: string, options: { path?: string; body?: unknown } = {}) {
 	return new Request(`https://example.com/api/market${options.path ?? ''}`, {
@@ -18,7 +18,7 @@ function request(method: string, options: { path?: string; body?: unknown } = {}
 
 afterEach(() => {
 	resetDbStub();
-	vi.mocked(requireAuth0).mockReset();
+	vi.mocked(requirePermission).mockReset();
 });
 
 describe('market handler routing', () => {
@@ -37,14 +37,14 @@ describe('market handler GET (default overview is public)', () => {
 
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toEqual({ event: null, questions: [], counts: {} });
-		expect(requireAuth0).not.toHaveBeenCalled();
+		expect(requirePermission).not.toHaveBeenCalled();
 	});
 });
 
 describe('market handler GET ?view=history (requires Auth0)', () => {
-	it('returns the requireAuth0 response when unauthorized, without querying history', async () => {
+	it('returns the requirePermission response when unauthorized, without querying history', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('GET', { path: '?view=history' }));
 
@@ -53,7 +53,7 @@ describe('market handler GET ?view=history (requires Auth0)', () => {
 	});
 
 	it('returns history once authorized', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([]);
 
 		const response = await handler(request('GET', { path: '?view=history' }));
@@ -64,9 +64,9 @@ describe('market handler GET ?view=history (requires Auth0)', () => {
 });
 
 describe('market handler PUT (requires Auth0)', () => {
-	it('returns the requireAuth0 response when unauthorized, without parsing the body', async () => {
+	it('returns the requirePermission response when unauthorized, without parsing the body', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('PUT', { body: { capacity: 10 } }));
 
@@ -74,7 +74,7 @@ describe('market handler PUT (requires Auth0)', () => {
 	});
 
 	it('validates settings once authorized', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await handler(request('PUT', { body: { capacity: -1 } }));
 
@@ -84,9 +84,9 @@ describe('market handler PUT (requires Auth0)', () => {
 });
 
 describe('market handler POST (requires Auth0)', () => {
-	it('returns the requireAuth0 response when unauthorized, without touching the database', async () => {
+	it('returns the requirePermission response when unauthorized, without touching the database', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('POST', { body: { action: 'run_lottery' } }));
 
@@ -95,7 +95,7 @@ describe('market handler POST (requires Auth0)', () => {
 	});
 
 	it('requires an existing market event once authorized', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([]); // no active market event
 
 		const response = await handler(request('POST', { body: { action: 'run_lottery' } }));

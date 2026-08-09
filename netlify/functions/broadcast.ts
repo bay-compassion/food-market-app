@@ -7,7 +7,7 @@ import {
 	pushSubscriptions,
 	visits,
 } from '../../db/schema.js';
-import { requireAuth0 } from '../lib/auth.js';
+import { requirePermission } from '../lib/auth.js';
 import { deliverPendingNotifications, pushConfiguration } from '../services/pushNotifications.js';
 
 function error(message: string, status = 400) {
@@ -32,9 +32,9 @@ export default async (request: Request) => {
 	if (request.method !== 'POST') {
 		return error('Method not allowed', 405);
 	}
-	const unauthorized = await requireAuth0(request);
-	if (unauthorized) {
-		return unauthorized;
+	const forbidden = await requirePermission(request, 'manage:sessions');
+	if (forbidden) {
+		return forbidden;
 	}
 	if (!pushConfiguration().configured) {
 		return error('Push notifications are not configured.', 503);

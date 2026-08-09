@@ -22,7 +22,12 @@ import ReportTable from './ReportTable.vue';
  * it here is what stops the dashboard container from growing another five pieces of state.
  */
 
-const props = defineProps<{ locale: Locale; getAccessToken: () => Promise<string> }>();
+const props = defineProps<{
+	locale: Locale;
+	getAccessToken: () => Promise<string>;
+	/** Whether this worker may download the export that names guests. */
+	canExport: boolean;
+}>();
 
 const t = computed(() => adminTranslations[props.locale]);
 const range = defaultReportRange();
@@ -80,7 +85,12 @@ async function loadReport() {
 		if (!response.ok) {
 			throw new Error('report');
 		}
-		const payload = (await response.json()) as { rows: ReportRow[] };
+		const payload = (await response.json()) as { rows?: ReportRow[] };
+		// A body without rows is a broken answer, not an empty report — say so rather than
+		// rendering it as "no sessions in this range", which would read as a fact about the data.
+		if (!Array.isArray(payload.rows)) {
+			throw new Error('report');
+		}
 		if (requestId !== latestRequest) {
 			return;
 		}
@@ -159,7 +169,9 @@ onMounted(loadReport);
 		</div>
 	</section>
 
-	<section class="admin-section action-card">
+	<!-- Hidden outright rather than shown disabled: a worker without the permission has no way to
+	     get it themselves, so offering the button would only be a dead end. -->
+	<section v-if="canExport" class="admin-section action-card">
 		<h2>{{ t.reportExportVisits }}</h2>
 		<p>{{ t.reportExportVisitsHelp }}</p>
 		<p class="privacy-note">{{ t.reportPrivacyNote }}</p>

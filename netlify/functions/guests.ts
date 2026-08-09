@@ -3,7 +3,7 @@ import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { guests, marketEvents, visits } from '../../db/schema.js';
 import { isVisitCommand } from '../../src/services/visitStateMachine.js';
-import { requireAuth0 } from '../lib/auth.js';
+import { requirePermission } from '../lib/auth.js';
 import { parseSubmission, registerGuest } from '../services/guestRegistration.js';
 import { runVisitCommand } from '../services/visitQueue.js';
 
@@ -82,9 +82,9 @@ async function createGuest(request: Request) {
 		return error('Please provide valid guest information.');
 	}
 	if (submission.source === 'admin') {
-		const unauthorized = await requireAuth0(request);
-		if (unauthorized) {
-			return unauthorized;
+		const forbidden = await requirePermission(request, 'run:queue');
+		if (forbidden) {
+			return forbidden;
 		}
 	}
 
@@ -118,9 +118,9 @@ async function updateGuest(request: Request) {
 
 export default async (request: Request) => {
 	if (request.method === 'GET') {
-		const unauthorized = await requireAuth0(request);
-		if (unauthorized) {
-			return unauthorized;
+		const forbidden = await requirePermission(request, 'run:queue');
+		if (forbidden) {
+			return forbidden;
 		}
 
 		return listGuests(request);
@@ -129,9 +129,9 @@ export default async (request: Request) => {
 		return createGuest(request);
 	}
 	if (request.method === 'PATCH') {
-		const unauthorized = await requireAuth0(request);
-		if (unauthorized) {
-			return unauthorized;
+		const forbidden = await requirePermission(request, 'run:queue');
+		if (forbidden) {
+			return forbidden;
 		}
 
 		return updateGuest(request);

@@ -3,10 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.js';
 
 vi.mock('../../../db/index.js', () => ({ db }));
-vi.mock('../../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
+vi.mock('../../lib/auth.js', () => ({ requirePermission: vi.fn() }));
 
 import handler from '../../functions/guests.js';
-import { requireAuth0 } from '../../lib/auth.js';
+import { requirePermission } from '../../lib/auth.js';
 
 function request(method: string, options: { path?: string; body?: unknown } = {}) {
 	return new Request(`https://example.com/api/guests${options.path ?? ''}`, {
@@ -18,7 +18,7 @@ function request(method: string, options: { path?: string; body?: unknown } = {}
 
 afterEach(() => {
 	resetDbStub();
-	vi.mocked(requireAuth0).mockReset();
+	vi.mocked(requirePermission).mockReset();
 });
 
 describe('guests handler routing', () => {
@@ -30,9 +30,9 @@ describe('guests handler routing', () => {
 });
 
 describe('guests handler GET (admin: requires Auth0)', () => {
-	it('returns the requireAuth0 response when unauthorized, without querying guests', async () => {
+	it('returns the requirePermission response when unauthorized, without querying guests', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('GET'));
 
@@ -41,7 +41,7 @@ describe('guests handler GET (admin: requires Auth0)', () => {
 	});
 
 	it('lists guests once authorized', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([]);
 
 		const response = await handler(request('GET', { path: '?scope=all' }));
@@ -52,9 +52,9 @@ describe('guests handler GET (admin: requires Auth0)', () => {
 });
 
 describe('guests handler PATCH (admin: requires Auth0)', () => {
-	it('returns the requireAuth0 response when unauthorized, without touching the database', async () => {
+	it('returns the requirePermission response when unauthorized, without touching the database', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
 
@@ -63,7 +63,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 	});
 
 	it('validates the body once authorized', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await handler(request('PATCH', { body: { id: 'visit-1' } }));
 
@@ -71,7 +71,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 	});
 
 	it('rejects a status string now that transitions are expressed as commands', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await handler(request('PATCH', { body: { id: 'visit-1', status: 'served' } }));
 
@@ -79,7 +79,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 	});
 
 	it('applies a command that is legal from the current status', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([{ status: 'called' }]); // current visit status
 		queueResult([{ id: 'visit-1', status: 'served' }]); // the update
 
@@ -90,7 +90,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 	});
 
 	it('rejects a command that is illegal from the current status', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([{ status: 'waiting' }]); // you cannot serve someone who was never called
 
 		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
@@ -100,7 +100,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 	});
 
 	it('returns 404 when the visit does not exist', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([]);
 
 		const response = await handler(request('PATCH', { body: { id: 'missing', command: 'call' } }));
@@ -110,7 +110,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 });
 
 describe('guests handler POST (self-service registration is intentionally public)', () => {
-	it('does not call requireAuth0 for a self-service submission with no Authorization header', async () => {
+	it('does not check permissions for a self-service submission with no Authorization header', async () => {
 		queueResult([]); // marketEvents lookup for the submitted marketEventId — none found
 
 		const response = await handler(
@@ -130,14 +130,14 @@ describe('guests handler POST (self-service registration is intentionally public
 
 		// The submitted event doesn't exist in this stub, so registration is correctly rejected —
 		// the point of this test is that it's rejected with a business-logic 409, not a 401, and
-		// requireAuth0 is never invoked for the public self-service path.
+		// No permission check happens on the public self-service path.
 		expect(response.status).toBe(409);
-		expect(requireAuth0).not.toHaveBeenCalled();
+		expect(requirePermission).not.toHaveBeenCalled();
 	});
 
 	it('requires Auth0 for an admin-source submission', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(
 			request('POST', {
@@ -162,7 +162,7 @@ describe('guests handler POST (self-service registration is intentionally public
 		const response = await handler(request('POST', { body: { firstName: '' } }));
 
 		expect(response.status).toBe(400);
-		expect(requireAuth0).not.toHaveBeenCalled();
+		expect(requirePermission).not.toHaveBeenCalled();
 		expect(db.select).not.toHaveBeenCalled();
 	});
 });

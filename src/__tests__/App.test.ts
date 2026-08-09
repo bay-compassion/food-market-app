@@ -20,6 +20,24 @@ vi.mock('../auth', async (importOriginal) => {
 	};
 });
 
+/**
+ * An unsigned access token carrying permissions, which is all the admin screens read it for.
+ * Nothing verifies it here — the server does that, against Auth0's keys.
+ */
+function accessTokenWith(permissions: string[]) {
+	const segment = (value: unknown) =>
+		btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+	return `${segment({ alg: 'none', typ: 'JWT' })}.${segment({ permissions })}.`;
+}
+
+const adminToken = accessTokenWith([
+	'run:queue',
+	'manage:sessions',
+	'read:reports',
+	'export:guest-data',
+]);
+
 const authClient = {
 	isLoading: ref(false),
 	isAuthenticated: ref(false),
@@ -373,7 +391,7 @@ describe('App', () => {
 			}),
 		);
 		vi.stubGlobal('fetch', fetchMock);
-		const getAccessToken = vi.fn().mockResolvedValue('admin-access-token');
+		const getAccessToken = vi.fn().mockResolvedValue(adminToken);
 		const wrapper = mount(AdminDashboard, {
 			props: { locale: 'en', getAccessToken },
 		});
@@ -410,7 +428,7 @@ describe('App', () => {
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/market',
 			expect.objectContaining({
-				headers: expect.objectContaining({ Authorization: 'Bearer admin-access-token' }),
+				headers: expect.objectContaining({ Authorization: `Bearer ${adminToken}` }),
 			}),
 		);
 
@@ -475,7 +493,7 @@ describe('App', () => {
 				),
 			);
 			const wrapper = mount(AdminDashboard, {
-				props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue('token') },
+				props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 			});
 			await flushPromises();
 
@@ -532,7 +550,7 @@ describe('App', () => {
 			}),
 		);
 		const wrapper = mount(AdminDashboard, {
-			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue('token') },
+			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 		});
 		await flushPromises();
 
@@ -557,7 +575,7 @@ describe('App', () => {
 		);
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mount(AdminDashboard, {
-			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue('token') },
+			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 		});
 		await flushPromises();
 
@@ -599,7 +617,7 @@ describe('App', () => {
 		const confirmMock = vi.spyOn(window, 'confirm').mockReturnValue(true);
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mount(AdminDashboard, {
-			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue('token') },
+			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 		});
 		await flushPromises();
 
@@ -615,7 +633,7 @@ describe('App', () => {
 			expect.objectContaining({
 				method: 'POST',
 				body: JSON.stringify({ action: 'close_registration' }),
-				headers: expect.objectContaining({ Authorization: 'Bearer token' }),
+				headers: expect.objectContaining({ Authorization: `Bearer ${adminToken}` }),
 			}),
 		);
 
