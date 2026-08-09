@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.ts=eb711a98a39c -->
+<!-- diagram-sources: db/schema.ts=bc5b0348f01d -->
 
 # Database structure
 
@@ -62,6 +62,7 @@ erDiagram
         integer queue_position "lottery order; walk-ins placed on arrival"
         integer lottery_weight "relative odds in the draw; 1 unless a worker raised them"
         timestamptz called_at
+        timestamptz served_at "null when never served, or recorded after the session ended"
         jsonb answers "registration question answers"
         text source "self | admin"
         text access_token_hash UK
@@ -107,6 +108,10 @@ A few things the diagram can't show on its own:
 - **A `visit` is one guest at one market session.** It's the row that carries everything about that
   appearance — queue position, status, the answers given at registration — while `guests` holds only
   the long-lived person record reused across sessions.
+- **`called_at` and `served_at` are the only timing this database keeps.** There is no log of
+  status changes, so anything time-based in reporting is measured from those two columns. Both are
+  null for a visit a worker recorded after its session had already ended — that guest was handed
+  food outside the app, and stamping a time would be inventing one.
 - **`guest_pin_attempts` has no foreign key to `guests`.** It's keyed by phone number so failed PIN
   attempts can be rate-limited even when the phone number doesn't match any guest — which is exactly
   the case worth throttling.
