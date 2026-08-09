@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { adminTranslations } from '../adminLocales';
 import { translations, type Locale } from '../locales';
 import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
+import { lotteryWeightFor } from '../services/lotteryWeight';
 import {
 	currentSessionState,
 	type SessionCommand,
@@ -499,6 +500,8 @@ async function addManualGuest(guest: ManualGuest, marketEventId = event.value?.i
 			headers: await authHeaders(true),
 			body: JSON.stringify({
 				...guest,
+				// The form speaks in named tiers; the API takes the multiplier behind one.
+				lotteryWeight: lotteryWeightFor(guest.lotteryWeightTier),
 				locale: props.locale,
 				marketEventId,
 				answers: {},

@@ -51,6 +51,11 @@ export interface AdminTranslation {
 	historySessions: string;
 	householdCount: string;
 	lotteryActions: string;
+	lotteryWeightHelp: string;
+	lotteryWeightLabel: string;
+	weightHigher: string;
+	weightHighest: string;
+	weightStandard: string;
 	manualGuestTitle: string;
 	markServed: string;
 	markNoShow: string;
@@ -182,6 +187,12 @@ export const adminTranslations = {
 		historySessions: 'Session history',
 		householdCount: 'Household',
 		lotteryActions: 'Lottery actions',
+		lotteryWeightHelp:
+			'Higher odds do not guarantee a spot — the guest can still miss out. Leave this at standard unless there is a reason to favour them.',
+		lotteryWeightLabel: 'Chance in the draw',
+		weightHigher: 'Higher priority',
+		weightHighest: 'Highest priority',
+		weightStandard: 'Standard',
 		manualGuestTitle: 'Manually add a guest',
 		markServed: 'Mark served',
 		markNoShow: 'Mark no show',
@@ -314,6 +325,12 @@ export const adminTranslations = {
 		historySessions: 'Historial de sesiones',
 		householdCount: 'Hogar',
 		lotteryActions: 'Acciones del sorteo',
+		lotteryWeightHelp:
+			'Más probabilidad no garantiza un lugar: el invitado todavía puede quedar fuera. Deje esto en estándar salvo que haya un motivo para favorecerlo.',
+		lotteryWeightLabel: 'Probabilidad en el sorteo',
+		weightHigher: 'Prioridad alta',
+		weightHighest: 'Prioridad máxima',
+		weightStandard: 'Estándar',
 		manualGuestTitle: 'Agregar un invitado manualmente',
 		markServed: 'Marcar como atendido',
 		markNoShow: 'Marcar como ausente',
@@ -444,6 +461,12 @@ export const adminTranslations = {
 		historySessions: 'تاریخچه جلسه‌ها',
 		householdCount: 'خانوار',
 		lotteryActions: 'عملیات قرعه‌کشی',
+		lotteryWeightHelp:
+			'شانس بیشتر تضمینی برای گرفتن جایگاه نیست؛ مهمان همچنان ممکن است انتخاب نشود. جز در صورت وجود دلیل، این را روی استاندارد بگذارید.',
+		lotteryWeightLabel: 'شانس در قرعه‌کشی',
+		weightHigher: 'اولویت بالا',
+		weightHighest: 'بالاترین اولویت',
+		weightStandard: 'استاندارد',
 		manualGuestTitle: 'افزودن دستی مهمان',
 		markServed: 'ثبت خدمت‌رسانی',
 		markNoShow: 'ثبت غیبت',
@@ -577,6 +600,12 @@ export const adminTranslations = {
 		historySessions: 'Kasaysayan ng mga sesyon',
 		householdCount: 'Sambahayan',
 		lotteryActions: 'Mga aksyon sa lottery',
+		lotteryWeightHelp:
+			'Ang mas mataas na tsansa ay hindi garantiyang puwesto — puwede pa ring hindi mapili ang bisita. Iwanan ito sa karaniwan maliban kung may dahilan.',
+		lotteryWeightLabel: 'Tsansa sa palabunutan',
+		weightHigher: 'Mas mataas na prayoridad',
+		weightHighest: 'Pinakamataas na prayoridad',
+		weightStandard: 'Karaniwan',
 		manualGuestTitle: 'Manu-manong magdagdag ng bisita',
 		markServed: 'Markahang napagsilbihan',
 		markNoShow: 'Markahang hindi dumating',
@@ -709,6 +738,12 @@ export const adminTranslations = {
 		historySessions: 'Lịch sử phiên',
 		householdCount: 'Hộ gia đình',
 		lotteryActions: 'Thao tác xổ số',
+		lotteryWeightHelp:
+			'Cơ hội cao hơn không bảo đảm có chỗ — khách vẫn có thể không được chọn. Hãy để ở mức tiêu chuẩn trừ khi có lý do ưu tiên.',
+		lotteryWeightLabel: 'Cơ hội trong vòng quay số',
+		weightHigher: 'Ưu tiên cao',
+		weightHighest: 'Ưu tiên cao nhất',
+		weightStandard: 'Tiêu chuẩn',
 		manualGuestTitle: 'Thêm khách thủ công',
 		markServed: 'Đánh dấu đã phục vụ',
 		markNoShow: 'Đánh dấu không đến',
@@ -836,6 +871,11 @@ export const adminTranslations = {
 		historySessions: '历史场次',
 		householdCount: '家庭人数',
 		lotteryActions: '抽签操作',
+		lotteryWeightHelp: '提高机会并不保证获得名额，访客仍可能落选。除非确有理由，请保持标准。',
+		lotteryWeightLabel: '抽签机会',
+		weightHigher: '较高优先',
+		weightHighest: '最高优先',
+		weightStandard: '标准',
 		manualGuestTitle: '手动添加访客',
 		markServed: '标记已服务',
 		markNoShow: '标记未到场',
@@ -963,6 +1003,12 @@ export const adminTranslations = {
 		historySessions: 'سجل الجلسات',
 		householdCount: 'الأسرة',
 		lotteryActions: 'إجراءات القرعة',
+		lotteryWeightHelp:
+			'الفرصة الأعلى لا تضمن مكانًا — قد لا يُختار الضيف رغم ذلك. اتركه على المستوى القياسي ما لم يوجد سبب للتفضيل.',
+		lotteryWeightLabel: 'الفرصة في القرعة',
+		weightHigher: 'أولوية أعلى',
+		weightHighest: 'أعلى أولوية',
+		weightStandard: 'قياسي',
 		manualGuestTitle: 'إضافة ضيف يدويًا',
 		markServed: 'تسجيل الخدمة',
 		markNoShow: 'تسجيل عدم الحضور',

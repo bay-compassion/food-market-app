@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=ec3e08809438, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=f5c167b78676 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=a1ee5c66c0c5, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=f5c167b78676 -->
 
 # Session lifecycle
 
@@ -116,7 +116,10 @@ Who owns each transition matters:
 - **The lottery** owns `select` and `skip`. `run_lottery` shuffles the `registered` visits, gives the
   first `capacity` of them a `queue_position`, and marks the rest `not_placed`. Any guest a worker
   already placed in the line is `waiting` before the draw runs, so those spots come out of
-  `capacity` first and the winners are numbered behind them.
+  `capacity` first and the winners are numbered behind them. The shuffle is weighted by each
+  visit's `lottery_weight` (`weightedShuffle`): a visit weighted 2 is twice as likely as a 1 to
+  land near the front, but nothing is guaranteed — every weight defaults to 1, which makes the
+  draw a plain even shuffle unless a worker deliberately raised someone's odds.
 - **The guest** owns `cancel`, from their own status screen, and only while `registered` or
   `waiting`.
 - **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the only four

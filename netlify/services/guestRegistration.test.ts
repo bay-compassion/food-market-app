@@ -354,6 +354,47 @@ describe('registerGuest happy paths', () => {
 		expect(insertedVisit()?.queuePosition).toBeNull();
 	});
 
+	it('stores the weight a worker chose for a guest entering the draw', async () => {
+		queueResult([{ status: 'registration_open' }]);
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
+		queueResult([{ id: 'visit-1', status: 'registered' }]);
+		const submission = parseSubmission(
+			selfSubmission({ source: 'admin', admission: 'lottery', lotteryWeight: 5 }),
+		)!;
+
+		await registerGuest(submission);
+
+		expect(insertedVisit()?.lotteryWeight).toBe(5);
+	});
+
+	it('ignores a weight on a guest who is not going into the draw', async () => {
+		queueResult([{ status: 'service_started' }]);
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
+		queueResult([{ position: 6 }]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+		const submission = parseSubmission(
+			selfSubmission({ source: 'admin', admission: 'queue', lotteryWeight: 5 }),
+		)!;
+
+		await registerGuest(submission);
+
+		// They already have a spot — weighting a draw they are not in would just be misleading data.
+		expect(insertedVisit()?.lotteryWeight).toBe(1);
+	});
+
+	it('leaves a self-registration on even odds whatever the payload claims', async () => {
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
+		queueResult([{ id: 'visit-1', status: 'registered' }]);
+		const submission = parseSubmission(selfSubmission({ lotteryWeight: 99 }))!;
+
+		await registerGuest(submission);
+
+		// The weight is a worker's judgement call; a guest cannot award it to themselves.
+		expect(insertedVisit()?.lotteryWeight).toBe(1);
+	});
+
 	it('records a guest served out of band once the session has ended', async () => {
 		queueResult([{ status: 'ended' }]); // admin event status check
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests

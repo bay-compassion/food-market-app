@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=4aa03c2e0cdc, netlify/services/guestRegistration.ts=3371e1963c01, netlify/functions/visit.ts=dd21eb63d9e9 -->
+<!-- diagram-sources: src/App.vue=4aa03c2e0cdc, netlify/services/guestRegistration.ts=7c898e9a90f0, netlify/functions/visit.ts=dd21eb63d9e9 -->
 
 # Guest journey
 
@@ -77,6 +77,10 @@ flowchart TD
     queue position, exactly like a self-registration) and handing them a spot outright (`waiting`,
     at the front of the waiting guests or the end). A reserved spot comes out of `capacity`, so it
     is one fewer place for the draw to give away.
+  - A guest entered into the lottery can also be given better odds — the worker picks a named tier
+    (standard, higher, highest) which maps to a `lottery_weight` multiplier. This shifts the odds
+    without guaranteeing anything: a weighted guest can still miss out. Only a worker can set it,
+    and only on a guest going into the draw; a self-registration is always weighted 1.
   - Once service has started the lottery is over, so a walk-in can only go straight into the line.
   - Once the session has ended, the only thing left to record is `served` — someone who was handed
     food outside the app. That visit never joins a queue.

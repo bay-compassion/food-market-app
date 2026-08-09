@@ -1,5 +1,6 @@
 import type { Locale } from '../../locales';
 import type { GuestAdmission, QueuePlacement } from '../../services/guestAdmission';
+import type { LotteryWeightTier } from '../../services/lotteryWeight';
 import type { SessionMode, SessionStatus } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 
@@ -34,6 +35,7 @@ export type ManualGuest = {
 	phone: string;
 	queuePlacement: QueuePlacement;
 	admission: GuestAdmission;
+	lotteryWeightTier: LotteryWeightTier;
 };
 
 /** The market event as the admin screens render it. */

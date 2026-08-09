@@ -18,6 +18,7 @@ import {
 	saveSettings,
 	scheduleRegistration,
 	updateRegistration,
+	weightedShuffle,
 	type MarketEventRow,
 } from './marketSession.js';
 import { notificationsEnabled } from './pushNotifications.js';
@@ -206,6 +207,59 @@ describe('getCurrentEvent', () => {
 
 		expect(event?.status).toBe('registration_closed');
 		expect(db.insert).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('weightedShuffle', () => {
+	const visit = (id: string, lotteryWeight: number) => ({ id, lotteryWeight });
+
+	it('leaves every entry in the draw', () => {
+		const entries = [visit('a', 1), visit('b', 5), visit('c', 2)];
+
+		const ordered = weightedShuffle(entries);
+
+		expect(ordered.map(({ id }) => id).sort()).toEqual(['a', 'b', 'c']);
+	});
+
+	it('favours the heavier weight when the underlying randomness is identical', () => {
+		// key = random^(1/weight); with random held equal, a bigger weight always wins.
+		vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(((array: Uint32Array) => {
+			array[0] = 2 ** 31; // the same 0.5 for every entry
+
+			return array;
+		}) as typeof crypto.getRandomValues);
+
+		const ordered = weightedShuffle([visit('light', 1), visit('heavy', 5), visit('middle', 2)]);
+
+		expect(ordered.map(({ id }) => id)).toEqual(['heavy', 'middle', 'light']);
+		vi.restoreAllMocks();
+	});
+
+	/** How often `id` came out on top across `runs` independent draws. */
+	function firstPlaceCount(entries: { id: string; lotteryWeight: number }[], id: string) {
+		const runs = 2000;
+
+		return Array.from({ length: runs }, () => weightedShuffle(entries)).filter(
+			(ordered) => ordered[0]!.id === id,
+		).length;
+	}
+
+	it('gives odds in proportion to the weights, not merely an ordering', () => {
+		// A weight of 1 against a weight of 5 should win 1-in-6 draws: 333 of 2000. The bounds are
+		// five standard deviations (σ ≈ 16.7) either side, so a correct implementation effectively
+		// never trips them — while a uniform shuffle (~1000) or a hard ordering (0) both would.
+		const wins = firstPlaceCount([visit('light', 1), visit('heavy', 5)], 'light');
+
+		expect(wins).toBeGreaterThan(250);
+		expect(wins).toBeLessThan(417);
+	});
+
+	it('is an even shuffle when every weight is left at the default', () => {
+		const wins = firstPlaceCount([visit('a', 1), visit('b', 1)], 'a');
+
+		// Five standard deviations either side of a fair 1000.
+		expect(wins).toBeGreaterThan(888);
+		expect(wins).toBeLessThan(1112);
 	});
 });
 
