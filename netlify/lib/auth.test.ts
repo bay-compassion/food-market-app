@@ -7,7 +7,7 @@ vi.mock('jose', () => ({
 	jwtVerify,
 }));
 
-import { requireAuth0, verifyAuth0Token } from './auth';
+import { requirePermission, verifyAuth0Token } from './auth';
 
 function requestWithAuth(header: string | null) {
 	const headers = new Headers();
@@ -96,37 +96,84 @@ describe('verifyAuth0Token', () => {
 	});
 });
 
-describe('requireAuth0', () => {
+describe('requirePermission', () => {
 	afterEach(() => {
 		vi.unstubAllEnvs();
 		jwtVerify.mockReset();
 	});
 
-	it('returns a 401 response when verification fails', async () => {
+	function tokenWith(permissions: unknown) {
+		jwtVerify.mockResolvedValueOnce({
+			payload: { sub: 'user-123', permissions },
+			protectedHeader: {},
+		});
+	}
+
+	it('returns a 401 when verification fails', async () => {
 		stubAuth0Env();
 		jwtVerify.mockRejectedValueOnce(new Error('expired'));
 
-		const response = await requireAuth0(requestWithAuth('Bearer bad-token'));
+		const response = await requirePermission(requestWithAuth('Bearer bad-token'), 'run:queue');
 
 		expect(response).toBeInstanceOf(Response);
 		expect(response?.status).toBe(401);
 		await expect(response?.json()).resolves.toEqual({ error: 'Authorization required.' });
 	});
 
-	it('returns a 401 response when the Authorization header is missing', async () => {
+	it('returns a 401 when the Authorization header is missing', async () => {
 		stubAuth0Env();
 
-		const response = await requireAuth0(requestWithAuth(null));
+		const response = await requirePermission(requestWithAuth(null), 'run:queue');
 
 		expect(response?.status).toBe(401);
 	});
 
-	it('returns null when the token is valid, allowing the caller to proceed', async () => {
+	it('returns null when the token carries the permission', async () => {
 		stubAuth0Env();
-		jwtVerify.mockResolvedValueOnce({ payload: { sub: 'user-123' }, protectedHeader: {} });
+		tokenWith(['run:queue', 'read:reports']);
 
-		const response = await requireAuth0(requestWithAuth('Bearer good-token'));
+		const response = await requirePermission(requestWithAuth('Bearer good-token'), 'run:queue');
 
 		expect(response).toBeNull();
+	});
+
+	// 403, not 401: the token is fine, so signing in again would just loop.
+	it('returns a 403 when a valid token lacks the permission', async () => {
+		stubAuth0Env();
+		tokenWith(['run:queue']);
+
+		const response = await requirePermission(
+			requestWithAuth('Bearer good-token'),
+			'export:guest-data',
+		);
+
+		expect(response?.status).toBe(403);
+		await expect(response?.json()).resolves.toEqual({
+			error: 'Your account does not have access to this.',
+		});
+	});
+
+	it('treats a token with no permissions claim as holding none', async () => {
+		stubAuth0Env();
+		tokenWith(undefined);
+
+		const response = await requirePermission(requestWithAuth('Bearer good-token'), 'run:queue');
+
+		expect(response?.status).toBe(403);
+	});
+
+	it('ignores permissions it does not recognise', async () => {
+		stubAuth0Env();
+		tokenWith(['admin:everything', 'run:queue']);
+
+		const granted = await requirePermission(requestWithAuth('Bearer good-token'), 'run:queue');
+		expect(granted).toBeNull();
+
+		tokenWith(['admin:everything']);
+		const refused = await requirePermission(
+			requestWithAuth('Bearer good-token'),
+			'manage:sessions',
+		);
+		expect(refused?.status).toBe(403);
 	});
 });

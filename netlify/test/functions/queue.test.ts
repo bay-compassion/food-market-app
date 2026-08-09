@@ -3,14 +3,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.js';
 
 vi.mock('../../../db/index.js', () => ({ db }));
-vi.mock('../../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
+vi.mock('../../lib/auth.js', () => ({ requirePermission: vi.fn() }));
 vi.mock('../../services/pushNotifications.js', () => ({
 	notificationsEnabled: vi.fn(() => false),
 	deliverPendingNotifications: vi.fn(),
 }));
 
 import handler from '../../functions/queue.js';
-import { requireAuth0 } from '../../lib/auth.js';
+import { requirePermission } from '../../lib/auth.js';
 
 function request(method: string, body?: unknown) {
 	return new Request('https://example.com/api/queue', {
@@ -35,7 +35,7 @@ function activeEvent(status = 'service_started') {
 
 afterEach(() => {
 	resetDbStub();
-	vi.mocked(requireAuth0).mockReset();
+	vi.mocked(requirePermission).mockReset();
 });
 
 describe('queue handler routing', () => {
@@ -45,9 +45,9 @@ describe('queue handler routing', () => {
 		expect(response.status).toBe(405);
 	});
 
-	it('returns the requireAuth0 response when unauthorized, without touching the database', async () => {
+	it('returns the requirePermission response when unauthorized, without touching the database', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('POST', { action: 'call_next', count: 2 }));
 
@@ -58,7 +58,7 @@ describe('queue handler routing', () => {
 
 describe('queue handler call_next', () => {
 	it('calls the requested number of waiting guests', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([activeEvent()]);
 		queueResult([{ id: 'visit-1' }, { id: 'visit-2' }]);
 
@@ -69,7 +69,7 @@ describe('queue handler call_next', () => {
 	});
 
 	it('defaults to calling a single guest', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([activeEvent()]);
 		queueResult([{ id: 'visit-1' }]);
 
@@ -80,7 +80,7 @@ describe('queue handler call_next', () => {
 	});
 
 	it('reports an empty queue rather than failing', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([activeEvent()]);
 		queueResult([]);
 
@@ -91,7 +91,7 @@ describe('queue handler call_next', () => {
 	});
 
 	it('rejects calling guests before service starts', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([activeEvent('registration_closed')]);
 
 		const response = await handler(request('POST', { action: 'call_next', count: 1 }));
@@ -101,7 +101,7 @@ describe('queue handler call_next', () => {
 	});
 
 	it('rejects when no session exists', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([]);
 
 		const response = await handler(request('POST', { action: 'call_next', count: 1 }));
@@ -110,7 +110,7 @@ describe('queue handler call_next', () => {
 	});
 
 	it.each([0, -1, 51, 1.5, 'two'])('rejects an invalid batch size of %s', async (count) => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await handler(request('POST', { action: 'call_next', count }));
 
@@ -119,7 +119,7 @@ describe('queue handler call_next', () => {
 	});
 
 	it('rejects an unknown action', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await handler(request('POST', { action: 'call_everyone' }));
 
@@ -127,7 +127,7 @@ describe('queue handler call_next', () => {
 	});
 
 	it('rejects a body that is not JSON', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await handler(
 			new Request('https://example.com/api/queue', {

@@ -102,6 +102,8 @@ export interface AdminTranslation {
 	registrationSettings: string;
 	registrationOverrides: string;
 	reopenRegistration: string;
+	noAccess: string;
+	forbidden: string;
 	reports: string;
 	reportsDescription: string;
 	reportRangeFrom: string;
@@ -255,6 +257,9 @@ export const adminTranslations = {
 		registrationSettings: 'Registration settings',
 		registrationOverrides: 'Registration overrides',
 		reopenRegistration: 'Reopen registration',
+		noAccess:
+			'Your account does not have access to the admin area yet. Ask an administrator to give you a role.',
+		forbidden: 'Your account does not have access to that.',
 		reports: 'Reports',
 		reportsDescription: 'See how sessions went, and pull the numbers a grant report asks for.',
 		reportRangeFrom: 'From',
@@ -454,6 +459,9 @@ export const adminTranslations = {
 		registrationSettings: 'Configuración del registro',
 		registrationOverrides: 'Modificaciones del registro',
 		reopenRegistration: 'Reabrir registro',
+		noAccess:
+			'Su cuenta aún no tiene acceso al área de administración. Pida a un administrador que le asigne un rol.',
+		forbidden: 'Su cuenta no tiene acceso a eso.',
 		reports: 'Informes',
 		reportsDescription:
 			'Vea cómo salieron las sesiones y obtenga las cifras que pide un informe de subvención.',
@@ -652,6 +660,8 @@ export const adminTranslations = {
 		registrationSettings: 'تنظیمات ثبت‌نام',
 		registrationOverrides: 'تغییرات ثبت‌نام',
 		reopenRegistration: 'بازگشایی ثبت‌نام',
+		noAccess: 'حساب شما هنوز به بخش مدیریت دسترسی ندارد. از یک مدیر بخواهید نقشی به شما بدهد.',
+		forbidden: 'حساب شما به آن دسترسی ندارد.',
 		reports: 'گزارش‌ها',
 		reportsDescription:
 			'ببینید جلسه‌ها چگونه پیش رفتند و عددهایی را که گزارش کمک‌هزینه می‌خواهد بیرون بکشید.',
@@ -853,6 +863,9 @@ export const adminTranslations = {
 		registrationSettings: 'Mga setting ng pagpaparehistro',
 		registrationOverrides: 'Mga pagbabago sa pagpaparehistro',
 		reopenRegistration: 'Buksan muli ang pagpaparehistro',
+		noAccess:
+			'Wala pang access ang account ninyo sa admin area. Hilingin sa isang administrator na bigyan kayo ng papel.',
+		forbidden: 'Walang access ang account ninyo diyan.',
 		reports: 'Mga ulat',
 		reportsDescription:
 			'Tingnan kung paano naganap ang mga sesyon, at kunin ang mga bilang na hinihingi ng ulat para sa grant.',
@@ -1055,6 +1068,9 @@ export const adminTranslations = {
 		registrationSettings: 'Cài đặt đăng ký',
 		registrationOverrides: 'Điều chỉnh đăng ký',
 		reopenRegistration: 'Mở lại đăng ký',
+		noAccess:
+			'Tài khoản của bạn chưa có quyền vào khu vực quản trị. Hãy nhờ quản trị viên cấp cho bạn một vai trò.',
+		forbidden: 'Tài khoản của bạn không có quyền với mục đó.',
 		reports: 'Báo cáo',
 		reportsDescription:
 			'Xem các phiên đã diễn ra thế nào và lấy những con số mà báo cáo tài trợ yêu cầu.',
@@ -1249,6 +1265,8 @@ export const adminTranslations = {
 		registrationSettings: '登记设置',
 		registrationOverrides: '登记调整',
 		reopenRegistration: '重新开放登记',
+		noAccess: '您的账户尚无管理区域的权限。请让管理员为您分配一个角色。',
+		forbidden: '您的账户没有该项权限。',
 		reports: '报表',
 		reportsDescription: '查看各场次的情况，并导出资助报告所需的数据。',
 		reportRangeFrom: '起始',
@@ -1438,6 +1456,8 @@ export const adminTranslations = {
 		registrationSettings: 'إعدادات التسجيل',
 		registrationOverrides: 'تعديلات التسجيل',
 		reopenRegistration: 'إعادة فتح التسجيل',
+		noAccess: 'حسابك لا يملك صلاحية الدخول إلى منطقة الإدارة بعد. اطلب من المسؤول أن يمنحك دورًا.',
+		forbidden: 'حسابك لا يملك صلاحية لذلك.',
 		reports: 'التقارير',
 		reportsDescription: 'اطّلع على سير الجلسات، واستخرج الأرقام التي يطلبها تقرير المنحة.',
 		reportRangeFrom: 'من',

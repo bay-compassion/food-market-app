@@ -129,7 +129,7 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 /**
  * Validates eligibility, then creates or updates the guest and their visit in a single
  * transaction. Assumes the caller has already gated admin-source submissions behind
- * `requireAuth0` — this function only checks registration-window and question eligibility.
+ * `requirePermission` — this function only checks registration-window and question eligibility.
  */
 export async function registerGuest(submission: GuestSubmission): Promise<RegisterGuestResult> {
 	if (submission.source === 'admin' && !submission.marketEventId) {

@@ -3,14 +3,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.js';
 
 vi.mock('../../../db/index.js', () => ({ db }));
-vi.mock('../../lib/auth.js', () => ({ requireAuth0: vi.fn() }));
+vi.mock('../../lib/auth.js', () => ({ requirePermission: vi.fn() }));
 vi.mock('../../services/pushNotifications.js', () => ({
 	deliverPendingNotifications: vi.fn(),
 	pushConfiguration: vi.fn(),
 }));
 
 import handler from '../../functions/broadcast.js';
-import { requireAuth0 } from '../../lib/auth.js';
+import { requirePermission } from '../../lib/auth.js';
 import {
 	deliverPendingNotifications,
 	pushConfiguration,
@@ -26,7 +26,7 @@ function request(body?: unknown, rawBody?: string) {
 
 afterEach(() => {
 	resetDbStub();
-	vi.mocked(requireAuth0).mockReset();
+	vi.mocked(requirePermission).mockReset();
 	vi.mocked(pushConfiguration).mockReset();
 	vi.mocked(deliverPendingNotifications).mockReset();
 });
@@ -36,12 +36,12 @@ describe('broadcast handler', () => {
 		const response = await handler(new Request('https://example.com/api/broadcast'));
 
 		expect(response.status).toBe(405);
-		expect(requireAuth0).not.toHaveBeenCalled();
+		expect(requirePermission).not.toHaveBeenCalled();
 	});
 
-	it('returns the requireAuth0 response when unauthorized', async () => {
+	it('returns the requirePermission response when unauthorized', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-		vi.mocked(requireAuth0).mockResolvedValueOnce(unauthorized);
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request({ title: 'Hi', body: 'Hello' }));
 
@@ -49,7 +49,7 @@ describe('broadcast handler', () => {
 	});
 
 	it('returns 503 when push notifications are not configured', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(pushConfiguration).mockReturnValueOnce({ configured: false, publicKey: null });
 
 		const response = await handler(request({ title: 'Hi', body: 'Hello' }));
@@ -58,7 +58,7 @@ describe('broadcast handler', () => {
 	});
 
 	it('returns 400 for a body that is not valid JSON', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(pushConfiguration).mockReturnValueOnce({ configured: true, publicKey: 'key' });
 
 		const response = await handler(request(undefined, '{not json'));
@@ -67,7 +67,7 @@ describe('broadcast handler', () => {
 	});
 
 	it('returns 400 when the title or body is missing', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(pushConfiguration).mockReturnValueOnce({ configured: true, publicKey: 'key' });
 
 		const response = await handler(request({ title: '', body: 'Hello' }));
@@ -76,7 +76,7 @@ describe('broadcast handler', () => {
 	});
 
 	it('returns 409 when there is no active session', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(pushConfiguration).mockReturnValueOnce({ configured: true, publicKey: 'key' });
 		queueResult([]);
 
@@ -86,7 +86,7 @@ describe('broadcast handler', () => {
 	});
 
 	it('returns queued:0 sent:0 without delivering when there are no recipients', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(pushConfiguration).mockReturnValueOnce({ configured: true, publicKey: 'key' });
 		queueResult([{ id: 'event-1', status: 'registration_open' }]);
 		queueResult([]);
@@ -100,7 +100,7 @@ describe('broadcast handler', () => {
 	});
 
 	it('queues one notification per recipient and delegates delivery', async () => {
-		vi.mocked(requireAuth0).mockResolvedValueOnce(null);
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(pushConfiguration).mockReturnValueOnce({ configured: true, publicKey: 'key' });
 		queueResult([{ id: 'event-1', status: 'service_started' }]);
 		queueResult([{ visitId: 'visit-1' }, { visitId: 'visit-2' }]);

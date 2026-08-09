@@ -1,4 +1,5 @@
-import { requireAuth0 } from '../lib/auth.js';
+import type { Permission } from '../../src/services/permissions.js';
+import { requirePermission } from '../lib/auth.js';
 import {
 	closeRegistration,
 	closeSession,
@@ -47,16 +48,41 @@ async function saveSettings(request: Request) {
 	return result.ok ? overview() : error(result.error, result.status);
 }
 
-const actions: Record<string, (event: MarketEventRow, body: unknown) => Promise<ActionResult>> = {
-	reset_session: (event) => resetSession(event),
-	update_registration: (event, body) => updateRegistration(event, body),
-	schedule_registration: (event) => scheduleRegistration(event),
-	postpone_registration: (event, body) => postponeRegistration(event, body),
-	open_registration: (event) => openRegistration(event),
-	reopen_registration: (event) => reopenRegistration(event),
-	close_registration: (event) => closeRegistration(event),
-	close_session: (event) => closeSession(event),
-	run_lottery: (event) => runLottery(event),
+type MarketAction = {
+	permission: Permission;
+	run: (event: MarketEventRow, body: unknown) => Promise<ActionResult>;
+};
+
+/**
+ * Every action carries the permission it needs. Steering a session belongs to whoever set it up,
+ * but `close_session` is the exception: its button lives on the queue screen a worker runs all
+ * day, and ending the day is part of that job.
+ */
+const actions: Record<string, MarketAction> = {
+	reset_session: { permission: 'manage:sessions', run: (event) => resetSession(event) },
+	update_registration: {
+		permission: 'manage:sessions',
+		run: (event, body) => updateRegistration(event, body),
+	},
+	schedule_registration: {
+		permission: 'manage:sessions',
+		run: (event) => scheduleRegistration(event),
+	},
+	postpone_registration: {
+		permission: 'manage:sessions',
+		run: (event, body) => postponeRegistration(event, body),
+	},
+	open_registration: { permission: 'manage:sessions', run: (event) => openRegistration(event) },
+	reopen_registration: {
+		permission: 'manage:sessions',
+		run: (event) => reopenRegistration(event),
+	},
+	close_registration: {
+		permission: 'manage:sessions',
+		run: (event) => closeRegistration(event),
+	},
+	close_session: { permission: 'run:queue', run: (event) => closeSession(event) },
+	run_lottery: { permission: 'manage:sessions', run: (event) => runLottery(event) },
 };
 
 async function runAction(request: Request) {
@@ -66,49 +92,53 @@ async function runAction(request: Request) {
 	} catch {
 		return error('Request body must be valid JSON.');
 	}
-	const action = (body as { action?: unknown } | null)?.action;
+	const name = (body as { action?: unknown } | null)?.action;
+	const action = typeof name === 'string' ? actions[name] : undefined;
+
+	// Gate before saying whether the action exists, so an unauthenticated caller cannot use the
+	// difference between "invalid action" and "forbidden" to map what this endpoint accepts.
+	const forbidden = await requirePermission(request, action?.permission ?? 'manage:sessions');
+	if (forbidden) {
+		return forbidden;
+	}
+	if (!action) {
+		return error('Invalid market action.');
+	}
+
 	const event = await getCurrentEvent();
 	if (!event) {
 		return error('No market event has been configured.', 409);
 	}
 
-	const run = typeof action === 'string' ? actions[action] : undefined;
-	if (!run) {
-		return error('Invalid market action.');
-	}
-
-	const result = await run(event, body);
+	const result = await action.run(event, body);
 
 	return result.ok ? overview() : error(result.error, result.status);
 }
 
 export default async (request: Request) => {
 	if (request.method === 'GET') {
-		if (new URL(request.url).searchParams.get('view') === 'history') {
-			const unauthorized = await requireAuth0(request);
-			if (unauthorized) {
-				return unauthorized;
-			}
-
-			return history();
+		// The overview drives the guest app's own screens, so it stays open to everyone.
+		if (new URL(request.url).searchParams.get('view') !== 'history') {
+			return overview();
+		}
+		// Past sessions are where a worker records someone served out of band — the same job as
+		// running the queue, just after the fact.
+		const forbidden = await requirePermission(request, 'run:queue');
+		if (forbidden) {
+			return forbidden;
 		}
 
-		return overview();
+		return history();
 	}
 	if (request.method === 'PUT') {
-		const unauthorized = await requireAuth0(request);
-		if (unauthorized) {
-			return unauthorized;
+		const forbidden = await requirePermission(request, 'manage:sessions');
+		if (forbidden) {
+			return forbidden;
 		}
 
 		return saveSettings(request);
 	}
 	if (request.method === 'POST') {
-		const unauthorized = await requireAuth0(request);
-		if (unauthorized) {
-			return unauthorized;
-		}
-
 		return runAction(request);
 	}
 

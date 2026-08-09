@@ -2,9 +2,11 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import { adminTranslations } from '../adminLocales';
+import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
 import { translations, type Locale } from '../locales';
 import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
 import { lotteryWeightFor } from '../services/lotteryWeight';
+import type { Permission } from '../services/permissions';
 import {
 	currentSessionState,
 	type SessionCommand,
@@ -30,6 +32,7 @@ import type {
 	QueueGuest,
 	SessionSettings,
 } from './admin/types';
+import { viewsFor } from './admin/types';
 import EyebrowLabel from './EyebrowLabel.vue';
 
 type GuestStatus = VisitStatus;
@@ -48,6 +51,7 @@ const emit = defineEmits<{ navigate: [view: AdminView] }>();
 const t = computed(() => adminTranslations[props.locale]);
 const base = computed(() => translations[props.locale]);
 const activeView = ref<AdminView>(props.view);
+const granted = ref<Permission[]>([]);
 const event = ref<AdminMarketEvent | null>(null);
 const counts = ref<Overview['counts']>({});
 const questions = ref<Question[]>([]);
@@ -87,14 +91,20 @@ const statusLabels = computed<Record<GuestStatus, string>>(() => ({
 	no_show: t.value.noShow,
 	cancelled: t.value.cancelled,
 }));
-const navigation = computed<{ id: AdminView; label: string }[]>(() => [
-	{ id: 'current-session', label: t.value.currentSession },
-	{ id: 'queue', label: t.value.queue },
-	{ id: 'question-bank', label: t.value.questionBank },
-	{ id: 'guest-database', label: t.value.guestDatabase },
-	{ id: 'session-history', label: t.value.historySessions },
-	{ id: 'reports', label: t.value.reports },
-]);
+const viewLabels = computed<Record<AdminView, string>>(() => ({
+	'current-session': t.value.currentSession,
+	queue: t.value.queue,
+	'question-bank': t.value.questionBank,
+	'guest-database': t.value.guestDatabase,
+	'session-history': t.value.historySessions,
+	reports: t.value.reports,
+}));
+const navigation = computed<{ id: AdminView; label: string }[]>(() =>
+	viewsFor(granted.value).map((id) => ({ id, label: viewLabels.value[id] })),
+);
+function can(permission: Permission) {
+	return granted.value.includes(permission);
+}
 const sessionState = computed(() => currentSessionState(event.value?.status));
 const sessionStatusLabel = computed(() => {
 	switch (sessionState.value) {
@@ -286,8 +296,25 @@ async function loadHistory() {
 
 async function loadDashboard() {
 	try {
+		granted.value = isAuth0Configured
+			? permissionsFromToken(await props.getAccessToken())
+			: everyPermission();
+	} catch {
+		granted.value = [];
+	}
+	// The route can name a screen this worker cannot open — a shared link, or a role that changed
+	// since they last bookmarked it. Land them on the first one they can.
+	const allowed = viewsFor(granted.value);
+	if (allowed.length > 0 && !allowed.includes(activeView.value)) {
+		navigate(allowed[0]!);
+	}
+	try {
 		await loadOverview();
-		await Promise.all([loadGuests(), loadSessionGuests(), loadHistory()]);
+		// Only ask for what this worker is allowed to see; the rest would come back 403 and read
+		// as a broken screen rather than as a screen that was never theirs.
+		if (can('run:queue')) {
+			await Promise.all([loadGuests(), loadSessionGuests(), loadHistory()]);
+		}
 	} catch {
 		feedback.value = t.value.error;
 	}
@@ -588,7 +615,10 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 			</button>
 		</nav>
 
-		<div class="admin-content">
+		<!-- Signed in, but holding no role yet. Saying so beats an admin area with nothing in it. -->
+		<p v-if="!navigation.length" class="admin-no-access" role="status">{{ t.noAccess }}</p>
+
+		<div v-else class="admin-content">
 			<!-- The queue view drops the eyebrow and description: during service this is the only
 			     screen a worker uses, and that chrome pushes the controls off a phone screen. -->
 			<header class="admin-heading" :class="{ compact: activeView === 'queue' }">
@@ -665,6 +695,7 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 				v-else-if="activeView === 'reports'"
 				:locale="locale"
 				:get-access-token="getAccessToken"
+				:can-export="can('export:guest-data')"
 			/>
 
 			<GuestDatabaseView
@@ -766,6 +797,14 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 .event-state.ended {
 	background: #edf0ee;
 	color: var(--color-text-subtle);
+}
+.admin-no-access {
+	padding: 24px;
+	border: 1.5px solid #c7d2cc;
+	border-radius: var(--radius-lg);
+	color: var(--color-text-subtle);
+	line-height: 1.5;
+	text-align: center;
 }
 .admin-feedback {
 	margin-bottom: 16px;

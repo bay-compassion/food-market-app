@@ -1,4 +1,4 @@
-import { requireAuth0 } from '../lib/auth.js';
+import { requirePermission } from '../lib/auth.js';
 import { getCurrentEvent } from '../services/marketSession.js';
 import { callNextVisits } from '../services/visitQueue.js';
 
@@ -12,9 +12,9 @@ export default async (request: Request) => {
 	if (request.method !== 'POST') {
 		return error('Method not allowed', 405);
 	}
-	const unauthorized = await requireAuth0(request);
-	if (unauthorized) {
-		return unauthorized;
+	const forbidden = await requirePermission(request, 'run:queue');
+	if (forbidden) {
+		return forbidden;
 	}
 
 	let body: unknown;

@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=0fb46636fd82, netlify/services/guestRegistration.ts=7c898e9a90f0, netlify/functions/visit.ts=dd21eb63d9e9 -->
+<!-- diagram-sources: src/App.vue=0fb46636fd82, netlify/services/guestRegistration.ts=a7a793472986, netlify/functions/visit.ts=dd21eb63d9e9 -->
 
 # Guest journey
 

@@ -22,11 +22,11 @@ function callArgs(fetchMock: Mock, index: number) {
 	return calls[index < 0 ? calls.length + index : index]!;
 }
 
-function mountReports(fetchMock: Mock) {
+function mountReports(fetchMock: Mock, canExport = true) {
 	vi.stubGlobal('fetch', fetchMock);
 
 	return mount(ReportsView, {
-		props: { locale: 'en' as const, getAccessToken: () => Promise.resolve('token') },
+		props: { locale: 'en' as const, getAccessToken: () => Promise.resolve('token'), canExport },
 	});
 }
 
@@ -129,6 +129,15 @@ describe('ReportsView', () => {
 
 		expect(wrapper.text()).toContain(t.reportPrivacyNote);
 		expect(wrapper.text()).toContain(t.reportExportVisits);
+	});
+
+	it('hides the export entirely from a worker who may not download it', async () => {
+		const wrapper = mountReports(respondWith([]), false);
+		await flushPromises();
+
+		expect(wrapper.text()).not.toContain(t.reportExportVisits);
+		// The reports themselves stay available — only the file that names guests is withheld.
+		expect(wrapper.text()).toContain(t.reportDownloadCsv);
 	});
 
 	it('shows the error message when the report request fails', async () => {

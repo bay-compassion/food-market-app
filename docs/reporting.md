@@ -76,7 +76,7 @@ name that is not plain ASCII is mangled, and this app registers guests in seven 
 
 ## Who can see reports
 
-The same gate as the rest of the admin area: `/api/reports` calls `requireAuth0`, so any signed-in
-Auth0 user can read every report and the full export. There are no roles in this app — a volunteer
-who can run the queue can also download the visit export. Worth remembering before widening who
-gets an admin login.
+Reading a report needs `read:reports`; the visit export needs `export:guest-data`. Both belong to
+the `admin` role, so a volunteer who can run the queue cannot open either. See
+[`roles.md`](roles.md) for the full picture, including how to give someone report access without
+giving them guest names.

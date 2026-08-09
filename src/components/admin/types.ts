@@ -1,6 +1,7 @@
 import type { Locale } from '../../locales';
 import type { GuestAdmission, QueuePlacement } from '../../services/guestAdmission';
 import type { LotteryWeightTier } from '../../services/lotteryWeight';
+import type { Permission } from '../../services/permissions';
 import type { SessionMode, SessionStatus } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 
@@ -43,6 +44,25 @@ export type AdminView = (typeof adminViews)[number];
 
 export function isAdminView(value: unknown): value is AdminView {
 	return adminViews.some((view) => view === value);
+}
+
+/**
+ * What a worker needs to hold before a screen is worth offering them. Mirrors how the endpoints
+ * behind each screen are gated in `netlify/functions/` — a screen whose data would come back 403
+ * should not be in the navigation at all.
+ */
+export const viewPermissions: Record<AdminView, Permission> = {
+	'current-session': 'manage:sessions',
+	queue: 'run:queue',
+	'question-bank': 'manage:sessions',
+	'guest-database': 'run:queue',
+	'session-history': 'run:queue',
+	reports: 'read:reports',
+};
+
+/** The screens a worker can open, in navigation order. */
+export function viewsFor(granted: Permission[]) {
+	return adminViews.filter((view) => granted.includes(viewPermissions[view]));
 }
 
 /** One registration question, as the question bank edits it. */
