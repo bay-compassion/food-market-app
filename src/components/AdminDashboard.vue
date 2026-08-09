@@ -16,27 +16,23 @@ import {
 	type VisitStatus,
 } from '../services/visitStateMachine';
 import GuestDatabaseView from './admin/GuestDatabaseView.vue';
+import QuestionBankView from './admin/QuestionBankView.vue';
 import QueueView from './admin/QueueView.vue';
+import ReportsView from './admin/ReportsView.vue';
 import SessionHistoryView from './admin/SessionHistoryView.vue';
 import SessionView from './admin/SessionView.vue';
 import type {
 	AdminMarketEvent,
+	AdminView,
 	HistoricalEvent,
 	ManualGuest,
+	Question,
 	QueueGuest,
 	SessionSettings,
 } from './admin/types';
-import AppButton from './AppButton.vue';
 import EyebrowLabel from './EyebrowLabel.vue';
 
 type GuestStatus = VisitStatus;
-type Question = { id?: string; prompt: string; type: 'text' | 'scale'; required: boolean };
-type AdminView =
-	| 'current-session'
-	| 'queue'
-	| 'question-bank'
-	| 'guest-database'
-	| 'session-history';
 type Guest = QueueGuest & { marketEventId: string | null };
 type Overview = {
 	event: AdminMarketEvent | null;
@@ -97,6 +93,7 @@ const navigation = computed<{ id: AdminView; label: string }[]>(() => [
 	{ id: 'question-bank', label: t.value.questionBank },
 	{ id: 'guest-database', label: t.value.guestDatabase },
 	{ id: 'session-history', label: t.value.historySessions },
+	{ id: 'reports', label: t.value.reports },
 ]);
 const sessionState = computed(() => currentSessionState(event.value?.status));
 const sessionStatusLabel = computed(() => {
@@ -294,10 +291,6 @@ async function loadDashboard() {
 	} catch {
 		feedback.value = t.value.error;
 	}
-}
-
-function addQuestion() {
-	questions.value.push({ prompt: '', type: 'text', required: false });
 }
 
 async function saveSettings() {
@@ -579,7 +572,9 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 </script>
 
 <template>
-	<section class="admin-dashboard">
+	<!-- Reports are the one admin screen meant for a desk: a wide table is easier to read than a
+	     narrow one, and the rest of the app has no reason to widen with it. -->
+	<section class="admin-dashboard" :class="{ wide: activeView === 'reports' }">
 		<nav class="admin-navigation" :aria-label="t.adminTitle">
 			<button
 				v-for="item in navigation"
@@ -657,36 +652,20 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 				@navigate-current-session="navigate('current-session')"
 			/>
 
-			<section v-else-if="activeView === 'question-bank'" class="admin-section settings-card">
-				<div class="questions-heading">
-					<h2>{{ t.questions }}</h2>
-					<button type="button" @click="addQuestion">+ {{ t.addQuestion }}</button>
-				</div>
-				<form @submit.prevent="saveSettings">
-					<div
-						v-for="(question, index) in questions"
-						:key="question.id ?? index"
-						class="question-row"
-					>
-						<input v-model.trim="question.prompt" :placeholder="t.questionPlaceholder" required />
-						<select v-model="question.type">
-							<option value="text">{{ t.textAnswer }}</option>
-							<option value="scale">{{ t.scaleAnswer }}</option>
-						</select>
-						<label class="check-label"
-							><input v-model="question.required" type="checkbox" /> {{ t.required }}</label
-						>
-						<button class="remove-button" type="button" @click="questions.splice(index, 1)">
-							{{ t.remove }}
-						</button>
-					</div>
-					<AppButton
-						type="submit"
-						:disabled="isBusy || (event !== null && event.status !== 'draft')"
-						>{{ t.saveSettings }}</AppButton
-					>
-				</form>
-			</section>
+			<QuestionBankView
+				v-else-if="activeView === 'question-bank'"
+				v-model:questions="questions"
+				:locale="locale"
+				:busy="isBusy"
+				:editable="event === null || event.status === 'draft'"
+				@save="saveSettings"
+			/>
+
+			<ReportsView
+				v-else-if="activeView === 'reports'"
+				:locale="locale"
+				:get-access-token="getAccessToken"
+			/>
 
 			<GuestDatabaseView
 				v-else-if="activeView === 'guest-database'"
@@ -717,6 +696,9 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	width: min(100% - 32px, 1180px);
 	margin: 0 auto;
 	padding: 30px 0 60px;
+}
+.admin-dashboard.wide {
+	width: min(100% - 32px, 1600px);
 }
 .admin-navigation {
 	display: flex;
@@ -791,51 +773,6 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 	border-radius: var(--radius-sm);
 	background: #eef5f3;
 	color: var(--color-brand);
-}
-.questions-heading {
-	display: flex;
-	justify-content: space-between;
-	gap: 14px;
-	align-items: center;
-	margin-top: 5px;
-}
-.questions-heading h3 {
-	margin: 0;
-	font-family: var(--font-heading);
-	text-transform: uppercase;
-}
-.questions-heading button,
-.remove-button {
-	border: 0;
-	color: var(--color-brand);
-	background: transparent;
-	font-weight: 700;
-}
-.question-row {
-	display: grid;
-	gap: 8px;
-	padding: 12px;
-	border-radius: var(--radius-md);
-	background: #f3f6f4;
-}
-.question-row .check-label {
-	display: flex;
-	align-items: center;
-}
-.check-label input {
-	width: 20px;
-	min-height: 20px;
-}
-.remove-button {
-	justify-self: start;
-	color: var(--color-error);
-	padding: 5px 0;
-}
-@media (min-width: 560px) {
-	.question-row {
-		grid-template-columns: minmax(0, 2fr) 1fr auto auto;
-		align-items: center;
-	}
 }
 @media (min-width: 860px) {
 	.admin-dashboard {

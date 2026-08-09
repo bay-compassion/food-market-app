@@ -26,6 +26,33 @@ export type QueueGuest = {
 	status: VisitStatus;
 };
 
+/**
+ * The admin screens, in the order the navigation lists them. The route in `router.ts` matches the
+ * same set — add a view here and the path pattern there has to grow with it.
+ */
+export const adminViews = [
+	'current-session',
+	'queue',
+	'question-bank',
+	'guest-database',
+	'session-history',
+	'reports',
+] as const;
+
+export type AdminView = (typeof adminViews)[number];
+
+export function isAdminView(value: unknown): value is AdminView {
+	return adminViews.some((view) => view === value);
+}
+
+/** One registration question, as the question bank edits it. */
+export type Question = {
+	id?: string;
+	prompt: string;
+	type: 'text' | 'scale';
+	required: boolean;
+};
+
 /** What the manual guest form collects for a guest a worker adds by hand. */
 export type ManualGuest = {
 	firstName: string;

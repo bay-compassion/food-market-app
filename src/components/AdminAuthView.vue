@@ -4,14 +4,8 @@ import { computed } from 'vue';
 
 import { authReturnUrl, isAuth0Configured } from '../auth';
 import { translations, type Locale } from '../locales';
+import type { AdminView } from './admin/types';
 import AdminDashboard from './AdminDashboard.vue';
-
-type AdminView =
-	| 'current-session'
-	| 'queue'
-	| 'question-bank'
-	| 'guest-database'
-	| 'session-history';
 
 const props = defineProps<{ locale: Locale; view: AdminView }>();
 const emit = defineEmits<{ navigate: [view: AdminView] }>();
