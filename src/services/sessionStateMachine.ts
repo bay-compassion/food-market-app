@@ -8,6 +8,20 @@ export type SessionStatus =
 	| 'service_started'
 	| 'ended';
 
+/** Every status, in lifecycle order. */
+export const sessionStatuses: SessionStatus[] = [
+	'draft',
+	'scheduled',
+	'registration_open',
+	'registration_closed',
+	'service_started',
+	'ended',
+];
+
+export function isSessionStatus(value: unknown): value is SessionStatus {
+	return sessionStatuses.includes(value as SessionStatus);
+}
+
 export type CurrentSessionState =
 	| 'inactive'
 	| 'scheduled'

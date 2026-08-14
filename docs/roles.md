@@ -15,7 +15,7 @@ Two roles rather than three because the risk being managed is volunteer turnover
 the table for a season should not be able to reset a session, push a notification to every guest,
 or download the whole guest database in one click.
 
-## The four permissions
+## The permissions
 
 | Permission          | Allows                                                                                                   |
 | ------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -23,10 +23,14 @@ or download the whole guest database in one click.
 | `manage:sessions`   | Session settings, the question bank, the registration lifecycle, the lottery, broadcasts                 |
 | `read:reports`      | The reports screen — counts and rates, never a guest's name                                              |
 | `export:guest-data` | The visit export, which carries guest names and phone numbers                                            |
+| `manage:demo-data`  | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
 
-There are four permissions behind two roles on purpose. Splitting out a third role later — a board
-member or grant writer who should read reports but never see a name, holding `read:reports` alone —
-is then a change in the Auth0 dashboard, with no code to write or deploy.
+The first four sit behind two roles on purpose. Splitting out a third role later — a board member
+or grant writer who should read reports but never see a name, holding `read:reports` alone — is
+then a change in the Auth0 dashboard, with no code to write or deploy. `manage:demo-data` is that
+kind of split from day one: it belongs on neither `worker` nor `admin`, only on a role of its own
+(e.g. `demo`) that starts assigned to nobody — see
+[the dev-mode data loader](#the-dev-mode-data-loader) below before granting it to anyone.
 
 ## What each endpoint requires
 
@@ -41,6 +45,7 @@ is then a change in the Auth0 dashboard, with no code to write or deploy.
 | `POST /api/broadcast`              | `manage:sessions`                                       |
 | `GET /api/reports`                 | `read:reports`                                          |
 | `GET /api/reports?view=export`     | `export:guest-data`                                     |
+| `GET`, `POST /api/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session
@@ -58,12 +63,14 @@ a token with no permissions, and the moment the server starts checking, they are
 admin area. The reverse order is safe: turning RBAC on with no enforcement deployed just adds a
 claim nothing reads yet, so you can confirm tokens look right and merge afterwards.
 
-1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the four
+1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the five
    permissions above.
 2. **Same API → Settings → RBAC Settings.** Turn on _Enable RBAC_ **and** _Add Permissions in the
    Access Token_. The second one is what puts the `permissions` claim in the token; without it
    nothing else here works.
-3. **User Management → Roles.** Create `worker` and `admin` and attach the permissions.
+3. **User Management → Roles.** Create `worker` and `admin` and attach the permissions. Leave
+   `manage:demo-data` off both; give it to a separate role only where and when you mean to use the
+   dev-mode data loader below.
 4. **Assign a role to every existing user**, then sign in and confirm a fresh access token carries
    the `permissions` claim before merging.
 
@@ -90,3 +97,19 @@ developer out of the app they are working on.
 Workers still see guest names and phone numbers on the queue and guest-database screens. They have
 to; that is the job. What `export:guest-data` protects is bulk download of the entire history in a
 single click, which is a different exposure from reading today's line.
+
+## The dev-mode data loader
+
+The Dev Mode screen (`src/components/admin/DevModeView.vue`, behind `POST /api/demo-data`) lets
+someone holding `manage:demo-data` replace whatever session is currently live with fake guests and
+visits staged at any point on the session lifecycle — for demos and screenshots. Loading a scenario
+archives the current session the same way `close_session` would, so it is destructive to whatever
+is live at the time.
+
+Because of that, the permission alone is not enough: `POST /api/demo-data` also checks
+`ENABLE_DEMO_DATA_TOOLS`, an environment variable that has to be set to `true` for the specific
+Netlify deploy context it should run on. A deploy that never sets it answers every request with a
+plain 404, indistinguishable from a route that was never registered, regardless of who is asking.
+Set it only on a deploy where every guest in the database is already fake — never on the one the
+market actually uses. This mirrors `scripts/seed-fake-data.mts`'s own guard against seeding a
+database that isn't `localhost` without `--force`.

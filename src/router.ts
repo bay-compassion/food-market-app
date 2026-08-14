@@ -9,7 +9,7 @@ const router = createRouter({
 	routes: [
 		{ path: '/', name: 'guest', component: App },
 		{
-			path: '/admin/:view(current-session|queue|question-bank|guest-database|session-history|reports)?',
+			path: '/admin/:view(current-session|queue|question-bank|guest-database|session-history|reports|dev-mode)?',
 			name: 'admin',
 			component: App,
 			beforeEnter: isAuth0Configured ? authGuard : () => true,

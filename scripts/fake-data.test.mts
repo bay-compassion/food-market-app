@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildFakeData, type FakeDataOptions } from './fake-data.mjs';
+import {
+	buildFakeData,
+	buildScenario,
+	type FakeDataOptions,
+	type ScenarioOptions,
+} from './fake-data.mjs';
 
 const now = new Date('2026-08-13T18:00:00');
 
@@ -99,5 +104,114 @@ describe('buildFakeData', () => {
 		expect(
 			openVisits.every((visit) => visit.status === 'registered' && visit.queuePosition === null),
 		).toBe(true);
+	});
+});
+
+function buildScenarioFor(overrides: Partial<ScenarioOptions> = {}) {
+	return buildScenario({
+		stage: 'registration_open',
+		guests: 40,
+		capacity: 20,
+		seed: 3,
+		now,
+		...overrides,
+	});
+}
+
+describe('buildScenario', () => {
+	it('replays the same scenario for the same seed', () => {
+		const first = buildScenarioFor({ stage: 'service_started' });
+		const second = buildScenarioFor({ stage: 'service_started' });
+
+		expect(first.visits.map((visit) => [visit.status, visit.queuePosition])).toEqual(
+			second.visits.map((visit) => [visit.status, visit.queuePosition]),
+		);
+		expect(
+			buildScenarioFor({ stage: 'service_started', seed: 4 }).visits.map((visit) => visit.status),
+		).not.toEqual(first.visits.map((visit) => visit.status));
+	});
+
+	it('produces exactly one session, staged at the requested status', () => {
+		for (const stage of [
+			'draft',
+			'scheduled',
+			'registration_open',
+			'registration_closed',
+			'service_started',
+			'ended',
+		] as const) {
+			const data = buildScenarioFor({ stage });
+
+			expect(data.sessions).toHaveLength(1);
+			expect(data.sessions[0]!.status).toBe(stage);
+		}
+	});
+
+	it('has no guests or visits yet in draft or scheduled', () => {
+		for (const stage of ['draft', 'scheduled'] as const) {
+			const data = buildScenarioFor({ stage });
+
+			expect(data.guests).toHaveLength(0);
+			expect(data.visits).toHaveLength(0);
+		}
+	});
+
+	it('registration_open: registration is still open, and nobody has a position yet', () => {
+		const data = buildScenarioFor({ stage: 'registration_open' });
+
+		expect(data.sessions[0]!.registrationClosesAt > now).toBe(true);
+		expect(data.visits.length).toBeGreaterThan(0);
+		expect(
+			data.visits.every((visit) => visit.status === 'registered' && visit.queuePosition === null),
+		).toBe(true);
+	});
+
+	it('registration_closed: registration has ended, but the lottery has not run', () => {
+		const data = buildScenarioFor({ stage: 'registration_closed' });
+
+		expect(data.sessions[0]!.registrationClosesAt <= now).toBe(true);
+		expect(data.visits.length).toBeGreaterThan(0);
+		expect(
+			data.visits.every((visit) => visit.status === 'registered' && visit.queuePosition === null),
+		).toBe(true);
+	});
+
+	it('ended: nothing is left waiting or called', () => {
+		const data = buildScenarioFor({ stage: 'ended', guests: 60 });
+
+		expect(data.visits.some((visit) => visit.queuePosition !== null)).toBe(true);
+		expect(
+			data.visits.every((visit) => visit.status !== 'waiting' && visit.status !== 'called'),
+		).toBe(true);
+	});
+
+	it('service_started: never exceeds capacity, and progress drains the queue in order', () => {
+		const rank: Record<string, number> = { served: 0, no_show: 0, called: 1, waiting: 2 };
+
+		for (const serviceProgress of ['just_started', 'halfway', 'nearly_done'] as const) {
+			const data = buildScenarioFor({ stage: 'service_started', guests: 60, serviceProgress });
+			const placed = data.visits
+				.filter((visit) => visit.queuePosition !== null)
+				.sort((first, second) => first.queuePosition! - second.queuePosition!);
+
+			expect(placed.length).toBeLessThanOrEqual(data.sessions[0]!.capacity);
+			for (let index = 1; index < placed.length; index += 1) {
+				expect(rank[placed[index]!.status]).toBeGreaterThanOrEqual(
+					rank[placed[index - 1]!.status]!,
+				);
+			}
+		}
+	});
+
+	it('further-along progress leaves fewer guests waiting', () => {
+		const waitingCount = (progress: 'just_started' | 'halfway' | 'nearly_done') =>
+			buildScenarioFor({
+				stage: 'service_started',
+				guests: 60,
+				serviceProgress: progress,
+			}).visits.filter((visit) => visit.status === 'waiting').length;
+
+		expect(waitingCount('just_started')).toBeGreaterThan(waitingCount('halfway'));
+		expect(waitingCount('halfway')).toBeGreaterThan(waitingCount('nearly_done'));
 	});
 });

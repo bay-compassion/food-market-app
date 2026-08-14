@@ -38,6 +38,7 @@ export const adminViews = [
 	'guest-database',
 	'session-history',
 	'reports',
+	'dev-mode',
 ] as const;
 
 export type AdminView = (typeof adminViews)[number];
@@ -58,6 +59,7 @@ export const viewPermissions: Record<AdminView, Permission> = {
 	'guest-database': 'run:queue',
 	'session-history': 'run:queue',
 	reports: 'read:reports',
+	'dev-mode': 'manage:demo-data',
 };
 
 /** The screens a worker can open, in navigation order. */

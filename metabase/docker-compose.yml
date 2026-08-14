@@ -33,5 +33,20 @@ services:
       MB_DB_PASS: ${METABASE_DB_PASSWORD:?set METABASE_DB_PASSWORD in metabase/.env}
       MB_DB_HOST: metabase-db
 
+  # Optional: exposes Metabase at a public https URL via a Cloudflare Tunnel, so the whole team
+  # can reach it without port-forwarding or a static IP. Create the tunnel in the Cloudflare Zero
+  # Trust dashboard (Networks → Tunnels), pointing it at http://metabase:3000, then copy its token
+  # into CLOUDFLARE_TUNNEL_TOKEN. Not started by default — run with
+  # `docker compose --profile tunnel up`.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    profiles: [tunnel]
+    depends_on:
+      - metabase
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in metabase/.env}
+
 volumes:
   metabase-db-data:
