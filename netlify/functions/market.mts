@@ -1,3 +1,4 @@
+import { Config } from "@netlify/functions";
 import type { Permission } from '../../src/services/permissions.js';
 import { requirePermission } from '../lib/auth.mjs';
 import {
@@ -145,4 +146,4 @@ export default async (request: Request) => {
 	return error('Method not allowed', 405);
 };
 
-export const config = { path: '/api/market' };
+export const config: Config = { path: '/api/market' };

@@ -1,3 +1,4 @@
+import { Config } from "@netlify/functions";
 import { and, eq, ne } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
@@ -140,4 +141,4 @@ export default async (request: Request) => {
 	return Response.json({ subscribed: true });
 };
 
-export const config = { path: '/api/push-subscription' };
+export const config: Config = { path: '/api/push-subscription' };

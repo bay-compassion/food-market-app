@@ -1,3 +1,4 @@
+import { Config } from '@netlify/functions';
 import { and, desc, eq, ne } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
@@ -92,4 +93,4 @@ export default async (request: Request) => {
 	return Response.json({ queued: recipients.length, sent: result.sent });
 };
 
-export const config = { path: '/api/broadcast' };
+export const config: Config = { path: '/api/broadcast' };

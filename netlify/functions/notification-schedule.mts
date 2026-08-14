@@ -1,3 +1,4 @@
+import { Config } from "@netlify/functions";
 import { and, eq, inArray, lte } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
@@ -63,4 +64,4 @@ export default async () => {
 	await deliverPendingNotifications({ limit: 250 });
 };
 
-export const config = { schedule: '* * * * *' };
+export const config: Config = { schedule: '* * * * *' };

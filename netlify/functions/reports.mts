@@ -1,3 +1,4 @@
+import { Config } from "@netlify/functions";
 import { csvFilename, toCsv } from '../../src/services/reportCsv.js';
 import { isReportId, reportRangeBounds } from '../../src/services/reports.js';
 import { requirePermission } from '../lib/auth.mjs';
@@ -49,4 +50,4 @@ export default async (request: Request) => {
 	return Response.json({ id, rows: await runReport(id, range) });
 };
 
-export const config = { path: '/api/reports' };
+export const config: Config = { path: '/api/reports' };
