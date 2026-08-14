@@ -16,6 +16,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "checks": "node scripts/checks.js",
+    "seed": "tsx scripts/seed-fake-data.mts",
     "check:translations": "node scripts/check-translations.js",
     "check:diagrams": "node scripts/check-diagrams.js",
     "netlify:prune-deploys": "node scripts/prune-netlify-deploys.js"
