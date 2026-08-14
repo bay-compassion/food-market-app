@@ -63,7 +63,25 @@ accounts) — not the guest data, which is added afterwards as a connection from
 
 This is meant for one machine at a time (a volunteer's laptop, a market office computer). If you
 want something reachable by the whole team without someone keeping a machine running, use Metabase
-Cloud instead.
+Cloud instead — or, if the machine does stay running, see below.
+
+### Sharing it with the team (optional)
+
+If the Docker Compose machine stays on (e.g. a market office computer) and you want others to
+reach it without port-forwarding or a static IP, `metabase/docker-compose.yml` includes an
+optional `cloudflared` service that exposes Metabase at a public https URL via a
+[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
+It's off by default — only the two services above start with `npm run metabase:up`.
+
+1. In the Cloudflare Zero Trust dashboard, go to **Networks → Tunnels → Create a tunnel**, and
+   point it at `http://metabase:3000`. Copy the token shown in the install step.
+2. Set `CLOUDFLARE_TUNNEL_TOKEN` in `metabase/.env` to that token (see `metabase/.env.example`).
+3. Start it with the `tunnel` profile:
+   `docker compose -f metabase/docker-compose.yml --profile tunnel up -d`. `npm run metabase:down`
+   still stops everything, tunnel included.
+
+Anyone with the tunnel's URL can reach your Metabase login — so this doesn't replace limiting who
+can log in to Metabase, described in [the section above](#read-this-before-connecting-anything).
 
 ## Metabase Cloud
 
