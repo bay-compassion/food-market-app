@@ -13,7 +13,7 @@ Three pieces, deliberately kept apart:
 - [`src/services/reports.ts`](../src/services/reports.ts) — the catalogue. Which reports exist,
   what columns each returns, and how each column should be rendered. Shared by the browser and the
   server so the two cannot disagree about a report's shape.
-- [`netlify/services/reports.ts`](../netlify/services/reports.ts) — the SQL, one function per
+- [`netlify/services/reports.mts`](../netlify/services/reports.mts) — the SQL, one function per
   report. The server returns **data only**: no column headings, no formatted numbers.
 - [`src/components/admin/ReportsView.vue`](../src/components/admin/ReportsView.vue) and its two
   children — the screen. Headings come from `adminLocales.ts` and numbers are formatted in the

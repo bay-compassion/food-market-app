@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.ts=a1ee5c66c0c5, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.ts=651f905be2e9 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=4cb6eb595a61, netlify/services/marketSession.mts=9249836f2761, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.mts=553804dcd519 -->
 
 # Session lifecycle
 
@@ -6,7 +6,7 @@ A market session is one row in the `market_events` table. Its `status` column dr
 allows at any moment: whether guests can register, whether the lottery can run, whether the queue is
 live. The allowed transitions are declared in
 [`src/services/sessionStateMachine.ts`](../src/services/sessionStateMachine.ts) and enforced on the
-server in [`netlify/services/marketSession.ts`](../netlify/services/marketSession.ts) — the browser
+server in [`netlify/services/marketSession.mts`](../netlify/services/marketSession.mts) — the browser
 only ever offers the buttons; the backend decides whether a transition is legal.
 
 The diagram is written in [Mermaid](https://mermaid.js.org/), a plain-text diagram format GitHub
@@ -81,7 +81,7 @@ A session's status says what the market is doing; a **visit's** status says what
 guest. Each guest who registers gets one row in `visits`, and its `status` column moves through its
 own small state machine, declared in
 [`src/services/visitStateMachine.ts`](../src/services/visitStateMachine.ts) and enforced on the
-server in [`netlify/services/visitQueue.ts`](../netlify/services/visitQueue.ts).
+server in [`netlify/services/visitQueue.mts`](../netlify/services/visitQueue.mts).
 
 Only the transitions below are possible. The server rejects anything else with a `409`, so a
 mis-tap cannot move a served guest back into the queue.
