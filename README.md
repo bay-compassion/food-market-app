@@ -190,6 +190,14 @@ the placeholders. Do not commit `.env`.
 Every Auth0 user who can sign in to this application has admin access. If the tenant also serves
 non-admin users, configure Auth0 API permissions and roles before inviting them to this application.
 
+## Metabase (optional ad hoc analytics)
+
+The [Reports](docs/reporting.md) screen covers the predefined questions the app anticipates. For
+anything else — a one-off chart, a dashboard to watch over time — this repo supports connecting
+[Metabase](https://www.metabase.com/), either self-hosted with Docker Compose (`npm run
+metabase:up`) or on Metabase Cloud. See [`docs/metabase.md`](docs/metabase.md) for setup and,
+importantly, how to connect it without handing it the app's own database credentials.
+
 ## Project structure
 
 - `src/` — Vue 3 frontend
@@ -199,3 +207,5 @@ non-admin users, configure Auth0 API permissions and roles before inviting them 
   before changing anything here
 - `db/` — Drizzle schema and database client; [`docs/data-model.md`](docs/data-model.md) diagrams
   the tables
+- `metabase/` — optional Docker Compose setup for self-hosted Metabase; see
+  [`docs/metabase.md`](docs/metabase.md)

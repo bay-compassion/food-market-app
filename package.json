@@ -19,7 +19,9 @@
     "seed": "tsx scripts/seed-fake-data.mts",
     "check:translations": "node scripts/check-translations.js",
     "check:diagrams": "node scripts/check-diagrams.js",
-    "netlify:prune-deploys": "node scripts/prune-netlify-deploys.js"
+    "netlify:prune-deploys": "node scripts/prune-netlify-deploys.js",
+    "metabase:up": "docker compose -f metabase/docker-compose.yml up -d",
+    "metabase:down": "docker compose -f metabase/docker-compose.yml down"
   },
   "dependencies": {
     "@auth0/auth0-vue": "^2.8.0",

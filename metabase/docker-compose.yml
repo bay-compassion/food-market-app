@@ -1,0 +1,37 @@
+# Self-hosted Metabase for ad hoc analytics against this app's database.
+# See docs/metabase.md for setup instructions and security notes before connecting a database.
+#
+# This is optional tooling, separate from the deployed app: Netlify does not build or run
+# anything in this directory.
+
+services:
+  # Metabase's own storage for dashboards, saved questions, and user accounts. This is NOT the
+  # app database — the app's data (guests, sessions, visits) is added afterwards, from inside
+  # Metabase, as a connection to the existing Netlify DB / Neon database.
+  metabase-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: ${METABASE_DB_PASSWORD:?set METABASE_DB_PASSWORD in metabase/.env}
+    volumes:
+      - metabase-db-data:/var/lib/postgresql/data
+
+  metabase:
+    image: metabase/metabase:latest
+    restart: unless-stopped
+    depends_on:
+      - metabase-db
+    ports:
+      - '3000:3000'
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: ${METABASE_DB_PASSWORD:?set METABASE_DB_PASSWORD in metabase/.env}
+      MB_DB_HOST: metabase-db
+
+volumes:
+  metabase-db-data:
