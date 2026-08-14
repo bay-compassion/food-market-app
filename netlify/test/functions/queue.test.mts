@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
-vi.mock('../../../db/index.js', () => ({ db }));
+vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 vi.mock('../../services/pushNotifications.mjs', () => ({
 	notificationsEnabled: vi.fn(() => false),

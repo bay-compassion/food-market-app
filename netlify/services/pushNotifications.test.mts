@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../db/index.js', () => ({ db: {} }));
+vi.mock('../../db/index.mjs', () => ({ db: {} }));
 vi.mock('web-push', () => ({ default: {} }));
 
 import { languages } from '../../src/locales.js';

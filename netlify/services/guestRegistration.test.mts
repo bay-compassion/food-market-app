@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
-vi.mock('../../db/index.js', () => ({ db }));
+vi.mock('../../db/index.mjs', () => ({ db }));
 vi.mock('./guestCredentials.mjs', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('./guestCredentials.mjs')>();
 

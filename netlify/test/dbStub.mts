@@ -9,7 +9,7 @@ import { vi } from 'vitest';
  * the next value pushed with `queueResult`. Tests queue results in the same order the handler
  * under test will request them.
  *
- * This is a module-level singleton (not a factory) so that `vi.mock('../../db/index.js', () =>
+ * This is a module-level singleton (not a factory) so that `vi.mock('../../db/index.mjs', () =>
  * ({ db }))` and test bodies can share the same `db` reference without hoisting issues — import
  * it directly rather than constructing a new one per test, and call `resetDbStub()` in
  * `afterEach` to clear queued results and mock call history between tests.
