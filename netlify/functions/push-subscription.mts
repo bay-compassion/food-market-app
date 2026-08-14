@@ -1,14 +1,15 @@
+import { Config } from '@netlify/functions';
 import { and, eq, ne } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.mjs';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
-import { hashVisitToken } from '../services/guestCredentials.js';
+import { hashVisitToken } from '../services/guestCredentials.mjs';
 import {
 	deliverPendingNotifications,
 	pushConfiguration,
 	type NotificationType,
-} from '../services/pushNotifications.js';
+} from '../services/pushNotifications.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
@@ -140,4 +141,4 @@ export default async (request: Request) => {
 	return Response.json({ subscribed: true });
 };
 
-export const config = { path: '/api/push-subscription' };
+export const config: Config = { path: '/api/push-subscription' };

@@ -8,7 +8,7 @@
  * fingerprint (a short hash) of each of those files at the time the diagram was last confirmed
  * accurate:
  *
- *   <!-- diagram-sources: db/schema.ts=1a2b3c4d5e6f -->
+ *   <!-- diagram-sources: db/schema.mts=1a2b3c4d5e6f -->
  *
  * This script recomputes those fingerprints. If one no longer matches, the source file changed
  * since the diagram was last reviewed, and this exits non-zero asking for a look.
@@ -62,7 +62,7 @@ function markdownFiles(directory) {
 		}
 	}
 
-	return files.sort();
+	return files.sort((a, b) => a.localeCompare(b));
 }
 
 function parseStamp(contents) {

@@ -3,8 +3,8 @@ import { promisify } from 'node:util';
 
 import { eq } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { guestPinAttempts, guests } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { guestPinAttempts, guests } from '../../db/schema.mjs';
 
 const scrypt = promisify(nodeScrypt);
 const attemptWindowMs = 15 * 60_000;

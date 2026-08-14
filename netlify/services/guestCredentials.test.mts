@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../db/index.js', () => ({ db: {} }));
+vi.mock('../../db/index.mjs', () => ({ db: {} }));
 
 import {
 	hashPin,
@@ -9,7 +9,7 @@ import {
 	issueVisitToken,
 	normalizePhone,
 	verifyPin,
-} from './guestCredentials';
+} from './guestCredentials.mjs';
 
 describe('guest credentials', () => {
 	it('normalizes North American phone numbers for matching', () => {

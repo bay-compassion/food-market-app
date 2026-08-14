@@ -69,7 +69,7 @@ claim nothing reads yet, so you can confirm tokens look right and merge afterwar
 
 ## How it is enforced
 
-`requirePermission` in [`netlify/lib/auth.ts`](../netlify/lib/auth.ts) verifies the token against
+`requirePermission` in [`netlify/lib/auth.mts`](../netlify/lib/auth.mts) verifies the token against
 Auth0's keys and checks the claim. It answers **401** when the token is missing or invalid, meaning
 sign in, and **403** when the token is fine but lacks the permission, meaning signing in again will
 not help — the browser needs to tell those apart, because retrying the first is right and retrying

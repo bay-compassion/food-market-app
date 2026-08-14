@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../db/index.js', () => ({ db: {} }));
+vi.mock('../../db/index.mjs', () => ({ db: {} }));
 vi.mock('web-push', () => ({ default: {} }));
 
-import { languages } from '../../src/locales';
+import { languages } from '../../src/locales.js';
 import {
 	deliveryCopy,
 	notificationCopy,
 	notificationsEnabled,
 	notificationTypes,
 	pushConfiguration,
-} from './pushNotifications';
+} from './pushNotifications.mjs';
 
 describe('push notification copy', () => {
 	it('provides localized title and body text for every notification and locale', () => {

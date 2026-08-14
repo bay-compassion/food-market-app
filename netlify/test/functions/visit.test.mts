@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../dbStub.js';
+import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
-vi.mock('../../../db/index.js', () => ({ db }));
+vi.mock('../../../db/index.mjs', () => ({ db }));
 
-import handler from '../../functions/visit.js';
+import handler from '../../functions/visit.mjs';
 
 const validToken = 'a'.repeat(40);
 

@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../dbStub.js';
+import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
-vi.mock('../../../db/index.js', () => ({ db }));
-vi.mock('../../services/pushNotifications.js', () => ({
+vi.mock('../../../db/index.mjs', () => ({ db }));
+vi.mock('../../services/pushNotifications.mjs', () => ({
 	deliverPendingNotifications: vi.fn(),
 	pushConfiguration: vi.fn(),
 }));
 
-import handler from '../../functions/push-subscription.js';
+import handler from '../../functions/push-subscription.mjs';
 import {
 	deliverPendingNotifications,
 	pushConfiguration,
-} from '../../services/pushNotifications.js';
+} from '../../services/pushNotifications.mjs';
 
 const validToken = 'a'.repeat(40);
 const validSubscription = {

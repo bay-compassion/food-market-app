@@ -1,14 +1,15 @@
+import { Config } from '@netlify/functions';
 import { and, desc, eq, ne } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
+import { db } from '../../db/index.mjs';
 import {
 	marketEvents,
 	notificationDeliveries,
 	pushSubscriptions,
 	visits,
-} from '../../db/schema.js';
-import { requirePermission } from '../lib/auth.js';
-import { deliverPendingNotifications, pushConfiguration } from '../services/pushNotifications.js';
+} from '../../db/schema.mjs';
+import { requirePermission } from '../lib/auth.mjs';
+import { deliverPendingNotifications, pushConfiguration } from '../services/pushNotifications.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
@@ -92,4 +93,4 @@ export default async (request: Request) => {
 	return Response.json({ queued: recipients.length, sent: result.sent });
 };
 
-export const config = { path: '/api/broadcast' };
+export const config: Config = { path: '/api/broadcast' };

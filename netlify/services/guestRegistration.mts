@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
 import {
 	admissionNeedsQueuePosition,
 	admissionVisitStatus,
@@ -19,8 +19,8 @@ import {
 	isValidPin,
 	issueVisitToken,
 	normalizePhone,
-} from './guestCredentials.js';
-import { nextQueuePosition } from './visitQueue.js';
+} from './guestCredentials.mjs';
+import { nextQueuePosition } from './visitQueue.mjs';
 
 const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 

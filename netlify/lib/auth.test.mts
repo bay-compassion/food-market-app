@@ -7,7 +7,7 @@ vi.mock('jose', () => ({
 	jwtVerify,
 }));
 
-import { requirePermission, verifyAuth0Token } from './auth';
+import { requirePermission, verifyAuth0Token } from './auth.mjs';
 
 function requestWithAuth(header: string | null) {
 	const headers = new Headers();

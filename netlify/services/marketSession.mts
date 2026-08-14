@@ -1,12 +1,12 @@
 import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
+import { db } from '../../db/index.mjs';
 import {
 	marketEvents,
 	notificationDeliveries,
 	registrationQuestions,
 	visits,
-} from '../../db/schema.js';
+} from '../../db/schema.mjs';
 import {
 	automaticSessionStatus,
 	canRunSessionCommand,
@@ -16,8 +16,8 @@ import {
 	type SessionMode,
 	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
-import { notificationsEnabled } from './pushNotifications.js';
-import { resolveOutstandingVisits } from './visitQueue.js';
+import { notificationsEnabled } from './pushNotifications.mjs';
+import { resolveOutstandingVisits } from './visitQueue.mjs';
 
 export type MarketEventRow = typeof marketEvents.$inferSelect;
 export type QuestionInput = { prompt: string; type: 'text' | 'scale'; required: boolean };

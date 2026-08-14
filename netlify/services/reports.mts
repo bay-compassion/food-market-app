@@ -1,6 +1,6 @@
 import { sql, type SQL } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
+import { db } from '../../db/index.mjs';
 import { languages } from '../../src/locales.js';
 import type { ReportId, ReportRow } from '../../src/services/reports.js';
 

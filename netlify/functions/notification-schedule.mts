@@ -1,11 +1,12 @@
+import { Config } from '@netlify/functions';
 import { and, eq, inArray, lte } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { marketEvents, notificationDeliveries, visits } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { marketEvents, notificationDeliveries, visits } from '../../db/schema.mjs';
 import {
 	deliverPendingNotifications,
 	notificationsEnabled,
-} from '../services/pushNotifications.js';
+} from '../services/pushNotifications.mjs';
 
 export default async () => {
 	if (!notificationsEnabled()) {
@@ -63,4 +64,4 @@ export default async () => {
 	await deliverPendingNotifications({ limit: 250 });
 };
 
-export const config = { schedule: '* * * * *' };
+export const config: Config = { schedule: '* * * * *' };

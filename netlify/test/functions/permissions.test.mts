@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../dbStub.js';
+import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
-vi.mock('../../../db/index.js', () => ({ db }));
-vi.mock('../../lib/auth.js', () => ({ requirePermission: vi.fn() }));
+vi.mock('../../../db/index.mjs', () => ({ db }));
+vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
-import broadcastHandler from '../../functions/broadcast.js';
-import guestsHandler from '../../functions/guests.js';
-import marketHandler from '../../functions/market.js';
-import queueHandler from '../../functions/queue.js';
-import reportsHandler from '../../functions/reports.js';
-import { requirePermission } from '../../lib/auth.js';
+import broadcastHandler from '../../functions/broadcast.mjs';
+import guestsHandler from '../../functions/guests.mjs';
+import marketHandler from '../../functions/market.mjs';
+import queueHandler from '../../functions/queue.mjs';
+import reportsHandler from '../../functions/reports.mjs';
+import { requirePermission } from '../../lib/auth.mjs';
 
 /**
  * Which permission each endpoint asks for.

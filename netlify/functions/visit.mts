@@ -1,8 +1,9 @@
+import { Config } from '@netlify/functions';
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { marketEvents, visits } from '../../db/schema.js';
-import { hashVisitToken } from '../services/guestCredentials.js';
+import { db } from '../../db/index.mjs';
+import { marketEvents, visits } from '../../db/schema.mjs';
+import { hashVisitToken } from '../services/guestCredentials.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
@@ -101,4 +102,4 @@ export default async (request: Request) => {
 	return error('Method not allowed', 405);
 };
 
-export const config = { path: '/api/visit' };
+export const config: Config = { path: '/api/visit' };

@@ -1,6 +1,8 @@
-import { requirePermission } from '../lib/auth.js';
-import { getCurrentEvent } from '../services/marketSession.js';
-import { callNextVisits } from '../services/visitQueue.js';
+import { Config } from '@netlify/functions';
+
+import { requirePermission } from '../lib/auth.mjs';
+import { getCurrentEvent } from '../services/marketSession.mjs';
+import { callNextVisits } from '../services/visitQueue.mjs';
 
 const maximumBatchSize = 50;
 
@@ -43,4 +45,4 @@ export default async (request: Request) => {
 	return Response.json({ called: await callNextVisits(event.id, batchSize) });
 };
 
-export const config = { path: '/api/queue' };
+export const config: Config = { path: '/api/queue' };

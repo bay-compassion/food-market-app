@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../test/dbStub.js';
+import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
-vi.mock('../../db/index.js', () => ({ db }));
-vi.mock('./pushNotifications.js', () => ({
+vi.mock('../../db/index.mjs', () => ({ db }));
+vi.mock('./pushNotifications.mjs', () => ({
 	notificationsEnabled: () => false,
 	deliverPendingNotifications: vi.fn(),
 }));
 
-import { runVisitCommand } from './visitQueue.js';
+import { runVisitCommand } from './visitQueue.mjs';
 
 /** The values the command handed to `update(...).set(...)`. */
 function lastUpdateValues() {

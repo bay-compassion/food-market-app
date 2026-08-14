@@ -1,5 +1,7 @@
+import { Config } from '@netlify/functions';
+
 import type { Permission } from '../../src/services/permissions.js';
-import { requirePermission } from '../lib/auth.js';
+import { requirePermission } from '../lib/auth.mjs';
 import {
 	closeRegistration,
 	closeSession,
@@ -17,7 +19,7 @@ import {
 	updateRegistration,
 	type ActionResult,
 	type MarketEventRow,
-} from '../services/marketSession.js';
+} from '../services/marketSession.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
@@ -145,4 +147,4 @@ export default async (request: Request) => {
 	return error('Method not allowed', 405);
 };
 
-export const config = { path: '/api/market' };
+export const config: Config = { path: '/api/market' };
