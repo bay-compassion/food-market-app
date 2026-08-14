@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { notificationDeliveries, visits } from '../../db/schema.mjs';
+import { visits } from '../../db/schema.mjs';
 import type { QueuePlacement } from '../../src/services/guestAdmission.js';
 import {
 	canRunVisitCommand,
@@ -9,7 +9,8 @@ import {
 	visitCommandTarget,
 	type VisitCommand,
 } from '../../src/services/visitStateMachine.js';
-import { deliverPendingNotifications, notificationsEnabled } from './pushNotifications.mjs';
+import { deliverQueuedNotifications, requeueNotification } from './notifications.mjs';
+import { notificationsEnabled } from './pushNotifications.mjs';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -18,27 +19,22 @@ export type VisitCommandResult =
 	| { ok: false; status: number; error: string };
 
 /**
- * Queues a `called` push for each visit, replacing any earlier one so a re-call notifies again.
- * The unique `(visit_id, dedupe_key)` index means a visit only ever holds one `called` row.
+ * Queues a `called` notification on every channel for each visit, replacing any earlier one so a
+ * re-call notifies again. The unique `(visit_id, dedupe_key, channel)` index means a visit only
+ * ever holds one `called` row per channel.
  */
 async function queueCalledNotifications(tx: Transaction, visitIds: string[]) {
 	if (!visitIds.length || !notificationsEnabled()) {
 		return;
 	}
-	await tx
-		.insert(notificationDeliveries)
-		.values(visitIds.map((visitId) => ({ visitId, type: 'called', dedupeKey: 'called' })))
-		.onConflictDoUpdate({
-			target: [notificationDeliveries.visitId, notificationDeliveries.dedupeKey],
-			set: { status: 'pending', attempts: 0, lastError: null, sentAt: null },
-		});
+	await requeueNotification(tx, visitIds, 'called', 'called');
 }
 
 async function deliverCalledNotifications(visitIds: string[]) {
 	if (!visitIds.length || !notificationsEnabled()) {
 		return;
 	}
-	await deliverPendingNotifications({ visitIds, types: ['called'], limit: visitIds.length });
+	await deliverQueuedNotifications({ visitIds, types: ['called'], limit: visitIds.length });
 }
 
 /**

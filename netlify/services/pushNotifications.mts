@@ -87,7 +87,10 @@ export async function deliverPendingNotifications(options?: {
 	}
 	webPush.setVapidDetails(configuration.subject, configuration.publicKey, configuration.privateKey);
 
-	const conditions = [eq(notificationDeliveries.status, 'pending')];
+	const conditions = [
+		eq(notificationDeliveries.status, 'pending'),
+		eq(notificationDeliveries.channel, 'push'),
+	];
 	if (options?.visitIds?.length) {
 		conditions.push(inArray(notificationDeliveries.visitId, options.visitIds));
 	}

@@ -1,15 +1,12 @@
 import { Config } from '@netlify/functions';
-import { and, desc, eq, ne } from 'drizzle-orm';
+import { and, desc, eq, ne, or, isNotNull } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import {
-	marketEvents,
-	notificationDeliveries,
-	pushSubscriptions,
-	visits,
-} from '../../db/schema.mjs';
+import { marketEvents, pushSubscriptions, smsSubscriptions, visits } from '../../db/schema.mjs';
 import { requirePermission } from '../lib/auth.mjs';
-import { deliverPendingNotifications, pushConfiguration } from '../services/pushNotifications.mjs';
+import { deliverQueuedNotifications, queueNotification } from '../services/notifications.mjs';
+import { pushConfiguration } from '../services/pushNotifications.mjs';
+import { smsConfiguration } from '../services/smsNotifications.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
@@ -37,8 +34,8 @@ export default async (request: Request) => {
 	if (forbidden) {
 		return forbidden;
 	}
-	if (!pushConfiguration().configured) {
-		return error('Push notifications are not configured.', 503);
+	if (!pushConfiguration().configured && !smsConfiguration().configured) {
+		return error('Notifications are not configured.', 503);
 	}
 
 	let value: unknown;
@@ -68,23 +65,28 @@ export default async (request: Request) => {
 	const recipients = await db
 		.select({ visitId: visits.id })
 		.from(visits)
-		.innerJoin(pushSubscriptions, eq(pushSubscriptions.visitId, visits.id))
-		.where(and(eq(visits.marketEventId, event.id), ne(visits.status, 'cancelled')));
+		.leftJoin(pushSubscriptions, eq(pushSubscriptions.visitId, visits.id))
+		.leftJoin(smsSubscriptions, eq(smsSubscriptions.visitId, visits.id))
+		.where(
+			and(
+				eq(visits.marketEventId, event.id),
+				ne(visits.status, 'cancelled'),
+				or(isNotNull(pushSubscriptions.id), isNotNull(smsSubscriptions.id)),
+			),
+		);
 	if (!recipients.length) {
 		return Response.json({ queued: 0, sent: 0 });
 	}
 
 	const dedupeKey = `broadcast:${crypto.randomUUID()}`;
-	await db.insert(notificationDeliveries).values(
-		recipients.map(({ visitId }) => ({
-			visitId,
-			type: 'broadcast',
-			dedupeKey,
-			title: broadcast.title,
-			body: broadcast.body,
-		})),
+	await queueNotification(
+		db,
+		recipients.map(({ visitId }) => visitId),
+		'broadcast',
+		dedupeKey,
+		broadcast,
 	);
-	const result = await deliverPendingNotifications({
+	const result = await deliverQueuedNotifications({
 		types: ['broadcast'],
 		dedupeKeys: [dedupeKey],
 		limit: Math.min(recipients.length, 250),

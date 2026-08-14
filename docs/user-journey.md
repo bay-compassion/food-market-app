@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=0fb46636fd82, netlify/services/guestRegistration.mts=42276ba52186, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=254843752bbc, netlify/services/guestRegistration.mts=42276ba52186, netlify/functions/visit.mts=2cf92eed3b8a -->
 
 # Guest journey
 
@@ -35,17 +35,17 @@ flowchart TD
     questions --> submit[Submit]
 
     submit --> registered[Visit created: registered]
-    registered --> offer{Enable notifications?}
-    offer -- yes --> subscribed[Push subscription saved]
+    registered --> offer{Enable push and/or<br/>SMS notifications?}
+    offer -- yes --> subscribed[Subscription(s) saved<br/>per channel chosen]
     offer -- no --> status
     subscribed --> status
 
-    status --> regClosed[Registration closes<br/>push: registration_closed]
+    status --> regClosed[Registration closes<br/>push/sms: registration_closed]
     regClosed --> lottery{Lottery}
-    lottery -- selected --> waiting[waiting: guest sees their place in line<br/>and how many are ahead<br/>push: lottery_selected]
-    lottery -- not selected --> notPlaced([not_placed<br/>push: lottery_not_selected])
+    lottery -- selected --> waiting[waiting: guest sees their place in line<br/>and how many are ahead<br/>push/sms: lottery_selected]
+    lottery -- not selected --> notPlaced([not_placed<br/>push/sms: lottery_not_selected])
 
-    waiting --> called["Worker calls the guest: called<br/>screen switches to 'it's your turn'<br/>push: called"]
+    waiting --> called["Worker calls the guest: called<br/>screen switches to 'it's your turn'<br/>push/sms: called"]
     called --> served([served])
     called --> noShow([no_show])
     noShow -. "worker returns them<br/>to the queue" .-> waiting
@@ -84,9 +84,12 @@ flowchart TD
   - Once service has started the lottery is over, so a walk-in can only go straight into the line.
   - Once the session has ended, the only thing left to record is `served` — someone who was handed
     food outside the app. That visit never joins a queue.
-- **Notifications are best-effort.** Push requires a browser that supports it, and on iOS the app
-  must be installed to the home screen first. Admins can also send a broadcast message to everyone
-  in the session whose visit isn't cancelled.
+- **Notifications are best-effort, across two independent channels.** Push requires a browser that
+  supports it, and on iOS the app must be installed to the home screen first. SMS requires an
+  explicit consent step (separate from just having a phone number on file) and Twilio to be
+  configured; a guest can enable either channel, both, or neither, and each is delivered and
+  retried on its own. Admins can also send a broadcast message to everyone in the session, on
+  whichever channel(s) they're subscribed to, whose visit isn't cancelled.
 - **Cancelling is only possible before service.** The cancel button appears only while the visit is
   `registered` or `waiting`, and not at all once the session has ended.
 - **A closing session resolves anyone left over.** Ending a session marks every visit still

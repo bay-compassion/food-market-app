@@ -102,6 +102,8 @@ export const notificationDeliveries = pgTable(
 			.references(() => visits.id, { onDelete: 'cascade' }),
 		type: text('type').notNull(),
 		dedupeKey: text('dedupe_key').notNull(),
+		/** Which transport delivers this row: 'push' via web-push, 'sms' via Twilio. */
+		channel: text('channel').$type<'push' | 'sms'>().notNull().default('push'),
 		title: text('title'),
 		body: text('body'),
 		status: text('status').notNull().default('pending'),
@@ -111,9 +113,26 @@ export const notificationDeliveries = pgTable(
 		sentAt: timestamp('sent_at', { withTimezone: true }),
 	},
 	(table) => [
-		uniqueIndex('notification_deliveries_visit_dedupe_idx').on(table.visitId, table.dedupeKey),
+		uniqueIndex('notification_deliveries_visit_dedupe_channel_idx').on(
+			table.visitId,
+			table.dedupeKey,
+			table.channel,
+		),
 		index('notification_deliveries_status_idx').on(table.status, table.createdAt),
 	],
+);
+
+export const smsSubscriptions = pgTable(
+	'sms_subscriptions',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		visitId: uuid('visit_id')
+			.notNull()
+			.references(() => visits.id, { onDelete: 'cascade' }),
+		consentedAt: timestamp('consented_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [uniqueIndex('sms_subscriptions_visit_idx').on(table.visitId)],
 );
 
 export const guestPinAttempts = pgTable('guest_pin_attempts', {

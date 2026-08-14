@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=bc5b0348f01d -->
+<!-- diagram-sources: db/schema.mts=9e0b540cc34a -->
 
 # Database structure
 
@@ -19,6 +19,7 @@ erDiagram
     market_events ||--o{ visits : "hosts"
     guests ||--o{ visits : "attends"
     visits ||--o| push_subscriptions : "notifies"
+    visits ||--o| sms_subscriptions : "notifies"
     visits ||--o{ notification_deliveries : "queues"
     guests ||..o| guest_pin_attempts : "matched by normalized_phone (no foreign key)"
 
@@ -85,7 +86,8 @@ erDiagram
         uuid id PK
         uuid visit_id FK "cascade delete"
         text type "called | registration_closed | lottery_selected | ..."
-        text dedupe_key "unique per visit"
+        text dedupe_key "unique per visit and channel"
+        text channel "push | sms"
         text title
         text body
         text status "pending | sent | failed"
@@ -93,6 +95,13 @@ erDiagram
         text last_error
         timestamptz created_at
         timestamptz sent_at
+    }
+
+    sms_subscriptions {
+        uuid id PK
+        uuid visit_id FK "unique; cascade delete"
+        timestamptz consented_at
+        timestamptz created_at
     }
 
     guest_pin_attempts {

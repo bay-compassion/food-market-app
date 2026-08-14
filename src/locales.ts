@@ -56,6 +56,10 @@ export interface Translation {
 	notificationsError: string;
 	notificationsIosInstall: string;
 	notificationsUnsupported: string;
+	smsConsentLabel: string;
+	smsEnable: string;
+	smsEnabled: string;
+	smsError: string;
 	pin: string;
 	pinHint: string;
 	pinMismatch: string;
@@ -139,6 +143,11 @@ export const translations = {
 		notificationsIosInstall:
 			'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
 		notificationsUnsupported: 'Push notifications are not available on this device.',
+		smsConsentLabel:
+			'I agree to receive text message updates about this visit. Message and data rates may apply. Reply STOP to opt out.',
+		smsEnable: 'Text me updates about this visit',
+		smsEnabled: 'Text message updates are enabled for this visit.',
+		smsError: 'We could not enable text updates. Please try again.',
 		pin: 'PIN',
 		pinHint: '4–8 numbers',
 		pinMismatch: 'The PINs do not match.',
@@ -221,6 +230,11 @@ export const translations = {
 		notificationsIosInstall:
 			'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
 		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
+		smsConsentLabel:
+			'Acepto recibir actualizaciones por mensaje de texto sobre esta visita. Pueden aplicarse tarifas de mensajes y datos. Responda ALTO para cancelar.',
+		smsEnable: 'Envíenme actualizaciones por mensaje de texto sobre esta visita',
+		smsEnabled: 'Las actualizaciones por mensaje de texto están activadas para esta visita.',
+		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
 		pin: 'PIN',
 		pinHint: 'De 4 a 8 números',
 		pinMismatch: 'Los PIN no coinciden.',
@@ -302,6 +316,11 @@ export const translations = {
 		notificationsIosInstall:
 			'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
 		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
+		smsConsentLabel:
+			'موافقم که به‌روزرسانی‌های پیامکی درباره این مراجعه را دریافت کنم. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک، STOP را پاسخ دهید.',
+		smsEnable: 'درباره این مراجعه به من پیامک بده',
+		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه فعال شدند.',
+		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
 		pin: 'پین',
 		pinHint: '۴ تا ۸ رقم',
 		pinMismatch: 'پین‌ها یکسان نیستند.',
@@ -385,6 +404,11 @@ export const translations = {
 		notificationsIosInstall:
 			'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
 		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
+		smsConsentLabel:
+			'Sumasang-ayon akong tumanggap ng mga text message update tungkol sa pagbisitang ito. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-opt out.',
+		smsEnable: 'Padalhan ako ng text update tungkol sa pagbisitang ito',
+		smsEnabled: 'Naka-enable ang mga text message update para sa pagbisitang ito.',
+		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
 		pin: 'PIN',
 		pinHint: '4–8 numero',
 		pinMismatch: 'Hindi magkapareho ang mga PIN.',
@@ -467,6 +491,11 @@ export const translations = {
 		notificationsIosInstall:
 			'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
 		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
+		smsConsentLabel:
+			'Tôi đồng ý nhận thông báo qua tin nhắn văn bản về lượt ghé thăm này. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy.',
+		smsEnable: 'Nhắn tin cập nhật cho tôi về lượt ghé thăm này',
+		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé thăm này.',
+		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
 		pin: 'Mã PIN',
 		pinHint: '4–8 chữ số',
 		pinMismatch: 'Các mã PIN không khớp.',
@@ -547,6 +576,11 @@ export const translations = {
 		notificationsError: '无法启用通知。请重试。',
 		notificationsIosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
 		notificationsUnsupported: '此设备不支持推送通知。',
+		smsConsentLabel:
+			'我同意接收有关此次到访的短信更新。可能会产生短信和数据费用。回复STOP可取消订阅。',
+		smsEnable: '通过短信通知我此次到访的更新',
+		smsEnabled: '此次到访的短信更新已启用。',
+		smsError: '我们无法启用短信更新。请重试。',
 		pin: 'PIN',
 		pinHint: '4–8 位数字',
 		pinMismatch: '两次输入的 PIN 不一致。',
@@ -628,6 +662,11 @@ export const translations = {
 		notificationsIosInstall:
 			'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
 		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
+		smsConsentLabel:
+			'أوافق على تلقي تحديثات عبر الرسائل النصية حول هذه الزيارة. قد يتم تطبيق رسوم للرسائل والبيانات. أرسل STOP لإلغاء الاشتراك.',
+		smsEnable: 'أرسل لي تحديثات نصية حول هذه الزيارة',
+		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة.',
+		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
 		pin: 'الرمز السري',
 		pinHint: 'من 4 إلى 8 أرقام',
 		pinMismatch: 'الرمزان السريان غير متطابقين.',

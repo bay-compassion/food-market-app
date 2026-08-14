@@ -2,11 +2,9 @@ import { Config } from '@netlify/functions';
 import { and, eq, inArray, lte } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { marketEvents, notificationDeliveries, visits } from '../../db/schema.mjs';
-import {
-	deliverPendingNotifications,
-	notificationsEnabled,
-} from '../services/pushNotifications.mjs';
+import { marketEvents, visits } from '../../db/schema.mjs';
+import { deliverQueuedNotifications, queueNotification } from '../services/notifications.mjs';
+import { notificationsEnabled } from '../services/pushNotifications.mjs';
 
 export default async () => {
 	if (!notificationsEnabled()) {
@@ -46,22 +44,16 @@ export default async () => {
 				.select({ visitId: visits.id })
 				.from(visits)
 				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
-			if (registrations.length) {
-				await tx
-					.insert(notificationDeliveries)
-					.values(
-						registrations.map(({ visitId }) => ({
-							visitId,
-							type: 'registration_closed',
-							dedupeKey: 'registration_closed',
-						})),
-					)
-					.onConflictDoNothing();
-			}
+			await queueNotification(
+				tx,
+				registrations.map(({ visitId }) => visitId),
+				'registration_closed',
+				'registration_closed',
+			);
 		});
 	}
 
-	await deliverPendingNotifications({ limit: 250 });
+	await deliverQueuedNotifications({ limit: 250 });
 };
 
 export const config: Config = { schedule: '* * * * *' };
