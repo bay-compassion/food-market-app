@@ -1,4 +1,5 @@
-import { Config } from "@netlify/functions";
+import { Config } from '@netlify/functions';
+
 import { csvFilename, toCsv } from '../../src/services/reportCsv.js';
 import { isReportId, reportRangeBounds } from '../../src/services/reports.js';
 import { requirePermission } from '../lib/auth.mjs';

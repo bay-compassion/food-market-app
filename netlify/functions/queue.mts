@@ -1,4 +1,5 @@
-import { Config } from "@netlify/functions";
+import { Config } from '@netlify/functions';
+
 import { requirePermission } from '../lib/auth.mjs';
 import { getCurrentEvent } from '../services/marketSession.mjs';
 import { callNextVisits } from '../services/visitQueue.mjs';

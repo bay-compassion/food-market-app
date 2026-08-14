@@ -1,4 +1,5 @@
-import { Config } from "@netlify/functions";
+import { Config } from '@netlify/functions';
+
 import type { Permission } from '../../src/services/permissions.js';
 import { requirePermission } from '../lib/auth.mjs';
 import {
