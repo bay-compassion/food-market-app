@@ -264,7 +264,7 @@ describe('weightedShuffle', () => {
 });
 
 describe('runLottery', () => {
-	const identity = <T>(items: T[]) => items;
+	const identity = <T,>(items: T[]) => items;
 
 	/**
 	 * Pulls the interpolated values out of a Drizzle `sql` template, in order. Literal SQL is held

@@ -62,7 +62,7 @@ function markdownFiles(directory) {
 		}
 	}
 
-	return files.sort();
+	return files.sort((a, b) => a.localeCompare(b));
 }
 
 function parseStamp(contents) {
