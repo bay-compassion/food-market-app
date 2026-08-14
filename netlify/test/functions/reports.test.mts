@@ -58,7 +58,7 @@ describe('reports handler', () => {
 
 	it('returns the rows for a known report', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
-		queueResult([{ sessionDate: '2026-03-01T17:00:00.000Z', served: 48 }]);
+		queueResult({ rows: [{ sessionDate: '2026-03-01T17:00:00.000Z', served: 48 }] });
 
 		const response = await handler(request());
 
@@ -71,7 +71,7 @@ describe('reports handler', () => {
 
 	it('serves the visit export as a downloadable CSV', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
-		queueResult([{ guest_first_name: 'Ana', guest_last_name: 'Reyes' }]);
+		queueResult({ rows: [{ guest_first_name: 'Ana', guest_last_name: 'Reyes' }] });
 
 		const response = await handler(request('?view=export&from=2026-01-01&to=2026-08-08'));
 

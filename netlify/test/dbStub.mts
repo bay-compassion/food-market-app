@@ -9,6 +9,10 @@ import { vi } from 'vitest';
  * the next value pushed with `queueResult`. Tests queue results in the same order the handler
  * under test will request them.
  *
+ * `execute` is not chainable and resolves to whatever was queued. Queue the shape the real driver
+ * returns — a result object like `{ rows: [...] }`, not a bare array — or a test will pass against
+ * a shape production never produces.
+ *
  * This is a module-level singleton (not a factory) so that `vi.mock('../../db/index.mjs', () =>
  * ({ db }))` and test bodies can share the same `db` reference without hoisting issues — import
  * it directly rather than constructing a new one per test, and call `resetDbStub()` in
