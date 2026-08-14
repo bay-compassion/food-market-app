@@ -184,13 +184,14 @@ needs access to that dashboard, not just to the GitHub repository.
 
 A **secret** is any value that grants access to something and must not become public: an API key,
 a password, a private cryptographic key, a database connection string. This app has several —
-Auth0 credentials, VAPID keys for push notifications, a Netlify access token — documented (as
-placeholders) in `.env.example`.
+Auth0 credentials, VAPID keys for push notifications, Twilio credentials
+(`TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_MESSAGING_SERVICE_SID`) for SMS notifications, a
+Netlify access token — documented (as placeholders) in `.env.example`.
 
 If a secret leaks — committed to git, pasted into a chat, exposed in a support ticket — anyone who
-finds it can use it to impersonate this app: send push notifications as it, access guest data
-through it, or rack up costs on the services behind it, until it's noticed and revoked. Unlike a
-bug in the code, there's no "just deploy a fix" for a leaked secret — it has to be rotated
+finds it can use it to impersonate this app: send push notifications or texts as it, access guest
+data through it, or rack up costs on the services behind it, until it's noticed and revoked. Unlike
+a bug in the code, there's no "just deploy a fix" for a leaked secret — it has to be rotated
 (replaced with a new value everywhere it's used) and you generally have to assume anything it
 could reach was exposed in the meantime.
 

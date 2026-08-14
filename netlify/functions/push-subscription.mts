@@ -2,9 +2,10 @@ import { Config } from '@netlify/functions';
 import { and, eq, ne } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.mjs';
+import { pushSubscriptions } from '../../db/schema.mjs';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
-import { hashVisitToken } from '../services/guestCredentials.mjs';
+import { authorizedVisit } from '../lib/visitAuth.mjs';
+import { requeueNotification } from '../services/notifications.mjs';
 import {
 	deliverPendingNotifications,
 	pushConfiguration,
@@ -13,21 +14,6 @@ import {
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
-}
-
-async function authorizedVisit(request: Request) {
-	const authorization = request.headers.get('authorization');
-	const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
-	if (!token || token.length < 32 || token.length > 200) {
-		return null;
-	}
-	const [visit] = await db
-		.select({ id: visits.id, status: visits.status })
-		.from(visits)
-		.where(eq(visits.accessTokenHash, hashVisitToken(token)))
-		.limit(1);
-
-	return visit ?? null;
 }
 
 function parseSubscription(value: unknown) {
@@ -124,13 +110,7 @@ export default async (request: Request) => {
 	const currentNotification =
 		existingSubscription?.visitId === visit.id ? undefined : catchUpNotifications[visit.status];
 	if (currentNotification) {
-		await db
-			.insert(notificationDeliveries)
-			.values({ visitId: visit.id, type: currentNotification, dedupeKey: currentNotification })
-			.onConflictDoUpdate({
-				target: [notificationDeliveries.visitId, notificationDeliveries.dedupeKey],
-				set: { status: 'pending', attempts: 0, lastError: null, sentAt: null },
-			});
+		await requeueNotification(db, [visit.id], currentNotification, currentNotification, ['push']);
 		await deliverPendingNotifications({
 			visitIds: [visit.id],
 			types: [currentNotification],

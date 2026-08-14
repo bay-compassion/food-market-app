@@ -1,12 +1,7 @@
 import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import {
-	marketEvents,
-	notificationDeliveries,
-	registrationQuestions,
-	visits,
-} from '../../db/schema.mjs';
+import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
 import {
 	automaticSessionStatus,
 	canRunSessionCommand,
@@ -16,6 +11,7 @@ import {
 	type SessionMode,
 	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
+import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
 import { resolveOutstandingVisits } from './visitQueue.mjs';
 
@@ -69,18 +65,12 @@ export async function getCurrentEvent() {
 					.select({ visitId: visits.id })
 					.from(visits)
 					.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
-				if (registrations.length) {
-					await tx
-						.insert(notificationDeliveries)
-						.values(
-							registrations.map(({ visitId }) => ({
-								visitId,
-								type: 'registration_closed',
-								dedupeKey: 'registration_closed',
-							})),
-						)
-						.onConflictDoNothing();
-				}
+				await queueNotification(
+					tx,
+					registrations.map(({ visitId }) => visitId),
+					'registration_closed',
+					'registration_closed',
+				);
 			}
 
 			return changed;
@@ -526,18 +516,12 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 				.select({ visitId: visits.id })
 				.from(visits)
 				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
-			if (registrations.length) {
-				await tx
-					.insert(notificationDeliveries)
-					.values(
-						registrations.map(({ visitId }) => ({
-							visitId,
-							type: 'registration_closed',
-							dedupeKey: 'registration_closed',
-						})),
-					)
-					.onConflictDoNothing();
-			}
+			await queueNotification(
+				tx,
+				registrations.map(({ visitId }) => visitId),
+				'registration_closed',
+				'registration_closed',
+			);
 		}
 
 		return true;
@@ -608,31 +592,13 @@ export async function runLottery(
 					WHERE visit.id = positions.id
 				`);
 				if (notificationsEnabled()) {
-					await tx
-						.insert(notificationDeliveries)
-						.values(
-							selected.map((visitId) => ({
-								visitId,
-								type: 'lottery_selected',
-								dedupeKey: 'lottery_selected',
-							})),
-						)
-						.onConflictDoNothing();
+					await queueNotification(tx, selected, 'lottery_selected', 'lottery_selected');
 				}
 			}
 			if (notPlaced.length) {
 				await tx.update(visits).set({ status: 'not_placed' }).where(inArray(visits.id, notPlaced));
 				if (notificationsEnabled()) {
-					await tx
-						.insert(notificationDeliveries)
-						.values(
-							notPlaced.map((visitId) => ({
-								visitId,
-								type: 'lottery_not_selected',
-								dedupeKey: 'lottery_not_selected',
-							})),
-						)
-						.onConflictDoNothing();
+					await queueNotification(tx, notPlaced, 'lottery_not_selected', 'lottery_not_selected');
 				}
 			}
 		})

@@ -8,6 +8,7 @@ import AdminAuthView from './components/AdminAuthView.vue';
 import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
 import FormField from './components/FormField.vue';
+import NotificationOptIn from './components/NotificationOptIn.vue';
 import { languages, translations, type Locale } from './locales';
 import type { SessionStatus } from './services/sessionStateMachine';
 import type { VisitStatus } from './services/visitStateMachine';
@@ -43,9 +44,7 @@ type ActiveVisit = {
 	aheadOfYou: number | null;
 };
 const activeVisit = ref<ActiveVisit | null>(null);
-const pushPublicKey = ref<string | null>(null);
-const pushConfigured = ref(false);
-const notificationState = ref<'idle' | 'enabling' | 'enabled' | 'error'>('idle');
+const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
 const currentMarketEventId = ref<string | null>(null);
 const registrationAvailable = ref(true);
 const registrationQuestions = ref<
@@ -102,99 +101,6 @@ const queuePosition = computed(() =>
 const guestsAhead = computed(() =>
 	activeVisit.value?.status === 'waiting' ? activeVisit.value.aheadOfYou : null,
 );
-const isIos = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
-const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches === true;
-const browserSupportsPush =
-	'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-const notificationsDenied = computed(
-	() => browserSupportsPush && Notification.permission === 'denied',
-);
-const canEnableNotifications = computed(
-	() =>
-		pushConfigured.value &&
-		browserSupportsPush &&
-		!notificationsDenied.value &&
-		(!isIos || isStandalone),
-);
-
-function applicationServerKey(value: string) {
-	const padding = '='.repeat((4 - (value.length % 4)) % 4);
-	const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
-	const bytes = window.atob(base64);
-
-	return Uint8Array.from(bytes, (character) => character.charCodeAt(0));
-}
-
-async function savePushSubscription(subscription: PushSubscription, token: string) {
-	const response = await fetch('/api/push-subscription', {
-		method: 'POST',
-		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-		body: JSON.stringify(subscription.toJSON()),
-	});
-	if (!response.ok) {
-		throw new Error('subscription');
-	}
-	notificationState.value = 'enabled';
-}
-
-async function syncExistingPushSubscription(token: string) {
-	if (!browserSupportsPush || Notification.permission !== 'granted') {
-		return;
-	}
-	const registration = await navigator.serviceWorker.getRegistration('/');
-	const subscription = await registration?.pushManager.getSubscription();
-	if (subscription) {
-		await savePushSubscription(subscription, token);
-	}
-}
-
-async function loadPushConfiguration() {
-	try {
-		const response = await fetch('/api/push-subscription');
-		if (!response.ok) {
-			return;
-		}
-		const configuration = (await response.json()) as {
-			configured: boolean;
-			publicKey: string | null;
-		};
-		pushConfigured.value = configuration.configured;
-		pushPublicKey.value = configuration.publicKey;
-		if (browserSupportsPush && Notification.permission === 'granted') {
-			const token = window.localStorage.getItem(visitTokenStorageKey);
-			if (token) {
-				await syncExistingPushSubscription(token);
-			}
-		}
-	} catch {
-		// Notification opt-in remains hidden if configuration is unavailable.
-	}
-}
-
-async function enableNotifications() {
-	const token = window.localStorage.getItem(visitTokenStorageKey);
-	if (!token || !pushPublicKey.value || !canEnableNotifications.value) {
-		return;
-	}
-	notificationState.value = 'enabling';
-	try {
-		const registration = await navigator.serviceWorker.register('/service-worker.js');
-		const permission = await Notification.requestPermission();
-		if (permission !== 'granted') {
-			throw new Error('permission');
-		}
-		const subscription =
-			(await registration.pushManager.getSubscription()) ??
-			(await registration.pushManager.subscribe({
-				userVisibleOnly: true,
-				applicationServerKey: applicationServerKey(pushPublicKey.value),
-			}));
-		await savePushSubscription(subscription, token);
-	} catch {
-		notificationState.value = 'error';
-	}
-}
-
 function scheduleVisitRefresh() {
 	if (visitRefreshTimer) {
 		clearTimeout(visitRefreshTimer);
@@ -269,6 +175,7 @@ async function submitForm() {
 			visitToken: string;
 		};
 		window.localStorage.setItem(visitTokenStorageKey, registration.visitToken);
+		visitToken.value = registration.visitToken;
 		activeVisit.value = {
 			id: registration.id,
 			status: registration.status,
@@ -276,9 +183,6 @@ async function submitForm() {
 			aheadOfYou: null,
 		};
 		isSubmitted.value = true;
-		void syncExistingPushSubscription(registration.visitToken).catch(() => {
-			notificationState.value = 'error';
-		});
 		scheduleVisitRefresh();
 	} catch {
 		submissionError.value = t.value.submissionError;
@@ -298,6 +202,7 @@ async function loadActiveVisit() {
 		});
 		if (!response.ok) {
 			window.localStorage.removeItem(visitTokenStorageKey);
+			visitToken.value = null;
 			activeVisit.value = null;
 			isSubmitted.value = false;
 			scheduleVisitRefresh();
@@ -382,7 +287,7 @@ async function loadRegistration() {
 	}
 }
 
-onMounted(() => Promise.all([loadRegistration(), loadActiveVisit(), loadPushConfiguration()]));
+onMounted(() => Promise.all([loadRegistration(), loadActiveVisit()]));
 onBeforeUnmount(() => {
 	clearTimeout(registrationRefreshTimer);
 	clearTimeout(visitRefreshTimer);
@@ -469,27 +374,7 @@ onBeforeUnmount(() => {
 						</p>
 						<p>{{ t.successDescription }}</p>
 					</template>
-					<div v-if="pushConfigured" class="notification-option">
-						<p v-if="notificationState === 'enabled'" class="notification-enabled">
-							{{ t.notificationsEnabled }}
-						</p>
-						<p v-else-if="notificationsDenied">{{ t.notificationsDenied }}</p>
-						<template v-else-if="canEnableNotifications">
-							<AppButton
-								type="button"
-								variant="secondary"
-								:disabled="notificationState === 'enabling'"
-								@click="enableNotifications"
-							>
-								{{ t.notificationsEnable }}
-							</AppButton>
-							<p v-if="notificationState === 'error'" class="submission-error" role="alert">
-								{{ t.notificationsError }}
-							</p>
-						</template>
-						<p v-else-if="isIos && !isStandalone">{{ t.notificationsIosInstall }}</p>
-						<p v-else>{{ t.notificationsUnsupported }}</p>
-					</div>
+					<NotificationOptIn :visit-token="visitToken" :locale="locale" />
 					<p v-if="submissionError" class="submission-error" role="alert">
 						{{ submissionError }}
 					</p>
