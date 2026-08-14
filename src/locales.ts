@@ -65,6 +65,7 @@ export interface Translation {
 	pinMismatch: string;
 	phone: string;
 	privacy: string;
+	privacyPolicy: string;
 	registrationClosed: string;
 	registrationClosedDescription: string;
 	registrationType: string;
@@ -75,6 +76,7 @@ export interface Translation {
 	submissionError: string;
 	submit: string;
 	submitting: string;
+	termsAndConditions: string;
 	successDescription: string;
 	successTitle: string;
 	queuePositionLabel: string;
@@ -153,6 +155,7 @@ export const translations = {
 		pinMismatch: 'The PINs do not match.',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you today.',
+		privacyPolicy: 'Privacy Policy',
 		registrationClosed: 'Registration is closed',
 		registrationClosedDescription: 'Please check with a market team member for help.',
 		registrationType: 'Guest type',
@@ -163,6 +166,7 @@ export const translations = {
 		submissionError: 'We could not save your check-in. Please try again.',
 		submit: 'Join the queue',
 		submitting: 'Joining the queue…',
+		termsAndConditions: 'Terms & Conditions',
 		successDescription: 'We’ll let you know when it’s your turn. Thank you for being here.',
 		successTitle: 'You’re in the queue!',
 		queuePositionLabel: 'Your place in line',
@@ -240,6 +244,7 @@ export const translations = {
 		pinMismatch: 'Los PIN no coinciden.',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
+		privacyPolicy: 'Política de privacidad',
 		registrationClosed: 'El registro está cerrado',
 		registrationClosedDescription: 'Pida ayuda a un miembro del equipo del mercado.',
 		registrationType: 'Tipo de invitado',
@@ -250,6 +255,7 @@ export const translations = {
 		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
 		submit: 'Unirse a la fila',
 		submitting: 'Uniéndose a la fila…',
+		termsAndConditions: 'Términos y condiciones',
 		successDescription: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
 		successTitle: '¡Ya está en la fila!',
 		queuePositionLabel: 'Su lugar en la fila',
@@ -326,6 +332,7 @@ export const translations = {
 		pinMismatch: 'پین‌ها یکسان نیستند.',
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی امروز استفاده می‌شود.',
+		privacyPolicy: 'سیاست حفظ حریم خصوصی',
 		registrationClosed: 'ثبت‌نام بسته است',
 		registrationClosedDescription: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
 		registrationType: 'نوع مهمان',
@@ -336,6 +343,7 @@ export const translations = {
 		submissionError: 'ثبت‌نام شما ذخیره نشد. لطفاً دوباره تلاش کنید.',
 		submit: 'پیوستن به صف',
 		submitting: 'در حال پیوستن به صف…',
+		termsAndConditions: 'شرایط و ضوابط',
 		successDescription: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
 		successTitle: 'شما در صف هستید!',
 		queuePositionLabel: 'جایگاه شما در صف',
@@ -414,6 +422,7 @@ export const translations = {
 		pinMismatch: 'Hindi magkapareho ang mga PIN.',
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayo ngayon.',
+		privacyPolicy: 'Patakaran sa Privacy',
 		registrationClosed: 'Sarado ang pagpaparehistro',
 		registrationClosedDescription: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
 		registrationType: 'Uri ng bisita',
@@ -424,6 +433,7 @@ export const translations = {
 		submissionError: 'Hindi namin na-save ang inyong check-in. Pakisubukang muli.',
 		submit: 'Sumali sa pila',
 		submitting: 'Sumasali sa pila…',
+		termsAndConditions: 'Mga Tuntunin at Kundisyon',
 		successDescription: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
 		successTitle: 'Nasa pila na kayo!',
 		queuePositionLabel: 'Ang inyong puwesto sa pila',
@@ -501,6 +511,7 @@ export const translations = {
 		pinMismatch: 'Các mã PIN không khớp.',
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn hôm nay.',
+		privacyPolicy: 'Chính sách quyền riêng tư',
 		registrationClosed: 'Đã đóng đăng ký',
 		registrationClosedDescription: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
 		registrationType: 'Loại khách',
@@ -511,6 +522,7 @@ export const translations = {
 		submissionError: 'Chúng tôi không thể lưu đăng ký của bạn. Vui lòng thử lại.',
 		submit: 'Vào hàng đợi',
 		submitting: 'Đang vào hàng đợi…',
+		termsAndConditions: 'Điều khoản và Điều kiện',
 		successDescription: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
 		successTitle: 'Bạn đã vào hàng đợi!',
 		queuePositionLabel: 'Vị trí của bạn trong hàng',
@@ -586,6 +598,7 @@ export const translations = {
 		pinMismatch: '两次输入的 PIN 不一致。',
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们今天为您提供服务。',
+		privacyPolicy: '隐私政策',
 		registrationClosed: '登记已关闭',
 		registrationClosedDescription: '请向市场工作人员寻求帮助。',
 		registrationType: '访客类型',
@@ -596,6 +609,7 @@ export const translations = {
 		submissionError: '无法保存您的登记信息。请重试。',
 		submit: '加入队列',
 		submitting: '正在加入队列…',
+		termsAndConditions: '条款和条件',
 		successDescription: '轮到您时我们会通知您。感谢您的到来。',
 		successTitle: '您已加入队列！',
 		queuePositionLabel: '您的排队位置',
@@ -672,6 +686,7 @@ export const translations = {
 		pinMismatch: 'الرمزان السريان غير متطابقين.',
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك اليوم.',
+		privacyPolicy: 'سياسة الخصوصية',
 		registrationClosed: 'التسجيل مغلق',
 		registrationClosedDescription: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
 		registrationType: 'نوع الضيف',
@@ -682,6 +697,7 @@ export const translations = {
 		submissionError: 'تعذر حفظ تسجيلك. يرجى المحاولة مرة أخرى.',
 		submit: 'انضم إلى قائمة الانتظار',
 		submitting: 'جارٍ الانضمام إلى قائمة الانتظار…',
+		termsAndConditions: 'الشروط والأحكام',
 		successDescription: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
 		successTitle: 'أنت الآن في قائمة الانتظار!',
 		queuePositionLabel: 'مكانك في الصف',

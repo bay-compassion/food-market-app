@@ -8,6 +8,9 @@ import AdminAuthView from './components/AdminAuthView.vue';
 import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
 import FormField from './components/FormField.vue';
+import LegalDocumentView from './components/legal/LegalDocumentView.vue';
+import privacyMarkdown from './components/legal/privacy.md?raw';
+import termsMarkdown from './components/legal/terms.md?raw';
 import NotificationOptIn from './components/NotificationOptIn.vue';
 import { languages, translations, type Locale } from './locales';
 import type { SessionStatus } from './services/sessionStateMachine';
@@ -113,6 +116,8 @@ const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
 const isAdmin = computed(() => route.name === 'admin');
+const isPrivacy = computed(() => route.name === 'privacy');
+const isTerms = computed(() => route.name === 'terms');
 const adminView = computed<AdminView>(() =>
 	isAdminView(route.params.view) ? route.params.view : 'current-session',
 );
@@ -124,6 +129,14 @@ function showGuest() {
 
 function toggleMode() {
 	void router.push({ name: isAdmin.value ? 'guest' : 'admin' });
+}
+
+function showPrivacy() {
+	void router.push({ name: 'privacy' });
+}
+
+function showTerms() {
+	void router.push({ name: 'terms' });
 }
 
 function navigateAdmin(view: AdminView) {
@@ -326,7 +339,19 @@ onBeforeUnmount(() => {
 		</header>
 		<p v-if="authenticationError" class="auth-banner" role="alert">{{ t.authError }}</p>
 
-		<section v-if="!isAdmin" class="guest-layout">
+		<LegalDocumentView
+			v-if="isPrivacy"
+			:back-label="t.backToGuest"
+			:markdown="privacyMarkdown"
+			@back="showGuest"
+		/>
+		<LegalDocumentView
+			v-else-if="isTerms"
+			:back-label="t.backToGuest"
+			:markdown="termsMarkdown"
+			@back="showGuest"
+		/>
+		<section v-else-if="!isAdmin" class="guest-layout">
 			<div v-if="!isReturningVisitor" class="hero">
 				<EyebrowLabel>{{ t.compassionFood }}</EyebrowLabel>
 				<h1>{{ t.welcome }}</h1>
@@ -524,6 +549,12 @@ onBeforeUnmount(() => {
 		</section>
 
 		<AdminAuthView v-else :locale="locale" :view="adminView" @navigate="navigateAdmin" />
+
+		<footer v-if="!isPrivacy && !isTerms" class="app-footer">
+			<a href="/privacy" @click.prevent="showPrivacy">{{ t.privacyPolicy }}</a>
+			<span class="app-footer-divider" aria-hidden="true">·</span>
+			<a href="/terms" @click.prevent="showTerms">{{ t.termsAndConditions }}</a>
+		</footer>
 	</main>
 </template>
 
@@ -940,6 +971,20 @@ form {
 	color: var(--color-on-brand);
 	background: var(--color-brand);
 	font-weight: 700;
+}
+.app-footer {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	padding: 20px 20px 32px;
+	font-size: 13px;
+}
+.app-footer a {
+	color: var(--color-text-subtle);
+	text-decoration: underline;
+}
+.app-footer-divider {
+	color: var(--color-text-subtle);
 }
 .sr-only {
 	position: absolute;
