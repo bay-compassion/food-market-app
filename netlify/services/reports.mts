@@ -191,10 +191,15 @@ const reportQueries: Record<ReportId, (range: ReportRange) => SQL> = {
 	'service-timing': serviceTiming,
 };
 
+/**
+ * `db.execute` resolves to the driver's result object — `{ rows, fields, rowCount, ... }` — not to
+ * the rows themselves. Its type degrades to `any` here, so the rows are annotated rather than
+ * inferred; without that, reading the result wrongly compiles and only fails once it runs.
+ */
 export async function runReport(id: ReportId, range: ReportRange): Promise<ReportRow[]> {
-	const rows = await db.execute<ReportRow>(reportQueries[id](range));
+	const { rows }: { rows: ReportRow[] } = await db.execute<ReportRow>(reportQueries[id](range));
 
-	return [...rows];
+	return rows;
 }
 
 /** Column headings for the raw export. These are database column names, not prose to translate. */
@@ -225,7 +230,7 @@ export const visitExportHeaders = [
  * own deliberate action rather than bundling it with a report download.
  */
 export async function runVisitExport({ start, end }: ReportRange) {
-	const rows = await db.execute<Record<string, unknown>>(sql`
+	const { rows }: { rows: Record<string, unknown>[] } = await db.execute(sql`
 		SELECT
 			e.registration_opens_at AS "session_opens_at",
 			e.capacity AS "session_capacity",
@@ -251,5 +256,5 @@ export async function runVisitExport({ start, end }: ReportRange) {
 		ORDER BY e.registration_opens_at DESC, v.queue_position ASC NULLS LAST, v.created_at ASC
 	`);
 
-	return [...rows].map((row) => visitExportHeaders.map((header) => row[header] as string | null));
+	return rows.map((row) => visitExportHeaders.map((header) => row[header] as string | null));
 }

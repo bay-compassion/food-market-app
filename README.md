@@ -77,6 +77,23 @@ npm run dev
 
 This Vite server does not run the `/api/guests` Netlify Function.
 
+### Fake data
+
+A fresh local database is empty, so the queue and the reports have nothing to show. With
+`netlify dev` running in another terminal, fill it with a plausible history:
+
+```bash
+npm run seed                                # 12 past weekly sessions, 120 guests
+npm run seed -- --reset --open-session      # start clean, and open a session for today
+npm run seed -- --help                      # every option
+```
+
+The history includes the awkward cases worth testing against: oversubscribed sessions, guests a
+worker added by hand, no-shows, cancellations, and visits served without a recorded time. Every
+seeded guest has a `(555)` phone number and the PIN `1234`, so the returning-guest sign-in can be
+tried by hand. The script refuses to touch a database that is not on localhost unless you pass
+`--force`.
+
 ## Checks
 
 Run these commands from the repository root before opening a pull request:
