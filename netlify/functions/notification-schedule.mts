@@ -1,11 +1,11 @@
 import { and, eq, inArray, lte } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { marketEvents, notificationDeliveries, visits } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { marketEvents, notificationDeliveries, visits } from '../../db/schema.mjs';
 import {
 	deliverPendingNotifications,
 	notificationsEnabled,
-} from '../services/pushNotifications.js';
+} from '../services/pushNotifications.mjs';
 
 export default async () => {
 	if (!notificationsEnabled()) {

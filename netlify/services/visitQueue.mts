@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { notificationDeliveries, visits } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { notificationDeliveries, visits } from '../../db/schema.mjs';
 import type { QueuePlacement } from '../../src/services/guestAdmission.js';
 import {
 	canRunVisitCommand,
@@ -9,7 +9,7 @@ import {
 	visitCommandTarget,
 	type VisitCommand,
 } from '../../src/services/visitStateMachine.js';
-import { deliverPendingNotifications, notificationsEnabled } from './pushNotifications.js';
+import { deliverPendingNotifications, notificationsEnabled } from './pushNotifications.mjs';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 

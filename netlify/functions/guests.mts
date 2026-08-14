@@ -1,11 +1,11 @@
 import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
-import { db } from '../../db/index.js';
-import { guests, marketEvents, visits } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { guests, marketEvents, visits } from '../../db/schema.mjs';
 import { isVisitCommand } from '../../src/services/visitStateMachine.js';
-import { requirePermission } from '../lib/auth.js';
-import { parseSubmission, registerGuest } from '../services/guestRegistration.js';
-import { runVisitCommand } from '../services/visitQueue.js';
+import { requirePermission } from '../lib/auth.mjs';
+import { parseSubmission, registerGuest } from '../services/guestRegistration.mjs';
+import { runVisitCommand } from '../services/visitQueue.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });

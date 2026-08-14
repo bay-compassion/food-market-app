@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../test/dbStub.js';
+import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.js', () => ({ db }));
-vi.mock('./pushNotifications.js', () => ({ notificationsEnabled: vi.fn(() => true) }));
+vi.mock('./pushNotifications.mjs', () => ({ notificationsEnabled: vi.fn(() => true) }));
 
 import {
 	closeRegistration,
@@ -20,8 +20,8 @@ import {
 	updateRegistration,
 	weightedShuffle,
 	type MarketEventRow,
-} from './marketSession.js';
-import { notificationsEnabled } from './pushNotifications.js';
+} from './marketSession.mjs';
+import { notificationsEnabled } from './pushNotifications.mjs';
 
 afterEach(() => {
 	resetDbStub();

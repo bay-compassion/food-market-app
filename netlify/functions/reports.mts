@@ -1,7 +1,7 @@
 import { csvFilename, toCsv } from '../../src/services/reportCsv.js';
 import { isReportId, reportRangeBounds } from '../../src/services/reports.js';
-import { requirePermission } from '../lib/auth.js';
-import { runReport, runVisitExport, visitExportHeaders } from '../services/reports.js';
+import { requirePermission } from '../lib/auth.mjs';
+import { runReport, runVisitExport, visitExportHeaders } from '../services/reports.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });

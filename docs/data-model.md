@@ -1,9 +1,9 @@
-<!-- diagram-sources: db/schema.ts=bc5b0348f01d -->
+<!-- diagram-sources: db/schema.mts=bc5b0348f01d -->
 
 # Database structure
 
 A map of every table this app stores data in, and how they relate. The tables are defined in
-[`db/schema.ts`](../db/schema.ts); the migrations that created them are in
+[`../db/schema.mts`](../db/schema.mts); the migrations that created them are in
 `netlify/database/migrations/` (see [`migrations.md`](migrations.md)).
 
 The diagram is written in [Mermaid](https://mermaid.js.org/), a plain-text diagram format GitHub

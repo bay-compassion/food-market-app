@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../dbStub.js';
+import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.js', () => ({ db }));
-vi.mock('../../lib/auth.js', () => ({ requirePermission: vi.fn() }));
+vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
-import handler from '../../functions/market.js';
-import { requirePermission } from '../../lib/auth.js';
+import handler from '../../functions/market.mjs';
+import { requirePermission } from '../../lib/auth.mjs';
 
 function request(method: string, options: { path?: string; body?: unknown } = {}) {
 	return new Request(`https://example.com/api/market${options.path ?? ''}`, {

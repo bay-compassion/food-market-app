@@ -9,7 +9,7 @@ import {
 	issueVisitToken,
 	normalizePhone,
 	verifyPin,
-} from './guestCredentials';
+} from './guestCredentials.mjs';
 
 describe('guest credentials', () => {
 	it('normalizes North American phone numbers for matching', () => {

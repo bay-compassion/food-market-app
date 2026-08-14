@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { db, queueResult, resetDbStub } from '../test/dbStub.js';
+import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.js', () => ({ db }));
-vi.mock('./guestCredentials.js', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('./guestCredentials.js')>();
+vi.mock('./guestCredentials.mjs', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('./guestCredentials.mjs')>();
 
 	return { ...actual, authenticateGuest: vi.fn() };
 });
 
-import { authenticateGuest } from './guestCredentials.js';
-import { parseSubmission, registerGuest } from './guestRegistration.js';
+import { authenticateGuest } from './guestCredentials.mjs';
+import { parseSubmission, registerGuest } from './guestRegistration.mjs';
 
 afterEach(() => {
 	resetDbStub();

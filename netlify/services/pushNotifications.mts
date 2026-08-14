@@ -1,8 +1,8 @@
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import webPush from 'web-push';
 
-import { db } from '../../db/index.js';
-import { guests, notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.js';
+import { db } from '../../db/index.mjs';
+import { guests, notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.mjs';
 import { translations, type Locale } from '../../src/locales.js';
 
 export const notificationTypes = [

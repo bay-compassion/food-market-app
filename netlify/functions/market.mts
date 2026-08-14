@@ -1,5 +1,5 @@
 import type { Permission } from '../../src/services/permissions.js';
-import { requirePermission } from '../lib/auth.js';
+import { requirePermission } from '../lib/auth.mjs';
 import {
 	closeRegistration,
 	closeSession,
@@ -17,7 +17,7 @@ import {
 	updateRegistration,
 	type ActionResult,
 	type MarketEventRow,
-} from '../services/marketSession.js';
+} from '../services/marketSession.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });

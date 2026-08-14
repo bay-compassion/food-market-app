@@ -1,6 +1,6 @@
-import { requirePermission } from '../lib/auth.js';
-import { getCurrentEvent } from '../services/marketSession.js';
-import { callNextVisits } from '../services/visitQueue.js';
+import { requirePermission } from '../lib/auth.mjs';
+import { getCurrentEvent } from '../services/marketSession.mjs';
+import { callNextVisits } from '../services/visitQueue.mjs';
 
 const maximumBatchSize = 50;
 
