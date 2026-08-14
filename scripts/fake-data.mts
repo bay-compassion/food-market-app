@@ -11,6 +11,7 @@
  */
 
 import type { Locale } from '../src/locales.js';
+import type { ServiceProgress } from '../src/services/demoScenario.js';
 import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../src/services/visitStateMachine.js';
 
@@ -215,7 +216,7 @@ function calendarDay(date: Date) {
 	return `${date.getFullYear()}-${month}-${day}`;
 }
 
-function buildGuests(options: FakeDataOptions, random: Random) {
+function buildGuests(options: { guests: number; now: Date }, random: Random) {
 	return Array.from({ length: options.guests }, (unused, index) => {
 		const locale = pickShare(random, localeShares);
 		const names = namesByLocale[locale];
@@ -317,16 +318,22 @@ function resolvePlacedVisit(serviceStartsAt: Date, position: number, random: Ran
 	};
 }
 
+type PlacementOutcome = { status: VisitStatus; calledAt: Date | null; servedAt: Date | null };
+
 /**
- * One past session's worth of visits: who signed up, who the draw placed, and how their visit
- * ended. Walk-ins are added by a worker during service, so they hold the first queue positions and
- * the draw fills what capacity is left behind them — the same order `runLottery` produces.
+ * The shape of a session where the lottery has run: who signed up, who the draw placed, and how
+ * their visit ended. Walk-ins are added by a worker during service, so they hold the first queue
+ * positions and the draw fills what capacity is left behind them — the same order `runLottery`
+ * produces. `resolveOutcome` decides what happens to a placed visit, and is the only thing that
+ * differs between a finished session (`buildSessionVisits`) and one still mid-service
+ * (`buildInProgressVisits`).
  */
-function buildSessionVisits(
+function buildDrawnVisits(
 	session: PlannedSession,
 	serviceStartsAt: Date,
 	questions: PlannedQuestion[],
 	attendees: PlannedGuest[],
+	resolveOutcome: (position: number, placedCount: number, random: Random) => PlacementOutcome,
 	random: Random,
 ) {
 	const walkInCount = Math.round(attendees.length * 0.06);
@@ -348,7 +355,7 @@ function buildSessionVisits(
 	const placedCount = Math.max(0, session.capacity - walkIns.length);
 
 	for (const [index, guest] of walkIns.entries()) {
-		const outcome = resolvePlacedVisit(serviceStartsAt, index, random);
+		const outcome = resolveOutcome(index, placedCount, random);
 		visits.push({
 			id: crypto.randomUUID(),
 			marketEventId: session.id,
@@ -368,7 +375,7 @@ function buildSessionVisits(
 		const placed = index < placedCount;
 		const position = walkIns.length + index + 1;
 		const outcome = placed
-			? resolvePlacedVisit(serviceStartsAt, position, random)
+			? resolveOutcome(position, placedCount, random)
 			: { status: 'not_placed' as VisitStatus, calledAt: null, servedAt: null };
 		visits.push({
 			id: crypto.randomUUID(),
@@ -404,6 +411,73 @@ function buildSessionVisits(
 	}
 
 	return visits;
+}
+
+/** One past session's worth of visits, fully resolved: nothing is left `waiting` or `called`. */
+function buildSessionVisits(
+	session: PlannedSession,
+	serviceStartsAt: Date,
+	questions: PlannedQuestion[],
+	attendees: PlannedGuest[],
+	random: Random,
+) {
+	return buildDrawnVisits(
+		session,
+		serviceStartsAt,
+		questions,
+		attendees,
+		(position, unusedPlacedCount, rand) => resolvePlacedVisit(serviceStartsAt, position, rand),
+		random,
+	);
+}
+
+/**
+ * Decides how a placed guest's visit stands partway through service. Queue positions before
+ * `progress * placedCount` have already been resolved, same as a finished session; a small band
+ * right at that point is `called` — guests currently at the table; everyone after is still
+ * `waiting`. Mirrors `resolvePlacedVisit`'s timing so the two blend together at the boundary.
+ */
+function resolveInProgressVisit(
+	serviceStartsAt: Date,
+	position: number,
+	placedCount: number,
+	progress: number,
+	random: Random,
+): PlacementOutcome {
+	const threshold = progress * placedCount;
+	if (position < threshold) {
+		return resolvePlacedVisit(serviceStartsAt, position, random);
+	}
+	const calledBandWidth = Math.max(1, Math.round(placedCount * 0.05));
+	if (position < threshold + calledBandWidth) {
+		return {
+			status: 'called',
+			calledAt: minutesAfter(serviceStartsAt, position * 1.6 + integerBetween(random, 0, 4)),
+			servedAt: null,
+		};
+	}
+
+	return { status: 'waiting', calledAt: null, servedAt: null };
+}
+
+/** A session mid-service: the queue has drained up to `progress`, and the rest are still waiting. */
+function buildInProgressVisits(
+	session: PlannedSession,
+	serviceStartsAt: Date,
+	questions: PlannedQuestion[],
+	attendees: PlannedGuest[],
+	progress: number,
+	random: Random,
+) {
+	return buildDrawnVisits(
+		session,
+		serviceStartsAt,
+		questions,
+		attendees,
+		(position, placedCount, rand) =>
+			resolveInProgressVisit(serviceStartsAt, position, placedCount, progress, rand),
+		random,
+	);
 }
 
 /** Today's session, still taking sign-ups: everyone is `registered` and nobody has a position. */
@@ -517,4 +591,110 @@ export function buildFakeData(options: FakeDataOptions): FakeData {
 	}
 
 	return { guests, sessions, questions, visits };
+}
+
+export type ScenarioOptions = {
+	/** Where on the session lifecycle to stage the scenario. */
+	stage: SessionStatus;
+	/** How far through service the queue is. Only read when `stage` is `service_started`. */
+	serviceProgress?: ServiceProgress;
+	/** Ignored (treated as 0) for `draft` and `scheduled` — nobody can have registered yet. */
+	guests: number;
+	capacity: number;
+	seed: number;
+	now: Date;
+};
+
+const progressFractions: Record<ServiceProgress, number> = {
+	just_started: 0.1,
+	halfway: 0.5,
+	nearly_done: 0.9,
+};
+
+/**
+ * Timing anchored relative to `now`, unlike the fixed clock hours `buildSession` uses for weekly
+ * history — so a loaded scenario looks fresh regardless of what time of day it is loaded.
+ */
+function scenarioTiming(stage: SessionStatus, now: Date) {
+	const serviceStartsAt = minutesAfter(now, -80);
+
+	switch (stage) {
+		case 'draft':
+			// Not committed to a time yet, but the settings form needs something to show.
+			return {
+				registrationOpensAt: minutesAfter(now, 24 * 60),
+				registrationClosesAt: minutesAfter(now, 24 * 60 + 120),
+				serviceStartsAt,
+			};
+		case 'scheduled':
+			return {
+				registrationOpensAt: minutesAfter(now, 45),
+				registrationClosesAt: minutesAfter(now, 45 + 120),
+				serviceStartsAt,
+			};
+		case 'registration_open':
+			return {
+				registrationOpensAt: minutesAfter(now, -30),
+				registrationClosesAt: minutesAfter(now, 60),
+				serviceStartsAt,
+			};
+		default:
+			// registration_closed, service_started, ended: registration is over either way.
+			return {
+				registrationOpensAt: minutesAfter(now, -180),
+				registrationClosesAt: minutesAfter(now, -90),
+				serviceStartsAt,
+			};
+	}
+}
+
+/**
+ * One session staged at a chosen point on the lifecycle, with guests and visits that look like
+ * that exact moment — what the dev-mode data loader (`netlify/services/demoScenario.mts`) uses to
+ * replace whatever session is currently live, for demos and screenshots. Unlike `buildFakeData`'s
+ * multi-week history, this always produces exactly one session.
+ */
+export function buildScenario(options: ScenarioOptions): FakeData {
+	const { stage, now, capacity } = options;
+	const random = createRandom(options.seed);
+	const guestCount = stage === 'draft' || stage === 'scheduled' ? 0 : options.guests;
+	const guests = buildGuests({ guests: guestCount, now }, random);
+	const { registrationOpensAt, registrationClosesAt, serviceStartsAt } = scenarioTiming(stage, now);
+
+	const session: PlannedSession = {
+		id: crypto.randomUUID(),
+		registrationOpensAt,
+		registrationClosesAt,
+		capacity,
+		sessionMode: 'scheduled',
+		status: stage,
+		createdAt: daysBefore(registrationOpensAt, 2),
+	};
+	const questions = buildQuestions(session);
+
+	let visits: PlannedVisit[] = [];
+	if (stage === 'registration_open') {
+		visits = buildOpenSessionVisits(session, questions, guests, now, random);
+	} else if (stage === 'registration_closed') {
+		visits = buildOpenSessionVisits(session, questions, guests, registrationClosesAt, random);
+	} else if (stage === 'service_started') {
+		const progress = progressFractions[options.serviceProgress ?? 'halfway'];
+		visits = buildInProgressVisits(session, serviceStartsAt, questions, guests, progress, random);
+	} else if (stage === 'ended') {
+		visits = buildSessionVisits(session, serviceStartsAt, questions, guests, random);
+	}
+
+	// Every guest exists from just before their one visit here — or, for anyone the lottery shut
+	// out entirely, some plausible time before the scenario starts.
+	for (const guest of guests) {
+		const visit = visits.find((candidate) => candidate.guestId === guest.id);
+		if (visit) {
+			visit.isFirstVisit = true;
+			guest.createdAt = minutesAfter(visit.createdAt, -2);
+		} else {
+			guest.createdAt = daysBefore(now, integerBetween(random, 30, 400));
+		}
+	}
+
+	return { guests, sessions: [session], questions, visits };
 }

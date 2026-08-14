@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { adminTranslations } from '../adminLocales';
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
 import { translations, type Locale } from '../locales';
+import type { ServiceProgress } from '../services/demoScenario';
 import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
 import { lotteryWeightFor } from '../services/lotteryWeight';
 import type { Permission } from '../services/permissions';
@@ -17,6 +18,7 @@ import {
 	type VisitCommand,
 	type VisitStatus,
 } from '../services/visitStateMachine';
+import DevModeView from './admin/DevModeView.vue';
 import GuestDatabaseView from './admin/GuestDatabaseView.vue';
 import QuestionBankView from './admin/QuestionBankView.vue';
 import QueueView from './admin/QueueView.vue';
@@ -98,6 +100,7 @@ const viewLabels = computed<Record<AdminView, string>>(() => ({
 	'guest-database': t.value.guestDatabase,
 	'session-history': t.value.historySessions,
 	reports: t.value.reports,
+	'dev-mode': t.value.devMode,
 }));
 const navigation = computed<{ id: AdminView; label: string }[]>(() =>
 	viewsFor(granted.value).map((id) => ({ id, label: viewLabels.value[id] })),
@@ -593,6 +596,36 @@ async function sendBroadcast() {
 	}
 }
 
+/**
+ * Replaces the current session with fake data staged at `stage`, for demos and screenshots. This
+ * is destructive to whatever session is currently live, so it is confirmed the same way the other
+ * session-lifecycle actions in `runMarketAction` are.
+ */
+async function loadScenario(stage: SessionStatus, serviceProgress?: ServiceProgress) {
+	if (!window.confirm(t.value.devModeConfirm)) {
+		return;
+	}
+	isBusy.value = true;
+	feedback.value = '';
+	try {
+		const response = await fetch('/api/demo-data', {
+			method: 'POST',
+			headers: await authHeaders(true),
+			body: JSON.stringify({ stage, serviceProgress }),
+		});
+		if (!response.ok) {
+			throw new Error('demo-data');
+		}
+		applyOverview((await response.json()) as Overview);
+		await Promise.all([loadGuests(), loadSessionGuests(), loadHistory()]);
+		feedback.value = t.value.devModeLoaded;
+	} catch {
+		feedback.value = t.value.error;
+	} finally {
+		isBusy.value = false;
+	}
+}
+
 setDefaultSettings();
 onMounted(loadDashboard);
 onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
@@ -709,6 +742,14 @@ onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 				@search="loadGuests"
 				@run="runGuestCommand"
 				@add-guest="addManualGuest"
+			/>
+
+			<DevModeView
+				v-else-if="activeView === 'dev-mode'"
+				:locale="locale"
+				:get-access-token="getAccessToken"
+				:busy="isBusy"
+				@load="loadScenario"
 			/>
 
 			<SessionHistoryView

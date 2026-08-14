@@ -107,4 +107,13 @@ describe('admin navigation by permission', () => {
 		const urls = vi.mocked(fetch).mock.calls.map((call) => String(call[0]));
 		expect(urls.some((url) => url.startsWith('/api/guests'))).toBe(false);
 	});
+
+	// manage:demo-data is deliberately not part of `worker` or `admin` — see docs/roles.md — so an
+	// administrator holding the other four permissions should not see it either.
+	it('offers the dev-mode screen only to whoever holds manage:demo-data', async () => {
+		const wrapper = mountDashboard(['manage:demo-data']);
+		await flushPromises();
+
+		expect(navigationLabels(wrapper)).toEqual([t.devMode]);
+	});
 });

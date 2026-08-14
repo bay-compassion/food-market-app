@@ -19,6 +19,12 @@ export const permissions = [
 	'read:reports',
 	/** Download the visit export, which carries guest names and phone numbers. */
 	'export:guest-data',
+	/**
+	 * Replace the current session with fake data staged at a chosen lifecycle point, for demos and
+	 * screenshots. Meant for its own role, granted to nobody by default — see `docs/roles.md`. Even
+	 * granted, it does nothing unless the deploy also sets `ENABLE_DEMO_DATA_TOOLS`.
+	 */
+	'manage:demo-data',
 ] as const;
 
 export type Permission = (typeof permissions)[number];

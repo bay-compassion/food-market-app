@@ -147,6 +147,28 @@ export interface AdminTranslation {
 	textAnswer: string;
 	updateCapacity: string;
 	waiting: string;
+	/** The dev-mode data loader: stages the current session at a chosen point on its lifecycle. */
+	devMode: string;
+	devModeIntro: string;
+	devModeDisabled: string;
+	devModeConfirm: string;
+	devModeLoad: string;
+	devModeLoaded: string;
+	devStageDraftTitle: string;
+	devStageDraftDescription: string;
+	devStageScheduledTitle: string;
+	devStageScheduledDescription: string;
+	devStageRegistrationOpenTitle: string;
+	devStageRegistrationOpenDescription: string;
+	devStageRegistrationClosedTitle: string;
+	devStageRegistrationClosedDescription: string;
+	devStageServiceStartedTitle: string;
+	devStageServiceStartedDescription: string;
+	devStageEndedTitle: string;
+	devStageEndedDescription: string;
+	devProgressJustStarted: string;
+	devProgressHalfway: string;
+	devProgressNearlyDone: string;
 }
 
 export const adminTranslations = {
@@ -350,6 +372,28 @@ export const adminTranslations = {
 		textAnswer: 'Written answer',
 		updateCapacity: 'Update capacity',
 		waiting: 'Waiting',
+		devMode: 'Dev Mode',
+		devModeIntro:
+			'Load fake guests and visits so the app looks like a real session at a chosen moment — for demos and screenshots. This replaces whatever session is currently live.',
+		devModeDisabled: 'Demo data tools are not turned on for this deploy.',
+		devModeConfirm: 'This replaces the current session with fake demo data. Continue?',
+		devModeLoad: 'Load',
+		devModeLoaded: 'Demo data loaded.',
+		devStageDraftTitle: 'Draft',
+		devStageDraftDescription: 'Settings saved, but nothing is public yet.',
+		devStageScheduledTitle: 'Scheduled',
+		devStageScheduledDescription: 'A registration window is set to open on its own.',
+		devStageRegistrationOpenTitle: 'Registration open',
+		devStageRegistrationOpenDescription: 'Guests are signing up right now.',
+		devStageRegistrationClosedTitle: 'Registration closed',
+		devStageRegistrationClosedDescription: 'Sign-ups are over, and the lottery has not run yet.',
+		devStageServiceStartedTitle: 'Service in progress',
+		devStageServiceStartedDescription: 'The lottery has run and the queue is live.',
+		devStageEndedTitle: 'Ended',
+		devStageEndedDescription: 'The session is finished and moved to history.',
+		devProgressJustStarted: 'Just started',
+		devProgressHalfway: 'Halfway',
+		devProgressNearlyDone: 'Nearly done',
 	},
 	es: {
 		adHocSession: 'Comenzar cuando esté listo',
@@ -553,6 +597,32 @@ export const adminTranslations = {
 		textAnswer: 'Respuesta escrita',
 		updateCapacity: 'Actualizar capacidad',
 		waiting: 'En espera',
+		devMode: 'Modo desarrollador',
+		devModeIntro:
+			'Carga invitados y visitas ficticios para que la aplicación se vea como una sesión real en un momento elegido, para demostraciones y capturas de pantalla. Esto reemplaza la sesión que esté activa en este momento.',
+		devModeDisabled:
+			'Las herramientas de datos de demostración no están activadas en este entorno.',
+		devModeConfirm:
+			'Esto reemplaza la sesión actual con datos de demostración ficticios. ¿Continuar?',
+		devModeLoad: 'Cargar',
+		devModeLoaded: 'Datos de demostración cargados.',
+		devStageDraftTitle: 'Borrador',
+		devStageDraftDescription: 'La configuración está guardada, pero nada es público todavía.',
+		devStageScheduledTitle: 'Programada',
+		devStageScheduledDescription:
+			'Hay una ventana de registro configurada para abrirse por sí sola.',
+		devStageRegistrationOpenTitle: 'Registro abierto',
+		devStageRegistrationOpenDescription: 'Los invitados se están registrando en este momento.',
+		devStageRegistrationClosedTitle: 'Registro cerrado',
+		devStageRegistrationClosedDescription:
+			'El registro terminó y el sorteo todavía no se ha realizado.',
+		devStageServiceStartedTitle: 'Servicio en curso',
+		devStageServiceStartedDescription: 'El sorteo ya se realizó y la fila está activa.',
+		devStageEndedTitle: 'Finalizada',
+		devStageEndedDescription: 'La sesión terminó y pasó al historial.',
+		devProgressJustStarted: 'Recién comenzado',
+		devProgressHalfway: 'A la mitad',
+		devProgressNearlyDone: 'Casi terminado',
 	},
 	fa: {
 		adHocSession: 'شروع هنگام آمادگی',
@@ -752,6 +822,28 @@ export const adminTranslations = {
 		textAnswer: 'پاسخ نوشتاری',
 		updateCapacity: 'به‌روزرسانی ظرفیت',
 		waiting: 'در انتظار',
+		devMode: 'حالت توسعه',
+		devModeIntro:
+			'مهمانان و مراجعات ساختگی را بارگذاری کنید تا برنامه در لحظه‌ای انتخابی شبیه یک جلسهٔ واقعی به نظر برسد — برای نمایش و گرفتن اسکرین‌شات. این کار جلسهٔ فعلی را جایگزین می‌کند.',
+		devModeDisabled: 'ابزارهای داده آزمایشی برای این استقرار فعال نشده‌اند.',
+		devModeConfirm: 'این کار جلسهٔ فعلی را با داده‌های آزمایشی ساختگی جایگزین می‌کند. ادامه می‌دهید؟',
+		devModeLoad: 'بارگذاری',
+		devModeLoaded: 'داده‌های آزمایشی بارگذاری شدند.',
+		devStageDraftTitle: 'پیش‌نویس',
+		devStageDraftDescription: 'تنظیمات ذخیره شده، اما هنوز چیزی عمومی نیست.',
+		devStageScheduledTitle: 'زمان‌بندی‌شده',
+		devStageScheduledDescription: 'بازهٔ ثبت‌نام تنظیم شده و خودش باز می‌شود.',
+		devStageRegistrationOpenTitle: 'ثبت‌نام باز',
+		devStageRegistrationOpenDescription: 'مهمانان همین الان در حال ثبت‌نام هستند.',
+		devStageRegistrationClosedTitle: 'ثبت‌نام بسته',
+		devStageRegistrationClosedDescription: 'ثبت‌نام تمام شده و قرعه‌کشی هنوز اجرا نشده است.',
+		devStageServiceStartedTitle: 'خدمت‌رسانی در جریان',
+		devStageServiceStartedDescription: 'قرعه‌کشی اجرا شده و صف فعال است.',
+		devStageEndedTitle: 'پایان‌یافته',
+		devStageEndedDescription: 'جلسه تمام شده و به تاریخچه منتقل شده است.',
+		devProgressJustStarted: 'تازه شروع شده',
+		devProgressHalfway: 'نیمه‌راه',
+		devProgressNearlyDone: 'تقریباً تمام',
 	},
 	tl: {
 		adHocSession: 'Magsimula kapag handa na',
@@ -960,6 +1052,29 @@ export const adminTranslations = {
 		textAnswer: 'Nakasulat na sagot',
 		updateCapacity: 'I-update ang kapasidad',
 		waiting: 'Naghihintay',
+		devMode: 'Dev Mode',
+		devModeIntro:
+			'Mag-load ng peke na mga bisita at pagdalaw para magmukhang totoong sesyon ang app sa isang piniling sandali — para sa mga demo at screenshot. Papalitan nito ang sesyong kasalukuyang aktibo.',
+		devModeDisabled: 'Hindi pa naka-on ang mga tool ng demo data para sa deploy na ito.',
+		devModeConfirm: 'Papalitan nito ang kasalukuyang sesyon ng peke na demo data. Magpatuloy?',
+		devModeLoad: 'I-load',
+		devModeLoaded: 'Na-load ang demo data.',
+		devStageDraftTitle: 'Draft',
+		devStageDraftDescription: 'Naka-save na ang mga setting, pero wala pang nakalantad sa publiko.',
+		devStageScheduledTitle: 'Nakatakda',
+		devStageScheduledDescription: 'May nakatakdang bukas ng pagpaparehistro na bubukas mag-isa.',
+		devStageRegistrationOpenTitle: 'Bukas ang pagpaparehistro',
+		devStageRegistrationOpenDescription: 'Nagpaparehistro ang mga bisita ngayon.',
+		devStageRegistrationClosedTitle: 'Sarado ang pagpaparehistro',
+		devStageRegistrationClosedDescription:
+			'Tapos na ang pagpaparehistro, at hindi pa naisasagawa ang lottery.',
+		devStageServiceStartedTitle: 'Nagsisimula ang serbisyo',
+		devStageServiceStartedDescription: 'Naisagawa na ang lottery at aktibo na ang pila.',
+		devStageEndedTitle: 'Tapos na',
+		devStageEndedDescription: 'Tapos na ang sesyon at inilipat na sa history.',
+		devProgressJustStarted: 'Kararating lang',
+		devProgressHalfway: 'Kalahati',
+		devProgressNearlyDone: 'Halos tapos na',
 	},
 	vi: {
 		adHocSession: 'Bắt đầu khi sẵn sàng',
@@ -1162,6 +1277,28 @@ export const adminTranslations = {
 		textAnswer: 'Câu trả lời viết',
 		updateCapacity: 'Cập nhật sức chứa',
 		waiting: 'Đang chờ',
+		devMode: 'Chế độ nhà phát triển',
+		devModeIntro:
+			'Tải khách và lượt ghé thăm giả để ứng dụng trông như một phiên thật tại một thời điểm được chọn — dùng để demo và chụp ảnh màn hình. Việc này sẽ thay thế phiên đang diễn ra.',
+		devModeDisabled: 'Công cụ dữ liệu demo chưa được bật cho bản triển khai này.',
+		devModeConfirm: 'Việc này sẽ thay thế phiên hiện tại bằng dữ liệu demo giả. Tiếp tục?',
+		devModeLoad: 'Tải',
+		devModeLoaded: 'Đã tải dữ liệu demo.',
+		devStageDraftTitle: 'Bản nháp',
+		devStageDraftDescription: 'Đã lưu cài đặt, nhưng chưa công khai gì.',
+		devStageScheduledTitle: 'Đã lên lịch',
+		devStageScheduledDescription: 'Đã đặt một khung giờ đăng ký sẽ tự mở.',
+		devStageRegistrationOpenTitle: 'Đang mở đăng ký',
+		devStageRegistrationOpenDescription: 'Khách đang đăng ký ngay lúc này.',
+		devStageRegistrationClosedTitle: 'Đã đóng đăng ký',
+		devStageRegistrationClosedDescription: 'Đăng ký đã kết thúc, và chưa quay xổ số.',
+		devStageServiceStartedTitle: 'Đang phục vụ',
+		devStageServiceStartedDescription: 'Đã quay xổ số và hàng đợi đang hoạt động.',
+		devStageEndedTitle: 'Đã kết thúc',
+		devStageEndedDescription: 'Phiên đã kết thúc và được chuyển vào lịch sử.',
+		devProgressJustStarted: 'Vừa mới bắt đầu',
+		devProgressHalfway: 'Được nửa chừng',
+		devProgressNearlyDone: 'Sắp xong',
 	},
 	zh: {
 		adHocSession: '准备好后开始',
@@ -1351,6 +1488,28 @@ export const adminTranslations = {
 		textAnswer: '文字回答',
 		updateCapacity: '更新容量',
 		waiting: '等待中',
+		devMode: '开发者模式',
+		devModeIntro:
+			'加载虚构的访客和到访记录，让应用在所选的某个时刻看起来像真实场次——用于演示和截图。此操作会替换当前正在进行的场次。',
+		devModeDisabled: '此部署尚未启用演示数据工具。',
+		devModeConfirm: '此操作会用虚构的演示数据替换当前场次。是否继续？',
+		devModeLoad: '加载',
+		devModeLoaded: '演示数据已加载。',
+		devStageDraftTitle: '草稿',
+		devStageDraftDescription: '设置已保存，但尚未公开。',
+		devStageScheduledTitle: '已安排',
+		devStageScheduledDescription: '已设置登记时间段，将自动开放。',
+		devStageRegistrationOpenTitle: '登记开放中',
+		devStageRegistrationOpenDescription: '访客正在登记。',
+		devStageRegistrationClosedTitle: '登记已关闭',
+		devStageRegistrationClosedDescription: '登记已结束，抽签尚未进行。',
+		devStageServiceStartedTitle: '服务进行中',
+		devStageServiceStartedDescription: '抽签已完成，队列正在进行。',
+		devStageEndedTitle: '已结束',
+		devStageEndedDescription: '场次已结束并归入历史记录。',
+		devProgressJustStarted: '刚刚开始',
+		devProgressHalfway: '进行到一半',
+		devProgressNearlyDone: '接近完成',
 	},
 	ar: {
 		adHocSession: 'البدء عند الاستعداد',
@@ -1547,5 +1706,27 @@ export const adminTranslations = {
 		textAnswer: 'إجابة كتابية',
 		updateCapacity: 'تحديث السعة',
 		waiting: 'في الانتظار',
+		devMode: 'وضع المطوّر',
+		devModeIntro:
+			'حمّل ضيوفًا وزيارات وهمية لتبدو الجلسة كأنها جلسة حقيقية في لحظة مختارة — للعروض التوضيحية ولقطات الشاشة. يستبدل هذا الجلسة الحالية النشطة.',
+		devModeDisabled: 'أدوات بيانات العرض التوضيحي غير مفعّلة لهذا النشر.',
+		devModeConfirm: 'سيستبدل هذا الجلسة الحالية ببيانات تجريبية وهمية. هل تريد المتابعة؟',
+		devModeLoad: 'تحميل',
+		devModeLoaded: 'تم تحميل البيانات التجريبية.',
+		devStageDraftTitle: 'مسودة',
+		devStageDraftDescription: 'الإعدادات محفوظة، لكن لا شيء معلن بعد.',
+		devStageScheduledTitle: 'مجدولة',
+		devStageScheduledDescription: 'تم ضبط فترة تسجيل ستُفتح من تلقاء نفسها.',
+		devStageRegistrationOpenTitle: 'التسجيل مفتوح',
+		devStageRegistrationOpenDescription: 'يقوم الضيوف بالتسجيل الآن.',
+		devStageRegistrationClosedTitle: 'التسجيل مغلق',
+		devStageRegistrationClosedDescription: 'انتهى التسجيل، ولم تُجرَ القرعة بعد.',
+		devStageServiceStartedTitle: 'الخدمة قيد التقدم',
+		devStageServiceStartedDescription: 'أُجريت القرعة وقائمة الانتظار نشطة.',
+		devStageEndedTitle: 'منتهية',
+		devStageEndedDescription: 'انتهت الجلسة وانتقلت إلى السجل.',
+		devProgressJustStarted: 'بدأت للتو',
+		devProgressHalfway: 'في المنتصف',
+		devProgressNearlyDone: 'أوشكت على الانتهاء',
 	},
 } satisfies Record<Locale, AdminTranslation>;
