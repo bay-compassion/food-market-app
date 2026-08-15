@@ -16,7 +16,13 @@ export interface Translation {
 	adminEyebrow: string;
 	adminTitle: string;
 	age: string;
-	ageHint: string;
+	agePlaceholder: string;
+	ageRange0to17: string;
+	ageRange18to29: string;
+	ageRange30to44: string;
+	ageRange45to59: string;
+	ageRange60to74: string;
+	ageRange75plus: string;
 	authConfigurationDescription: string;
 	authConfigurationRequired: string;
 	authError: string;
@@ -24,10 +30,18 @@ export interface Translation {
 	backToGuest: string;
 	cancelVisit: string;
 	cancelVisitConfirm: string;
+	childrenCount: string;
+	childrenCountHint: string;
 	compassionFood: string;
 	confirmPin: string;
 	currentStatus: string;
 	chooseAnswer: string;
+	earlyFormDescription: string;
+	earlyFormTitle: string;
+	earlySubmit: string;
+	earlySubmitting: string;
+	earlySuccessDescription: string;
+	earlySuccessTitle: string;
 	firstName: string;
 	formDescription: string;
 	formTitle: string;
@@ -56,10 +70,13 @@ export interface Translation {
 	notificationsError: string;
 	notificationsIosInstall: string;
 	notificationsUnsupported: string;
+	preregisterCta: string;
 	smsConsentLabel: string;
 	smsEnable: string;
 	smsEnabled: string;
 	smsError: string;
+	seniorsCount: string;
+	seniorsCountHint: string;
 	pin: string;
 	pinHint: string;
 	pinMismatch: string;
@@ -107,7 +124,13 @@ export const translations = {
 		adminEyebrow: 'Market team',
 		adminTitle: 'A simpler way to welcome every neighbor.',
 		age: 'Age',
-		ageHint: 'In years',
+		agePlaceholder: 'Select your age range',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
 		authConfigurationDescription:
 			'Add the Auth0 environment variables through the Netlify Auth0 extension, then redeploy the site.',
 		authConfigurationRequired: 'Admin sign-in is not configured',
@@ -116,10 +139,19 @@ export const translations = {
 		backToGuest: 'Back to guest check-in',
 		cancelVisit: 'Cancel this visit',
 		cancelVisitConfirm: 'Cancel your place in the queue for this visit?',
+		childrenCount: 'Number of children you’re shopping for',
+		childrenCountHint: 'Enter 0 if none',
 		compassionFood: 'Compassion Food',
 		confirmPin: 'Confirm PIN',
 		currentStatus: 'Current status',
 		chooseAnswer: 'Choose an answer',
+		earlyFormDescription: 'Sign up now and we’ll have everything ready when the market opens.',
+		earlyFormTitle: 'Reserve your spot early',
+		earlySubmit: 'Sign up early',
+		earlySubmitting: 'Signing up…',
+		earlySuccessDescription:
+			'We’ll let you know as soon as registration opens. Thank you for planning ahead.',
+		earlySuccessTitle: 'You’re signed up early!',
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
 		formTitle: 'Tell us about you',
@@ -149,11 +181,14 @@ export const translations = {
 		notificationsIosInstall:
 			'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
 		notificationsUnsupported: 'Push notifications are not available on this device.',
+		preregisterCta: 'Sign up early for the next market',
 		smsConsentLabel:
 			'I agree to receive text message updates about this visit. Message and data rates may apply. Reply STOP to opt out.',
 		smsEnable: 'Text me updates about this visit',
 		smsEnabled: 'Text message updates are enabled for this visit.',
 		smsError: 'We could not enable text updates. Please try again.',
+		seniorsCount: 'Number of seniors (55+) you’re shopping for',
+		seniorsCountHint: 'Enter 0 if none',
 		pin: 'PIN',
 		pinHint: '4–8 numbers',
 		pinMismatch: 'The PINs do not match.',
@@ -200,7 +235,13 @@ export const translations = {
 		adminEyebrow: 'Equipo del mercado',
 		adminTitle: 'Una forma más sencilla de recibir a cada vecino.',
 		age: 'Edad',
-		ageHint: 'En años',
+		agePlaceholder: 'Seleccione su rango de edad',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
 		authConfigurationDescription:
 			'Agregue las variables de entorno de Auth0 mediante la extensión Auth0 de Netlify y vuelva a implementar el sitio.',
 		authConfigurationRequired: 'El inicio de sesión de administración no está configurado',
@@ -209,10 +250,19 @@ export const translations = {
 		backToGuest: 'Volver al registro',
 		cancelVisit: 'Cancelar esta visita',
 		cancelVisitConfirm: '¿Cancelar su lugar en la fila para esta visita?',
+		childrenCount: 'Número de niños para quienes está comprando',
+		childrenCountHint: 'Escriba 0 si no aplica',
 		compassionFood: 'Alimentos con Compasión',
 		confirmPin: 'Confirmar PIN',
 		currentStatus: 'Estado actual',
 		chooseAnswer: 'Elija una respuesta',
+		earlyFormDescription: 'Regístrese ahora y tendremos todo listo cuando abra el mercado.',
+		earlyFormTitle: 'Reserve su lugar con anticipación',
+		earlySubmit: 'Registrarse con anticipación',
+		earlySubmitting: 'Registrando…',
+		earlySuccessDescription:
+			'Le avisaremos en cuanto se abra el registro. Gracias por planear con tiempo.',
+		earlySuccessTitle: '¡Se registró con anticipación!',
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
@@ -243,11 +293,14 @@ export const translations = {
 		notificationsIosInstall:
 			'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
 		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
+		preregisterCta: 'Regístrese temprano para el próximo mercado',
 		smsConsentLabel:
 			'Acepto recibir actualizaciones por mensaje de texto sobre esta visita. Pueden aplicarse tarifas de mensajes y datos. Responda ALTO para cancelar.',
 		smsEnable: 'Envíenme actualizaciones por mensaje de texto sobre esta visita',
 		smsEnabled: 'Las actualizaciones por mensaje de texto están activadas para esta visita.',
 		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
+		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
+		seniorsCountHint: 'Escriba 0 si no aplica',
 		pin: 'PIN',
 		pinHint: 'De 4 a 8 números',
 		pinMismatch: 'Los PIN no coinciden.',
@@ -294,7 +347,13 @@ export const translations = {
 		adminEyebrow: 'تیم بازار',
 		adminTitle: 'راهی ساده‌تر برای خوشامدگویی به هر همسایه.',
 		age: 'سن',
-		ageHint: 'به سال',
+		agePlaceholder: 'محدوده سنی خود را انتخاب کنید',
+		ageRange0to17: '۰ تا ۱۷',
+		ageRange18to29: '۱۸ تا ۲۹',
+		ageRange30to44: '۳۰ تا ۴۴',
+		ageRange45to59: '۴۵ تا ۵۹',
+		ageRange60to74: '۶۰ تا ۷۴',
+		ageRange75plus: '۷۵ به بالا',
 		authConfigurationDescription:
 			'متغیرهای محیطی Auth0 را از طریق افزونه Auth0 نتلیفای اضافه کنید و سپس سایت را دوباره منتشر کنید.',
 		authConfigurationRequired: 'ورود مدیر پیکربندی نشده است',
@@ -303,10 +362,19 @@ export const translations = {
 		backToGuest: 'بازگشت به ثبت‌نام مهمان',
 		cancelVisit: 'لغو این بازدید',
 		cancelVisitConfirm: 'جای خود را در صف این بازدید لغو می‌کنید؟',
+		childrenCount: 'تعداد کودکانی که برای آن‌ها خرید می‌کنید',
+		childrenCountHint: 'اگر ندارید ۰ وارد کنید',
 		compassionFood: 'غذای دلسوزانه',
 		confirmPin: 'تأیید پین',
 		currentStatus: 'وضعیت فعلی',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
+		earlyFormDescription: 'همین حالا ثبت‌نام کنید تا هنگام باز شدن بازار همه‌چیز آماده باشد.',
+		earlyFormTitle: 'زودتر جای خود را رزرو کنید',
+		earlySubmit: 'ثبت‌نام زودهنگام',
+		earlySubmitting: 'در حال ثبت‌نام…',
+		earlySuccessDescription:
+			'به محض باز شدن ثبت‌نام به شما اطلاع می‌دهیم. از برنامه‌ریزی زودهنگام شما سپاسگزاریم.',
+		earlySuccessTitle: 'شما زودهنگام ثبت‌نام کردید!',
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
 		formTitle: 'درباره خودتان بگویید',
@@ -336,11 +404,14 @@ export const translations = {
 		notificationsIosInstall:
 			'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
 		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
+		preregisterCta: 'زودتر برای بازار بعدی ثبت‌نام کنید',
 		smsConsentLabel:
 			'موافقم که به‌روزرسانی‌های پیامکی درباره این مراجعه را دریافت کنم. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک، STOP را پاسخ دهید.',
 		smsEnable: 'درباره این مراجعه به من پیامک بده',
 		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه فعال شدند.',
 		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
+		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
+		seniorsCountHint: 'اگر ندارید ۰ وارد کنید',
 		pin: 'پین',
 		pinHint: '۴ تا ۸ رقم',
 		pinMismatch: 'پین‌ها یکسان نیستند.',
@@ -387,7 +458,13 @@ export const translations = {
 		adminEyebrow: 'Pangkat ng pamilihan',
 		adminTitle: 'Isang mas madaling paraan upang salubungin ang bawat kapitbahay.',
 		age: 'Edad',
-		ageHint: 'Sa taon',
+		agePlaceholder: 'Piliin ang iyong saklaw ng edad',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
 		authConfigurationDescription:
 			'Idagdag ang mga Auth0 environment variable gamit ang Netlify Auth0 extension, pagkatapos ay i-deploy muli ang site.',
 		authConfigurationRequired: 'Hindi pa naka-configure ang pag-sign in ng admin',
@@ -396,10 +473,20 @@ export const translations = {
 		backToGuest: 'Bumalik sa pag-check in ng bisita',
 		cancelVisit: 'Kanselahin ang pagbisitang ito',
 		cancelVisitConfirm: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
+		childrenCount: 'Bilang ng mga batang binibilhan mo',
+		childrenCountHint: 'Ilagay ang 0 kung wala',
 		compassionFood: 'Pagkaing May Malasakit',
 		confirmPin: 'Kumpirmahin ang PIN',
 		currentStatus: 'Kasalukuyang katayuan',
 		chooseAnswer: 'Pumili ng sagot',
+		earlyFormDescription:
+			'Magrehistro na ngayon at ihahanda namin ang lahat pagbukas ng pamilihan.',
+		earlyFormTitle: 'Mag-reserba nang maaga',
+		earlySubmit: 'Magrehistro nang maaga',
+		earlySubmitting: 'Nagrerehistro…',
+		earlySuccessDescription:
+			'Ipaaalam namin sa inyo sa sandaling magbukas ang pagpaparehistro. Salamat sa maagang paghahanda.',
+		earlySuccessTitle: 'Narehistro ka na nang maaga!',
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
@@ -431,11 +518,14 @@ export const translations = {
 		notificationsIosInstall:
 			'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
 		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
+		preregisterCta: 'Magrehistro nang maaga para sa susunod na pamilihan',
 		smsConsentLabel:
 			'Sumasang-ayon akong tumanggap ng mga text message update tungkol sa pagbisitang ito. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-opt out.',
 		smsEnable: 'Padalhan ako ng text update tungkol sa pagbisitang ito',
 		smsEnabled: 'Naka-enable ang mga text message update para sa pagbisitang ito.',
 		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
+		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
+		seniorsCountHint: 'Ilagay ang 0 kung wala',
 		pin: 'PIN',
 		pinHint: '4–8 numero',
 		pinMismatch: 'Hindi magkapareho ang mga PIN.',
@@ -482,7 +572,13 @@ export const translations = {
 		adminEyebrow: 'Đội ngũ chợ',
 		adminTitle: 'Một cách đơn giản hơn để chào đón mọi người hàng xóm.',
 		age: 'Tuổi',
-		ageHint: 'Theo năm',
+		agePlaceholder: 'Chọn độ tuổi của bạn',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
 		authConfigurationDescription:
 			'Thêm các biến môi trường Auth0 bằng tiện ích Auth0 của Netlify, sau đó triển khai lại trang web.',
 		authConfigurationRequired: 'Chưa cấu hình đăng nhập quản trị',
@@ -491,10 +587,20 @@ export const translations = {
 		backToGuest: 'Quay lại đăng ký khách',
 		cancelVisit: 'Hủy lượt ghé này',
 		cancelVisitConfirm: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
+		childrenCount: 'Số trẻ em bạn đang mua sắm cho',
+		childrenCountHint: 'Nhập 0 nếu không có',
 		compassionFood: 'Thực Phẩm Nhân Ái',
 		confirmPin: 'Xác nhận mã PIN',
 		currentStatus: 'Trạng thái hiện tại',
 		chooseAnswer: 'Chọn câu trả lời',
+		earlyFormDescription:
+			'Đăng ký ngay và chúng tôi sẽ chuẩn bị sẵn sàng mọi thứ khi phiên chợ mở.',
+		earlyFormTitle: 'Đăng ký sớm để giữ chỗ',
+		earlySubmit: 'Đăng ký sớm',
+		earlySubmitting: 'Đang đăng ký…',
+		earlySuccessDescription:
+			'Chúng tôi sẽ báo cho bạn ngay khi đăng ký mở. Cảm ơn bạn đã chuẩn bị trước.',
+		earlySuccessTitle: 'Bạn đã đăng ký sớm!',
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
@@ -525,11 +631,14 @@ export const translations = {
 		notificationsIosInstall:
 			'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
 		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
+		preregisterCta: 'Đăng ký sớm cho phiên chợ tiếp theo',
 		smsConsentLabel:
 			'Tôi đồng ý nhận thông báo qua tin nhắn văn bản về lượt ghé thăm này. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy.',
 		smsEnable: 'Nhắn tin cập nhật cho tôi về lượt ghé thăm này',
 		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé thăm này.',
 		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
+		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
+		seniorsCountHint: 'Nhập 0 nếu không có',
 		pin: 'Mã PIN',
 		pinHint: '4–8 chữ số',
 		pinMismatch: 'Các mã PIN không khớp.',
@@ -576,7 +685,13 @@ export const translations = {
 		adminEyebrow: '市场团队',
 		adminTitle: '用更简单的方式欢迎每一位邻居。',
 		age: '年龄',
-		ageHint: '岁',
+		agePlaceholder: '选择您的年龄段',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
 		authConfigurationDescription:
 			'请通过 Netlify Auth0 扩展添加 Auth0 环境变量，然后重新部署网站。',
 		authConfigurationRequired: '尚未配置管理员登录',
@@ -585,10 +700,18 @@ export const translations = {
 		backToGuest: '返回访客登记',
 		cancelVisit: '取消本次到访',
 		cancelVisitConfirm: '要取消本次到访的排队位置吗？',
+		childrenCount: '您为多少儿童采购',
+		childrenCountHint: '如无请填 0',
 		compassionFood: '关爱食品',
 		confirmPin: '确认 PIN',
 		currentStatus: '当前状态',
 		chooseAnswer: '请选择答案',
+		earlyFormDescription: '现在登记，等市场开放时我们会准备就绪。',
+		earlyFormTitle: '提前预留名额',
+		earlySubmit: '提前登记',
+		earlySubmitting: '正在登记…',
+		earlySuccessDescription: '登记一开放我们就会通知您。感谢您提前规划。',
+		earlySuccessTitle: '您已提前登记！',
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
 		formTitle: '请告诉我们您的信息',
@@ -617,11 +740,14 @@ export const translations = {
 		notificationsError: '无法启用通知。请重试。',
 		notificationsIosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
 		notificationsUnsupported: '此设备不支持推送通知。',
+		preregisterCta: '提前登记下一次市场',
 		smsConsentLabel:
 			'我同意接收有关此次到访的短信更新。可能会产生短信和数据费用。回复STOP可取消订阅。',
 		smsEnable: '通过短信通知我此次到访的更新',
 		smsEnabled: '此次到访的短信更新已启用。',
 		smsError: '我们无法启用短信更新。请重试。',
+		seniorsCount: '您为多少老年人（55岁以上）采购',
+		seniorsCountHint: '如无请填 0',
 		pin: 'PIN',
 		pinHint: '4–8 位数字',
 		pinMismatch: '两次输入的 PIN 不一致。',
@@ -667,7 +793,13 @@ export const translations = {
 		adminEyebrow: 'فريق السوق',
 		adminTitle: 'طريقة أبسط للترحيب بكل جار.',
 		age: 'العمر',
-		ageHint: 'بالسنوات',
+		agePlaceholder: 'اختر الفئة العمرية',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
 		authConfigurationDescription:
 			'أضف متغيرات بيئة Auth0 من خلال إضافة Auth0 في Netlify، ثم أعد نشر الموقع.',
 		authConfigurationRequired: 'لم يتم إعداد تسجيل دخول الإدارة',
@@ -676,10 +808,18 @@ export const translations = {
 		backToGuest: 'العودة إلى تسجيل الضيف',
 		cancelVisit: 'إلغاء هذه الزيارة',
 		cancelVisitConfirm: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
+		childrenCount: 'عدد الأطفال الذين تتسوق من أجلهم',
+		childrenCountHint: 'أدخل 0 إذا لم يوجد',
 		compassionFood: 'طعام الرحمة',
 		confirmPin: 'تأكيد الرمز السري',
 		currentStatus: 'الحالة الحالية',
 		chooseAnswer: 'اختر إجابة',
+		earlyFormDescription: 'سجّل الآن وسنكون جاهزين تمامًا عند افتتاح السوق.',
+		earlyFormTitle: 'احجز مكانك مبكرًا',
+		earlySubmit: 'التسجيل المبكر',
+		earlySubmitting: 'جارٍ التسجيل…',
+		earlySuccessDescription: 'سنخبرك بمجرد فتح التسجيل. شكرًا لتخطيطك المسبق.',
+		earlySuccessTitle: 'لقد سجّلت مبكرًا!',
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
 		formTitle: 'أخبرنا عنك',
@@ -709,11 +849,14 @@ export const translations = {
 		notificationsIosInstall:
 			'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
 		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
+		preregisterCta: 'سجّل مبكرًا للسوق القادم',
 		smsConsentLabel:
 			'أوافق على تلقي تحديثات عبر الرسائل النصية حول هذه الزيارة. قد يتم تطبيق رسوم للرسائل والبيانات. أرسل STOP لإلغاء الاشتراك.',
 		smsEnable: 'أرسل لي تحديثات نصية حول هذه الزيارة',
 		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة.',
 		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
+		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
+		seniorsCountHint: 'أدخل 0 إذا لم يوجد',
 		pin: 'الرمز السري',
 		pinHint: 'من 4 إلى 8 أرقام',
 		pinMismatch: 'الرمزان السريان غير متطابقين.',

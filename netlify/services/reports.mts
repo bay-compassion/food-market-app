@@ -97,21 +97,14 @@ function peopleServed({ start, end }: ReportRange) {
 function guestDemographics({ start, end }: ReportRange) {
 	return sql`
 		WITH served_guests AS (
-			SELECT DISTINCT g.id, g.age, g.household_size, g.locale
+			SELECT DISTINCT g.id, g.age_range, g.household_size, g.locale
 			FROM market_events e
 			JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
 			JOIN guests g ON g.id = v.guest_id
 			WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
 		),
 		facts AS (
-			SELECT 'age' AS category, CASE
-				WHEN age < 18 THEN '0-17'
-				WHEN age < 30 THEN '18-29'
-				WHEN age < 45 THEN '30-44'
-				WHEN age < 60 THEN '45-59'
-				WHEN age < 75 THEN '60-74'
-				ELSE '75+'
-			END AS value FROM served_guests
+			SELECT 'age' AS category, age_range AS value FROM served_guests
 			UNION ALL
 			SELECT 'household', CASE
 				WHEN household_size = 1 THEN '1'
@@ -217,8 +210,10 @@ export const visitExportHeaders = [
 	'served_at',
 	'guest_first_name',
 	'guest_last_name',
-	'guest_age',
+	'guest_age_range',
 	'guest_household_size',
+	'visit_children_count',
+	'visit_seniors_count',
 	'guest_phone',
 	'guest_locale',
 ];
@@ -245,8 +240,10 @@ export async function runVisitExport({ start, end }: ReportRange) {
 			v.served_at AS "served_at",
 			g.first_name AS "guest_first_name",
 			g.last_name AS "guest_last_name",
-			g.age AS "guest_age",
+			g.age_range AS "guest_age_range",
 			g.household_size AS "guest_household_size",
+			v.children_count AS "visit_children_count",
+			v.seniors_count AS "visit_seniors_count",
 			g.phone AS "guest_phone",
 			g.locale AS "guest_locale"
 		FROM market_events e

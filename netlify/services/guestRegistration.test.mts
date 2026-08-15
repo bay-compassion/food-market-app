@@ -21,8 +21,10 @@ function selfSubmission(overrides: Record<string, unknown> = {}) {
 	return {
 		firstName: 'Ari',
 		lastName: 'Guest',
-		age: 30,
+		ageRange: '18-29',
 		householdSize: 2,
+		childrenCount: 0,
+		seniorsCount: 0,
 		phone: '555-123-4567',
 		locale: 'en',
 		pin: '1234',
@@ -85,12 +87,18 @@ describe('parseSubmission', () => {
 		expect(parseSubmission(selfSubmission({ answers: { q1: { nested: true } } }))).toBeNull();
 	});
 
-	it('rejects an out-of-range age when a profile is required', () => {
-		expect(parseSubmission(selfSubmission({ age: 200 }))).toBeNull();
+	it('rejects an invalid age range when a profile is required', () => {
+		expect(parseSubmission(selfSubmission({ ageRange: 'not-a-range' }))).toBeNull();
 	});
 
 	it('rejects an out-of-range household size when a profile is required', () => {
 		expect(parseSubmission(selfSubmission({ householdSize: 0 }))).toBeNull();
+	});
+
+	it('rejects shopper counts that add up to more than the household size', () => {
+		expect(
+			parseSubmission(selfSubmission({ householdSize: 2, childrenCount: 2, seniorsCount: 1 })),
+		).toBeNull();
 	});
 
 	it('requires profile fields when updateProfile is set on a returning guest', () => {
@@ -177,7 +185,27 @@ describe('registerGuest eligibility', () => {
 		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
 
-	it('rejects a self submission when the session is not open for registration', async () => {
+	it.each(['registration_closed', 'service_started', 'ended'])(
+		'rejects a self submission once the session is %s',
+		async (status) => {
+			queueResult([
+				{
+					id: 'event-1',
+					status,
+					sessionMode: 'scheduled',
+					registrationOpensAt: new Date(Date.now() - 120_000),
+					registrationClosesAt: new Date(Date.now() - 60_000),
+				},
+			]);
+			const submission = parseSubmission(selfSubmission())!;
+
+			const result = await registerGuest(submission);
+
+			expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+		},
+	);
+
+	it('allows a self submission while the session is still in draft', async () => {
 		queueResult([
 			{
 				id: 'event-1',
@@ -187,11 +215,34 @@ describe('registerGuest eligibility', () => {
 				registrationClosesAt: new Date(Date.now() + 120_000),
 			},
 		]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission())!;
 
 		const result = await registerGuest(submission);
 
-		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+		expect(result.ok).toBe(true);
+	});
+
+	it('allows a self submission once the session is scheduled but not open yet', async () => {
+		queueResult([
+			{
+				id: 'event-1',
+				status: 'scheduled',
+				sessionMode: 'scheduled',
+				registrationOpensAt: new Date(Date.now() + 60_000),
+				registrationClosesAt: new Date(Date.now() + 120_000),
+			},
+		]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
+		const submission = parseSubmission(selfSubmission())!;
+
+		const result = await registerGuest(submission);
+
+		expect(result.ok).toBe(true);
 	});
 
 	it('rejects a self submission missing a required registration answer', async () => {
@@ -314,6 +365,24 @@ describe('registerGuest happy paths', () => {
 			status: 200,
 			body: { id: 'visit-1', guestId: 'guest-1', status: 'waiting' },
 		});
+	});
+
+	it('carries a returning guest’s stored shopper counts onto their new visit', async () => {
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([]); // no existing visit for this event
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
+		vi.mocked(authenticateGuest).mockResolvedValueOnce({
+			id: 'guest-1',
+			firstName: 'Ari',
+			childrenCount: 2,
+			seniorsCount: 1,
+		} as never);
+		const submission = parseSubmission(selfSubmission({ registrationType: 'returning' }))!;
+
+		await registerGuest(submission);
+
+		expect(insertedVisit()).toMatchObject({ childrenCount: 2, seniorsCount: 1 });
 	});
 
 	it('creates an admin-added guest directly into the waiting queue with no visit token', async () => {

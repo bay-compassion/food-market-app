@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
+import { isAgeRange, type AgeRange } from '../../src/services/ageRanges.js';
 import {
 	admissionNeedsQueuePosition,
 	admissionVisitStatus,
@@ -27,8 +28,10 @@ const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 export type GuestSubmission = {
 	firstName: string;
 	lastName: string;
-	age: number;
+	ageRange: AgeRange;
 	householdSize: number;
+	childrenCount: number;
+	seniorsCount: number;
 	phone: string;
 	locale: (typeof locales)[number];
 	marketEventId: string | null;
@@ -67,8 +70,10 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 	const firstName = typeof body.firstName === 'string' ? body.firstName.trim() : '';
 	const lastName = typeof body.lastName === 'string' ? body.lastName.trim() : '';
 	const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-	const age = Number(body.age);
+	const ageRange = (typeof body.ageRange === 'string' ? body.ageRange : '') as AgeRange;
 	const householdSize = Number(body.householdSize);
+	const childrenCount = Number(body.childrenCount);
+	const seniorsCount = Number(body.seniorsCount);
 	const locale = body.locale;
 	const source = body.source === 'admin' ? 'admin' : 'self';
 	const registrationType = body.registrationType === 'returning' ? 'returning' : 'new';
@@ -97,12 +102,17 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 				!lastName ||
 				firstName.length > 100 ||
 				lastName.length > 100 ||
-				!Number.isInteger(age) ||
-				age < 0 ||
-				age > 120 ||
+				!isAgeRange(ageRange) ||
 				!Number.isInteger(householdSize) ||
 				householdSize < 1 ||
-				householdSize > 30))
+				householdSize > 30 ||
+				!Number.isInteger(childrenCount) ||
+				childrenCount < 0 ||
+				childrenCount > 30 ||
+				!Number.isInteger(seniorsCount) ||
+				seniorsCount < 0 ||
+				seniorsCount > 30 ||
+				childrenCount + seniorsCount > householdSize))
 	) {
 		return null;
 	}
@@ -110,8 +120,10 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 	return {
 		firstName,
 		lastName,
-		age,
+		ageRange,
 		householdSize,
+		childrenCount,
+		seniorsCount,
 		phone,
 		locale: locale as GuestSubmission['locale'],
 		marketEventId,
@@ -164,13 +176,19 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 			.from(marketEvents)
 			.where(eq(marketEvents.id, submission.marketEventId))
 			.limit(1);
+		if (!event) {
+			return { ok: false, status: 409, error: 'Registration is not open.' };
+		}
 		const now = new Date();
-		const effectiveStatus = event ? automaticSessionStatus(event, now) : null;
+		const effectiveStatus = automaticSessionStatus(event, now);
+		// Guests may register as soon as an event exists at all — including `draft`, before an admin
+		// has scheduled registration — so signing up ahead of time doesn't depend on what stage the
+		// session is in. Only once the window has genuinely passed (closed, service started, or the
+		// session ended) does self-registration stop making sense.
 		if (
-			!event ||
-			effectiveStatus !== 'registration_open' ||
-			now < event.registrationOpensAt ||
-			now > event.registrationClosesAt
+			effectiveStatus === 'registration_closed' ||
+			effectiveStatus === 'service_started' ||
+			effectiveStatus === 'ended'
 		) {
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
@@ -235,8 +253,10 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 				.set({
 					firstName: submission.firstName,
 					lastName: submission.lastName,
-					age: submission.age,
+					ageRange: submission.ageRange,
 					householdSize: submission.householdSize,
+					childrenCount: submission.childrenCount,
+					seniorsCount: submission.seniorsCount,
 					locale: submission.locale,
 				})
 				.where(eq(guests.id, guest.id))
@@ -249,8 +269,10 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 				.values({
 					firstName: submission.firstName,
 					lastName: submission.lastName,
-					age: submission.age,
+					ageRange: submission.ageRange,
 					householdSize: submission.householdSize,
+					childrenCount: submission.childrenCount,
+					seniorsCount: submission.seniorsCount,
 					phone: submission.phone,
 					normalizedPhone: normalizePhone(submission.phone),
 					pinHash,
@@ -289,6 +311,11 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 						source: submission.source,
 						accessTokenHash: visitCredential.tokenHash,
 						isFirstVisit: submission.registrationType === 'new',
+						// `guest` reflects the just-created/updated row, or — for a returning guest not
+						// updating their profile — the existing stored values, so this always carries
+						// over the guest's current counts even when the fields weren't resubmitted.
+						childrenCount: guest.childrenCount,
+						seniorsCount: guest.seniorsCount,
 						// Only a guest actually entering the draw can carry anything but the default odds.
 						lotteryWeight:
 							submission.source === 'admin' && submission.admission === 'lottery'

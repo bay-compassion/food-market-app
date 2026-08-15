@@ -152,11 +152,13 @@ describe('App', () => {
 
 		await inputs[0]!.setValue('Ada');
 		await inputs[1]!.setValue('Lovelace');
-		await inputs[2]!.setValue('36');
-		await inputs[3]!.setValue('2');
-		await inputs[4]!.setValue('(555) 123-4567');
-		await inputs[5]!.setValue('1234');
+		await wrapper.find('select').setValue('18-29');
+		await inputs[2]!.setValue('2');
+		await inputs[3]!.setValue('1');
+		await inputs[4]!.setValue('0');
+		await inputs[5]!.setValue('(555) 123-4567');
 		await inputs[6]!.setValue('1234');
+		await inputs[7]!.setValue('1234');
 		await wrapper.find('form').trigger('submit');
 		await flushPromises();
 
@@ -166,8 +168,10 @@ describe('App', () => {
 				body: JSON.stringify({
 					firstName: 'Ada',
 					lastName: 'Lovelace',
-					age: 36,
+					ageRange: '18-29',
 					householdSize: 2,
+					childrenCount: 1,
+					seniorsCount: 0,
 					phone: '(555) 123-4567',
 					locale: 'en',
 					marketEventId: 'event-1',

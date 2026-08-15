@@ -1,0 +1,40 @@
+/**
+ * Styles shared between `GuestSignupCard.vue` and `NotificationOptIn.vue`.
+ *
+ * `NotificationOptIn` has two top-level elements (no single root), so Vue never forwards a
+ * parent's scoped style attribute onto it — a scoped `<style>` in `GuestSignupCard.vue` would
+ * silently fail to style it. Everything here is scoped to `.checkin-card`, the wrapper both
+ * components render inside, so none of it leaks into the admin screens.
+ */
+
+.checkin-card .update-profile-option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-weight: 600;
+}
+.checkin-card .update-profile-option input {
+	width: 20px;
+	height: 20px;
+}
+.checkin-card .submission-error {
+	margin: 0;
+	color: var(--color-error);
+	font-size: 13px;
+	line-height: 1.4;
+}
+.checkin-card .notification-option {
+	display: grid;
+	gap: 12px;
+	margin-bottom: 22px;
+	padding: 18px;
+	border-radius: var(--radius-md);
+	background: var(--color-surface-soft);
+}
+.checkin-card .notification-option p {
+	margin-bottom: 0;
+	font-size: 14px;
+}
+.checkin-card .notification-enabled {
+	font-weight: 700;
+}

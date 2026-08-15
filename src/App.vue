@@ -5,16 +5,19 @@ import { useRoute, useRouter } from 'vue-router';
 import { auth0 } from './auth';
 import { isAdminView, type AdminView } from './components/admin/types';
 import AdminAuthView from './components/AdminAuthView.vue';
-import AppButton from './components/AppButton.vue';
 import EyebrowLabel from './components/EyebrowLabel.vue';
-import FormField from './components/FormField.vue';
+import GuestSignupCard from './components/GuestSignupCard.vue';
 import LegalDocumentView from './components/legal/LegalDocumentView.vue';
 import privacyMarkdown from './components/legal/privacy.md?raw';
 import termsMarkdown from './components/legal/terms.md?raw';
-import NotificationOptIn from './components/NotificationOptIn.vue';
 import QrCodeView from './components/QrCodeView.vue';
+import type { GuestFormState } from './components/types';
 import { languages, translations, type Locale } from './locales';
-import type { SessionStatus } from './services/sessionStateMachine';
+import {
+	automaticSessionStatus,
+	type SessionMode,
+	type SessionStatus,
+} from './services/sessionStateMachine';
 import type { VisitStatus } from './services/visitStateMachine';
 
 const localeStorageKey = 'bay-compassion.locale';
@@ -49,23 +52,26 @@ type ActiveVisit = {
 };
 const activeVisit = ref<ActiveVisit | null>(null);
 const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
-const currentMarketEventId = ref<string | null>(null);
+type MarketEventTiming = {
+	id: string;
+	status: SessionStatus;
+	sessionMode: SessionMode;
+	registrationOpensAt: Date;
+	registrationClosesAt: Date;
+};
+const marketEvent = ref<MarketEventTiming | null>(null);
 const registrationAvailable = ref(true);
 const registrationQuestions = ref<
 	{ id: string; prompt: string; type: 'text' | 'scale'; required: boolean }[]
 >([]);
 const registrationAnswers = ref<Record<string, string | number>>({});
-const guest = ref<{
-	firstName: string;
-	lastName: string;
-	age: number | string;
-	householdSize: number | string;
-	phone: string;
-}>({
+const guest = ref<GuestFormState>({
 	firstName: '',
 	lastName: '',
-	age: '',
+	ageRange: '',
 	householdSize: '',
+	childrenCount: '',
+	seniorsCount: '',
 	phone: '',
 });
 
@@ -120,6 +126,30 @@ const isAdmin = computed(() => route.name === 'admin');
 const isPrivacy = computed(() => route.name === 'privacy');
 const isTerms = computed(() => route.name === 'terms');
 const isQrCode = computed(() => route.name === 'qr-code');
+const isPreregistration = computed(() => route.name === 'signup');
+/**
+ * Mirrors the server-side gate in `guestRegistration.mts`: a guest may sign up as soon as an event
+ * exists at all, including `draft`, and only loses the ability once the window has genuinely
+ * passed.
+ */
+const canPreregister = computed(() => {
+	if (!marketEvent.value) {
+		return false;
+	}
+	const status = automaticSessionStatus(marketEvent.value, new Date());
+
+	return status !== 'registration_closed' && status !== 'service_started' && status !== 'ended';
+});
+const canShowForm = computed(
+	() => registrationAvailable.value || (isPreregistration.value && canPreregister.value),
+);
+const showPreregisterCta = computed(() => !isPreregistration.value && canPreregister.value);
+/**
+ * Whether a guest is actually joining today's queue or signing up ahead of the window — decided by
+ * whether registration is genuinely open right now, not by which route got them here, so a guest
+ * who happens to still be on `/signup` once registration opens sees the ordinary queue copy.
+ */
+const formContext = computed(() => (registrationAvailable.value ? 'queue' : 'early'));
 const adminView = computed<AdminView>(() =>
 	isAdminView(route.params.view) ? route.params.view : 'current-session',
 );
@@ -139,6 +169,10 @@ function showPrivacy() {
 
 function showTerms() {
 	void router.push({ name: 'terms' });
+}
+
+function goToSignup() {
+	void router.push({ name: 'signup' });
 }
 
 function navigateAdmin(view: AdminView) {
@@ -172,7 +206,7 @@ async function submitForm() {
 			body: JSON.stringify({
 				...guest.value,
 				locale: locale.value,
-				marketEventId: currentMarketEventId.value,
+				marketEventId: marketEvent.value?.id ?? null,
 				answers: registrationAnswers.value,
 				source: 'self',
 				registrationType: registrationType.value,
@@ -268,12 +302,21 @@ async function loadRegistration() {
 			event: {
 				id: string;
 				status: SessionStatus;
+				sessionMode: SessionMode;
 				registrationOpensAt: string;
 				registrationClosesAt: string;
 			} | null;
 			questions: { id: string; prompt: string; type: 'text' | 'scale'; required: boolean }[];
 		};
-		currentMarketEventId.value = data.event?.id ?? null;
+		marketEvent.value = data.event
+			? {
+					id: data.event.id,
+					status: data.event.status,
+					sessionMode: data.event.sessionMode,
+					registrationOpensAt: new Date(data.event.registrationOpensAt),
+					registrationClosesAt: new Date(data.event.registrationClosesAt),
+				}
+			: null;
 		registrationQuestions.value = data.questions;
 		const now = new Date();
 		registrationAvailable.value = Boolean(
@@ -389,178 +432,34 @@ onBeforeUnmount(() => {
 				</section>
 			</div>
 
-			<section class="checkin-card" aria-live="polite">
-				<div v-if="activeVisit && isSubmitted" class="success-state">
-					<template v-if="isCalled">
-						<div class="checkmark called-mark" aria-hidden="true">→</div>
-						<h2>{{ t.calledTitle }}</h2>
-						<p>{{ t.calledDescription }}</p>
-					</template>
-					<template v-else>
-						<div class="checkmark">✓</div>
-						<h2>{{ t.successTitle }}</h2>
-						<div v-if="queuePosition" class="queue-standing">
-							<p class="queue-position">
-								<span>{{ t.queuePositionLabel }}</span>
-								<strong>{{ queuePosition }}</strong>
-							</p>
-							<p v-if="guestsAhead === 0" class="queue-next">{{ t.youAreNext }}</p>
-							<p v-else-if="guestsAhead !== null">
-								{{ t.guestsAheadOfYou }}: <strong>{{ guestsAhead }}</strong>
-							</p>
-						</div>
-						<p v-else>
-							{{ t.currentStatus }}: <strong>{{ visitStatusLabel }}</strong>
-						</p>
-						<p>{{ t.successDescription }}</p>
-					</template>
-					<NotificationOptIn :visit-token="visitToken" :locale="locale" />
-					<p v-if="submissionError" class="submission-error" role="alert">
-						{{ submissionError }}
-					</p>
-					<AppButton
-						v-if="canCancelVisit"
-						type="button"
-						variant="secondary"
-						:disabled="isCancelling"
-						@click="cancelVisit"
-					>
-						{{ t.cancelVisit }}
-					</AppButton>
-				</div>
-				<div v-else-if="!registrationAvailable" class="closed-state">
-					<div class="closed-icon" aria-hidden="true">—</div>
-					<h2>{{ t.registrationClosed }}</h2>
-					<p>{{ t.registrationClosedDescription }}</p>
-				</div>
-				<form v-else-if="registrationAvailable" @submit.prevent="submitForm">
-					<div class="form-heading">
-						<h2>{{ t.formTitle }}</h2>
-						<p>{{ t.formDescription }}</p>
-					</div>
-					<div class="registration-type" role="group" :aria-label="t.registrationType">
-						<button
-							type="button"
-							:class="{ active: registrationType === 'new' }"
-							:aria-pressed="registrationType === 'new'"
-							@click="registrationType = 'new'"
-						>
-							{{ t.newGuest }}
-						</button>
-						<button
-							type="button"
-							:class="{ active: registrationType === 'returning' }"
-							:aria-pressed="registrationType === 'returning'"
-							@click="registrationType = 'returning'"
-						>
-							{{ t.returningGuest }}
-						</button>
-					</div>
-					<p v-if="registrationType === 'returning'" class="form-help">
-						{{ t.returningGuestHelp }}
-					</p>
-					<template v-if="registrationType === 'new' || updateProfile">
-						<FormField
-							v-model="guest.firstName"
-							:label="t.firstName"
-							required
-							autocomplete="given-name"
-						/>
-						<FormField
-							v-model="guest.lastName"
-							:label="t.lastName"
-							required
-							autocomplete="family-name"
-						/>
-						<FormField
-							v-model="guest.age"
-							:label="t.age"
-							type="number"
-							required
-							:min="0"
-							:max="120"
-							inputmode="numeric"
-							:placeholder="t.ageHint"
-						/>
-						<FormField
-							v-model="guest.householdSize"
-							:label="t.household"
-							type="number"
-							required
-							:min="1"
-							:max="30"
-							inputmode="numeric"
-							:placeholder="t.householdHint"
-						/>
-					</template>
-					<FormField
-						v-model="guest.phone"
-						:label="t.phone"
-						required
-						autocomplete="tel"
-						inputmode="tel"
-						type="tel"
-						placeholder="(555) 123-4567"
-					/>
-					<FormField
-						v-model="pin"
-						:label="t.pin"
-						type="password"
-						required
-						:minlength="4"
-						:maxlength="8"
-						inputmode="numeric"
-						:placeholder="t.pinHint"
-					/>
-					<FormField
-						v-if="registrationType === 'new'"
-						v-model="pinConfirmation"
-						:label="t.confirmPin"
-						type="password"
-						required
-						:minlength="4"
-						:maxlength="8"
-						inputmode="numeric"
-					/>
-					<label v-if="registrationType === 'returning'" class="update-profile-option">
-						<input v-model="updateProfile" type="checkbox" />
-						<span>{{ t.updateInformation }}</span>
-					</label>
-					<label
-						v-for="question in registrationQuestions"
-						:key="question.id"
-						class="dynamic-question"
-					>
-						<span>{{ question.prompt }}</span>
-						<select
-							v-if="question.type === 'scale'"
-							v-model.number="registrationAnswers[question.id]"
-							:required="question.required"
-						>
-							<option value="" disabled>{{ t.chooseAnswer }}</option>
-							<option v-for="value in 10" :key="value" :value="value">{{ value }}</option>
-						</select>
-						<textarea
-							v-else
-							v-model.trim="registrationAnswers[question.id]"
-							:required="question.required"
-							rows="3"
-						></textarea>
-					</label>
-					<p v-if="submissionError" class="submission-error" role="alert">
-						{{ submissionError }}
-					</p>
-					<AppButton type="submit" :disabled="isSubmitting">
-						{{ isSubmitting ? t.submitting : t.submit }} <span aria-hidden="true">→</span>
-					</AppButton>
-					<p class="privacy">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<rect x="5" y="10" width="14" height="10" rx="2" />
-							<path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg
-						>{{ t.privacy }}
-					</p>
-				</form>
-			</section>
+			<GuestSignupCard
+				v-model:guest="guest"
+				v-model:pin="pin"
+				v-model:pin-confirmation="pinConfirmation"
+				v-model:registration-type="registrationType"
+				v-model:update-profile="updateProfile"
+				v-model:registration-answers="registrationAnswers"
+				:t="t"
+				:locale="locale"
+				:context="formContext"
+				:active-visit="activeVisit"
+				:is-submitted="isSubmitted"
+				:is-called="isCalled"
+				:visit-status-label="visitStatusLabel"
+				:queue-position="queuePosition"
+				:guests-ahead="guestsAhead"
+				:can-cancel-visit="canCancelVisit"
+				:is-cancelling="isCancelling"
+				:visit-token="visitToken"
+				:can-show-form="canShowForm"
+				:show-preregister-cta="showPreregisterCta"
+				:registration-questions="registrationQuestions"
+				:submission-error="submissionError"
+				:is-submitting="isSubmitting"
+				@submit="submitForm"
+				@cancel-visit="cancelVisit"
+				@preregister="goToSignup"
+			/>
 		</section>
 
 		<AdminAuthView v-else :locale="locale" :view="adminView" @navigate="navigateAdmin" />
@@ -770,197 +669,6 @@ h1 {
 .language-option.active {
 	color: var(--color-brand);
 	background: var(--color-background);
-}
-.checkin-card {
-	padding: 32px 22px;
-	border: 2px solid var(--color-brand);
-	border-radius: var(--radius-lg);
-	background: var(--color-background);
-}
-.form-heading {
-	margin-bottom: 8px;
-}
-.form-heading h2,
-.success-state h2 {
-	margin-bottom: 9px;
-	font-family: var(--font-heading);
-	font-size: 29px;
-	letter-spacing: -0.01em;
-	text-transform: uppercase;
-	color: var(--color-text);
-}
-.form-heading p,
-.success-state p {
-	color: var(--color-text-muted);
-	font-size: 16px;
-	line-height: 1.55;
-}
-form {
-	display: grid;
-	gap: 18px;
-}
-.registration-type {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 8px;
-}
-.registration-type button {
-	min-height: 48px;
-	border: 2px solid var(--color-brand);
-	border-radius: var(--radius-md);
-	color: var(--color-brand);
-	background: var(--color-background);
-	font-weight: 700;
-}
-.registration-type button.active {
-	color: var(--color-on-brand);
-	background: var(--color-brand);
-}
-.form-help {
-	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 14px;
-	line-height: 1.5;
-}
-.update-profile-option {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	font-weight: 600;
-}
-.update-profile-option input {
-	width: 20px;
-	height: 20px;
-}
-.submission-error {
-	margin: 0;
-	color: var(--color-error);
-	font-size: 13px;
-	line-height: 1.4;
-}
-.privacy {
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
-	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 13px;
-	line-height: 1.5;
-}
-.privacy svg {
-	flex: 0 0 auto;
-	width: 16px;
-	margin-top: 1px;
-}
-.success-state {
-	display: grid;
-	min-height: 340px;
-	place-content: center;
-	text-align: center;
-}
-.closed-state {
-	display: grid;
-	min-height: 280px;
-	place-content: center;
-	text-align: center;
-}
-.closed-state h2 {
-	margin-bottom: 8px;
-	font-family: var(--font-heading);
-	font-size: 28px;
-	text-transform: uppercase;
-}
-.closed-state p {
-	max-width: 320px;
-	color: var(--color-text-muted);
-	line-height: 1.55;
-}
-.closed-icon {
-	display: grid;
-	width: 54px;
-	height: 54px;
-	place-self: center;
-	place-items: center;
-	margin-bottom: 16px;
-	border-radius: 50%;
-	color: white;
-	background: var(--color-brand);
-	font-size: 28px;
-}
-.dynamic-question {
-	display: grid;
-	gap: 8px;
-	font-family: var(--font-heading);
-	font-size: 14.5px;
-	font-weight: 700;
-}
-.dynamic-question select,
-.dynamic-question textarea {
-	width: 100%;
-	padding: 14px 16px;
-	border: 2px solid var(--color-border);
-	border-radius: var(--radius-md);
-	color: var(--color-text);
-	background: var(--color-background);
-	font-family: var(--font-body);
-}
-.checkmark {
-	display: grid;
-	width: 58px;
-	height: 58px;
-	place-self: center;
-	place-items: center;
-	margin-bottom: 19px;
-	border-radius: var(--radius-md);
-	color: var(--color-on-brand);
-	background: var(--color-brand);
-	font-size: 29px;
-}
-.success-state p {
-	max-width: 280px;
-	margin: 0 auto 27px;
-}
-.called-mark {
-	background: var(--color-error);
-	font-size: 34px;
-}
-.queue-standing {
-	margin-bottom: 27px;
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: var(--color-surface-soft);
-}
-.queue-standing p {
-	margin-bottom: 0;
-}
-.queue-position {
-	display: grid;
-	gap: 4px;
-	margin-bottom: 8px;
-}
-.queue-position strong {
-	font-family: var(--font-heading);
-	font-size: 44px;
-	line-height: 1;
-	color: var(--color-brand);
-}
-.queue-next {
-	font-weight: 700;
-}
-.notification-option {
-	display: grid;
-	gap: 12px;
-	margin-bottom: 22px;
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: var(--color-surface-soft);
-}
-.notification-option p {
-	margin-bottom: 0;
-	font-size: 14px;
-}
-.notification-enabled {
-	font-weight: 700;
 }
 .admin-view {
 	width: min(100% - 36px, 560px);

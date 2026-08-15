@@ -5,6 +5,7 @@ import { auth0 } from './auth';
 import router from './router';
 
 import './styles/admin.css';
+import './styles/guest.css';
 
 const app = createApp(App).use(router);
 

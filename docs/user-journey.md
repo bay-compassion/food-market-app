@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=9c9a37ff17db, netlify/services/guestRegistration.mts=42276ba52186, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=77286a80adc9, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
 
 # Guest journey
 
@@ -25,10 +25,13 @@ flowchart TD
     hasVisit -- yes --> status[Status screen]
     hasVisit -- no --> canRegister{Registration open?}
 
-    canRegister -- no --> closed([Closed screen:<br/>no session to join right now])
     canRegister -- yes --> kind{New or returning guest?}
+    canRegister -- no --> closed{Event exists and its<br/>window hasn't passed yet?}
+    closed -- no --> closedScreen([Closed screen:<br/>no session to join right now])
+    closed -- yes --> earlyLink([Closed screen offers a<br/>'sign up early' link to /signup])
+    earlyLink -. "guest follows the link" .-> kind
 
-    kind -- new --> newForm[Name, age, household size,<br/>phone, new PIN]
+    kind -- new --> newForm[Name, age range,<br/>household size,<br/>children/seniors shopping for,<br/>phone, new PIN]
     kind -- returning --> returningForm[Phone and PIN]
     newForm --> questions[Answer this session's<br/>registration questions]
     returningForm --> questions
@@ -62,6 +65,21 @@ flowchart TD
 - **A returning guest proves who they are with phone number plus PIN.** Repeated wrong PINs are
   rate-limited per phone number (`guest_pin_attempts`), and a returning guest can optionally update
   their stored profile while registering.
+- **`/signup` lets a guest register ahead of the window, as soon as any event exists.** The server
+  allows self-registration for any status up through `registration_open` — including `draft`,
+  before an admin has scheduled anything — and only blocks it once the window has genuinely passed
+  (`registration_closed`, `service_started`, `ended`). The `/` route only shows the form once
+  registration is actually open; `/signup` renders the same `GuestSignupCard` component but
+  bypasses that client-side wait, so it also doubles as a way to exercise the form locally without
+  forcing a session into `registration_open`. `GuestSignupCard` takes a `context` prop
+  (`'queue' | 'early'`) that swaps the form/success copy — "join the queue" only reads correctly
+  once registration is genuinely open, so `App.vue` derives `context` from whether registration is
+  actually open right now, not from which route rendered the card.
+- **Household composition — age range, household size, and how many children/seniors (55+) the
+  guest is shopping for — lives on the guest profile and is snapshotted onto each visit.** A
+  returning guest who isn't updating their profile doesn't see those fields again; the visit is
+  created with whatever values are already on file, so the numbers stay accurate for reporting
+  without asking the same questions every time.
 - **The status screen polls.** It re-checks `/api/visit` on a timer for as long as the visit is
   live — `registered`, `waiting`, or `called` — so the guest sees the lottery result and the call
   even without notifications. Push is a convenience, never the only channel. It also re-checks

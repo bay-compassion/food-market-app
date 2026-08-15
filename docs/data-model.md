@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=9e0b540cc34a -->
+<!-- diagram-sources: db/schema.mts=28166cebdfb3 -->
 
 # Database structure
 
@@ -46,8 +46,11 @@ erDiagram
         uuid id PK
         text first_name
         text last_name
-        integer age
+        integer age "nullable; superseded by age_range, dropped in a later migration"
+        text age_range "nullable until the drop migration lands; 0-17 | 18-29 | ... | 75+"
         integer household_size
+        integer children_count "shopping for; carried over onto each new visit"
+        integer seniors_count "55+, shopping for; carried over onto each new visit"
         text phone
         text normalized_phone
         text pin_hash "null until a PIN is set"
@@ -62,6 +65,8 @@ erDiagram
         text status "see session-lifecycle.md"
         integer queue_position "lottery order; walk-ins placed on arrival"
         integer lottery_weight "relative odds in the draw; 1 unless a worker raised them"
+        integer children_count "snapshot of the guest's count at the time of this visit"
+        integer seniors_count "snapshot of the guest's count at the time of this visit"
         timestamptz called_at
         timestamptz served_at "null when never served, or recorded after the session ended"
         jsonb answers "registration question answers"
