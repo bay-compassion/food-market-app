@@ -10,6 +10,7 @@ const router = createRouter({
 		{ path: '/', name: 'guest', component: App },
 		{ path: '/privacy', name: 'privacy', component: App },
 		{ path: '/terms', name: 'terms', component: App },
+		{ path: '/qr-code', name: 'qr-code', component: App },
 		{
 			path: '/admin/:view(current-session|queue|question-bank|guest-database|session-history|reports|dev-mode)?',
 			name: 'admin',

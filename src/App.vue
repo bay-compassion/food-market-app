@@ -12,6 +12,7 @@ import LegalDocumentView from './components/legal/LegalDocumentView.vue';
 import privacyMarkdown from './components/legal/privacy.md?raw';
 import termsMarkdown from './components/legal/terms.md?raw';
 import NotificationOptIn from './components/NotificationOptIn.vue';
+import QrCodeView from './components/QrCodeView.vue';
 import { languages, translations, type Locale } from './locales';
 import type { SessionStatus } from './services/sessionStateMachine';
 import type { VisitStatus } from './services/visitStateMachine';
@@ -118,6 +119,7 @@ const router = useRouter();
 const isAdmin = computed(() => route.name === 'admin');
 const isPrivacy = computed(() => route.name === 'privacy');
 const isTerms = computed(() => route.name === 'terms');
+const isQrCode = computed(() => route.name === 'qr-code');
 const adminView = computed<AdminView>(() =>
 	isAdminView(route.params.view) ? route.params.view : 'current-session',
 );
@@ -308,7 +310,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<main class="app-shell" :dir="locale === 'fa' || locale === 'ar' ? 'rtl' : 'ltr'">
+	<main
+		class="app-shell"
+		:class="{ 'app-shell--print-qr': isQrCode }"
+		:dir="locale === 'fa' || locale === 'ar' ? 'rtl' : 'ltr'"
+	>
 		<header class="topbar">
 			<a class="brand" href="/" @click.prevent="showGuest">
 				<img class="brand-mark" src="/bay-compassion-logo.png" alt="" />
@@ -349,6 +355,15 @@ onBeforeUnmount(() => {
 			v-else-if="isTerms"
 			:back-label="t.backToGuest"
 			:markdown="termsMarkdown"
+			@back="showGuest"
+		/>
+		<QrCodeView
+			v-else-if="isQrCode"
+			:back-label="t.backToGuest"
+			:title="t.qrCodeTitle"
+			:description="t.qrCodeDescription"
+			:image-alt="t.qrCodeImageAlt"
+			:print-label="t.qrCodePrint"
 			@back="showGuest"
 		/>
 		<section v-else-if="!isAdmin" class="guest-layout">
@@ -550,7 +565,7 @@ onBeforeUnmount(() => {
 
 		<AdminAuthView v-else :locale="locale" :view="adminView" @navigate="navigateAdmin" />
 
-		<footer v-if="!isPrivacy && !isTerms" class="app-footer">
+		<footer v-if="!isPrivacy && !isTerms && !isQrCode" class="app-footer">
 			<a href="/privacy" @click.prevent="showPrivacy">{{ t.privacyPolicy }}</a>
 			<span class="app-footer-divider" aria-hidden="true">·</span>
 			<a href="/terms" @click.prevent="showTerms">{{ t.termsAndConditions }}</a>
@@ -620,6 +635,11 @@ a:focus-visible {
 	justify-content: space-between;
 	padding: 0 20px;
 	background: var(--color-brand);
+}
+@media print {
+	.app-shell--print-qr .topbar {
+		display: none;
+	}
 }
 .auth-banner {
 	padding: 12px 20px;
