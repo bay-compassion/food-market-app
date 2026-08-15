@@ -28,7 +28,8 @@ describe('AddGuestSection', () => {
 
 	it('lets a worker choose the draw or a reserved spot before the lottery runs', async () => {
 		const wrapper = await openForm(['lottery', 'queue']);
-		const options = wrapper.findAll('select')[0]!.findAll('option');
+		// [0] is the age range select, which is always present.
+		const options = wrapper.findAll('select')[1]!.findAll('option');
 
 		expect(options.map((option) => option.text())).toEqual([t.admitToLottery, t.admitToQueue]);
 		// The first option leads, so the fair choice is what a worker gets by default.
@@ -39,9 +40,10 @@ describe('AddGuestSection', () => {
 		const wrapper = await openForm(['queue']);
 		const selects = wrapper.findAll('select');
 
-		// Just the queue placement — no point asking a question with a single answer.
-		expect(selects).toHaveLength(1);
-		expect(selects[0]!.findAll('option').map((option) => option.text())).toEqual([
+		// The age range select, plus just the queue placement — no point asking a question with a
+		// single answer.
+		expect(selects).toHaveLength(2);
+		expect(selects[1]!.findAll('option').map((option) => option.text())).toEqual([
 			t.placeEnd,
 			t.placeNext,
 		]);
@@ -51,7 +53,8 @@ describe('AddGuestSection', () => {
 	it('hides the queue placement for an admission that never joins a line', async () => {
 		const wrapper = await openForm(['served']);
 
-		expect(wrapper.findAll('select')).toHaveLength(0);
+		// Only the age range select remains.
+		expect(wrapper.findAll('select')).toHaveLength(1);
 		expect(wrapper.text()).toContain(t.admitAsServedHelp);
 	});
 
@@ -60,7 +63,7 @@ describe('AddGuestSection', () => {
 
 		expect(wrapper.text()).toContain(t.lotteryWeightLabel);
 		// Switching to a reserved spot takes the guest out of the draw, so the odds go with it.
-		await wrapper.findAll('select')[0]!.setValue('queue');
+		await wrapper.findAll('select')[1]!.setValue('queue');
 		expect(wrapper.text()).not.toContain(t.lotteryWeightLabel);
 	});
 
@@ -76,7 +79,9 @@ describe('AddGuestSection', () => {
 
 	it('emits the weight tier the worker picked', async () => {
 		const wrapper = await openForm(['lottery']);
-		await wrapper.findAll('select')[0]!.setValue('highest');
+		// [0] is the age range select; the admission select is hidden with a single admission, so
+		// [1] is the lottery weight tier.
+		await wrapper.findAll('select')[1]!.setValue('highest');
 		await wrapper.find('form').trigger('submit');
 
 		expect(wrapper.emitted('addGuest')?.[0]?.[0]).toMatchObject({
@@ -86,7 +91,7 @@ describe('AddGuestSection', () => {
 
 	it('emits the guest with the admission the worker picked', async () => {
 		const wrapper = await openForm(['lottery', 'queue']);
-		await wrapper.findAll('select')[0]!.setValue('queue');
+		await wrapper.findAll('select')[1]!.setValue('queue');
 		await wrapper.find('form').trigger('submit');
 
 		expect(wrapper.emitted('addGuest')?.[0]?.[0]).toMatchObject({

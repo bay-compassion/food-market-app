@@ -23,7 +23,7 @@ function toNumber(value: string): string | number {
 }
 
 function onInput(event: Event) {
-	const value = (event.target as HTMLInputElement).value;
+	const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
 
 	emit('update:modelValue', props.type === 'number' ? toNumber(value) : value.trim());
 }
@@ -32,7 +32,11 @@ function onInput(event: Event) {
 <template>
 	<label class="form-field">
 		<span>{{ label }}</span>
+		<select v-if="type === 'select'" :value="modelValue" :required="required" @change="onInput">
+			<slot />
+		</select>
 		<input
+			v-else
 			:value="modelValue"
 			:type="type"
 			:required="required"
@@ -55,7 +59,8 @@ function onInput(event: Event) {
 	font-size: 14.5px;
 	font-weight: 700;
 }
-.form-field input {
+.form-field input,
+.form-field select {
 	width: 100%;
 	height: 58px;
 	padding: 0 16px;

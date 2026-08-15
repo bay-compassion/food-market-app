@@ -74,8 +74,10 @@ describe('endpoint permissions', () => {
 			json('https://x/api/guests', 'POST', {
 				firstName: 'Ana',
 				lastName: 'Reyes',
-				age: 40,
+				ageRange: '30-44',
 				householdSize: 3,
+				childrenCount: 0,
+				seniorsCount: 0,
 				phone: '5105550123',
 				locale: 'en',
 				source: 'admin',
@@ -149,8 +151,10 @@ describe('endpoint permissions', () => {
 			json('https://x/api/guests', 'POST', {
 				firstName: 'Ana',
 				lastName: 'Reyes',
-				age: 40,
+				ageRange: '30-44',
 				householdSize: 3,
+				childrenCount: 0,
+				seniorsCount: 0,
 				phone: '5105550123',
 				locale: 'en',
 				source: 'self',

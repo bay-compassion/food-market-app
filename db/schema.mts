@@ -12,6 +12,7 @@ import {
 	uuid,
 } from 'drizzle-orm/pg-core';
 
+import type { AgeRange } from '../src/services/ageRanges';
 import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine';
 import type { VisitStatus } from '../src/services/visitStateMachine';
 
@@ -40,8 +41,12 @@ export const guests = pgTable('guests', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
-	age: integer('age').notNull(),
+	/** Still present for the pending backfill-then-drop follow-up; superseded by `ageRange`. */
+	age: integer('age'),
+	ageRange: text('age_range').$type<AgeRange>(),
 	householdSize: integer('household_size').notNull(),
+	childrenCount: integer('children_count').notNull().default(0),
+	seniorsCount: integer('seniors_count').notNull().default(0),
 	phone: text('phone').notNull(),
 	normalizedPhone: text('normalized_phone').notNull(),
 	pinHash: text('pin_hash'),
@@ -61,6 +66,9 @@ export const visits = pgTable('visits', {
 	queuePosition: integer('queue_position'),
 	/** Relative odds in the lottery: a visit weighted 2 is twice as likely to be drawn as a 1. */
 	lotteryWeight: integer('lottery_weight').notNull().default(1),
+	/** Snapshot of the guest's counts at the time of this visit, for accurate per-visit reporting. */
+	childrenCount: integer('children_count').notNull().default(0),
+	seniorsCount: integer('seniors_count').notNull().default(0),
 	calledAt: timestamp('called_at', { withTimezone: true }),
 	/** When service finished. Null for a visit never served, and for one recorded after the fact. */
 	servedAt: timestamp('served_at', { withTimezone: true }),

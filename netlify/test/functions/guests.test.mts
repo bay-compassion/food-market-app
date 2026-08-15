@@ -118,8 +118,10 @@ describe('guests handler POST (self-service registration is intentionally public
 				body: {
 					firstName: 'Ari',
 					lastName: 'Guest',
-					age: 30,
+					ageRange: '18-29',
 					householdSize: 2,
+					childrenCount: 0,
+					seniorsCount: 0,
 					phone: '555-123-4567',
 					locale: 'en',
 					pin: '1234',
@@ -144,8 +146,10 @@ describe('guests handler POST (self-service registration is intentionally public
 				body: {
 					firstName: 'Ari',
 					lastName: 'Guest',
-					age: 30,
+					ageRange: '18-29',
 					householdSize: 2,
+					childrenCount: 0,
+					seniorsCount: 0,
 					phone: '555-123-4567',
 					locale: 'en',
 					source: 'admin',

@@ -69,8 +69,9 @@ describe('App', () => {
 		window.localStorage.clear();
 	});
 
-	it('renders the guest queue form', () => {
+	it('renders the guest queue form', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		expect(wrapper.text()).toContain('Welcome to the community food market');
 		expect(wrapper.text()).toContain('Number of people in your household');
@@ -82,6 +83,7 @@ describe('App', () => {
 
 	it('switches the guest copy to Spanish', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		await wrapper.findAll('.language-option')[1]!.trigger('click');
 
@@ -90,19 +92,21 @@ describe('App', () => {
 		expect(wrapper.find('.hero').exists()).toBe(false);
 	});
 
-	it('uses saved settings for returning visitors', () => {
+	it('uses saved settings for returning visitors', async () => {
 		window.localStorage.setItem('bay-compassion.locale', 'es');
 		window.localStorage.setItem('bay-compassion.returning-visitor', 'true');
 
 		const wrapper = mountApp();
+		await flushPromises();
 
 		expect(wrapper.find('.hero').exists()).toBe(false);
 		expect((wrapper.find('select').element as HTMLSelectElement).value).toBe('es');
 		expect(wrapper.text()).toContain('Cuéntenos sobre usted');
 	});
 
-	it('offers the requested language options on the guest page', () => {
+	it('offers the requested language options on the guest page', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		expect(wrapper.findAll('.language-option')).toHaveLength(7);
 		expect(wrapper.text()).toContain('فارسی');
@@ -114,6 +118,7 @@ describe('App', () => {
 
 	it('renders Persian in a right-to-left layout', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		await wrapper.findAll('.language-option')[2]!.trigger('click');
 
@@ -152,11 +157,13 @@ describe('App', () => {
 
 		await inputs[0]!.setValue('Ada');
 		await inputs[1]!.setValue('Lovelace');
-		await inputs[2]!.setValue('36');
-		await inputs[3]!.setValue('2');
-		await inputs[4]!.setValue('(555) 123-4567');
-		await inputs[5]!.setValue('1234');
+		await wrapper.find('select').setValue('18-29');
+		await inputs[2]!.setValue('2');
+		await inputs[3]!.setValue('1');
+		await inputs[4]!.setValue('0');
+		await inputs[5]!.setValue('(555) 123-4567');
 		await inputs[6]!.setValue('1234');
+		await inputs[7]!.setValue('1234');
 		await wrapper.find('form').trigger('submit');
 		await flushPromises();
 
@@ -166,8 +173,10 @@ describe('App', () => {
 				body: JSON.stringify({
 					firstName: 'Ada',
 					lastName: 'Lovelace',
-					age: 36,
+					ageRange: '18-29',
 					householdSize: 2,
+					childrenCount: 1,
+					seniorsCount: 0,
 					phone: '(555) 123-4567',
 					locale: 'en',
 					marketEventId: 'event-1',

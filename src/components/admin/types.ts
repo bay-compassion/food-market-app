@@ -1,4 +1,5 @@
 import type { Locale } from '../../locales';
+import type { AgeRange } from '../../services/ageRanges';
 import type { GuestAdmission, QueuePlacement } from '../../services/guestAdmission';
 import type { LotteryWeightTier } from '../../services/lotteryWeight';
 import type { Permission } from '../../services/permissions';
@@ -79,8 +80,10 @@ export type Question = {
 export type ManualGuest = {
 	firstName: string;
 	lastName: string;
-	age: string | number;
+	ageRange: AgeRange | '';
 	householdSize: string | number;
+	childrenCount: string | number;
+	seniorsCount: string | number;
 	phone: string;
 	queuePlacement: QueuePlacement;
 	admission: GuestAdmission;

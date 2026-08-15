@@ -3,6 +3,7 @@ import { computed, reactive, watch } from 'vue';
 
 import { adminTranslations } from '../../adminLocales';
 import { translations, type Locale } from '../../locales';
+import { ageRanges } from '../../services/ageRanges';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import {
 	lotteryWeightFor,
@@ -26,14 +27,24 @@ const base = computed(() => translations[props.locale]);
 const guest = reactive<ManualGuest>({
 	firstName: '',
 	lastName: '',
-	age: '',
+	ageRange: '',
 	householdSize: 1,
+	childrenCount: 0,
+	seniorsCount: 0,
 	phone: '',
 	queuePlacement: 'end',
 	admission: props.admissions[0] ?? 'queue',
 	lotteryWeightTier: 'standard',
 });
 
+const ageRangeLabels = computed<Record<(typeof ageRanges)[number], string>>(() => ({
+	'0-17': base.value.ageRange0to17,
+	'18-29': base.value.ageRange18to29,
+	'30-44': base.value.ageRange30to44,
+	'45-59': base.value.ageRange45to59,
+	'60-74': base.value.ageRange60to74,
+	'75+': base.value.ageRange75plus,
+}));
 const admissionLabels = computed<Record<GuestAdmission, string>>(() => ({
 	lottery: t.value.admitToLottery,
 	queue: t.value.admitToQueue,
@@ -71,18 +82,34 @@ function submit() {
 		<FormField v-model="guest.firstName" :label="base.firstName" required />
 		<FormField v-model="guest.lastName" :label="base.lastName" required />
 		<div class="field-row">
+			<FormField v-model="guest.ageRange" :label="base.age" type="select" required>
+				<option value="" disabled>{{ base.agePlaceholder }}</option>
+				<option v-for="range in ageRanges" :key="range" :value="range">
+					{{ ageRangeLabels[range] }}
+				</option>
+			</FormField>
 			<FormField
-				v-model="guest.age"
-				:label="base.age"
-				type="number"
-				:min="0"
-				:max="120"
-				required
-			/><FormField
 				v-model="guest.householdSize"
 				:label="base.household"
 				type="number"
 				:min="1"
+				:max="30"
+				required
+			/>
+		</div>
+		<div class="field-row">
+			<FormField
+				v-model="guest.childrenCount"
+				:label="base.childrenCount"
+				type="number"
+				:min="0"
+				:max="30"
+				required
+			/><FormField
+				v-model="guest.seniorsCount"
+				:label="base.seniorsCount"
+				type="number"
+				:min="0"
 				:max="30"
 				required
 			/>
