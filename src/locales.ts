@@ -66,6 +66,10 @@ export interface Translation {
 	phone: string;
 	privacy: string;
 	privacyPolicy: string;
+	qrCodeDescription: string;
+	qrCodeImageAlt: string;
+	qrCodePrint: string;
+	qrCodeTitle: string;
 	registrationClosed: string;
 	registrationClosedDescription: string;
 	registrationType: string;
@@ -156,6 +160,11 @@ export const translations = {
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you today.',
 		privacyPolicy: 'Privacy Policy',
+		qrCodeDescription:
+			'Scan this code with a phone camera, or visit the link below, to open the check-in page.',
+		qrCodeImageAlt: 'QR code that links to the check-in page',
+		qrCodePrint: 'Print',
+		qrCodeTitle: 'Scan to check in',
 		registrationClosed: 'Registration is closed',
 		registrationClosedDescription: 'Please check with a market team member for help.',
 		registrationType: 'Guest type',
@@ -245,6 +254,11 @@ export const translations = {
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
 		privacyPolicy: 'Política de privacidad',
+		qrCodeDescription:
+			'Escanee este código con la cámara de un teléfono, o visite el enlace de abajo, para abrir la página de registro.',
+		qrCodeImageAlt: 'Código QR que enlaza a la página de registro',
+		qrCodePrint: 'Imprimir',
+		qrCodeTitle: 'Escanee para registrarse',
 		registrationClosed: 'El registro está cerrado',
 		registrationClosedDescription: 'Pida ayuda a un miembro del equipo del mercado.',
 		registrationType: 'Tipo de invitado',
@@ -333,6 +347,11 @@ export const translations = {
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی امروز استفاده می‌شود.',
 		privacyPolicy: 'سیاست حفظ حریم خصوصی',
+		qrCodeDescription:
+			'این کد را با دوربین گوشی اسکن کنید یا از پیوند زیر بازدید کنید تا صفحه ثبت‌نام باز شود.',
+		qrCodeImageAlt: 'کد QR که به صفحه ثبت‌نام پیوند دارد',
+		qrCodePrint: 'چاپ',
+		qrCodeTitle: 'برای ثبت‌نام اسکن کنید',
 		registrationClosed: 'ثبت‌نام بسته است',
 		registrationClosedDescription: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
 		registrationType: 'نوع مهمان',
@@ -423,6 +442,11 @@ export const translations = {
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayo ngayon.',
 		privacyPolicy: 'Patakaran sa Privacy',
+		qrCodeDescription:
+			'I-scan ang code na ito gamit ang camera ng telepono, o bisitahin ang link sa ibaba, para buksan ang pahina ng pag-check in.',
+		qrCodeImageAlt: 'QR code na naka-link sa pahina ng pag-check in',
+		qrCodePrint: 'I-print',
+		qrCodeTitle: 'I-scan para mag-check in',
 		registrationClosed: 'Sarado ang pagpaparehistro',
 		registrationClosedDescription: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
 		registrationType: 'Uri ng bisita',
@@ -512,6 +536,11 @@ export const translations = {
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn hôm nay.',
 		privacyPolicy: 'Chính sách quyền riêng tư',
+		qrCodeDescription:
+			'Quét mã này bằng camera điện thoại, hoặc truy cập liên kết bên dưới, để mở trang đăng ký.',
+		qrCodeImageAlt: 'Mã QR liên kết đến trang đăng ký',
+		qrCodePrint: 'In',
+		qrCodeTitle: 'Quét để đăng ký',
 		registrationClosed: 'Đã đóng đăng ký',
 		registrationClosedDescription: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
 		registrationType: 'Loại khách',
@@ -599,6 +628,10 @@ export const translations = {
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们今天为您提供服务。',
 		privacyPolicy: '隐私政策',
+		qrCodeDescription: '用手机相机扫描此二维码，或访问下方链接，打开登记页面。',
+		qrCodeImageAlt: '链接到登记页面的二维码',
+		qrCodePrint: '打印',
+		qrCodeTitle: '扫码登记',
 		registrationClosed: '登记已关闭',
 		registrationClosedDescription: '请向市场工作人员寻求帮助。',
 		registrationType: '访客类型',
@@ -687,6 +720,11 @@ export const translations = {
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك اليوم.',
 		privacyPolicy: 'سياسة الخصوصية',
+		qrCodeDescription:
+			'امسح هذا الرمز بكاميرا الهاتف، أو تفضل بزيارة الرابط أدناه، لفتح صفحة التسجيل.',
+		qrCodeImageAlt: 'رمز الاستجابة السريعة الذي يرتبط بصفحة التسجيل',
+		qrCodePrint: 'طباعة',
+		qrCodeTitle: 'امسح للتسجيل',
 		registrationClosed: 'التسجيل مغلق',
 		registrationClosedDescription: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
 		registrationType: 'نوع الضيف',
