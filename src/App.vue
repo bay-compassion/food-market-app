@@ -51,6 +51,7 @@ type ActiveVisit = {
 	aheadOfYou: number | null;
 };
 const activeVisit = ref<ActiveVisit | null>(null);
+const isStatusLoading = ref(true);
 const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
 type MarketEventTiming = {
 	id: string;
@@ -345,7 +346,10 @@ async function loadRegistration() {
 	}
 }
 
-onMounted(() => Promise.all([loadRegistration(), loadActiveVisit()]));
+onMounted(async () => {
+	await Promise.all([loadRegistration(), loadActiveVisit()]);
+	isStatusLoading.value = false;
+});
 onBeforeUnmount(() => {
 	clearTimeout(registrationRefreshTimer);
 	clearTimeout(visitRefreshTimer);
@@ -410,56 +414,59 @@ onBeforeUnmount(() => {
 			@back="showGuest"
 		/>
 		<section v-else-if="!isAdmin" class="guest-layout">
-			<div v-if="!isReturningVisitor" class="hero">
-				<EyebrowLabel>{{ t.compassionFood }}</EyebrowLabel>
-				<h1>{{ t.welcome }}</h1>
-				<p class="hero-copy">{{ t.heroCopy }}</p>
-				<section class="language-selector" :aria-label="t.language">
-					<p>{{ t.languagePrompt }}</p>
-					<div class="language-list" role="group" :aria-label="t.languagePrompt">
-						<button
-							v-for="language in languages"
-							:key="language.code"
-							class="language-option"
-							:class="{ active: locale === language.code }"
-							type="button"
-							:aria-pressed="locale === language.code"
-							@click="selectLanguage(language.code)"
-						>
-							{{ language.label }}
-						</button>
-					</div>
-				</section>
-			</div>
+			<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
+			<template v-else>
+				<div v-if="!isReturningVisitor" class="hero">
+					<EyebrowLabel>{{ t.compassionFood }}</EyebrowLabel>
+					<h1>{{ t.welcome }}</h1>
+					<p class="hero-copy">{{ t.heroCopy }}</p>
+					<section class="language-selector" :aria-label="t.language">
+						<p>{{ t.languagePrompt }}</p>
+						<div class="language-list" role="group" :aria-label="t.languagePrompt">
+							<button
+								v-for="language in languages"
+								:key="language.code"
+								class="language-option"
+								:class="{ active: locale === language.code }"
+								type="button"
+								:aria-pressed="locale === language.code"
+								@click="selectLanguage(language.code)"
+							>
+								{{ language.label }}
+							</button>
+						</div>
+					</section>
+				</div>
 
-			<GuestSignupCard
-				v-model:guest="guest"
-				v-model:pin="pin"
-				v-model:pin-confirmation="pinConfirmation"
-				v-model:registration-type="registrationType"
-				v-model:update-profile="updateProfile"
-				v-model:registration-answers="registrationAnswers"
-				:t="t"
-				:locale="locale"
-				:context="formContext"
-				:active-visit="activeVisit"
-				:is-submitted="isSubmitted"
-				:is-called="isCalled"
-				:visit-status-label="visitStatusLabel"
-				:queue-position="queuePosition"
-				:guests-ahead="guestsAhead"
-				:can-cancel-visit="canCancelVisit"
-				:is-cancelling="isCancelling"
-				:visit-token="visitToken"
-				:can-show-form="canShowForm"
-				:show-preregister-cta="showPreregisterCta"
-				:registration-questions="registrationQuestions"
-				:submission-error="submissionError"
-				:is-submitting="isSubmitting"
-				@submit="submitForm"
-				@cancel-visit="cancelVisit"
-				@preregister="goToSignup"
-			/>
+				<GuestSignupCard
+					v-model:guest="guest"
+					v-model:pin="pin"
+					v-model:pin-confirmation="pinConfirmation"
+					v-model:registration-type="registrationType"
+					v-model:update-profile="updateProfile"
+					v-model:registration-answers="registrationAnswers"
+					:t="t"
+					:locale="locale"
+					:context="formContext"
+					:active-visit="activeVisit"
+					:is-submitted="isSubmitted"
+					:is-called="isCalled"
+					:visit-status-label="visitStatusLabel"
+					:queue-position="queuePosition"
+					:guests-ahead="guestsAhead"
+					:can-cancel-visit="canCancelVisit"
+					:is-cancelling="isCancelling"
+					:visit-token="visitToken"
+					:can-show-form="canShowForm"
+					:show-preregister-cta="showPreregisterCta"
+					:registration-questions="registrationQuestions"
+					:submission-error="submissionError"
+					:is-submitting="isSubmitting"
+					@submit="submitForm"
+					@cancel-visit="cancelVisit"
+					@preregister="goToSignup"
+				/>
+			</template>
 		</section>
 
 		<AdminAuthView v-else :locale="locale" :view="adminView" @navigate="navigateAdmin" />
@@ -606,6 +613,13 @@ a:focus-visible {
 	width: min(100% - 36px, 560px);
 	margin: 0 auto;
 	padding: 24px 0 40px;
+}
+.status-loading {
+	padding: 32px 0;
+	color: var(--color-text-subtle);
+	font-size: 17px;
+	line-height: 1.6;
+	text-align: center;
 }
 .hero {
 	margin-bottom: 24px;

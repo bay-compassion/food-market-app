@@ -107,6 +107,7 @@ export interface Translation {
 	calledDescription: string;
 	statusCancelled: string;
 	statusCalled: string;
+	statusLoading: string;
 	statusNoShow: string;
 	statusNotPlaced: string;
 	statusRegistered: string;
@@ -220,6 +221,7 @@ export const translations = {
 		calledDescription: 'Please come to the table now.',
 		statusCancelled: 'Cancelled',
 		statusCalled: 'Called',
+		statusLoading: 'Checking today’s market status…',
 		statusNoShow: 'No show',
 		statusNotPlaced: 'Not placed',
 		statusRegistered: 'Registered',
@@ -332,6 +334,7 @@ export const translations = {
 		calledDescription: 'Por favor, acérquese al mostrador ahora.',
 		statusCancelled: 'Cancelado',
 		statusCalled: 'Llamado',
+		statusLoading: 'Consultando el estado del mercado de hoy…',
 		statusNoShow: 'No se presentó',
 		statusNotPlaced: 'Sin lugar',
 		statusRegistered: 'Registrado',
@@ -443,6 +446,7 @@ export const translations = {
 		calledDescription: 'لطفاً همین حالا به میز مراجعه کنید.',
 		statusCancelled: 'لغوشده',
 		statusCalled: 'فراخوانده‌شده',
+		statusLoading: 'در حال بررسی وضعیت بازار امروز…',
 		statusNoShow: 'غایب',
 		statusNotPlaced: 'انتخاب‌نشده',
 		statusRegistered: 'ثبت‌شده',
@@ -557,6 +561,7 @@ export const translations = {
 		calledDescription: 'Pumunta na po kayo sa mesa ngayon.',
 		statusCancelled: 'Kinansela',
 		statusCalled: 'Tinawag',
+		statusLoading: 'Sinusuri ang katayuan ng palengke ngayon…',
 		statusNoShow: 'Hindi dumating',
 		statusNotPlaced: 'Hindi napili',
 		statusRegistered: 'Nakarehistro',
@@ -670,6 +675,7 @@ export const translations = {
 		calledDescription: 'Vui lòng đến quầy ngay bây giờ.',
 		statusCancelled: 'Đã hủy',
 		statusCalled: 'Đã gọi',
+		statusLoading: 'Đang kiểm tra tình trạng chợ hôm nay…',
 		statusNoShow: 'Không đến',
 		statusNotPlaced: 'Không được chọn',
 		statusRegistered: 'Đã đăng ký',
@@ -778,6 +784,7 @@ export const translations = {
 		calledDescription: '请现在到服务台来。',
 		statusCancelled: '已取消',
 		statusCalled: '已叫号',
+		statusLoading: '正在查询今天的市场状态…',
 		statusNoShow: '未到场',
 		statusNotPlaced: '未入选',
 		statusRegistered: '已登记',
@@ -888,6 +895,7 @@ export const translations = {
 		calledDescription: 'يرجى التوجه إلى الطاولة الآن.',
 		statusCancelled: 'ملغاة',
 		statusCalled: 'تم استدعاؤه',
+		statusLoading: 'جارٍ التحقق من حالة السوق اليوم…',
 		statusNoShow: 'لم يحضر',
 		statusNotPlaced: 'لم يتم اختياره',
 		statusRegistered: 'مسجل',

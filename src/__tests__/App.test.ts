@@ -69,8 +69,9 @@ describe('App', () => {
 		window.localStorage.clear();
 	});
 
-	it('renders the guest queue form', () => {
+	it('renders the guest queue form', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		expect(wrapper.text()).toContain('Welcome to the community food market');
 		expect(wrapper.text()).toContain('Number of people in your household');
@@ -82,6 +83,7 @@ describe('App', () => {
 
 	it('switches the guest copy to Spanish', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		await wrapper.findAll('.language-option')[1]!.trigger('click');
 
@@ -90,19 +92,21 @@ describe('App', () => {
 		expect(wrapper.find('.hero').exists()).toBe(false);
 	});
 
-	it('uses saved settings for returning visitors', () => {
+	it('uses saved settings for returning visitors', async () => {
 		window.localStorage.setItem('bay-compassion.locale', 'es');
 		window.localStorage.setItem('bay-compassion.returning-visitor', 'true');
 
 		const wrapper = mountApp();
+		await flushPromises();
 
 		expect(wrapper.find('.hero').exists()).toBe(false);
 		expect((wrapper.find('select').element as HTMLSelectElement).value).toBe('es');
 		expect(wrapper.text()).toContain('Cuéntenos sobre usted');
 	});
 
-	it('offers the requested language options on the guest page', () => {
+	it('offers the requested language options on the guest page', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		expect(wrapper.findAll('.language-option')).toHaveLength(7);
 		expect(wrapper.text()).toContain('فارسی');
@@ -114,6 +118,7 @@ describe('App', () => {
 
 	it('renders Persian in a right-to-left layout', async () => {
 		const wrapper = mountApp();
+		await flushPromises();
 
 		await wrapper.findAll('.language-option')[2]!.trigger('click');
 
