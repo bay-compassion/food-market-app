@@ -12,6 +12,12 @@ const props = withDefaults(
 		inputmode?: 'text' | 'numeric' | 'tel' | 'none' | 'decimal' | 'search' | 'email' | 'url';
 		autocomplete?: string;
 		placeholder?: string;
+		/** Transforms the raw typed text before it's emitted, e.g. formatting phone number digits
+		 *  into `(555) 123-4567`. Written back onto the input element itself rather than left to
+		 *  `:value` to reapply: Vue only patches an input's DOM value when the emitted model actually
+		 *  changes, so a keystroke the formatter rejects outright (a stray letter, an eleventh digit)
+		 *  would otherwise sit visibly in the field even though the model stayed correct. */
+		format?: (value: string) => string;
 	}>(),
 	{ type: 'text', required: false },
 );
@@ -19,7 +25,18 @@ const props = withDefaults(
 const emit = defineEmits<{ 'update:modelValue': [value: string | number] }>();
 
 function onInput(event: Event) {
-	const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
+	const target = event.target as HTMLInputElement | HTMLSelectElement;
+
+	if (props.format) {
+		const formatted = props.format(target.value);
+
+		target.value = formatted;
+		emit('update:modelValue', formatted);
+
+		return;
+	}
+
+	const value = target.value;
 
 	emit('update:modelValue', props.type === 'number' ? parseNumericInput(value) : value.trim());
 }

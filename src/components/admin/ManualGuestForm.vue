@@ -12,6 +12,7 @@ import {
 } from '../../services/lotteryWeight';
 import AppButton from '../AppButton.vue';
 import FormField from '../FormField.vue';
+import PhoneField from '../PhoneField.vue';
 import type { ManualGuest } from './types';
 
 const props = defineProps<{
@@ -114,7 +115,7 @@ function submit() {
 				required
 			/>
 		</div>
-		<FormField v-model="guest.phone" :label="base.phone" type="tel" required />
+		<PhoneField v-model="guest.phone" :label="base.phone" required />
 		<label v-if="admissions.length > 1">
 			<span>{{ t.admissionLabel }}</span>
 			<select v-model="guest.admission">
