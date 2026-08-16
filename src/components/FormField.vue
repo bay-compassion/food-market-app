@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { parseNumericInput } from '../services/numericInput';
+
 const props = withDefaults(
 	defineProps<{
 		label: string;
@@ -16,16 +18,10 @@ const props = withDefaults(
 
 const emit = defineEmits<{ 'update:modelValue': [value: string | number] }>();
 
-function toNumber(value: string): string | number {
-	const parsed = Number.parseFloat(value);
-
-	return Number.isNaN(parsed) ? value : parsed;
-}
-
 function onInput(event: Event) {
 	const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
 
-	emit('update:modelValue', props.type === 'number' ? toNumber(value) : value.trim());
+	emit('update:modelValue', props.type === 'number' ? parseNumericInput(value) : value.trim());
 }
 </script>
 

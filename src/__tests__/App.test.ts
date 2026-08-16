@@ -153,7 +153,9 @@ describe('App', () => {
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mountApp();
 		await flushPromises();
-		const inputs = wrapper.findAll('input');
+		// Excludes each count field's invisible validity-anchor input — it exists purely to give
+		// native validation a full-width control to anchor its message to, not to be filled in.
+		const inputs = wrapper.findAll('input:not(.count-validity-anchor)');
 
 		await inputs[0]!.setValue('Ada');
 		await inputs[1]!.setValue('Lovelace');
