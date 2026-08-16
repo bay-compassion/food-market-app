@@ -1,0 +1,24 @@
+// TSConfig for the Storybook configuration and its Vitest runner.
+{
+  "extends": "./tsconfig.app.json",
+
+  // Override to cover only the Storybook plumbing. The stories themselves live under `src/` and
+  // are already type-checked by `tsconfig.app.json`. `env.d.ts` is what makes the side-effect
+  // CSS imports in `preview.ts` resolve, via its `vite/client` reference.
+  "include": [
+    ".storybook/**/*.ts",
+    ".storybook/**/*.vue",
+    "vitest.storybook.config.ts",
+    "env.d.ts"
+  ],
+  "exclude": [],
+
+  "compilerOptions": {
+    // `main.ts` and the Vitest config read paths and run in Node.
+    "types": ["node"],
+
+    // `vue-tsc --build` produces a .tsbuildinfo file for incremental type-checking.
+    // Specified here to keep it out of the root directory.
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.storybook.tsbuildinfo"
+  }
+}

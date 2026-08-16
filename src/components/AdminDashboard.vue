@@ -18,6 +18,7 @@ import {
 	type VisitCommand,
 	type VisitStatus,
 } from '../services/visitStateMachine';
+import { adminVisitStatusLabels } from '../services/visitStatusLabels';
 import DevModeView from './admin/DevModeView.vue';
 import GuestDatabaseView from './admin/GuestDatabaseView.vue';
 import QuestionBankView from './admin/QuestionBankView.vue';
@@ -84,15 +85,9 @@ const statuses: GuestStatus[] = [
 	'no_show',
 	'cancelled',
 ];
-const statusLabels = computed<Record<GuestStatus, string>>(() => ({
-	waiting: t.value.waiting,
-	called: base.value.statusCalled,
-	served: t.value.served,
-	registered: t.value.registered,
-	not_placed: t.value.notPlaced,
-	no_show: t.value.noShow,
-	cancelled: t.value.cancelled,
-}));
+const statusLabels = computed<Record<GuestStatus, string>>(() =>
+	adminVisitStatusLabels(props.locale),
+);
 const viewLabels = computed<Record<AdminView, string>>(() => ({
 	'current-session': t.value.currentSession,
 	queue: t.value.queue,

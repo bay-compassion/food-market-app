@@ -1,0 +1,49 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as Specimens from './DesignTokens.stories';
+
+<Meta title="Design System/Colors" />
+
+# Colors
+
+Every value below is read live from `src/styles/base.css` by the Vue component behind these tables.
+The palette is deliberately small: one brand colour carries almost the whole interface, and
+everything else is either a neutral or a signal.
+
+## Brand
+
+The dark teal is the app's only real colour. It fills the top bar, the guest hero, primary
+buttons, and the queue-position number — the places a guest's eye should land first.
+
+<Story of={Specimens.BrandColors} />
+
+## Surfaces
+
+<Story of={Specimens.SurfaceColors} />
+
+## Text
+
+Three weights of neutral, in descending prominence. Reach for the darkest by default and step down
+only for genuinely secondary content — this app is used outdoors, on phones, often by people
+reading a second language.
+
+<Story of={Specimens.TextColors} />
+
+## Signals
+
+<Story of={Specimens.SignalColors} />
+
+## Notes on use
+
+**The focus ring is not optional.** `base.css` puts a 3px `--color-focus` outline on every input,
+button, and link at `:focus-visible`. It is amber rather than the brand colour so it stays visible
+against the brand-filled top bar. Do not override it in a component.
+
+**`--color-error` does double duty.** It marks failure, but it also marks the "called to the
+counter" state on the guest card — the one moment the app needs to interrupt someone who is not
+looking at their phone. That is deliberate, not a misuse, and it is the reason the called state
+also changes the icon and the heading rather than relying on colour alone.
+
+**Contrast.** `--color-text-subtle` on `--color-background` is the lightest pairing in the app, at
+roughly 5:1. That clears the 4.5:1 floor for body text but not by much, so do not lighten it
+further, and do not use it on `--color-surface-soft` for anything a guest has to read.

@@ -1,0 +1,193 @@
+/**
+ * The chrome `App.vue` renders around every screen: the top bar, the guest hero and language
+ * picker, the admin page frame, and the footer.
+ *
+ * Split out of `App.vue`'s unscoped `<style>` block alongside `base.css`. It stays a plain
+ * stylesheet rather than a scoped block because several of these rules style elements that
+ * `App.vue` hands to child components, which a scoped `<style>` cannot reach.
+ */
+
+.app-shell {
+	min-height: 100vh;
+	background: var(--color-background);
+}
+.topbar {
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 20px;
+	background: var(--color-brand);
+}
+@media print {
+	.app-shell--print-qr .topbar {
+		display: none;
+	}
+}
+.auth-banner {
+	padding: 12px 20px;
+	color: white;
+	background: var(--color-error);
+	font-size: 14px;
+	line-height: 1.4;
+	text-align: center;
+}
+.brand {
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	color: var(--color-on-brand);
+	font-family: var(--font-heading);
+	font-weight: 700;
+	font-size: 14.5px;
+	text-transform: uppercase;
+	text-decoration: none;
+}
+.brand-mark {
+	width: 28px;
+	height: 28px;
+	object-fit: contain;
+	border-radius: var(--radius-sm);
+}
+.header-actions {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+.language-picker select {
+	min-height: 46px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	color: var(--color-on-brand);
+	background: transparent;
+	font-size: 15px;
+	font-weight: 600;
+}
+.language-picker option {
+	color: var(--color-brand);
+	background: var(--color-background);
+}
+.mode-button {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	min-height: 46px;
+	padding: 0 15px;
+	border: 1.5px solid var(--color-on-brand);
+	border-radius: var(--radius-pill);
+	color: var(--color-on-brand);
+	background: transparent;
+	font-family: var(--font-heading);
+	font-weight: 600;
+	font-size: 13px;
+	text-transform: uppercase;
+}
+.mode-button svg {
+	width: 16px;
+}
+.guest-layout {
+	width: min(100% - 36px, 560px);
+	margin: 0 auto;
+	padding: 24px 0 40px;
+}
+.status-loading {
+	padding: 32px 0;
+	color: var(--color-text-subtle);
+	font-size: 17px;
+	line-height: 1.6;
+	text-align: center;
+}
+.hero {
+	margin-bottom: 24px;
+	padding: 32px 22px;
+	color: var(--color-on-brand);
+	background: var(--color-brand);
+	border-radius: var(--radius-lg);
+}
+.hero-copy {
+	margin-bottom: 28px;
+	color: var(--color-on-brand);
+	font-size: 17px;
+	line-height: 1.65;
+}
+.language-selector {
+	padding-top: 24px;
+	border-top: 2px solid rgba(255, 255, 255, 0.4);
+}
+.language-selector > p {
+	margin-bottom: 14px;
+	font-family: var(--font-heading);
+	font-size: 15px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+.language-list {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+.language-option {
+	min-height: 60px;
+	padding: 8px;
+	border: 2px solid var(--color-on-brand);
+	border-radius: var(--radius-md);
+	color: var(--color-on-brand);
+	background: transparent;
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.15;
+	transition:
+		background 0.2s,
+		color 0.2s;
+}
+.language-option:hover,
+.language-option.active {
+	color: var(--color-brand);
+	background: var(--color-background);
+}
+.admin-view {
+	width: min(100% - 36px, 560px);
+	margin: 0 auto;
+	padding: 48px 0;
+}
+.admin-view h1 {
+	max-width: 650px;
+	color: var(--color-brand);
+}
+.admin-view > p:not(.eyebrow) {
+	max-width: 430px;
+	color: var(--color-text-subtle);
+	font-size: 17px;
+	line-height: 1.6;
+}
+.admin-preview {
+	display: flex;
+	gap: 12px;
+	margin: 38px 0;
+}
+.admin-preview span {
+	display: grid;
+	width: 65px;
+	height: 65px;
+	place-items: center;
+	border-radius: 50%;
+	color: var(--color-on-brand);
+	background: var(--color-brand);
+	font-weight: 700;
+}
+.app-footer {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	padding: 20px 20px 32px;
+	font-size: 13px;
+}
+.app-footer a {
+	color: var(--color-text-subtle);
+	text-decoration: underline;
+}
+.app-footer-divider {
+	color: var(--color-text-subtle);
+}
