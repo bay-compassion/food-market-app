@@ -1,0 +1,19 @@
+/**
+ * Storybook-only styles: the page shells a story renders inside.
+ *
+ * `App.vue` and `AdminDashboard.vue` normally provide these wrappers, and neither renders in a
+ * story. `.guest-layout` comes from the app's own `app-shell.css`, but `AdminDashboard.vue` keeps
+ * its width and padding in a *scoped* block that nothing outside that component can reach, so the
+ * admin shell is mirrored here. Keep it in step with `.admin-dashboard` in `AdminDashboard.vue`.
+ */
+
+.sb-admin-shell {
+	width: min(100% - 32px, 1180px);
+	margin: 0 auto;
+	padding: 24px 0 48px;
+}
+
+/* Stories with no shell still deserve breathing room rather than sitting against the viewport. */
+.sb-bare-shell {
+	padding: 24px;
+}

@@ -1,0 +1,69 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as Specimens from './DesignTokens.stories';
+
+<Meta title="Design System/Shape and layout" />
+
+# Shape and layout
+
+## Corner radius
+
+Four radii, chosen by the size of the thing being rounded rather than by its importance.
+
+<Story of={Specimens.Radii} />
+
+Every button in the app is a pill. That is the one shape rule worth holding to strictly: it is how
+a guest tells a button from a panel at a glance, and the check-in form has both stacked directly
+against each other.
+
+## Touch targets
+
+Sizes are set for thumbs, not cursors. Primary buttons are 60px tall, inputs 58px, secondary
+buttons 54px, and the smallest interactive elements in the top bar are 46px. Nothing interactive
+should go below 44px.
+
+The language buttons on the welcome screen are 60px for the same reason — a guest choosing their
+language is, by definition, someone who cannot yet read the screen, so the target has to be
+forgiving.
+
+## Page widths
+
+| Shell                   | Width                      | Where              |
+| ----------------------- | -------------------------- | ------------------ |
+| `.guest-layout`         | `min(100% - 36px, 560px)`  | Every guest screen |
+| `.admin-dashboard`      | `min(100% - 32px, 1180px)` | Every admin screen |
+| `.admin-dashboard.wide` | `min(100% - 32px, 1600px)` | Reports only       |
+
+The guest side caps at 560px because it is a single column of form fields and nothing is gained by
+letting them stretch. The admin side is wider because the queue lists guests in rows, but it is
+still designed to work at phone width first — a worker runs a whole service from a phone.
+
+## Breakpoints
+
+There are only two in the entire app. Use them; do not invent a third.
+
+- **`560px`** — a one-column form grid becomes two columns. Used by `admin.css` and by the session
+  settings and question bank forms.
+- **`860px`** — the only breakpoint that rearranges anything. The admin navigation stops being a
+  horizontally scrolling strip above the content and becomes a sticky 210px sidebar beside it. The
+  same breakpoint widens the report filters, session history rows, and dev-mode rows.
+
+The guest side has no breakpoints at all. It is one column capped at 560px, which is the same
+layout on every screen.
+
+If a change seems to need a third breakpoint, that is usually a sign the mobile layout is doing too
+much rather than a sign a breakpoint is missing.
+
+## Choosing a shell in Storybook
+
+A story declares which of these wrappers it renders inside, because the per-area stylesheets are
+namespaced and a component without its wrapper is unstyled:
+
+```ts
+parameters: {
+	shell: 'guest';
+} // 'guest' | 'admin' | 'bare'
+```
+
+`bare` adds padding and nothing else — the right choice for a primitive such as `AppButton` that
+belongs to neither area.

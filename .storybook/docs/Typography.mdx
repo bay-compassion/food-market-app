@@ -1,0 +1,46 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as Specimens from './DesignTokens.stories';
+
+<Meta title="Design System/Typography" />
+
+# Typography
+
+Two families, split by job. Roboto Condensed carries anything structural — headings, labels,
+buttons, counts — and always uppercase. Roboto carries everything a person actually reads in
+sentences.
+
+The split is what gives the app its voice, and it is easy to break by accident: a heading set in
+the body font reads as a paragraph, and a paragraph set in Condensed uppercase becomes unreadable
+at the length guests are asked to read.
+
+## Headings — `--font-heading`
+
+Roboto Condensed, uppercase, weight 700. Sizes are set per context rather than by a global scale,
+because a heading on the guest hero and a heading on an admin section are doing different jobs.
+
+<Story of={Specimens.HeadingScale} />
+
+## Body — `--font-body`
+
+Roboto, sentence case, weight 400. Line height sits between 1.5 and 1.65 — generous, because a
+large share of guests are reading a translation of a second language on a phone outdoors.
+
+<Story of={Specimens.BodyScale} />
+
+## Numbers
+
+One number in the app is set large on purpose: the guest's place in the queue. It is Condensed at
+44px in the brand colour, and it is the only thing on the screen at that size, so a guest can check
+their position at arm's length without reading anything else.
+
+<Story of={Specimens.QueueNumber} />
+
+## Rules of thumb
+
+- Headings, buttons, labels, and counts use `--font-heading` and are uppercase.
+- Anything longer than a few words uses `--font-body` in sentence case.
+- Never set body copy in uppercase. Arabic and Farsi have no case at all, so uppercase styling
+  silently does nothing there — a distinction that exists only in English is not a distinction the
+  design can rely on.
+- Both families are loaded from Google Fonts in `base.css`, with `Impact` and `Arial` as fallbacks.

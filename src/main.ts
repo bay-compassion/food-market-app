@@ -4,6 +4,9 @@ import App from './App.vue';
 import { auth0 } from './auth';
 import router from './router';
 
+// Order matters: tokens and resets first, then the app chrome, then the per-area stylesheets.
+import './styles/base.css';
+import './styles/app-shell.css';
 import './styles/admin.css';
 import './styles/guest.css';
 

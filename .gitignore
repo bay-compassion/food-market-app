@@ -110,3 +110,6 @@ dist
 .claude/worktrees
 # Local Netlify folder
 .netlify
+
+# Storybook build output
+storybook-static

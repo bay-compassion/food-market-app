@@ -1,0 +1,71 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Design System/Introduction" />
+
+# The Bay Compassion design system
+
+This Storybook exists for two jobs: developing a component on its own, away from the conditional
+state that makes the running app hard to work in, and writing down the design decisions so they
+stay consistent as the app grows.
+
+## Where things live
+
+| What               | Where                                                            |
+| ------------------ | ---------------------------------------------------------------- |
+| Design tokens      | `src/styles/base.css`                                            |
+| App chrome         | `src/styles/app-shell.css`                                       |
+| Guest-only styles  | `src/styles/guest.css`, scoped under `.checkin-card`             |
+| Admin-only styles  | `src/styles/admin.css`, scoped under `.admin-dashboard`          |
+| Shared components  | `src/components/`                                                |
+| Feature components | `src/components/<feature>/`, for example `src/components/admin/` |
+| Business logic     | `src/services/`                                                  |
+
+Every page in this section reads its values live from `src/styles/base.css` rather than repeating
+them. If a swatch below looks wrong, the fix belongs in that stylesheet, not in this page.
+
+## Writing a story
+
+Components here are deliberately presentational: a container owns the state and fetching, children
+take props and emit events. That is what makes them straightforward to render in isolation — a
+story supplies the props the container normally would.
+
+Two conventions are worth knowing:
+
+**Pick a shell.** Every rule in `admin.css` is prefixed `.admin-dashboard` and every rule in
+`guest.css` is prefixed `.checkin-card`. A component rendered without its wrapper is not merely
+mispositioned, it is unstyled. Set it per story:
+
+```ts
+const meta: Meta<Args> = {
+	title: 'Admin/QueueView',
+	component: QueueView,
+	parameters: { shell: 'admin' }, // 'guest' | 'admin' | 'bare'
+};
+```
+
+**Take the locale from the toolbar.** Any story whose args include `locale` has it overwritten by
+the globe control in the toolbar, and the story is re-rendered with `dir="rtl"` for Arabic and
+Farsi. Stories that need the full `Translation` object build it from that arg:
+
+```ts
+setup() {
+	return { t: computed(() => translations[args.locale]) };
+}
+```
+
+## Localization
+
+All user-facing text is translated into every language in `src/locales.ts` — currently English,
+Spanish, Farsi, Tagalog, Vietnamese, Chinese, and Arabic. Storybook is the fastest way to see
+whether a string still fits once it is translated, which is usually where layout breaks: German-
+length words are not the problem here, but Vietnamese and Tagalog run noticeably longer than
+English and Arabic reverses the whole layout.
+
+Switch locales from the toolbar on any story. Run `npm run check:translations` after touching
+either locale file.
+
+## Mobile first
+
+This is a phone app. Guests sign up on their own phones and workers run the queue on a phone
+through a whole service, so stories open at iPhone width by default. Desktop is not a requirement
+unless a task explicitly asks for it — the one screen that genuinely needs width is Reports.

@@ -6,6 +6,16 @@
 - Prefer clear, conventional, and small implementations. This project is maintained largely by novice developers working with agentic coding tools, so optimize for readability and low maintenance cost over clever abstractions or new dependencies.
 - Make the smallest change that fully solves the request. "Smallest" refers to behavior and blast radius, not to the number of files: splitting an oversized file into focused pieces is not scope creep, and neither is extracting a component you had to read in full in order to edit safely. Reuse the existing Vue, TypeScript, and project patterns before introducing a new pattern or library.
 
+## Storybook
+
+- `npm run storybook` opens the component workshop on port 6006. Use it to build and review a component on its own — it is the practical way to see states that are hard to reach in the running app, such as every visit status on `GuestSignupCard`.
+- Storybook configuration lives in `.storybook/`. Stories sit next to the component they cover (`src/components/AppButton.stories.ts`); the design system documentation pages are Storybook-only content and live in `.storybook/docs/` rather than in `src/`.
+- A story must declare which page shell it renders inside, with `parameters: { shell: 'guest' | 'admin' | 'bare' }`. This is not cosmetic: every rule in `guest.css` is prefixed `.checkin-card` and every rule in `admin.css` is prefixed `.admin-dashboard`, so a component rendered without its shell is unstyled.
+- Any story whose args include `locale` has that arg driven by the toolbar's locale picker, and re-renders with `dir="rtl"` for Arabic and Farsi. Prefer taking `locale` as an arg and deriving `t` from it over hard-coding a translation, and match text in a `play` function against the entry in `locales.ts` rather than a literal string.
+- Design tokens live in `src/styles/base.css` and the design system pages read their values from it live. Change a token there, never in a documentation page.
+- Storybook's MDX documentation layer is React internally, but nothing in this repo is. The colour, radius, and type specimens are Vue components (`.storybook/docs/TokenTable.vue`, `TypeScale.vue`) exposed as stories in `DesignTokens.stories.ts` and pulled into the MDX prose with `<Story of={...} />`. Those stories are tagged `!dev` so they stay out of the sidebar while still being covered by `npm run test:storybook`. Add a specimen the same way rather than writing JSX in an MDX file.
+- `npm run test:storybook` renders every story in headless Chromium and runs its `play` function. It needs `npx playwright install chromium` once. It is kept out of `npm run checks` on purpose so a fresh clone does not need browser binaries — run it when you have changed a component or a story.
+
 ## Localization
 
 - All user-facing text must be localized: labels, headings, buttons, validation and error messages, empty states, success messages, placeholders, and accessibility text.
@@ -27,7 +37,7 @@
 - Within `src/`: shared components sit directly in `src/components/`, and components belonging to one feature go in a subfolder named for it (for example `src/components/admin/`). Frontend business logic goes in `src/services/`. CSS shared across components — anything a scoped `<style>` block cannot reach, since scoped styles do not apply inside child components — belongs in `src/styles/` and is imported once from `src/main.ts`.
 - This is currently a Netlify-targeted application. Keep deployment configuration and server-side work compatible with the Netlify setup in `netlify.toml` and `netlify/`.
 - Before creating or editing anything under `netlify/database/migrations/`, read `docs/migrations.md` and complete its pre-merge checklist. Migrations apply automatically to production on the next build — never merge or deploy a migration yourself; a human must review and merge it.
-- TypeScript configuration is split by environment: `tsconfig.app.json`, `tsconfig.node.json`, and `tsconfig.vitest.json` are referenced from `tsconfig.json`.
+- TypeScript configuration is split by environment: `tsconfig.app.json`, `tsconfig.node.json`, `tsconfig.vitest.json`, and `tsconfig.storybook.json` are referenced from `tsconfig.json`.
 - `oxlint` uses type-aware checks; treat warnings as worth resolving when they affect changed code.
 - The Mermaid diagrams in `docs/data-model.md`, `docs/session-lifecycle.md`, and `docs/user-journey.md` are maintained by hand and fingerprint the source files they describe. `npm run check:diagrams` fails when one of those files changed; update the affected diagram if the change made it wrong, then run `npm run check:diagrams -- --update` to re-stamp. Re-stamping without looking at the diagram defeats the check.
 - The project uses Node 24 (see `.nvmrc`).
