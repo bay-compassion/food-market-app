@@ -8,6 +8,7 @@ import AppButton from './AppButton.vue';
 import CollapsingCountField from './CollapsingCountField.vue';
 import FormField from './FormField.vue';
 import NotificationOptIn from './NotificationOptIn.vue';
+import PhoneField from './PhoneField.vue';
 import type { GuestFormState } from './types';
 
 type ActiveVisit = {
@@ -217,15 +218,7 @@ const copy = computed(() =>
 					:back-label="t.countBackLabel"
 				/>
 			</template>
-			<FormField
-				v-model="guest.phone"
-				:label="t.phone"
-				required
-				autocomplete="tel"
-				inputmode="tel"
-				type="tel"
-				placeholder="(555) 123-4567"
-			/>
+			<PhoneField v-model="guest.phone" :label="t.phone" required />
 			<FormField
 				v-model="pin"
 				:label="t.pin"
