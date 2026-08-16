@@ -393,8 +393,10 @@ form {
 .dynamic-question {
 	display: grid;
 	gap: 8px;
+}
+.dynamic-question > span {
 	font-family: var(--font-heading);
-	font-size: 14.5px;
+	font-size: 16px;
 	font-weight: 700;
 }
 .dynamic-question select,
@@ -406,6 +408,8 @@ form {
 	color: var(--color-text);
 	background: var(--color-background);
 	font-family: var(--font-body);
+	font-size: 16px;
+	font-weight: 400;
 }
 .checkmark {
 	display: grid;

@@ -55,8 +55,10 @@ function onInput(event: Event) {
 	display: grid;
 	gap: 8px;
 	color: var(--color-text);
+}
+.form-field > span {
 	font-family: var(--font-heading);
-	font-size: 14.5px;
+	font-size: 16px;
 	font-weight: 700;
 }
 .form-field input,
@@ -65,6 +67,9 @@ function onInput(event: Event) {
 	height: 58px;
 	padding: 0 16px;
 	color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: 16px;
+	font-weight: 400;
 	border: 2px solid var(--color-border);
 	border-radius: var(--radius-md);
 	outline: 0;
