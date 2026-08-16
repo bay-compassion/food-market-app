@@ -5,6 +5,7 @@ import type { Locale, Translation } from '../locales';
 import { ageRanges } from '../services/ageRanges';
 import type { VisitStatus } from '../services/visitStateMachine';
 import AppButton from './AppButton.vue';
+import CollapsingCountField from './CollapsingCountField.vue';
 import FormField from './FormField.vue';
 import NotificationOptIn from './NotificationOptIn.vue';
 import type { GuestFormState } from './types';
@@ -186,35 +187,34 @@ const copy = computed(() =>
 						{{ ageRangeLabels[range] }}
 					</option>
 				</FormField>
-				<FormField
+				<CollapsingCountField
 					v-model="guest.householdSize"
 					:label="t.household"
-					type="number"
+					:hint="t.householdHint"
+					:options="[1, 2, 3, 4]"
 					required
-					:min="1"
 					:max="30"
-					inputmode="numeric"
-					:placeholder="t.householdHint"
+					:other-label="t.countOtherLabel"
+					:other-placeholder="t.countOtherPlaceholder"
+					:back-label="t.countBackLabel"
 				/>
-				<FormField
+				<CollapsingCountField
 					v-model="guest.childrenCount"
 					:label="t.childrenCount"
-					type="number"
 					required
-					:min="0"
 					:max="30"
-					inputmode="numeric"
-					:placeholder="t.childrenCountHint"
+					:other-label="t.countOtherLabel"
+					:other-placeholder="t.countOtherPlaceholder"
+					:back-label="t.countBackLabel"
 				/>
-				<FormField
+				<CollapsingCountField
 					v-model="guest.seniorsCount"
 					:label="t.seniorsCount"
-					type="number"
 					required
-					:min="0"
 					:max="30"
-					inputmode="numeric"
-					:placeholder="t.seniorsCountHint"
+					:other-label="t.countOtherLabel"
+					:other-placeholder="t.countOtherPlaceholder"
+					:back-label="t.countBackLabel"
 				/>
 			</template>
 			<FormField
@@ -393,8 +393,10 @@ form {
 .dynamic-question {
 	display: grid;
 	gap: 8px;
+}
+.dynamic-question > span {
 	font-family: var(--font-heading);
-	font-size: 14.5px;
+	font-size: 16px;
 	font-weight: 700;
 }
 .dynamic-question select,
@@ -406,6 +408,8 @@ form {
 	color: var(--color-text);
 	background: var(--color-background);
 	font-family: var(--font-body);
+	font-size: 16px;
+	font-weight: 400;
 }
 .checkmark {
 	display: grid;

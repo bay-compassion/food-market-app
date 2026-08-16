@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { parseNumericInput } from '../services/numericInput';
+
 const props = withDefaults(
 	defineProps<{
 		label: string;
@@ -16,16 +18,10 @@ const props = withDefaults(
 
 const emit = defineEmits<{ 'update:modelValue': [value: string | number] }>();
 
-function toNumber(value: string): string | number {
-	const parsed = Number.parseFloat(value);
-
-	return Number.isNaN(parsed) ? value : parsed;
-}
-
 function onInput(event: Event) {
 	const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
 
-	emit('update:modelValue', props.type === 'number' ? toNumber(value) : value.trim());
+	emit('update:modelValue', props.type === 'number' ? parseNumericInput(value) : value.trim());
 }
 </script>
 
@@ -55,8 +51,10 @@ function onInput(event: Event) {
 	display: grid;
 	gap: 8px;
 	color: var(--color-text);
+}
+.form-field > span {
 	font-family: var(--font-heading);
-	font-size: 14.5px;
+	font-size: 16px;
 	font-weight: 700;
 }
 .form-field input,
@@ -65,6 +63,9 @@ function onInput(event: Event) {
 	height: 58px;
 	padding: 0 16px;
 	color: var(--color-text);
+	font-family: var(--font-body);
+	font-size: 16px;
+	font-weight: 400;
 	border: 2px solid var(--color-border);
 	border-radius: var(--radius-md);
 	outline: 0;

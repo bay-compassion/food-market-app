@@ -31,9 +31,11 @@ export interface Translation {
 	cancelVisit: string;
 	cancelVisitConfirm: string;
 	childrenCount: string;
-	childrenCountHint: string;
 	compassionFood: string;
 	confirmPin: string;
+	countBackLabel: string;
+	countOtherLabel: string;
+	countOtherPlaceholder: string;
 	currentStatus: string;
 	chooseAnswer: string;
 	earlyFormDescription: string;
@@ -76,7 +78,6 @@ export interface Translation {
 	smsEnabled: string;
 	smsError: string;
 	seniorsCount: string;
-	seniorsCountHint: string;
 	pin: string;
 	pinHint: string;
 	pinMismatch: string;
@@ -141,9 +142,11 @@ export const translations = {
 		cancelVisit: 'Cancel this visit',
 		cancelVisitConfirm: 'Cancel your place in the queue for this visit?',
 		childrenCount: 'Number of children you’re shopping for',
-		childrenCountHint: 'Enter 0 if none',
 		compassionFood: 'Compassion Food',
 		confirmPin: 'Confirm PIN',
+		countBackLabel: 'Choose a smaller number',
+		countOtherLabel: 'Or enter another number',
+		countOtherPlaceholder: 'Enter value',
 		currentStatus: 'Current status',
 		chooseAnswer: 'Choose an answer',
 		earlyFormDescription: 'Sign up now and we’ll have everything ready when the market opens.',
@@ -189,7 +192,6 @@ export const translations = {
 		smsEnabled: 'Text message updates are enabled for this visit.',
 		smsError: 'We could not enable text updates. Please try again.',
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
-		seniorsCountHint: 'Enter 0 if none',
 		pin: 'PIN',
 		pinHint: '4–8 numbers',
 		pinMismatch: 'The PINs do not match.',
@@ -253,9 +255,11 @@ export const translations = {
 		cancelVisit: 'Cancelar esta visita',
 		cancelVisitConfirm: '¿Cancelar su lugar en la fila para esta visita?',
 		childrenCount: 'Número de niños para quienes está comprando',
-		childrenCountHint: 'Escriba 0 si no aplica',
 		compassionFood: 'Alimentos con Compasión',
 		confirmPin: 'Confirmar PIN',
+		countBackLabel: 'Elegir un número menor',
+		countOtherLabel: 'O escriba otro número',
+		countOtherPlaceholder: 'Ingrese un valor',
 		currentStatus: 'Estado actual',
 		chooseAnswer: 'Elija una respuesta',
 		earlyFormDescription: 'Regístrese ahora y tendremos todo listo cuando abra el mercado.',
@@ -302,7 +306,6 @@ export const translations = {
 		smsEnabled: 'Las actualizaciones por mensaje de texto están activadas para esta visita.',
 		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
-		seniorsCountHint: 'Escriba 0 si no aplica',
 		pin: 'PIN',
 		pinHint: 'De 4 a 8 números',
 		pinMismatch: 'Los PIN no coinciden.',
@@ -366,9 +369,11 @@ export const translations = {
 		cancelVisit: 'لغو این بازدید',
 		cancelVisitConfirm: 'جای خود را در صف این بازدید لغو می‌کنید؟',
 		childrenCount: 'تعداد کودکانی که برای آن‌ها خرید می‌کنید',
-		childrenCountHint: 'اگر ندارید ۰ وارد کنید',
 		compassionFood: 'غذای دلسوزانه',
 		confirmPin: 'تأیید پین',
+		countBackLabel: 'انتخاب عدد کوچک‌تر',
+		countOtherLabel: 'یا عدد دیگری وارد کنید',
+		countOtherPlaceholder: 'مقدار را وارد کنید',
 		currentStatus: 'وضعیت فعلی',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
 		earlyFormDescription: 'همین حالا ثبت‌نام کنید تا هنگام باز شدن بازار همه‌چیز آماده باشد.',
@@ -414,7 +419,6 @@ export const translations = {
 		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه فعال شدند.',
 		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
-		seniorsCountHint: 'اگر ندارید ۰ وارد کنید',
 		pin: 'پین',
 		pinHint: '۴ تا ۸ رقم',
 		pinMismatch: 'پین‌ها یکسان نیستند.',
@@ -478,9 +482,11 @@ export const translations = {
 		cancelVisit: 'Kanselahin ang pagbisitang ito',
 		cancelVisitConfirm: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 		childrenCount: 'Bilang ng mga batang binibilhan mo',
-		childrenCountHint: 'Ilagay ang 0 kung wala',
 		compassionFood: 'Pagkaing May Malasakit',
 		confirmPin: 'Kumpirmahin ang PIN',
+		countBackLabel: 'Pumili ng mas maliit na numero',
+		countOtherLabel: 'O maglagay ng ibang numero',
+		countOtherPlaceholder: 'Ilagay ang halaga',
 		currentStatus: 'Kasalukuyang katayuan',
 		chooseAnswer: 'Pumili ng sagot',
 		earlyFormDescription:
@@ -529,7 +535,6 @@ export const translations = {
 		smsEnabled: 'Naka-enable ang mga text message update para sa pagbisitang ito.',
 		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
-		seniorsCountHint: 'Ilagay ang 0 kung wala',
 		pin: 'PIN',
 		pinHint: '4–8 numero',
 		pinMismatch: 'Hindi magkapareho ang mga PIN.',
@@ -593,9 +598,11 @@ export const translations = {
 		cancelVisit: 'Hủy lượt ghé này',
 		cancelVisitConfirm: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 		childrenCount: 'Số trẻ em bạn đang mua sắm cho',
-		childrenCountHint: 'Nhập 0 nếu không có',
 		compassionFood: 'Thực Phẩm Nhân Ái',
 		confirmPin: 'Xác nhận mã PIN',
+		countBackLabel: 'Chọn số nhỏ hơn',
+		countOtherLabel: 'Hoặc nhập số khác',
+		countOtherPlaceholder: 'Nhập giá trị',
 		currentStatus: 'Trạng thái hiện tại',
 		chooseAnswer: 'Chọn câu trả lời',
 		earlyFormDescription:
@@ -643,7 +650,6 @@ export const translations = {
 		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé thăm này.',
 		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
-		seniorsCountHint: 'Nhập 0 nếu không có',
 		pin: 'Mã PIN',
 		pinHint: '4–8 chữ số',
 		pinMismatch: 'Các mã PIN không khớp.',
@@ -707,9 +713,11 @@ export const translations = {
 		cancelVisit: '取消本次到访',
 		cancelVisitConfirm: '要取消本次到访的排队位置吗？',
 		childrenCount: '您为多少儿童采购',
-		childrenCountHint: '如无请填 0',
 		compassionFood: '关爱食品',
 		confirmPin: '确认 PIN',
+		countBackLabel: '选择较小的数字',
+		countOtherLabel: '或输入其他数字',
+		countOtherPlaceholder: '输入数值',
 		currentStatus: '当前状态',
 		chooseAnswer: '请选择答案',
 		earlyFormDescription: '现在登记，等市场开放时我们会准备就绪。',
@@ -753,7 +761,6 @@ export const translations = {
 		smsEnabled: '此次到访的短信更新已启用。',
 		smsError: '我们无法启用短信更新。请重试。',
 		seniorsCount: '您为多少老年人（55岁以上）采购',
-		seniorsCountHint: '如无请填 0',
 		pin: 'PIN',
 		pinHint: '4–8 位数字',
 		pinMismatch: '两次输入的 PIN 不一致。',
@@ -816,9 +823,11 @@ export const translations = {
 		cancelVisit: 'إلغاء هذه الزيارة',
 		cancelVisitConfirm: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
 		childrenCount: 'عدد الأطفال الذين تتسوق من أجلهم',
-		childrenCountHint: 'أدخل 0 إذا لم يوجد',
 		compassionFood: 'طعام الرحمة',
 		confirmPin: 'تأكيد الرمز السري',
+		countBackLabel: 'اختيار رقم أصغر',
+		countOtherLabel: 'أو أدخل رقمًا آخر',
+		countOtherPlaceholder: 'أدخل القيمة',
 		currentStatus: 'الحالة الحالية',
 		chooseAnswer: 'اختر إجابة',
 		earlyFormDescription: 'سجّل الآن وسنكون جاهزين تمامًا عند افتتاح السوق.',
@@ -863,7 +872,6 @@ export const translations = {
 		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة.',
 		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
-		seniorsCountHint: 'أدخل 0 إذا لم يوجد',
 		pin: 'الرمز السري',
 		pinHint: 'من 4 إلى 8 أرقام',
 		pinMismatch: 'الرمزان السريان غير متطابقين.',
