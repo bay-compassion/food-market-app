@@ -190,7 +190,12 @@ onMounted(() => {
 		<template v-else>
 			<label class="update-profile-option">
 				<input v-model="smsConsent" type="checkbox" />
-				<span>{{ t.smsConsentLabel }}</span>
+				<span>
+					{{ t.smsConsentLabel }}
+					<a href="/privacy">{{ t.privacyPolicy }}</a>
+					·
+					<a href="/terms">{{ t.termsAndConditions }}</a>
+				</span>
 			</label>
 			<AppButton
 				type="button"

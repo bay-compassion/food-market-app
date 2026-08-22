@@ -20,7 +20,7 @@ By using the App, you agree to the collection and use of information as describe
 - Your preferred language
 - Answers to any optional questions a market asks that day, such as a short survey — the questions vary by market and are set by our staff
 
-**If you opt in to text message updates**, we collect your consent and use your phone number to send those messages. **If you opt in to browser push notifications**, we collect the subscription your browser creates for that purpose. Both are optional and described further in Section 3.
+**If you opt in to text message updates**, we collect your consent and use your phone number to send those messages. **If you opt in to browser push notifications**, we collect the subscription your browser creates for that purpose. Both are optional and described further in Sections 2 and 3.
 
 **Each time you check in for a visit**, the App creates a private link tied to that visit so you can check your queue status without signing in again. We do not collect any information from the QR code some markets display — it simply links to the public sign-up page.
 
@@ -36,7 +36,7 @@ If you provide your phone number and opt in to text messages, the following appl
 - **Consent:** opting in is optional and is not required to sign up for or be served at a food market. You can opt in or out at sign-up or at any time afterward.
 - **Frequency:** you'll receive a small number of messages tied to your visit, typically no more than a few per market day.
 - **Cost:** message and data rates may apply, depending on your mobile carrier and plan.
-- **Opt-out:** reply **STOP** at any time to stop receiving texts. Reply **HELP** for assistance, or contact us using the details in Section 10.
+- **Opt-out:** reply **STOP** at any time to stop receiving texts. Reply **HELP** for assistance, or contact us using the details in Section 11.
 - **Carriers:** we are not liable for delayed or undelivered messages, which can happen for reasons outside our control.
 
 We send text messages through Twilio, our messaging provider. We do not send marketing messages through this program. We do not share, sell, or provide your mobile phone number or messaging consent data to third parties or affiliates for marketing or promotional purposes.
@@ -69,7 +69,7 @@ We do not sell your personal information. We do not share, sell, or provide your
 
 - **Service providers** who help us operate the App on our behalf, including Twilio for text messages, Auth0 for staff and volunteer sign-in, and Netlify, our hosting provider. These providers are limited to using your information only to provide services to us.
 - **Legal requirements:** we may disclose information if required by law or subpoena, or to protect the safety of our staff, volunteers, or the community we serve.
-- **Business transfers:** if The Bay Compassion undergoes a merger, reorganization, or transfer of program operations, information may be transferred as part of that transaction, subject to this policy or a successor policy.
+- **Business transfers:** if The Bay Compassion undergoes a merger, reorganization, or transfer of program operations, information may be transferred as part of that transaction, subject to this policy or a successor policy. Mobile phone numbers and messaging consent are excluded from such a transfer.
 
 ---
 

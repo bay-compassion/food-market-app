@@ -27,7 +27,11 @@ The App is open to any member of the community our food markets serve. If you ar
 
 ## 3. Text Messages and Push Notifications
 
-If you opt in to receive text messages or browser push notifications, the terms in our [Privacy Policy](/privacy) apply, including your ability to reply **STOP** at any time to stop text messages. Opting in is not required to sign up for or be served at a food market.
+If you opt in, The Bay Compassion will send you text messages about your place in the queue and your visit status. Message frequency varies, typically no more than a few messages per market day. Message and data rates may apply. Reply **STOP** at any time to stop receiving messages or **HELP** for assistance. You may also contact us using the details in Section 10. Carriers are not liable for delayed or undelivered messages.
+
+Opting in is optional and is not required to sign up for or be served at a food market. Our [Privacy Policy](/privacy) explains how we handle your mobile phone number and messaging consent.
+
+If you opt in to browser push notifications, you can turn them off at any time in your browser settings.
 
 ---
 
