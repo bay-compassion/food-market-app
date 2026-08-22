@@ -65,6 +65,12 @@ describe('NotificationOptIn', () => {
 		const wrapper = mountOptIn();
 		await flushPromises();
 
+		expect(wrapper.text()).toContain('text messages from The Bay Compassion');
+		expect(wrapper.text()).toContain('Message frequency varies');
+		expect(wrapper.text()).toContain('Message and data rates may apply');
+		expect(wrapper.text()).toContain('Reply STOP to unsubscribe or HELP for assistance');
+		expect(wrapper.get('a[href="/privacy"]').text()).toBe('Privacy Policy');
+		expect(wrapper.get('a[href="/terms"]').text()).toBe('Terms & Conditions');
 		expect(wrapper.find('button').attributes('disabled')).toBeDefined();
 
 		await wrapper.find('input[type="checkbox"]').setValue(true);

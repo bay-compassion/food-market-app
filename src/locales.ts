@@ -187,7 +187,7 @@ export const translations = {
 		notificationsUnsupported: 'Push notifications are not available on this device.',
 		preregisterCta: 'Sign up early for the next market',
 		smsConsentLabel:
-			'I agree to receive text message updates about this visit. Message and data rates may apply. Reply STOP to opt out.',
+			'I agree to receive text messages from The Bay Compassion about my queue and visit status. Message frequency varies, typically no more than a few messages per market day. Message and data rates may apply. Reply STOP to unsubscribe or HELP for assistance. Consent is not required to receive food market service.',
 		smsEnable: 'Text me updates about this visit',
 		smsEnabled: 'Text message updates are enabled for this visit.',
 		smsError: 'We could not enable text updates. Please try again.',
@@ -301,7 +301,7 @@ export const translations = {
 		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
 		preregisterCta: 'Regístrese temprano para el próximo mercado',
 		smsConsentLabel:
-			'Acepto recibir actualizaciones por mensaje de texto sobre esta visita. Pueden aplicarse tarifas de mensajes y datos. Responda ALTO para cancelar.',
+			'Acepto recibir mensajes de texto de The Bay Compassion sobre mi lugar en la fila y el estado de mi visita. La frecuencia varía; normalmente no recibiré más de unos pocos mensajes por día de mercado. Pueden aplicarse tarifas de mensajes y datos. Responda STOP para cancelar o HELP para recibir ayuda. El consentimiento no es necesario para recibir servicio en el mercado de alimentos.',
 		smsEnable: 'Envíenme actualizaciones por mensaje de texto sobre esta visita',
 		smsEnabled: 'Las actualizaciones por mensaje de texto están activadas para esta visita.',
 		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
@@ -414,7 +414,7 @@ export const translations = {
 		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
 		preregisterCta: 'زودتر برای بازار بعدی ثبت‌نام کنید',
 		smsConsentLabel:
-			'موافقم که به‌روزرسانی‌های پیامکی درباره این مراجعه را دریافت کنم. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک، STOP را پاسخ دهید.',
+			'موافقم پیامک‌هایی از The Bay Compassion درباره جایگاهم در صف و وضعیت این مراجعه دریافت کنم. تعداد پیام‌ها متغیر است و معمولاً از چند پیام در هر روز بازار بیشتر نمی‌شود. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک STOP و برای راهنمایی HELP را پاسخ دهید. رضایت به دریافت پیامک برای دریافت خدمات بازار مواد غذایی الزامی نیست.',
 		smsEnable: 'درباره این مراجعه به من پیامک بده',
 		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه فعال شدند.',
 		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
@@ -530,7 +530,7 @@ export const translations = {
 		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
 		preregisterCta: 'Magrehistro nang maaga para sa susunod na pamilihan',
 		smsConsentLabel:
-			'Sumasang-ayon akong tumanggap ng mga text message update tungkol sa pagbisitang ito. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-opt out.',
+			'Sumasang-ayon akong tumanggap ng mga text message mula sa The Bay Compassion tungkol sa puwesto ko sa pila at katayuan ng pagbisitang ito. Nag-iiba ang dalas at karaniwang hindi hihigit sa ilang mensahe bawat araw ng pamilihan. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-unsubscribe o HELP para sa tulong. Hindi kailangang pumayag upang makatanggap ng serbisyo sa pamilihan ng pagkain.',
 		smsEnable: 'Padalhan ako ng text update tungkol sa pagbisitang ito',
 		smsEnabled: 'Naka-enable ang mga text message update para sa pagbisitang ito.',
 		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
@@ -645,7 +645,7 @@ export const translations = {
 		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
 		preregisterCta: 'Đăng ký sớm cho phiên chợ tiếp theo',
 		smsConsentLabel:
-			'Tôi đồng ý nhận thông báo qua tin nhắn văn bản về lượt ghé thăm này. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy.',
+			'Tôi đồng ý nhận tin nhắn từ The Bay Compassion về vị trí trong hàng đợi và trạng thái lượt ghé của tôi. Tần suất thay đổi, thường không quá vài tin nhắn trong mỗi ngày diễn ra chợ. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy đăng ký hoặc HELP để được hỗ trợ. Không bắt buộc đồng ý để nhận dịch vụ tại chợ thực phẩm.',
 		smsEnable: 'Nhắn tin cập nhật cho tôi về lượt ghé thăm này',
 		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé thăm này.',
 		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
@@ -756,7 +756,7 @@ export const translations = {
 		notificationsUnsupported: '此设备不支持推送通知。',
 		preregisterCta: '提前登记下一次市场',
 		smsConsentLabel:
-			'我同意接收有关此次到访的短信更新。可能会产生短信和数据费用。回复STOP可取消订阅。',
+			'我同意接收 The Bay Compassion 发送的有关排队位置和到访状态的短信。短信频率不定，通常每个市场开放日不超过数条。可能会产生短信和数据费用。回复 STOP 可取消订阅，回复 HELP 可获取帮助。是否同意接收短信不影响获得食品市场服务。',
 		smsEnable: '通过短信通知我此次到访的更新',
 		smsEnabled: '此次到访的短信更新已启用。',
 		smsError: '我们无法启用短信更新。请重试。',
@@ -867,7 +867,7 @@ export const translations = {
 		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
 		preregisterCta: 'سجّل مبكرًا للسوق القادم',
 		smsConsentLabel:
-			'أوافق على تلقي تحديثات عبر الرسائل النصية حول هذه الزيارة. قد يتم تطبيق رسوم للرسائل والبيانات. أرسل STOP لإلغاء الاشتراك.',
+			'أوافق على تلقي رسائل نصية من The Bay Compassion بشأن مكاني في قائمة الانتظار وحالة زيارتي. يختلف عدد الرسائل، وعادةً لا يتجاوز بضع رسائل في كل يوم سوق. قد تُطبق رسوم الرسائل والبيانات. أرسل STOP لإلغاء الاشتراك أو HELP للمساعدة. الموافقة ليست شرطًا لتلقي خدمة سوق المواد الغذائية.',
 		smsEnable: 'أرسل لي تحديثات نصية حول هذه الزيارة',
 		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة.',
 		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
