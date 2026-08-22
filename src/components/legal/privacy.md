@@ -2,7 +2,7 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: August 21, 2026
+Last Updated: August 22, 2026
 
 The Bay Compassion ("The Bay Compassion," "we," "us," or "our") is a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. This Privacy Policy explains how we collect, use, share, and protect information through this food market guest sign-up app (the "App"). It does not cover our other programs or our main website, thebaycompassion.org.
 
@@ -39,7 +39,7 @@ If you provide your phone number and opt in to text messages, the following appl
 - **Opt-out:** reply **STOP** at any time to stop receiving texts. Reply **HELP** for assistance, or contact us using the details in Section 10.
 - **Carriers:** we are not liable for delayed or undelivered messages, which can happen for reasons outside our control.
 
-We send text messages through Twilio, our messaging provider. We do not send marketing messages through this program and do not share your phone number with third parties for their own marketing purposes.
+We send text messages through Twilio, our messaging provider. We do not send marketing messages through this program. We do not share, sell, or provide your mobile phone number or messaging consent data to third parties or affiliates for marketing or promotional purposes.
 
 ---
 
@@ -65,7 +65,7 @@ Reports we produce for general program tracking, impact analysis, and grant writ
 
 ## 5. How We Share Information
 
-We do not sell your personal information. We share it only in the following circumstances:
+We do not sell your personal information. We do not share, sell, or provide your mobile phone number or messaging consent data to third parties or affiliates for marketing or promotional purposes. We share information only in the following circumstances:
 
 - **Service providers** who help us operate the App on our behalf, including Twilio for text messages, Auth0 for staff and volunteer sign-in, and Netlify, our hosting provider. These providers are limited to using your information only to provide services to us.
 - **Legal requirements:** we may disclose information if required by law or subpoena, or to protect the safety of our staff, volunteers, or the community we serve.
