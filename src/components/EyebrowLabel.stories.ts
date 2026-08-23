@@ -30,7 +30,7 @@ export default meta;
 
 type Story = StoryObj<EyebrowLabelArgs>;
 
-/** On the brand-coloured hero at the top of the guest screen. */
+/** On the brand-colored hero at the top of the guest screen. */
 export const OnBrand: Story = {
 	args: { tone: 'on-brand' },
 	render: (args) => ({

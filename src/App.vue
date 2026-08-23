@@ -25,7 +25,17 @@ const localeStorageKey = 'bay-compassion.locale';
 const returningVisitorStorageKey = 'bay-compassion.returning-visitor';
 const visitTokenStorageKey = 'bay-compassion.visit-token';
 let registrationRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+let registrationPollTimer: ReturnType<typeof setInterval> | undefined;
 let visitRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+let countdownTimer: ReturnType<typeof setInterval> | undefined;
+/**
+ * How often to re-check `/api/market` while registration is open. `registrationRefreshTimer`
+ * above only fires at the transition it knew about at the time it was scheduled — it can't know
+ * about an admin closing registration early or extending the window after the fact. This polls
+ * only while `registrationAvailable` is true, so a session that's closed, scheduled, or between
+ * markets never triggers an unnecessary function invocation.
+ */
+const registrationPollIntervalMs = 30_000;
 
 function getSavedLocale(): Locale {
 	const savedLocale = window.localStorage.getItem(localeStorageKey);
@@ -63,6 +73,8 @@ type MarketEventTiming = {
 };
 const marketEvent = ref<MarketEventTiming | null>(null);
 const registrationAvailable = ref(true);
+/** Ticks while registration is open so `GuestSignupCard`'s countdown stays live. */
+const now = ref(Date.now());
 const registrationQuestions = ref<
 	{ id: string; prompt: string; type: 'text' | 'scale'; required: boolean }[]
 >([]);
@@ -319,6 +331,14 @@ async function loadRegistration() {
 			now >= new Date(data.event.registrationOpensAt) &&
 			now <= new Date(data.event.registrationClosesAt),
 		);
+		if (registrationAvailable.value) {
+			if (!registrationPollTimer) {
+				registrationPollTimer = setInterval(loadRegistration, registrationPollIntervalMs);
+			}
+		} else if (registrationPollTimer) {
+			clearInterval(registrationPollTimer);
+			registrationPollTimer = undefined;
+		}
 		if (registrationRefreshTimer) {
 			clearTimeout(registrationRefreshTimer);
 		}
@@ -340,12 +360,17 @@ async function loadRegistration() {
 }
 
 onMounted(async () => {
+	countdownTimer = setInterval(() => {
+		now.value = Date.now();
+	}, 1_000);
 	await Promise.all([loadRegistration(), loadActiveVisit()]);
 	isStatusLoading.value = false;
 });
 onBeforeUnmount(() => {
 	clearTimeout(registrationRefreshTimer);
+	clearInterval(registrationPollTimer);
 	clearTimeout(visitRefreshTimer);
+	clearInterval(countdownTimer);
 });
 </script>
 
@@ -455,6 +480,8 @@ onBeforeUnmount(() => {
 					:registration-questions="registrationQuestions"
 					:submission-error="submissionError"
 					:is-submitting="isSubmitting"
+					:now="now"
+					:registration-closes-at="marketEvent?.registrationClosesAt ?? null"
 					@submit="submitForm"
 					@cancel-visit="cancelVisit"
 					@preregister="goToSignup"

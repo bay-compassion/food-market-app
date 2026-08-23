@@ -380,6 +380,83 @@ describe('App', () => {
 		vi.unstubAllGlobals();
 	});
 
+	it('polls the market endpoint periodically while registration is open', async () => {
+		vi.useFakeTimers();
+		const fetchMock = vi.fn().mockImplementation((url: string) =>
+			Promise.resolve(
+				url === '/api/market'
+					? {
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									event: {
+										id: 'event-1',
+										status: 'registration_open',
+										registrationOpensAt: '2020-01-01T00:00:00.000Z',
+										// An hour out, not a far-future date: `runOnlyPendingTimersAsync` below
+										// simulates all the way to the boundary `setTimeout` this schedules, and a
+										// multi-decade gap makes that simulation effectively hang.
+										registrationClosesAt: new Date(Date.now() + 3_600_000).toISOString(),
+									},
+									questions: [],
+								}),
+						}
+					: { ok: false },
+			),
+		);
+		vi.stubGlobal('fetch', fetchMock);
+		const wrapper = mountApp();
+		await vi.runOnlyPendingTimersAsync();
+		const callsAfterLoad = fetchMock.mock.calls.filter(([url]) => url === '/api/market').length;
+
+		await vi.advanceTimersByTimeAsync(30_000);
+
+		const callsAfterPoll = fetchMock.mock.calls.filter(([url]) => url === '/api/market').length;
+		expect(callsAfterPoll).toBeGreaterThan(callsAfterLoad);
+
+		wrapper.unmount();
+		vi.useRealTimers();
+		vi.unstubAllGlobals();
+	});
+
+	it('does not poll the market endpoint once registration is no longer open', async () => {
+		vi.useFakeTimers();
+		const fetchMock = vi.fn().mockImplementation((url: string) =>
+			Promise.resolve(
+				url === '/api/market'
+					? {
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									event: {
+										id: 'event-1',
+										status: 'service_started',
+										registrationOpensAt: '2020-01-01T00:00:00.000Z',
+										registrationClosesAt: '2020-01-01T01:00:00.000Z',
+									},
+									questions: [],
+								}),
+						}
+					: { ok: false },
+			),
+		);
+		vi.stubGlobal('fetch', fetchMock);
+		const wrapper = mountApp();
+		await vi.runOnlyPendingTimersAsync();
+		const callsAfterLoad = fetchMock.mock.calls.filter(([url]) => url === '/api/market').length;
+
+		// Comfortably past the polling interval used while registration is open — nothing should
+		// have queued a repeat check for a session that is already past registration.
+		await vi.advanceTimersByTimeAsync(60_000);
+
+		const callsAfterWait = fetchMock.mock.calls.filter(([url]) => url === '/api/market').length;
+		expect(callsAfterWait).toBe(callsAfterLoad);
+
+		wrapper.unmount();
+		vi.useRealTimers();
+		vi.unstubAllGlobals();
+	});
+
 	it('shows an error when an admin session cannot be verified', async () => {
 		const wrapper = mountApp();
 

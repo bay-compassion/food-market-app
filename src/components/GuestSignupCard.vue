@@ -7,8 +7,10 @@ import type { VisitStatus } from '../services/visitStateMachine';
 import AppButton from './AppButton.vue';
 import CollapsingCountField from './CollapsingCountField.vue';
 import FormField from './FormField.vue';
-import NotificationOptIn from './NotificationOptIn.vue';
+import GuestClosedState from './GuestClosedState.vue';
+import GuestVisitStatus from './GuestVisitStatus.vue';
 import PhoneField from './PhoneField.vue';
+import RegistrationCountdown from './RegistrationCountdown.vue';
 import type { GuestFormState } from './types';
 
 type ActiveVisit = {
@@ -46,6 +48,10 @@ const props = defineProps<{
 	}[];
 	submissionError: string;
 	isSubmitting: boolean;
+	/** Ticked by the container so the countdown stays live; unused unless `registrationClosesAt` is set. */
+	now: number;
+	/** When registration is genuinely open right now, the moment it closes; otherwise `null`. */
+	registrationClosesAt: Date | null;
 }>();
 
 const emit = defineEmits<{ submit: []; 'cancel-visit': []; preregister: [] }>();
@@ -92,59 +98,36 @@ const copy = computed(() =>
 
 <template>
 	<section class="checkin-card" aria-live="polite">
-		<div v-if="activeVisit && isSubmitted" class="success-state">
-			<template v-if="isCalled">
-				<div class="checkmark called-mark" aria-hidden="true">→</div>
-				<h2>{{ t.calledTitle }}</h2>
-				<p>{{ t.calledDescription }}</p>
-			</template>
-			<template v-else>
-				<div class="checkmark">✓</div>
-				<h2>{{ copy.successTitle }}</h2>
-				<div v-if="queuePosition" class="queue-standing">
-					<p class="queue-position">
-						<span>{{ t.queuePositionLabel }}</span>
-						<strong>{{ queuePosition }}</strong>
-					</p>
-					<p v-if="guestsAhead === 0" class="queue-next">{{ t.youAreNext }}</p>
-					<p v-else-if="guestsAhead !== null">
-						{{ t.guestsAheadOfYou }}: <strong>{{ guestsAhead }}</strong>
-					</p>
-				</div>
-				<p v-else>
-					{{ t.currentStatus }}: <strong>{{ visitStatusLabel }}</strong>
-				</p>
-				<p>{{ copy.successDescription }}</p>
-			</template>
-			<NotificationOptIn :visit-token="visitToken" :locale="locale" />
-			<p v-if="submissionError" class="submission-error" role="alert">
-				{{ submissionError }}
-			</p>
-			<AppButton
-				v-if="canCancelVisit"
-				type="button"
-				variant="secondary"
-				:disabled="isCancelling"
-				@click="emit('cancel-visit')"
-			>
-				{{ t.cancelVisit }}
-			</AppButton>
-		</div>
-		<div v-else-if="!canShowForm" class="closed-state">
-			<div class="closed-icon" aria-hidden="true">—</div>
-			<h2>{{ t.registrationClosed }}</h2>
-			<p>{{ t.registrationClosedDescription }}</p>
-			<a
-				v-if="showPreregisterCta"
-				class="preregister-cta"
-				href="/signup"
-				@click.prevent="emit('preregister')"
-			>
-				{{ t.preregisterCta }}
-			</a>
-		</div>
+		<GuestVisitStatus
+			v-if="activeVisit && isSubmitted"
+			:t="t"
+			:locale="locale"
+			:is-called="isCalled"
+			:success-title="copy.successTitle"
+			:success-description="copy.successDescription"
+			:visit-status-label="visitStatusLabel"
+			:queue-position="queuePosition"
+			:guests-ahead="guestsAhead"
+			:can-cancel-visit="canCancelVisit"
+			:is-cancelling="isCancelling"
+			:visit-token="visitToken"
+			:submission-error="submissionError"
+			@cancel-visit="emit('cancel-visit')"
+		/>
+		<GuestClosedState
+			v-else-if="!canShowForm"
+			:t="t"
+			:show-preregister-cta="showPreregisterCta"
+			@preregister="emit('preregister')"
+		/>
 		<form v-else-if="canShowForm" @submit.prevent="emit('submit')">
 			<div class="form-heading">
+				<RegistrationCountdown
+					v-if="context === 'queue' && registrationClosesAt"
+					:t="t"
+					:now="now"
+					:closes-at="registrationClosesAt"
+				/>
 				<h2>{{ copy.formTitle }}</h2>
 				<p>{{ copy.formDescription }}</p>
 			</div>
@@ -286,8 +269,7 @@ const copy = computed(() =>
 .form-heading {
 	margin-bottom: 8px;
 }
-.form-heading h2,
-.success-state h2 {
+.form-heading h2 {
 	margin-bottom: 9px;
 	font-family: var(--font-heading);
 	font-size: 29px;
@@ -295,8 +277,7 @@ const copy = computed(() =>
 	text-transform: uppercase;
 	color: var(--color-text);
 }
-.form-heading p,
-.success-state p {
+.form-heading p {
 	color: var(--color-text-muted);
 	font-size: 16px;
 	line-height: 1.55;
@@ -342,47 +323,6 @@ form {
 	width: 16px;
 	margin-top: 1px;
 }
-.success-state {
-	display: grid;
-	min-height: 340px;
-	place-content: center;
-	text-align: center;
-}
-.closed-state {
-	display: grid;
-	min-height: 280px;
-	place-content: center;
-	text-align: center;
-}
-.closed-state h2 {
-	margin-bottom: 8px;
-	font-family: var(--font-heading);
-	font-size: 28px;
-	text-transform: uppercase;
-}
-.closed-state p {
-	max-width: 320px;
-	color: var(--color-text-muted);
-	line-height: 1.55;
-}
-.closed-icon {
-	display: grid;
-	width: 54px;
-	height: 54px;
-	place-self: center;
-	place-items: center;
-	margin-bottom: 16px;
-	border-radius: 50%;
-	color: white;
-	background: var(--color-brand);
-	font-size: 28px;
-}
-.preregister-cta {
-	margin: 12px auto 0;
-	color: var(--color-brand);
-	font-weight: 700;
-	text-decoration: underline;
-}
 .dynamic-question {
 	display: grid;
 	gap: 8px;
@@ -403,48 +343,5 @@ form {
 	font-family: var(--font-body);
 	font-size: 16px;
 	font-weight: 400;
-}
-.checkmark {
-	display: grid;
-	width: 58px;
-	height: 58px;
-	place-self: center;
-	place-items: center;
-	margin-bottom: 19px;
-	border-radius: var(--radius-md);
-	color: var(--color-on-brand);
-	background: var(--color-brand);
-	font-size: 29px;
-}
-.success-state p {
-	max-width: 280px;
-	margin: 0 auto 27px;
-}
-.called-mark {
-	background: var(--color-error);
-	font-size: 34px;
-}
-.queue-standing {
-	margin-bottom: 27px;
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: var(--color-surface-soft);
-}
-.queue-standing p {
-	margin-bottom: 0;
-}
-.queue-position {
-	display: grid;
-	gap: 4px;
-	margin-bottom: 8px;
-}
-.queue-position strong {
-	font-family: var(--font-heading);
-	font-size: 44px;
-	line-height: 1;
-	color: var(--color-brand);
-}
-.queue-next {
-	font-weight: 700;
 }
 </style>

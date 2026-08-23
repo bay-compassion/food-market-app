@@ -29,7 +29,7 @@ export const BrandColors: Story = {
 		tokens: [
 			['--color-brand', 'Top bar, hero, primary buttons, headings on admin screens'],
 			['--color-brand-dark', 'Hover state for primary buttons'],
-			['--color-on-brand', 'Text and borders on top of the brand colour'],
+			['--color-on-brand', 'Text and borders on top of the brand color'],
 		],
 	},
 };
@@ -65,7 +65,10 @@ export const SignalColors: Story = {
 		preview: 'color',
 		tokens: [
 			['--color-focus', 'The 3px focus ring on every focusable element'],
-			['--color-error', 'Validation messages, the auth banner, and the "called" state'],
+			[
+				'--color-error',
+				'Validation messages, the auth banner, the "called" state, and the color the registration countdown blends toward as time runs out',
+			],
 		],
 	},
 };
