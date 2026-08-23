@@ -1,0 +1,60 @@
+{
+  "version": "5",
+  "remote": {
+    "https://edge.netlify.com/": "fd941d61d88673d5f28aab283fb86fcc50f08a3bc80ee5470498fcfa88c65cfb",
+    "https://edge.netlify.com/bootstrap/config.ts": "6a2ce0e544e15e8f8883a5c18da5948e37fd0f2619f68cb31f3af53c51817025",
+    "https://edge.netlify.com/bootstrap/context.ts": "e97240232121e2f369f6546ce961490f34d961ea1ea54be3ff09633e3f08373f",
+    "https://edge.netlify.com/bootstrap/cookie.ts": "8b0baae708989ca183c6f3b4ab3d029e6abcbc2e43f93edeb0ff447b3bbc3a05",
+    "https://edge.netlify.com/bootstrap/edge_function.ts": "b8253e86aa83c67341f5cfedeba5049d77fbf84dcab7eceff7566b7728ae9b39",
+    "https://edge.netlify.com/bootstrap/globals/types.ts": "eaa6148ded3121d8dee62dd91c86e7fe76601df0f3ca8d7962243a30f4c8935f"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@auth0/auth0-vue@^2.8.0",
+        "npm:@nestjs/cli@^11.0.21",
+        "npm:@netlify/database@^1.1.0",
+        "npm:@netlify/functions@^5.3.0",
+        "npm:@netlify/vite-plugin@^2.12.9",
+        "npm:@storybook/addon-a11y@^10.5.8",
+        "npm:@storybook/addon-docs@^10.5.8",
+        "npm:@storybook/addon-vitest@^10.5.8",
+        "npm:@storybook/vue3-vite@^10.5.8",
+        "npm:@stylistic/eslint-plugin@^5.10.0",
+        "npm:@tsconfig/node24@^24.0.4",
+        "npm:@types/jsdom@^28.0.3",
+        "npm:@types/node@^24.13.2",
+        "npm:@types/web-push@^3.6.4",
+        "npm:@vitejs/plugin-vue@^6.0.7",
+        "npm:@vitest/browser-playwright@^4.1.10",
+        "npm:@vitest/browser@^4.1.10",
+        "npm:@vue/test-utils@^2.4.11",
+        "npm:@vue/tsconfig@~0.9.1",
+        "npm:del-cli@7",
+        "npm:drizzle-kit@^1.0.0-beta.22",
+        "npm:drizzle-orm@^1.0.0-beta.22",
+        "npm:jose@^6.2.3",
+        "npm:jsdom@^29.1.1",
+        "npm:marked@^18.0.9",
+        "npm:npm-run-all2@^9.0.2",
+        "npm:oxfmt@0.54",
+        "npm:oxlint-tsgolint@0.23",
+        "npm:oxlint@^1.66.0",
+        "npm:playwright@^1.62.1",
+        "npm:qrcode-generator@^2.0.4",
+        "npm:reflect-metadata@~0.2.2",
+        "npm:storybook@^10.5.8",
+        "npm:tsx@^4.22.3",
+        "npm:twilio@^6.1.0",
+        "npm:typescript@6.0",
+        "npm:vite-plugin-vue-devtools@^8.1.2",
+        "npm:vite@^8.0.16",
+        "npm:vitest@^4.1.9",
+        "npm:vue-router@^4.6.4",
+        "npm:vue-tsc@^3.3.5",
+        "npm:vue@^3.5.38",
+        "npm:web-push@^3.6.7"
+      ]
+    }
+  }
+}

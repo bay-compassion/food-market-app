@@ -89,6 +89,8 @@ type GuestSignupCardArgs = {
 	submissionError: string;
 	isSubmitting: boolean;
 	isCancelling: boolean;
+	/** `null` hides the countdown; a number shows it closing that many minutes from now. */
+	minutesRemaining: number | null;
 };
 
 const meta: Meta<GuestSignupCardArgs> = {
@@ -124,6 +126,7 @@ const meta: Meta<GuestSignupCardArgs> = {
 		submissionError: '',
 		isSubmitting: false,
 		isCancelling: false,
+		minutesRemaining: null,
 	},
 	render: (args) => ({
 		components: { GuestSignupCard },
@@ -148,6 +151,12 @@ const meta: Meta<GuestSignupCardArgs> = {
 						},
 			);
 			const isWaiting = computed(() => args.visitStatus === 'waiting');
+			// A fixed pair, rather than a live-ticking ref, keeps the story stable rather than
+			// drifting while it sits open (see `QueueGuestRow.stories.ts` for the same convention).
+			const now = Date.now();
+			const registrationClosesAt = computed(() =>
+				args.minutesRemaining === null ? null : new Date(now + args.minutesRemaining * 60_000),
+			);
 
 			return {
 				args,
@@ -158,6 +167,8 @@ const meta: Meta<GuestSignupCardArgs> = {
 				updateProfile,
 				registrationAnswers,
 				activeVisit,
+				now,
+				registrationClosesAt,
 				t: computed(() => translations[args.locale]),
 				isSubmitted: computed(() => activeVisit.value !== null),
 				isCalled: computed(() => args.visitStatus === 'called'),
@@ -197,6 +208,8 @@ const meta: Meta<GuestSignupCardArgs> = {
 				:registration-questions="registrationQuestions"
 				:submission-error="args.submissionError"
 				:is-submitting="args.isSubmitting"
+				:now="now"
+				:registration-closes-at="registrationClosesAt"
 			/>
 		`,
 	}),
@@ -208,6 +221,11 @@ type Story = StoryObj<GuestSignupCardArgs>;
 
 /** A guest arriving for the first time, with registration open. */
 export const NewGuestForm: Story = {};
+
+/** Registration open, with the closing countdown showing above the form title. */
+export const RegistrationClosingSoon: Story = {
+	args: { minutesRemaining: 5 },
+};
 
 /**
  * A returning guest. The name and household fields collapse away — they are already on file — and

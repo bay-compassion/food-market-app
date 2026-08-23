@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=fce540ac2c92, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=9317a9a8738a, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
 
 # Guest journey
 
@@ -84,6 +84,11 @@ flowchart TD
   live — `registered`, `waiting`, or `called` — so the guest sees the lottery result and the call
   even without notifications. Push is a convenience, never the only channel. It also re-checks
   `/api/market`, so a guest sitting on the closed screen sees registration open without reloading.
+  The same `/api/market` re-check also runs on a short interval while a guest is actively filling
+  out the registration form, not just once the visit exists — that's what keeps the countdown
+  clock's `registrationClosesAt` correct if an admin closes registration early or extends the
+  window after the page loaded. The poll only runs while registration is genuinely open; a session
+  that's scheduled, closed, or between markets never triggers it.
 - **A waiting guest is told where they stand.** `/api/visit` returns their `queue_position` and how
   many waiting guests are ahead of them, so they can judge whether to stay by the door or sit down.
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status

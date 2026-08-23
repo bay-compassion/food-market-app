@@ -58,7 +58,7 @@ export const Filled: Story = {
 	args: { modelValue: 'Maria' },
 };
 
-/** Placeholder copy shows through in the muted placeholder colour until the guest types. */
+/** Placeholder copy shows through in the muted placeholder color until the guest types. */
 export const WithPlaceholder: Story = {
 	args: {
 		label: 'People in your household',

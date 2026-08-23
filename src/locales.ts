@@ -90,6 +90,8 @@ export interface Translation {
 	qrCodeTitle: string;
 	registrationClosed: string;
 	registrationClosedDescription: string;
+	registrationClosesIn: string;
+	registrationClosesInMinutes: string;
 	registrationType: string;
 	returningGuest: string;
 	returningGuestHelp: string;
@@ -205,6 +207,8 @@ export const translations = {
 		qrCodeTitle: 'Scan to check in',
 		registrationClosed: 'Registration is closed',
 		registrationClosedDescription: 'Please check with a market team member for help.',
+		registrationClosesIn: 'Registration closes in',
+		registrationClosesInMinutes: 'Registration closes in {minutes} min',
 		registrationType: 'Guest type',
 		returningGuest: 'Returning guest',
 		returningGuestHelp: 'Enter the phone number and PIN you used before.',
@@ -319,6 +323,8 @@ export const translations = {
 		qrCodeTitle: 'Escanee para registrarse',
 		registrationClosed: 'El registro está cerrado',
 		registrationClosedDescription: 'Pida ayuda a un miembro del equipo del mercado.',
+		registrationClosesIn: 'El registro cierra en',
+		registrationClosesInMinutes: 'El registro cierra en {minutes} min',
 		registrationType: 'Tipo de invitado',
 		returningGuest: 'Invitado que regresa',
 		returningGuestHelp: 'Ingrese el número de teléfono y el PIN que usó anteriormente.',
@@ -432,6 +438,8 @@ export const translations = {
 		qrCodeTitle: 'برای ثبت‌نام اسکن کنید',
 		registrationClosed: 'ثبت‌نام بسته است',
 		registrationClosedDescription: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
+		registrationClosesIn: 'زمان باقی‌مانده برای ثبت‌نام',
+		registrationClosesInMinutes: 'ثبت‌نام تا {minutes} دقیقه دیگر بسته می‌شود',
 		registrationType: 'نوع مهمان',
 		returningGuest: 'مهمان بازگشتی',
 		returningGuestHelp: 'شماره تلفن و پینی را که قبلاً استفاده کرده‌اید وارد کنید.',
@@ -548,6 +556,8 @@ export const translations = {
 		qrCodeTitle: 'I-scan para mag-check in',
 		registrationClosed: 'Sarado ang pagpaparehistro',
 		registrationClosedDescription: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
+		registrationClosesIn: 'Magsasara ang pagpaparehistro sa loob ng',
+		registrationClosesInMinutes: 'Magsasara ang pagpaparehistro sa loob ng {minutes} min',
 		registrationType: 'Uri ng bisita',
 		returningGuest: 'Bumabalik na bisita',
 		returningGuestHelp: 'Ilagay ang numero ng telepono at PIN na ginamit mo dati.',
@@ -663,6 +673,8 @@ export const translations = {
 		qrCodeTitle: 'Quét để đăng ký',
 		registrationClosed: 'Đã đóng đăng ký',
 		registrationClosedDescription: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
+		registrationClosesIn: 'Đăng ký sẽ đóng sau',
+		registrationClosesInMinutes: 'Đăng ký sẽ đóng sau {minutes} phút',
 		registrationType: 'Loại khách',
 		returningGuest: 'Khách quay lại',
 		returningGuestHelp: 'Nhập số điện thoại và mã PIN bạn đã dùng trước đây.',
@@ -773,6 +785,8 @@ export const translations = {
 		qrCodeTitle: '扫码登记',
 		registrationClosed: '登记已关闭',
 		registrationClosedDescription: '请向市场工作人员寻求帮助。',
+		registrationClosesIn: '距登记关闭还剩',
+		registrationClosesInMinutes: '登记将在 {minutes} 分钟后关闭',
 		registrationType: '访客类型',
 		returningGuest: '再次到访',
 		returningGuestHelp: '请输入您之前使用的电话号码和 PIN。',
@@ -885,6 +899,8 @@ export const translations = {
 		qrCodeTitle: 'امسح للتسجيل',
 		registrationClosed: 'التسجيل مغلق',
 		registrationClosedDescription: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
+		registrationClosesIn: 'يُغلق التسجيل خلال',
+		registrationClosesInMinutes: 'يُغلق التسجيل خلال {minutes} دقيقة',
 		registrationType: 'نوع الضيف',
 		returningGuest: 'ضيف عائد',
 		returningGuestHelp: 'أدخل رقم الهاتف والرمز السري اللذين استخدمتهما سابقًا.',
