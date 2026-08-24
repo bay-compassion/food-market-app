@@ -44,6 +44,13 @@ counter" state on the guest card — the one moment the app needs to interrupt s
 looking at their phone. That is deliberate, not a misuse, and it is the reason the called state
 also changes the icon and the heading rather than relying on color alone.
 
+**`--color-success` and `--color-warning` exist only for `Alert`.** They stay out of the
+`info` and `error` severities on purpose: `info` reuses `--color-brand` and `error` reuses
+`--color-error`, so the palette only grows for the two signals nothing else in the app already
+carries. Neither is safe as a background with white text at these values — they're tuned to pass
+4.5:1 as text and icon-badge fills on `--color-background` and `--color-surface-soft`, not as full
+panel fills.
+
 **Contrast.** `--color-text-subtle` on `--color-background` is the lightest pairing in the app, at
 roughly 5:1. That clears the 4.5:1 floor for body text but not by much, so do not lighten it
 further, and do not use it on `--color-surface-soft` for anything a guest has to read.

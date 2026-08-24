@@ -1,3 +1,5 @@
+import { outdent } from 'outdent';
+
 export const languages = [
 	{ code: 'en', label: 'English' },
 	{ code: 'es', label: 'Español' },
@@ -10,7 +12,15 @@ export const languages = [
 
 export type Locale = (typeof languages)[number]['code'];
 
+export interface GuestViewTranslations {
+	scheduleInformation: {
+		heading: string;
+		body: string;
+	};
+}
+
 export interface Translation {
+	guestView: GuestViewTranslations;
 	admin: string;
 	adminDescription: string;
 	adminEyebrow: string;
@@ -123,6 +133,15 @@ export interface Translation {
 
 export const translations = {
 	en: {
+		guestView: {
+			scheduleInformation: {
+				heading: 'Registration opens every Saturday at 10:30 AM',
+				body: outdent`
+					Sign-ups are not open yet. Please come back on Saturday at 10:30 AM.
+					Everyone will have a fair chance to enter the queue lottery.
+				`,
+			},
+		},
 		admin: 'Admin',
 		adminDescription: 'Queue management tools are coming soon.',
 		adminEyebrow: 'Market team',
@@ -238,6 +257,15 @@ export const translations = {
 		welcome: 'Welcome to the community food market',
 	},
 	es: {
+		guestView: {
+			scheduleInformation: {
+				heading: 'El registro abre todos los sábados a las 10:30 a. m.',
+				body: outdent`
+					Las inscripciones aún no están abiertas. Vuelva el sábado a las 10:30 a. m.
+					Todos tendrán una oportunidad justa de participar en el sorteo de la fila.
+				`,
+			},
+		},
 		admin: 'Administración',
 		adminDescription: 'Las herramientas para gestionar la fila estarán disponibles pronto.',
 		adminEyebrow: 'Equipo del mercado',
@@ -354,6 +382,15 @@ export const translations = {
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
 	},
 	fa: {
+		guestView: {
+			scheduleInformation: {
+				heading: 'ثبت‌نام هر شنبه ساعت ۱۰:۳۰ صبح باز می‌شود',
+				body: outdent`
+					ثبت‌نام هنوز باز نشده است. لطفاً روز شنبه ساعت ۱۰:۳۰ صبح دوباره مراجعه کنید.
+					همه فرصتی برابر برای ورود به قرعه‌کشی صف خواهند داشت.
+				`,
+			},
+		},
 		admin: 'مدیریت',
 		adminDescription: 'ابزارهای مدیریت صف به‌زودی در دسترس خواهند بود.',
 		adminEyebrow: 'تیم بازار',
@@ -469,6 +506,15 @@ export const translations = {
 		welcome: 'به بازار غذای جامعه خوش آمدید',
 	},
 	tl: {
+		guestView: {
+			scheduleInformation: {
+				heading: 'Nagbubukas ang pagpaparehistro tuwing Sabado nang 10:30 AM',
+				body: outdent`
+					Hindi pa bukas ang pagpaparehistro. Pakibalik sa Sabado nang 10:30 AM.
+					Magkakaroon ang lahat ng patas na pagkakataon na makasali sa lottery ng pila.
+				`,
+			},
+		},
 		admin: 'Admin',
 		adminDescription: 'Darating na ang mga kasangkapan sa pamamahala ng pila.',
 		adminEyebrow: 'Pangkat ng pamilihan',
@@ -587,6 +633,15 @@ export const translations = {
 		welcome: 'Maligayang pagdating sa pamilihan ng pagkaing pangkomunidad',
 	},
 	vi: {
+		guestView: {
+			scheduleInformation: {
+				heading: 'Đăng ký mở vào mỗi thứ Bảy lúc 10:30 sáng',
+				body: outdent`
+					Việc đăng ký chưa mở. Vui lòng quay lại vào thứ Bảy lúc 10:30 sáng.
+					Mọi người đều có cơ hội công bằng để tham gia bốc thăm vào hàng đợi.
+				`,
+			},
+		},
 		admin: 'Quản trị',
 		adminDescription: 'Công cụ quản lý hàng đợi sẽ sớm có.',
 		adminEyebrow: 'Đội ngũ chợ',
@@ -704,6 +759,15 @@ export const translations = {
 		welcome: 'Chào mừng đến với chợ thực phẩm cộng đồng',
 	},
 	zh: {
+		guestView: {
+			scheduleInformation: {
+				heading: '登记每周六上午 10:30 开放',
+				body: outdent`
+					登记尚未开放。请于周六上午 10:30 再次访问。
+					每个人都将有公平的机会参加排队抽签。
+				`,
+			},
+		},
 		admin: '管理',
 		adminDescription: '排队管理工具即将推出。',
 		adminEyebrow: '市场团队',
@@ -816,6 +880,15 @@ export const translations = {
 		welcome: '欢迎来到社区食品市场',
 	},
 	ar: {
+		guestView: {
+			scheduleInformation: {
+				heading: 'يُفتح التسجيل كل يوم سبت الساعة 10:30 صباحًا',
+				body: outdent`
+					التسجيل لم يُفتح بعد. يرجى العودة يوم السبت الساعة 10:30 صباحًا.
+					سيحصل الجميع على فرصة عادلة للدخول في قرعة قائمة الانتظار.
+				`,
+			},
+		},
 		admin: 'الإدارة',
 		adminDescription: 'أدوات إدارة قائمة الانتظار ستتوفر قريبًا.',
 		adminEyebrow: 'فريق السوق',
