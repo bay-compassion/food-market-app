@@ -1,11 +1,14 @@
-<!-- diagram-sources: src/App.vue=9317a9a8738a, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=07ab22ebe1dc, src/components/guest-view/GuestQueueScreen.vue=a5bff8180201, src/services/guestVisitApi.ts=ed65085ea3a5, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
 
 # Guest journey
 
 The path a guest takes from opening the app to being served, and the state their visit is in at each
-step. The guest-facing screens are all in [`src/App.vue`](../src/App.vue); the endpoints they call
-are `/api/market` (is registration open?), `/api/guests` (register), and `/api/visit` (check status,
-cancel).
+step. Language selection lives in [`src/App.vue`](../src/App.vue); the registration form, status
+screen, and countdown are in
+[`src/components/guest-view/GuestQueueScreen.vue`](../src/components/guest-view/GuestQueueScreen.vue),
+which calls `/api/market` (is registration open?), `/api/guests` (register), and `/api/visit` (check
+status, cancel) through
+[`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts).
 
 The diagram is written in [Mermaid](https://mermaid.js.org/), a plain-text diagram format GitHub
 renders automatically when viewing this file on github.com. It is maintained by hand — see
@@ -73,7 +76,7 @@ flowchart TD
   bypasses that client-side wait, so it also doubles as a way to exercise the form locally without
   forcing a session into `registration_open`. `GuestSignupCard` takes a `context` prop
   (`'queue' | 'early'`) that swaps the form/success copy — "join the queue" only reads correctly
-  once registration is genuinely open, so `App.vue` derives `context` from whether registration is
+  once registration is genuinely open, so `GuestQueueScreen.vue` derives `context` from whether registration is
   actually open right now, not from which route rendered the card.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — lives on the guest profile and is snapshotted onto each visit.** A
