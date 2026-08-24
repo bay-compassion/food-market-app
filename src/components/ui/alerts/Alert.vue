@@ -38,6 +38,7 @@ const displayIcon = computed(() => props.icon ?? defaultIcons[props.severity]);
 .alert {
 	display: flex;
 	gap: 14px;
+	margin-bottom: 24px;
 	padding: 16px 18px;
 	border-radius: var(--radius-md);
 	background: var(--color-surface-soft);

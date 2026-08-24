@@ -17,6 +17,7 @@ import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import GuestSignupCard from '../GuestSignupCard.vue';
 import type { GuestFormState } from '../types';
 import GuestLanguageHero from './GuestLanguageHero.vue';
+import ScheduleInformation from './ScheduleInformation.vue';
 
 const props = defineProps<{
 	t: Translation;
@@ -121,6 +122,15 @@ const canShowForm = computed(
 	() => registrationAvailable.value || (isPreregistration.value && canPreregister.value),
 );
 const showPreregisterCta = computed(() => !isPreregistration.value && canPreregister.value);
+const isEventInProgress = computed(() => marketEvent.value?.status === 'service_started');
+/**
+ * `registrationAvailable` is also `false` during `service_started`, so it alone can't distinguish
+ * "not open yet" (alert is accurate) from "event under way" (alert would contradict reality) —
+ * the explicit `isEventInProgress` check is what keeps the alert hidden once service starts.
+ */
+const showScheduleInformation = computed(
+	() => !registrationAvailable.value && !isEventInProgress.value,
+);
 /**
  * Whether a guest is actually joining today's queue or signing up ahead of the window — decided by
  * whether registration is genuinely open right now, not by which route got them here, so a guest
@@ -277,6 +287,8 @@ defineExpose({ resetToForm });
 	<section class="guest-layout">
 		<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
 		<template v-else>
+			<ScheduleInformation v-if="showScheduleInformation" :t="t" />
+
 			<GuestLanguageHero
 				v-if="!isReturningVisitor"
 				:t="t"

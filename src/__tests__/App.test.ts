@@ -7,6 +7,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import App from '../App.vue';
 import { authReturnUrl } from '../auth';
 import AdminDashboard from '../components/AdminDashboard.vue';
+import { translations } from '../locales';
 
 // The real module only configures Auth0 when the VITE_AUTH0_* variables are set, which is true
 // locally but not in CI. Pretend it is configured so the admin surfaces use the client below.
@@ -454,6 +455,63 @@ describe('App', () => {
 
 		wrapper.unmount();
 		vi.useRealTimers();
+		vi.unstubAllGlobals();
+	});
+
+	function mountWithMarketStatus(status: string) {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation((url: string) =>
+				Promise.resolve(
+					url === '/api/market'
+						? {
+								ok: true,
+								json: () =>
+									Promise.resolve({
+										event: {
+											id: 'event-1',
+											status,
+											registrationOpensAt: '2020-01-01T00:00:00.000Z',
+											registrationClosesAt:
+												status === 'registration_open'
+													? '2099-01-01T00:00:00.000Z'
+													: '2020-01-01T01:00:00.000Z',
+										},
+										questions: [],
+									}),
+							}
+						: { ok: false },
+				),
+			),
+		);
+
+		return mountApp();
+	}
+
+	it('hides the schedule information alert while registration is open', async () => {
+		const wrapper = mountWithMarketStatus('registration_open');
+		await flushPromises();
+
+		expect(wrapper.text()).not.toContain(translations.en.guestView.scheduleInformation.heading);
+
+		vi.unstubAllGlobals();
+	});
+
+	it('hides the schedule information alert while the event is in progress', async () => {
+		const wrapper = mountWithMarketStatus('service_started');
+		await flushPromises();
+
+		expect(wrapper.text()).not.toContain(translations.en.guestView.scheduleInformation.heading);
+
+		vi.unstubAllGlobals();
+	});
+
+	it('shows the schedule information alert once registration has closed', async () => {
+		const wrapper = mountWithMarketStatus('registration_closed');
+		await flushPromises();
+
+		expect(wrapper.text()).toContain(translations.en.guestView.scheduleInformation.heading);
+
 		vi.unstubAllGlobals();
 	});
 
