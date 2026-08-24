@@ -24,17 +24,30 @@
 const KNOWN_EXCEPTIONS = new Set(['The Bay Compassion']);
 const MIN_FLAGGED_LENGTH = 3;
 
+function flatten(value, prefix = '') {
+	const result = {};
+	for (const [key, entry] of Object.entries(value)) {
+		const path = prefix ? `${prefix}.${key}` : key;
+		if (typeof entry === 'string') {
+			result[path] = entry;
+		} else if (entry && typeof entry === 'object') {
+			Object.assign(result, flatten(entry, path));
+		}
+	}
+
+	return result;
+}
+
 async function checkDictionary(label, moduleUrl, exportName) {
 	const module = await import(moduleUrl);
 	const dictionary = module[exportName];
-	const english = dictionary.en;
+	const english = flatten(dictionary.en);
 	const languages = Object.keys(dictionary).filter((code) => code !== 'en');
 	const findings = [];
 
 	for (const language of languages) {
-		for (const [key, value] of Object.entries(dictionary[language])) {
+		for (const [key, value] of Object.entries(flatten(dictionary[language]))) {
 			if (
-				typeof value === 'string' &&
 				value === english[key] &&
 				value.trim().length >= MIN_FLAGGED_LENGTH &&
 				!KNOWN_EXCEPTIONS.has(value)
