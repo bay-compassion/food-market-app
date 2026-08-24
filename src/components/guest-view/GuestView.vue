@@ -3,30 +3,27 @@ import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import type { Locale, Translation } from '../../locales';
-import LegalDocumentView from '../legal/LegalDocumentView.vue';
-import privacyMarkdown from '../legal/privacy.md?raw';
-import termsMarkdown from '../legal/terms.md?raw';
 import QrCodeView from '../QrCodeView.vue';
 import GuestQueueScreen from './GuestQueueScreen.vue';
 
-defineProps<{
+const props = defineProps<{
 	t: Translation;
 	locale: Locale;
 	isReturningVisitor: boolean;
+	/**
+	 * Whether this view's own content should be visible. `AppFooter`'s `LegalDocumentView` covers
+	 * the whole page above this component, so `App.vue` sets this to false rather than unmounting
+	 * `GuestView` (which would drop in-progress form input and restart the queue screen's polling).
+	 * Applied as a prop, not a `v-show` on `<GuestView>` itself, because this component's template
+	 * has two root nodes and Vue cannot forward a `v-show` style onto a multi-root component.
+	 */
+	visible: boolean;
 }>();
 defineEmits<{ 'select-language': [locale: Locale] }>();
 
 const route = useRoute();
 const router = useRouter();
-const isPrivacy = computed(() => route.name === 'privacy');
-const isTerms = computed(() => route.name === 'terms');
 const isQrCode = computed(() => route.name === 'qr-code');
-/**
- * Whether one of the guest chrome views (legal docs, QR code) covers the queue screen. Kept as a
- * `v-show` below rather than folding `GuestQueueScreen` into this `v-if`/`v-else-if` chain — it
- * unmounting on every trip to `/privacy` would drop in-progress form input and restart its polling.
- */
-const showsChrome = computed(() => isPrivacy.value || isTerms.value || isQrCode.value);
 
 const queueScreen = ref<InstanceType<typeof GuestQueueScreen> | null>(null);
 
@@ -39,20 +36,8 @@ defineExpose({ resetToForm: () => queueScreen.value?.resetToForm() });
 </script>
 
 <template>
-	<LegalDocumentView
-		v-if="isPrivacy"
-		:back-label="t.backToGuest"
-		:markdown="privacyMarkdown"
-		@back="showGuest"
-	/>
-	<LegalDocumentView
-		v-else-if="isTerms"
-		:back-label="t.backToGuest"
-		:markdown="termsMarkdown"
-		@back="showGuest"
-	/>
 	<QrCodeView
-		v-else-if="isQrCode"
+		v-if="isQrCode"
 		:back-label="t.backToGuest"
 		:title="t.qrCodeTitle"
 		:description="t.qrCodeDescription"
@@ -61,7 +46,7 @@ defineExpose({ resetToForm: () => queueScreen.value?.resetToForm() });
 		@back="showGuest"
 	/>
 	<GuestQueueScreen
-		v-show="!showsChrome"
+		v-show="!isQrCode && props.visible"
 		ref="queueScreen"
 		:t="t"
 		:locale="locale"

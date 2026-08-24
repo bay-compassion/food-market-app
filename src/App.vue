@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { auth0 } from './auth';
 import { isAdminView, type AdminView } from './components/admin/types';
 import AdminAuthView from './components/AdminAuthView.vue';
+import AppFooter from './components/AppFooter.vue';
 import GuestView from './components/guest-view/GuestView.vue';
 import { languages, translations, type Locale } from './locales';
 
@@ -42,14 +43,6 @@ function showGuest() {
 
 function toggleMode() {
 	void router.push({ name: isAdmin.value ? 'guest' : 'admin' });
-}
-
-function showPrivacy() {
-	void router.push({ name: 'privacy' });
-}
-
-function showTerms() {
-	void router.push({ name: 'terms' });
 }
 
 function navigateAdmin(view: AdminView) {
@@ -110,15 +103,12 @@ function saveLocale() {
 			:t="t"
 			:locale="locale"
 			:is-returning-visitor="isReturningVisitor"
+			:visible="!isPrivacy && !isTerms"
 			@select-language="selectLanguage"
 		/>
 
 		<AdminAuthView v-else :locale="locale" :view="adminView" @navigate="navigateAdmin" />
 
-		<footer v-if="!isPrivacy && !isTerms && !isQrCode" class="app-footer">
-			<a href="/privacy" @click.prevent="showPrivacy">{{ t.privacyPolicy }}</a>
-			<span class="app-footer-divider" aria-hidden="true">·</span>
-			<a href="/terms" @click.prevent="showTerms">{{ t.termsAndConditions }}</a>
-		</footer>
+		<AppFooter :t="t" @back="showGuest" />
 	</main>
 </template>
