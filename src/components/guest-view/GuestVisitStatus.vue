@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import type { Locale, Translation } from '../locales';
-import AppButton from './AppButton.vue';
-import NotificationOptIn from './NotificationOptIn.vue';
+import type { Translation } from '../../locales';
+import AppButton from '../AppButton.vue';
 
 defineProps<{
 	t: Translation;
-	locale: Locale;
 	isCalled: boolean;
 	successTitle: string;
 	successDescription: string;
@@ -14,7 +12,6 @@ defineProps<{
 	guestsAhead: number | null;
 	canCancelVisit: boolean;
 	isCancelling: boolean;
-	visitToken: string | null;
 	submissionError: string;
 }>();
 
@@ -46,7 +43,6 @@ const emit = defineEmits<{ 'cancel-visit': [] }>();
 			</p>
 			<p>{{ successDescription }}</p>
 		</template>
-		<NotificationOptIn :visit-token="visitToken" :locale="locale" />
 		<p v-if="submissionError" class="submission-error" role="alert">
 			{{ submissionError }}
 		</p>

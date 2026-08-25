@@ -6,8 +6,8 @@ import RegistrationCountdown from './RegistrationCountdown.vue';
 
 /**
  * The clock shown above the sign-up form while registration is open, counting down to the moment
- * it closes. `GuestSignupCard` renders it only when `context === 'queue'` — genuinely open right
- * now, not a pre-registration window.
+ * it closes. `GuestRegistrationForm` renders it only when `context === 'queue'` — genuinely open
+ * right now, not a pre-registration window.
  *
  * The background blends from brand to danger color via CSS `color-mix()`, driven by a
  * `--registration-countdown-progress` custom property (`0` = brand, `1` = danger) rather than

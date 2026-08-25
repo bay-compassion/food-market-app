@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { translations, type Locale } from '../locales';
-import AppButton from './AppButton.vue';
+import { translations, type Locale } from '../../locales';
+import AppButton from '../AppButton.vue';
 
 const props = defineProps<{ visitToken: string | null; locale: Locale }>();
 
@@ -110,12 +110,21 @@ const canEnableSms = computed(() => smsConfigured.value && Boolean(props.visitTo
 
 async function loadSmsConfiguration() {
 	try {
-		const response = await fetch('/api/sms-subscription');
+		const response = await fetch('/api/sms-subscription', {
+			headers: props.visitToken ? { Authorization: `Bearer ${props.visitToken}` } : undefined,
+		});
 		if (!response.ok) {
 			return;
 		}
-		const configuration = (await response.json()) as { configured: boolean };
+		const configuration = (await response.json()) as { configured: boolean; subscribed: boolean };
 		smsConfigured.value = configuration.configured;
+		// Consent is a guest characteristic, not a per-visit one — a guest who already consented on
+		// a past visit shouldn't see the checkbox again. A `false` here isn't necessarily "not
+		// subscribed" though (it's also the response shape before a token is known), so it never
+		// overrides a state `enableSms` already set locally.
+		if (configuration.subscribed) {
+			smsState.value = 'enabled';
+		}
 	} catch {
 		// SMS opt-in remains hidden if configuration is unavailable.
 	}
@@ -142,7 +151,8 @@ async function enableSms() {
 }
 
 // A guest may finish registering, or return with a saved token, after this component has already
-// mounted — re-sync the push subscription whenever the token we have to work with changes.
+// mounted — re-sync the push subscription and re-check SMS consent whenever the token changes,
+// since this component is no longer scoped to a single visit's status screen.
 watch(
 	() => props.visitToken,
 	async (token) => {
@@ -154,6 +164,7 @@ watch(
 		} catch {
 			notificationState.value = 'error';
 		}
+		void loadSmsConfiguration();
 	},
 );
 
@@ -188,15 +199,6 @@ onMounted(() => {
 	<div v-if="smsConfigured" class="notification-option">
 		<p v-if="smsState === 'enabled'" class="notification-enabled">{{ t.smsEnabled }}</p>
 		<template v-else>
-			<label class="update-profile-option">
-				<input v-model="smsConsent" type="checkbox" />
-				<span>
-					{{ t.smsConsentLabel }}
-					<a href="/privacy">{{ t.privacyPolicy }}</a>
-					·
-					<a href="/terms">{{ t.termsAndConditions }}</a>
-				</span>
-			</label>
 			<AppButton
 				type="button"
 				variant="secondary"
@@ -205,9 +207,31 @@ onMounted(() => {
 			>
 				{{ t.smsEnable }}
 			</AppButton>
+			<label class="update-profile-option sms-consent">
+				<input v-model="smsConsent" type="checkbox" />
+				<span>
+					{{ t.smsConsentLabel }}
+					<a href="/privacy">{{ t.privacyPolicy }}</a>
+					·
+					<a href="/terms">{{ t.termsAndConditions }}</a>
+				</span>
+			</label>
 			<p v-if="smsState === 'error'" class="submission-error" role="alert">
 				{{ t.smsError }}
 			</p>
 		</template>
 	</div>
 </template>
+
+<style scoped>
+/**
+ * The consent paragraph is long enough that the bold weight `.update-profile-option` normally
+ * uses for its short, one-line siblings (see `guest.css`) reads as a dense, hard-to-scan block
+ * here — normal weight with more line-height keeps it legible without shrinking it into fine
+ * print, since this text still has to double as the guest's affirmative action.
+ */
+.sms-consent span {
+	font-weight: 400;
+	line-height: 1.55;
+}
+</style>
