@@ -1,10 +1,9 @@
 import type { GuestFormState } from '../components/types';
-import type { SessionMode, SessionStatus } from './sessionStateMachine';
 import type { VisitStatus } from './visitStateMachine';
 
 /**
- * The guest-facing `/api/market`, `/api/guests`, and `/api/visit` calls, kept out of `GuestView`
- * so its component stays about orchestrating state rather than parsing responses.
+ * The guest-facing `/api/guests` and `/api/visit` calls, kept out of `GuestView` so its component
+ * stays about orchestrating state rather than parsing responses.
  */
 
 export type ActiveVisit = {
@@ -13,65 +12,6 @@ export type ActiveVisit = {
 	queuePosition: number | null;
 	aheadOfYou: number | null;
 };
-
-export type MarketEventTiming = {
-	id: string;
-	status: SessionStatus;
-	sessionMode: SessionMode;
-	registrationOpensAt: Date;
-	registrationClosesAt: Date;
-};
-
-export type RegistrationQuestion = {
-	id: string;
-	prompt: string;
-	type: 'text' | 'scale';
-	required: boolean;
-};
-
-export type MarketRegistration = {
-	event: MarketEventTiming | null;
-	questions: RegistrationQuestion[];
-};
-
-/**
- * Fetches the current market event and its registration questions. Returns `null` if the optional
- * configuration endpoint can't be reached, so a caller can keep the form available with whatever
- * it already knew.
- */
-export async function fetchMarketRegistration(): Promise<MarketRegistration | null> {
-	try {
-		const response = await fetch('/api/market');
-		if (!response.ok) {
-			return null;
-		}
-		const data = (await response.json()) as {
-			event: {
-				id: string;
-				status: SessionStatus;
-				sessionMode: SessionMode;
-				registrationOpensAt: string;
-				registrationClosesAt: string;
-			} | null;
-			questions: RegistrationQuestion[];
-		};
-
-		return {
-			event: data.event
-				? {
-						id: data.event.id,
-						status: data.event.status,
-						sessionMode: data.event.sessionMode,
-						registrationOpensAt: new Date(data.event.registrationOpensAt),
-						registrationClosesAt: new Date(data.event.registrationClosesAt),
-					}
-				: null,
-			questions: data.questions,
-		};
-	} catch {
-		return null;
-	}
-}
 
 export type GuestRegistrationPayload = GuestFormState & {
 	locale: string;

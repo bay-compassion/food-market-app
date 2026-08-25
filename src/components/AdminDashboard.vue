@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import { adminTranslations } from '../adminLocales';
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
@@ -7,7 +7,9 @@ import { translations, type Locale } from '../locales';
 import type { ServiceProgress } from '../services/demoScenario';
 import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
 import { lotteryWeightFor } from '../services/lotteryWeight';
+import type { SessionOverview } from '../services/market-session.store';
 import type { Permission } from '../services/permissions';
+import { useRootStore } from '../services/root.store';
 import {
 	currentSessionState,
 	type SessionCommand,
@@ -27,7 +29,6 @@ import ReportsView from './admin/ReportsView.vue';
 import SessionHistoryView from './admin/SessionHistoryView.vue';
 import SessionView from './admin/SessionView.vue';
 import type {
-	AdminMarketEvent,
 	AdminView,
 	HistoricalEvent,
 	ManualGuest,
@@ -40,23 +41,21 @@ import EyebrowLabel from './EyebrowLabel.vue';
 
 type GuestStatus = VisitStatus;
 type Guest = QueueGuest & { marketEventId: string | null };
-type Overview = {
-	event: AdminMarketEvent | null;
-	questions: Question[];
-	counts: Partial<Record<GuestStatus, number>>;
-};
 
 const props = withDefaults(
 	defineProps<{ locale: Locale; getAccessToken: () => Promise<string>; view?: AdminView }>(),
 	{ view: 'current-session' },
 );
 const emit = defineEmits<{ navigate: [view: AdminView] }>();
+const rootStore = useRootStore();
+const session = rootStore.session;
+rootStore.setAccessTokenProvider(props.getAccessToken);
 const t = computed(() => adminTranslations[props.locale]);
 const base = computed(() => translations[props.locale]);
 const activeView = ref<AdminView>(props.view);
 const granted = ref<Permission[]>([]);
-const event = ref<AdminMarketEvent | null>(null);
-const counts = ref<Overview['counts']>({});
+const event = computed(() => session.currentState?.event ?? null);
+const counts = computed(() => session.currentState?.counts ?? {});
 const questions = ref<Question[]>([]);
 const guests = ref<Guest[]>([]);
 const sessionGuests = ref<Guest[]>([]);
@@ -73,7 +72,6 @@ const settings = ref<SessionSettings>({
 });
 const extensionMinutes = ref(30);
 const postponementMinutes = ref(30);
-let sessionRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 const broadcast = ref({ title: '', body: '' });
 
 const statuses: GuestStatus[] = [
@@ -187,12 +185,14 @@ function registrationClosesAt() {
 	).toISOString();
 }
 
-function applyOverview(data: Overview) {
-	if (sessionRefreshTimer) {
-		clearTimeout(sessionRefreshTimer);
+let appliedSettingsSignature = '';
+
+function applySessionSettings(data: SessionOverview) {
+	const signature = JSON.stringify({ event: data.event, questions: data.questions });
+	if (signature === appliedSettingsSignature) {
+		return;
 	}
-	event.value = data.event;
-	counts.value = data.counts;
+	appliedSettingsSignature = signature;
 	questions.value = data.questions.map(({ id, prompt, type, required }) => ({
 		id,
 		prompt,
@@ -212,42 +212,21 @@ function applyOverview(data: Overview) {
 			),
 		);
 		settings.value.capacity = data.event.capacity;
-		const now = new Date();
-		const nextTransitionAt =
-			data.event.status === 'scheduled'
-				? new Date(data.event.registrationOpensAt)
-				: data.event.status === 'registration_open'
-					? new Date(data.event.registrationClosesAt)
-					: null;
-		if (nextTransitionAt && nextTransitionAt > now) {
-			const transitionDelay = nextTransitionAt.valueOf() - now.valueOf() + 250;
-			sessionRefreshTimer = setTimeout(
-				refreshCurrentSession,
-				Math.min(
-					data.event.status === 'registration_open'
-						? Math.min(transitionDelay, 15_000)
-						: transitionDelay,
-					2_147_000_000,
-				),
-			);
-		} else if (data.event.status === 'service_started') {
-			// Several workers can run the queue at once, so keep polling while service is live —
-			// otherwise one worker never sees the guests another has already called.
-			sessionRefreshTimer = setTimeout(refreshCurrentSession, 15_000);
-		}
 	} else {
 		settings.value.capacity = 50;
 		setDefaultSettings();
 	}
 }
 
-async function loadOverview() {
-	const response = await fetch('/api/market', { headers: await authHeaders() });
-	if (!response.ok) {
-		throw new Error('overview');
-	}
-	applyOverview((await response.json()) as Overview);
-}
+watch(
+	() => session.currentState,
+	(data) => {
+		if (data) {
+			applySessionSettings(data);
+		}
+	},
+	{ immediate: true },
+);
 
 async function loadGuests() {
 	const params = new URLSearchParams({ scope: 'all' });
@@ -275,15 +254,6 @@ async function loadSessionGuests() {
 	sessionGuests.value = (await response.json()) as Guest[];
 }
 
-async function refreshCurrentSession() {
-	try {
-		await loadOverview();
-		await loadSessionGuests();
-	} catch {
-		feedback.value = t.value.error;
-	}
-}
-
 async function loadHistory() {
 	const response = await fetch('/api/market?view=history', { headers: await authHeaders() });
 	if (!response.ok) {
@@ -307,7 +277,7 @@ async function loadDashboard() {
 		navigate(allowed[0]!);
 	}
 	try {
-		await loadOverview();
+		await session.getStatus();
 		// Only ask for what this worker is allowed to see; the rest would come back 403 and read
 		// as a broken screen rather than as a screen that was never theirs.
 		if (can('run:queue')) {
@@ -322,24 +292,19 @@ async function saveSettings() {
 	isBusy.value = true;
 	feedback.value = '';
 	try {
-		const response = await fetch('/api/market', {
-			method: 'PUT',
-			headers: await authHeaders(true),
-			body: JSON.stringify({
-				registrationOpensAt:
-					settings.value.sessionMode === 'ad_hoc'
-						? new Date().toISOString()
-						: new Date(settings.value.registrationOpensAt).toISOString(),
-				registrationClosesAt: registrationClosesAt(),
-				capacity: settings.value.capacity,
-				sessionMode: settings.value.sessionMode,
-				questions: questions.value,
-			}),
+		const saved = await session.saveSettings({
+			registrationOpensAt:
+				settings.value.sessionMode === 'ad_hoc'
+					? new Date().toISOString()
+					: new Date(settings.value.registrationOpensAt).toISOString(),
+			registrationClosesAt: registrationClosesAt(),
+			capacity: settings.value.capacity,
+			sessionMode: settings.value.sessionMode,
+			questions: questions.value,
 		});
-		if (!response.ok) {
+		if (!saved) {
 			throw new Error('save');
 		}
-		applyOverview((await response.json()) as Overview);
 		feedback.value = t.value.saved;
 
 		return true;
@@ -374,15 +339,9 @@ async function runMarketAction(action: MarketAction, isConfirmed = false) {
 	isBusy.value = true;
 	feedback.value = '';
 	try {
-		const response = await fetch('/api/market', {
-			method: 'POST',
-			headers: await authHeaders(true),
-			body: JSON.stringify({ action }),
-		});
-		if (!response.ok) {
+		if (!(await session.sendCommand(action))) {
 			throw new Error('action');
 		}
-		applyOverview((await response.json()) as Overview);
 		await Promise.all([loadGuests(), loadSessionGuests()]);
 		feedback.value = action === 'run_lottery' ? t.value.drawComplete : t.value.sessionUpdated;
 	} catch {
@@ -414,18 +373,13 @@ async function postponeRegistration() {
 	isBusy.value = true;
 	feedback.value = '';
 	try {
-		const response = await fetch('/api/market', {
-			method: 'POST',
-			headers: await authHeaders(true),
-			body: JSON.stringify({
-				action: 'postpone_registration',
+		if (
+			!(await session.sendCommand('postpone_registration', {
 				minutes: postponementMinutes.value,
-			}),
-		});
-		if (!response.ok) {
+			}))
+		) {
 			throw new Error('postpone');
 		}
-		applyOverview((await response.json()) as Overview);
 		postponementMinutes.value = 30;
 		feedback.value = t.value.sessionUpdated;
 	} catch {
@@ -442,19 +396,14 @@ async function updateRegistrationOverrides(registrationClosesAt: string, capacit
 	isBusy.value = true;
 	feedback.value = '';
 	try {
-		const response = await fetch('/api/market', {
-			method: 'POST',
-			headers: await authHeaders(true),
-			body: JSON.stringify({
-				action: 'update_registration',
+		if (
+			!(await session.sendCommand('update_registration', {
 				registrationClosesAt,
 				capacity,
-			}),
-		});
-		if (!response.ok) {
+			}))
+		) {
 			throw new Error('override');
 		}
-		applyOverview((await response.json()) as Overview);
 		feedback.value = t.value.saved;
 
 		return true;
@@ -498,7 +447,7 @@ async function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
 		if (!response.ok) {
 			throw new Error('command');
 		}
-		await Promise.all([loadOverview(), loadSessionGuests()]);
+		await Promise.all([session.getStatus(), loadSessionGuests()]);
 	} catch {
 		guest.status = previous;
 		feedback.value = t.value.error;
@@ -529,7 +478,7 @@ async function addManualGuest(guest: ManualGuest, marketEventId = event.value?.i
 		if (!response.ok) {
 			throw new Error('guest');
 		}
-		await loadOverview();
+		await session.getStatus();
 		await Promise.all([loadGuests(), loadSessionGuests(), loadHistory()]);
 	} catch {
 		feedback.value = t.value.error;
@@ -551,7 +500,7 @@ async function callNextGuests(count: number) {
 			throw new Error('call_next');
 		}
 		const { called } = (await response.json()) as { called: string[] };
-		await Promise.all([loadOverview(), loadSessionGuests()]);
+		await Promise.all([session.getStatus(), loadSessionGuests()]);
 		if (!called.length) {
 			feedback.value = t.value.noWaitingGuests;
 		}
@@ -611,7 +560,7 @@ async function loadScenario(stage: SessionStatus, serviceProgress?: ServiceProgr
 		if (!response.ok) {
 			throw new Error('demo-data');
 		}
-		applyOverview((await response.json()) as Overview);
+		session.applyServerState((await response.json()) as SessionOverview);
 		await Promise.all([loadGuests(), loadSessionGuests(), loadHistory()]);
 		feedback.value = t.value.devModeLoaded;
 	} catch {
@@ -623,7 +572,6 @@ async function loadScenario(stage: SessionStatus, serviceProgress?: ServiceProgr
 
 setDefaultSettings();
 onMounted(loadDashboard);
-onBeforeUnmount(() => clearTimeout(sessionRefreshTimer));
 </script>
 
 <template>
