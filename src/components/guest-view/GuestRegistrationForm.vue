@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { Translation } from '../locales';
-import { ageRanges } from '../services/ageRanges';
-import AppButton from './AppButton.vue';
-import CollapsingCountField from './CollapsingCountField.vue';
-import FormField from './FormField.vue';
-import PhoneField from './PhoneField.vue';
-import RegistrationCountdown from './RegistrationCountdown.vue';
-import type { GuestFormState } from './types';
+import type { Translation } from '../../locales';
+import { ageRanges } from '../../services/ageRanges';
+import AppButton from '../AppButton.vue';
+import CollapsingCountField from '../CollapsingCountField.vue';
+import FormField from '../FormField.vue';
+import PhoneField from '../PhoneField.vue';
+import RegistrationCountdown from '../RegistrationCountdown.vue';
+import type { GuestFormState } from '../types';
 
 const props = defineProps<{
 	t: Translation;

@@ -17,6 +17,21 @@ export interface GuestViewTranslations {
 		heading: string;
 		body: string;
 	};
+	notOpenState: {
+		heading: string;
+		description: string;
+		preregisterCta: string;
+	};
+	registrationClosedState: {
+		heading: string;
+		description: string;
+	};
+	serviceState: {
+		inProgressHeading: string;
+		inProgressDescription: string;
+		endedHeading: string;
+		endedDescription: string;
+	};
 }
 
 export interface Translation {
@@ -82,7 +97,6 @@ export interface Translation {
 	notificationsError: string;
 	notificationsIosInstall: string;
 	notificationsUnsupported: string;
-	preregisterCta: string;
 	smsConsentLabel: string;
 	smsEnable: string;
 	smsEnabled: string;
@@ -98,8 +112,6 @@ export interface Translation {
 	qrCodeImageAlt: string;
 	qrCodePrint: string;
 	qrCodeTitle: string;
-	registrationClosed: string;
-	registrationClosedDescription: string;
 	registrationClosesIn: string;
 	registrationClosesInMinutes: string;
 	registrationType: string;
@@ -140,6 +152,23 @@ export const translations = {
 					Sign-ups are not open yet. Please come back on Saturday at 10:30 AM.
 					Everyone will have a fair chance to enter the queue lottery.
 				`,
+			},
+			notOpenState: {
+				heading: 'Check back soon',
+				description: 'Please check back at the scheduled time above.',
+				preregisterCta: 'Sign up early for the next market',
+			},
+			registrationClosedState: {
+				heading: 'Registration is closed',
+				description: 'Please check with a market team member for help.',
+			},
+			serviceState: {
+				inProgressHeading: 'Today’s market is underway',
+				inProgressDescription:
+					'Registration is closed for today. If you haven’t checked in yet, please speak with a market team member.',
+				endedHeading: 'Today’s market has ended',
+				endedDescription:
+					'Thank you for being part of our community. Check the schedule above for the next one.',
 			},
 		},
 		admin: 'Admin',
@@ -206,7 +235,6 @@ export const translations = {
 		notificationsIosInstall:
 			'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
 		notificationsUnsupported: 'Push notifications are not available on this device.',
-		preregisterCta: 'Sign up early for the next market',
 		smsConsentLabel:
 			'I agree to receive text messages from The Bay Compassion about my queue and visit status. Message frequency varies, typically no more than a few messages per market day. Message and data rates may apply. Reply STOP to unsubscribe or HELP for assistance. Consent is not required to receive food market service.',
 		smsEnable: 'Text me updates about this visit',
@@ -224,8 +252,6 @@ export const translations = {
 		qrCodeImageAlt: 'QR code that links to the check-in page',
 		qrCodePrint: 'Print',
 		qrCodeTitle: 'Scan to check in',
-		registrationClosed: 'Registration is closed',
-		registrationClosedDescription: 'Please check with a market team member for help.',
 		registrationClosesIn: 'Registration closes in',
 		registrationClosesInMinutes: 'Registration closes in {minutes} min',
 		registrationType: 'Guest type',
@@ -264,6 +290,23 @@ export const translations = {
 					Las inscripciones aún no están abiertas. Vuelva el sábado a las 10:30 a. m.
 					Todos tendrán una oportunidad justa de participar en el sorteo de la fila.
 				`,
+			},
+			notOpenState: {
+				heading: 'Vuelva pronto',
+				description: 'Vuelva a consultar a la hora programada indicada arriba.',
+				preregisterCta: 'Regístrese temprano para el próximo mercado',
+			},
+			registrationClosedState: {
+				heading: 'El registro está cerrado',
+				description: 'Pida ayuda a un miembro del equipo del mercado.',
+			},
+			serviceState: {
+				inProgressHeading: 'El mercado de hoy está en curso',
+				inProgressDescription:
+					'El registro está cerrado por hoy. Si aún no se ha registrado, hable con un miembro del equipo del mercado.',
+				endedHeading: 'El mercado de hoy ha terminado',
+				endedDescription:
+					'Gracias por ser parte de nuestra comunidad. Consulte el horario indicado arriba para el próximo mercado.',
 			},
 		},
 		admin: 'Administración',
@@ -331,7 +374,6 @@ export const translations = {
 		notificationsIosInstall:
 			'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
 		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
-		preregisterCta: 'Regístrese temprano para el próximo mercado',
 		smsConsentLabel:
 			'Acepto recibir mensajes de texto de The Bay Compassion sobre mi lugar en la fila y el estado de mi visita. La frecuencia varía; normalmente no recibiré más de unos pocos mensajes por día de mercado. Pueden aplicarse tarifas de mensajes y datos. Responda STOP para cancelar o HELP para recibir ayuda. El consentimiento no es necesario para recibir servicio en el mercado de alimentos.',
 		smsEnable: 'Envíenme actualizaciones por mensaje de texto sobre esta visita',
@@ -349,8 +391,6 @@ export const translations = {
 		qrCodeImageAlt: 'Código QR que enlaza a la página de registro',
 		qrCodePrint: 'Imprimir',
 		qrCodeTitle: 'Escanee para registrarse',
-		registrationClosed: 'El registro está cerrado',
-		registrationClosedDescription: 'Pida ayuda a un miembro del equipo del mercado.',
 		registrationClosesIn: 'El registro cierra en',
 		registrationClosesInMinutes: 'El registro cierra en {minutes} min',
 		registrationType: 'Tipo de invitado',
@@ -389,6 +429,23 @@ export const translations = {
 					ثبت‌نام هنوز باز نشده است. لطفاً روز شنبه ساعت ۱۰:۳۰ صبح دوباره مراجعه کنید.
 					همه فرصتی برابر برای ورود به قرعه‌کشی صف خواهند داشت.
 				`,
+			},
+			notOpenState: {
+				heading: 'به‌زودی دوباره سر بزنید',
+				description: 'لطفاً در زمان برنامه‌ریزی‌شده که در بالا آمده دوباره مراجعه کنید.',
+				preregisterCta: 'زودتر برای بازار بعدی ثبت‌نام کنید',
+			},
+			registrationClosedState: {
+				heading: 'ثبت‌نام بسته است',
+				description: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
+			},
+			serviceState: {
+				inProgressHeading: 'بازار امروز در حال برگزاری است',
+				inProgressDescription:
+					'ثبت‌نام برای امروز بسته شده است. اگر هنوز ثبت‌نام نکرده‌اید، لطفاً با یکی از اعضای تیم بازار صحبت کنید.',
+				endedHeading: 'بازار امروز به پایان رسید',
+				endedDescription:
+					'از اینکه بخشی از جامعه ما هستید سپاسگزاریم. برای بازار بعدی، برنامه بالا را بررسی کنید.',
 			},
 		},
 		admin: 'مدیریت',
@@ -455,7 +512,6 @@ export const translations = {
 		notificationsIosInstall:
 			'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
 		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
-		preregisterCta: 'زودتر برای بازار بعدی ثبت‌نام کنید',
 		smsConsentLabel:
 			'موافقم پیامک‌هایی از The Bay Compassion درباره جایگاهم در صف و وضعیت این مراجعه دریافت کنم. تعداد پیام‌ها متغیر است و معمولاً از چند پیام در هر روز بازار بیشتر نمی‌شود. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک STOP و برای راهنمایی HELP را پاسخ دهید. رضایت به دریافت پیامک برای دریافت خدمات بازار مواد غذایی الزامی نیست.',
 		smsEnable: 'درباره این مراجعه به من پیامک بده',
@@ -473,8 +529,6 @@ export const translations = {
 		qrCodeImageAlt: 'کد QR که به صفحه ثبت‌نام پیوند دارد',
 		qrCodePrint: 'چاپ',
 		qrCodeTitle: 'برای ثبت‌نام اسکن کنید',
-		registrationClosed: 'ثبت‌نام بسته است',
-		registrationClosedDescription: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
 		registrationClosesIn: 'زمان باقی‌مانده برای ثبت‌نام',
 		registrationClosesInMinutes: 'ثبت‌نام تا {minutes} دقیقه دیگر بسته می‌شود',
 		registrationType: 'نوع مهمان',
@@ -513,6 +567,23 @@ export const translations = {
 					Hindi pa bukas ang pagpaparehistro. Pakibalik sa Sabado nang 10:30 AM.
 					Magkakaroon ang lahat ng patas na pagkakataon na makasali sa lottery ng pila.
 				`,
+			},
+			notOpenState: {
+				heading: 'Bumalik sa lalong madaling panahon',
+				description: 'Pakibalik sa oras na nakatakda sa itaas.',
+				preregisterCta: 'Magrehistro nang maaga para sa susunod na pamilihan',
+			},
+			registrationClosedState: {
+				heading: 'Sarado ang pagpaparehistro',
+				description: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
+			},
+			serviceState: {
+				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
+				inProgressDescription:
+					'Sarado na ang pagpaparehistro para ngayong araw. Kung hindi ka pa nag-check in, makipag-usap sa isang miyembro ng pangkat ng pamilihan.',
+				endedHeading: 'Natapos na ang pamilihan ngayong araw',
+				endedDescription:
+					'Salamat sa pagiging bahagi ng aming komunidad. Tingnan ang iskedyul sa itaas para sa susunod na pamilihan.',
 			},
 		},
 		admin: 'Admin',
@@ -582,7 +653,6 @@ export const translations = {
 		notificationsIosInstall:
 			'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
 		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
-		preregisterCta: 'Magrehistro nang maaga para sa susunod na pamilihan',
 		smsConsentLabel:
 			'Sumasang-ayon akong tumanggap ng mga text message mula sa The Bay Compassion tungkol sa puwesto ko sa pila at katayuan ng pagbisitang ito. Nag-iiba ang dalas at karaniwang hindi hihigit sa ilang mensahe bawat araw ng pamilihan. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-unsubscribe o HELP para sa tulong. Hindi kailangang pumayag upang makatanggap ng serbisyo sa pamilihan ng pagkain.',
 		smsEnable: 'Padalhan ako ng text update tungkol sa pagbisitang ito',
@@ -600,8 +670,6 @@ export const translations = {
 		qrCodeImageAlt: 'QR code na naka-link sa pahina ng pag-check in',
 		qrCodePrint: 'I-print',
 		qrCodeTitle: 'I-scan para mag-check in',
-		registrationClosed: 'Sarado ang pagpaparehistro',
-		registrationClosedDescription: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
 		registrationClosesIn: 'Magsasara ang pagpaparehistro sa loob ng',
 		registrationClosesInMinutes: 'Magsasara ang pagpaparehistro sa loob ng {minutes} min',
 		registrationType: 'Uri ng bisita',
@@ -640,6 +708,23 @@ export const translations = {
 					Việc đăng ký chưa mở. Vui lòng quay lại vào thứ Bảy lúc 10:30 sáng.
 					Mọi người đều có cơ hội công bằng để tham gia bốc thăm vào hàng đợi.
 				`,
+			},
+			notOpenState: {
+				heading: 'Vui lòng quay lại sau',
+				description: 'Vui lòng quay lại vào thời gian đã lên lịch ở trên.',
+				preregisterCta: 'Đăng ký sớm cho phiên chợ tiếp theo',
+			},
+			registrationClosedState: {
+				heading: 'Đã đóng đăng ký',
+				description: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
+			},
+			serviceState: {
+				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
+				inProgressDescription:
+					'Đăng ký đã đóng cho hôm nay. Nếu bạn chưa đăng ký, vui lòng trao đổi với nhân viên chợ.',
+				endedHeading: 'Phiên chợ hôm nay đã kết thúc',
+				endedDescription:
+					'Cảm ơn bạn đã là một phần của cộng đồng chúng tôi. Xem lịch ở trên cho phiên chợ tiếp theo.',
 			},
 		},
 		admin: 'Quản trị',
@@ -708,7 +793,6 @@ export const translations = {
 		notificationsIosInstall:
 			'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
 		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
-		preregisterCta: 'Đăng ký sớm cho phiên chợ tiếp theo',
 		smsConsentLabel:
 			'Tôi đồng ý nhận tin nhắn từ The Bay Compassion về vị trí trong hàng đợi và trạng thái lượt ghé của tôi. Tần suất thay đổi, thường không quá vài tin nhắn trong mỗi ngày diễn ra chợ. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy đăng ký hoặc HELP để được hỗ trợ. Không bắt buộc đồng ý để nhận dịch vụ tại chợ thực phẩm.',
 		smsEnable: 'Nhắn tin cập nhật cho tôi về lượt ghé thăm này',
@@ -726,8 +810,6 @@ export const translations = {
 		qrCodeImageAlt: 'Mã QR liên kết đến trang đăng ký',
 		qrCodePrint: 'In',
 		qrCodeTitle: 'Quét để đăng ký',
-		registrationClosed: 'Đã đóng đăng ký',
-		registrationClosedDescription: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
 		registrationClosesIn: 'Đăng ký sẽ đóng sau',
 		registrationClosesInMinutes: 'Đăng ký sẽ đóng sau {minutes} phút',
 		registrationType: 'Loại khách',
@@ -766,6 +848,21 @@ export const translations = {
 					登记尚未开放。请于周六上午 10:30 再次访问。
 					每个人都将有公平的机会参加排队抽签。
 				`,
+			},
+			notOpenState: {
+				heading: '请稍后再来查看',
+				description: '请在上方显示的预定时间再来查看。',
+				preregisterCta: '提前登记下一次市场',
+			},
+			registrationClosedState: {
+				heading: '登记已关闭',
+				description: '请向市场工作人员寻求帮助。',
+			},
+			serviceState: {
+				inProgressHeading: '今天的市场正在进行中',
+				inProgressDescription: '今天的登记已关闭。如果您还未登记，请联系市场工作人员。',
+				endedHeading: '今天的市场已结束',
+				endedDescription: '感谢您成为我们社区的一员。请查看上方的时间安排，了解下一次市场。',
 			},
 		},
 		admin: '管理',
@@ -830,7 +927,6 @@ export const translations = {
 		notificationsError: '无法启用通知。请重试。',
 		notificationsIosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
 		notificationsUnsupported: '此设备不支持推送通知。',
-		preregisterCta: '提前登记下一次市场',
 		smsConsentLabel:
 			'我同意接收 The Bay Compassion 发送的有关排队位置和到访状态的短信。短信频率不定，通常每个市场开放日不超过数条。可能会产生短信和数据费用。回复 STOP 可取消订阅，回复 HELP 可获取帮助。是否同意接收短信不影响获得食品市场服务。',
 		smsEnable: '通过短信通知我此次到访的更新',
@@ -847,8 +943,6 @@ export const translations = {
 		qrCodeImageAlt: '链接到登记页面的二维码',
 		qrCodePrint: '打印',
 		qrCodeTitle: '扫码登记',
-		registrationClosed: '登记已关闭',
-		registrationClosedDescription: '请向市场工作人员寻求帮助。',
 		registrationClosesIn: '距登记关闭还剩',
 		registrationClosesInMinutes: '登记将在 {minutes} 分钟后关闭',
 		registrationType: '访客类型',
@@ -887,6 +981,23 @@ export const translations = {
 					التسجيل لم يُفتح بعد. يرجى العودة يوم السبت الساعة 10:30 صباحًا.
 					سيحصل الجميع على فرصة عادلة للدخول في قرعة قائمة الانتظار.
 				`,
+			},
+			notOpenState: {
+				heading: 'يرجى العودة قريبًا',
+				description: 'يرجى العودة في الوقت المحدد أعلاه.',
+				preregisterCta: 'سجّل مبكرًا للسوق القادم',
+			},
+			registrationClosedState: {
+				heading: 'التسجيل مغلق',
+				description: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
+			},
+			serviceState: {
+				inProgressHeading: 'سوق اليوم جارٍ الآن',
+				inProgressDescription:
+					'أُغلق التسجيل لهذا اليوم. إذا لم تكن قد سجّلت الدخول بعد، يرجى التحدث مع أحد أعضاء فريق السوق.',
+				endedHeading: 'انتهى سوق اليوم',
+				endedDescription:
+					'شكرًا لكونك جزءًا من مجتمعنا. يرجى مراجعة الجدول أعلاه لمعرفة موعد السوق القادم.',
 			},
 		},
 		admin: 'الإدارة',
@@ -952,7 +1063,6 @@ export const translations = {
 		notificationsIosInstall:
 			'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
 		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
-		preregisterCta: 'سجّل مبكرًا للسوق القادم',
 		smsConsentLabel:
 			'أوافق على تلقي رسائل نصية من The Bay Compassion بشأن مكاني في قائمة الانتظار وحالة زيارتي. يختلف عدد الرسائل، وعادةً لا يتجاوز بضع رسائل في كل يوم سوق. قد تُطبق رسوم الرسائل والبيانات. أرسل STOP لإلغاء الاشتراك أو HELP للمساعدة. الموافقة ليست شرطًا لتلقي خدمة سوق المواد الغذائية.',
 		smsEnable: 'أرسل لي تحديثات نصية حول هذه الزيارة',
@@ -970,8 +1080,6 @@ export const translations = {
 		qrCodeImageAlt: 'رمز الاستجابة السريعة الذي يرتبط بصفحة التسجيل',
 		qrCodePrint: 'طباعة',
 		qrCodeTitle: 'امسح للتسجيل',
-		registrationClosed: 'التسجيل مغلق',
-		registrationClosedDescription: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
 		registrationClosesIn: 'يُغلق التسجيل خلال',
 		registrationClosesInMinutes: 'يُغلق التسجيل خلال {minutes} دقيقة',
 		registrationType: 'نوع الضيف',

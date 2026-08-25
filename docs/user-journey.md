@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=8f6a844eadcf, src/components/guest-view/GuestView.vue=e7e50b99dadc, src/services/guestVisitApi.ts=ed65085ea3a5, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=f4a63ea67aad, src/components/guest-view/GuestView.vue=099a6544bdd1, src/services/guestCardState.ts=2ef64ab1b07f, src/services/guestVisitApi.ts=ed65085ea3a5, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
 
 # Guest journey
 
@@ -29,10 +29,14 @@ flowchart TD
     hasVisit -- no --> canRegister{Registration open?}
 
     canRegister -- yes --> kind{New or returning guest?}
-    canRegister -- no --> closed{Event exists and its<br/>window hasn't passed yet?}
-    closed -- no --> closedScreen([Closed screen:<br/>no session to join right now])
-    closed -- yes --> earlyLink([Closed screen offers a<br/>'sign up early' link to /signup])
+    canRegister -- no --> phase{Which phase is<br/>the session in?}
+    phase -- not open yet --> notOpenCta{Event exists?}
+    notOpenCta -- no --> notOpenScreen([Not-open screen:<br/>no session to join right now])
+    notOpenCta -- yes --> earlyLink([Not-open screen offers a<br/>'sign up early' link to /signup])
     earlyLink -. "guest follows the link" .-> kind
+    phase -- registration closed --> closedScreen([Registration-closed screen])
+    phase -- service underway --> inServiceScreen([In-service screen])
+    phase -- ended --> endedScreen([Ended screen])
 
     kind -- new --> newForm[Name, age range,<br/>household size,<br/>children/seniors shopping for,<br/>phone, new PIN]
     kind -- returning --> returningForm[Phone and PIN]
@@ -72,18 +76,28 @@ flowchart TD
   allows self-registration for any status up through `registration_open` — including `draft`,
   before an admin has scheduled anything — and only blocks it once the window has genuinely passed
   (`registration_closed`, `service_started`, `ended`). The `/` route only shows the form once
-  registration is actually open; `/signup` renders the same `GuestSignupCard` component but
+  registration is actually open; `/signup` renders the same `GuestRegistrationForm` component but
   bypasses that client-side wait, so it also doubles as a way to exercise the form locally without
-  forcing a session into `registration_open`. `GuestSignupCard` takes a `context` prop
+  forcing a session into `registration_open`. `GuestRegistrationForm` takes a `context` prop
   (`'queue' | 'early'`) that swaps the form/success copy — "join the queue" only reads correctly
-  once registration is genuinely open, so `GuestView.vue` derives `context` from whether registration is
-  actually open right now, not from which route rendered the card.
+  once registration is genuinely open. `GuestView.vue`'s `src/services/guestCardState.ts` resolves
+  which of the card's states applies — `resolveGuestCardState` derives `context` from whether
+  registration is actually open right now, not from which route rendered the card, so a guest who
+  happens to still be on `/signup` once registration opens sees the ordinary queue copy.
+- **The "not open yet" screen, once past, gives way to three more screens with their own
+  copy — registration-closed, in-service, and ended — instead of one generic "closed" message.**
+  `currentSessionPhase` in `guestCardState.ts` is the single place that maps a session's status and
+  the current time to one of these phases; `GuestView.vue` renders `GuestNotOpenState`,
+  `GuestRegistrationClosedState`, or `GuestServiceState` (with `has-ended` distinguishing
+  in-service from ended) accordingly. Before `/api/market` has ever resolved — including when it's
+  unreachable — the resolver optimistically assumes registration is open rather than showing a
+  "not open" screen it can't actually confirm.
 - **A schedule information alert tells a guest when to come back, except while it wouldn't make
-  sense.** `GuestView.vue` shows `ScheduleInformation` above the rest of the screen whenever
-  registration isn't open and the event isn't `service_started` — i.e. before the window opens,
-  after it closes but before the lottery runs, and once the session has ended. It's hidden while
-  registration is open (the signup form is live) and while `service_started` (the event is
-  underway), since its copy ("sign-ups aren't open yet") would contradict either.
+  sense.** `GuestView.vue` shows `ScheduleInformation` above the rest of the screen whenever the
+  phase isn't `registration-open` or `in-service` — i.e. before the window opens, after it closes
+  but before the lottery runs, and once the session has ended. It's hidden while registration is
+  open (the signup form is live) and while service is underway, since its copy ("sign-ups aren't
+  open yet") would contradict either.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — lives on the guest profile and is snapshotted onto each visit.** A
   returning guest who isn't updating their profile doesn't see those fields again; the visit is

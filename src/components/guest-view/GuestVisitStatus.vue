@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Translation } from '../locales';
-import AppButton from './AppButton.vue';
+import type { Translation } from '../../locales';
+import AppButton from '../AppButton.vue';
 
 defineProps<{
 	t: Translation;

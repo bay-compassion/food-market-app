@@ -4,6 +4,11 @@ import { useRoute, useRouter } from 'vue-router';
 
 import type { Locale, Translation } from '../../locales';
 import {
+	currentSessionPhase,
+	guestFormContext,
+	resolveGuestCardState,
+} from '../../services/guestCardState';
+import {
 	cancelActiveVisit,
 	fetchActiveVisit,
 	fetchMarketRegistration,
@@ -12,11 +17,16 @@ import {
 	type MarketEventTiming,
 	type RegistrationQuestion,
 } from '../../services/guestVisitApi';
-import { automaticSessionStatus } from '../../services/sessionStateMachine';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
-import GuestSignupCard from '../GuestSignupCard.vue';
 import type { GuestFormState } from '../types';
 import GuestLanguageHero from './GuestLanguageHero.vue';
+import GuestNotificationCard from './GuestNotificationCard.vue';
+import GuestNotOpenState from './GuestNotOpenState.vue';
+import GuestRegistrationClosedState from './GuestRegistrationClosedState.vue';
+import GuestRegistrationForm from './GuestRegistrationForm.vue';
+import GuestServiceState from './GuestServiceState.vue';
+import GuestSignupCard from './GuestSignupCard.vue';
+import GuestVisitStatus from './GuestVisitStatus.vue';
 import ScheduleInformation from './ScheduleInformation.vue';
 
 const props = defineProps<{
@@ -35,8 +45,8 @@ let countdownTimer: ReturnType<typeof setInterval> | undefined;
  * How often to re-check `/api/market` while registration is open. `registrationRefreshTimer`
  * above only fires at the transition it knew about at the time it was scheduled — it can't know
  * about an admin closing registration early or extending the window after the fact. This polls
- * only while `registrationAvailable` is true, so a session that's closed, scheduled, or between
- * markets never triggers an unnecessary function invocation.
+ * only while the session phase is `registration-open`, so a session that's closed, scheduled, or
+ * between markets never triggers an unnecessary function invocation.
  */
 const registrationPollIntervalMs = 30_000;
 
@@ -52,7 +62,13 @@ const activeVisit = ref<ActiveVisit | null>(null);
 const isStatusLoading = ref(true);
 const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
 const marketEvent = ref<MarketEventTiming | null>(null);
-const registrationAvailable = ref(true);
+/**
+ * Whether `/api/market` has ever returned usable data. Stays `false` while it hasn't, including
+ * when the optional configuration endpoint can't be reached — `phase` below treats that the same
+ * as registration being open, so the form is still available rather than blocking a guest behind
+ * a "not open" screen the app can't actually confirm.
+ */
+const hasLoadedRegistration = ref(false);
 /** Ticks while registration is open so `GuestSignupCard`'s countdown stays live. */
 const now = ref(Date.now());
 const registrationQuestions = ref<RegistrationQuestion[]>([]);
@@ -105,38 +121,42 @@ function scheduleVisitRefresh() {
 const route = useRoute();
 const router = useRouter();
 const isPreregistration = computed(() => route.name === 'signup');
-/**
- * Mirrors the server-side gate in `guestRegistration.mts`: a guest may sign up as soon as an event
- * exists at all, including `draft`, and only loses the ability once the window has genuinely
- * passed.
- */
-const canPreregister = computed(() => {
-	if (!marketEvent.value) {
-		return false;
-	}
-	const status = automaticSessionStatus(marketEvent.value, new Date());
-
-	return status !== 'registration_closed' && status !== 'service_started' && status !== 'ended';
-});
-const canShowForm = computed(
-	() => registrationAvailable.value || (isPreregistration.value && canPreregister.value),
+const phase = computed(() =>
+	hasLoadedRegistration.value
+		? currentSessionPhase(marketEvent.value, new Date(now.value))
+		: 'registration-open',
 );
-const showPreregisterCta = computed(() => !isPreregistration.value && canPreregister.value);
-const isEventInProgress = computed(() => marketEvent.value?.status === 'service_started');
 /**
- * `registrationAvailable` is also `false` during `service_started`, so it alone can't distinguish
- * "not open yet" (alert is accurate) from "event under way" (alert would contradict reality) —
- * the explicit `isEventInProgress` check is what keeps the alert hidden once service starts.
+ * Which of the signup card's states applies right now. An active visit always wins — see
+ * `resolveGuestCardState` for the full precedence, which mirrors the server-side gate in
+ * `guestRegistration.mts`.
+ */
+const cardState = computed(() =>
+	resolveGuestCardState({
+		phase: phase.value,
+		marketEvent: marketEvent.value,
+		isPreregistration: isPreregistration.value,
+		// `isSubmitted` is a separate flag, not derived from `activeVisit`, so `resetToForm` can put
+		// the card back in front of the form (e.g. to register another household member) without
+		// discarding the visit that's still being tracked and refreshed in the background.
+		hasActiveVisit: activeVisit.value !== null && isSubmitted.value,
+	}),
+);
+/**
+ * A schedule reminder shown above the rest of the screen whenever there's nothing actionable to
+ * do right now — before the window opens, after it closes but before the lottery runs, and once
+ * the session has ended. Hidden while registration is open (the signup form is live) and while
+ * service is underway, since its "sign-ups aren't open yet" copy would contradict either.
  */
 const showScheduleInformation = computed(
-	() => !registrationAvailable.value && !isEventInProgress.value,
+	() => phase.value !== 'registration-open' && phase.value !== 'in-service',
 );
-/**
- * Whether a guest is actually joining today's queue or signing up ahead of the window — decided by
- * whether registration is genuinely open right now, not by which route got them here, so a guest
- * who happens to still be on `/signup` once registration opens sees the ordinary queue copy.
- */
-const formContext = computed(() => (registrationAvailable.value ? 'queue' : 'early'));
+/** The success-state copy differs between joining today's queue and signing up ahead of time. */
+const successCopy = computed(() =>
+	guestFormContext(phase.value) === 'early'
+		? { title: props.t.earlySuccessTitle, description: props.t.earlySuccessDescription }
+		: { title: props.t.successTitle, description: props.t.successDescription },
+);
 
 /** Resets the card to the empty form, e.g. so the header brand link can act as a "start over". */
 function resetToForm() {
@@ -234,14 +254,8 @@ async function loadRegistration() {
 
 	marketEvent.value = registration.event;
 	registrationQuestions.value = registration.questions;
-	const now = new Date();
-	registrationAvailable.value = Boolean(
-		registration.event &&
-		registration.event.status === 'registration_open' &&
-		now >= registration.event.registrationOpensAt &&
-		now <= registration.event.registrationClosesAt,
-	);
-	if (registrationAvailable.value) {
+	hasLoadedRegistration.value = true;
+	if (phase.value === 'registration-open') {
 		if (!registrationPollTimer) {
 			registrationPollTimer = setInterval(loadRegistration, registrationPollIntervalMs);
 		}
@@ -252,16 +266,17 @@ async function loadRegistration() {
 	if (registrationRefreshTimer) {
 		clearTimeout(registrationRefreshTimer);
 	}
+	const loadedAt = new Date();
 	const nextTransitionAt =
 		registration.event?.status === 'scheduled'
 			? registration.event.registrationOpensAt
 			: registration.event?.status === 'registration_open'
 				? registration.event.registrationClosesAt
 				: null;
-	if (nextTransitionAt && nextTransitionAt > now) {
+	if (nextTransitionAt && nextTransitionAt > loadedAt) {
 		registrationRefreshTimer = setTimeout(
 			loadRegistration,
-			Math.min(nextTransitionAt.valueOf() - now.valueOf() + 250, 2_147_000_000),
+			Math.min(nextTransitionAt.valueOf() - loadedAt.valueOf() + 250, 2_147_000_000),
 		);
 	}
 }
@@ -296,36 +311,49 @@ defineExpose({ resetToForm });
 				@select-language="$emit('select-language', $event)"
 			/>
 
-			<GuestSignupCard
-				v-model:guest="guest"
-				v-model:pin="pin"
-				v-model:pin-confirmation="pinConfirmation"
-				v-model:registration-type="registrationType"
-				v-model:update-profile="updateProfile"
-				v-model:registration-answers="registrationAnswers"
-				:t="t"
-				:locale="locale"
-				:context="formContext"
-				:active-visit="activeVisit"
-				:is-submitted="isSubmitted"
-				:is-called="isCalled"
-				:visit-status-label="visitStatusLabel"
-				:queue-position="queuePosition"
-				:guests-ahead="guestsAhead"
-				:can-cancel-visit="canCancelVisit"
-				:is-cancelling="isCancelling"
-				:visit-token="visitToken"
-				:can-show-form="canShowForm"
-				:show-preregister-cta="showPreregisterCta"
-				:registration-questions="registrationQuestions"
-				:submission-error="submissionError"
-				:is-submitting="isSubmitting"
-				:now="now"
-				:registration-closes-at="marketEvent?.registrationClosesAt ?? null"
-				@submit="submitForm"
-				@cancel-visit="cancelVisit"
-				@preregister="goToSignup"
-			/>
+			<GuestSignupCard>
+				<GuestVisitStatus
+					v-if="cardState.kind === 'visit-status'"
+					:t="t"
+					:is-called="isCalled"
+					:success-title="successCopy.title"
+					:success-description="successCopy.description"
+					:visit-status-label="visitStatusLabel"
+					:queue-position="queuePosition"
+					:guests-ahead="guestsAhead"
+					:can-cancel-visit="canCancelVisit"
+					:is-cancelling="isCancelling"
+					:submission-error="submissionError"
+					@cancel-visit="cancelVisit"
+				/>
+				<GuestRegistrationForm
+					v-else-if="cardState.kind === 'form'"
+					v-model:guest="guest"
+					v-model:pin="pin"
+					v-model:pin-confirmation="pinConfirmation"
+					v-model:registration-type="registrationType"
+					v-model:update-profile="updateProfile"
+					v-model:registration-answers="registrationAnswers"
+					:t="t"
+					:context="cardState.context"
+					:registration-questions="registrationQuestions"
+					:submission-error="submissionError"
+					:is-submitting="isSubmitting"
+					:now="now"
+					:registration-closes-at="marketEvent?.registrationClosesAt ?? null"
+					@submit="submitForm"
+				/>
+				<GuestNotOpenState
+					v-else-if="cardState.kind === 'not-open'"
+					:t="t"
+					:show-preregister-cta="cardState.showPreregisterCta"
+					@preregister="goToSignup"
+				/>
+				<GuestRegistrationClosedState v-else-if="cardState.kind === 'registration-closed'" :t="t" />
+				<GuestServiceState v-else :t="t" :has-ended="cardState.kind === 'ended'" />
+			</GuestSignupCard>
+
+			<GuestNotificationCard :locale="locale" :visit-token="visitToken" />
 		</template>
 	</section>
 </template>
