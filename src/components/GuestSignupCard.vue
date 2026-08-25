@@ -2,15 +2,11 @@
 import { computed } from 'vue';
 
 import type { Locale, Translation } from '../locales';
-import { ageRanges } from '../services/ageRanges';
 import type { VisitStatus } from '../services/visitStateMachine';
-import AppButton from './AppButton.vue';
-import CollapsingCountField from './CollapsingCountField.vue';
-import FormField from './FormField.vue';
+import NotificationOptIn from './guest-view/NotificationOptIn.vue';
 import GuestClosedState from './GuestClosedState.vue';
+import GuestRegistrationForm from './GuestRegistrationForm.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
-import PhoneField from './PhoneField.vue';
-import RegistrationCountdown from './RegistrationCountdown.vue';
 import type { GuestFormState } from './types';
 
 type ActiveVisit = {
@@ -65,34 +61,11 @@ const registrationAnswers = defineModel<Record<string, string | number>>('regist
 	required: true,
 });
 
-const ageRangeLabels = computed<Record<(typeof ageRanges)[number], string>>(() => ({
-	'0-17': props.t.ageRange0to17,
-	'18-29': props.t.ageRange18to29,
-	'30-44': props.t.ageRange30to44,
-	'45-59': props.t.ageRange45to59,
-	'60-74': props.t.ageRange60to74,
-	'75+': props.t.ageRange75plus,
-}));
-
-/** The strings that differ between joining today's queue and signing up ahead of time. */
-const copy = computed(() =>
+/** The success-state copy differs between joining today's queue and signing up ahead of time. */
+const successCopy = computed(() =>
 	props.context === 'early'
-		? {
-				formTitle: props.t.earlyFormTitle,
-				formDescription: props.t.earlyFormDescription,
-				submit: props.t.earlySubmit,
-				submitting: props.t.earlySubmitting,
-				successTitle: props.t.earlySuccessTitle,
-				successDescription: props.t.earlySuccessDescription,
-			}
-		: {
-				formTitle: props.t.formTitle,
-				formDescription: props.t.formDescription,
-				submit: props.t.submit,
-				submitting: props.t.submitting,
-				successTitle: props.t.successTitle,
-				successDescription: props.t.successDescription,
-			},
+		? { title: props.t.earlySuccessTitle, description: props.t.earlySuccessDescription }
+		: { title: props.t.successTitle, description: props.t.successDescription },
 );
 </script>
 
@@ -101,16 +74,14 @@ const copy = computed(() =>
 		<GuestVisitStatus
 			v-if="activeVisit && isSubmitted"
 			:t="t"
-			:locale="locale"
 			:is-called="isCalled"
-			:success-title="copy.successTitle"
-			:success-description="copy.successDescription"
+			:success-title="successCopy.title"
+			:success-description="successCopy.description"
 			:visit-status-label="visitStatusLabel"
 			:queue-position="queuePosition"
 			:guests-ahead="guestsAhead"
 			:can-cancel-visit="canCancelVisit"
 			:is-cancelling="isCancelling"
-			:visit-token="visitToken"
 			:submission-error="submissionError"
 			@cancel-visit="emit('cancel-visit')"
 		/>
@@ -120,142 +91,27 @@ const copy = computed(() =>
 			:show-preregister-cta="showPreregisterCta"
 			@preregister="emit('preregister')"
 		/>
-		<form v-else-if="canShowForm" @submit.prevent="emit('submit')">
-			<div class="form-heading">
-				<RegistrationCountdown
-					v-if="context === 'queue' && registrationClosesAt"
-					:t="t"
-					:now="now"
-					:closes-at="registrationClosesAt"
-				/>
-				<h2>{{ copy.formTitle }}</h2>
-				<p>{{ copy.formDescription }}</p>
-			</div>
-			<div class="registration-type" role="group" :aria-label="t.registrationType">
-				<button
-					type="button"
-					:class="{ active: registrationType === 'new' }"
-					:aria-pressed="registrationType === 'new'"
-					@click="registrationType = 'new'"
-				>
-					{{ t.newGuest }}
-				</button>
-				<button
-					type="button"
-					:class="{ active: registrationType === 'returning' }"
-					:aria-pressed="registrationType === 'returning'"
-					@click="registrationType = 'returning'"
-				>
-					{{ t.returningGuest }}
-				</button>
-			</div>
-			<p v-if="registrationType === 'returning'" class="form-help">
-				{{ t.returningGuestHelp }}
-			</p>
-			<template v-if="registrationType === 'new' || updateProfile">
-				<FormField
-					v-model="guest.firstName"
-					:label="t.firstName"
-					required
-					autocomplete="given-name"
-				/>
-				<FormField
-					v-model="guest.lastName"
-					:label="t.lastName"
-					required
-					autocomplete="family-name"
-				/>
-				<FormField v-model="guest.ageRange" :label="t.age" type="select" required>
-					<option value="" disabled>{{ t.agePlaceholder }}</option>
-					<option v-for="range in ageRanges" :key="range" :value="range">
-						{{ ageRangeLabels[range] }}
-					</option>
-				</FormField>
-				<CollapsingCountField
-					v-model="guest.householdSize"
-					:label="t.household"
-					:hint="t.householdHint"
-					:options="[1, 2, 3, 4]"
-					required
-					:max="30"
-					:other-label="t.countOtherLabel"
-					:other-placeholder="t.countOtherPlaceholder"
-					:back-label="t.countBackLabel"
-				/>
-				<CollapsingCountField
-					v-model="guest.childrenCount"
-					:label="t.childrenCount"
-					required
-					:max="30"
-					:other-label="t.countOtherLabel"
-					:other-placeholder="t.countOtherPlaceholder"
-					:back-label="t.countBackLabel"
-				/>
-				<CollapsingCountField
-					v-model="guest.seniorsCount"
-					:label="t.seniorsCount"
-					required
-					:max="30"
-					:other-label="t.countOtherLabel"
-					:other-placeholder="t.countOtherPlaceholder"
-					:back-label="t.countBackLabel"
-				/>
-			</template>
-			<PhoneField v-model="guest.phone" :label="t.phone" required />
-			<FormField
-				v-model="pin"
-				:label="t.pin"
-				type="password"
-				required
-				:minlength="4"
-				:maxlength="8"
-				inputmode="numeric"
-				:placeholder="t.pinHint"
-			/>
-			<FormField
-				v-if="registrationType === 'new'"
-				v-model="pinConfirmation"
-				:label="t.confirmPin"
-				type="password"
-				required
-				:minlength="4"
-				:maxlength="8"
-				inputmode="numeric"
-			/>
-			<label v-if="registrationType === 'returning'" class="update-profile-option">
-				<input v-model="updateProfile" type="checkbox" />
-				<span>{{ t.updateInformation }}</span>
-			</label>
-			<label v-for="question in registrationQuestions" :key="question.id" class="dynamic-question">
-				<span>{{ question.prompt }}</span>
-				<select
-					v-if="question.type === 'scale'"
-					v-model.number="registrationAnswers[question.id]"
-					:required="question.required"
-				>
-					<option value="" disabled>{{ t.chooseAnswer }}</option>
-					<option v-for="value in 10" :key="value" :value="value">{{ value }}</option>
-				</select>
-				<textarea
-					v-else
-					v-model.trim="registrationAnswers[question.id]"
-					:required="question.required"
-					rows="3"
-				></textarea>
-			</label>
-			<p v-if="submissionError" class="submission-error" role="alert">
-				{{ submissionError }}
-			</p>
-			<AppButton type="submit" :disabled="isSubmitting">
-				{{ isSubmitting ? copy.submitting : copy.submit }} <span aria-hidden="true">→</span>
-			</AppButton>
-			<p class="privacy">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<rect x="5" y="10" width="14" height="10" rx="2" />
-					<path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg
-				>{{ t.privacy }}
-			</p>
-		</form>
+		<GuestRegistrationForm
+			v-else-if="canShowForm"
+			v-model:guest="guest"
+			v-model:pin="pin"
+			v-model:pin-confirmation="pinConfirmation"
+			v-model:registration-type="registrationType"
+			v-model:update-profile="updateProfile"
+			v-model:registration-answers="registrationAnswers"
+			:t="t"
+			:context="context"
+			:registration-questions="registrationQuestions"
+			:submission-error="submissionError"
+			:is-submitting="isSubmitting"
+			:now="now"
+			:registration-closes-at="registrationClosesAt"
+			@submit="emit('submit')"
+		/>
+		<!-- Consent is a guest characteristic, not a per-visit one, so this is available whenever
+		     the guest is identified (a visit token exists), regardless of which state above is
+		     showing — not only once there's an active visit to report status on. -->
+		<NotificationOptIn v-if="visitToken" :visit-token="visitToken" :locale="locale" />
 	</section>
 </template>
 
@@ -265,83 +121,5 @@ const copy = computed(() =>
 	border: 2px solid var(--color-brand);
 	border-radius: var(--radius-lg);
 	background: var(--color-background);
-}
-.form-heading {
-	margin-bottom: 8px;
-}
-.form-heading h2 {
-	margin-bottom: 9px;
-	font-family: var(--font-heading);
-	font-size: 29px;
-	letter-spacing: -0.01em;
-	text-transform: uppercase;
-	color: var(--color-text);
-}
-.form-heading p {
-	color: var(--color-text-muted);
-	font-size: 16px;
-	line-height: 1.55;
-}
-form {
-	display: grid;
-	gap: 18px;
-}
-.registration-type {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 8px;
-}
-.registration-type button {
-	min-height: 48px;
-	border: 2px solid var(--color-brand);
-	border-radius: var(--radius-md);
-	color: var(--color-brand);
-	background: var(--color-background);
-	font-weight: 700;
-}
-.registration-type button.active {
-	color: var(--color-on-brand);
-	background: var(--color-brand);
-}
-.form-help {
-	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 14px;
-	line-height: 1.5;
-}
-.privacy {
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
-	margin: 0;
-	color: var(--color-text-muted);
-	font-size: 13px;
-	line-height: 1.5;
-}
-.privacy svg {
-	flex: 0 0 auto;
-	width: 16px;
-	margin-top: 1px;
-}
-.dynamic-question {
-	display: grid;
-	gap: 8px;
-}
-.dynamic-question > span {
-	font-family: var(--font-heading);
-	font-size: 16px;
-	font-weight: 700;
-}
-.dynamic-question select,
-.dynamic-question textarea {
-	width: 100%;
-	padding: 14px 16px;
-	border: 2px solid var(--color-border);
-	border-radius: var(--radius-md);
-	color: var(--color-text);
-	background: var(--color-background);
-	font-family: var(--font-body);
-	font-size: 16px;
-	font-weight: 400;
 }
 </style>

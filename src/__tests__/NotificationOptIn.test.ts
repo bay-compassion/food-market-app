@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import NotificationOptIn from '../components/NotificationOptIn.vue';
+import NotificationOptIn from '../components/guest-view/NotificationOptIn.vue';
 
 function mountOptIn(visitToken: string | null = 'token-1') {
 	return mount(NotificationOptIn, { props: { visitToken, locale: 'en' } });
@@ -80,6 +80,27 @@ describe('NotificationOptIn', () => {
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Text message updates are enabled for this visit.');
+	});
+
+	it('skips the checkbox for a guest already subscribed from a past visit', async () => {
+		const fetchMock = vi.fn().mockImplementation((url: string, options?: RequestInit) => {
+			if (url === '/api/sms-subscription') {
+				expect(options?.headers).toMatchObject({ Authorization: 'Bearer token-1' });
+
+				return Promise.resolve({
+					ok: true,
+					json: () => Promise.resolve({ configured: true, subscribed: true }),
+				});
+			}
+
+			return Promise.resolve({ ok: true, json: () => Promise.resolve({ configured: false }) });
+		});
+		vi.stubGlobal('fetch', fetchMock);
+		const wrapper = mountOptIn();
+		await flushPromises();
+
+		expect(wrapper.text()).toContain('Text message updates are enabled for this visit.');
+		expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false);
 	});
 
 	it('shows an error when enabling SMS fails', async () => {

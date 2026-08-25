@@ -7,6 +7,7 @@ import { isAdminView, type AdminView } from './components/admin/types';
 import AdminAuthView from './components/AdminAuthView.vue';
 import AppFooter from './components/AppFooter.vue';
 import GuestView from './components/guest-view/GuestView.vue';
+import QrCodeView from './components/QrCodeView.vue';
 import { languages, translations, type Locale } from './locales';
 
 const localeStorageKey = 'bay-compassion.locale';
@@ -96,14 +97,27 @@ function saveLocale() {
 			</div>
 		</header>
 		<p v-if="authenticationError" class="auth-banner" role="alert">{{ t.authError }}</p>
-
+		<QrCodeView
+			v-if="isQrCode"
+			:back-label="t.backToGuest"
+			:title="t.qrCodeTitle"
+			:description="t.qrCodeDescription"
+			:image-alt="t.qrCodeImageAlt"
+			:print-label="t.qrCodePrint"
+			@back="showGuest"
+		/>
+		<!--
+			v-show, not folded into the v-if above: AppFooter's LegalDocumentView covers the whole
+			page over GuestView, and unmounting GuestView while it's hidden would drop in-progress
+			form input and restart the queue screen's polling.
+		-->
 		<GuestView
 			v-if="!isAdmin"
+			v-show="!isQrCode && !isPrivacy && !isTerms"
 			ref="guestView"
 			:t="t"
 			:locale="locale"
 			:is-returning-visitor="isReturningVisitor"
-			:visible="!isPrivacy && !isTerms"
 			@select-language="selectLanguage"
 		/>
 

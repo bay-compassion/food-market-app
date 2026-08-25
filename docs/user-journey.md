@@ -1,11 +1,11 @@
-<!-- diagram-sources: src/App.vue=c9c5a6095254, src/components/guest-view/GuestQueueScreen.vue=e7e50b99dadc, src/services/guestVisitApi.ts=ed65085ea3a5, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=8f6a844eadcf, src/components/guest-view/GuestView.vue=e7e50b99dadc, src/services/guestVisitApi.ts=ed65085ea3a5, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
 
 # Guest journey
 
 The path a guest takes from opening the app to being served, and the state their visit is in at each
 step. Language selection lives in [`src/App.vue`](../src/App.vue); the registration form, status
 screen, and countdown are in
-[`src/components/guest-view/GuestQueueScreen.vue`](../src/components/guest-view/GuestQueueScreen.vue),
+[`src/components/guest-view/GuestView.vue`](../src/components/guest-view/GuestView.vue),
 which calls `/api/market` (is registration open?), `/api/guests` (register), and `/api/visit` (check
 status, cancel) through
 [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts).
@@ -76,10 +76,10 @@ flowchart TD
   bypasses that client-side wait, so it also doubles as a way to exercise the form locally without
   forcing a session into `registration_open`. `GuestSignupCard` takes a `context` prop
   (`'queue' | 'early'`) that swaps the form/success copy — "join the queue" only reads correctly
-  once registration is genuinely open, so `GuestQueueScreen.vue` derives `context` from whether registration is
+  once registration is genuinely open, so `GuestView.vue` derives `context` from whether registration is
   actually open right now, not from which route rendered the card.
 - **A schedule information alert tells a guest when to come back, except while it wouldn't make
-  sense.** `GuestQueueScreen.vue` shows `ScheduleInformation` above the rest of the screen whenever
+  sense.** `GuestView.vue` shows `ScheduleInformation` above the rest of the screen whenever
   registration isn't open and the event isn't `service_started` — i.e. before the window opens,
   after it closes but before the lottery runs, and once the session has ended. It's hidden while
   registration is open (the signup form is live) and while `service_started` (the event is

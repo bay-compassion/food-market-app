@@ -1,21 +1,27 @@
 /**
- * Styles shared between `GuestSignupCard.vue` and `NotificationOptIn.vue`.
+ * Styles shared across the guest check-in card's states — `GuestRegistrationForm.vue`,
+ * `GuestVisitStatus.vue`, and `NotificationOptIn.vue` — each rendered by `GuestSignupCard.vue`
+ * inside its `.checkin-card` wrapper.
  *
  * `NotificationOptIn` has two top-level elements (no single root), so Vue never forwards a
- * parent's scoped style attribute onto it — a scoped `<style>` in `GuestSignupCard.vue` would
- * silently fail to style it. Everything here is scoped to `.checkin-card`, the wrapper both
- * components render inside, so none of it leaks into the admin screens.
+ * parent's scoped style attribute onto it — a scoped `<style>` in a sibling component would
+ * silently fail to style it. Everything here is scoped to `.checkin-card` instead, so none of it
+ * leaks into the admin screens.
  */
 
 .checkin-card .update-profile-option {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 10px;
 	font-weight: 600;
 }
 .checkin-card .update-profile-option input {
+	flex: 0 0 auto;
 	width: 20px;
 	height: 20px;
+	/* Optically aligns the checkbox with the cap height of the first line of text beside it,
+	   rather than its raw top edge — most noticeable now that a long paragraph sits beside it. */
+	margin-top: 2px;
 }
 .checkin-card .submission-error {
 	margin: 0;
