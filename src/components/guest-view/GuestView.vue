@@ -11,12 +11,10 @@ import {
 import {
 	cancelActiveVisit,
 	fetchActiveVisit,
-	fetchMarketRegistration,
 	submitGuestRegistration,
 	type ActiveVisit,
-	type MarketEventTiming,
-	type RegistrationQuestion,
 } from '../../services/guestVisitApi';
+import { useRootStore } from '../../services/root.store';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import type { GuestFormState } from '../types';
 import GuestLanguageHero from './GuestLanguageHero.vue';
@@ -35,20 +33,11 @@ const props = defineProps<{
 	isReturningVisitor: boolean;
 }>();
 defineEmits<{ 'select-language': [locale: Locale] }>();
+const session = useRootStore().session;
 
 const visitTokenStorageKey = 'bay-compassion.visit-token';
-let registrationRefreshTimer: ReturnType<typeof setTimeout> | undefined;
-let registrationPollTimer: ReturnType<typeof setInterval> | undefined;
 let visitRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 let countdownTimer: ReturnType<typeof setInterval> | undefined;
-/**
- * How often to re-check `/api/market` while registration is open. `registrationRefreshTimer`
- * above only fires at the transition it knew about at the time it was scheduled — it can't know
- * about an admin closing registration early or extending the window after the fact. This polls
- * only while the session phase is `registration-open`, so a session that's closed, scheduled, or
- * between markets never triggers an unnecessary function invocation.
- */
-const registrationPollIntervalMs = 30_000;
 
 const isSubmitted = ref(false);
 const isSubmitting = ref(false);
@@ -61,17 +50,16 @@ const updateProfile = ref(false);
 const activeVisit = ref<ActiveVisit | null>(null);
 const isStatusLoading = ref(true);
 const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
-const marketEvent = ref<MarketEventTiming | null>(null);
 /**
  * Whether `/api/market` has ever returned usable data. Stays `false` while it hasn't, including
  * when the optional configuration endpoint can't be reached — `phase` below treats that the same
  * as registration being open, so the form is still available rather than blocking a guest behind
  * a "not open" screen the app can't actually confirm.
  */
-const hasLoadedRegistration = ref(false);
+const hasLoadedRegistration = computed(() => session.currentState !== null);
 /** Ticks while registration is open so `GuestSignupCard`'s countdown stays live. */
 const now = ref(Date.now());
-const registrationQuestions = ref<RegistrationQuestion[]>([]);
+const registrationQuestions = computed(() => session.currentState?.questions ?? []);
 const registrationAnswers = ref<Record<string, string | number>>({});
 const guest = ref<GuestFormState>({
 	firstName: '',
@@ -123,7 +111,7 @@ const router = useRouter();
 const isPreregistration = computed(() => route.name === 'signup');
 const phase = computed(() =>
 	hasLoadedRegistration.value
-		? currentSessionPhase(marketEvent.value, new Date(now.value))
+		? currentSessionPhase(session.marketEvent, new Date(now.value))
 		: 'registration-open',
 );
 /**
@@ -134,7 +122,7 @@ const phase = computed(() =>
 const cardState = computed(() =>
 	resolveGuestCardState({
 		phase: phase.value,
-		marketEvent: marketEvent.value,
+		marketEvent: session.marketEvent,
 		isPreregistration: isPreregistration.value,
 		// `isSubmitted` is a separate flag, not derived from `activeVisit`, so `resetToForm` can put
 		// the card back in front of the form (e.g. to register another household member) without
@@ -180,7 +168,7 @@ async function submitForm() {
 		const registration = await submitGuestRegistration({
 			...guest.value,
 			locale: props.locale,
-			marketEventId: marketEvent.value?.id ?? null,
+			marketEventId: session.marketEvent?.id ?? null,
 			answers: registrationAnswers.value,
 			source: 'self',
 			registrationType: registrationType.value,
@@ -245,52 +233,14 @@ async function cancelVisit() {
 	}
 }
 
-async function loadRegistration() {
-	const registration = await fetchMarketRegistration();
-	if (!registration) {
-		// Keep the form available when the optional configuration endpoint cannot be reached.
-		return;
-	}
-
-	marketEvent.value = registration.event;
-	registrationQuestions.value = registration.questions;
-	hasLoadedRegistration.value = true;
-	if (phase.value === 'registration-open') {
-		if (!registrationPollTimer) {
-			registrationPollTimer = setInterval(loadRegistration, registrationPollIntervalMs);
-		}
-	} else if (registrationPollTimer) {
-		clearInterval(registrationPollTimer);
-		registrationPollTimer = undefined;
-	}
-	if (registrationRefreshTimer) {
-		clearTimeout(registrationRefreshTimer);
-	}
-	const loadedAt = new Date();
-	const nextTransitionAt =
-		registration.event?.status === 'scheduled'
-			? registration.event.registrationOpensAt
-			: registration.event?.status === 'registration_open'
-				? registration.event.registrationClosesAt
-				: null;
-	if (nextTransitionAt && nextTransitionAt > loadedAt) {
-		registrationRefreshTimer = setTimeout(
-			loadRegistration,
-			Math.min(nextTransitionAt.valueOf() - loadedAt.valueOf() + 250, 2_147_000_000),
-		);
-	}
-}
-
 onMounted(async () => {
 	countdownTimer = setInterval(() => {
 		now.value = Date.now();
 	}, 1_000);
-	await Promise.all([loadRegistration(), loadActiveVisit()]);
+	await Promise.all([session.getStatus().catch(() => undefined), loadActiveVisit()]);
 	isStatusLoading.value = false;
 });
 onBeforeUnmount(() => {
-	clearTimeout(registrationRefreshTimer);
-	clearInterval(registrationPollTimer);
 	clearTimeout(visitRefreshTimer);
 	clearInterval(countdownTimer);
 });
@@ -340,7 +290,7 @@ defineExpose({ resetToForm });
 					:submission-error="submissionError"
 					:is-submitting="isSubmitting"
 					:now="now"
-					:registration-closes-at="marketEvent?.registrationClosesAt ?? null"
+					:registration-closes-at="session.marketEvent?.registrationClosesAt ?? null"
 					@submit="submitForm"
 				/>
 				<GuestNotOpenState

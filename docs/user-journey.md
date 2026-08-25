@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=f4a63ea67aad, src/components/guest-view/GuestView.vue=099a6544bdd1, src/services/guestCardState.ts=2ef64ab1b07f, src/services/guestVisitApi.ts=ed65085ea3a5, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=f4a63ea67aad, src/components/guest-view/GuestView.vue=7f8e0e67006b, src/services/guestCardState.ts=cac55b2f9ccd, src/services/guestVisitApi.ts=6c4ec45ac4d5, src/services/root.store.ts=a02944e1fe1f, src/services/market-session.store.ts=b8807b609880, src/services/page-visibility-poller.ts=4900a5d7e4b0, netlify/services/guestRegistration.mts=2345f47897e4, netlify/functions/visit.mts=2cf92eed3b8a -->
 
 # Guest journey
 
@@ -6,8 +6,11 @@ The path a guest takes from opening the app to being served, and the state their
 step. Language selection lives in [`src/App.vue`](../src/App.vue); the registration form, status
 screen, and countdown are in
 [`src/components/guest-view/GuestView.vue`](../src/components/guest-view/GuestView.vue),
-which calls `/api/market` (is registration open?), `/api/guests` (register), and `/api/visit` (check
-status, cancel) through
+which reads the current market session from the shared
+[`src/services/root.store.ts`](../src/services/root.store.ts). The root's
+[`MarketSessionStore`](../src/services/market-session.store.ts) polls `/api/market` (is registration
+open?),
+while `/api/guests` (register) and `/api/visit` (check status, cancel) are called through
 [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts).
 
 The diagram is written in [Mermaid](https://mermaid.js.org/), a plain-text diagram format GitHub
@@ -105,13 +108,12 @@ flowchart TD
   without asking the same questions every time.
 - **The status screen polls.** It re-checks `/api/visit` on a timer for as long as the visit is
   live — `registered`, `waiting`, or `called` — so the guest sees the lottery result and the call
-  even without notifications. Push is a convenience, never the only channel. It also re-checks
-  `/api/market`, so a guest sitting on the closed screen sees registration open without reloading.
-  The same `/api/market` re-check also runs on a short interval while a guest is actively filling
-  out the registration form, not just once the visit exists — that's what keeps the countdown
-  clock's `registrationClosesAt` correct if an admin closes registration early or extends the
-  window after the page loaded. The poll only runs while registration is genuinely open; a session
-  that's scheduled, closed, or between markets never triggers it.
+  even without notifications. Push is a convenience, never the only channel. Separately, the
+  application-level `MarketSessionStore` re-checks `/api/market` every five seconds while the page
+  is visible. It pauses while the page is hidden or suspended, then refreshes immediately when the
+  guest returns. Both the guest and admin screens observe that same state, so a guest sitting on
+  the closed screen sees registration open without reloading, and the form countdown receives a
+  new `registrationClosesAt` if an admin closes registration early or extends the window.
 - **A waiting guest is told where they stand.** `/api/visit` returns their `queue_position` and how
   many waiting guests are ahead of them, so they can judge whether to stay by the door or sit down.
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status

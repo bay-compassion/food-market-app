@@ -3,6 +3,7 @@ import { createApp, watch } from 'vue';
 import App from './App.vue';
 import { auth0 } from './auth';
 import router from './router';
+import { RootStore, rootStoreKey } from './services/root.store';
 
 // Order matters: tokens and resets first, then the app chrome, then the per-area stylesheets.
 import './styles/base.css';
@@ -10,7 +11,8 @@ import './styles/app-shell.css';
 import './styles/admin.css';
 import './styles/guest.css';
 
-const app = createApp(App).use(router);
+const rootStore = new RootStore();
+const app = createApp(App).use(router).provide(rootStoreKey, rootStore);
 
 if (auth0) {
 	app.use(auth0);
@@ -23,4 +25,9 @@ if (auth0) {
 	}
 }
 
+rootStore.start();
 app.mount('#app');
+
+if (import.meta.hot) {
+	import.meta.hot.dispose(() => rootStore[Symbol.dispose]());
+}

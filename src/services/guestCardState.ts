@@ -1,4 +1,4 @@
-import type { MarketEventTiming } from './guestVisitApi';
+import type { MarketEventTiming } from './market-session.store';
 import { automaticSessionStatus } from './sessionStateMachine';
 
 /**
