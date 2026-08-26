@@ -12,6 +12,7 @@ export default async (request: Request) => {
 	}
 
 	let body: unknown;
+
 	try {
 		body = await request.json();
 	} catch {
@@ -19,6 +20,7 @@ export default async (request: Request) => {
 	}
 
 	const submission = parseSignupSubmission(body);
+
 	if (!submission) {
 		return error('Please provide valid guest information.');
 	}

@@ -44,6 +44,7 @@ describe('broadcast handler', () => {
 
 	it('returns the requirePermission response when unauthorized', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request({ title: 'Hi', body: 'Hello' }));

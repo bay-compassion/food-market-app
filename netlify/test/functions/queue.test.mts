@@ -47,6 +47,7 @@ describe('queue handler routing', () => {
 
 	it('returns the requirePermission response when unauthorized, without touching the database', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('POST', { action: 'call_next', count: 2 }));

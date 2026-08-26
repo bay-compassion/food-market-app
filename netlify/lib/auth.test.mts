@@ -11,6 +11,7 @@ import { requirePermission, verifyAuth0Token } from './auth.mjs';
 
 function requestWithAuth(header: string | null) {
 	const headers = new Headers();
+
 	if (header !== null) {
 		headers.set('Authorization', header);
 	}
@@ -81,6 +82,7 @@ describe('verifyAuth0Token', () => {
 	it('verifies a well-formed token against the configured issuer and audience', async () => {
 		stubAuth0Env();
 		const verified = { payload: { sub: 'user-123' }, protectedHeader: { alg: 'RS256' } };
+
 		jwtVerify.mockResolvedValueOnce(verified);
 
 		await expect(verifyAuth0Token(requestWithAuth('Bearer good-token'))).resolves.toBe(verified);
@@ -167,6 +169,7 @@ describe('requirePermission', () => {
 		tokenWith(['admin:everything', 'run:queue']);
 
 		const granted = await requirePermission(requestWithAuth('Bearer good-token'), 'run:queue');
+
 		expect(granted).toBeNull();
 
 		tokenWith(['admin:everything']);
@@ -174,6 +177,7 @@ describe('requirePermission', () => {
 			requestWithAuth('Bearer good-token'),
 			'manage:sessions',
 		);
+
 		expect(refused?.status).toBe(403);
 	});
 });

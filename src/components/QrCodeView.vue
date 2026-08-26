@@ -11,6 +11,7 @@ const props = defineProps<{
 	imageAlt: string;
 	printLabel: string;
 }>();
+
 defineEmits<{ back: [] }>();
 
 const router = useRouter();

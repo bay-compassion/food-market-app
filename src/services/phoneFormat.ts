@@ -16,9 +16,11 @@ export function formatUsPhone(value: string): string {
 	if (digits.length > 6) {
 		return `(${areaCode}) ${exchange}-${line}`;
 	}
+
 	if (digits.length > 3) {
 		return `(${areaCode}) ${exchange}`;
 	}
+
 	if (digits.length > 0) {
 		return `(${areaCode}`;
 	}

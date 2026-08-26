@@ -170,11 +170,13 @@ export class MarketSessionStore {
 
 	private async sendMutation(method: 'POST' | 'PUT', body: object): Promise<boolean> {
 		const revision = ++this.requestRevision;
+
 		this._pendingCommands += 1;
 		this._error = null;
 
 		try {
 			const headers = new Headers(await this.requestHeaders());
+
 			headers.set('Content-Type', 'application/json');
 
 			const response = await fetch('/api/market', {
@@ -221,21 +223,25 @@ export class MarketSessionStore {
 
 	private async fetchStatus(): Promise<void> {
 		const revision = ++this.requestRevision;
+
 		this._isLoading = true;
 		this._error = null;
 
 		try {
 			const response = await fetch('/api/market', { headers: await this.requestHeaders() });
+
 			if (!response.ok) {
 				throw await responseError(response, 'Failed to fetch market status');
 			}
 
 			const overview = (await response.json()) as SessionOverview;
+
 			if (revision === this.requestRevision) {
 				this._currentState = overview;
 			}
 		} catch (cause) {
 			const error = errorFrom(cause, 'Failed to fetch market status');
+
 			if (revision === this.requestRevision) {
 				this._error = error;
 			}
@@ -253,6 +259,7 @@ function errorFrom(cause: unknown, fallback: string): Error {
 async function responseError(response: Response, fallback: string): Promise<Error> {
 	try {
 		const body = (await response.json()) as { error?: unknown };
+
 		if (typeof body.error === 'string' && body.error) {
 			return new Error(body.error);
 		}

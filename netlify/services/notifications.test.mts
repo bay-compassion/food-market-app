@@ -49,6 +49,7 @@ describe('queueNotification', () => {
 		);
 
 		const rows = lastInsertedRows();
+
 		expect(rows).toHaveLength(4);
 		expect(rows).toEqual(
 			expect.arrayContaining([
@@ -83,6 +84,7 @@ describe('requeueNotification', () => {
 		const chain = db.insert.mock.results.at(-1)?.value as {
 			onConflictDoUpdate: ReturnType<typeof vi.fn>;
 		};
+
 		expect(chain.onConflictDoUpdate).toHaveBeenCalledWith(
 			expect.objectContaining({ set: expect.objectContaining({ status: 'pending' }) }),
 		);

@@ -6,6 +6,7 @@ import type { Locale } from '../../locales';
 import AppButton from '../AppButton.vue';
 
 const props = defineProps<{ locale: Locale; waitingCount: number; busy?: boolean }>();
+
 defineEmits<{ call: [] }>();
 const count = defineModel<number>('count', { required: true });
 

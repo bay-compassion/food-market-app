@@ -51,10 +51,12 @@ describe('sessionStateMachine', () => {
 
 	it('preserves duration when opening early and shifts both times when postponed', () => {
 		const opened = openingWindow(scheduledSession, new Date('2026-07-18T15:00:00.000Z'));
+
 		expect(opened.registrationOpensAt.toISOString()).toBe('2026-07-18T15:00:00.000Z');
 		expect(opened.registrationClosesAt.toISOString()).toBe('2026-07-18T16:00:00.000Z');
 
 		const postponed = postponedWindow(scheduledSession, 30);
+
 		expect(postponed.registrationOpensAt.toISOString()).toBe('2026-07-18T16:30:00.000Z');
 		expect(postponed.registrationClosesAt.toISOString()).toBe('2026-07-18T17:30:00.000Z');
 	});

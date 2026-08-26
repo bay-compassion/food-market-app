@@ -8,6 +8,7 @@ import { hashVisitToken } from '../services/guestCredentials.mjs';
 export async function authorizedVisit(request: Request) {
 	const authorization = request.headers.get('authorization');
 	const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
+
 	if (!token || token.length < 32 || token.length > 200) {
 		return null;
 	}

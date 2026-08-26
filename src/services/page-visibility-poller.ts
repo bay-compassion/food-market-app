@@ -17,9 +17,11 @@ export class PageVisibilityPoller {
 	start(): void {
 		if (!this.started) {
 			this.started = true;
+
 			if (typeof document !== 'undefined') {
 				document.addEventListener('visibilitychange', this.visibilityListener);
 			}
+
 			if (typeof window !== 'undefined') {
 				window.addEventListener('pagehide', this.pageHideListener);
 				window.addEventListener('pageshow', this.pageShowListener);
@@ -31,9 +33,11 @@ export class PageVisibilityPoller {
 
 	stop(): void {
 		this.started = false;
+
 		if (typeof document !== 'undefined') {
 			document.removeEventListener('visibilitychange', this.visibilityListener);
 		}
+
 		if (typeof window !== 'undefined') {
 			window.removeEventListener('pagehide', this.pageHideListener);
 			window.removeEventListener('pageshow', this.pageShowListener);

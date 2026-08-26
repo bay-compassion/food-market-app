@@ -326,6 +326,7 @@ describe('registerGuest happy paths', () => {
 		});
 		expect((result as { body: { visitToken?: string } }).body.visitToken).toBeTruthy();
 		const deviceToken = (result as { body: { deviceToken?: string } }).body.deviceToken;
+
 		expect(deviceToken).toBeTruthy();
 		expect(insertedGuest()?.deviceTokenHash).toBeTruthy();
 		expect(insertedGuest()?.deviceTokenHash).not.toBe(deviceToken);
@@ -343,6 +344,7 @@ describe('registerGuest happy paths', () => {
 		const result = await registerGuest(submission);
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });
+
 		if (!result.ok) {
 			throw new Error('Expected registration to succeed');
 		}
@@ -376,6 +378,7 @@ describe('registerGuest happy paths', () => {
 			status: 200,
 			body: { id: 'visit-1', guestId: 'guest-1', status: 'waiting' },
 		});
+
 		if (!result.ok) {
 			throw new Error('Expected registration to succeed');
 		}
@@ -608,6 +611,7 @@ describe('registerGuestSignup', () => {
 
 		expect(result.ok).toBe(true);
 		expect(result).toMatchObject({ status: 201, body: { guestId: 'guest-1' } });
+
 		if (!result.ok) {
 			throw new Error('Expected sign-up to succeed');
 		}
@@ -635,6 +639,7 @@ describe('registerGuestSignup', () => {
 		);
 
 		expect(result).toMatchObject({ ok: true, status: 200, body: { guestId: 'guest-1' } });
+
 		if (!result.ok) {
 			throw new Error('Expected sign-up to succeed');
 		}
@@ -652,6 +657,7 @@ describe('registerGuestSignup', () => {
 		);
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });
+
 		if (!result.ok) {
 			throw new Error('Expected sign-up to succeed');
 		}

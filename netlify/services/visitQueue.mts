@@ -44,6 +44,7 @@ async function deliverCalledNotifications(visitIds: string[]) {
  */
 function visitCommandChanges(command: VisitCommand) {
 	const status = visitCommandTarget(command);
+
 	switch (command) {
 		case 'call':
 			return { status, calledAt: new Date() };
@@ -70,9 +71,11 @@ export async function runVisitCommand(
 		.from(visits)
 		.where(eq(visits.id, visitId))
 		.limit(1);
+
 	if (!current) {
 		return { ok: false, status: 404, error: 'Visit not found.' };
 	}
+
 	if (!canRunVisitCommand(current.status, command)) {
 		return {
 			ok: false,
@@ -89,12 +92,14 @@ export async function runVisitCommand(
 			.set(changes)
 			.where(and(eq(visits.id, visitId), eq(visits.status, current.status)))
 			.returning({ id: visits.id, status: visits.status });
+
 		if (visit && command === 'call') {
 			await queueCalledNotifications(tx, [visit.id]);
 		}
 
 		return visit ?? null;
 	});
+
 	if (!updated) {
 		return {
 			ok: false,
@@ -102,6 +107,7 @@ export async function runVisitCommand(
 			error: 'That visit transition is not allowed from the current status.',
 		};
 	}
+
 	if (command === 'call') {
 		await deliverCalledNotifications([updated.id]);
 	}
@@ -126,10 +132,12 @@ export async function callNextVisits(marketEventId: string, count: number) {
 			RETURNING id
 		`);
 		const visitIds = [...rows].map((row) => row.id);
+
 		await queueCalledNotifications(tx, visitIds);
 
 		return visitIds;
 	});
+
 	await deliverCalledNotifications(called);
 
 	return called;
@@ -171,6 +179,7 @@ export async function nextQueuePosition(
 		.from(visits)
 		.where(eq(visits.marketEventId, marketEventId));
 	const endPosition = (highest?.position ?? 0) + 1;
+
 	if (placement === 'end') {
 		return endPosition;
 	}
@@ -187,6 +196,7 @@ export async function nextQueuePosition(
 		)
 		.orderBy(asc(visits.queuePosition))
 		.limit(1);
+
 	if (front?.position === null || front?.position === undefined) {
 		return endPosition;
 	}

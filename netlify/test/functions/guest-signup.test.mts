@@ -51,6 +51,7 @@ describe('guest-signup handler POST', () => {
 
 		expect(response.status).toBe(201);
 		const body = (await response.json()) as { guestId: string; deviceToken?: string };
+
 		expect(body.guestId).toBe('guest-1');
 		expect(body.deviceToken).toBeTruthy();
 	});
@@ -75,6 +76,7 @@ describe('guest-signup handler POST', () => {
 
 		expect(response.status).toBe(200);
 		const body = (await response.json()) as { guestId: string; deviceToken?: string };
+
 		expect(body.guestId).toBe('guest-1');
 		expect(body.deviceToken).toBeUndefined();
 	});

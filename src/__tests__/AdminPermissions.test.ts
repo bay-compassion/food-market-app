@@ -60,6 +60,7 @@ afterEach(() => {
 describe('admin navigation by permission', () => {
 	it('offers a queue worker only the screens their role can open', async () => {
 		const wrapper = mountDashboard(['run:queue']);
+
 		await flushPromises();
 
 		expect(navigationLabels(wrapper)).toEqual([t.queue, t.guestDatabase, t.historySessions]);
@@ -72,6 +73,7 @@ describe('admin navigation by permission', () => {
 			'read:reports',
 			'export:guest-data',
 		]);
+
 		await flushPromises();
 
 		expect(navigationLabels(wrapper)).toEqual([
@@ -86,6 +88,7 @@ describe('admin navigation by permission', () => {
 
 	it('lands a worker on a screen they can open, not the default one they cannot', async () => {
 		const wrapper = mountDashboard(['run:queue']);
+
 		await flushPromises();
 
 		// `current-session` is the default view but needs manage:sessions.
@@ -94,6 +97,7 @@ describe('admin navigation by permission', () => {
 
 	it('explains itself to someone signed in with no role at all', async () => {
 		const wrapper = mountDashboard([]);
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain(t.noAccess);
@@ -105,6 +109,7 @@ describe('admin navigation by permission', () => {
 		await flushPromises();
 
 		const urls = vi.mocked(fetch).mock.calls.map((call) => String(call[0]));
+
 		expect(urls.some((url) => url.startsWith('/api/guests'))).toBe(false);
 	});
 
@@ -112,6 +117,7 @@ describe('admin navigation by permission', () => {
 	// administrator holding the other four permissions should not see it either.
 	it('offers the dev-mode screen only to whoever holds manage:demo-data', async () => {
 		const wrapper = mountDashboard(['manage:demo-data']);
+
 		await flushPromises();
 
 		expect(navigationLabels(wrapper)).toEqual([t.devMode]);

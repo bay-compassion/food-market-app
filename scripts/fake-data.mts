@@ -149,6 +149,7 @@ export function createRandom(seed: number): Random {
 	return () => {
 		state = (state + 0x6d2b79f5) >>> 0;
 		let value = Math.imul(state ^ (state >>> 15), 1 | state);
+
 		value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
 
 		return ((value ^ (value >>> 14)) >>> 0) / 2 ** 32;
@@ -170,8 +171,10 @@ function chance(random: Random, probability: number) {
 function pickShare<T>(random: Random, shares: [T, number][]) {
 	const total = shares.reduce((sum, [, share]) => sum + share, 0);
 	let target = random() * total;
+
 	for (const [value, share] of shares) {
 		target -= share;
+
 		if (target <= 0) {
 			return value;
 		}
@@ -194,6 +197,7 @@ function weightedShuffle<T>(items: T[], weightOf: (item: T) => number, random: R
 
 function atHour(day: Date, hour: number) {
 	const date = new Date(day);
+
 	date.setHours(hour, 0, 0, 0);
 
 	return date;
@@ -201,6 +205,7 @@ function atHour(day: Date, hour: number) {
 
 function daysBefore(date: Date, days: number) {
 	const result = new Date(date);
+
 	result.setDate(result.getDate() - days);
 
 	return result;
@@ -307,6 +312,7 @@ function buildAnswers(questions: PlannedQuestion[], random: Random) {
  */
 function resolvePlacedVisit(serviceStartsAt: Date, position: number, random: Random) {
 	const calledAt = minutesAfter(serviceStartsAt, position * 1.6 + integerBetween(random, 0, 4));
+
 	if (chance(random, 0.09)) {
 		return {
 			status: 'no_show' as VisitStatus,
@@ -314,6 +320,7 @@ function resolvePlacedVisit(serviceStartsAt: Date, position: number, random: Ran
 			servedAt: null,
 		};
 	}
+
 	if (chance(random, 0.06)) {
 		return { status: 'served' as VisitStatus, calledAt: null, servedAt: null };
 	}
@@ -366,6 +373,7 @@ function buildDrawnVisits(
 
 	for (const [index, guest] of walkIns.entries()) {
 		const outcome = resolveOutcome(index, placedCount, random);
+
 		visits.push({
 			id: crypto.randomUUID(),
 			marketEventId: session.id,
@@ -388,6 +396,7 @@ function buildDrawnVisits(
 		const outcome = placed
 			? resolveOutcome(position, placedCount, random)
 			: { status: 'not_placed' as VisitStatus, calledAt: null, servedAt: null };
+
 		visits.push({
 			id: crypto.randomUUID(),
 			marketEventId: session.id,
@@ -458,10 +467,12 @@ function resolveInProgressVisit(
 	random: Random,
 ): PlacementOutcome {
 	const threshold = progress * placedCount;
+
 	if (position < threshold) {
 		return resolvePlacedVisit(serviceStartsAt, position, random);
 	}
 	const calledBandWidth = Math.max(1, Math.round(placedCount * 0.05));
+
 	if (position < threshold + calledBandWidth) {
 		return {
 			status: 'called',
@@ -566,6 +577,7 @@ export function buildFakeData(options: FakeDataOptions): FakeData {
 		const sessionQuestions = buildQuestions(session);
 		const signUps = Math.round(session.capacity * (0.9 + random() * 0.7));
 		const attendees = pickAttendees(guests, loyalty, signUps, random);
+
 		sessions.push(session);
 		questions.push(...sessionQuestions);
 		visits.push(
@@ -577,6 +589,7 @@ export function buildFakeData(options: FakeDataOptions): FakeData {
 		const session = buildOpenSession(options, random);
 		const sessionQuestions = buildQuestions(session);
 		const attendees = pickAttendees(guests, loyalty, Math.round(session.capacity * 0.8), random);
+
 		sessions.push(session);
 		questions.push(...sessionQuestions);
 		visits.push(
@@ -585,20 +598,25 @@ export function buildFakeData(options: FakeDataOptions): FakeData {
 	}
 
 	const firstVisits = new Map<string, PlannedVisit>();
+
 	for (const visit of visits) {
 		const earliest = firstVisits.get(visit.guestId);
+
 		if (!earliest || visit.createdAt < earliest.createdAt) {
 			firstVisits.set(visit.guestId, visit);
 		}
 	}
+
 	for (const visit of firstVisits.values()) {
 		visit.isFirstVisit = true;
 	}
 	// A guest record exists from just before the first time they signed up. Anyone the draw of
 	// attendees never picked is backdated to before the history starts.
 	const historyStartsAt = sessions[0]?.registrationOpensAt ?? options.now;
+
 	for (const guest of guests) {
 		const first = firstVisits.get(guest.id);
+
 		guest.createdAt = first
 			? minutesAfter(first.createdAt, -2)
 			: daysBefore(historyStartsAt, integerBetween(random, 30, 400));
@@ -687,12 +705,14 @@ export function buildScenario(options: ScenarioOptions): FakeData {
 	const questions = buildQuestions(session);
 
 	let visits: PlannedVisit[] = [];
+
 	if (stage === 'registration_open') {
 		visits = buildOpenSessionVisits(session, questions, guests, now, random);
 	} else if (stage === 'registration_closed') {
 		visits = buildOpenSessionVisits(session, questions, guests, registrationClosesAt, random);
 	} else if (stage === 'service_started') {
 		const progress = progressFractions[options.serviceProgress ?? 'halfway'];
+
 		visits = buildInProgressVisits(session, serviceStartsAt, questions, guests, progress, random);
 	} else if (stage === 'ended') {
 		visits = buildSessionVisits(session, serviceStartsAt, questions, guests, random);
@@ -702,6 +722,7 @@ export function buildScenario(options: ScenarioOptions): FakeData {
 	// out entirely, some plausible time before the scenario starts.
 	for (const guest of guests) {
 		const visit = visits.find((candidate) => candidate.guestId === guest.id);
+
 		if (visit) {
 			visit.isFirstVisit = true;
 			guest.createdAt = minutesAfter(visit.createdAt, -2);

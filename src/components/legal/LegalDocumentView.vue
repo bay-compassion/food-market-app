@@ -7,6 +7,7 @@ const props = defineProps<{
 	backLabel: string;
 	markdown: string;
 }>();
+
 defineEmits<{ back: [] }>();
 
 const router = useRouter();
@@ -15,6 +16,7 @@ const html = computed(() => marked.parse(props.markdown, { async: false, breaks:
 function onContentClick(event: MouseEvent) {
 	const anchor = (event.target as HTMLElement).closest('a');
 	const href = anchor?.getAttribute('href');
+
 	if (href?.startsWith('/')) {
 		event.preventDefault();
 		void router.push(href);

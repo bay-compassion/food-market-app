@@ -39,6 +39,7 @@ export async function submitGuestRegistration(
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
 	});
+
 	if (!response.ok) {
 		throw new Error('Guest submission failed');
 	}
@@ -68,6 +69,7 @@ export async function submitGuestSignup(payload: GuestSignupPayload): Promise<Gu
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
 	});
+
 	if (!response.ok) {
 		throw new Error('Guest sign-up failed');
 	}
@@ -88,6 +90,7 @@ export async function fetchActiveVisit(token: string): Promise<ActiveVisitLookup
 		const response = await fetch('/api/visit', {
 			headers: { Authorization: `Bearer ${token}` },
 		});
+
 		if (!response.ok) {
 			return { found: false, reason: 'expired' };
 		}
@@ -107,6 +110,7 @@ export async function cancelActiveVisit(
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 		body: JSON.stringify({ action: 'cancel' }),
 	});
+
 	if (!response.ok) {
 		throw new Error('cancel');
 	}

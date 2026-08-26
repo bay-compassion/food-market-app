@@ -82,6 +82,7 @@ export async function deliverPendingNotifications(options?: {
 	limit?: number;
 }) {
 	const configuration = settings();
+
 	if (!configuration) {
 		return { sent: 0, failed: 0, skipped: 0 };
 	}
@@ -91,12 +92,15 @@ export async function deliverPendingNotifications(options?: {
 		eq(notificationDeliveries.status, 'pending'),
 		eq(notificationDeliveries.channel, 'push'),
 	];
+
 	if (options?.visitIds?.length) {
 		conditions.push(inArray(notificationDeliveries.visitId, options.visitIds));
 	}
+
 	if (options?.types?.length) {
 		conditions.push(inArray(notificationDeliveries.type, options.types));
 	}
+
 	if (options?.dedupeKeys?.length) {
 		conditions.push(inArray(notificationDeliveries.dedupeKey, options.dedupeKeys));
 	}
@@ -124,6 +128,7 @@ export async function deliverPendingNotifications(options?: {
 	let sent = 0;
 	let failed = 0;
 	let skipped = 0;
+
 	for (const row of rows) {
 		if (!row.endpoint || !row.p256dh || !row.auth) {
 			await db
@@ -137,6 +142,7 @@ export async function deliverPendingNotifications(options?: {
 		const locale = Object.hasOwn(translations, row.locale) ? (row.locale as Locale) : 'en';
 		const type = row.type as DeliveryType;
 		const copy = deliveryCopy(locale, type, { title: row.title, body: row.body });
+
 		if (!copy.title || !copy.body) {
 			await db
 				.update(notificationDeliveries)
@@ -145,6 +151,7 @@ export async function deliverPendingNotifications(options?: {
 			failed += 1;
 			continue;
 		}
+
 		try {
 			await webPush.sendNotification(
 				{ endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
@@ -164,10 +171,12 @@ export async function deliverPendingNotifications(options?: {
 				typeof cause === 'object' && cause && 'statusCode' in cause
 					? Number(cause.statusCode)
 					: null;
+
 			if (statusCode === 404 || statusCode === 410) {
 				await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, row.endpoint));
 			}
 			const attempts = row.attempts + 1;
+
 			await db
 				.update(notificationDeliveries)
 				.set({

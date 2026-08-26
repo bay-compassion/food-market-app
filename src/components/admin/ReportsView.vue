@@ -59,6 +59,7 @@ function rangeParams() {
 function download(blob: Blob, filename: string) {
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
+
 	link.href = url;
 	link.download = filename;
 	link.click();
@@ -76,21 +77,27 @@ async function loadReport() {
 		return;
 	}
 	const requestId = (latestRequest += 1);
+
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		const params = rangeParams();
+
 		params.set('report', selectedReport.value);
 		const response = await fetch(`/api/reports?${params}`, { headers: await authHeaders() });
+
 		if (!response.ok) {
 			throw new Error('report');
 		}
 		const payload = (await response.json()) as { rows?: ReportRow[] };
+
 		// A body without rows is a broken answer, not an empty report — say so rather than
 		// rendering it as "no sessions in this range", which would read as a fact about the data.
 		if (!Array.isArray(payload.rows)) {
 			throw new Error('report');
 		}
+
 		if (requestId !== latestRequest) {
 			return;
 		}
@@ -112,6 +119,7 @@ async function loadReport() {
 function downloadReportCsv() {
 	const headers = columns.value.map((column) => t.value.reportColumnLabels[column.key]);
 	const csv = toCsv(headers, reportCsvRows(columns.value, rows.value, t.value.reportValueLabels));
+
 	download(
 		new Blob([csv], { type: 'text/csv;charset=utf-8' }),
 		csvFilename(selectedReport.value, from.value, to.value),
@@ -127,10 +135,13 @@ async function downloadVisitExport() {
 	}
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		const params = rangeParams();
+
 		params.set('view', 'export');
 		const response = await fetch(`/api/reports?${params}`, { headers: await authHeaders() });
+
 		if (!response.ok) {
 			throw new Error('export');
 		}

@@ -90,6 +90,7 @@ export function resolveGuestCardState(options: {
 			return { kind: 'in-service' };
 		case 'ended':
 			return { kind: 'ended' };
+
 		case 'not-open': {
 			if (!options.isIdentified && options.isPreregistration) {
 				return { kind: 'form', context: guestFormContext(phase) };

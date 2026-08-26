@@ -47,6 +47,7 @@ export async function verifyAuth0Token(request: Request) {
  */
 export async function requirePermission(request: Request, permission: Permission) {
 	let claims;
+
 	try {
 		claims = await verifyAuth0Token(request);
 	} catch {

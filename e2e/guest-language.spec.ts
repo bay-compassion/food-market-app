@@ -8,6 +8,7 @@ test('first-time guest can choose a language', async ({ page }) => {
 	).toBeVisible();
 
 	const languageGroup = page.getByRole('group', { name: 'Choose your language' });
+
 	await expect(languageGroup.getByRole('button', { name: 'English' })).toHaveAttribute(
 		'aria-pressed',
 		'true',
@@ -19,6 +20,7 @@ test('first-time guest can choose a language', async ({ page }) => {
 	// a compact picker in the header — see `selectLanguage` in `src/App.vue`.
 	await expect(languageGroup).not.toBeVisible();
 	const headerPicker = page.getByLabel('Idioma');
+
 	await expect(headerPicker).toBeVisible();
 	await expect(headerPicker).toHaveValue('es');
 });

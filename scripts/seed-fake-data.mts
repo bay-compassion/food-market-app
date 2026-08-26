@@ -55,6 +55,7 @@ function parseOptions() {
 
 function positiveNumber(value: string, name: string) {
 	const parsed = Number(value);
+
 	if (!Number.isInteger(parsed) || parsed < 1) {
 		throw new Error(`--${name} must be a whole number of at least 1.`);
 	}
@@ -72,9 +73,11 @@ function resolveConnectionString() {
 	if (process.env.NETLIFY_DB_URL) {
 		return process.env.NETLIFY_DB_URL;
 	}
+
 	try {
 		const statePath = new URL('../.netlify/state.json', import.meta.url);
 		const state = JSON.parse(readFileSync(statePath, 'utf8')) as { dbConnectionString?: unknown };
+
 		if (typeof state.dbConnectionString === 'string' && state.dbConnectionString) {
 			return state.dbConnectionString;
 		}
@@ -95,6 +98,7 @@ function isLocalDatabase(connectionString: string) {
 
 function chunk<T>(items: T[], size: number) {
 	const chunks: T[][] = [];
+
 	for (let index = 0; index < items.length; index += size) {
 		chunks.push(items.slice(index, index + size));
 	}
@@ -104,6 +108,7 @@ function chunk<T>(items: T[], size: number) {
 
 function summarize(data: FakeData) {
 	const counts = new Map<string, number>();
+
 	for (const visit of data.visits) {
 		counts.set(visit.status, (counts.get(visit.status) ?? 0) + 1);
 	}
@@ -122,6 +127,7 @@ function summarize(data: FakeData) {
 
 async function main() {
 	const values = parseOptions();
+
 	if (values.help) {
 		console.log(usage);
 
@@ -129,6 +135,7 @@ async function main() {
 	}
 
 	const connectionString = resolveConnectionString();
+
 	if (!connectionString) {
 		throw new Error(
 			'No database found. Run `npm start` (`netlify dev`) in another terminal so it provisions ' +
@@ -136,6 +143,7 @@ async function main() {
 				'yourself.',
 		);
 	}
+
 	if (!isLocalDatabase(connectionString) && !values.force) {
 		throw new Error(
 			'That database is not on localhost, and fake data does not belong in a shared one. ' +
@@ -185,12 +193,15 @@ async function main() {
 			})),
 		);
 	}
+
 	for (const rows of chunk(data.sessions, 500)) {
 		await db.insert(marketEvents).values(rows);
 	}
+
 	for (const rows of chunk(data.questions, 500)) {
 		await db.insert(registrationQuestions).values(rows);
 	}
+
 	for (const rows of chunk(data.visits, 500)) {
 		await db
 			.insert(visits)
@@ -208,6 +219,7 @@ try {
 	// the one that actually says what was wrong — on `cause`. Print both, or debugging is guesswork.
 	if (error instanceof Error) {
 		console.error(error.message.split('\n')[0]);
+
 		if (error.cause instanceof Error) {
 			console.error(error.cause.message);
 		}

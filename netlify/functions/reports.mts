@@ -21,6 +21,7 @@ export default async (request: Request) => {
 		request,
 		isExport ? 'export:guest-data' : 'read:reports',
 	);
+
 	if (forbidden) {
 		return forbidden;
 	}
@@ -28,6 +29,7 @@ export default async (request: Request) => {
 	const from = url.searchParams.get('from') ?? '';
 	const to = url.searchParams.get('to') ?? '';
 	const range = reportRangeBounds(from, to);
+
 	if (!range) {
 		return error('Please provide a valid date range.');
 	}
@@ -44,6 +46,7 @@ export default async (request: Request) => {
 	}
 
 	const id = url.searchParams.get('report');
+
 	if (!isReportId(id)) {
 		return error('Unknown report.');
 	}

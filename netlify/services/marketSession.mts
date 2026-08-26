@@ -47,12 +47,14 @@ async function getLatestActiveEvent() {
  */
 export async function getCurrentEvent() {
 	let event = await getLatestActiveEvent();
+
 	if (!event) {
 		return null;
 	}
 
 	const now = new Date();
 	const automaticStatus = automaticSessionStatus(event, now);
+
 	if (automaticStatus !== event.status) {
 		const updated = await db.transaction(async (tx) => {
 			const [changed] = await tx
@@ -60,11 +62,13 @@ export async function getCurrentEvent() {
 				.set({ status: automaticStatus })
 				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
 				.returning();
+
 			if (changed && automaticStatus === 'registration_closed' && notificationsEnabled()) {
 				const registrations = await tx
 					.select({ visitId: visits.id })
 					.from(visits)
 					.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+
 				await queueNotification(
 					tx,
 					registrations.map(({ visitId }) => visitId),
@@ -75,6 +79,7 @@ export async function getCurrentEvent() {
 
 			return changed;
 		});
+
 		event = updated ?? (await getLatestActiveEvent()) ?? event;
 	}
 
@@ -83,6 +88,7 @@ export async function getCurrentEvent() {
 
 export async function marketOverview() {
 	const event = await getCurrentEvent();
+
 	if (!event) {
 		return { event: null, questions: [], counts: {} as Record<string, number> };
 	}
@@ -112,6 +118,7 @@ export async function marketHistory() {
 		.where(eq(marketEvents.status, 'ended'))
 		.orderBy(desc(marketEvents.createdAt))
 		.limit(100);
+
 	if (!events.length) {
 		return [];
 	}
@@ -144,6 +151,7 @@ export function parseSettings(value: unknown): ParsedSettings | null {
 	const capacity = Number(body.capacity);
 	const sessionMode: SessionMode = body.sessionMode === 'ad_hoc' ? 'ad_hoc' : 'scheduled';
 	const rawQuestions = body.questions;
+
 	if (
 		Number.isNaN(registrationOpensAt.valueOf()) ||
 		Number.isNaN(registrationClosesAt.valueOf()) ||
@@ -156,6 +164,7 @@ export function parseSettings(value: unknown): ParsedSettings | null {
 		return null;
 	}
 	const questions: QuestionInput[] = [];
+
 	for (const item of rawQuestions) {
 		if (!item || typeof item !== 'object') {
 			return null;
@@ -163,6 +172,7 @@ export function parseSettings(value: unknown): ParsedSettings | null {
 		const question = item as Record<string, unknown>;
 		const prompt = typeof question.prompt === 'string' ? question.prompt.trim() : '';
 		const type = question.type === 'scale' ? 'scale' : 'text';
+
 		if (!prompt || prompt.length > 300) {
 			return null;
 		}
@@ -174,6 +184,7 @@ export function parseSettings(value: unknown): ParsedSettings | null {
 
 export async function saveSettings(settings: ParsedSettings): Promise<ActionResult> {
 	const current = await getCurrentEvent();
+
 	if (current && current.status !== 'draft') {
 		return {
 			ok: false,
@@ -196,6 +207,7 @@ export async function saveSettings(settings: ParsedSettings): Promise<ActionResu
 					})
 					.where(and(eq(marketEvents.id, current.id), eq(marketEvents.status, 'draft')))
 					.returning();
+
 				if (!updated) {
 					throw new Error('SESSION_SETTINGS_LOCKED');
 				}
@@ -214,6 +226,7 @@ export async function saveSettings(settings: ParsedSettings): Promise<ActionResu
 						sessionMode: settings.sessionMode,
 					})
 					.returning();
+
 				event = created!;
 			}
 
@@ -233,6 +246,7 @@ export async function saveSettings(settings: ParsedSettings): Promise<ActionResu
 			}
 			throw cause;
 		});
+
 	if (saved === false) {
 		return {
 			ok: false,
@@ -273,6 +287,7 @@ export function parseRegistrationOverride(value: unknown) {
 	const body = value as Record<string, unknown>;
 	const registrationClosesAt = new Date(String(body.registrationClosesAt));
 	const capacity = Number(body.capacity);
+
 	if (
 		Number.isNaN(registrationClosesAt.valueOf()) ||
 		!Number.isInteger(capacity) ||
@@ -300,6 +315,7 @@ async function transitionEvent(event: MarketEventRow, from: SessionStatus, to: S
 
 export async function resetSession(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('reset_session');
+
 	if (!target || !canRunSessionCommand(event.status, 'reset_session', event.sessionMode)) {
 		return { ok: false, status: 409, error: 'The current session could not be reset.' };
 	}
@@ -308,6 +324,7 @@ export async function resetSession(event: MarketEventRow): Promise<ActionResult>
 		.set({ status: target })
 		.where(and(eq(marketEvents.id, event.id), ne(marketEvents.status, 'ended')))
 		.returning({ id: marketEvents.id });
+
 	if (!reset) {
 		return { ok: false, status: 409, error: 'The current session could not be reset.' };
 	}
@@ -320,6 +337,7 @@ export async function updateRegistration(
 	body: unknown,
 ): Promise<ActionResult> {
 	const override = parseRegistrationOverride(body);
+
 	if (
 		!canRunSessionCommand(event.status, 'update_registration', event.sessionMode) ||
 		!override ||
@@ -333,6 +351,7 @@ export async function updateRegistration(
 		.set(override)
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_open')))
 		.returning({ id: marketEvents.id });
+
 	if (!updated) {
 		return {
 			ok: false,
@@ -346,6 +365,7 @@ export async function updateRegistration(
 
 export async function scheduleRegistration(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('schedule_registration');
+
 	if (
 		!target ||
 		!canRunSessionCommand(event.status, 'schedule_registration', event.sessionMode) ||
@@ -353,6 +373,7 @@ export async function scheduleRegistration(event: MarketEventRow): Promise<Actio
 	) {
 		return { ok: false, status: 409, error: 'Only a future scheduled session can be scheduled.' };
 	}
+
 	if (!(await transitionEvent(event, event.status, target))) {
 		return {
 			ok: false,
@@ -369,6 +390,7 @@ export async function postponeRegistration(
 	body: unknown,
 ): Promise<ActionResult> {
 	const minutes = Number((body as Record<string, unknown> | null)?.minutes);
+
 	if (
 		!canRunSessionCommand(event.status, 'postpone_registration', event.sessionMode) ||
 		!Number.isInteger(minutes) ||
@@ -386,6 +408,7 @@ export async function postponeRegistration(
 		.set(postponedWindow(event, minutes))
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
 		.returning({ id: marketEvents.id });
+
 	if (!updated) {
 		return {
 			ok: false,
@@ -399,6 +422,7 @@ export async function postponeRegistration(
 
 export async function openRegistration(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('open_registration');
+
 	if (!target || !canRunSessionCommand(event.status, 'open_registration', event.sessionMode)) {
 		return {
 			ok: false,
@@ -409,6 +433,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 	const now = new Date();
 	const window = openingWindow(event, now);
 	const { registrationClosesAt } = window;
+
 	if (registrationClosesAt <= now) {
 		return { ok: false, status: 409, error: 'Registration must close in the future.' };
 	}
@@ -417,6 +442,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 		.set({ status: target, ...window })
 		.where(and(eq(marketEvents.id, event.id), inArray(marketEvents.status, ['draft', 'scheduled'])))
 		.returning({ id: marketEvents.id });
+
 	if (!updated) {
 		return {
 			ok: false,
@@ -430,6 +456,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 
 export async function reopenRegistration(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('reopen_registration');
+
 	if (!target || !canRunSessionCommand(event.status, 'reopen_registration', event.sessionMode)) {
 		return {
 			ok: false,
@@ -447,6 +474,7 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 		})
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_closed')))
 		.returning({ id: marketEvents.id });
+
 	if (!updated) {
 		return {
 			ok: false,
@@ -460,6 +488,7 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 
 export async function closeSession(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('close_session');
+
 	if (!target || !canRunSessionCommand(event.status, 'close_session', event.sessionMode)) {
 		return {
 			ok: false,
@@ -475,6 +504,7 @@ export async function closeSession(event: MarketEventRow): Promise<ActionResult>
 			.set({ status: target })
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
 			.returning({ id: marketEvents.id });
+
 		if (!updated) {
 			return false;
 		}
@@ -482,6 +512,7 @@ export async function closeSession(event: MarketEventRow): Promise<ActionResult>
 
 		return true;
 	});
+
 	if (!closed) {
 		return {
 			ok: false,
@@ -495,6 +526,7 @@ export async function closeSession(event: MarketEventRow): Promise<ActionResult>
 
 export async function closeRegistration(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('close_registration');
+
 	if (!target || !canRunSessionCommand(event.status, 'close_registration', event.sessionMode)) {
 		return {
 			ok: false,
@@ -508,14 +540,17 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 			.set({ status: target })
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
 			.returning({ id: marketEvents.id });
+
 		if (!updated) {
 			return false;
 		}
+
 		if (notificationsEnabled()) {
 			const registrations = await tx
 				.select({ visitId: visits.id })
 				.from(visits)
 				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+
 			await queueNotification(
 				tx,
 				registrations.map(({ visitId }) => visitId),
@@ -526,6 +561,7 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 
 		return true;
 	});
+
 	if (!closed) {
 		return {
 			ok: false,
@@ -550,6 +586,7 @@ export async function runLottery(
 		.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
 	const shuffled = shuffleFn(registrations);
 	const lotteryTarget = sessionCommandTarget('run_lottery');
+
 	if (!lotteryTarget) {
 		return { ok: false, status: 500, error: 'The lottery transition is not configured.' };
 	}
@@ -577,26 +614,32 @@ export async function runLottery(
 				.set({ status: lotteryTarget })
 				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_closed')))
 				.returning({ id: marketEvents.id });
+
 			if (!started) {
 				throw new Error('INVALID_SESSION_TRANSITION');
 			}
+
 			if (selected.length) {
 				const positions = selectedRegistrations.map(
 					(registration, index) =>
 						sql`(${registration.id}::uuid, ${index + 1 + positionOffset}::integer)`,
 				);
+
 				await tx.execute(sql`
 					UPDATE ${visits} AS visit
 					SET status = 'waiting', queue_position = positions.position
 					FROM (VALUES ${sql.join(positions, sql`, `)}) AS positions(id, position)
 					WHERE visit.id = positions.id
 				`);
+
 				if (notificationsEnabled()) {
 					await queueNotification(tx, selected, 'lottery_selected', 'lottery_selected');
 				}
 			}
+
 			if (notPlaced.length) {
 				await tx.update(visits).set({ status: 'not_placed' }).where(inArray(visits.id, notPlaced));
+
 				if (notificationsEnabled()) {
 					await queueNotification(tx, notPlaced, 'lottery_not_selected', 'lottery_not_selected');
 				}
@@ -609,6 +652,7 @@ export async function runLottery(
 			throw cause;
 		});
 	const refreshed = await getCurrentEvent();
+
 	if (refreshed?.status !== lotteryTarget) {
 		return {
 			ok: false,

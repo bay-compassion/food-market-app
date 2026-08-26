@@ -10,9 +10,11 @@ const validToken = 'a'.repeat(40);
 
 function request(method: string, options: { token?: string; body?: unknown } = {}) {
 	const headers = new Headers();
+
 	if (options.token) {
 		headers.set('Authorization', `Bearer ${options.token}`);
 	}
+
 	if (options.body !== undefined) {
 		headers.set('Content-Type', 'application/json');
 	}
@@ -60,6 +62,7 @@ describe('visit handler GET', () => {
 			calledAt: null,
 			sessionStatus: 'registration_open',
 		};
+
 		queueResult([visit]);
 
 		const response = await handler(request('GET', { token: validToken }));
@@ -78,6 +81,7 @@ describe('visit handler GET', () => {
 			calledAt: null,
 			sessionStatus: 'service_started',
 		};
+
 		queueResult([visit]);
 		queueResult([{ count: 3 }]);
 
@@ -96,6 +100,7 @@ describe('visit handler GET', () => {
 			calledAt: '2026-08-08T18:00:00.000Z',
 			sessionStatus: 'service_started',
 		};
+
 		queueResult([visit]);
 
 		const response = await handler(request('GET', { token: validToken }));

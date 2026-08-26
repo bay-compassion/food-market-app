@@ -16,6 +16,7 @@ async function overview() {
 
 async function runLoad(request: Request) {
 	let body: unknown;
+
 	try {
 		body = await request.json();
 	} catch {
@@ -23,9 +24,11 @@ async function runLoad(request: Request) {
 	}
 	const stage = (body as { stage?: unknown } | null)?.stage;
 	const serviceProgress = (body as { serviceProgress?: unknown } | null)?.serviceProgress;
+
 	if (!isSessionStatus(stage)) {
 		return error('Please provide a valid lifecycle stage.');
 	}
+
 	if (serviceProgress !== undefined && !isServiceProgress(serviceProgress)) {
 		return error('Please provide a valid service progress level.');
 	}
@@ -46,6 +49,7 @@ export default async (request: Request) => {
 	// Gate on the permission before anything else, so an unauthenticated caller cannot use this
 	// endpoint's responses to learn whether demo data tools are even enabled here.
 	const forbidden = await requirePermission(request, 'manage:demo-data');
+
 	if (forbidden) {
 		return forbidden;
 	}
@@ -53,6 +57,7 @@ export default async (request: Request) => {
 	if (request.method === 'GET') {
 		return Response.json({ enabled: demoDataToolsEnabled() });
 	}
+
 	if (request.method === 'POST') {
 		return runLoad(request);
 	}

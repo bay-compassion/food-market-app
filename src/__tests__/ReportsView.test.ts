@@ -40,9 +40,11 @@ describe('ReportsView', () => {
 			{ sessionDate: '2026-03-04T17:00:00.000Z', capacity: 50, served: 48, fillRate: 96 },
 		]);
 		const wrapper = mountReports(fetchMock);
+
 		await flushPromises();
 
 		const text = wrapper.text();
+
 		expect(text).toContain(t.reportColumnLabels.sessionDate);
 		expect(text).toContain(t.reportColumnLabels.fillRate);
 		// Rendered through the locale formatter, not printed as the raw number the server sent.
@@ -53,6 +55,7 @@ describe('ReportsView', () => {
 
 	it('sends the bearer token with the report request', async () => {
 		const fetchMock = respondWith([]);
+
 		mountReports(fetchMock);
 		await flushPromises();
 
@@ -62,6 +65,7 @@ describe('ReportsView', () => {
 	it('reloads when a different report is chosen', async () => {
 		const fetchMock = respondWith([]);
 		const wrapper = mountReports(fetchMock);
+
 		await flushPromises();
 
 		await wrapper.find('select').setValue('people-served');
@@ -72,6 +76,7 @@ describe('ReportsView', () => {
 
 	it('says so when the range holds no sessions, rather than showing an empty table', async () => {
 		const wrapper = mountReports(respondWith([]));
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain(t.reportEmpty);
@@ -81,11 +86,13 @@ describe('ReportsView', () => {
 	it('refuses a backwards range without asking the server', async () => {
 		const fetchMock = respondWith([]);
 		const wrapper = mountReports(fetchMock);
+
 		await flushPromises();
 		fetchMock.mockClear();
 
 		// The default range opens a year back, so this end date lands before the start.
 		const toInput = wrapper.findAll('input[type="date"]')[1];
+
 		await toInput!.setValue('2020-01-01');
 		await flushPromises();
 
@@ -110,6 +117,7 @@ describe('ReportsView', () => {
 			.mockImplementationOnce(() => new Promise<Response>((resolve) => (resolveFirst = resolve)))
 			.mockImplementation(() => Promise.resolve(jsonResponse([{ served: 2 }])));
 		const wrapper = mountReports(fetchMock);
+
 		await flushPromises();
 
 		await wrapper.findAll('input[type="date"]')[0]!.setValue('2026-01-01');
@@ -125,6 +133,7 @@ describe('ReportsView', () => {
 
 	it('warns that the full export names guests, unlike the reports above it', async () => {
 		const wrapper = mountReports(respondWith([]));
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain(t.reportPrivacyNote);
@@ -133,6 +142,7 @@ describe('ReportsView', () => {
 
 	it('hides the export entirely from a worker who may not download it', async () => {
 		const wrapper = mountReports(respondWith([]), false);
+
 		await flushPromises();
 
 		expect(wrapper.text()).not.toContain(t.reportExportVisits);
@@ -142,6 +152,7 @@ describe('ReportsView', () => {
 
 	it('shows the error message when the report request fails', async () => {
 		const wrapper = mountReports(vi.fn(() => Promise.resolve({ ok: false } as Response)));
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain(t.error);

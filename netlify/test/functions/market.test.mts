@@ -44,6 +44,7 @@ describe('market handler GET (default overview is public)', () => {
 describe('market handler GET ?view=history (requires Auth0)', () => {
 	it('returns the requirePermission response when unauthorized, without querying history', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('GET', { path: '?view=history' }));
@@ -66,6 +67,7 @@ describe('market handler GET ?view=history (requires Auth0)', () => {
 describe('market handler PUT (requires Auth0)', () => {
 	it('returns the requirePermission response when unauthorized, without parsing the body', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('PUT', { body: { capacity: 10 } }));
@@ -86,6 +88,7 @@ describe('market handler PUT (requires Auth0)', () => {
 describe('market handler POST (requires Auth0)', () => {
 	it('returns the requirePermission response when unauthorized, without touching the database', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('POST', { body: { action: 'run_lottery' } }));
