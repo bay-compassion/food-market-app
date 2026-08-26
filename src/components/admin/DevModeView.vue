@@ -57,6 +57,7 @@ async function checkEnabled() {
 		const response = await fetch('/api/demo-data', {
 			headers: { Authorization: `Bearer ${await props.getAccessToken()}` },
 		});
+
 		enabled.value = response.ok ? ((await response.json()) as { enabled: boolean }).enabled : false;
 	} catch {
 		enabled.value = false;

@@ -17,6 +17,7 @@ function accessToken(request: Request) {
 
 async function authorizedVisit(request: Request) {
 	const token = accessToken(request);
+
 	if (!token || token.length < 32 || token.length > 200) {
 		return null;
 	}
@@ -65,9 +66,11 @@ async function guestsAhead(visit: {
 
 export default async (request: Request) => {
 	const visit = await authorizedVisit(request);
+
 	if (!visit) {
 		return error('Visit access could not be verified.', 401);
 	}
+
 	if (request.method === 'GET') {
 		if (visit.sessionStatus === 'ended') {
 			return error('This visit belongs to an ended session.', 410);
@@ -75,16 +78,19 @@ export default async (request: Request) => {
 
 		return Response.json({ ...visit, aheadOfYou: await guestsAhead(visit) });
 	}
+
 	if (request.method === 'PATCH') {
 		if (visit.sessionStatus === 'ended') {
 			return error('This visit can no longer be cancelled.', 409);
 		}
 		let body: unknown;
+
 		try {
 			body = await request.json();
 		} catch {
 			return error('Request body must be valid JSON.');
 		}
+
 		if ((body as { action?: unknown } | null)?.action !== 'cancel') {
 			return error('Invalid visit action.');
 		}

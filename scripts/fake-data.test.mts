@@ -195,6 +195,7 @@ describe('buildScenario', () => {
 				.sort((first, second) => first.queuePosition! - second.queuePosition!);
 
 			expect(placed.length).toBeLessThanOrEqual(data.sessions[0]!.capacity);
+
 			for (let index = 1; index < placed.length; index += 1) {
 				expect(rank[placed[index]!.status]).toBeGreaterThanOrEqual(
 					rank[placed[index - 1]!.status]!,

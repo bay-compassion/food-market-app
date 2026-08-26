@@ -3,7 +3,7 @@
 ## What a test actually is
 
 A test is a small script that runs part of the app and checks the result against what's expected
-— for example, "if someone submits a check-in with an invalid PIN, the server should reject it,"
+— for example, "if someone submits a malformed device token, the server should reject it,"
 or "an admin action should require login." Every file ending in `.test.ts` in this repo is a
 collection of checks like that. Running `npm run test:unit -- --run` runs all of them and reports
 which passed and which failed.

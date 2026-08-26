@@ -44,7 +44,7 @@ type Story = StoryObj<GuestNotOpenStateArgs>;
 /** No event exists yet, or it's still `draft`/`scheduled` off the `/signup` route. */
 export const NotOpen: Story = {};
 
-/** Same state, but the session is far enough along (`draft` or `scheduled`) to preregister for. */
+/** Same state, but this guest hasn't signed up yet, so a "sign up early" link is offered. */
 export const WithPreregisterCta: Story = {
 	args: { showPreregisterCta: true },
 };

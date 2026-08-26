@@ -3,6 +3,7 @@ self.addEventListener('push', (event) => {
 		return;
 	}
 	const notification = event.data.json();
+
 	event.waitUntil(
 		self.registration.showNotification(notification.title, {
 			body: notification.body,
@@ -17,6 +18,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
 	event.notification.close();
 	const target = new URL(event.notification.data?.url || '/', self.location.origin).href;
+
 	event.waitUntil(
 		self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
 			const existing = clients.find((client) => client.url.startsWith(self.location.origin));

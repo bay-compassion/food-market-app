@@ -49,6 +49,7 @@ const props = withDefaults(
 const emit = defineEmits<{ navigate: [view: AdminView] }>();
 const rootStore = useRootStore();
 const session = rootStore.session;
+
 rootStore.setAccessTokenProvider(props.getAccessToken);
 const t = computed(() => adminTranslations[props.locale]);
 const base = computed(() => translations[props.locale]);
@@ -98,6 +99,7 @@ const viewLabels = computed<Record<AdminView, string>>(() => ({
 const navigation = computed<{ id: AdminView; label: string }[]>(() =>
 	viewsFor(granted.value).map((id) => ({ id, label: viewLabels.value[id] })),
 );
+
 function can(permission: Permission) {
 	return granted.value.includes(permission);
 }
@@ -163,11 +165,14 @@ function toLocalDateTime(value: string | Date) {
 function setDefaultSettings() {
 	const now = new Date();
 	const opens = new Date(now);
+
 	opens.setMinutes(Math.ceil(opens.getMinutes() / 15) * 15, 0, 0);
+
 	if (opens <= now) {
 		opens.setMinutes(opens.getMinutes() + 15);
 	}
 	const closes = new Date(opens.valueOf() + 60 * 60_000);
+
 	settings.value.sessionMode = 'scheduled';
 	settings.value.registrationOpensAt = toLocalDateTime(opens);
 	settings.value.adHocClosesAt = toLocalDateTime(closes);
@@ -189,6 +194,7 @@ let appliedSettingsSignature = '';
 
 function applySessionSettings(data: SessionOverview) {
 	const signature = JSON.stringify({ event: data.event, questions: data.questions });
+
 	if (signature === appliedSettingsSignature) {
 		return;
 	}
@@ -199,6 +205,7 @@ function applySessionSettings(data: SessionOverview) {
 		type,
 		required,
 	}));
+
 	if (data.event) {
 		settings.value.sessionMode = data.event.sessionMode ?? 'scheduled';
 		settings.value.registrationOpensAt = toLocalDateTime(data.event.registrationOpensAt);
@@ -230,10 +237,12 @@ watch(
 
 async function loadGuests() {
 	const params = new URLSearchParams({ scope: 'all' });
+
 	if (searchQuery.value.trim()) {
 		params.set('q', searchQuery.value.trim());
 	}
 	const response = await fetch(`/api/guests?${params}`, { headers: await authHeaders() });
+
 	if (!response.ok) {
 		throw new Error('guests');
 	}
@@ -248,6 +257,7 @@ async function loadSessionGuests() {
 	}
 	const params = new URLSearchParams({ marketEventId: event.value.id });
 	const response = await fetch(`/api/guests?${params}`, { headers: await authHeaders() });
+
 	if (!response.ok) {
 		throw new Error('session-guests');
 	}
@@ -256,6 +266,7 @@ async function loadSessionGuests() {
 
 async function loadHistory() {
 	const response = await fetch('/api/market?view=history', { headers: await authHeaders() });
+
 	if (!response.ok) {
 		throw new Error('history');
 	}
@@ -273,11 +284,14 @@ async function loadDashboard() {
 	// The route can name a screen this worker cannot open — a shared link, or a role that changed
 	// since they last bookmarked it. Land them on the first one they can.
 	const allowed = viewsFor(granted.value);
+
 	if (allowed.length > 0 && !allowed.includes(activeView.value)) {
 		navigate(allowed[0]!);
 	}
+
 	try {
 		await session.getStatus();
+
 		// Only ask for what this worker is allowed to see; the rest would come back 403 and read
 		// as a broken screen rather than as a screen that was never theirs.
 		if (can('run:queue')) {
@@ -291,6 +305,7 @@ async function loadDashboard() {
 async function saveSettings() {
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		const saved = await session.saveSettings({
 			registrationOpensAt:
@@ -302,6 +317,7 @@ async function saveSettings() {
 			sessionMode: settings.value.sessionMode,
 			questions: questions.value,
 		});
+
 		if (!saved) {
 			throw new Error('save');
 		}
@@ -333,11 +349,13 @@ async function runMarketAction(action: MarketAction, isConfirmed = false) {
 				: t.value.confirmCloseSession,
 		reset_session: t.value.confirmResetSession,
 	};
+
 	if (!isConfirmed && !window.confirm(confirmations[action])) {
 		return;
 	}
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		if (!(await session.sendCommand(action))) {
 			throw new Error('action');
@@ -358,9 +376,11 @@ async function saveAndStartRegistration() {
 		action === 'schedule_registration'
 			? t.value.confirmScheduleRegistration
 			: t.value.confirmOpenRegistration;
+
 	if (!window.confirm(confirmation)) {
 		return;
 	}
+
 	if (await saveSettings()) {
 		await runMarketAction(action, true);
 	}
@@ -372,6 +392,7 @@ async function postponeRegistration() {
 	}
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		if (
 			!(await session.sendCommand('postpone_registration', {
@@ -395,6 +416,7 @@ async function updateRegistrationOverrides(registrationClosesAt: string, capacit
 	}
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		if (
 			!(await session.sendCommand('update_registration', {
@@ -423,6 +445,7 @@ async function extendRegistration() {
 	const closesAt = new Date(
 		new Date(event.value.registrationClosesAt).valueOf() + extensionMinutes.value * 60_000,
 	).toISOString();
+
 	if (await updateRegistrationOverrides(closesAt, event.value.capacity)) {
 		extensionMinutes.value = 30;
 	}
@@ -437,13 +460,16 @@ async function saveCapacityOverride() {
 
 async function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
 	const previous = guest.status;
+
 	guest.status = visitCommandTarget(command);
+
 	try {
 		const response = await fetch('/api/guests', {
 			method: 'PATCH',
 			headers: await authHeaders(true),
 			body: JSON.stringify({ id: guest.id, command }),
 		});
+
 		if (!response.ok) {
 			throw new Error('command');
 		}
@@ -461,6 +487,7 @@ async function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
 async function addManualGuest(guest: ManualGuest, marketEventId = event.value?.id ?? null) {
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		const response = await fetch('/api/guests', {
 			method: 'POST',
@@ -475,6 +502,7 @@ async function addManualGuest(guest: ManualGuest, marketEventId = event.value?.i
 				source: 'admin',
 			}),
 		});
+
 		if (!response.ok) {
 			throw new Error('guest');
 		}
@@ -490,17 +518,21 @@ async function addManualGuest(guest: ManualGuest, marketEventId = event.value?.i
 async function callNextGuests(count: number) {
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		const response = await fetch('/api/queue', {
 			method: 'POST',
 			headers: await authHeaders(true),
 			body: JSON.stringify({ action: 'call_next', count }),
 		});
+
 		if (!response.ok) {
 			throw new Error('call_next');
 		}
 		const { called } = (await response.json()) as { called: string[] };
+
 		await Promise.all([session.getStatus(), loadSessionGuests()]);
+
 		if (!called.length) {
 			feedback.value = t.value.noWaitingGuests;
 		}
@@ -517,19 +549,23 @@ async function sendBroadcast() {
 	}
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		const response = await fetch('/api/broadcast', {
 			method: 'POST',
 			headers: await authHeaders(true),
 			body: JSON.stringify(broadcast.value),
 		});
+
 		if (!response.ok) {
 			throw new Error('broadcast');
 		}
 		const result = (await response.json()) as { queued: number };
+
 		feedback.value = result.queued
 			? `${t.value.broadcastQueued} ${result.queued}`
 			: t.value.broadcastNoRecipients;
+
 		if (result.queued) {
 			broadcast.value = { title: '', body: '' };
 		}
@@ -551,12 +587,14 @@ async function loadScenario(stage: SessionStatus, serviceProgress?: ServiceProgr
 	}
 	isBusy.value = true;
 	feedback.value = '';
+
 	try {
 		const response = await fetch('/api/demo-data', {
 			method: 'POST',
 			headers: await authHeaders(true),
 			body: JSON.stringify({ stage, serviceProgress }),
 		});
+
 		if (!response.ok) {
 			throw new Error('demo-data');
 		}

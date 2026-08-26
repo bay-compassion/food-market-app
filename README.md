@@ -17,14 +17,12 @@ through), and [`docs/user-journey.md`](docs/user-journey.md) (a guest's path thr
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/images/first-time.png" alt="Welcome screen with the language picker" width="100%"></td>
-    <td width="33%"><img src="docs/images/new-guest.png" alt="New guest form asking for name, age, household size, phone number, and PIN" width="100%"></td>
-    <td width="33%"><img src="docs/images/returning-guest.png" alt="Returning guest form asking for phone number and PIN" width="100%"></td>
+	<td width="50%"><img src="docs/images/first-time.png" alt="Welcome screen with the language picker" width="100%"></td>
+	<td width="50%"><img src="docs/images/new-guest.png" alt="Guest form asking for name, age range, household details, and phone number" width="100%"></td>
   </tr>
   <tr>
-    <td>Choose a language to begin.</td>
-    <td>New guests share the details needed for their visit.</td>
-    <td>Returning guests sign in with their phone number and PIN.</td>
+	<td>Choose a language to begin.</td>
+	<td>Guests share renewed details for every visit; the browser keeps a private device credential.</td>
   </tr>
   <tr>
     <td width="33%"><img src="docs/images/spanish.png" alt="New guest form translated into Spanish" width="100%"></td>
@@ -89,10 +87,8 @@ npm run seed -- --help                      # every option
 ```
 
 The history includes the awkward cases worth testing against: oversubscribed sessions, guests a
-worker added by hand, no-shows, cancellations, and visits served without a recorded time. Every
-seeded guest has a `(555)` phone number and the PIN `1234`, so the returning-guest sign-in can be
-tried by hand. The script refuses to touch a database that is not on localhost unless you pass
-`--force`.
+worker added by hand, no-shows, cancellations, and visits served without a recorded time. The
+script refuses to touch a database that is not on localhost unless you pass `--force`.
 
 ## Checks
 

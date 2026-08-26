@@ -130,6 +130,7 @@ describe('QueueView', () => {
 		const wrapper = mountQueue([
 			guest({ id: 'b', status: 'called', calledAt: '2026-08-08T18:00:00.000Z' }),
 		]);
+
 		await flushPromises();
 		const actions = wrapper.find('.guest-row .visit-commands').text();
 

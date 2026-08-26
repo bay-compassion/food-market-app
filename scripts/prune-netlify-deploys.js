@@ -35,6 +35,7 @@ async function netlifyFetch(path, options = {}) {
 
 	if (!response.ok) {
 		const body = await response.text();
+
 		throw new Error(`${options.method ?? 'GET'} ${path} failed: ${response.status} ${body}`);
 	}
 
@@ -47,7 +48,9 @@ async function fetchAllDeploys() {
 
 	for (let page = 1; ; page++) {
 		const batch = await netlifyFetch(`/sites/${siteId}/deploys?page=${page}&per_page=${perPage}`);
+
 		deploys.push(...batch);
+
 		if (batch.length < perPage) {
 			break;
 		}
@@ -99,6 +102,7 @@ async function main() {
 
 	console.log('\nDeleting...');
 	let deleted = 0;
+
 	for (const deploy of toDelete) {
 		try {
 			await netlifyFetch(`/deploys/${deploy.id}`, { method: 'DELETE' });

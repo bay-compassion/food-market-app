@@ -19,6 +19,7 @@ function parseBroadcast(value: unknown) {
 	const body = value as Record<string, unknown>;
 	const title = typeof body.title === 'string' ? body.title.trim() : '';
 	const message = typeof body.body === 'string' ? body.body.trim() : '';
+
 	if (!title || title.length > 100 || !message || message.length > 500) {
 		return null;
 	}
@@ -31,20 +32,24 @@ export default async (request: Request) => {
 		return error('Method not allowed', 405);
 	}
 	const forbidden = await requirePermission(request, 'manage:sessions');
+
 	if (forbidden) {
 		return forbidden;
 	}
+
 	if (!pushConfiguration().configured && !smsConfiguration().configured) {
 		return error('Notifications are not configured.', 503);
 	}
 
 	let value: unknown;
+
 	try {
 		value = await request.json();
 	} catch {
 		return error('Request body must be valid JSON.');
 	}
 	const broadcast = parseBroadcast(value);
+
 	if (!broadcast) {
 		return error('Please provide a title and message.');
 	}
@@ -55,6 +60,7 @@ export default async (request: Request) => {
 		.where(ne(marketEvents.status, 'ended'))
 		.orderBy(desc(marketEvents.createdAt))
 		.limit(1);
+
 	if (
 		!event ||
 		!['registration_open', 'registration_closed', 'service_started'].includes(event.status)
@@ -74,11 +80,13 @@ export default async (request: Request) => {
 				or(isNotNull(pushSubscriptions.id), isNotNull(smsSubscriptions.id)),
 			),
 		);
+
 	if (!recipients.length) {
 		return Response.json({ queued: 0, sent: 0 });
 	}
 
 	const dedupeKey = `broadcast:${crypto.randomUUID()}`;
+
 	await queueNotification(
 		db,
 		recipients.map(({ visitId }) => visitId),

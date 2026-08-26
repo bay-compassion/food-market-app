@@ -16,6 +16,7 @@ const app = createApp(App).use(router).provide(rootStoreKey, rootStore);
 
 if (auth0) {
 	app.use(auth0);
+
 	if (import.meta.env.DEV) {
 		watch(auth0.error, (error) => {
 			if (error) {

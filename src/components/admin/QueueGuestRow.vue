@@ -16,6 +16,7 @@ const props = defineProps<{
 	busy?: boolean;
 	showWaitingTime?: boolean;
 }>();
+
 defineEmits<{ run: [command: VisitCommand] }>();
 
 const t = computed(() => adminTranslations[props.locale]);

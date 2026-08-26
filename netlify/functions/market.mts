@@ -35,12 +35,14 @@ async function history() {
 
 async function saveSettings(request: Request) {
 	let body: unknown;
+
 	try {
 		body = await request.json();
 	} catch {
 		return error('Request body must be valid JSON.');
 	}
 	const settings = parseSettings(body);
+
 	if (!settings) {
 		return error('Please provide valid lottery settings.');
 	}
@@ -89,6 +91,7 @@ const actions: Record<string, MarketAction> = {
 
 async function runAction(request: Request) {
 	let body: unknown;
+
 	try {
 		body = await request.json();
 	} catch {
@@ -100,14 +103,17 @@ async function runAction(request: Request) {
 	// Gate before saying whether the action exists, so an unauthenticated caller cannot use the
 	// difference between "invalid action" and "forbidden" to map what this endpoint accepts.
 	const forbidden = await requirePermission(request, action?.permission ?? 'manage:sessions');
+
 	if (forbidden) {
 		return forbidden;
 	}
+
 	if (!action) {
 		return error('Invalid market action.');
 	}
 
 	const event = await getCurrentEvent();
+
 	if (!event) {
 		return error('No market event has been configured.', 409);
 	}
@@ -126,20 +132,24 @@ export default async (request: Request) => {
 		// Past sessions are where a worker records someone served out of band — the same job as
 		// running the queue, just after the fact.
 		const forbidden = await requirePermission(request, 'run:queue');
+
 		if (forbidden) {
 			return forbidden;
 		}
 
 		return history();
 	}
+
 	if (request.method === 'PUT') {
 		const forbidden = await requirePermission(request, 'manage:sessions');
+
 		if (forbidden) {
 			return forbidden;
 		}
 
 		return saveSettings(request);
 	}
+
 	if (request.method === 'POST') {
 		return runAction(request);
 	}

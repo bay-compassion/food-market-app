@@ -1,57 +1,20 @@
-import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed, reactive } from 'vue';
 
 import { translations, type Locale } from '../../locales';
 import { visitStatuses } from '../../services/visitStateMachine';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
-import GuestNotificationCard from './GuestNotificationCard.vue';
 import GuestSignupCard from './GuestSignupCard.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
 
 /**
  * `GuestView` is a container: it owns `localStorage`, polling timers, and a router, none of which
  * can be made to hold several different states at once inside one page. What a guest actually sees
- * once a visit exists is `GuestVisitStatus` inside `GuestSignupCard`'s shell, plus
- * `GuestNotificationCard` below it, driven entirely by `VisitStatus` — this story renders one side
- * by side per named status, the same way `QueueGuestRow.stories.ts`'s `EachStatus` story does for
- * the admin queue row. See `GuestVisitStatus.stories.ts` for each status on its own with full
- * controls.
+ * once a visit exists is `GuestVisitStatus` inside `GuestSignupCard`'s shell, driven entirely by
+ * `VisitStatus` — this story renders one side by side per named status, the same way
+ * `QueueGuestRow.stories.ts`'s `EachStatus` story does for the admin queue row. See
+ * `GuestVisitStatus.stories.ts` for each status on its own with full controls.
  */
-
-/**
- * `NotificationOptIn`, rendered inside every success state, asks the backend whether push and SMS
- * are configured and renders nothing when it cannot tell. There is no backend behind Storybook, so
- * without this stub the states would quietly hide the opt-in.
- */
-let endpointsStubbed = false;
-
-function stubNotificationEndpoints() {
-	if (endpointsStubbed) {
-		return;
-	}
-	endpointsStubbed = true;
-
-	const realFetch = window.fetch.bind(window);
-
-	window.fetch = (input, init) => {
-		const url = String(input instanceof Request ? input.url : input);
-
-		if (url.includes('/api/push-subscription')) {
-			return Promise.resolve(Response.json({ configured: true, publicKey: 'story-public-key' }));
-		}
-		if (url.includes('/api/sms-subscription')) {
-			return Promise.resolve(Response.json({ configured: true }));
-		}
-
-		return realFetch(input, init);
-	};
-}
-
-const withNotificationEndpoints: Decorator = (story) => {
-	stubNotificationEndpoints();
-
-	return story();
-};
 
 type GuestViewArgs = {
 	locale: Locale;
@@ -72,7 +35,6 @@ const meta: Meta<GuestViewArgs> = {
 		},
 	},
 	globals: { viewport: { value: 'fill' } },
-	decorators: [withNotificationEndpoints],
 	args: {
 		locale: 'en',
 	},
@@ -86,7 +48,7 @@ type Story = StoryObj<GuestViewArgs>;
 export const AllStates: Story = {
 	parameters: { controls: { disable: true } },
 	render: (args) => ({
-		components: { GuestNotificationCard, GuestSignupCard, GuestVisitStatus },
+		components: { GuestSignupCard, GuestVisitStatus },
 		setup() {
 			const rows = reactive(
 				visitStatuses.map((status) => ({
@@ -125,7 +87,6 @@ export const AllStates: Story = {
 								submission-error=""
 							/>
 						</GuestSignupCard>
-						<GuestNotificationCard :locale="args.locale" visit-token="story-visit-token" />
 					</section>
 				</div>
 			</div>

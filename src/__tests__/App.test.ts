@@ -72,6 +72,7 @@ describe('App', () => {
 
 	it('renders the guest queue form', async () => {
 		const wrapper = mountApp();
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Welcome to the community food market');
@@ -84,6 +85,7 @@ describe('App', () => {
 
 	it('switches the guest copy to Spanish', async () => {
 		const wrapper = mountApp();
+
 		await flushPromises();
 
 		await wrapper.findAll('.language-option')[1]!.trigger('click');
@@ -98,6 +100,7 @@ describe('App', () => {
 		window.localStorage.setItem('bay-compassion.returning-visitor', 'true');
 
 		const wrapper = mountApp();
+
 		await flushPromises();
 
 		expect(wrapper.find('.hero').exists()).toBe(false);
@@ -107,6 +110,7 @@ describe('App', () => {
 
 	it('offers the requested language options on the guest page', async () => {
 		const wrapper = mountApp();
+
 		await flushPromises();
 
 		expect(wrapper.findAll('.language-option')).toHaveLength(7);
@@ -119,6 +123,7 @@ describe('App', () => {
 
 	it('renders Persian in a right-to-left layout', async () => {
 		const wrapper = mountApp();
+
 		await flushPromises();
 
 		await wrapper.findAll('.language-option')[2]!.trigger('click');
@@ -147,58 +152,79 @@ describe('App', () => {
 					: {
 							ok: true,
 							json: () =>
-								Promise.resolve({ id: 'visit-1', status: 'registered', visitToken: 'token-1' }),
+								Promise.resolve({
+									id: 'visit-1',
+									status: 'registered',
+									visitToken: 'token-1',
+									deviceToken: 'server-issued-device-token',
+								}),
 						},
 			),
 		);
+
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mountApp();
-		await flushPromises();
-		// Excludes each count field's invisible validity-anchor input — it exists purely to give
-		// native validation a full-width control to anchor its message to, not to be filled in.
-		const inputs = wrapper.findAll('input:not(.count-validity-anchor)');
 
-		await inputs[0]!.setValue('Ada');
-		await inputs[1]!.setValue('Lovelace');
+		await flushPromises();
+		// Not yet identified, so the sign-up fields (name, phone) and the lottery-entry fields
+		// (age range, household composition) both render, in one combined form. Selected by
+		// attribute rather than position — `GuestSignupForm` and `GuestLotteryForm` order their
+		// fields differently than the single form they replaced.
+		await wrapper.find('input[autocomplete="given-name"]').setValue('Ada');
+		await wrapper.find('input[autocomplete="family-name"]').setValue('Lovelace');
+		await wrapper.find('input[type="tel"]').setValue('(555) 123-4567');
 		await wrapper.find('select').setValue('18-29');
-		await inputs[2]!.setValue('2');
-		await inputs[3]!.setValue('1');
-		await inputs[4]!.setValue('0');
-		await inputs[5]!.setValue('(555) 123-4567');
-		await inputs[6]!.setValue('1234');
-		await inputs[7]!.setValue('1234');
+		// Household, children, then seniors — `GuestLotteryForm`'s stable relative order.
+		const countInputs = wrapper.findAll('input.count-other');
+
+		await countInputs[0]!.setValue('2');
+		await countInputs[1]!.setValue('1');
+		await countInputs[2]!.setValue('0');
 		await wrapper.find('form').trigger('submit');
 		await flushPromises();
 
-		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/guests',
-			expect.objectContaining({
-				body: JSON.stringify({
-					firstName: 'Ada',
-					lastName: 'Lovelace',
-					ageRange: '18-29',
-					householdSize: 2,
-					childrenCount: 1,
-					seniorsCount: 0,
-					phone: '(555) 123-4567',
-					locale: 'en',
-					marketEventId: 'event-1',
-					answers: {},
-					source: 'self',
-					registrationType: 'new',
-					pin: '1234',
-					updateProfile: false,
-				}),
-				method: 'POST',
-			}),
-		);
+		const registrationCall = fetchMock.mock.calls.find(([url]) => url === '/api/guests');
+		const body = JSON.parse(registrationCall?.[1]?.body as string) as Record<string, unknown>;
+
+		expect(body).toMatchObject({
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			ageRange: '18-29',
+			householdSize: 2,
+			childrenCount: 1,
+			seniorsCount: 0,
+			phone: '(555) 123-4567',
+			locale: 'en',
+			marketEventId: 'event-1',
+			answers: {},
+			source: 'self',
+		});
+		expect(body.deviceToken).toBeNull();
+		expect(registrationCall?.[1]?.method).toBe('POST');
 		expect(wrapper.text()).toContain('You’re in the queue!');
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBe('token-1');
+		expect(window.localStorage.getItem('bay-compassion.guest-device-token')).toBe(
+			JSON.stringify('server-issued-device-token'),
+		);
+		expect(JSON.parse(window.localStorage.getItem('bay-compassion.guest-identity') ?? '')).toEqual({
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			phone: '(555) 123-4567',
+		});
+		expect(wrapper.find('.guest-identity').text()).toContain('Ada L');
+		expect(wrapper.find('.guest-identity').text()).toContain('(555) 123-4567');
+		expect(wrapper.find('.guest-layout').element.firstElementChild).toBe(
+			wrapper.find('.guest-identity').element,
+		);
 
 		vi.unstubAllGlobals();
 	});
 
-	it('allows a returning guest to register with a phone number and PIN', async () => {
+	it('reuses a saved device credential while collecting renewed guest information', async () => {
+		window.localStorage.setItem(
+			'bay-compassion.guest-device-token',
+			JSON.stringify('saved-device-token'),
+		);
 		const fetchMock = vi.fn().mockImplementation((url: string) =>
 			Promise.resolve(
 				url === '/api/market'
@@ -222,21 +248,30 @@ describe('App', () => {
 						},
 			),
 		);
+
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mountApp();
-		await flushPromises();
 
-		await wrapper.findAll('.registration-type button')[1]!.trigger('click');
-		const inputs = wrapper.findAll('input');
-		await inputs[0]!.setValue('(555) 123-4567');
-		await inputs[1]!.setValue('1234');
+		await flushPromises();
+		// A device token with no locally cached identity (this test sets only the token, not
+		// `bay-compassion.guest-identity`) still shows the sign-up fields — there's nothing to
+		// prefill them with. See `GuestRegistrationForm`'s `isIdentified` prop.
+		await wrapper.find('input[autocomplete="given-name"]').setValue('Ada');
+		await wrapper.find('input[autocomplete="family-name"]').setValue('Lovelace');
+		await wrapper.find('input[type="tel"]').setValue('(555) 123-4567');
+		await wrapper.find('select').setValue('18-29');
+		const countInputs = wrapper.findAll('input.count-other');
+
+		await countInputs[0]!.setValue('2');
+		await countInputs[1]!.setValue('1');
+		await countInputs[2]!.setValue('0');
 		await wrapper.find('form').trigger('submit');
 		await flushPromises();
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/guests',
 			expect.objectContaining({
-				body: expect.stringContaining('"registrationType":"returning"'),
+				body: expect.stringContaining('"deviceToken":"saved-device-token"'),
 			}),
 		);
 		expect(wrapper.text()).toContain('Current status: Registered');
@@ -267,9 +302,11 @@ describe('App', () => {
 						: { ok: false },
 			),
 		);
+
 		vi.stubGlobal('fetch', fetchMock);
 
 		const wrapper = mountApp();
+
 		await flushPromises();
 
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBeNull();
@@ -314,6 +351,7 @@ describe('App', () => {
 			queuePosition: 7,
 			aheadOfYou: 3,
 		});
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Your place in line');
@@ -330,6 +368,7 @@ describe('App', () => {
 			queuePosition: 1,
 			aheadOfYou: 0,
 		});
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('You are next');
@@ -345,6 +384,7 @@ describe('App', () => {
 			queuePosition: 2,
 			aheadOfYou: null,
 		});
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('It’s your turn');
@@ -364,6 +404,7 @@ describe('App', () => {
 			queuePosition: 2,
 			aheadOfYou: null,
 		});
+
 		await vi.runOnlyPendingTimersAsync();
 		const callsAfterLoad = vi
 			.mocked(fetch)
@@ -374,6 +415,7 @@ describe('App', () => {
 		const callsAfterWait = vi
 			.mocked(fetch)
 			.mock.calls.filter(([url]) => url === '/api/visit').length;
+
 		expect(callsAfterWait).toBeGreaterThan(callsAfterLoad);
 
 		wrapper.unmount();
@@ -413,6 +455,7 @@ describe('App', () => {
 
 	it('hides the schedule information alert while registration is open', async () => {
 		const wrapper = mountWithMarketStatus('registration_open');
+
 		await flushPromises();
 
 		expect(wrapper.text()).not.toContain(translations.en.guestView.scheduleInformation.heading);
@@ -422,6 +465,7 @@ describe('App', () => {
 
 	it('hides the schedule information alert while the event is in progress', async () => {
 		const wrapper = mountWithMarketStatus('service_started');
+
 		await flushPromises();
 
 		expect(wrapper.text()).not.toContain(translations.en.guestView.scheduleInformation.heading);
@@ -431,6 +475,7 @@ describe('App', () => {
 
 	it('shows the schedule information alert once registration has closed', async () => {
 		const wrapper = mountWithMarketStatus('registration_closed');
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain(translations.en.guestView.scheduleInformation.heading);
@@ -459,11 +504,13 @@ describe('App', () => {
 					),
 			}),
 		);
+
 		vi.stubGlobal('fetch', fetchMock);
 		const getAccessToken = vi.fn().mockResolvedValue(adminToken);
 		const wrapper = mount(AdminDashboard, {
 			props: { locale: 'en', getAccessToken },
 		});
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Current session');
@@ -547,6 +594,7 @@ describe('App', () => {
 				registrationClosesAt: '2026-07-18T18:00:00.000Z',
 				capacity: 50,
 			};
+
 			vi.stubGlobal(
 				'fetch',
 				vi.fn().mockImplementation((url: string) =>
@@ -564,11 +612,13 @@ describe('App', () => {
 			const wrapper = mount(AdminDashboard, {
 				props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 			});
+
 			await flushPromises();
 
 			for (const copy of shown) {
 				expect(wrapper.text()).toContain(copy);
 			}
+
 			for (const copy of hidden) {
 				expect(wrapper.text()).not.toContain(copy);
 			}
@@ -586,10 +636,12 @@ describe('App', () => {
 			registrationClosesAt: '2026-07-18T18:00:00.000Z',
 			capacity: 50,
 		};
+
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockImplementation((url: string) => {
 				let data: unknown = { event: currentEvent, questions: [], counts: { registered: 1 } };
+
 				if (url.includes('view=history') || url.includes('scope=all')) {
 					data = [];
 				} else if (url.includes('marketEventId=event-1')) {
@@ -621,6 +673,7 @@ describe('App', () => {
 		const wrapper = mount(AdminDashboard, {
 			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 		});
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Registered guests');
@@ -642,13 +695,16 @@ describe('App', () => {
 					),
 			}),
 		);
+
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mount(AdminDashboard, {
 			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 		});
+
 		await flushPromises();
 
 		const opensAt = '2026-07-18T09:00';
+
 		await wrapper.find('input[type="datetime-local"]').setValue(opensAt);
 		await wrapper.find('input[list="registration-duration-options"]').setValue('45');
 		await wrapper.find('.settings-card form').trigger('submit');
@@ -656,6 +712,7 @@ describe('App', () => {
 
 		const settingsRequest = fetchMock.mock.calls.find(([, options]) => options?.method === 'PUT');
 		const body = JSON.parse(String(settingsRequest?.[1]?.body));
+
 		expect(body.sessionMode).toBe('scheduled');
 		expect(body.registrationClosesAt).toBe(
 			new Date(new Date(opensAt).valueOf() + 45 * 60_000).toISOString(),
@@ -684,10 +741,12 @@ describe('App', () => {
 			}),
 		);
 		const confirmMock = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mount(AdminDashboard, {
 			props: { locale: 'en', getAccessToken: vi.fn().mockResolvedValue(adminToken) },
 		});
+
 		await flushPromises();
 
 		await wrapper
@@ -701,6 +760,7 @@ describe('App', () => {
 			([url, options]) =>
 				url === '/api/market' && options?.body === JSON.stringify({ action: 'close_registration' }),
 		);
+
 		expect(closeRequest?.[1]?.method).toBe('POST');
 		expect(new Headers(closeRequest?.[1]?.headers).get('Authorization')).toBe(
 			`Bearer ${adminToken}`,

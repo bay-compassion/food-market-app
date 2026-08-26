@@ -2,7 +2,7 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: August 21, 2026
+Last Updated: August 25, 2026
 
 These Terms and Conditions ("Terms") govern your use of this food market guest sign-up app (the "App"), offered by The Bay Compassion ("The Bay Compassion," "we," "us," or "our"), a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. These Terms do not cover our other programs or our main website, thebaycompassion.org.
 
@@ -18,7 +18,7 @@ The App is open to any member of the community our food markets serve. If you ar
 
 ## 2. Guest Sign-Up and Queue
 
-- When you sign up, we use your phone number to recognize you as a returning guest and to protect your place in the queue.
+- When you sign up, the App stores a random private credential in your browser to recognize later sign-ups from the same device. It also stores a separate visit credential to protect your place in the queue.
 - Signing up for a market does not guarantee service. Some markets use a lottery or capacity limit, and being signed up or placed in the queue does not guarantee you will be served that day.
 - We may cancel, pause, or adjust sign-up, queue order, or service availability at any time, including due to weather, capacity, safety concerns, or operational needs.
 - Providing false or misleading information at sign-up, such as impersonating another guest, may result in removal from the queue or from future participation.

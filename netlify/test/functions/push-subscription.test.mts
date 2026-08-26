@@ -22,6 +22,7 @@ const validSubscription = {
 
 function request(method: string, options: { token?: string; body?: unknown } = {}) {
 	const headers = new Headers();
+
 	if (options.token) {
 		headers.set('Authorization', `Bearer ${options.token}`);
 	}

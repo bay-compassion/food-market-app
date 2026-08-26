@@ -53,8 +53,10 @@ function fingerprint(absolutePath) {
 
 function markdownFiles(directory) {
 	const files = [];
+
 	for (const entry of readdirSync(directory, { withFileTypes: true })) {
 		const path = join(directory, entry.name);
+
 		if (entry.isDirectory()) {
 			files.push(...markdownFiles(path));
 		} else if (entry.name.endsWith('.md')) {
@@ -67,6 +69,7 @@ function markdownFiles(directory) {
 
 function parseStamp(contents) {
 	const match = contents.match(stampPattern);
+
 	if (!match) {
 		return null;
 	}
@@ -86,11 +89,13 @@ function parseStamp(contents) {
 function checkDocument(documentPath) {
 	const contents = readFileSync(documentPath, 'utf8');
 	const stamp = parseStamp(contents);
+
 	if (!stamp) {
 		return null;
 	}
 	const sources = stamp.entries.map((entry) => {
 		const absolutePath = join(repositoryRoot, entry.path);
+
 		if (!existsSync(absolutePath)) {
 			return { ...entry, current: null, state: 'missing' };
 		}
@@ -116,6 +121,7 @@ function stampComment(sources) {
 
 function printReport(document) {
 	const stale = document.sources.filter((source) => source.state !== 'current');
+
 	if (stale.length === 0) {
 		console.log(`${document.label}: up to date with ${document.sources.length} source file(s).`);
 
@@ -123,6 +129,7 @@ function printReport(document) {
 	}
 
 	console.log(`${document.label}: ${stale.length} source file(s) changed since last reviewed:`);
+
 	for (const source of stale) {
 		console.log(
 			source.state === 'missing'
@@ -160,8 +167,10 @@ function main() {
 			process.exit(1);
 		}
 		let updated = 0;
+
 		for (const document of documents) {
 			const comment = stampComment(document.sources);
+
 			if (comment === document.comment) {
 				continue;
 			}
@@ -186,6 +195,7 @@ function main() {
 	const staleDocuments = documents.filter((document) =>
 		document.sources.some((source) => source.state !== 'current'),
 	);
+
 	if (staleDocuments.length > 0) {
 		console.log(
 			`\n${staleDocuments.length} document(s) flagged above. Open each one, compare its diagram ` +

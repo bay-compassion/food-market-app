@@ -37,6 +37,7 @@ export async function deliverPendingSmsNotifications(options?: {
 	limit?: number;
 }) {
 	const configuration = settings();
+
 	if (!configuration) {
 		return { sent: 0, failed: 0, skipped: 0 };
 	}
@@ -46,12 +47,15 @@ export async function deliverPendingSmsNotifications(options?: {
 		eq(notificationDeliveries.status, 'pending'),
 		eq(notificationDeliveries.channel, 'sms'),
 	];
+
 	if (options?.visitIds?.length) {
 		conditions.push(inArray(notificationDeliveries.visitId, options.visitIds));
 	}
+
 	if (options?.types?.length) {
 		conditions.push(inArray(notificationDeliveries.type, options.types));
 	}
+
 	if (options?.dedupeKeys?.length) {
 		conditions.push(inArray(notificationDeliveries.dedupeKey, options.dedupeKeys));
 	}
@@ -78,6 +82,7 @@ export async function deliverPendingSmsNotifications(options?: {
 	let sent = 0;
 	let failed = 0;
 	let skipped = 0;
+
 	for (const row of rows) {
 		if (!row.subscribed || !row.phone) {
 			await db
@@ -91,6 +96,7 @@ export async function deliverPendingSmsNotifications(options?: {
 		const locale = Object.hasOwn(translations, row.locale) ? (row.locale as Locale) : 'en';
 		const type = row.type as DeliveryType;
 		const copy = deliveryCopy(locale, type, { title: row.title, body: row.body });
+
 		if (!copy.title || !copy.body) {
 			await db
 				.update(notificationDeliveries)
@@ -99,6 +105,7 @@ export async function deliverPendingSmsNotifications(options?: {
 			failed += 1;
 			continue;
 		}
+
 		try {
 			await client.messages.create({
 				messagingServiceSid: configuration.messagingServiceSid,
@@ -113,10 +120,12 @@ export async function deliverPendingSmsNotifications(options?: {
 		} catch (cause: unknown) {
 			const code =
 				typeof cause === 'object' && cause && 'code' in cause ? Number(cause.code) : null;
+
 			if (code !== null && permanentFailureCodes.has(code)) {
 				await db.delete(smsSubscriptions).where(eq(smsSubscriptions.visitId, row.visitId));
 			}
 			const attempts = row.attempts + 1;
+
 			await db
 				.update(notificationDeliveries)
 				.set({

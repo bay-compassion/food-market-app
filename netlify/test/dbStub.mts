@@ -45,9 +45,11 @@ function chain() {
 		'onConflictDoNothing',
 		'onConflictDoUpdate',
 	];
+
 	for (const method of chainedMethods) {
 		link[method] = vi.fn(() => link);
 	}
+
 	// Intentional: mimics Drizzle's own thenable query builder so handler code can
 	// `await db.select(...).from(...).where(...)` unchanged.
 	// oxlint-disable-next-line unicorn/no-thenable

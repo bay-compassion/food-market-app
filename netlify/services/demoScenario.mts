@@ -5,7 +5,7 @@ import { guests, marketEvents, registrationQuestions, visits } from '../../db/sc
 import { buildScenario } from '../../scripts/fake-data.mjs';
 import type { ServiceProgress } from '../../src/services/demoScenario.js';
 import type { SessionStatus } from '../../src/services/sessionStateMachine.js';
-import { hashPin, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
+import { issueVisitToken, normalizePhone } from './guestCredentials.mjs';
 import type { ActionResult } from './marketSession.mjs';
 import { resolveOutstandingVisits } from './visitQueue.mjs';
 
@@ -13,9 +13,6 @@ export type DemoScenarioInput = {
 	stage: SessionStatus;
 	serviceProgress?: ServiceProgress;
 };
-
-/** Every seeded demo guest signs in with this PIN, matching `scripts/seed-fake-data.mts`. */
-const seedPin = '1234';
 
 /**
  * Guest/capacity sizing per stage, so the numbers make sense for what the stage is demoing:
@@ -56,16 +53,17 @@ export async function loadScenario(input: DemoScenarioInput): Promise<ActionResu
 		seed: Math.floor(Math.random() * 2 ** 31),
 		now: new Date(),
 	});
-	const pinHash = await hashPin(seedPin);
 
 	await db.transaction(async (tx) => {
 		const stale = await tx
 			.select({ id: marketEvents.id })
 			.from(marketEvents)
 			.where(ne(marketEvents.status, 'ended'));
+
 		for (const event of stale) {
 			await resolveOutstandingVisits(tx, event.id);
 		}
+
 		if (stale.length) {
 			await tx
 				.update(marketEvents)
@@ -78,14 +76,16 @@ export async function loadScenario(input: DemoScenarioInput): Promise<ActionResu
 				data.guests.map((guest) => ({
 					...guest,
 					normalizedPhone: normalizePhone(guest.phone),
-					pinHash,
 				})),
 			);
 		}
+
 		await tx.insert(marketEvents).values(data.sessions);
+
 		if (data.questions.length) {
 			await tx.insert(registrationQuestions).values(data.questions);
 		}
+
 		if (data.visits.length) {
 			await tx.insert(visits).values(
 				data.visits.map((visit) => ({

@@ -31,6 +31,7 @@ export function isLotteryWeightTier(value: unknown): value is LotteryWeightTier 
 /** Clamps to the range the database will accept, so a bad payload cannot fail the insert. */
 export function normalizeLotteryWeight(value: unknown) {
 	const weight = Math.trunc(Number(value));
+
 	if (!Number.isFinite(weight)) {
 		return minimumLotteryWeight;
 	}

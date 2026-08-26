@@ -293,6 +293,7 @@ describe('runLottery', () => {
 
 	it('selects up to capacity and marks the remainder not_placed, in shuffle order', async () => {
 		const event = baseEvent({ status: 'registration_closed', capacity: 2 });
+
 		queueResult([{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }]); // registered visits
 		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
@@ -309,6 +310,7 @@ describe('runLottery', () => {
 
 	it('skips the bulk update and notification inserts when there are no registrations', async () => {
 		const event = baseEvent({ status: 'registration_closed', capacity: 5 });
+
 		queueResult([]); // no registered visits
 		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning
@@ -324,6 +326,7 @@ describe('runLottery', () => {
 		// Capacity 3 with two spots already handed out: only one registration can still win, and it
 		// has to queue behind the reserved pair rather than reusing position 1.
 		const event = baseEvent({ status: 'registration_closed', capacity: 3 });
+
 		queueResult([{ id: 'v1' }, { id: 'v2' }]); // registered visits
 		queueResult([{ count: 2, highestPosition: 2 }]); // two guests already waiting
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
@@ -340,11 +343,13 @@ describe('runLottery', () => {
 		// rather than reusing a position that is already spoken for.
 		// The stub declares `execute` as taking no arguments, so reach past its call signature.
 		const [positionUpdate] = db.execute.mock.calls[0] as unknown as [unknown];
+
 		expect(sqlParameters(positionUpdate)).toEqual(['v1', 3]);
 	});
 
 	it('returns 409 when a concurrent process already moved the session before the lottery started', async () => {
 		const event = baseEvent({ status: 'registration_closed', capacity: 5 });
+
 		queueResult([]); // registrations
 		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([]); // tx.update ... returning — no row matched, lost the race
@@ -377,6 +382,7 @@ describe('remaining session actions: one legal and one illegal transition each',
 			registrationClosesAt: new Date(event.registrationClosesAt.valueOf() + 60_000).toISOString(),
 			capacity: 15,
 		};
+
 		queueResult([{ id: 'event-1' }]);
 		await expect(updateRegistration(event, override)).resolves.toEqual({ ok: true });
 
@@ -390,6 +396,7 @@ describe('remaining session actions: one legal and one illegal transition each',
 			status: 'draft',
 			registrationOpensAt: new Date(Date.now() + 3_600_000),
 		});
+
 		queueResult([{ id: 'event-1' }]);
 		await expect(scheduleRegistration(event)).resolves.toEqual({ ok: true });
 
@@ -468,6 +475,7 @@ describe('remaining session actions: one legal and one illegal transition each',
 		const noShowUpdate = db.update.mock.results
 			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
 			.find(({ set }) => set.mock.calls.some(([changes]) => changes?.status === 'no_show'));
+
 		expect(noShowUpdate).toBeDefined();
 	});
 });

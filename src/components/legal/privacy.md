@@ -2,7 +2,7 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: August 22, 2026
+Last Updated: August 25, 2026
 
 The Bay Compassion ("The Bay Compassion," "we," "us," or "our") is a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. This Privacy Policy explains how we collect, use, share, and protect information through this food market guest sign-up app (the "App"). It does not cover our other programs or our main website, thebaycompassion.org.
 
@@ -16,9 +16,11 @@ By using the App, you agree to the collection and use of information as describe
 
 - Your first and last name
 - Your age range, and your household size, including the number of children and seniors in your household
-- Your phone number, used to recognize you as a returning guest
+- Your phone number, used for visit-related communication when you opt in
 - Your preferred language
 - Answers to any optional questions a market asks that day, such as a short survey — the questions vary by market and are set by our staff
+
+The App also stores a random private credential in your browser so it can recognize sign-ups from the same device. It does not reveal your device's serial number, phone number, or advertising identifier. Clearing your browser data removes it.
 
 **If you opt in to text message updates**, we collect your consent and use your phone number to send those messages. **If you opt in to browser push notifications**, we collect the subscription your browser creates for that purpose. Both are optional and described further in Sections 2 and 3.
 
@@ -53,7 +55,7 @@ Some browsers let you opt in to push notifications instead of, or in addition to
 
 We use the information we collect to:
 
-- Recognize you as a returning guest and pre-fill your information on future visits
+- Recognize sign-ups from the same device and refresh your guest information on future visits
 - Manage the queue and communicate your visit status to you
 - Run market operations, such as lotteries or capacity limits, where a market uses them
 - Produce reports on market activity for our staff and program reporting
@@ -83,7 +85,7 @@ We keep guest and visit information for as long as needed to operate the food ma
 
 **California residents** have the right to know what personal information we have collected and how it's used, request deletion of personal information (subject to legal exceptions), correct inaccurate information, opt out of the sale or sharing of personal information (we do not sell or share personal information), and be free from discrimination for exercising these rights.
 
-**Regardless of location**, you may request a copy of the information we hold about you, ask us to correct or delete it, withdraw consent to receive text messages at any time by replying STOP, and ask questions about how your information is used. Because guest records are identified by phone number rather than a login, we will verify your identity before processing a request by confirming your phone number and other details on file.
+**Regardless of location**, you may request a copy of the information we hold about you, ask us to correct or delete it, withdraw consent to receive text messages at any time by replying STOP, and ask questions about how your information is used. Because guest records do not have a traditional login, we will verify your identity before processing a request by confirming your phone number and other details on file.
 
 ---
 

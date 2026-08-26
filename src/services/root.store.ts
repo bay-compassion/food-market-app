@@ -1,12 +1,18 @@
 import { inject, type InjectionKey } from 'vue';
 
+import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore } from './market-session.store.ts';
+import { StorageService } from './storage.service.ts';
 
 export class RootStore {
+	readonly guest: GuestStore;
 	readonly session: MarketSessionStore;
 	private getAccessToken: (() => Promise<string>) | null = null;
 
 	constructor() {
+		const storage = new StorageService();
+
+		this.guest = new GuestStore({ storage });
 		this.session = new MarketSessionStore({
 			requestHeaders: async () => {
 				if (!this.getAccessToken) {

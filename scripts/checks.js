@@ -27,10 +27,12 @@ const results = [];
 for (const check of checks) {
 	console.log(`\n── ${check.label} ──`);
 	const result = spawnSync(check.command, check.args, { stdio: 'inherit' });
+
 	results.push({ ...check, passed: result.status === 0 });
 }
 
 console.log('\nSummary:');
+
 for (const result of results) {
 	console.log(`  ${result.passed ? 'PASS' : 'FAIL'}  ${result.label}`);
 }

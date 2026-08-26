@@ -10,6 +10,7 @@ import {
 } from '../../services/visitStateMachine';
 
 const props = defineProps<{ locale: Locale; status: VisitStatus; disabled?: boolean }>();
+
 defineEmits<{ run: [command: VisitCommand] }>();
 
 const t = computed(() => adminTranslations[props.locale]);

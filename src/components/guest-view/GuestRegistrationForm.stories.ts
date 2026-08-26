@@ -8,8 +8,8 @@ import GuestSignupCard from './GuestSignupCard.vue';
 
 /**
  * The registration form itself — before a guest has submitted anything. Wrapped in
- * `GuestSignupCard` because several of its rules — `.submission-error`, `.update-profile-option`
- * — live in `guest.css` scoped to `.checkin-card`, and render unstyled without that ancestor.
+ * `GuestSignupCard` because its submission-error rules live in `guest.css`, scoped to
+ * `.checkin-card`, and render unstyled without that ancestor.
  */
 
 const emptyGuest = (): GuestFormState => ({
@@ -35,6 +35,7 @@ const sampleQuestions = [
 type GuestRegistrationFormArgs = {
 	locale: Locale;
 	context: 'queue' | 'early';
+	isIdentified: boolean;
 	askExtraQuestions: boolean;
 	submissionError: string;
 	isSubmitting: boolean;
@@ -52,6 +53,7 @@ const meta: Meta<GuestRegistrationFormArgs> = {
 	args: {
 		locale: 'en',
 		context: 'queue',
+		isIdentified: false,
 		askExtraQuestions: false,
 		submissionError: '',
 		isSubmitting: false,
@@ -61,10 +63,6 @@ const meta: Meta<GuestRegistrationFormArgs> = {
 		components: { GuestSignupCard, GuestRegistrationForm },
 		setup() {
 			const guest = ref<GuestFormState>(emptyGuest());
-			const pin = ref('');
-			const pinConfirmation = ref('');
-			const registrationType = ref<'new' | 'returning'>('new');
-			const updateProfile = ref(false);
 			const registrationAnswers = ref<Record<string, string | number>>({});
 			// A fixed pair, rather than a live-ticking ref, keeps the story stable rather than
 			// drifting while it sits open (see `QueueGuestRow.stories.ts` for the same convention).
@@ -76,10 +74,6 @@ const meta: Meta<GuestRegistrationFormArgs> = {
 			return {
 				args,
 				guest,
-				pin,
-				pinConfirmation,
-				registrationType,
-				updateProfile,
 				registrationAnswers,
 				now,
 				registrationClosesAt,
@@ -91,13 +85,10 @@ const meta: Meta<GuestRegistrationFormArgs> = {
 			<GuestSignupCard>
 				<GuestRegistrationForm
 					v-model:guest="guest"
-					v-model:pin="pin"
-					v-model:pin-confirmation="pinConfirmation"
-					v-model:registration-type="registrationType"
-					v-model:update-profile="updateProfile"
 					v-model:registration-answers="registrationAnswers"
 					:t="t"
 					:context="args.context"
+					:is-identified="args.isIdentified"
 					:registration-questions="registrationQuestions"
 					:submission-error="args.submissionError"
 					:is-submitting="args.isSubmitting"
@@ -113,26 +104,17 @@ export default meta;
 
 type Story = StoryObj<GuestRegistrationFormArgs>;
 
-/** A guest arriving for the first time, with registration open. */
-export const NewGuestForm: Story = {};
+/** Registration open, not yet identified: sign-up and lottery-entry fields together. */
+export const RegistrationForm: Story = {};
+
+/** Registration open, already identified: only the lottery-entry fields — nothing to re-ask. */
+export const IdentifiedGuest: Story = {
+	args: { isIdentified: true },
+};
 
 /** Registration open, with the closing countdown showing above the form title. */
 export const RegistrationClosingSoon: Story = {
 	args: { minutesRemaining: 5 },
-};
-
-/**
- * A returning guest. The name and household fields collapse away — they are already on file — and
- * only the phone number and PIN are asked for.
- */
-export const ReturningGuestForm: Story = {
-	play: async ({ canvas, userEvent }) => {
-		// Matched against the translation rather than a hard-coded string, so rewording the label in
-		// `locales.ts` does not quietly break this story.
-		const label = new RegExp(translations.en.returningGuest, 'i');
-
-		await userEvent.click(await canvas.findByRole('button', { name: label }));
-	},
 };
 
 /** Registration questions configured in the admin question bank appear at the end of the form. */
@@ -150,7 +132,7 @@ export const SubmissionFailed: Story = {
 	args: { submissionError: translations.en.submissionError },
 };
 
-/** The `early` context: signing up ahead of the market rather than joining today's queue. */
+/** The `early` context: signing up ahead of the market — identity only, no lottery fields. */
 export const EarlySignupForm: Story = {
 	args: { context: 'early' },
 };

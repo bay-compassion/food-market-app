@@ -42,6 +42,7 @@ export const Default: Story = {
 			canvas.getByText(translations.en.guestView.scheduleInformation.heading),
 		).toBeInTheDocument();
 		const expectedBody = normalize(translations.en.guestView.scheduleInformation.body);
+
 		await expect(
 			canvas.getByText((_, element) => normalize(element?.textContent ?? '') === expectedBody),
 		).toBeInTheDocument();

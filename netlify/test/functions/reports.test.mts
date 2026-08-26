@@ -28,6 +28,7 @@ describe('reports handler', () => {
 
 	it('returns the requirePermission response when unauthorized, without querying anything', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request());
@@ -82,6 +83,7 @@ describe('reports handler', () => {
 		);
 
 		const body = await response.text();
+
 		expect(body).toContain('session_opens_at');
 		expect(body).toContain('Ana');
 	});

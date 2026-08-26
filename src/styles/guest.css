@@ -1,18 +1,9 @@
 /**
- * Styles shared across the guest check-in flow's cards — `GuestRegistrationForm.vue` and
- * `GuestVisitStatus.vue` inside `GuestSignupCard.vue`'s `.checkin-card` wrapper, and
- * `NotificationOptIn.vue` inside `GuestNotificationCard.vue`'s own separate `.checkin-card`
- * wrapper below it. Both wrappers share the `.checkin-card` class purely as a scoping hook for
- * this file, not because they're the same element.
- *
- * `NotificationOptIn` has two top-level elements (no single root), so Vue never forwards a
- * parent's scoped style attribute onto it — a scoped `<style>` in a sibling component would
- * silently fail to style it. Everything here is scoped to `.checkin-card` instead, so none of it
- * leaks into the admin screens.
+ * Styles shared across `GuestRegistrationForm.vue` and `GuestVisitStatus.vue` inside
+ * `GuestSignupCard.vue`'s `.checkin-card` wrapper. Everything here is scoped to `.checkin-card`,
+ * so none of it leaks into the admin screens.
  */
 
-/* Spaces the two `.checkin-card` panels apart — harmless as trailing space when the
-   notification card is absent or is itself the last one on the page. */
 .checkin-card {
 	margin-bottom: 24px;
 }
@@ -35,19 +26,4 @@
 	color: var(--color-error);
 	font-size: 13px;
 	line-height: 1.4;
-}
-.checkin-card .notification-option {
-	display: grid;
-	gap: 12px;
-	margin-bottom: 22px;
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: var(--color-surface-soft);
-}
-.checkin-card .notification-option p {
-	margin-bottom: 0;
-	font-size: 14px;
-}
-.checkin-card .notification-enabled {
-	font-weight: 700;
 }

@@ -17,23 +17,28 @@ export default async (request: Request) => {
 	if (request.method === 'GET') {
 		return Response.json(smsConfiguration());
 	}
+
 	if (!smsConfiguration().configured) {
 		return error('SMS notifications are not configured.', 503);
 	}
 	const visit = await authorizedVisit(request);
+
 	if (!visit) {
 		return error('Visit access could not be verified.', 401);
 	}
+
 	if (request.method === 'DELETE') {
 		await db.delete(smsSubscriptions).where(eq(smsSubscriptions.visitId, visit.id));
 
 		return new Response(null, { status: 204 });
 	}
+
 	if (request.method !== 'POST') {
 		return error('Method not allowed', 405);
 	}
 
 	let body: unknown;
+
 	try {
 		body = await request.json();
 	} catch {
@@ -42,6 +47,7 @@ export default async (request: Request) => {
 	const consent = Boolean(
 		body && typeof body === 'object' && (body as { consent?: unknown }).consent === true,
 	);
+
 	if (!consent) {
 		return error('Please confirm you consent to receive text messages.');
 	}
@@ -69,6 +75,7 @@ export default async (request: Request) => {
 		called: 'called',
 	};
 	const currentNotification = existingSubscription ? undefined : catchUpNotifications[visit.status];
+
 	if (currentNotification) {
 		await requeueNotification(db, [visit.id], currentNotification, currentNotification, ['sms']);
 		await deliverPendingSmsNotifications({

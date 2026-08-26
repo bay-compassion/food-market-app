@@ -26,8 +26,10 @@ const MIN_FLAGGED_LENGTH = 3;
 
 function flatten(value, prefix = '') {
 	const result = {};
+
 	for (const [key, entry] of Object.entries(value)) {
 		const path = prefix ? `${prefix}.${key}` : key;
+
 		if (typeof entry === 'string') {
 			result[path] = entry;
 		} else if (entry && typeof entry === 'object') {
@@ -69,14 +71,17 @@ function printReport({ label, findings }) {
 
 	console.log(`${label}: ${findings.length} value(s) identical to English:`);
 	const byLanguage = new Map();
+
 	for (const finding of findings) {
 		if (!byLanguage.has(finding.language)) {
 			byLanguage.set(finding.language, []);
 		}
 		byLanguage.get(finding.language).push(finding);
 	}
+
 	for (const [language, items] of byLanguage) {
 		console.log(`  ${language}:`);
+
 		for (const item of items) {
 			console.log(`    ${item.key}: "${item.value}"`);
 		}
@@ -102,6 +107,7 @@ async function main() {
 	}
 
 	const total = results.reduce((sum, result) => sum + result.findings.length, 0);
+
 	if (total > 0) {
 		console.log(
 			`\n${total} value(s) flagged for review above. A match isn't always wrong — proper names ` +

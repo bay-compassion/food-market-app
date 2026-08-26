@@ -107,6 +107,7 @@ export function automaticSessionStatus(session: SessionTiming, now: Date): Sessi
 	if (session.status === 'scheduled' && session.registrationOpensAt <= now) {
 		return session.registrationClosesAt <= now ? 'registration_closed' : 'registration_open';
 	}
+
 	if (session.status === 'registration_open' && session.registrationClosesAt <= now) {
 		return 'registration_closed';
 	}

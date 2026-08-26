@@ -13,20 +13,21 @@ export type ActiveVisit = {
 	aheadOfYou: number | null;
 };
 
-export type GuestRegistrationPayload = GuestFormState & {
+export type GuestRegistrationInput = GuestFormState & {
 	locale: string;
 	marketEventId: string | null;
 	answers: Record<string, string | number>;
 	source: 'self';
-	registrationType: 'new' | 'returning';
-	pin: string;
-	updateProfile: boolean;
 };
+
+export type GuestRegistrationPayload = GuestRegistrationInput & { deviceToken: string | null };
 
 export type GuestRegistrationResult = {
 	id: string;
 	status: VisitStatus;
 	visitToken: string;
+	/** Present when the server establishes or replaces this browser's guest credential. */
+	deviceToken?: string;
 };
 
 /** Submits a guest's registration. Throws if the server rejects it. */
@@ -38,11 +39,42 @@ export async function submitGuestRegistration(
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
 	});
+
 	if (!response.ok) {
 		throw new Error('Guest submission failed');
 	}
 
 	return (await response.json()) as GuestRegistrationResult;
+}
+
+export type GuestSignupInput = {
+	firstName: string;
+	lastName: string;
+	phone: string;
+	locale: string;
+};
+
+export type GuestSignupPayload = GuestSignupInput & { deviceToken: string | null };
+
+export type GuestSignupResult = {
+	guestId: string;
+	/** Present when the server establishes or replaces this browser's guest credential. */
+	deviceToken?: string;
+};
+
+/** Submits an identity-only sign-up: no session, no household data. Throws if the server rejects it. */
+export async function submitGuestSignup(payload: GuestSignupPayload): Promise<GuestSignupResult> {
+	const response = await fetch('/api/guest-signup', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(payload),
+	});
+
+	if (!response.ok) {
+		throw new Error('Guest sign-up failed');
+	}
+
+	return (await response.json()) as GuestSignupResult;
 }
 
 export type ActiveVisitLookup =
@@ -58,6 +90,7 @@ export async function fetchActiveVisit(token: string): Promise<ActiveVisitLookup
 		const response = await fetch('/api/visit', {
 			headers: { Authorization: `Bearer ${token}` },
 		});
+
 		if (!response.ok) {
 			return { found: false, reason: 'expired' };
 		}
@@ -77,6 +110,7 @@ export async function cancelActiveVisit(
 		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
 		body: JSON.stringify({ action: 'cancel' }),
 	});
+
 	if (!response.ok) {
 		throw new Error('cancel');
 	}

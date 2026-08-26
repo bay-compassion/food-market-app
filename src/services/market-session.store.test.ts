@@ -74,11 +74,13 @@ describe('MarketSessionStore', () => {
 		).resolves.toBe(true);
 
 		const [, init] = fetchMock.mock.calls[0]!;
+
 		expect(init?.method).toBe('POST');
 		expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer token');
 		expect(new Headers(init?.headers).get('Content-Type')).toBe('application/json');
 		expect(typeof init?.body).toBe('string');
 		const body = typeof init?.body === 'string' ? JSON.parse(init.body) : null;
+
 		expect(body).toEqual({
 			action: 'update_registration',
 			registrationClosesAt: '2026-08-25T19:30:00.000Z',
@@ -146,6 +148,7 @@ describe('MarketSessionStore', () => {
 	it('pauses while the page is hidden and refreshes immediately when it becomes visible', async () => {
 		vi.useFakeTimers();
 		let visibility: DocumentVisibilityState = 'visible';
+
 		vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility);
 		const fetchMock = vi
 			.spyOn(globalThis, 'fetch')

@@ -127,6 +127,7 @@ export function toDateInput(date: Date) {
 export function defaultReportRange() {
 	const to = new Date();
 	const from = new Date(to);
+
 	from.setFullYear(from.getFullYear() - 1);
 
 	return { from: toDateInput(from), to: toDateInput(to) };
@@ -139,6 +140,7 @@ export function defaultReportRange() {
 export function reportRangeBounds(from: string, to: string) {
 	const start = new Date(`${from}T00:00:00`);
 	const endOfDay = new Date(`${to}T00:00:00`);
+
 	endOfDay.setDate(endOfDay.getDate() + 1);
 
 	if (Number.isNaN(start.valueOf()) || Number.isNaN(endOfDay.valueOf()) || endOfDay <= start) {

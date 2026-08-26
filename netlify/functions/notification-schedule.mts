@@ -11,6 +11,7 @@ export default async () => {
 		return;
 	}
 	const now = new Date();
+
 	await db
 		.update(marketEvents)
 		.set({ status: 'registration_open' })
@@ -25,6 +26,7 @@ export default async () => {
 				lte(marketEvents.registrationClosesAt, now),
 			),
 		);
+
 	for (const event of dueEvents) {
 		await db.transaction(async (tx) => {
 			const [closed] = await tx
@@ -37,6 +39,7 @@ export default async () => {
 					),
 				)
 				.returning({ id: marketEvents.id });
+
 			if (!closed) {
 				return;
 			}
@@ -44,6 +47,7 @@ export default async () => {
 				.select({ visitId: visits.id })
 				.from(visits)
 				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+
 			await queueNotification(
 				tx,
 				registrations.map(({ visitId }) => visitId),

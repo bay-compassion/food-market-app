@@ -49,10 +49,10 @@ async function listGuests(request: Request) {
 				marketEventId: visits.marketEventId,
 				firstName: guests.firstName,
 				lastName: guests.lastName,
-				ageRange: guests.ageRange,
-				householdSize: guests.householdSize,
-				childrenCount: guests.childrenCount,
-				seniorsCount: guests.seniorsCount,
+				ageRange: visits.ageRange,
+				householdSize: visits.householdSize,
+				childrenCount: visits.childrenCount,
+				seniorsCount: visits.seniorsCount,
 				phone: guests.phone,
 				locale: guests.locale,
 				status: visits.status,
@@ -74,6 +74,7 @@ async function listGuests(request: Request) {
 
 async function createGuest(request: Request) {
 	let body: unknown;
+
 	try {
 		body = await request.json();
 	} catch {
@@ -81,11 +82,14 @@ async function createGuest(request: Request) {
 	}
 
 	const submission = parseSubmission(body);
+
 	if (!submission) {
 		return error('Please provide valid guest information.');
 	}
+
 	if (submission.source === 'admin') {
 		const forbidden = await requirePermission(request, 'run:queue');
+
 		if (forbidden) {
 			return forbidden;
 		}
@@ -100,16 +104,19 @@ async function createGuest(request: Request) {
 
 async function updateGuest(request: Request) {
 	let body: unknown;
+
 	try {
 		body = await request.json();
 	} catch {
 		return error('Request body must be valid JSON.');
 	}
+
 	if (!body || typeof body !== 'object') {
 		return error('Invalid guest update.');
 	}
 
 	const { id, command } = body as Record<string, unknown>;
+
 	if (typeof id !== 'string' || !isVisitCommand(command)) {
 		return error('Invalid guest update.');
 	}
@@ -122,17 +129,21 @@ async function updateGuest(request: Request) {
 export default async (request: Request) => {
 	if (request.method === 'GET') {
 		const forbidden = await requirePermission(request, 'run:queue');
+
 		if (forbidden) {
 			return forbidden;
 		}
 
 		return listGuests(request);
 	}
+
 	if (request.method === 'POST') {
 		return createGuest(request);
 	}
+
 	if (request.method === 'PATCH') {
 		const forbidden = await requirePermission(request, 'run:queue');
+
 		if (forbidden) {
 			return forbidden;
 		}

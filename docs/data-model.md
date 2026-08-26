@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=28166cebdfb3 -->
+<!-- diagram-sources: db/schema.mts=e02861386e3a -->
 
 # Database structure
 
@@ -47,13 +47,10 @@ erDiagram
         text first_name
         text last_name
         integer age "nullable; superseded by age_range, dropped in a later migration"
-        text age_range "nullable until the drop migration lands; 0-17 | 18-29 | ... | 75+"
-        integer household_size
-        integer children_count "shopping for; carried over onto each new visit"
-        integer seniors_count "55+, shopping for; carried over onto each new visit"
         text phone
         text normalized_phone
-        text pin_hash "null until a PIN is set"
+		text device_token_hash UK "nullable; authenticates self-service sign-ups from one browser"
+		text pin_hash "retired credential; retained pending a later cleanup migration"
         text locale
         timestamptz created_at
     }
@@ -65,8 +62,11 @@ erDiagram
         text status "see session-lifecycle.md"
         integer queue_position "lottery order; walk-ins placed on arrival"
         integer lottery_weight "relative odds in the draw; 1 unless a worker raised them"
-        integer children_count "snapshot of the guest's count at the time of this visit"
-        integer seniors_count "snapshot of the guest's count at the time of this visit"
+        text age_range "nullable; 0-17 | 18-29 | ... | 75+, entered at this visit"
+        integer household_size "entered at this visit"
+        integer children_count "shopping for, entered at this visit"
+        integer seniors_count "55+, shopping for, entered at this visit"
+		text normalized_phone "nullable snapshot for later reconciliation"
         timestamptz called_at
         timestamptz served_at "null when never served, or recorded after the session ended"
         jsonb answers "registration question answers"
@@ -120,15 +120,27 @@ erDiagram
 A few things the diagram can't show on its own:
 
 - **A `visit` is one guest at one market session.** It's the row that carries everything about that
-  appearance — queue position, status, the answers given at registration — while `guests` holds only
-  the long-lived person record reused across sessions.
+  appearance — queue position, status, household composition, the answers given at registration —
+  while `guests` holds only the long-lived identity reused across sessions: name, phone, and the
+  device credential. Household composition (age range, household size, children/seniors counts)
+  is entered fresh at each visit rather than carried on the guest, and the browser keeps its own
+  last-entered copy in `localStorage` purely to prefill the next visit's form.
+- **`guests` still has `age_range`, `household_size`, `children_count`, and `seniors_count`
+  columns in the database that this diagram omits.** Application code stopped reading and writing
+  them once household composition moved to `visits` — they're mid backfill-then-drop, waiting on a
+  later migration to actually remove them (see
+  [`migrations.md`](migrations.md#the-backfill-then-drop-rule)).
 - **`called_at` and `served_at` are the only timing this database keeps.** There is no log of
   status changes, so anything time-based in reporting is measured from those two columns. Both are
   null for a visit a worker recorded after its session had already ended — that guest was handed
   food outside the app, and stamping a time would be inventing one.
-- **`guest_pin_attempts` has no foreign key to `guests`.** It's keyed by phone number so failed PIN
-  attempts can be rate-limited even when the phone number doesn't match any guest — which is exactly
-  the case worth throttling.
+- **The device token is the self-service guest credential.** The opaque token exists only in the
+  browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
+  an admin have no device credential. The retired `pin_hash` and `guest_pin_attempts` data remain
+  only so removing them can happen in a separately reviewed, destructive migration.
+- **`visits.normalized_phone` preserves the submitted phone number in normalized form.** Renewed
+  information can update the long-lived guest profile without erasing the phone signal that was
+  present on an earlier visit, so later analysis can reconcile possible duplicate guest records.
 - **Only `market_events → registration_questions` and the two `visits →` tables cascade on delete.**
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.

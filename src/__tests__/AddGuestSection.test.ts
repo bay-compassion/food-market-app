@@ -13,6 +13,7 @@ function mountSection(admissions: GuestAdmission[]) {
 
 async function openForm(admissions: GuestAdmission[]) {
 	const wrapper = mountSection(admissions);
+
 	await wrapper.find('.add-guest-button').trigger('click');
 
 	return wrapper;
@@ -69,6 +70,7 @@ describe('AddGuestSection', () => {
 
 	it('starts a weighted guest on even odds', async () => {
 		const wrapper = await openForm(['lottery']);
+
 		await wrapper.find('form').trigger('submit');
 
 		expect(wrapper.emitted('addGuest')?.[0]?.[0]).toMatchObject({
@@ -79,6 +81,7 @@ describe('AddGuestSection', () => {
 
 	it('emits the weight tier the worker picked', async () => {
 		const wrapper = await openForm(['lottery']);
+
 		// [0] is the age range select; the admission select is hidden with a single admission, so
 		// [1] is the lottery weight tier.
 		await wrapper.findAll('select')[1]!.setValue('highest');
@@ -91,6 +94,7 @@ describe('AddGuestSection', () => {
 
 	it('emits the guest with the admission the worker picked', async () => {
 		const wrapper = await openForm(['lottery', 'queue']);
+
 		await wrapper.findAll('select')[1]!.setValue('queue');
 		await wrapper.find('form').trigger('submit');
 
@@ -102,6 +106,7 @@ describe('AddGuestSection', () => {
 
 	it('closes the form once the guest has been handed to the container', async () => {
 		const wrapper = await openForm(['queue']);
+
 		await wrapper.find('form').trigger('submit');
 
 		expect(wrapper.find('form').exists()).toBe(false);

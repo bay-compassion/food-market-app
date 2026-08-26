@@ -6,6 +6,7 @@ import qrcode from 'qrcode-generator';
  */
 export function createQrCodeSvg(url: string): string {
 	const qr = qrcode(0, 'M');
+
 	qr.addData(url);
 	qr.make();
 

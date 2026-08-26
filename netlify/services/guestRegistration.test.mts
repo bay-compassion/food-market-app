@@ -3,18 +3,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
-vi.mock('./guestCredentials.mjs', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('./guestCredentials.mjs')>();
 
-	return { ...actual, authenticateGuest: vi.fn() };
-});
+import {
+	parseSignupSubmission,
+	parseSubmission,
+	registerGuest,
+	registerGuestSignup,
+} from './guestRegistration.mjs';
 
-import { authenticateGuest } from './guestCredentials.mjs';
-import { parseSubmission, registerGuest } from './guestRegistration.mjs';
+const savedDeviceToken = 'device-token-from-this-browser-12345678901234567890';
 
 afterEach(() => {
 	resetDbStub();
-	vi.mocked(authenticateGuest).mockReset();
 });
 
 function selfSubmission(overrides: Record<string, unknown> = {}) {
@@ -27,7 +27,7 @@ function selfSubmission(overrides: Record<string, unknown> = {}) {
 		seniorsCount: 0,
 		phone: '555-123-4567',
 		locale: 'en',
-		pin: '1234',
+		deviceToken: null,
 		marketEventId: 'event-1',
 		...overrides,
 	};
@@ -41,22 +41,10 @@ describe('parseSubmission', () => {
 			firstName: 'Ari',
 			lastName: 'Guest',
 			source: 'self',
-			registrationType: 'new',
+			deviceToken: null,
 			locale: 'en',
 			marketEventId: 'event-1',
 		});
-	});
-
-	it('parses a returning guest submission without profile fields', () => {
-		const result = parseSubmission({
-			phone: '555-123-4567',
-			locale: 'en',
-			pin: '1234',
-			registrationType: 'returning',
-			marketEventId: 'event-1',
-		});
-
-		expect(result).toMatchObject({ registrationType: 'returning', firstName: '', lastName: '' });
 	});
 
 	it('defaults marketEventId to null when omitted', () => {
@@ -73,14 +61,21 @@ describe('parseSubmission', () => {
 		expect(parseSubmission(selfSubmission({ locale: 'de' }))).toBeNull();
 	});
 
-	it('rejects an invalid PIN for a self-service submission', () => {
-		expect(parseSubmission(selfSubmission({ pin: 'ab' }))).toBeNull();
+	it('accepts a saved device token for a self-service submission', () => {
+		expect(parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))).toMatchObject({
+			deviceToken: savedDeviceToken,
+		});
 	});
 
-	it('does not require a PIN for an admin submission', () => {
-		const result = parseSubmission(selfSubmission({ source: 'admin', pin: '' }));
+	it('rejects a malformed device token instead of treating it as a new device', () => {
+		expect(parseSubmission(selfSubmission({ deviceToken: 'too-short' }))).toBeNull();
+	});
+
+	it('ignores a device token on an admin submission', () => {
+		const result = parseSubmission(selfSubmission({ source: 'admin', deviceToken: 'too-short' }));
 
 		expect(result?.source).toBe('admin');
+		expect(result?.deviceToken).toBeNull();
 	});
 
 	it('rejects non-string/number answer values', () => {
@@ -99,19 +94,6 @@ describe('parseSubmission', () => {
 		expect(
 			parseSubmission(selfSubmission({ householdSize: 2, childrenCount: 2, seniorsCount: 1 })),
 		).toBeNull();
-	});
-
-	it('requires profile fields when updateProfile is set on a returning guest', () => {
-		const result = parseSubmission({
-			phone: '555-123-4567',
-			locale: 'en',
-			pin: '1234',
-			registrationType: 'returning',
-			updateProfile: true,
-			marketEventId: 'event-1',
-		});
-
-		expect(result).toBeNull();
 	});
 
 	it('rejects a non-object payload', () => {
@@ -288,29 +270,6 @@ describe('registerGuest eligibility', () => {
 			error: 'Please provide valid registration answers.',
 		});
 	});
-
-	it('rejects a returning guest whose phone/PIN cannot be verified', async () => {
-		queueResult([
-			{
-				id: 'event-1',
-				status: 'registration_open',
-				sessionMode: 'scheduled',
-				registrationOpensAt: new Date(Date.now() - 60_000),
-				registrationClosesAt: new Date(Date.now() + 60_000),
-			},
-		]);
-		queueResult([]);
-		vi.mocked(authenticateGuest).mockResolvedValueOnce(null);
-		const submission = parseSubmission(selfSubmission({ registrationType: 'returning' }))!;
-
-		const result = await registerGuest(submission);
-
-		expect(result).toEqual({
-			ok: false,
-			status: 401,
-			error: 'The phone number or PIN could not be verified.',
-		});
-	});
 });
 
 describe('registerGuest happy paths', () => {
@@ -330,6 +289,27 @@ describe('registerGuest happy paths', () => {
 			.find((row) => row?.guestId);
 	}
 
+	function insertedGuest() {
+		return db.insert.mock.results
+			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
+			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
+			.find((row) => row?.deviceTokenHash);
+	}
+
+	function updatedGuest() {
+		return db.update.mock.results
+			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
+			.flatMap(({ set }) => set.mock.calls.map(([row]) => row))
+			.find((row) => row?.firstName);
+	}
+
+	function updatedVisit() {
+		return db.update.mock.results
+			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
+			.flatMap(({ set }) => set.mock.calls.map(([row]) => row))
+			.find((row) => row?.accessTokenHash);
+	}
+
 	it('creates a new guest and visit for a first-time self registration', async () => {
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions
@@ -345,18 +325,51 @@ describe('registerGuest happy paths', () => {
 			body: { id: 'visit-1', guestId: 'guest-1', status: 'registered' },
 		});
 		expect((result as { body: { visitToken?: string } }).body.visitToken).toBeTruthy();
+		const deviceToken = (result as { body: { deviceToken?: string } }).body.deviceToken;
+
+		expect(deviceToken).toBeTruthy();
+		expect(insertedGuest()?.deviceTokenHash).toBeTruthy();
+		expect(insertedGuest()?.deviceTokenHash).not.toBe(deviceToken);
+		expect(insertedVisit()?.normalizedPhone).toBe('+15551234567');
 	});
 
-	it('updates the existing visit for a returning guest', async () => {
+	it('replaces an unrecognized device token while creating a redundant guest', async () => {
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions
+		queueResult([]); // submitted token does not identify a guest
+		queueResult([{ id: 'guest-2', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-2', status: 'registered' }]); // insert visits
+		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+		const result = await registerGuest(submission);
+
+		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });
+
+		if (!result.ok) {
+			throw new Error('Expected registration to succeed');
+		}
+		expect(result.body.deviceToken).toBeTruthy();
+		expect(result.body.deviceToken).not.toBe(savedDeviceToken);
+		expect(insertedGuest()?.deviceTokenHash).not.toBe(result.body.deviceToken);
+	});
+
+	it('updates the guest identity and refreshes the existing visit for an identified device', async () => {
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Old' }]); // device credential lookup
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // existing visit lookup
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // tx.update visits returning
-		vi.mocked(authenticateGuest).mockResolvedValueOnce({
-			id: 'guest-1',
-			firstName: 'Ari',
-		} as never);
-		const submission = parseSubmission(selfSubmission({ registrationType: 'returning' }))!;
+		const submission = parseSubmission(
+			selfSubmission({
+				deviceToken: savedDeviceToken,
+				firstName: 'Renewed',
+				phone: '555-999-0000',
+				childrenCount: 1,
+				seniorsCount: 0,
+				householdSize: 3,
+			}),
+		)!;
 
 		const result = await registerGuest(submission);
 
@@ -365,24 +378,52 @@ describe('registerGuest happy paths', () => {
 			status: 200,
 			body: { id: 'visit-1', guestId: 'guest-1', status: 'waiting' },
 		});
+
+		if (!result.ok) {
+			throw new Error('Expected registration to succeed');
+		}
+		expect(db.update).toHaveBeenCalledTimes(2);
+		expect(updatedGuest()).toMatchObject({
+			firstName: 'Renewed',
+			phone: '555-999-0000',
+			normalizedPhone: '+15559990000',
+		});
+		// The guest row no longer carries household composition at all — resubmitting refreshes the
+		// visit's own snapshot straight from this submission.
+		expect(updatedVisit()).toMatchObject({
+			normalizedPhone: '+15559990000',
+			householdSize: 3,
+			childrenCount: 1,
+			seniorsCount: 0,
+		});
+		expect(result.body.deviceToken).toBeUndefined();
 	});
 
-	it('carries a returning guest’s stored shopper counts onto their new visit', async () => {
+	it('takes household composition from the submission, not the guest record, for a new visit', async () => {
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
 		queueResult([]); // no existing visit for this event
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning (identity only)
 		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
-		vi.mocked(authenticateGuest).mockResolvedValueOnce({
-			id: 'guest-1',
-			firstName: 'Ari',
-			childrenCount: 2,
-			seniorsCount: 1,
-		} as never);
-		const submission = parseSubmission(selfSubmission({ registrationType: 'returning' }))!;
+		const submission = parseSubmission(
+			selfSubmission({
+				deviceToken: savedDeviceToken,
+				ageRange: '30-44',
+				householdSize: 4,
+				childrenCount: 2,
+				seniorsCount: 1,
+			}),
+		)!;
 
 		await registerGuest(submission);
 
-		expect(insertedVisit()).toMatchObject({ childrenCount: 2, seniorsCount: 1 });
+		expect(insertedVisit()).toMatchObject({
+			ageRange: '30-44',
+			householdSize: 4,
+			childrenCount: 2,
+			seniorsCount: 1,
+		});
 	});
 
 	it('creates an admin-added guest directly into the waiting queue with no visit token', async () => {
@@ -492,5 +533,135 @@ describe('registerGuest happy paths', () => {
 		await registerGuest(submission);
 
 		expect(insertedVisit()?.queuePosition).toBe(3);
+	});
+});
+
+function signupSubmission(overrides: Record<string, unknown> = {}) {
+	return {
+		firstName: 'Ari',
+		lastName: 'Guest',
+		phone: '555-123-4567',
+		locale: 'en',
+		deviceToken: null,
+		...overrides,
+	};
+}
+
+describe('parseSignupSubmission', () => {
+	it('parses a valid sign-up with no device token', () => {
+		expect(parseSignupSubmission(signupSubmission())).toEqual({
+			firstName: 'Ari',
+			lastName: 'Guest',
+			phone: '555-123-4567',
+			locale: 'en',
+			deviceToken: null,
+		});
+	});
+
+	it('accepts a saved device token', () => {
+		expect(
+			parseSignupSubmission(signupSubmission({ deviceToken: savedDeviceToken })),
+		).toMatchObject({
+			deviceToken: savedDeviceToken,
+		});
+	});
+
+	it('rejects a malformed device token', () => {
+		expect(parseSignupSubmission(signupSubmission({ deviceToken: 'too-short' }))).toBeNull();
+	});
+
+	it('rejects a missing phone number', () => {
+		expect(parseSignupSubmission(signupSubmission({ phone: '' }))).toBeNull();
+	});
+
+	it('rejects an unsupported locale', () => {
+		expect(parseSignupSubmission(signupSubmission({ locale: 'de' }))).toBeNull();
+	});
+
+	it('rejects a missing first or last name', () => {
+		expect(parseSignupSubmission(signupSubmission({ firstName: '' }))).toBeNull();
+		expect(parseSignupSubmission(signupSubmission({ lastName: '' }))).toBeNull();
+	});
+
+	it('rejects a non-object payload', () => {
+		expect(parseSignupSubmission('not an object')).toBeNull();
+		expect(parseSignupSubmission(null)).toBeNull();
+	});
+});
+
+describe('registerGuestSignup', () => {
+	function insertedGuest() {
+		return db.insert.mock.results
+			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
+			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
+			.find((row) => row?.deviceTokenHash !== undefined);
+	}
+
+	function updatedGuest() {
+		return db.update.mock.results
+			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
+			.flatMap(({ set }) => set.mock.calls.map(([row]) => row))
+			.find((row) => row?.firstName);
+	}
+
+	it('creates a new guest and issues a device token for a first-time sign-up', async () => {
+		queueResult([{ id: 'guest-1' }]); // insert guests
+
+		const result = await registerGuestSignup(parseSignupSubmission(signupSubmission())!);
+
+		expect(result.ok).toBe(true);
+		expect(result).toMatchObject({ status: 201, body: { guestId: 'guest-1' } });
+
+		if (!result.ok) {
+			throw new Error('Expected sign-up to succeed');
+		}
+		expect(result.body.deviceToken).toBeTruthy();
+		expect(insertedGuest()?.deviceTokenHash).toBeTruthy();
+		expect(db.update).not.toHaveBeenCalled();
+	});
+
+	it('never touches visits for a sign-up', async () => {
+		queueResult([{ id: 'guest-1' }]); // insert guests
+
+		await registerGuestSignup(parseSignupSubmission(signupSubmission())!);
+
+		expect(db.select).not.toHaveBeenCalled();
+	});
+
+	it('updates only the identity fields for an already-identified device', async () => {
+		queueResult([{ id: 'guest-1', firstName: 'Old' }]); // device credential lookup
+		queueResult([{ id: 'guest-1', firstName: 'Renewed' }]); // tx.update guest returning
+
+		const result = await registerGuestSignup(
+			parseSignupSubmission(
+				signupSubmission({ deviceToken: savedDeviceToken, firstName: 'Renewed' }),
+			)!,
+		);
+
+		expect(result).toMatchObject({ ok: true, status: 200, body: { guestId: 'guest-1' } });
+
+		if (!result.ok) {
+			throw new Error('Expected sign-up to succeed');
+		}
+		expect(result.body.deviceToken).toBeUndefined();
+		expect(updatedGuest()).toMatchObject({ firstName: 'Renewed' });
+		expect(db.insert).not.toHaveBeenCalled();
+	});
+
+	it('replaces an unrecognized device token with a new guest and token', async () => {
+		queueResult([]); // submitted token does not identify a guest
+		queueResult([{ id: 'guest-2' }]); // insert guests
+
+		const result = await registerGuestSignup(
+			parseSignupSubmission(signupSubmission({ deviceToken: savedDeviceToken }))!,
+		);
+
+		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });
+
+		if (!result.ok) {
+			throw new Error('Expected sign-up to succeed');
+		}
+		expect(result.body.deviceToken).toBeTruthy();
+		expect(result.body.deviceToken).not.toBe(savedDeviceToken);
 	});
 });
