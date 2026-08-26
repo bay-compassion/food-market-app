@@ -16,6 +16,12 @@
 - Storybook's MDX documentation layer is React internally, but nothing in this repo is. The color, radius, and type specimens are Vue components (`.storybook/docs/TokenTable.vue`, `TypeScale.vue`) exposed as stories in `DesignTokens.stories.ts` and pulled into the MDX prose with `<Story of={...} />`. Those stories are tagged `!dev` so they stay out of the sidebar while still being covered by `npm run test:storybook`. Add a specimen the same way rather than writing JSX in an MDX file.
 - `npm run test:storybook` renders every story in headless Chromium and runs its `play` function. It needs `npx playwright install chromium` once. It is kept out of `npm run checks` on purpose so a fresh clone does not need browser binaries — run it when you have changed a component or a story.
 
+## End-to-end tests
+
+- `npm run test:e2e` runs Playwright specs from `e2e/` against `npm run dev`, driving a real browser through the running app. Like `npm run test:storybook`, it needs `npx playwright install chromium` once and is kept out of `npm run checks` on purpose so a fresh clone does not need browser binaries.
+- These specs run against the Vite dev server only — no Netlify Functions, database, or Auth0 — so they're limited to guest-facing behavior that works without a backend. See `e2e/README.md` for what that covers and why.
+- `playwright.config.ts` emulates a phone by default, matching this app's mobile-first priority.
+
 ## Localization
 
 - All user-facing text must be localized: labels, headings, buttons, validation and error messages, empty states, success messages, placeholders, and accessibility text.

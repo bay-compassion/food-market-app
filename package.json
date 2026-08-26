@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build",
     "test:unit": "vitest",
     "test:storybook": "vitest --config vitest.storybook.config.ts",
+    "test:e2e": "playwright test",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "preview": "vite preview",
@@ -44,6 +45,7 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.21",
+    "@playwright/test": "^1.62.1",
     "@storybook/addon-a11y": "^10.5.8",
     "@storybook/addon-docs": "^10.5.8",
     "@storybook/addon-vitest": "^10.5.8",
