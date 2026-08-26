@@ -32,6 +32,7 @@ describe('guests handler routing', () => {
 describe('guests handler GET (admin: requires Auth0)', () => {
 	it('returns the requirePermission response when unauthorized, without querying guests', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('GET'));
@@ -54,6 +55,7 @@ describe('guests handler GET (admin: requires Auth0)', () => {
 describe('guests handler PATCH (admin: requires Auth0)', () => {
 	it('returns the requirePermission response when unauthorized, without touching the database', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
@@ -124,7 +126,7 @@ describe('guests handler POST (self-service registration is intentionally public
 					seniorsCount: 0,
 					phone: '555-123-4567',
 					locale: 'en',
-					pin: '1234',
+					deviceToken: null,
 					marketEventId: 'event-1',
 				},
 			}),
@@ -139,6 +141,7 @@ describe('guests handler POST (self-service registration is intentionally public
 
 	it('requires Auth0 for an admin-source submission', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
 		const response = await handler(

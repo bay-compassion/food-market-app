@@ -2,9 +2,23 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import NotificationOptIn from '../components/guest-view/NotificationOptIn.vue';
+import { GuestStore } from '../services/guest.store';
+import { StorageKey } from '../services/storage.service';
 
 function mountOptIn(visitToken: string | null = 'token-1') {
-	return mount(NotificationOptIn, { props: { visitToken, locale: 'en' } });
+	if (!visitToken) {
+		throw new Error('NotificationOptIn requires a visit token.');
+	}
+	const guest = new GuestStore({
+		request: (input, init) => fetch(input, init),
+		storage: {
+			get: (key) =>
+				key === StorageKey.GUEST_DEVICE_TOKEN ? 'test-device-token'.padEnd(32, 'x') : null,
+			set: vi.fn(),
+		},
+	});
+
+	return mount(NotificationOptIn, { props: { guest, visitToken, locale: 'en' } });
 }
 
 afterEach(() => {
@@ -18,6 +32,7 @@ describe('NotificationOptIn', () => {
 			vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ configured: false }) }),
 		);
 		const wrapper = mountOptIn();
+
 		await flushPromises();
 
 		expect(wrapper.text()).toBe('');
@@ -39,6 +54,7 @@ describe('NotificationOptIn', () => {
 			),
 		);
 		const wrapper = mountOptIn();
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Push notifications are not available on this device.');
@@ -61,8 +77,10 @@ describe('NotificationOptIn', () => {
 					),
 			});
 		});
+
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mountOptIn();
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('text messages from The Bay Compassion');
@@ -84,19 +102,33 @@ describe('NotificationOptIn', () => {
 
 	it('skips the checkbox for a guest already subscribed from a past visit', async () => {
 		const fetchMock = vi.fn().mockImplementation((url: string, options?: RequestInit) => {
-			if (url === '/api/sms-subscription') {
-				expect(options?.headers).toMatchObject({ Authorization: 'Bearer token-1' });
+			if (url === '/api/notification-status') {
+				expect(options?.headers).toMatchObject({
+					Authorization: `Bearer ${'test-device-token'.padEnd(32, 'x')}`,
+				});
 
 				return Promise.resolve({
 					ok: true,
-					json: () => Promise.resolve({ configured: true, subscribed: true }),
+					json: () => Promise.resolve({ pushSubscribed: false, smsConsented: true }),
 				});
+			}
+
+			if (url === '/api/sms-subscription' && options?.method === 'POST') {
+				expect(options.headers).toMatchObject({ Authorization: 'Bearer token-1' });
+
+				return Promise.resolve({ ok: true });
+			}
+
+			if (url === '/api/sms-subscription') {
+				return Promise.resolve({ ok: true, json: () => Promise.resolve({ configured: true }) });
 			}
 
 			return Promise.resolve({ ok: true, json: () => Promise.resolve({ configured: false }) });
 		});
+
 		vi.stubGlobal('fetch', fetchMock);
 		const wrapper = mountOptIn();
+
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Text message updates are enabled for this visit.');
@@ -121,6 +153,7 @@ describe('NotificationOptIn', () => {
 			),
 		);
 		const wrapper = mountOptIn();
+
 		await flushPromises();
 
 		await wrapper.find('input[type="checkbox"]').setValue(true);

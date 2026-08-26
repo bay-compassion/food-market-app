@@ -11,19 +11,20 @@ import {
 import {
 	cancelActiveVisit,
 	fetchActiveVisit,
-	submitGuestRegistration,
 	type ActiveVisit,
 } from '../../services/guestVisitApi';
 import { useRootStore } from '../../services/root.store';
+import { StorageKey, StorageService } from '../../services/storage.service';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import type { GuestFormState } from '../types';
+import GuestIdentityIndicator from './GuestIdentityIndicator.vue';
 import GuestLanguageHero from './GuestLanguageHero.vue';
-import GuestNotificationCard from './GuestNotificationCard.vue';
 import GuestNotOpenState from './GuestNotOpenState.vue';
 import GuestRegistrationClosedState from './GuestRegistrationClosedState.vue';
 import GuestRegistrationForm from './GuestRegistrationForm.vue';
 import GuestServiceState from './GuestServiceState.vue';
 import GuestSignupCard from './GuestSignupCard.vue';
+import GuestStateMessage from './GuestStateMessage.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
 import ScheduleInformation from './ScheduleInformation.vue';
 
@@ -32,24 +33,27 @@ const props = defineProps<{
 	locale: Locale;
 	isReturningVisitor: boolean;
 }>();
+
 defineEmits<{ 'select-language': [locale: Locale] }>();
-const session = useRootStore().session;
+const rootStore = useRootStore();
+const guestDomain = rootStore.guest;
+const session = rootStore.session;
 
 const visitTokenStorageKey = 'bay-compassion.visit-token';
 let visitRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 let countdownTimer: ReturnType<typeof setInterval> | undefined;
 
+const storage = new StorageService();
 const isSubmitted = ref(false);
+const isSignedUpEarly = ref(false);
 const isSubmitting = ref(false);
 const isCancelling = ref(false);
 const submissionError = ref('');
-const registrationType = ref<'new' | 'returning'>('new');
-const pin = ref('');
-const pinConfirmation = ref('');
-const updateProfile = ref(false);
 const activeVisit = ref<ActiveVisit | null>(null);
 const isStatusLoading = ref(true);
 const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
+const guestIdentity = computed(() => guestDomain.identity);
+
 /**
  * Whether `/api/market` has ever returned usable data. Stays `false` while it hasn't, including
  * when the optional configuration endpoint can't be reached — `phase` below treats that the same
@@ -61,14 +65,19 @@ const hasLoadedRegistration = computed(() => session.currentState !== null);
 const now = ref(Date.now());
 const registrationQuestions = computed(() => session.currentState?.questions ?? []);
 const registrationAnswers = ref<Record<string, string | number>>({});
+/** Last-entered household composition, kept only in this browser to prefill the lottery form —
+ *  never sent to the server as part of identity. */
+const savedHousehold = storage.get(StorageKey.GUEST_HOUSEHOLD) as Partial<
+	Pick<GuestFormState, 'ageRange' | 'householdSize' | 'childrenCount' | 'seniorsCount'>
+> | null;
 const guest = ref<GuestFormState>({
-	firstName: '',
-	lastName: '',
-	ageRange: '',
-	householdSize: '',
-	childrenCount: '',
-	seniorsCount: '',
-	phone: '',
+	firstName: guestDomain.identity?.firstName ?? '',
+	lastName: guestDomain.identity?.lastName ?? '',
+	ageRange: savedHousehold?.ageRange ?? '',
+	householdSize: savedHousehold?.householdSize ?? '',
+	childrenCount: savedHousehold?.childrenCount ?? '',
+	seniorsCount: savedHousehold?.seniorsCount ?? '',
+	phone: guestDomain.identity?.phone ?? '',
 });
 
 const visitStatusLabel = computed(() => {
@@ -98,10 +107,12 @@ const queuePosition = computed(() =>
 const guestsAhead = computed(() =>
 	activeVisit.value?.status === 'waiting' ? activeVisit.value.aheadOfYou : null,
 );
+
 function scheduleVisitRefresh() {
 	if (visitRefreshTimer) {
 		clearTimeout(visitRefreshTimer);
 	}
+
 	if (isVisitActive.value) {
 		visitRefreshTimer = setTimeout(loadActiveVisit, 15_000);
 	}
@@ -122,7 +133,7 @@ const phase = computed(() =>
 const cardState = computed(() =>
 	resolveGuestCardState({
 		phase: phase.value,
-		marketEvent: session.marketEvent,
+		isIdentified: guestDomain.isIdentified,
 		isPreregistration: isPreregistration.value,
 		// `isSubmitted` is a separate flag, not derived from `activeVisit`, so `resetToForm` can put
 		// the card back in front of the form (e.g. to register another household member) without
@@ -149,6 +160,7 @@ const successCopy = computed(() =>
 /** Resets the card to the empty form, e.g. so the header brand link can act as a "start over". */
 function resetToForm() {
 	isSubmitted.value = false;
+	isSignedUpEarly.value = false;
 }
 
 function goToSignup() {
@@ -160,21 +172,26 @@ async function submitForm() {
 	submissionError.value = '';
 
 	try {
-		if (registrationType.value === 'new' && pin.value !== pinConfirmation.value) {
-			submissionError.value = props.t.pinMismatch;
+		if (cardState.value.kind === 'form' && cardState.value.context === 'early') {
+			await guestDomain.signUp({
+				firstName: guest.value.firstName,
+				lastName: guest.value.lastName,
+				phone: guest.value.phone,
+				locale: props.locale,
+			});
+			isSignedUpEarly.value = true;
 
 			return;
 		}
-		const registration = await submitGuestRegistration({
+
+		const registration = await guestDomain.register({
 			...guest.value,
 			locale: props.locale,
 			marketEventId: session.marketEvent?.id ?? null,
 			answers: registrationAnswers.value,
 			source: 'self',
-			registrationType: registrationType.value,
-			pin: pin.value,
-			updateProfile: registrationType.value === 'returning' && updateProfile.value,
 		});
+
 		window.localStorage.setItem(visitTokenStorageKey, registration.visitToken);
 		visitToken.value = registration.visitToken;
 		activeVisit.value = {
@@ -184,6 +201,12 @@ async function submitForm() {
 			aheadOfYou: null,
 		};
 		isSubmitted.value = true;
+		storage.set(StorageKey.GUEST_HOUSEHOLD, {
+			ageRange: guest.value.ageRange,
+			householdSize: guest.value.householdSize,
+			childrenCount: guest.value.childrenCount,
+			seniorsCount: guest.value.seniorsCount,
+		});
 		scheduleVisitRefresh();
 	} catch {
 		submissionError.value = props.t.submissionError;
@@ -194,10 +217,12 @@ async function submitForm() {
 
 async function loadActiveVisit() {
 	const token = window.localStorage.getItem(visitTokenStorageKey);
+
 	if (!token) {
 		return;
 	}
 	const lookup = await fetchActiveVisit(token);
+
 	if (!lookup.found) {
 		if (lookup.reason === 'unreachable') {
 			// Keep registration available if status refresh is temporarily unavailable.
@@ -218,13 +243,16 @@ async function loadActiveVisit() {
 
 async function cancelVisit() {
 	const token = window.localStorage.getItem(visitTokenStorageKey);
+
 	if (!token || !window.confirm(props.t.cancelVisitConfirm)) {
 		return;
 	}
 
 	isCancelling.value = true;
+
 	try {
 		const visit = await cancelActiveVisit(token);
+
 		activeVisit.value = { ...activeVisit.value!, ...visit };
 	} catch {
 		submissionError.value = props.t.visitError;
@@ -252,7 +280,13 @@ defineExpose({ resetToForm });
 	<section class="guest-layout">
 		<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
 		<template v-else>
-			<GuestIdentityIndicator v-if="guestIdentity" :t="t" :identity="guestIdentity" />
+			<GuestIdentityIndicator
+				v-if="guestIdentity"
+				:t="t"
+				:locale="locale"
+				:identity="guestIdentity"
+				:visit-token="visitToken"
+			/>
 
 			<ScheduleInformation v-if="showScheduleInformation" :t="t" />
 
@@ -264,8 +298,13 @@ defineExpose({ resetToForm });
 			/>
 
 			<GuestSignupCard>
+				<GuestStateMessage
+					v-if="isSignedUpEarly"
+					:heading="t.earlySuccessTitle"
+					:description="t.earlySuccessDescription"
+				/>
 				<GuestVisitStatus
-					v-if="cardState.kind === 'visit-status'"
+					v-else-if="cardState.kind === 'visit-status'"
 					:t="t"
 					:is-called="isCalled"
 					:success-title="successCopy.title"
@@ -281,13 +320,10 @@ defineExpose({ resetToForm });
 				<GuestRegistrationForm
 					v-else-if="cardState.kind === 'form'"
 					v-model:guest="guest"
-					v-model:pin="pin"
-					v-model:pin-confirmation="pinConfirmation"
-					v-model:registration-type="registrationType"
-					v-model:update-profile="updateProfile"
 					v-model:registration-answers="registrationAnswers"
 					:t="t"
 					:context="cardState.context"
+					:is-identified="guestIdentity !== null"
 					:registration-questions="registrationQuestions"
 					:submission-error="submissionError"
 					:is-submitting="isSubmitting"
@@ -304,8 +340,6 @@ defineExpose({ resetToForm });
 				<GuestRegistrationClosedState v-else-if="cardState.kind === 'registration-closed'" :t="t" />
 				<GuestServiceState v-else :t="t" :has-ended="cardState.kind === 'ended'" />
 			</GuestSignupCard>
-
-			<GuestNotificationCard :locale="locale" :visit-token="visitToken" />
 		</template>
 	</section>
 </template>

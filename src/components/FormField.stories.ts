@@ -75,9 +75,9 @@ export const Phone: Story = {
 	args: { label: 'Phone number', type: 'tel', inputmode: 'tel', placeholder: '(555) 123-4567' },
 };
 
-/** The PIN field guests use to identify themselves on a return visit. */
+/** A generic password field state for consumers that need masked input. */
 export const Password: Story = {
-	args: { label: 'Choose a PIN', type: 'password', modelValue: '1234', inputmode: 'numeric' },
+	args: { label: 'Password', type: 'password', modelValue: 'example' },
 };
 
 /** `type="select"` renders the default slot as options — this is the age range field. */

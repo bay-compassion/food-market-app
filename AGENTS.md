@@ -31,6 +31,11 @@
 - Preserve culturally appropriate scripts and writing direction for translated content. Do not translate proper names such as `The Bay Compassion` unless the product direction explicitly calls for it.
 - After touching either locale file, run `npm run check:translations` (`scripts/check-translations.js`). TypeScript already guarantees every language has every key; this instead flags values still identical to English — a likely missed translation. It's advisory, not a hard gate: review each flagged value rather than assuming it's wrong.
 
+## Style Conventions
+
+- Use kebab-case for file names except for components (where the casing matters).
+- Use the Arrange-Act-Assert (AAA) pattern for unit tests.
+
 ## Code and verification
 
 - Use TypeScript and Vue's existing conventions.

@@ -12,8 +12,7 @@
  *   npm run seed -- --open-session              # also open a session for registration today
  *   npm run seed -- --reset                     # delete every existing row first
  *
- * Every seeded guest has the PIN 1234 and a (555) phone number, so the returning-guest sign-in
- * can be tried by hand. Runs append: use `--reset` for a clean slate.
+ * Runs append: use `--reset` for a clean slate.
  */
 
 import { readFileSync } from 'node:fs';
@@ -23,7 +22,6 @@ import { sql } from 'drizzle-orm';
 
 import { buildFakeData, type FakeData } from './fake-data.mjs';
 
-const seedPin = '1234';
 const localHosts = ['localhost', '127.0.0.1', '::1'];
 
 const usage = `Usage: npm run seed -- [options]
@@ -120,7 +118,6 @@ function summarize(data: FakeData) {
 		} visits.`,
 	);
 	console.log(`Visits by status: ${statuses}.`);
-	console.log(`Every seeded guest signs in with the PIN ${seedPin}.`);
 }
 
 async function main() {
@@ -153,7 +150,7 @@ async function main() {
 
 	const { db } = await import('../db/index.mjs');
 	const { guests, marketEvents, registrationQuestions, visits } = await import('../db/schema.mjs');
-	const { hashPin, issueVisitToken, normalizePhone } =
+	const { issueVisitToken, normalizePhone } =
 		await import('../netlify/services/guestCredentials.mjs');
 
 	if (values.reset) {
@@ -180,16 +177,11 @@ async function main() {
 		now: new Date(),
 	});
 
-	// One hash for everyone: these are throwaway guests, and hashing each PIN separately would be
-	// the slowest part of the script by far.
-	const pinHash = await hashPin(seedPin);
-
 	for (const rows of chunk(data.guests, 500)) {
 		await db.insert(guests).values(
 			rows.map((guest) => ({
 				...guest,
 				normalizedPhone: normalizePhone(guest.phone),
-				pinHash,
 			})),
 		);
 	}

@@ -18,6 +18,7 @@ describe('RootStore', () => {
 			}),
 		);
 		const store = new RootStore();
+		expect(store.guest).toBeDefined();
 		store.setAccessTokenProvider(() => Promise.resolve('token'));
 
 		store.start();

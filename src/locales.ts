@@ -14,7 +14,11 @@ export type Locale = (typeof languages)[number]['code'];
 
 export interface GuestViewTranslations {
 	identityIndicator: {
+		closeNotificationsDialog: string;
 		heading: string;
+		notificationsAction: string;
+		notificationsDialogTitle: string;
+		notificationsEnabled: string;
 	};
 	scheduleInformation: {
 		heading: string;
@@ -60,7 +64,6 @@ export interface Translation {
 	cancelVisitConfirm: string;
 	childrenCount: string;
 	compassionFood: string;
-	confirmPin: string;
 	countBackLabel: string;
 	countOtherLabel: string;
 	countOtherPlaceholder: string;
@@ -83,7 +86,6 @@ export interface Translation {
 	language: string;
 	languagePrompt: string;
 	marketName: string;
-	newGuest: string;
 	notificationCalledBody: string;
 	notificationCalledTitle: string;
 	notificationNotSelectedBody: string;
@@ -105,9 +107,6 @@ export interface Translation {
 	smsEnabled: string;
 	smsError: string;
 	seniorsCount: string;
-	pin: string;
-	pinHint: string;
-	pinMismatch: string;
 	phone: string;
 	privacy: string;
 	privacyPolicy: string;
@@ -117,9 +116,6 @@ export interface Translation {
 	qrCodeTitle: string;
 	registrationClosesIn: string;
 	registrationClosesInMinutes: string;
-	registrationType: string;
-	returningGuest: string;
-	returningGuestHelp: string;
 	signedInAs: string;
 	signOut: string;
 	submissionError: string;
@@ -141,7 +137,6 @@ export interface Translation {
 	statusRegistered: string;
 	statusServed: string;
 	statusWaiting: string;
-	updateInformation: string;
 	visitError: string;
 	welcome: string;
 }
@@ -150,7 +145,11 @@ export const translations = {
 	en: {
 		guestView: {
 			identityIndicator: {
+				closeNotificationsDialog: 'Close notification updates',
 				heading: 'Recognized on this device',
+				notificationsAction: 'Notify Me About Updates',
+				notificationsDialogTitle: 'Notification Updates',
+				notificationsEnabled: 'Notifications Enabled',
 			},
 			scheduleInformation: {
 				heading: 'Registration opens every Saturday at 10:30 AM',
@@ -199,7 +198,6 @@ export const translations = {
 		cancelVisitConfirm: 'Cancel your place in the queue for this visit?',
 		childrenCount: 'Number of children you’re shopping for',
 		compassionFood: 'Compassion Food',
-		confirmPin: 'Confirm PIN',
 		countBackLabel: 'Choose a smaller number',
 		countOtherLabel: 'Or enter another number',
 		countOtherPlaceholder: 'Enter value',
@@ -223,7 +221,6 @@ export const translations = {
 		language: 'Language',
 		languagePrompt: 'Choose your language',
 		marketName: 'The Bay Compassion',
-		newGuest: 'New guest',
 		notificationCalledBody: 'Please come up for service now.',
 		notificationCalledTitle: 'It’s your turn',
 		notificationNotSelectedBody: 'You were not selected for today’s service.',
@@ -247,9 +244,6 @@ export const translations = {
 		smsEnabled: 'Text message updates are enabled for this visit.',
 		smsError: 'We could not enable text updates. Please try again.',
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
-		pin: 'PIN',
-		pinHint: '4–8 numbers',
-		pinMismatch: 'The PINs do not match.',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you today.',
 		privacyPolicy: 'Privacy Policy',
@@ -260,9 +254,6 @@ export const translations = {
 		qrCodeTitle: 'Scan to check in',
 		registrationClosesIn: 'Registration closes in',
 		registrationClosesInMinutes: 'Registration closes in {minutes} min',
-		registrationType: 'Guest type',
-		returningGuest: 'Returning guest',
-		returningGuestHelp: 'Enter the phone number and PIN you used before.',
 		signedInAs: 'Signed in as',
 		signOut: 'Sign out',
 		submissionError: 'We could not save your check-in. Please try again.',
@@ -284,14 +275,17 @@ export const translations = {
 		statusRegistered: 'Registered',
 		statusServed: 'Served',
 		statusWaiting: 'Waiting',
-		updateInformation: 'Update my information',
 		visitError: 'We could not update this visit. Please ask a market team member for help.',
 		welcome: 'Welcome to the community food market',
 	},
 	es: {
 		guestView: {
 			identityIndicator: {
+				closeNotificationsDialog: 'Cerrar actualizaciones de notificaciones',
 				heading: 'Reconocido en este dispositivo',
+				notificationsAction: 'Notificarme sobre novedades',
+				notificationsDialogTitle: 'Actualizaciones por notificación',
+				notificationsEnabled: 'Notificaciones activadas',
 			},
 			scheduleInformation: {
 				heading: 'El registro abre todos los sábados a las 10:30 a. m.',
@@ -340,7 +334,6 @@ export const translations = {
 		cancelVisitConfirm: '¿Cancelar su lugar en la fila para esta visita?',
 		childrenCount: 'Número de niños para quienes está comprando',
 		compassionFood: 'Alimentos con Compasión',
-		confirmPin: 'Confirmar PIN',
 		countBackLabel: 'Elegir un número menor',
 		countOtherLabel: 'O escriba otro número',
 		countOtherPlaceholder: 'Ingrese un valor',
@@ -364,7 +357,6 @@ export const translations = {
 		language: 'Idioma',
 		languagePrompt: 'Elija su idioma',
 		marketName: 'The Bay Compassion',
-		newGuest: 'Invitado nuevo',
 		notificationCalledBody: 'Por favor, acérquese ahora para recibir el servicio.',
 		notificationCalledTitle: 'Es su turno',
 		notificationNotSelectedBody: 'No fue seleccionado para el servicio de hoy.',
@@ -389,9 +381,6 @@ export const translations = {
 		smsEnabled: 'Las actualizaciones por mensaje de texto están activadas para esta visita.',
 		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
-		pin: 'PIN',
-		pinHint: 'De 4 a 8 números',
-		pinMismatch: 'Los PIN no coinciden.',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle hoy.',
 		privacyPolicy: 'Política de privacidad',
@@ -402,9 +391,6 @@ export const translations = {
 		qrCodeTitle: 'Escanee para registrarse',
 		registrationClosesIn: 'El registro cierra en',
 		registrationClosesInMinutes: 'El registro cierra en {minutes} min',
-		registrationType: 'Tipo de invitado',
-		returningGuest: 'Invitado que regresa',
-		returningGuestHelp: 'Ingrese el número de teléfono y el PIN que usó anteriormente.',
 		signedInAs: 'Sesión iniciada como',
 		signOut: 'Cerrar sesión',
 		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
@@ -426,14 +412,17 @@ export const translations = {
 		statusRegistered: 'Registrado',
 		statusServed: 'Atendido',
 		statusWaiting: 'En espera',
-		updateInformation: 'Actualizar mi información',
 		visitError: 'No pudimos actualizar esta visita. Pida ayuda al equipo del mercado.',
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
 	},
 	fa: {
 		guestView: {
 			identityIndicator: {
+				closeNotificationsDialog: 'بستن به‌روزرسانی اعلان‌ها',
 				heading: 'شناسایی‌شده در این دستگاه',
+				notificationsAction: 'مرا از به‌روزرسانی‌ها باخبر کنید',
+				notificationsDialogTitle: 'به‌روزرسانی‌های اعلان',
+				notificationsEnabled: 'اعلان‌ها فعال هستند',
 			},
 			scheduleInformation: {
 				heading: 'ثبت‌نام هر شنبه ساعت ۱۰:۳۰ صبح باز می‌شود',
@@ -482,7 +471,6 @@ export const translations = {
 		cancelVisitConfirm: 'جای خود را در صف این بازدید لغو می‌کنید؟',
 		childrenCount: 'تعداد کودکانی که برای آن‌ها خرید می‌کنید',
 		compassionFood: 'غذای دلسوزانه',
-		confirmPin: 'تأیید پین',
 		countBackLabel: 'انتخاب عدد کوچک‌تر',
 		countOtherLabel: 'یا عدد دیگری وارد کنید',
 		countOtherPlaceholder: 'مقدار را وارد کنید',
@@ -506,7 +494,6 @@ export const translations = {
 		language: 'زبان',
 		languagePrompt: 'زبان خود را انتخاب کنید',
 		marketName: 'The Bay Compassion',
-		newGuest: 'مهمان جدید',
 		notificationCalledBody: 'لطفاً اکنون برای دریافت خدمات مراجعه کنید.',
 		notificationCalledTitle: 'نوبت شماست',
 		notificationNotSelectedBody: 'شما برای خدمات امروز انتخاب نشدید.',
@@ -530,9 +517,6 @@ export const translations = {
 		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه فعال شدند.',
 		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
-		pin: 'پین',
-		pinHint: '۴ تا ۸ رقم',
-		pinMismatch: 'پین‌ها یکسان نیستند.',
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی امروز استفاده می‌شود.',
 		privacyPolicy: 'سیاست حفظ حریم خصوصی',
@@ -543,9 +527,6 @@ export const translations = {
 		qrCodeTitle: 'برای ثبت‌نام اسکن کنید',
 		registrationClosesIn: 'زمان باقی‌مانده برای ثبت‌نام',
 		registrationClosesInMinutes: 'ثبت‌نام تا {minutes} دقیقه دیگر بسته می‌شود',
-		registrationType: 'نوع مهمان',
-		returningGuest: 'مهمان بازگشتی',
-		returningGuestHelp: 'شماره تلفن و پینی را که قبلاً استفاده کرده‌اید وارد کنید.',
 		signedInAs: 'واردشده به‌عنوان',
 		signOut: 'خروج',
 		submissionError: 'ثبت‌نام شما ذخیره نشد. لطفاً دوباره تلاش کنید.',
@@ -567,14 +548,17 @@ export const translations = {
 		statusRegistered: 'ثبت‌شده',
 		statusServed: 'خدمت‌رسانی‌شده',
 		statusWaiting: 'در انتظار',
-		updateInformation: 'به‌روزرسانی اطلاعات من',
 		visitError: 'این بازدید به‌روزرسانی نشد. از یکی از اعضای تیم بازار کمک بخواهید.',
 		welcome: 'به بازار غذای جامعه خوش آمدید',
 	},
 	tl: {
 		guestView: {
 			identityIndicator: {
+				closeNotificationsDialog: 'Isara ang mga update sa abiso',
 				heading: 'Nakilala sa device na ito',
+				notificationsAction: 'Abisuhan Ako Tungkol sa mga Update',
+				notificationsDialogTitle: 'Mga Update sa Abiso',
+				notificationsEnabled: 'Naka-enable ang mga Abiso',
 			},
 			scheduleInformation: {
 				heading: 'Nagbubukas ang pagpaparehistro tuwing Sabado nang 10:30 AM',
@@ -623,7 +607,6 @@ export const translations = {
 		cancelVisitConfirm: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 		childrenCount: 'Bilang ng mga batang binibilhan mo',
 		compassionFood: 'Pagkaing May Malasakit',
-		confirmPin: 'Kumpirmahin ang PIN',
 		countBackLabel: 'Pumili ng mas maliit na numero',
 		countOtherLabel: 'O maglagay ng ibang numero',
 		countOtherPlaceholder: 'Ilagay ang halaga',
@@ -649,7 +632,6 @@ export const translations = {
 		language: 'Wika',
 		languagePrompt: 'Piliin ang iyong wika',
 		marketName: 'The Bay Compassion',
-		newGuest: 'Bagong bisita',
 		notificationCalledBody: 'Mangyaring lumapit na para sa serbisyo.',
 		notificationCalledTitle: 'Oras mo na',
 		notificationNotSelectedBody: 'Hindi ka napili para sa serbisyo ngayong araw.',
@@ -674,9 +656,6 @@ export const translations = {
 		smsEnabled: 'Naka-enable ang mga text message update para sa pagbisitang ito.',
 		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
-		pin: 'PIN',
-		pinHint: '4–8 numero',
-		pinMismatch: 'Hindi magkapareho ang mga PIN.',
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayo ngayon.',
 		privacyPolicy: 'Patakaran sa Privacy',
@@ -687,9 +666,6 @@ export const translations = {
 		qrCodeTitle: 'I-scan para mag-check in',
 		registrationClosesIn: 'Magsasara ang pagpaparehistro sa loob ng',
 		registrationClosesInMinutes: 'Magsasara ang pagpaparehistro sa loob ng {minutes} min',
-		registrationType: 'Uri ng bisita',
-		returningGuest: 'Bumabalik na bisita',
-		returningGuestHelp: 'Ilagay ang numero ng telepono at PIN na ginamit mo dati.',
 		signedInAs: 'Naka-sign in bilang',
 		signOut: 'Mag-sign out',
 		submissionError: 'Hindi namin na-save ang inyong check-in. Pakisubukang muli.',
@@ -711,14 +687,17 @@ export const translations = {
 		statusRegistered: 'Nakarehistro',
 		statusServed: 'Napagsilbihan',
 		statusWaiting: 'Naghihintay',
-		updateInformation: 'I-update ang aking impormasyon',
 		visitError: 'Hindi namin ma-update ang pagbisitang ito. Humingi ng tulong sa pangkat.',
 		welcome: 'Maligayang pagdating sa pamilihan ng pagkaing pangkomunidad',
 	},
 	vi: {
 		guestView: {
 			identityIndicator: {
+				closeNotificationsDialog: 'Đóng cập nhật thông báo',
 				heading: 'Đã nhận dạng trên thiết bị này',
+				notificationsAction: 'Thông báo cho tôi về cập nhật',
+				notificationsDialogTitle: 'Cập nhật thông báo',
+				notificationsEnabled: 'Đã bật thông báo',
 			},
 			scheduleInformation: {
 				heading: 'Đăng ký mở vào mỗi thứ Bảy lúc 10:30 sáng',
@@ -767,7 +746,6 @@ export const translations = {
 		cancelVisitConfirm: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 		childrenCount: 'Số trẻ em bạn đang mua sắm cho',
 		compassionFood: 'Thực Phẩm Nhân Ái',
-		confirmPin: 'Xác nhận mã PIN',
 		countBackLabel: 'Chọn số nhỏ hơn',
 		countOtherLabel: 'Hoặc nhập số khác',
 		countOtherPlaceholder: 'Nhập giá trị',
@@ -793,7 +771,6 @@ export const translations = {
 		language: 'Ngôn ngữ',
 		languagePrompt: 'Chọn ngôn ngữ của bạn',
 		marketName: 'The Bay Compassion',
-		newGuest: 'Khách mới',
 		notificationCalledBody: 'Vui lòng đến khu vực phục vụ ngay bây giờ.',
 		notificationCalledTitle: 'Đến lượt bạn',
 		notificationNotSelectedBody: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
@@ -817,9 +794,6 @@ export const translations = {
 		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé thăm này.',
 		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
-		pin: 'Mã PIN',
-		pinHint: '4–8 chữ số',
-		pinMismatch: 'Các mã PIN không khớp.',
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn hôm nay.',
 		privacyPolicy: 'Chính sách quyền riêng tư',
@@ -830,9 +804,6 @@ export const translations = {
 		qrCodeTitle: 'Quét để đăng ký',
 		registrationClosesIn: 'Đăng ký sẽ đóng sau',
 		registrationClosesInMinutes: 'Đăng ký sẽ đóng sau {minutes} phút',
-		registrationType: 'Loại khách',
-		returningGuest: 'Khách quay lại',
-		returningGuestHelp: 'Nhập số điện thoại và mã PIN bạn đã dùng trước đây.',
 		signedInAs: 'Đã đăng nhập với tên',
 		signOut: 'Đăng xuất',
 		submissionError: 'Chúng tôi không thể lưu đăng ký của bạn. Vui lòng thử lại.',
@@ -854,14 +825,17 @@ export const translations = {
 		statusRegistered: 'Đã đăng ký',
 		statusServed: 'Đã phục vụ',
 		statusWaiting: 'Đang chờ',
-		updateInformation: 'Cập nhật thông tin của tôi',
 		visitError: 'Không thể cập nhật lượt ghé này. Vui lòng nhờ nhân viên chợ hỗ trợ.',
 		welcome: 'Chào mừng đến với chợ thực phẩm cộng đồng',
 	},
 	zh: {
 		guestView: {
 			identityIndicator: {
+				closeNotificationsDialog: '关闭通知更新',
 				heading: '已在此设备上识别',
+				notificationsAction: '有更新时通知我',
+				notificationsDialogTitle: '通知更新',
+				notificationsEnabled: '通知已启用',
 			},
 			scheduleInformation: {
 				heading: '登记每周六上午 10:30 开放',
@@ -908,7 +882,6 @@ export const translations = {
 		cancelVisitConfirm: '要取消本次到访的排队位置吗？',
 		childrenCount: '您为多少儿童采购',
 		compassionFood: '关爱食品',
-		confirmPin: '确认 PIN',
 		countBackLabel: '选择较小的数字',
 		countOtherLabel: '或输入其他数字',
 		countOtherPlaceholder: '输入数值',
@@ -931,7 +904,6 @@ export const translations = {
 		language: '语言',
 		languagePrompt: '选择您的语言',
 		marketName: 'The Bay Compassion',
-		newGuest: '新访客',
 		notificationCalledBody: '请现在前往服务区。',
 		notificationCalledTitle: '轮到您了',
 		notificationNotSelectedBody: '您未被选中参加今天的服务。',
@@ -954,9 +926,6 @@ export const translations = {
 		smsEnabled: '此次到访的短信更新已启用。',
 		smsError: '我们无法启用短信更新。请重试。',
 		seniorsCount: '您为多少老年人（55岁以上）采购',
-		pin: 'PIN',
-		pinHint: '4–8 位数字',
-		pinMismatch: '两次输入的 PIN 不一致。',
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们今天为您提供服务。',
 		privacyPolicy: '隐私政策',
@@ -966,9 +935,6 @@ export const translations = {
 		qrCodeTitle: '扫码登记',
 		registrationClosesIn: '距登记关闭还剩',
 		registrationClosesInMinutes: '登记将在 {minutes} 分钟后关闭',
-		registrationType: '访客类型',
-		returningGuest: '再次到访',
-		returningGuestHelp: '请输入您之前使用的电话号码和 PIN。',
 		signedInAs: '登录身份',
 		signOut: '退出登录',
 		submissionError: '无法保存您的登记信息。请重试。',
@@ -990,14 +956,17 @@ export const translations = {
 		statusRegistered: '已登记',
 		statusServed: '已服务',
 		statusWaiting: '等待中',
-		updateInformation: '更新我的信息',
 		visitError: '无法更新本次到访。请向市场工作人员寻求帮助。',
 		welcome: '欢迎来到社区食品市场',
 	},
 	ar: {
 		guestView: {
 			identityIndicator: {
+				closeNotificationsDialog: 'إغلاق تحديثات الإشعارات',
 				heading: 'تم التعرّف عليك على هذا الجهاز',
+				notificationsAction: 'أبلغني بالتحديثات',
+				notificationsDialogTitle: 'تحديثات الإشعارات',
+				notificationsEnabled: 'تم تفعيل الإشعارات',
 			},
 			scheduleInformation: {
 				heading: 'يُفتح التسجيل كل يوم سبت الساعة 10:30 صباحًا',
@@ -1046,7 +1015,6 @@ export const translations = {
 		cancelVisitConfirm: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
 		childrenCount: 'عدد الأطفال الذين تتسوق من أجلهم',
 		compassionFood: 'طعام الرحمة',
-		confirmPin: 'تأكيد الرمز السري',
 		countBackLabel: 'اختيار رقم أصغر',
 		countOtherLabel: 'أو أدخل رقمًا آخر',
 		countOtherPlaceholder: 'أدخل القيمة',
@@ -1069,7 +1037,6 @@ export const translations = {
 		language: 'اللغة',
 		languagePrompt: 'اختر لغتك',
 		marketName: 'The Bay Compassion',
-		newGuest: 'ضيف جديد',
 		notificationCalledBody: 'يرجى التوجه الآن لتلقي الخدمة.',
 		notificationCalledTitle: 'حان دورك',
 		notificationNotSelectedBody: 'لم يتم اختيارك لخدمة اليوم.',
@@ -1093,9 +1060,6 @@ export const translations = {
 		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة.',
 		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
-		pin: 'الرمز السري',
-		pinHint: 'من 4 إلى 8 أرقام',
-		pinMismatch: 'الرمزان السريان غير متطابقين.',
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك اليوم.',
 		privacyPolicy: 'سياسة الخصوصية',
@@ -1106,9 +1070,6 @@ export const translations = {
 		qrCodeTitle: 'امسح للتسجيل',
 		registrationClosesIn: 'يُغلق التسجيل خلال',
 		registrationClosesInMinutes: 'يُغلق التسجيل خلال {minutes} دقيقة',
-		registrationType: 'نوع الضيف',
-		returningGuest: 'ضيف عائد',
-		returningGuestHelp: 'أدخل رقم الهاتف والرمز السري اللذين استخدمتهما سابقًا.',
 		signedInAs: 'تم تسجيل الدخول باسم',
 		signOut: 'تسجيل الخروج',
 		submissionError: 'تعذر حفظ تسجيلك. يرجى المحاولة مرة أخرى.',
@@ -1130,7 +1091,6 @@ export const translations = {
 		statusRegistered: 'مسجل',
 		statusServed: 'تمت خدمته',
 		statusWaiting: 'قيد الانتظار',
-		updateInformation: 'تحديث معلوماتي',
 		visitError: 'تعذر تحديث هذه الزيارة. يرجى طلب المساعدة من فريق السوق.',
 		welcome: 'مرحبًا بكم في سوق الطعام المجتمعي',
 	},

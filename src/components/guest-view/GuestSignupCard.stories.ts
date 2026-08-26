@@ -4,10 +4,11 @@ import GuestSignupCard from './GuestSignupCard.vue';
 
 /**
  * The `.checkin-card` shell every guest-facing state renders inside — see
- * `GuestRegistrationForm.stories.ts`, `GuestVisitStatus.stories.ts`, `GuestNotOpenState.stories.ts`,
- * `GuestRegistrationClosedState.stories.ts`, and `GuestServiceState.stories.ts` for the states
- * themselves. This component only owns the card chrome and its default slot — the notification
- * opt-in lives in its own card below this one, see `GuestNotificationCard.stories.ts`.
+ * `GuestRegistrationForm.stories.ts` (and its `GuestSignupForm.stories.ts` /
+ * `GuestLotteryForm.stories.ts` pieces), `GuestVisitStatus.stories.ts`,
+ * `GuestNotOpenState.stories.ts`, `GuestRegistrationClosedState.stories.ts`, and
+ * `GuestServiceState.stories.ts` for the states themselves. This component only owns the card
+ * chrome and its default slot.
  */
 
 const meta: Meta = {

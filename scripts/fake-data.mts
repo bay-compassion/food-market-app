@@ -11,6 +11,7 @@
  */
 
 import type { Locale } from '../src/locales.js';
+import { ageRanges, type AgeRange } from '../src/services/ageRanges.js';
 import type { ServiceProgress } from '../src/services/demoScenario.js';
 import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../src/services/visitStateMachine.js';
@@ -33,7 +34,6 @@ export type PlannedGuest = {
 	firstName: string;
 	lastName: string;
 	age: number;
-	householdSize: number;
 	phone: string;
 	locale: Locale;
 	createdAt: Date;
@@ -65,6 +65,8 @@ export type PlannedVisit = {
 	status: VisitStatus;
 	queuePosition: number | null;
 	lotteryWeight: number;
+	ageRange: AgeRange;
+	householdSize: number;
 	calledAt: Date | null;
 	servedAt: Date | null;
 	answers: Record<string, string | number>;
@@ -230,20 +232,28 @@ function buildGuests(options: { guests: number; now: Date }, random: Random) {
 			firstName: pick(random, names.first),
 			lastName: pick(random, names.last),
 			age: integerBetween(random, 19, 84),
-			householdSize: pickShare(random, [
-				[1, 22],
-				[2, 26],
-				[3, 20],
-				[4, 15],
-				[5, 9],
-				[6, 5],
-				[8, 3],
-			]),
 			phone,
 			locale,
 			createdAt: options.now,
 		} satisfies PlannedGuest;
 	});
+}
+
+/** Household composition is a per-visit detail now, not part of the guest record — see
+ *  `20260826120000_move_household_composition_to_visits`. Picked fresh for each visit. */
+function pickHouseholdComposition(random: Random) {
+	return {
+		ageRange: pick(random, ageRanges),
+		householdSize: pickShare(random, [
+			[1, 22],
+			[2, 26],
+			[3, 20],
+			[4, 15],
+			[5, 9],
+			[6, 5],
+			[8, 3],
+		]),
+	};
 }
 
 function buildSession(
@@ -362,6 +372,7 @@ function buildDrawnVisits(
 			guestId: guest.id,
 			queuePosition: index + 1,
 			lotteryWeight: 1,
+			...pickHouseholdComposition(random),
 			answers: {},
 			source: 'admin',
 			visitDate,
@@ -383,6 +394,7 @@ function buildDrawnVisits(
 			guestId: entry.guest.id,
 			queuePosition: placed ? position : null,
 			lotteryWeight: entry.lotteryWeight,
+			...pickHouseholdComposition(random),
 			answers: buildAnswers(questions, random),
 			source: 'self',
 			visitDate,
@@ -400,6 +412,7 @@ function buildDrawnVisits(
 			status: 'cancelled',
 			queuePosition: null,
 			lotteryWeight: entry.lotteryWeight,
+			...pickHouseholdComposition(random),
 			calledAt: null,
 			servedAt: null,
 			answers: buildAnswers(questions, random),
@@ -511,6 +524,7 @@ function buildOpenSessionVisits(
 		status: 'registered' as VisitStatus,
 		queuePosition: null,
 		lotteryWeight: pickShare(random, lotteryWeightShares),
+		...pickHouseholdComposition(random),
 		calledAt: null,
 		servedAt: null,
 		answers: buildAnswers(questions, random),

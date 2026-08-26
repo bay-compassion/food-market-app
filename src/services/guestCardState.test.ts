@@ -46,52 +46,65 @@ describe('resolveGuestCardState', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith('registration_closed'), now),
-				marketEvent: eventWith('registration_closed'),
 				isPreregistration: false,
+				isIdentified: false,
 				hasActiveVisit: true,
 			}),
 		).toEqual({ kind: 'visit-status' });
 	});
 
-	it('shows the early-context form on /signup while an event is still draft', () => {
+	it('shows the early-context sign-up form on /signup when not yet identified', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith('draft'), now),
-				marketEvent: eventWith('draft'),
 				isPreregistration: true,
+				isIdentified: false,
 				hasActiveVisit: false,
 			}),
 		).toEqual({ kind: 'form', context: 'early' });
 	});
 
-	it('shows the not-open screen without a CTA on /signup when no event exists at all', () => {
+	it('offers the early sign-up form on /signup even when no event exists at all', () => {
+		// Signing up is decoupled from any session — there's nothing to preregister for, but
+		// creating an identity ahead of time is still useful.
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(null, now),
-				marketEvent: null,
 				isPreregistration: true,
+				isIdentified: false,
+				hasActiveVisit: false,
+			}),
+		).toEqual({ kind: 'form', context: 'early' });
+	});
+
+	it('shows the not-open screen without a CTA on /signup once already identified', () => {
+		expect(
+			resolveGuestCardState({
+				phase: currentSessionPhase(eventWith('draft'), now),
+				isPreregistration: true,
+				isIdentified: true,
 				hasActiveVisit: false,
 			}),
 		).toEqual({ kind: 'not-open', showPreregisterCta: false });
 	});
 
-	it('offers the preregister CTA off /signup while an event is draft', () => {
+	it('offers the sign-up CTA off /signup when not yet identified', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith('draft'), now),
-				marketEvent: eventWith('draft'),
 				isPreregistration: false,
+				isIdentified: false,
 				hasActiveVisit: false,
 			}),
 		).toEqual({ kind: 'not-open', showPreregisterCta: true });
 	});
 
-	it('shows no CTA when no event exists at all, off /signup', () => {
+	it('shows no CTA off /signup once already identified', () => {
 		expect(
 			resolveGuestCardState({
-				phase: currentSessionPhase(null, now),
-				marketEvent: null,
+				phase: currentSessionPhase(eventWith('draft'), now),
 				isPreregistration: false,
+				isIdentified: true,
 				hasActiveVisit: false,
 			}),
 		).toEqual({ kind: 'not-open', showPreregisterCta: false });
@@ -101,8 +114,8 @@ describe('resolveGuestCardState', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith('registration_closed'), now),
-				marketEvent: eventWith('registration_closed'),
 				isPreregistration: true,
+				isIdentified: false,
 				hasActiveVisit: false,
 			}),
 		).toEqual({ kind: 'registration-closed' });
@@ -117,21 +130,21 @@ describe('resolveGuestCardState', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith(status), now),
-				marketEvent: eventWith(status),
 				isPreregistration: false,
+				isIdentified: false,
 				hasActiveVisit: false,
 			}),
 		).toEqual(expected);
 	});
 
-	it('respects a caller-supplied optimistic phase even when marketEvent is still null', () => {
+	it('respects a caller-supplied optimistic phase regardless of identification', () => {
 		// Mirrors `GuestView.vue` before `/api/market` has resolved: the form stays available
 		// rather than showing a "not open" screen the app can't actually confirm.
 		expect(
 			resolveGuestCardState({
 				phase: 'registration-open',
-				marketEvent: null,
 				isPreregistration: true,
+				isIdentified: false,
 				hasActiveVisit: false,
 			}),
 		).toEqual({ kind: 'form', context: 'queue' });

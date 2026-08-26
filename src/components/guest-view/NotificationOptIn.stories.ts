@@ -2,11 +2,13 @@ import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
+import { GuestStore } from '../../services/guest.store';
+import { StorageKey } from '../../services/storage.service';
 import NotificationOptIn from './NotificationOptIn.vue';
 
 /**
- * There is no backend behind Storybook, so `NotificationOptIn`'s own `fetch` calls to
- * `/api/push-subscription` and `/api/sms-subscription` are stubbed here, keyed off the
+ * There is no backend behind Storybook, so the guest store's calls to `/api/push-subscription`
+ * and `/api/sms-subscription` are stubbed here, keyed off the
  * `pushConfigured`/`smsConfigured` args so a story can show either channel on its own or both
  * together. Unknown URLs fall through to the real `fetch`.
  *
@@ -29,6 +31,7 @@ const withNotificationEndpoints: Decorator = (story, context) => {
 				}),
 			);
 		}
+
 		if (url === '/api/sms-subscription') {
 			if (init?.method === 'POST') {
 				return Promise.resolve(Response.json({ subscribed: true }));
@@ -37,8 +40,13 @@ const withNotificationEndpoints: Decorator = (story, context) => {
 			return Promise.resolve(
 				Response.json({
 					configured: context.args.smsConfigured,
-					subscribed: context.args.smsSubscribed,
 				}),
+			);
+		}
+
+		if (url === '/api/notification-status') {
+			return Promise.resolve(
+				Response.json({ pushSubscribed: false, smsConsented: context.args.smsSubscribed }),
 			);
 		}
 
@@ -52,8 +60,8 @@ type NotificationOptInArgs = {
 	locale: Locale;
 	pushConfigured: boolean;
 	smsConfigured: boolean;
-	/** Whether the guest already has active consent from some past visit — the server-side check
-	 *  that lets a returning guest skip the checkbox entirely. */
+	/** Whether this phone already has active consent from a past visit — the server-side check
+	 *  that lets the guest skip the checkbox entirely. */
 	smsSubscribed: boolean;
 };
 
@@ -88,10 +96,23 @@ const meta: Meta<NotificationOptInArgs> = {
 	},
 	render: (args) => ({
 		components: { NotificationOptIn },
-		setup: () => ({ args }),
+		setup: () => ({
+			args,
+			guest: new GuestStore({
+				storage: {
+					get: (key) =>
+						key === StorageKey.GUEST_DEVICE_TOKEN ? 'story-device-token'.padEnd(32, 'x') : null,
+					set: () => undefined,
+				},
+			}),
+		}),
 		template: `
 			<div class="checkin-card" style="max-width: 360px;">
-				<NotificationOptIn visit-token="story-visit-token" :locale="args.locale" />
+				<NotificationOptIn
+					:guest="guest"
+					visit-token="story-visit-token"
+					:locale="args.locale"
+				/>
 			</div>
 		`,
 	}),
@@ -134,14 +155,14 @@ export const SmsConsentGiven: Story = {
 };
 
 /**
- * A returning guest who already consented on a past visit — consent is a guest characteristic,
- * not a per-visit one, so this skips straight to the confirmation instead of asking again.
+ * A guest whose phone already consented on a past visit, so this skips straight to confirmation
+ * instead of asking again.
  */
 export const AlreadySubscribed: Story = {
 	args: { pushConfigured: false, smsSubscribed: true },
 	play: async ({ canvas }) => {
 		await expect(await canvas.findByText(translations.en.smsEnabled)).toBeInTheDocument();
-		expect(canvas.queryByRole('checkbox')).not.toBeInTheDocument();
+		await expect(canvas.queryByRole('checkbox')).not.toBeInTheDocument();
 	},
 };
 

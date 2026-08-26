@@ -61,14 +61,18 @@ export type GuestCardState =
  * `guestRegistration.mts`: a guest may self-register through `/signup` as soon as any event
  * exists, including `draft`, and only loses that ability once the window has genuinely passed.
  *
+ * Signing up (identity only) is decoupled from any session — `isIdentified` gates it instead of
+ * whether a market event exists, so a guest can create their identity any time. Once identified,
+ * there is nothing left to nudge them toward before registration opens.
+ *
  * Takes `phase` rather than deriving it internally so a caller can substitute an optimistic
  * default (e.g. while `/api/market` hasn't loaded yet) without that policy leaking into this
  * function.
  */
 export function resolveGuestCardState(options: {
 	phase: SessionPhase;
-	marketEvent: MarketEventTiming | null;
 	isPreregistration: boolean;
+	isIdentified: boolean;
 	hasActiveVisit: boolean;
 }): GuestCardState {
 	if (options.hasActiveVisit) {
@@ -87,12 +91,14 @@ export function resolveGuestCardState(options: {
 		case 'ended':
 			return { kind: 'ended' };
 		case 'not-open': {
-			const canPreregister = options.marketEvent !== null;
-			if (options.isPreregistration && canPreregister) {
+			if (!options.isIdentified && options.isPreregistration) {
 				return { kind: 'form', context: guestFormContext(phase) };
 			}
 
-			return { kind: 'not-open', showPreregisterCta: !options.isPreregistration && canPreregister };
+			return {
+				kind: 'not-open',
+				showPreregisterCta: !options.isIdentified && !options.isPreregistration,
+			};
 		}
 	}
 }
