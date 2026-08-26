@@ -13,6 +13,9 @@ export const languages = [
 export type Locale = (typeof languages)[number]['code'];
 
 export interface GuestViewTranslations {
+	identityIndicator: {
+		heading: string;
+	};
 	scheduleInformation: {
 		heading: string;
 		body: string;
@@ -146,6 +149,9 @@ export interface Translation {
 export const translations = {
 	en: {
 		guestView: {
+			identityIndicator: {
+				heading: 'Recognized on this device',
+			},
 			scheduleInformation: {
 				heading: 'Registration opens every Saturday at 10:30 AM',
 				body: outdent`
@@ -284,6 +290,9 @@ export const translations = {
 	},
 	es: {
 		guestView: {
+			identityIndicator: {
+				heading: 'Reconocido en este dispositivo',
+			},
 			scheduleInformation: {
 				heading: 'El registro abre todos los sábados a las 10:30 a. m.',
 				body: outdent`
@@ -423,6 +432,9 @@ export const translations = {
 	},
 	fa: {
 		guestView: {
+			identityIndicator: {
+				heading: 'شناسایی‌شده در این دستگاه',
+			},
 			scheduleInformation: {
 				heading: 'ثبت‌نام هر شنبه ساعت ۱۰:۳۰ صبح باز می‌شود',
 				body: outdent`
@@ -561,6 +573,9 @@ export const translations = {
 	},
 	tl: {
 		guestView: {
+			identityIndicator: {
+				heading: 'Nakilala sa device na ito',
+			},
 			scheduleInformation: {
 				heading: 'Nagbubukas ang pagpaparehistro tuwing Sabado nang 10:30 AM',
 				body: outdent`
@@ -702,6 +717,9 @@ export const translations = {
 	},
 	vi: {
 		guestView: {
+			identityIndicator: {
+				heading: 'Đã nhận dạng trên thiết bị này',
+			},
 			scheduleInformation: {
 				heading: 'Đăng ký mở vào mỗi thứ Bảy lúc 10:30 sáng',
 				body: outdent`
@@ -842,6 +860,9 @@ export const translations = {
 	},
 	zh: {
 		guestView: {
+			identityIndicator: {
+				heading: '已在此设备上识别',
+			},
 			scheduleInformation: {
 				heading: '登记每周六上午 10:30 开放',
 				body: outdent`
@@ -975,6 +996,9 @@ export const translations = {
 	},
 	ar: {
 		guestView: {
+			identityIndicator: {
+				heading: 'تم التعرّف عليك على هذا الجهاز',
+			},
 			scheduleInformation: {
 				heading: 'يُفتح التسجيل كل يوم سبت الساعة 10:30 صباحًا',
 				body: outdent`

@@ -194,6 +194,19 @@ describe('App', () => {
 		);
 		expect(wrapper.text()).toContain('You’re in the queue!');
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBe('token-1');
+		expect(window.localStorage.getItem('bay-compassion.guest-device-token')).toBe(
+			'server-issued-device-token',
+		);
+		expect(JSON.parse(window.localStorage.getItem('bay-compassion.guest-identity') ?? '')).toEqual({
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			phone: '(555) 123-4567',
+		});
+		expect(wrapper.find('.guest-identity').text()).toContain('Ada L');
+		expect(wrapper.find('.guest-identity').text()).toContain('(555) 123-4567');
+		expect(wrapper.find('.guest-layout').element.firstElementChild).toBe(
+			wrapper.find('.guest-identity').element,
+		);
 
 		vi.unstubAllGlobals();
 	});

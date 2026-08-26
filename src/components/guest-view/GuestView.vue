@@ -252,6 +252,8 @@ defineExpose({ resetToForm });
 	<section class="guest-layout">
 		<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
 		<template v-else>
+			<GuestIdentityIndicator v-if="guestIdentity" :t="t" :identity="guestIdentity" />
+
 			<ScheduleInformation v-if="showScheduleInformation" :t="t" />
 
 			<GuestLanguageHero
