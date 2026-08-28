@@ -72,7 +72,7 @@ export default async (request: Request) => {
 		.select({ visitId: visits.id })
 		.from(visits)
 		.leftJoin(pushSubscriptions, eq(pushSubscriptions.visitId, visits.id))
-		.leftJoin(smsSubscriptions, eq(smsSubscriptions.visitId, visits.id))
+		.leftJoin(smsSubscriptions, eq(smsSubscriptions.guestId, visits.guestId))
 		.where(
 			and(
 				eq(visits.marketEventId, event.id),

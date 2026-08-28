@@ -26,8 +26,7 @@ export default async (request: Request) => {
 		db
 			.select({ id: smsSubscriptions.id })
 			.from(smsSubscriptions)
-			.innerJoin(visits, eq(smsSubscriptions.visitId, visits.id))
-			.where(eq(visits.guestId, guest.id))
+			.where(eq(smsSubscriptions.guestId, guest.id))
 			.limit(1),
 	]);
 

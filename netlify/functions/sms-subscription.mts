@@ -1,16 +1,38 @@
 import { Config } from '@netlify/functions';
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, ne } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { smsSubscriptions } from '../../db/schema.mjs';
+import { marketEvents, smsSubscriptions, visits } from '../../db/schema.mjs';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
-import { authorizedVisit } from '../lib/visitAuth.mjs';
+import { authorizedGuest } from '../lib/deviceAuth.mjs';
 import { requeueNotification } from '../services/notifications.mjs';
 import type { NotificationType } from '../services/pushNotifications.mjs';
 import { deliverPendingSmsNotifications, smsConfiguration } from '../services/smsNotifications.mjs';
 
 function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
+}
+
+async function activeVisitForGuest(guestId: string) {
+	const [event] = await db
+		.select({ id: marketEvents.id })
+		.from(marketEvents)
+		.where(ne(marketEvents.status, 'ended'))
+		.orderBy(desc(marketEvents.createdAt))
+		.limit(1);
+
+	if (!event) {
+		return null;
+	}
+
+	const [visit] = await db
+		.select({ id: visits.id, status: visits.status })
+		.from(visits)
+		.where(and(eq(visits.guestId, guestId), eq(visits.marketEventId, event.id)))
+		.orderBy(desc(visits.createdAt))
+		.limit(1);
+
+	return visit ?? null;
 }
 
 export default async (request: Request) => {
@@ -21,14 +43,14 @@ export default async (request: Request) => {
 	if (!smsConfiguration().configured) {
 		return error('SMS notifications are not configured.', 503);
 	}
-	const visit = await authorizedVisit(request);
+	const guest = await authorizedGuest(request);
 
-	if (!visit) {
-		return error('Visit access could not be verified.', 401);
+	if (!guest) {
+		return error('Device access could not be verified.', 401);
 	}
 
 	if (request.method === 'DELETE') {
-		await db.delete(smsSubscriptions).where(eq(smsSubscriptions.visitId, visit.id));
+		await db.delete(smsSubscriptions).where(eq(smsSubscriptions.guestId, guest.id));
 
 		return new Response(null, { status: 204 });
 	}
@@ -53,18 +75,28 @@ export default async (request: Request) => {
 	}
 
 	const [existingSubscription] = await db
-		.select({ visitId: smsSubscriptions.visitId })
+		.select({ guestId: smsSubscriptions.guestId })
 		.from(smsSubscriptions)
-		.where(eq(smsSubscriptions.visitId, visit.id))
+		.where(eq(smsSubscriptions.guestId, guest.id))
 		.limit(1);
 
 	await db
 		.insert(smsSubscriptions)
-		.values({ visitId: visit.id })
+		.values({ guestId: guest.id })
 		.onConflictDoUpdate({
-			target: smsSubscriptions.visitId,
+			target: smsSubscriptions.guestId,
 			set: { consentedAt: new Date() },
 		});
+
+	if (existingSubscription) {
+		return Response.json({ subscribed: true });
+	}
+
+	const activeVisit = await activeVisitForGuest(guest.id);
+
+	if (!activeVisit) {
+		return Response.json({ subscribed: true });
+	}
 
 	// Statuses with no entry here are terminal (served, no_show, cancelled) — subscribing at that
 	// point should not replay a notification about a visit that is already over.
@@ -74,12 +106,14 @@ export default async (request: Request) => {
 		not_placed: 'lottery_not_selected',
 		called: 'called',
 	};
-	const currentNotification = existingSubscription ? undefined : catchUpNotifications[visit.status];
+	const currentNotification = catchUpNotifications[activeVisit.status];
 
 	if (currentNotification) {
-		await requeueNotification(db, [visit.id], currentNotification, currentNotification, ['sms']);
+		await requeueNotification(db, [activeVisit.id], currentNotification, currentNotification, [
+			'sms',
+		]);
 		await deliverPendingSmsNotifications({
-			visitIds: [visit.id],
+			visitIds: [activeVisit.id],
 			types: [currentNotification],
 			limit: 1,
 		});

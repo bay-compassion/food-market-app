@@ -62,6 +62,7 @@ describe('deliverPendingSmsNotifications', () => {
 			{
 				id: 'delivery-1',
 				visitId: 'visit-1',
+				guestId: 'guest-1',
 				attempts: 0,
 				type: 'called',
 				title: null,
@@ -91,6 +92,7 @@ describe('deliverPendingSmsNotifications', () => {
 			{
 				id: 'delivery-1',
 				visitId: 'visit-1',
+				guestId: 'guest-1',
 				attempts: 0,
 				type: 'called',
 				title: null,
@@ -114,6 +116,7 @@ describe('deliverPendingSmsNotifications', () => {
 			{
 				id: 'delivery-1',
 				visitId: 'visit-1',
+				guestId: 'guest-1',
 				attempts: 0,
 				type: 'called',
 				title: null,
@@ -141,6 +144,7 @@ describe('deliverPendingSmsNotifications', () => {
 			{
 				id: 'delivery-1',
 				visitId: 'visit-1',
+				guestId: 'guest-1',
 				attempts: 0,
 				type: 'called',
 				title: null,

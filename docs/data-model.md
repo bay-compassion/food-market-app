@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=e02861386e3a -->
+<!-- diagram-sources: db/schema.mts=55fdcd8ff226 -->
 
 # Database structure
 
@@ -19,7 +19,7 @@ erDiagram
     market_events ||--o{ visits : "hosts"
     guests ||--o{ visits : "attends"
     visits ||--o| push_subscriptions : "notifies"
-    visits ||--o| sms_subscriptions : "notifies"
+    guests ||--o| sms_subscriptions : "consents"
     visits ||--o{ notification_deliveries : "queues"
     guests ||..o| guest_pin_attempts : "matched by normalized_phone (no foreign key)"
 
@@ -104,7 +104,7 @@ erDiagram
 
     sms_subscriptions {
         uuid id PK
-        uuid visit_id FK "unique; cascade delete"
+        uuid guest_id FK "unique; cascade delete"
         timestamptz consented_at
         timestamptz created_at
     }
@@ -141,7 +141,8 @@ A few things the diagram can't show on its own:
 - **`visits.normalized_phone` preserves the submitted phone number in normalized form.** Renewed
   information can update the long-lived guest profile without erasing the phone signal that was
   present on an earlier visit, so later analysis can reconcile possible duplicate guest records.
-- **Only `market_events → registration_questions` and the two `visits →` tables cascade on delete.**
+- **Only `market_events → registration_questions`, `visits → push_subscriptions`,
+  `visits → notification_deliveries`, and `guests → sms_subscriptions` cascade on delete.**
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.
 

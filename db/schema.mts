@@ -144,13 +144,13 @@ export const smsSubscriptions = pgTable(
 	'sms_subscriptions',
 	{
 		id: uuid('id').defaultRandom().primaryKey(),
-		visitId: uuid('visit_id')
+		guestId: uuid('guest_id')
 			.notNull()
-			.references(() => visits.id, { onDelete: 'cascade' }),
+			.references(() => guests.id, { onDelete: 'cascade' }),
 		consentedAt: timestamp('consented_at', { withTimezone: true }).notNull().defaultNow(),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},
-	(table) => [uniqueIndex('sms_subscriptions_visit_idx').on(table.visitId)],
+	(table) => [uniqueIndex('sms_subscriptions_guest_idx').on(table.guestId)],
 );
 
 /** Retained until a separate destructive migration removes the retired PIN credential data. */
