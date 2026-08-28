@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed } from 'vue';
 
 import { translations, type Locale } from '../../locales';
+import Card from '../ui/layout/Card.vue';
 import GuestRegistrationClosedState from './GuestRegistrationClosedState.vue';
-import GuestSignupCard from './GuestSignupCard.vue';
 
 /**
- * Shown once registration has closed for the day, before the lottery runs. Wrapped in
- * `GuestSignupCard` purely for the `.checkin-card` frame this screen normally sits inside.
+ * Shown once registration has closed for the day, before the lottery runs. Wrapped in `Card` for
+ * the frame this screen normally sits inside.
  */
 
 type GuestRegistrationClosedStateArgs = {
@@ -22,14 +22,14 @@ const meta: Meta<GuestRegistrationClosedStateArgs> = {
 		locale: 'en',
 	},
 	render: (args) => ({
-		components: { GuestSignupCard, GuestRegistrationClosedState },
+		components: { Card, GuestRegistrationClosedState },
 		setup() {
 			return { args, t: computed(() => translations[args.locale]) };
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<GuestRegistrationClosedState :t="t" />
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };

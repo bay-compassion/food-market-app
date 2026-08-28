@@ -4,13 +4,12 @@ import type { Locale } from '../../locales';
 import { RootStore, rootStoreKey } from '../../services/root.store';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { Language } from '../../stores/translation.store';
+import Card from '../ui/layout/Card.vue';
 import GuestRegistrationForm from './GuestRegistrationForm.vue';
-import GuestSignupCard from './GuestSignupCard.vue';
 
 /**
- * The registration form itself — before a guest has submitted anything. Wrapped in
- * `GuestSignupCard` because its submission-error rules live in `guest.css`, scoped to
- * `.checkin-card`, and render unstyled without that ancestor.
+ * The registration form itself — before a guest has submitted anything. Wrapped in `Card` for the
+ * frame this screen normally sits inside.
  *
  * `GuestRegistrationForm` reads its guest fields, answers, and session data from `RootStore`
  * rather than taking them as props, so each story seeds a fresh store and provides it instead of
@@ -53,7 +52,7 @@ const meta: Meta<GuestRegistrationFormArgs> = {
 		minutesRemaining: null,
 	},
 	render: (args) => ({
-		components: { GuestSignupCard, GuestRegistrationForm },
+		components: { Card, GuestRegistrationForm },
 		setup() {
 			const rootStore = new RootStore();
 
@@ -85,9 +84,9 @@ const meta: Meta<GuestRegistrationFormArgs> = {
 			return { [this.rootStoreKey]: this.rootStore };
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<GuestRegistrationForm :context="args.context" :now="now" />
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };

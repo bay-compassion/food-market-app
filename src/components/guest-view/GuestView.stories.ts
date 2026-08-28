@@ -4,13 +4,13 @@ import { computed, reactive } from 'vue';
 import { translations, type Locale } from '../../locales';
 import { visitStatuses } from '../../services/visitStateMachine';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
-import GuestSignupCard from './GuestSignupCard.vue';
+import Card from '../ui/layout/Card.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
 
 /**
  * `GuestView` is a container: it owns `localStorage`, polling timers, and a router, none of which
  * can be made to hold several different states at once inside one page. What a guest actually sees
- * once a visit exists is `GuestVisitStatus` inside `GuestSignupCard`'s shell, driven entirely by
+ * once a visit exists is `GuestVisitStatus` inside `Card`'s shell, driven entirely by
  * `VisitStatus` — this story renders one side by side per named status, the same way
  * `QueueGuestRow.stories.ts`'s `EachStatus` story does for the admin queue row. See
  * `GuestVisitStatus.stories.ts` for each status on its own with full controls.
@@ -48,7 +48,7 @@ type Story = StoryObj<GuestViewArgs>;
 export const AllStates: Story = {
 	parameters: { controls: { disable: true } },
 	render: (args) => ({
-		components: { GuestSignupCard, GuestVisitStatus },
+		components: { Card, GuestVisitStatus },
 		setup() {
 			const rows = reactive(
 				visitStatuses.map((status) => ({
@@ -73,7 +73,7 @@ export const AllStates: Story = {
 						{{ labelFor(row.status) }}
 					</h2>
 					<section class="guest-layout" style="width: auto; padding: 0;">
-						<GuestSignupCard>
+						<Card aria-live="polite">
 							<GuestVisitStatus
 								:t="t"
 								:is-called="row.status === 'called'"
@@ -86,7 +86,7 @@ export const AllStates: Story = {
 								:is-cancelling="false"
 								submission-error=""
 							/>
-						</GuestSignupCard>
+						</Card>
 					</section>
 				</div>
 			</div>

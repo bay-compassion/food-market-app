@@ -11,4 +11,7 @@
 	border-radius: var(--radius-lg);
 	background: var(--color-background);
 }
+.card + .card {
+	margin-bottom: 24px;
+}
 </style>

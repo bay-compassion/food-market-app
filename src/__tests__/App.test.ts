@@ -544,7 +544,7 @@ describe('App', () => {
 
 		await flushPromises();
 
-		const inactiveCard = wrapper.get('.checkin-card');
+		const inactiveCard = wrapper.get('.card');
 		const copy = translations.en.guestView.notOpenState;
 
 		expect(inactiveCard.text()).toContain(copy.heading);

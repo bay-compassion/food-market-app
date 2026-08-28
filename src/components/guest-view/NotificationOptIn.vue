@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
+
 import { translations, type Locale } from '../../locales';
 import type { GuestStore } from '../../services/guest.store';
 import AppButton from '../AppButton.vue';
 
-const props = defineProps<{ guest: GuestStore; locale: Locale }>();
+const props = defineProps<{ guest: GuestStore }>();
 const guest = props.guest;
-const t = computed(() => translations[props.locale]);
+const t = useTranslation();
 const smsConsent = ref(false);
 
 onMounted(() => {

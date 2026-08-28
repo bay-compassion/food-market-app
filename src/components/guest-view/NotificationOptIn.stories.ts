@@ -104,7 +104,7 @@ const meta: Meta<NotificationOptInArgs> = {
 			}),
 		}),
 		template: `
-			<div class="checkin-card" style="max-width: 360px;">
+			<div style="max-width: 360px;">
 				<NotificationOptIn
 					:guest="guest"
 					:locale="args.locale"

@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import { useRouter } from 'vue-router';
 
+import Card from '@/components/ui/layout/Card.vue';
+
 import type { Locale } from '../../locales';
 import {
 	currentSessionPhase,
@@ -23,7 +25,6 @@ import GuestNotOpenState from './GuestNotOpenState.vue';
 import GuestRegistrationClosedState from './GuestRegistrationClosedState.vue';
 import GuestRegistrationForm from './GuestRegistrationForm.vue';
 import GuestServiceState from './GuestServiceState.vue';
-import GuestSignupCard from './GuestSignupCard.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
 
 const rootStore = useRootStore();
@@ -59,7 +60,7 @@ const guestIdentity = computed(() => guestDomain.identity);
  * a "not open" screen the app can't actually confirm.
  */
 const hasLoadedRegistration = computed(() => session.currentState !== null);
-/** Ticks every second so `GuestSignupCard`'s countdown stays live. */
+/** Ticks every second so the registration form's countdown stays live. */
 const now = ref(Date.now());
 
 const visitStatusLabel = computed(() => {
@@ -215,22 +216,16 @@ onBeforeUnmount(() => {
 			@select-language="selectLanguage"
 		/>
 
-		<GuestIdentityIndicator
-			v-if="guestIdentity"
-			:t="t"
-			:locale="locale"
-			:identity="guestIdentity"
-		/>
+		<!-- Card that indicates who the guest has been identified as -->
+		<GuestIdentityIndicator v-if="guestIdentity" :identity="guestIdentity" />
 
 		<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
 		<template v-else>
-			<template v-if="!session.isActive">
-				<GuestSignupCard>
+			<Card aria-live="polite">
+				<template v-if="!session.isActive">
 					<GuestNotOpenState :t="t" @preregister="goToSignup" />
-				</GuestSignupCard>
-			</template>
-			<template v-else>
-				<GuestSignupCard>
+				</template>
+				<template v-else>
 					<GuestVisitStatus
 						v-if="cardState.kind === 'visit-status'"
 						:t="t"
@@ -257,8 +252,8 @@ onBeforeUnmount(() => {
 						:t="t"
 					/>
 					<GuestServiceState v-else :t="t" :has-ended="cardState.kind === 'ended'" />
-				</GuestSignupCard>
-			</template>
+				</template>
+			</Card>
 		</template>
 	</section>
 </template>

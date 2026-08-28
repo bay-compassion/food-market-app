@@ -4,13 +4,12 @@ import { computed } from 'vue';
 import { translations, type Locale } from '../../locales';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
-import GuestSignupCard from './GuestSignupCard.vue';
+import Card from '../ui/layout/Card.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
 
 /**
  * What a guest sees once they have an active visit, in every status it can be in. Wrapped in
- * `GuestSignupCard` because `.submission-error` lives in `guest.css` scoped to `.checkin-card`,
- * and renders unstyled without that ancestor.
+ * `Card` for the frame this screen normally sits inside.
  */
 
 type GuestVisitStatusArgs = {
@@ -46,7 +45,7 @@ const meta: Meta<GuestVisitStatusArgs> = {
 		submissionError: '',
 	},
 	render: (args) => ({
-		components: { GuestSignupCard, GuestVisitStatus },
+		components: { Card, GuestVisitStatus },
 		setup() {
 			const t = computed(() => translations[args.locale]);
 			const successCopy = computed(() =>
@@ -64,7 +63,7 @@ const meta: Meta<GuestVisitStatusArgs> = {
 			};
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<GuestVisitStatus
 					:t="t"
 					:is-called="isCalled"
@@ -77,7 +76,7 @@ const meta: Meta<GuestVisitStatusArgs> = {
 					:is-cancelling="args.isCancelling"
 					:submission-error="args.submissionError"
 				/>
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };

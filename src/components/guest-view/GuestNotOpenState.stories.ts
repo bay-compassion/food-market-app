@@ -3,13 +3,13 @@ import { expect } from 'storybook/test';
 import { computed } from 'vue';
 
 import { translations, type Locale } from '../../locales';
+import Card from '../ui/layout/Card.vue';
 import GuestNotOpenState from './GuestNotOpenState.vue';
-import GuestSignupCard from './GuestSignupCard.vue';
 
 /**
  * Shown before a `draft` or `scheduled` session's registration window has opened — including when
- * no event has been configured at all. Wrapped in `GuestSignupCard` purely for the `.checkin-card`
- * frame this screen normally sits inside.
+ * no event has been configured at all. Wrapped in `Card` for the frame this screen normally sits
+ * inside.
  */
 
 type GuestNotOpenStateArgs = {
@@ -24,14 +24,14 @@ const meta: Meta<GuestNotOpenStateArgs> = {
 		locale: 'en',
 	},
 	render: (args) => ({
-		components: { GuestSignupCard, GuestNotOpenState },
+		components: { Card, GuestNotOpenState },
 		setup() {
 			return { args, t: computed(() => translations[args.locale]) };
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<GuestNotOpenState :t="t" />
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };

@@ -123,6 +123,12 @@ form {
 	display: grid;
 	gap: 18px;
 }
+.submission-error {
+	margin: 0;
+	color: var(--color-error);
+	font-size: 13px;
+	line-height: 1.4;
+}
 .privacy {
 	display: flex;
 	align-items: flex-start;

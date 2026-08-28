@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 
-import type { Locale, Translation } from '../../locales';
-import type { GuestIdentity } from '../../services/guest.store';
-import { useRootStore } from '../../services/root.store';
+import type { GuestIdentity } from '@/services/guest.store.ts';
+import { useRootStore } from '@/services/root.store.ts';
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
+
 import AppButton from '../AppButton.vue';
 import Dialog from '../ui/Dialog.vue';
 import NotificationOptIn from './NotificationOptIn.vue';
 
 const props = defineProps<{
-	t: Translation;
-	locale: Locale;
 	identity: GuestIdentity;
 }>();
 
 const guest = useRootStore().guest;
+const t = useTranslation();
 const notificationsDialogOpen = ref(false);
 const lastInitial = props.identity.lastName.charAt(0);
 
@@ -81,7 +81,7 @@ watch(
 		:close-label="t.guestView.identityIndicator.closeNotificationsDialog"
 		@close="notificationsDialogOpen = false"
 	>
-		<NotificationOptIn :guest="guest" :locale="locale" />
+		<NotificationOptIn :guest="guest" />
 	</Dialog>
 </template>
 

@@ -3,9 +3,9 @@ import { onMounted, ref, toRef } from 'vue';
 import { useRouter } from 'vue-router';
 
 import GuestRegistrationForm from '@/components/guest-view/GuestRegistrationForm.vue';
-import GuestSignupCard from '@/components/guest-view/GuestSignupCard.vue';
 import GuestStateMessage from '@/components/guest-view/GuestStateMessage.vue';
-import type { RegistrationSubmitResult } from '@/services/registration.store.ts';
+import Card from '@/components/ui/layout/Card.vue';
+import type { RegistrationSubmitResult } from '@/stores/registration.store.ts';
 import { useStore } from '@/stores/use-store.ts';
 
 const { guest, translations } = useStore();
@@ -31,14 +31,14 @@ function handleSubmitted(result: RegistrationSubmitResult) {
 </script>
 
 <template>
-	<GuestSignupCard>
+	<Card aria-live="polite">
 		<GuestStateMessage
 			v-if="isSignedUp"
 			:heading="t.earlySuccessTitle"
 			:description="t.earlySuccessDescription"
 		/>
 		<GuestRegistrationForm v-else context="early" :now="Date.now()" @submitted="handleSubmitted" />
-	</GuestSignupCard>
+	</Card>
 </template>
 
 <style scoped></style>

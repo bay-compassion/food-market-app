@@ -65,6 +65,12 @@ const emit = defineEmits<{ 'cancel-visit': [] }>();
 	place-content: center;
 	text-align: center;
 }
+.submission-error {
+	margin: 0;
+	color: var(--color-error);
+	font-size: 13px;
+	line-height: 1.4;
+}
 .success-state h2 {
 	margin-bottom: 9px;
 	font-family: var(--font-heading);

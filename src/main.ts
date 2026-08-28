@@ -9,7 +9,6 @@ import { RootStore, rootStoreKey } from './services/root.store';
 import './styles/base.css';
 import './styles/app-shell.css';
 import './styles/admin.css';
-import './styles/guest.css';
 
 const rootStore = new RootStore();
 const app = createApp(App).use(router).provide(rootStoreKey, rootStore);
