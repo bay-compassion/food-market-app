@@ -144,6 +144,40 @@ describe('GuestStore', () => {
 		expect(register).not.toHaveBeenCalled();
 	});
 
+	it('marks the guest as a returning visitor once they pick a language', () => {
+		// Arrange
+		const storage: Pick<StorageService, 'get' | 'set' | 'remove'> = {
+			get: vi.fn().mockReturnValue(null),
+			set: vi.fn(),
+			remove: vi.fn(),
+		};
+		const store = new GuestStore({ storage });
+
+		// Act
+		store.markAsReturningVisitor();
+
+		// Assert
+		expect(store.isReturningVisitor).toBe(true);
+		expect(storage.set).toHaveBeenCalledWith(StorageKey.RETURNING_VISITOR, true);
+	});
+
+	it('recognizes a returning visitor already saved to browser storage', () => {
+		// Arrange
+		const storage: Pick<StorageService, 'get' | 'set' | 'remove'> = {
+			get: vi.fn(
+				(key: StorageKey) => key === StorageKey.RETURNING_VISITOR,
+			) as StorageService['get'],
+			set: vi.fn(),
+			remove: vi.fn(),
+		};
+
+		// Act
+		const store = new GuestStore({ storage });
+
+		// Assert
+		expect(store.isReturningVisitor).toBe(true);
+	});
+
 	it('does not trust a locally stored identity without a device credential', () => {
 		const storage: Pick<StorageService, 'get' | 'set' | 'remove'> = {
 			get: vi.fn((key: StorageKey) =>
