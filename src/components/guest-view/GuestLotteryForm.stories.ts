@@ -4,13 +4,12 @@ import { computed, ref } from 'vue';
 
 import { translations, type Locale } from '../../locales';
 import type { GuestFormState } from '../types';
+import Card from '../ui/layout/Card.vue';
 import GuestLotteryForm from './GuestLotteryForm.vue';
-import GuestSignupCard from './GuestSignupCard.vue';
 
 /**
  * The lottery-entry fields — age range, household composition, and any per-session registration
- * questions. Wrapped in `GuestSignupCard` because `guest.css` scopes its field styling to
- * `.checkin-card`, and renders unstyled without that ancestor.
+ * questions. Wrapped in `Card` for the frame this screen normally sits inside.
  */
 
 const emptyGuest = (): GuestFormState => ({
@@ -44,7 +43,7 @@ const meta: Meta<GuestLotteryFormArgs> = {
 	parameters: { shell: 'guest' },
 	args: { locale: 'en', askExtraQuestions: false },
 	render: (args) => ({
-		components: { GuestSignupCard, GuestLotteryForm },
+		components: { Card, GuestLotteryForm },
 		setup() {
 			const guest = ref<GuestFormState>(emptyGuest());
 			const registrationAnswers = ref<Record<string, string | number>>({});
@@ -57,7 +56,7 @@ const meta: Meta<GuestLotteryFormArgs> = {
 			};
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<form>
 					<GuestLotteryForm
 						v-model:guest="guest"
@@ -66,7 +65,7 @@ const meta: Meta<GuestLotteryFormArgs> = {
 						:registration-questions="registrationQuestions"
 					/>
 				</form>
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };

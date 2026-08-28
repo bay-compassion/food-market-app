@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 
 import type { Translation } from '../../locales';
+import GuestScheduleDetails from './GuestScheduleDetails.vue';
 import GuestStateMessage from './GuestStateMessage.vue';
 
 const props = defineProps<{
@@ -24,5 +25,9 @@ const copy = computed(() =>
 </script>
 
 <template>
-	<GuestStateMessage :heading="copy.heading" :description="copy.description" />
+	<GuestStateMessage :heading="copy.heading" :description="copy.description">
+		<template v-if="hasEnded" #details>
+			<GuestScheduleDetails :t="t" />
+		</template>
+	</GuestStateMessage>
 </template>

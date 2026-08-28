@@ -1,38 +1,31 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
-import type { Locale, Translation } from '../../locales';
-import type { GuestIdentity } from '../../services/guest.store';
-import { useRootStore } from '../../services/root.store';
+import type { GuestIdentity } from '@/stores/guest.store.ts';
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
+import { useRootStore } from '@/stores/root.store.ts';
+
 import AppButton from '../AppButton.vue';
 import Dialog from '../ui/Dialog.vue';
 import NotificationOptIn from './NotificationOptIn.vue';
 
 const props = defineProps<{
-	t: Translation;
-	locale: Locale;
 	identity: GuestIdentity;
-	visitToken: string | null;
 }>();
 
 const guest = useRootStore().guest;
+const t = useTranslation();
 const notificationsDialogOpen = ref(false);
 const lastInitial = props.identity.lastName.charAt(0);
 
-watch(
-	() => props.visitToken,
-	(visitToken) => {
-		if (visitToken) {
-			void guest.loadNotificationSettings(visitToken);
-		}
-	},
-	{ immediate: true },
-);
+onMounted(() => {
+	void guest.loadNotificationSettings();
+});
 
 watch(
-	() => guest.notificationsEnabled,
-	(enabled) => {
-		if (enabled) {
+	() => guest.smsConsented,
+	(consented) => {
+		if (consented) {
 			notificationsDialogOpen.value = false;
 		}
 	},
@@ -41,35 +34,44 @@ watch(
 
 <template>
 	<aside class="guest-identity" :aria-label="t.guestView.identityIndicator.heading">
-		<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-			<path d="M20 21a8 8 0 0 0-16 0" />
-			<circle cx="12" cy="7" r="4" />
-			<path d="m16.5 14.5 1.5 1.5 3-3" />
-		</svg>
-		<div class="identity-container">
-			<div class="identity-heading">{{ t.guestView.identityIndicator.heading }}</div>
-			<div class="identity-name">
-				<bdi dir="auto">{{ identity.firstName }} {{ lastInitial }}</bdi>
+		<div class="identity-row">
+			<svg
+				aria-hidden="true"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+			>
+				<path d="M20 21a8 8 0 0 0-16 0" />
+				<circle cx="12" cy="7" r="4" />
+				<path d="m16.5 14.5 1.5 1.5 3-3" />
+			</svg>
+			<div class="identity-container">
+				<div class="identity-heading">{{ t.guestView.identityIndicator.heading }}</div>
+				<div class="identity-name">
+					<bdi dir="auto">{{ identity.firstName }} {{ lastInitial }}</bdi>
+				</div>
+				<div class="identity-phone">
+					<bdi dir="ltr">{{ identity.phone }}</bdi>
+				</div>
 			</div>
-			<div class="identity-phone">
-				<bdi dir="ltr">{{ identity.phone }}</bdi>
-			</div>
-			<div v-if="guest.notificationSettingsLoaded" class="notification-status">
-				<p v-if="guest.notificationsEnabled" class="notifications-enabled" aria-live="polite">
-					<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="m5 12 4 4L19 6" />
-					</svg>
-					{{ t.guestView.identityIndicator.notificationsEnabled }}
-				</p>
-				<AppButton
-					v-else-if="guest.notificationsAvailable"
-					type="button"
-					variant="secondary"
-					@click="notificationsDialogOpen = true"
-				>
-					{{ t.guestView.identityIndicator.notificationsAction }}
-				</AppButton>
-			</div>
+		</div>
+
+		<div v-if="guest.notificationSettingsLoaded" class="notification-status">
+			<p v-if="guest.smsConsented" class="notifications-enabled" aria-live="polite">
+				<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+					<path d="m5 12 4 4L19 6" />
+				</svg>
+				{{ t.guestView.identityIndicator.notificationsEnabled }}
+			</p>
+			<AppButton
+				v-else-if="guest.smsConfigured"
+				type="button"
+				variant="secondary"
+				@click="notificationsDialogOpen = true"
+			>
+				{{ t.guestView.identityIndicator.notificationsAction }}
+			</AppButton>
 		</div>
 	</aside>
 
@@ -79,53 +81,54 @@ watch(
 		:close-label="t.guestView.identityIndicator.closeNotificationsDialog"
 		@close="notificationsDialogOpen = false"
 	>
-		<NotificationOptIn
-			v-if="visitToken"
-			:guest="guest"
-			:visit-token="visitToken"
-			:locale="locale"
-		/>
+		<NotificationOptIn :guest="guest" />
 	</Dialog>
 </template>
 
 <style scoped>
 .guest-identity {
 	display: flex;
-	align-items: center;
-	gap: 12px;
+	flex-direction: column;
 	margin-bottom: 16px;
 	padding: 14px 16px;
 	border-radius: var(--radius-md);
 	color: var(--color-brand-dark);
 	background: var(--color-surface-soft);
 
-	svg {
-		flex: 0 0 auto;
-		width: 28px;
-		height: 28px;
-		color: var(--color-success);
-	}
+	& > .identity-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 12px;
 
-	.identity-container {
-		display: grid;
-		flex: 1;
-		grid-template-columns: repeat(2, 1fr);
-		grid-template-areas:
-			'heading heading'
-			'name phone'
-			'notifications notifications';
-	}
+		svg {
+			flex: 0 0 auto;
+			width: 28px;
+			height: 28px;
+			color: var(--color-success);
+		}
 
-	.identity-heading {
-		grid-area: heading;
-	}
+		.identity-container {
+			display: grid;
+			flex: 1;
+			grid-template-columns: repeat(2, 1fr);
+			grid-template-areas:
+				'heading heading'
+				'name phone'
+				'notifications notifications';
+		}
 
-	.identity-name {
-		grid-area: name;
-	}
+		.identity-heading {
+			grid-area: heading;
+		}
 
-	.identity-phone {
-		grid-area: phone;
+		.identity-name {
+			grid-area: name;
+		}
+
+		.identity-phone {
+			grid-area: phone;
+		}
 	}
 
 	.notification-status {

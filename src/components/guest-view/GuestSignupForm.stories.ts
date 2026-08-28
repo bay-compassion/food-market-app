@@ -4,14 +4,13 @@ import { ref } from 'vue';
 
 import { translations, type Locale } from '../../locales';
 import type { GuestFormState } from '../types';
-import GuestSignupCard from './GuestSignupCard.vue';
+import Card from '../ui/layout/Card.vue';
 import GuestSignupForm from './GuestSignupForm.vue';
 
 /**
  * The identity-only fields — first name, last name, phone — shared by the standalone early
- * sign-up screen and the combined registration-open form. Wrapped in `GuestSignupCard` because
- * `guest.css` scopes its field styling to `.checkin-card`, and renders unstyled without that
- * ancestor.
+ * sign-up screen and the combined registration-open form. Wrapped in `Card` for the frame this
+ * screen normally sits inside.
  */
 
 const emptyGuest = (): GuestFormState => ({
@@ -34,18 +33,18 @@ const meta: Meta<GuestSignupFormArgs> = {
 	parameters: { shell: 'guest' },
 	args: { locale: 'en' },
 	render: (args) => ({
-		components: { GuestSignupCard, GuestSignupForm },
+		components: { Card, GuestSignupForm },
 		setup() {
 			const guest = ref<GuestFormState>(emptyGuest());
 
 			return { guest, t: translations[args.locale] };
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<form>
 					<GuestSignupForm v-model:guest="guest" :t="t" />
 				</form>
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { adminTranslations } from '../../adminLocales';
+import { type AdminLocale, adminTranslations } from '../../adminLocales';
 import { languages, translations, type Locale } from '../../locales';
 import type { VisitCommand } from '../../services/visitStateMachine';
 import type { QueueGuest } from './types';
 import VisitCommandButtons from './VisitCommandButtons.vue';
 
 const props = defineProps<{
-	locale: Locale;
+	locale: AdminLocale;
 	guest: QueueGuest;
 	/** Ticks on a timer so the "called N min ago" label keeps counting up. */
 	now: number;

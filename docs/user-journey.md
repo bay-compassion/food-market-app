@@ -1,19 +1,29 @@
-<!-- diagram-sources: src/App.vue=f4a63ea67aad, src/components/guest-view/GuestView.vue=fd244225ef4d, src/services/guestCardState.ts=ee78768cc725, src/services/guest.store.ts=2c93c96b30e4, src/services/guestVisitApi.ts=3d96b156d4f2, src/services/root.store.ts=0d514c1568d7, src/services/market-session.store.ts=b8807b609880, src/services/page-visibility-poller.ts=4900a5d7e4b0, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=2cf92eed3b8a -->
+<!-- diagram-sources: src/App.vue=9a13205002eb, src/components/guest-view/GuestView.vue=b4f8d6d30f86, src/components/routes/SignupView.vue=2b8e489b26bc, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=bb58e5b9f902, src/stores/registration.store.ts=192c5b21f93b, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=7a16d33461b1, src/stores/root.store.ts=0c69fac54725, src/stores/market-session.store.ts=e3a352a4cbdb, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
 The path a guest takes from opening the app to being served, and the state their visit is in at each
-step. Language selection lives in [`src/App.vue`](../src/App.vue); the registration form, status
+step. Language selection (`GuestLanguageHero`, shown until a returning visitor has picked one) lives
+in `GuestView`, backed by the root's shared `TranslationStore`; the registration form, status
 screen, and countdown are in
-[`src/components/guest-view/GuestView.vue`](../src/components/guest-view/GuestView.vue),
-which reads the current market session from the shared
-[`src/services/root.store.ts`](../src/services/root.store.ts). The root's
-[`MarketSessionStore`](../src/services/market-session.store.ts) polls `/api/market` (is registration
-open?),
-while the root's [`GuestStore`](../src/services/guest.store.ts) owns the device credential used by
-`/api/guests` (register for a session), `/api/guest-signup` (identity only, no session), and
-`/api/notification-status` (retrieve consent). `/api/visit` (check status, cancel) is called
-through [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts).
+[`src/components/guest-view/GuestView.vue`](../src/components/guest-view/GuestView.vue) (route `/`),
+with the identity-only sign-up screen in its own
+[`src/components/routes/SignupView.vue`](../src/components/routes/SignupView.vue) (route `/signup`).
+Both read the current market session from the shared
+[`src/stores/root.store.ts`](../src/stores/root.store.ts) — every store it composes
+(`src/stores/*.store.ts`) lives for the app's lifetime, not any one component's mount. The root's
+[`MarketSessionStore`](../src/stores/market-session.store.ts) polls `/api/market` (is registration
+open?), while the root's [`GuestStore`](../src/stores/guest.store.ts) owns the device credential
+used by `/api/guests` (register for a session), `/api/guest-signup` (identity only, no session), and
+`/api/notification-status` (retrieve consent) and `/api/sms-subscription` (grant or revoke SMS
+consent). Both routes render the shared `GuestRegistrationForm`, which reads and submits the
+in-progress form fields through the root's
+[`RegistrationStore`](../src/stores/registration.store.ts) rather than through props, so `/` and
+`/signup` don't each wire up their own copy of that state. `/api/visit` (check status, cancel) is
+called through [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts), with the root's
+[`VisitStore`](../src/stores/visit.store.ts) owning the stored visit token, the active visit, and its
+refresh polling — it keeps polling in the background even while the guest is elsewhere in the app
+(e.g. `/admin` on the same device), stopping only when the root store itself is disposed.
 
 The diagram is written in [Mermaid](https://mermaid.js.org/), a plain-text diagram format GitHub
 renders automatically when viewing this file on github.com. It is maintained by hand — see
@@ -29,15 +39,20 @@ flowchart TD
     seen -- yes --> saved[Opens in the saved language]
     pick --> saved
 
-    saved --> hasIdentity{Saved device token<br/>and local profile?}
+    saved --> activeSession{Market session active?}
+    activeSession -- no --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
+    inactiveScreen --> hasRunAlready{Has this market's<br/>session already ended?}
+    hasRunAlready -- no, not open yet --> preregisterOffer[Show "Preregister" button]
+    hasRunAlready -- yes, already ended --> noCta([No CTA — nothing to do<br/>until the next one is scheduled])
+    activeSession -- yes --> hasIdentity{Saved device token<br/>and local profile?}
     hasIdentity -- yes --> identityShown[Show locally saved<br/>name and phone]
     hasIdentity -- no --> hasVisit
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
-    deviceAuth --> notificationState{Notifications enabled?}
+    deviceAuth --> notificationState{SMS consent granted?}
     notificationState -- yes --> notificationEnabled[Show "Notifications Enabled"]
     notificationState -- no --> notifyButton[Show "Notify Me About Updates"]
-    notifyButton -. opens .-> offer{Consent dialog:<br/>enable push and/or SMS?}
-    offer -- yes --> subscribed[Subscriptions saved<br/>per channel chosen]
+    notifyButton -. opens .-> offer{Consent dialog:<br/>approve the full SMS terms?}
+    offer -- yes --> subscribed[Save consent for the guest;<br/>server finds their active visit<br/>for any catch-up text]
     offer -- no --> notifyButton
     subscribed --> notificationEnabled
     notificationEnabled --> hasVisit{Saved visit token<br/>on this device?}
@@ -48,17 +63,18 @@ flowchart TD
     canRegister -- yes --> cachedIdentity{Cached local<br/>name and phone?}
     cachedIdentity -- no --> combinedForm[Sign-up fields — name, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
     cachedIdentity -- yes --> lotteryOnlyForm[Lottery-entry fields only:<br/>age range, household size,<br/>children/seniors]
-    canRegister -- no --> phase{Which phase is<br/>the session in?}
-    phase -- not open yet --> alreadySignedUp{Device token<br/>already issued?}
-    alreadySignedUp -- yes --> notOpenScreen([Not-open screen:<br/>no session to join right now])
-    alreadySignedUp -- no --> earlyLink([Not-open screen offers a<br/>'sign up early' link to /signup])
-    earlyLink -. "guest follows the link" .-> signupOnlyForm[Sign-up form:<br/>name and phone only —<br/>no session or household data]
-    signupOnlyForm --> signupSubmit["POST /api/guest-signup<br/>(creates/updates the guest,<br/>no visit)"]
-    signupSubmit --> saveSignupIdentity[Save entered name and phone,<br/>and any issued device token]
-    saveSignupIdentity --> notOpenScreen
+    canRegister -- no --> phase{Which active phase is<br/>the session in?}
     phase -- registration closed --> closedScreen([Registration-closed screen])
     phase -- service underway --> inServiceScreen([In-service screen])
-    phase -- ended --> endedScreen([Ended screen])
+
+    preregisterOffer -. "Preregister" button .-> signupRoute
+    signupRoute([Guest visits /signup]) --> alreadyIdentified{Already has a<br/>device token?}
+    alreadyIdentified -- yes --> redirectHome[Redirect to /]
+    redirectHome --> saved
+    alreadyIdentified -- no --> signupOnlyForm[Sign-up form:<br/>name and phone only —<br/>no session or household data]
+    signupOnlyForm --> signupSubmit["POST /api/guest-signup<br/>(creates/updates the guest,<br/>no visit)"]
+    signupSubmit --> saveSignupIdentity[Save entered name and phone,<br/>and any issued device token]
+    saveSignupIdentity --> signupSuccess([Show "You're signed up early!"<br/>on /signup])
 
     combinedForm --> questions[Answer this session's<br/>registration questions]
     lotteryOnlyForm --> questions
@@ -97,38 +113,36 @@ flowchart TD
   name and phone number under `bay-compassion.guest-identity`. The identity indicator reads only
   that browser-local copy; it never retrieves a guest profile from the server. A legacy token with
   no local profile therefore shows no indicator until the guest registers again.
-- **`/signup` lets a guest create their identity ahead of any session, whether or not one exists
-  yet.** Signing up (name and phone, via `/api/guest-signup`) is decoupled from any market
-  event — `resolveGuestCardState` in `guestCardState.ts` offers it purely off whether the device is
-  already identified (`isIdentified`, i.e. has a device token), independent of `marketEvent`. Once
-  registration is genuinely open, `/signup` and `/` render the same thing — `resolveGuestCardState`
-  derives `context` from whether registration is actually open right now, not from which route
-  rendered the card, so a guest who happens to still be on `/signup` once registration opens sees
-  the ordinary queue form. `GuestRegistrationForm` (the composer) takes a `context` prop
-  (`'queue' | 'early'`): `'early'` renders only the identity fields (`GuestSignupForm`, submitted
-  through `GuestStore.signUp`, no visit created); `'queue'` renders the lottery-entry fields
-  (`GuestLotteryForm`) plus the identity fields too, unless the device already has a cached local
-  identity to skip re-asking for.
+- **`/signup` is its own route (`SignupView.vue`) for creating a guest identity without a visit.**
+  Signing up (name and phone, via `/api/guest-signup`) is decoupled from lottery registration.
+  `SignupView` redirects to `/` as soon as it mounts if the browser already has a device token —
+  there's nothing left to ask, so the guest lands back on `GuestView`, which shows whatever its
+  normal card resolution decides (queue form, visit status, or the session's current phase). A
+  browser with no device token instead sees the identity-only form and, on success, an inline
+  "you're signed up early" message on `/signup` itself. `GuestNotOpenState`'s "Preregister" button
+  (shown on `/` while the market is inactive, unless that market's session has already ended, in
+  which case there is nothing left to preregister for until the next one is scheduled) is the
+  in-app link into this flow; a guest can also land on `/signup` directly, e.g. from a QR code.
+  `GuestRegistrationForm` (the composer) takes a
+  `context` prop (`'queue' | 'early'`): `'early'` (only ever passed by `SignupView`) renders only the
+  identity fields (`GuestSignupForm`, submitted through `GuestStore.signUp`, no visit created);
+  `'queue'` (only ever passed by `GuestView`) renders the lottery-entry fields (`GuestLotteryForm`)
+  plus the identity fields too, unless the device already has a cached local identity to skip
+  re-asking for. Both routes read and write the in-progress form through the shared
+  `RegistrationStore` instead of taking it as props.
 - **Signing up and entering the lottery are visually one screen but two components.**
   `GuestRegistrationForm` composes `GuestSignupForm` (name, phone) and `GuestLotteryForm` (age
   range, household size, children/seniors, per-session questions) inside a single `<form>` — one
   submit either way, so the wire contract to `/api/guests` for a lottery entry is unchanged. Only
   the standalone `'early'` sign-up path talks to a different endpoint (`/api/guest-signup`) and
   creates no visit.
-- **The "not open yet" screen, once past, gives way to three more screens with their own
-  copy — registration-closed, in-service, and ended — instead of one generic "closed" message.**
-  `currentSessionPhase` in `guestCardState.ts` is the single place that maps a session's status and
-  the current time to one of these phases; `GuestView.vue` renders `GuestNotOpenState`,
-  `GuestRegistrationClosedState`, or `GuestServiceState` (with `has-ended` distinguishing
-  in-service from ended) accordingly. Before `/api/market` has ever resolved — including when it's
-  unreachable — the resolver optimistically assumes registration is open rather than showing a
-  "not open" screen it can't actually confirm.
-- **A schedule information alert tells a guest when to come back, except while it wouldn't make
-  sense.** `GuestView.vue` shows `ScheduleInformation` above the rest of the screen whenever the
-  phase isn't `registration-open` or `in-service` — i.e. before the window opens, after it closes
-  but before the lottery runs, and once the session has ended. It's hidden while registration is
-  open (the signup form is live) and while service is underway, since its copy ("sign-ups aren't
-  open yet") would contradict either.
+- **Inactive market states share one explanation card.** `MarketSessionStore.isActive` is the
+  boundary: when it is false, `GuestView.vue` renders `GuestNotOpenState` with the next registration
+  window, lottery rules, and notification details, plus an early-signup link — unless the session's
+  status is `ended`, in which case the card omits that button, since there is nothing scheduled yet
+  to preregister for. When `isActive` is true, the normal card resolver chooses among the
+  registration form, visit status, registration-closed message, and in-service message. The
+  separate schedule alert is no longer rendered above the card.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — is entered fresh at every visit and lives only on `visits`, not on the
   guest's identity.** `GuestLotteryForm` asks for these details each time a guest enters a session's
@@ -138,9 +152,10 @@ flowchart TD
   [`data-model.md`](data-model.md) for how this moved off `guests`. Each visit also snapshots the
   normalized phone number so later reconciliation can see earlier values after a guest renews their
   identity.
-- **The status screen polls.** It re-checks `/api/visit` on a timer for as long as the visit is
-  live — `registered`, `waiting`, or `called` — so the guest sees the lottery result and the call
-  even without notifications. Push is a convenience, never the only channel. Separately, the
+- **The visit status polls.** The root's `VisitStore` re-checks `/api/visit` on a timer for as long
+  as the visit is live — `registered`, `waiting`, or `called` — so the guest sees the lottery result
+  and the call even without notifications, and keeps doing so even if they wander to another route
+  on the same device. Push is a convenience, never the only channel. Separately, the
   application-level `MarketSessionStore` re-checks `/api/market` every five seconds while the page
   is visible. It pauses while the page is hidden or suspended, then refreshes immediately when the
   guest returns. Both the guest and admin screens observe that same state, so a guest sitting on
@@ -164,18 +179,18 @@ flowchart TD
   - Once service has started the lottery is over, so a walk-in can only go straight into the line.
   - Once the session has ended, the only thing left to record is `served` — someone who was handed
     food outside the app. That visit never joins a queue.
-- **Notifications are best-effort, across two independent channels.** Push requires a browser that
-  supports it, and on iOS the app must be installed to the home screen first. SMS requires an
-  explicit consent step (separate from just having a phone number on file) and Twilio to be
-  configured; a guest can enable either channel, both, or neither, and each is delivered and
-  retried on its own. `GuestStore` sends the browser-local device credential to the authenticated
-  `/api/notification-status` endpoint, which hashes it to identify the guest and reports prior
-  consent without exposing profile data. Prior SMS consent is then attached to the current visit;
-  push still requires a live subscription in the current browser. The identity indicator shows a
-  single opt-in button before consent, opens the channel choices in a dialog, and replaces the
-  button with a compact enabled status after either channel is activated. Admins can also send a
-  broadcast message to everyone in the session, on whichever channel(s) they're subscribed to,
-  whose visit isn't cancelled.
+- **Notifications are best-effort.** SMS requires an explicit consent step (separate from just
+  having a phone number on file) and Twilio to be configured. Consent belongs to the guest, so it
+  applies to future visits until the guest revokes it. `GuestStore` sends the browser-local device
+  credential to the authenticated `/api/notification-status` endpoint during initialization,
+  which hashes it to identify the guest and restores consent without exposing profile data. The
+  same credential authorizes `/api/sms-subscription`; no visit token participates in consent. On a
+  new opt-in, the server looks up the guest's visit in the newest non-ended market event and sends
+  the appropriate catch-up text if that visit has a live status. The identity indicator shows a
+  single SMS opt-in button before consent and replaces it with a compact enabled status afterward.
+  Push notification plumbing remains in place, but push controls are not currently shown to guests.
+  Admin broadcasts still reach eligible visits over any subscribed channel whose visit isn't
+  cancelled.
 - **Cancelling is only possible before service.** The cancel button appears only while the visit is
   `registered` or `waiting`, and not at all once the session has ended.
 - **A closing session resolves anyone left over.** Ending a session marks every visit still

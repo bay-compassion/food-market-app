@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed } from 'vue';
 
-import type { Locale } from '../../locales';
+import type { AdminLocale } from '@/adminLocales.ts';
+
 import { visitStatuses, type VisitStatus } from '../../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import QueueGuestRow from './QueueGuestRow.vue';
@@ -15,7 +16,7 @@ import { guestWithStatus, queueGuest } from './queueGuests.fixture';
  * below is the quickest way to see the whole matrix at once.
  */
 type QueueGuestRowArgs = {
-	locale: Locale;
+	locale: AdminLocale;
 	status: VisitStatus;
 	showWaitingTime: boolean;
 	busy: boolean;

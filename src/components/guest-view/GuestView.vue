@@ -1,57 +1,44 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
+import { useRouter } from 'vue-router';
 
-import type { Locale, Translation } from '../../locales';
+import Card from '@/components/ui/layout/Card.vue';
+
+import type { Locale } from '../../locales';
 import {
 	currentSessionPhase,
 	guestFormContext,
 	resolveGuestCardState,
 } from '../../services/guestCardState';
-import {
-	cancelActiveVisit,
-	fetchActiveVisit,
-	type ActiveVisit,
-} from '../../services/guestVisitApi';
-import { useRootStore } from '../../services/root.store';
-import { StorageKey, StorageService } from '../../services/storage.service';
-import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
-import type { GuestFormState } from '../types';
+import { SessionStatusEnum } from '../../services/sessionStateMachine';
+import type { RegistrationSubmitResult } from '../../stores/registration.store';
+import { useRootStore } from '../../stores/root.store';
+import type { Language } from '../../stores/translation.store';
 import GuestIdentityIndicator from './GuestIdentityIndicator.vue';
 import GuestLanguageHero from './GuestLanguageHero.vue';
 import GuestNotOpenState from './GuestNotOpenState.vue';
 import GuestRegistrationClosedState from './GuestRegistrationClosedState.vue';
 import GuestRegistrationForm from './GuestRegistrationForm.vue';
 import GuestServiceState from './GuestServiceState.vue';
-import GuestSignupCard from './GuestSignupCard.vue';
-import GuestStateMessage from './GuestStateMessage.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
-import ScheduleInformation from './ScheduleInformation.vue';
 
-const props = defineProps<{
-	t: Translation;
-	locale: Locale;
-	isReturningVisitor: boolean;
-}>();
-
-defineEmits<{ 'select-language': [locale: Locale] }>();
 const rootStore = useRootStore();
 const guestDomain = rootStore.guest;
 const session = rootStore.session;
+const visitStore = rootStore.visit;
+const translations = rootStore.translations;
+const t = toRef(translations, 'translation');
+const locale = toRef(translations, 'locale');
+const isReturningVisitor = toRef(guestDomain, 'isReturningVisitor');
 
-const visitTokenStorageKey = 'bay-compassion.visit-token';
-let visitRefreshTimer: ReturnType<typeof setTimeout> | undefined;
-let countdownTimer: ReturnType<typeof setInterval> | undefined;
+function selectLanguage(selected: Locale) {
+	translations.setLanguage(selected as Language);
+	guestDomain.markAsReturningVisitor();
+}
 
-const storage = new StorageService();
-const isSubmitted = ref(false);
-const isSignedUpEarly = ref(false);
-const isSubmitting = ref(false);
-const isCancelling = ref(false);
-const submissionError = ref('');
-const activeVisit = ref<ActiveVisit | null>(null);
+let nowTimer: ReturnType<typeof setInterval> | undefined;
+
 const isStatusLoading = ref(true);
-const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
 const guestIdentity = computed(() => guestDomain.identity);
 
 /**
@@ -61,65 +48,10 @@ const guestIdentity = computed(() => guestDomain.identity);
  * a "not open" screen the app can't actually confirm.
  */
 const hasLoadedRegistration = computed(() => session.currentState !== null);
-/** Ticks while registration is open so `GuestSignupCard`'s countdown stays live. */
+/** Ticks every second so the registration form's countdown stays live. */
 const now = ref(Date.now());
-const registrationQuestions = computed(() => session.currentState?.questions ?? []);
-const registrationAnswers = ref<Record<string, string | number>>({});
-/** Last-entered household composition, kept only in this browser to prefill the lottery form —
- *  never sent to the server as part of identity. */
-const savedHousehold = storage.get(StorageKey.GUEST_HOUSEHOLD) as Partial<
-	Pick<GuestFormState, 'ageRange' | 'householdSize' | 'childrenCount' | 'seniorsCount'>
-> | null;
-const guest = ref<GuestFormState>({
-	firstName: guestDomain.identity?.firstName ?? '',
-	lastName: guestDomain.identity?.lastName ?? '',
-	ageRange: savedHousehold?.ageRange ?? '',
-	householdSize: savedHousehold?.householdSize ?? '',
-	childrenCount: savedHousehold?.childrenCount ?? '',
-	seniorsCount: savedHousehold?.seniorsCount ?? '',
-	phone: guestDomain.identity?.phone ?? '',
-});
 
-const visitStatusLabel = computed(() => {
-	if (!activeVisit.value) {
-		return '';
-	}
-
-	return guestVisitStatusLabel(props.locale, activeVisit.value.status);
-});
-const canCancelVisit = computed(
-	() => activeVisit.value?.status === 'registered' || activeVisit.value?.status === 'waiting',
-);
-/**
- * A called guest still needs updates — refreshing only while the visit can be cancelled meant the
- * screen froze on "Called" and never moved on.
- */
-const isVisitActive = computed(
-	() =>
-		activeVisit.value?.status === 'registered' ||
-		activeVisit.value?.status === 'waiting' ||
-		activeVisit.value?.status === 'called',
-);
-const isCalled = computed(() => activeVisit.value?.status === 'called');
-const queuePosition = computed(() =>
-	activeVisit.value?.status === 'waiting' ? activeVisit.value.queuePosition : null,
-);
-const guestsAhead = computed(() =>
-	activeVisit.value?.status === 'waiting' ? activeVisit.value.aheadOfYou : null,
-);
-
-function scheduleVisitRefresh() {
-	if (visitRefreshTimer) {
-		clearTimeout(visitRefreshTimer);
-	}
-
-	if (isVisitActive.value) {
-		visitRefreshTimer = setTimeout(loadActiveVisit, 15_000);
-	}
-}
-const route = useRoute();
 const router = useRouter();
-const isPreregistration = computed(() => route.name === 'signup');
 const phase = computed(() =>
 	hasLoadedRegistration.value
 		? currentSessionPhase(session.marketEvent, new Date(now.value))
@@ -128,218 +60,98 @@ const phase = computed(() =>
 /**
  * Which of the signup card's states applies right now. An active visit always wins — see
  * `resolveGuestCardState` for the full precedence, which mirrors the server-side gate in
- * `guestRegistration.mts`.
+ * `guestRegistration.mts`. `isPreregistration` is always `false` here — the `/signup` route
+ * renders `SignupView` instead, which is the only place that flag ever applies.
  */
 const cardState = computed(() =>
 	resolveGuestCardState({
 		phase: phase.value,
 		isIdentified: guestDomain.isIdentified,
-		isPreregistration: isPreregistration.value,
-		// `isSubmitted` is a separate flag, not derived from `activeVisit`, so `resetToForm` can put
-		// the card back in front of the form (e.g. to register another household member) without
-		// discarding the visit that's still being tracked and refreshed in the background.
-		hasActiveVisit: activeVisit.value !== null && isSubmitted.value,
+		isPreregistration: false,
+		hasActiveVisit: visitStore.hasActiveVisit,
 	}),
 );
-/**
- * A schedule reminder shown above the rest of the screen whenever there's nothing actionable to
- * do right now — before the window opens, after it closes but before the lottery runs, and once
- * the session has ended. Hidden while registration is open (the signup form is live) and while
- * service is underway, since its "sign-ups aren't open yet" copy would contradict either.
- */
-const showScheduleInformation = computed(
-	() => phase.value !== 'registration-open' && phase.value !== 'in-service',
-);
+/** Once a market has run its course, there is nothing left to preregister for until an admin
+ *  schedules the next one — unlike the "hasn't opened yet" case, which still welcomes it. */
+const canPreregister = computed(() => session.currentStatus !== SessionStatusEnum.ENDED);
 /** The success-state copy differs between joining today's queue and signing up ahead of time. */
 const successCopy = computed(() =>
 	guestFormContext(phase.value) === 'early'
-		? { title: props.t.earlySuccessTitle, description: props.t.earlySuccessDescription }
-		: { title: props.t.successTitle, description: props.t.successDescription },
+		? { title: t.value.earlySuccessTitle, description: t.value.earlySuccessDescription }
+		: { title: t.value.successTitle, description: t.value.successDescription },
 );
-
-/** Resets the card to the empty form, e.g. so the header brand link can act as a "start over". */
-function resetToForm() {
-	isSubmitted.value = false;
-	isSignedUpEarly.value = false;
-}
 
 function goToSignup() {
 	void router.push({ name: 'signup' });
 }
 
-async function submitForm() {
-	isSubmitting.value = true;
-	submissionError.value = '';
-
-	try {
-		if (cardState.value.kind === 'form' && cardState.value.context === 'early') {
-			await guestDomain.signUp({
-				firstName: guest.value.firstName,
-				lastName: guest.value.lastName,
-				phone: guest.value.phone,
-				locale: props.locale,
-			});
-			isSignedUpEarly.value = true;
-
-			return;
-		}
-
-		const registration = await guestDomain.register({
-			...guest.value,
-			locale: props.locale,
-			marketEventId: session.marketEvent?.id ?? null,
-			answers: registrationAnswers.value,
-			source: 'self',
-		});
-
-		window.localStorage.setItem(visitTokenStorageKey, registration.visitToken);
-		visitToken.value = registration.visitToken;
-		activeVisit.value = {
-			id: registration.id,
-			status: registration.status,
-			queuePosition: null,
-			aheadOfYou: null,
-		};
-		isSubmitted.value = true;
-		storage.set(StorageKey.GUEST_HOUSEHOLD, {
-			ageRange: guest.value.ageRange,
-			householdSize: guest.value.householdSize,
-			childrenCount: guest.value.childrenCount,
-			seniorsCount: guest.value.seniorsCount,
-		});
-		scheduleVisitRefresh();
-	} catch {
-		submissionError.value = props.t.submissionError;
-	} finally {
-		isSubmitting.value = false;
+function handleSubmitted(result: RegistrationSubmitResult) {
+	if (result.kind !== 'registered') {
+		return;
 	}
+
+	visitStore.submit(result.registration);
 }
 
-async function loadActiveVisit() {
-	const token = window.localStorage.getItem(visitTokenStorageKey);
-
-	if (!token) {
-		return;
-	}
-	const lookup = await fetchActiveVisit(token);
-
-	if (!lookup.found) {
-		if (lookup.reason === 'unreachable') {
-			// Keep registration available if status refresh is temporarily unavailable.
-			return;
-		}
-		window.localStorage.removeItem(visitTokenStorageKey);
-		visitToken.value = null;
-		activeVisit.value = null;
-		isSubmitted.value = false;
-		scheduleVisitRefresh();
-
-		return;
-	}
-	activeVisit.value = lookup.visit;
-	isSubmitted.value = true;
-	scheduleVisitRefresh();
-}
-
-async function cancelVisit() {
-	const token = window.localStorage.getItem(visitTokenStorageKey);
-
-	if (!token || !window.confirm(props.t.cancelVisitConfirm)) {
+function cancelVisit() {
+	if (!window.confirm(t.value.cancelVisitConfirm)) {
 		return;
 	}
 
-	isCancelling.value = true;
-
-	try {
-		const visit = await cancelActiveVisit(token);
-
-		activeVisit.value = { ...activeVisit.value!, ...visit };
-	} catch {
-		submissionError.value = props.t.visitError;
-	} finally {
-		isCancelling.value = false;
-	}
+	void visitStore.cancel();
 }
 
 onMounted(async () => {
-	countdownTimer = setInterval(() => {
+	nowTimer = setInterval(() => {
 		now.value = Date.now();
 	}, 1_000);
-	await Promise.all([session.getStatus().catch(() => undefined), loadActiveVisit()]);
+	await Promise.all([session.getStatus().catch(() => undefined), visitStore.refresh()]);
 	isStatusLoading.value = false;
 });
 onBeforeUnmount(() => {
-	clearTimeout(visitRefreshTimer);
-	clearInterval(countdownTimer);
+	clearInterval(nowTimer);
 });
-
-defineExpose({ resetToForm });
 </script>
 
 <template>
 	<section class="guest-layout">
+		<!-- Card that indicates who the guest has been identified as -->
+		<GuestIdentityIndicator v-if="guestIdentity" :identity="guestIdentity" />
+
+		<GuestLanguageHero
+			v-if="!isReturningVisitor"
+			:t="t"
+			:locale="locale"
+			@select-language="selectLanguage"
+		/>
+
 		<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
 		<template v-else>
-			<GuestIdentityIndicator
-				v-if="guestIdentity"
-				:t="t"
-				:locale="locale"
-				:identity="guestIdentity"
-				:visit-token="visitToken"
-			/>
-
-			<ScheduleInformation v-if="showScheduleInformation" :t="t" />
-
-			<GuestLanguageHero
-				v-if="!isReturningVisitor"
-				:t="t"
-				:locale="locale"
-				@select-language="$emit('select-language', $event)"
-			/>
-
-			<GuestSignupCard>
-				<GuestStateMessage
-					v-if="isSignedUpEarly"
-					:heading="t.earlySuccessTitle"
-					:description="t.earlySuccessDescription"
-				/>
-				<GuestVisitStatus
-					v-else-if="cardState.kind === 'visit-status'"
-					:t="t"
-					:is-called="isCalled"
-					:success-title="successCopy.title"
-					:success-description="successCopy.description"
-					:visit-status-label="visitStatusLabel"
-					:queue-position="queuePosition"
-					:guests-ahead="guestsAhead"
-					:can-cancel-visit="canCancelVisit"
-					:is-cancelling="isCancelling"
-					:submission-error="submissionError"
-					@cancel-visit="cancelVisit"
-				/>
-				<GuestRegistrationForm
-					v-else-if="cardState.kind === 'form'"
-					v-model:guest="guest"
-					v-model:registration-answers="registrationAnswers"
-					:t="t"
-					:context="cardState.context"
-					:is-identified="guestIdentity !== null"
-					:registration-questions="registrationQuestions"
-					:submission-error="submissionError"
-					:is-submitting="isSubmitting"
-					:now="now"
-					:registration-closes-at="session.marketEvent?.registrationClosesAt ?? null"
-					@submit="submitForm"
-				/>
-				<GuestNotOpenState
-					v-else-if="cardState.kind === 'not-open'"
-					:t="t"
-					:show-preregister-cta="cardState.showPreregisterCta"
-					@preregister="goToSignup"
-				/>
-				<GuestRegistrationClosedState v-else-if="cardState.kind === 'registration-closed'" :t="t" />
-				<GuestServiceState v-else :t="t" :has-ended="cardState.kind === 'ended'" />
-			</GuestSignupCard>
+			<Card aria-live="polite">
+				<template v-if="!session.isActive">
+					<GuestNotOpenState :t="t" :allow-preregister="canPreregister" @preregister="goToSignup" />
+				</template>
+				<template v-else>
+					<GuestVisitStatus
+						v-if="cardState.kind === 'visit-status'"
+						:success-title="successCopy.title"
+						:success-description="successCopy.description"
+						@cancel-visit="cancelVisit"
+					/>
+					<GuestRegistrationForm
+						v-else-if="cardState.kind === 'form'"
+						:context="cardState.context"
+						:now="now"
+						@submitted="handleSubmitted"
+					/>
+					<GuestNotOpenState v-else-if="cardState.kind === 'not-open'" :t="t" />
+					<GuestRegistrationClosedState
+						v-else-if="cardState.kind === 'registration-closed'"
+						:t="t"
+					/>
+					<GuestServiceState v-else :t="t" :has-ended="cardState.kind === 'ended'" />
+				</template>
+			</Card>
 		</template>
 	</section>
 </template>

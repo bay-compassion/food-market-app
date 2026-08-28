@@ -10,15 +10,14 @@ stay consistent as the app grows.
 
 ## Where things live
 
-| What               | Where                                                            |
-| ------------------ | ---------------------------------------------------------------- |
-| Design tokens      | `src/styles/base.css`                                            |
-| App chrome         | `src/styles/app-shell.css`                                       |
-| Guest-only styles  | `src/styles/guest.css`, scoped under `.checkin-card`             |
-| Admin-only styles  | `src/styles/admin.css`, scoped under `.admin-dashboard`          |
-| Shared components  | `src/components/`                                                |
-| Feature components | `src/components/<feature>/`, for example `src/components/admin/` |
-| Business logic     | `src/services/`                                                  |
+| What               | Where                                                                    |
+| ------------------ | ------------------------------------------------------------------------ |
+| Design tokens      | `src/styles/base.css`                                                    |
+| App chrome         | `src/styles/app-shell.css`, including the `.guest-layout` page container |
+| Admin-only styles  | `src/styles/admin.css`, scoped under `.admin-dashboard`                  |
+| Shared components  | `src/components/`                                                        |
+| Feature components | `src/components/<feature>/`, for example `src/components/admin/`         |
+| Business logic     | `src/services/`                                                          |
 
 Every page in this section reads its values live from `src/styles/base.css` rather than repeating
 them. If a swatch below looks wrong, the fix belongs in that stylesheet, not in this page.
@@ -31,9 +30,10 @@ story supplies the props the container normally would.
 
 Two conventions are worth knowing:
 
-**Pick a shell.** Every rule in `admin.css` is prefixed `.admin-dashboard` and every rule in
-`guest.css` is prefixed `.checkin-card`. A component rendered without its wrapper is not merely
-mispositioned, it is unstyled. Set it per story:
+**Pick a shell.** Every rule in `admin.css` is prefixed `.admin-dashboard`, so an admin component
+rendered without its wrapper is not merely mispositioned, it is unstyled. A guest component has no
+such shared stylesheet to lose — its `guest` shell only supplies the `.guest-layout` container's
+width and padding, matching the real page. Set the shell per story:
 
 ```ts
 const meta: Meta<Args> = {

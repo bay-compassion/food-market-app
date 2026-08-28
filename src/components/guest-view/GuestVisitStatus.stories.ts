@@ -1,17 +1,24 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed } from 'vue';
 
 import { translations, type Locale } from '../../locales';
 import type { VisitStatus } from '../../services/visitStateMachine';
-import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
-import GuestSignupCard from './GuestSignupCard.vue';
+import { RootStore, rootStoreKey } from '../../stores/root.store';
+import type { Language } from '../../stores/translation.store';
+import Card from '../ui/layout/Card.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
 
 /**
  * What a guest sees once they have an active visit, in every status it can be in. Wrapped in
- * `GuestSignupCard` because `.submission-error` lives in `guest.css` scoped to `.checkin-card`,
- * and renders unstyled without that ancestor.
+ * `Card` for the frame this screen normally sits inside.
+ *
+ * `GuestVisitStatus` reads the active visit from `RootStore` rather than taking it as props, so
+ * each story seeds a fresh store — via a mocked `/api/visit` — instead of passing visit fields
+ * straight through as props.
  */
+
+const visitTokenStorageKey = 'bay-compassion.visit-token';
+const originalFetch = window.fetch.bind(window);
 
 type GuestVisitStatusArgs = {
 	locale: Locale;
@@ -19,9 +26,45 @@ type GuestVisitStatusArgs = {
 	queuePosition: number | null;
 	aheadOfYou: number | null;
 	context: 'queue' | 'early';
-	canCancelVisit: boolean;
 	isCancelling: boolean;
-	submissionError: string;
+	submissionError: boolean;
+};
+
+const withVisitEndpoint: Decorator = (story, context) => {
+	const args = context.args as GuestVisitStatusArgs;
+
+	window.localStorage.setItem(visitTokenStorageKey, 'story-visit-token');
+
+	window.fetch = (input, init) => {
+		const url = String(input instanceof Request ? input.url : input);
+
+		if (url !== '/api/visit') {
+			return originalFetch(input, init);
+		}
+
+		if ((init?.method ?? 'GET') === 'GET') {
+			return Promise.resolve(
+				Response.json({
+					id: 'story-visit',
+					status: args.visitStatus,
+					queuePosition: args.queuePosition,
+					aheadOfYou: args.aheadOfYou,
+				}),
+			);
+		}
+
+		if (args.isCancelling) {
+			return new Promise(() => {});
+		}
+
+		if (args.submissionError) {
+			return Promise.resolve(new Response(null, { status: 500 }));
+		}
+
+		return Promise.resolve(Response.json({ id: 'story-visit', status: 'cancelled' }));
+	};
+
+	return story();
 };
 
 const meta: Meta<GuestVisitStatusArgs> = {
@@ -41,13 +84,22 @@ const meta: Meta<GuestVisitStatusArgs> = {
 		queuePosition: null,
 		aheadOfYou: null,
 		context: 'queue',
-		canCancelVisit: true,
 		isCancelling: false,
-		submissionError: '',
+		submissionError: false,
 	},
+	decorators: [withVisitEndpoint],
 	render: (args) => ({
-		components: { GuestSignupCard, GuestVisitStatus },
+		components: { Card, GuestVisitStatus },
 		setup() {
+			const rootStore = new RootStore();
+
+			rootStore.translations.setLanguage(args.locale as Language);
+			void rootStore.visit.refresh().then(() => {
+				if (args.isCancelling || args.submissionError) {
+					void rootStore.visit.cancel();
+				}
+			});
+
 			const t = computed(() => translations[args.locale]);
 			const successCopy = computed(() =>
 				args.context === 'early'
@@ -55,29 +107,18 @@ const meta: Meta<GuestVisitStatusArgs> = {
 					: { title: t.value.successTitle, description: t.value.successDescription },
 			);
 
-			return {
-				args,
-				t,
-				successCopy,
-				isCalled: computed(() => args.visitStatus === 'called'),
-				visitStatusLabel: computed(() => guestVisitStatusLabel(args.locale, args.visitStatus)),
-			};
+			return { rootStore, rootStoreKey, successCopy };
+		},
+		provide() {
+			return { [this.rootStoreKey]: this.rootStore };
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<GuestVisitStatus
-					:t="t"
-					:is-called="isCalled"
 					:success-title="successCopy.title"
 					:success-description="successCopy.description"
-					:visit-status-label="visitStatusLabel"
-					:queue-position="args.queuePosition"
-					:guests-ahead="args.aheadOfYou"
-					:can-cancel-visit="args.canCancelVisit"
-					:is-cancelling="args.isCancelling"
-					:submission-error="args.submissionError"
 				/>
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };
@@ -116,27 +157,22 @@ export const Cancelling: Story = {
 
 /** The visit is over. There is nothing left to cancel. */
 export const Served: Story = {
-	args: { visitStatus: 'served', canCancelVisit: false },
+	args: { visitStatus: 'served' },
 };
 
 /** The guest was not drawn in the lottery. */
 export const NotPlaced: Story = {
-	args: { visitStatus: 'not_placed', canCancelVisit: false },
+	args: { visitStatus: 'not_placed' },
 };
 
 /** The guest cancelled their own visit. */
 export const Cancelled: Story = {
-	args: { visitStatus: 'cancelled', canCancelVisit: false },
+	args: { visitStatus: 'cancelled' },
 };
 
 /** A failed cancel request. The error sits above the cancel button. */
 export const CancelFailed: Story = {
-	args: {
-		visitStatus: 'waiting',
-		queuePosition: 3,
-		aheadOfYou: 2,
-		submissionError: translations.en.visitError,
-	},
+	args: { visitStatus: 'waiting', queuePosition: 3, aheadOfYou: 2, submissionError: true },
 };
 
 /** Right-to-left rendering, which the Arabic and Farsi locales need. */

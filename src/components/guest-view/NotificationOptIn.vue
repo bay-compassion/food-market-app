@@ -1,44 +1,24 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
+
 import { translations, type Locale } from '../../locales';
-import type { GuestStore } from '../../services/guest.store';
+import type { GuestStore } from '../../stores/guest.store';
 import AppButton from '../AppButton.vue';
 
-const props = defineProps<{ guest: GuestStore; visitToken: string; locale: Locale }>();
+const props = defineProps<{ guest: GuestStore }>();
 const guest = props.guest;
-const t = computed(() => translations[props.locale]);
+const t = useTranslation();
 const smsConsent = ref(false);
 
 onMounted(() => {
-	void guest.loadNotificationSettings(props.visitToken);
+	void guest.loadNotificationSettings();
 });
 </script>
 
 <template>
 	<div class="notification-consent">
-		<div v-if="guest.pushConfigured" class="notification-option">
-			<p v-if="guest.pushState === 'enabled'" class="notification-enabled">
-				{{ t.notificationsEnabled }}
-			</p>
-			<p v-else-if="guest.notificationsDenied">{{ t.notificationsDenied }}</p>
-			<template v-else-if="guest.canEnablePush">
-				<AppButton
-					type="button"
-					variant="secondary"
-					:disabled="guest.pushState === 'enabling'"
-					@click="guest.enablePushNotifications()"
-				>
-					{{ t.notificationsEnable }}
-				</AppButton>
-				<p v-if="guest.pushState === 'error'" class="submission-error" role="alert">
-					{{ t.notificationsError }}
-				</p>
-			</template>
-			<p v-else-if="guest.shouldInstallIosApp">{{ t.notificationsIosInstall }}</p>
-			<p v-else>{{ t.notificationsUnsupported }}</p>
-		</div>
-
 		<div v-if="guest.smsConfigured" class="notification-option">
 			<p v-if="guest.smsState === 'enabled'" class="notification-enabled">{{ t.smsEnabled }}</p>
 			<template v-else>

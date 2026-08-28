@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { adminTranslations } from '../adminLocales';
+import { useAdminTranslation } from '@/stores/hooks/use-translation.ts';
+
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
-import { translations, type Locale } from '../locales';
 import type { ServiceProgress } from '../services/demoScenario';
 import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
 import { lotteryWeightFor } from '../services/lotteryWeight';
-import type { SessionOverview } from '../services/market-session.store';
 import type { Permission } from '../services/permissions';
-import { useRootStore } from '../services/root.store';
 import {
 	currentSessionState,
 	type SessionCommand,
@@ -21,6 +19,8 @@ import {
 	type VisitStatus,
 } from '../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../services/visitStatusLabels';
+import type { SessionOverview } from '../stores/market-session.store';
+import { useRootStore } from '../stores/root.store';
 import DevModeView from './admin/DevModeView.vue';
 import GuestDatabaseView from './admin/GuestDatabaseView.vue';
 import QuestionBankView from './admin/QuestionBankView.vue';
@@ -43,16 +43,17 @@ type GuestStatus = VisitStatus;
 type Guest = QueueGuest & { marketEventId: string | null };
 
 const props = withDefaults(
-	defineProps<{ locale: Locale; getAccessToken: () => Promise<string>; view?: AdminView }>(),
+	defineProps<{ getAccessToken: () => Promise<string>; view?: AdminView }>(),
 	{ view: 'current-session' },
 );
 const emit = defineEmits<{ navigate: [view: AdminView] }>();
 const rootStore = useRootStore();
+const { translations } = rootStore;
+const locale = translations.locale;
 const session = rootStore.session;
 
 rootStore.setAccessTokenProvider(props.getAccessToken);
-const t = computed(() => adminTranslations[props.locale]);
-const base = computed(() => translations[props.locale]);
+const t = useAdminTranslation();
 const activeView = ref<AdminView>(props.view);
 const granted = ref<Permission[]>([]);
 const event = computed(() => session.currentState?.event ?? null);
@@ -84,9 +85,7 @@ const statuses: GuestStatus[] = [
 	'no_show',
 	'cancelled',
 ];
-const statusLabels = computed<Record<GuestStatus, string>>(() =>
-	adminVisitStatusLabels(props.locale),
-);
+const statusLabels = computed<Record<GuestStatus, string>>(() => adminVisitStatusLabels(locale));
 const viewLabels = computed<Record<AdminView, string>>(() => ({
 	'current-session': t.value.currentSession,
 	queue: t.value.queue,
@@ -496,7 +495,7 @@ async function addManualGuest(guest: ManualGuest, marketEventId = event.value?.i
 				...guest,
 				// The form speaks in named tiers; the API takes the multiplier behind one.
 				lotteryWeight: lotteryWeightFor(guest.lotteryWeightTier),
-				locale: props.locale,
+				locale: locale,
 				marketEventId,
 				answers: {},
 				source: 'admin',
@@ -638,7 +637,7 @@ onMounted(loadDashboard);
 			<header class="admin-heading" :class="{ compact: activeView === 'queue' }">
 				<div>
 					<EyebrowLabel v-if="activeView !== 'queue'" tone="brand">
-						{{ base.adminEyebrow }}
+						{{ t.adminEyebrow }}
 					</EyebrowLabel>
 					<h1>{{ navigation.find((item) => item.id === activeView)?.label }}</h1>
 					<p v-if="activeView !== 'queue'">{{ t.adminDescription }}</p>

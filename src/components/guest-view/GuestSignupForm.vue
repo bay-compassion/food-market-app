@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { Translation } from '../../locales';
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
+
 import FormField from '../FormField.vue';
 import PhoneField from '../PhoneField.vue';
 import type { GuestFormState } from '../types';
 
-defineProps<{ t: Translation }>();
-
+const t = useTranslation();
 const guest = defineModel<GuestFormState>('guest', { required: true });
 </script>
 

@@ -8,6 +8,7 @@ withDefaults(defineProps<{ heading: string; description: string; icon?: string }
 	<div class="state-message">
 		<div class="state-icon" aria-hidden="true">{{ icon }}</div>
 		<h2>{{ heading }}</h2>
+		<slot name="details" />
 		<p>{{ description }}</p>
 		<slot />
 	</div>
@@ -27,7 +28,7 @@ withDefaults(defineProps<{ heading: string; description: string; icon?: string }
 	text-transform: uppercase;
 }
 .state-message p {
-	max-width: 320px;
+	max-width: var(--state-description-max-width, 320px);
 	color: var(--color-text-muted);
 	line-height: 1.55;
 }

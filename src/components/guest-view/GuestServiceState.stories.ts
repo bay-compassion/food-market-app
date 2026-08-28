@@ -2,13 +2,12 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed } from 'vue';
 
 import { translations, type Locale } from '../../locales';
+import Card from '../ui/layout/Card.vue';
 import GuestServiceState from './GuestServiceState.vue';
-import GuestSignupCard from './GuestSignupCard.vue';
 
 /**
  * Shown to a guest without an active visit while the market is `service_started` or `ended`.
- * Wrapped in `GuestSignupCard` purely for the `.checkin-card` frame this screen normally sits
- * inside.
+ * Wrapped in `Card` for the frame this screen normally sits inside.
  */
 
 type GuestServiceStateArgs = {
@@ -25,14 +24,14 @@ const meta: Meta<GuestServiceStateArgs> = {
 		hasEnded: false,
 	},
 	render: (args) => ({
-		components: { GuestSignupCard, GuestServiceState },
+		components: { Card, GuestServiceState },
 		setup() {
 			return { args, t: computed(() => translations[args.locale]) };
 		},
 		template: `
-			<GuestSignupCard>
+			<Card aria-live="polite">
 				<GuestServiceState :t="t" :has-ended="args.hasEnded" />
-			</GuestSignupCard>
+			</Card>
 		`,
 	}),
 };

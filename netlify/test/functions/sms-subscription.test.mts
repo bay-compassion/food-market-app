@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
-vi.mock('../../lib/visitAuth.mjs', () => ({ authorizedVisit: vi.fn() }));
+vi.mock('../../lib/deviceAuth.mjs', () => ({ authorizedGuest: vi.fn() }));
 vi.mock('../../services/notifications.mjs', () => ({ requeueNotification: vi.fn() }));
 vi.mock('../../services/smsNotifications.mjs', () => ({
 	deliverPendingSmsNotifications: vi.fn(),
@@ -11,7 +11,7 @@ vi.mock('../../services/smsNotifications.mjs', () => ({
 }));
 
 import handler from '../../functions/sms-subscription.mjs';
-import { authorizedVisit } from '../../lib/visitAuth.mjs';
+import { authorizedGuest } from '../../lib/deviceAuth.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import {
 	deliverPendingSmsNotifications,
@@ -37,7 +37,7 @@ function request(method: string, options: { token?: string; body?: unknown } = {
 afterEach(() => {
 	resetDbStub();
 	vi.mocked(smsConfiguration).mockReset();
-	vi.mocked(authorizedVisit).mockReset();
+	vi.mocked(authorizedGuest).mockReset();
 	vi.mocked(requeueNotification).mockReset();
 	vi.mocked(deliverPendingSmsNotifications).mockReset();
 });
@@ -62,9 +62,9 @@ describe('sms-subscription handler auth', () => {
 		expect(response.status).toBe(503);
 	});
 
-	it('returns 401 when no visit matches the token', async () => {
+	it('returns 401 when no guest matches the device token', async () => {
 		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
-		vi.mocked(authorizedVisit).mockResolvedValueOnce(null);
+		vi.mocked(authorizedGuest).mockResolvedValueOnce(null);
 
 		const response = await handler(request('POST', { token: validToken, body: { consent: true } }));
 
@@ -75,7 +75,7 @@ describe('sms-subscription handler auth', () => {
 describe('sms-subscription handler POST', () => {
 	it('rejects a request that does not explicitly consent', async () => {
 		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
-		vi.mocked(authorizedVisit).mockResolvedValueOnce({ id: 'visit-1', status: 'waiting' });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
 
 		const response = await handler(
 			request('POST', { token: validToken, body: { consent: false } }),
@@ -87,9 +87,11 @@ describe('sms-subscription handler POST', () => {
 
 	it('subscribes and queues a status-appropriate notification for a new consent', async () => {
 		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
-		vi.mocked(authorizedVisit).mockResolvedValueOnce({ id: 'visit-1', status: 'waiting' });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
 		queueResult([]); // existing subscription lookup
 		queueResult(undefined); // insert...onConflictDoUpdate
+		queueResult([{ id: 'event-1' }]); // current event lookup
+		queueResult([{ id: 'visit-1', status: 'waiting' }]); // guest's active visit lookup
 		vi.mocked(deliverPendingSmsNotifications).mockResolvedValueOnce({
 			sent: 1,
 			failed: 0,
@@ -109,10 +111,26 @@ describe('sms-subscription handler POST', () => {
 		);
 	});
 
+	it('subscribes without a catch-up notification when the guest has no active visit', async () => {
+		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
+		queueResult([]); // existing subscription lookup
+		queueResult(undefined); // insert...onConflictDoUpdate
+		queueResult([{ id: 'event-1' }]); // current event lookup
+		queueResult([]); // guest's active visit lookup
+
+		const response = await handler(request('POST', { token: validToken, body: { consent: true } }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ subscribed: true });
+		expect(requeueNotification).not.toHaveBeenCalled();
+		expect(deliverPendingSmsNotifications).not.toHaveBeenCalled();
+	});
+
 	it('does not queue a duplicate notification when already consented', async () => {
 		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
-		vi.mocked(authorizedVisit).mockResolvedValueOnce({ id: 'visit-1', status: 'waiting' });
-		queueResult([{ visitId: 'visit-1' }]); // already consented
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
+		queueResult([{ guestId: 'guest-1' }]); // already consented
 		queueResult(undefined); // insert...onConflictDoUpdate
 
 		const response = await handler(request('POST', { token: validToken, body: { consent: true } }));
@@ -124,9 +142,9 @@ describe('sms-subscription handler POST', () => {
 });
 
 describe('sms-subscription handler DELETE', () => {
-	it('removes the subscription for the authorized visit', async () => {
+	it('removes the subscription for the authorized guest', async () => {
 		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
-		vi.mocked(authorizedVisit).mockResolvedValueOnce({ id: 'visit-1', status: 'registered' });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
 		queueResult(undefined);
 
 		const response = await handler(request('DELETE', { token: validToken }));
@@ -139,7 +157,7 @@ describe('sms-subscription handler DELETE', () => {
 describe('sms-subscription handler method routing', () => {
 	it('returns 405 for unsupported methods', async () => {
 		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
-		vi.mocked(authorizedVisit).mockResolvedValueOnce({ id: 'visit-1', status: 'registered' });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
 
 		const response = await handler(request('PUT', { token: validToken }));
 

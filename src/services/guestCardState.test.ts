@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import type { MarketEventTiming } from '../stores/market-session.store';
 import { currentSessionPhase, resolveGuestCardState } from './guestCardState';
-import type { MarketEventTiming } from './market-session.store';
-import type { SessionStatus } from './sessionStateMachine';
+import { SessionStatusEnum } from './sessionStateMachine';
 
 const now = new Date('2026-07-18T16:30:00.000Z');
 
-function eventWith(status: SessionStatus): MarketEventTiming {
+function eventWith(status: SessionStatusEnum): MarketEventTiming {
 	return {
 		id: 'event-1',
 		status,
@@ -26,18 +26,20 @@ describe('currentSessionPhase', () => {
 	const beforeOpen = new Date('2026-07-18T15:30:00.000Z');
 
 	it.each([
-		['draft', 'not-open'],
-		['scheduled', 'not-open'],
-		['registration_open', 'registration-open'],
-		['registration_closed', 'registration-closed'],
-		['service_started', 'in-service'],
-		['ended', 'ended'],
+		[SessionStatusEnum.DRAFT, 'not-open'],
+		[SessionStatusEnum.SCHEDULED, 'not-open'],
+		[SessionStatusEnum.REGISTRATION_OPEN, 'registration-open'],
+		[SessionStatusEnum.REGISTRATION_CLOSED, 'registration-closed'],
+		[SessionStatusEnum.SERVICE_STARTED, 'in-service'],
+		[SessionStatusEnum.ENDED, 'ended'],
 	] as const)('maps %s to %s', (status, phase) => {
 		expect(currentSessionPhase(eventWith(status), beforeOpen)).toBe(phase);
 	});
 
 	it('auto-transitions a scheduled session to registration-open once its window opens', () => {
-		expect(currentSessionPhase(eventWith('scheduled'), now)).toBe('registration-open');
+		expect(currentSessionPhase(eventWith(SessionStatusEnum.SCHEDULED), now)).toBe(
+			'registration-open',
+		);
 	});
 });
 
@@ -45,7 +47,7 @@ describe('resolveGuestCardState', () => {
 	it('shows visit status over every other phase, including registration_closed', () => {
 		expect(
 			resolveGuestCardState({
-				phase: currentSessionPhase(eventWith('registration_closed'), now),
+				phase: currentSessionPhase(eventWith(SessionStatusEnum.REGISTRATION_CLOSED), now),
 				isPreregistration: false,
 				isIdentified: false,
 				hasActiveVisit: true,
@@ -56,7 +58,7 @@ describe('resolveGuestCardState', () => {
 	it('shows the early-context sign-up form on /signup when not yet identified', () => {
 		expect(
 			resolveGuestCardState({
-				phase: currentSessionPhase(eventWith('draft'), now),
+				phase: currentSessionPhase(eventWith(SessionStatusEnum.DRAFT), now),
 				isPreregistration: true,
 				isIdentified: false,
 				hasActiveVisit: false,
@@ -77,55 +79,58 @@ describe('resolveGuestCardState', () => {
 		).toEqual({ kind: 'form', context: 'early' });
 	});
 
-	it('shows the not-open screen without a CTA on /signup once already identified', () => {
+	it('shows the not-open screen on /signup once already identified', () => {
 		expect(
 			resolveGuestCardState({
-				phase: currentSessionPhase(eventWith('draft'), now),
+				phase: currentSessionPhase(eventWith(SessionStatusEnum.DRAFT), now),
 				isPreregistration: true,
 				isIdentified: true,
 				hasActiveVisit: false,
 			}),
-		).toEqual({ kind: 'not-open', showPreregisterCta: false });
+		).toEqual({ kind: 'not-open' });
 	});
 
-	it('offers the sign-up CTA off /signup when not yet identified', () => {
+	it('shows the not-open screen off /signup when not yet identified', () => {
 		expect(
 			resolveGuestCardState({
-				phase: currentSessionPhase(eventWith('draft'), now),
+				phase: currentSessionPhase(eventWith(SessionStatusEnum.DRAFT), now),
 				isPreregistration: false,
 				isIdentified: false,
 				hasActiveVisit: false,
 			}),
-		).toEqual({ kind: 'not-open', showPreregisterCta: true });
+		).toEqual({ kind: 'not-open' });
 	});
 
-	it('shows no CTA off /signup once already identified', () => {
+	it('shows the not-open screen off /signup once already identified', () => {
 		expect(
 			resolveGuestCardState({
-				phase: currentSessionPhase(eventWith('draft'), now),
+				phase: currentSessionPhase(eventWith(SessionStatusEnum.DRAFT), now),
 				isPreregistration: false,
 				isIdentified: true,
 				hasActiveVisit: false,
 			}),
-		).toEqual({ kind: 'not-open', showPreregisterCta: false });
+		).toEqual({ kind: 'not-open' });
 	});
 
-	it('does not offer the early form once registration has closed, even on /signup', () => {
-		expect(
-			resolveGuestCardState({
-				phase: currentSessionPhase(eventWith('registration_closed'), now),
-				isPreregistration: true,
-				isIdentified: false,
-				hasActiveVisit: false,
-			}),
-		).toEqual({ kind: 'registration-closed' });
-	});
+	it.each(['registration-open', 'registration-closed', 'in-service', 'ended'] as const)(
+		'shows identity-only signup on /signup without a device token during %s',
+		(phase) => {
+			expect(
+				resolveGuestCardState({
+					phase,
+					isPreregistration: true,
+					isIdentified: false,
+					hasActiveVisit: true,
+				}),
+			).toEqual({ kind: 'form', context: 'early' });
+		},
+	);
 
 	it.each([
-		['registration_open', { kind: 'form', context: 'queue' }],
-		['registration_closed', { kind: 'registration-closed' }],
-		['service_started', { kind: 'in-service' }],
-		['ended', { kind: 'ended' }],
+		[SessionStatusEnum.REGISTRATION_OPEN, { kind: 'form', context: 'queue' }],
+		[SessionStatusEnum.REGISTRATION_CLOSED, { kind: 'registration-closed' }],
+		[SessionStatusEnum.SERVICE_STARTED, { kind: 'in-service' }],
+		[SessionStatusEnum.ENDED, { kind: 'ended' }],
 	] as const)('maps %s to %o', (status, expected) => {
 		expect(
 			resolveGuestCardState({
@@ -137,13 +142,13 @@ describe('resolveGuestCardState', () => {
 		).toEqual(expected);
 	});
 
-	it('respects a caller-supplied optimistic phase regardless of identification', () => {
+	it('respects a caller-supplied optimistic phase on the main route', () => {
 		// Mirrors `GuestView.vue` before `/api/market` has resolved: the form stays available
 		// rather than showing a "not open" screen the app can't actually confirm.
 		expect(
 			resolveGuestCardState({
 				phase: 'registration-open',
-				isPreregistration: true,
+				isPreregistration: false,
 				isIdentified: false,
 				hasActiveVisit: false,
 			}),

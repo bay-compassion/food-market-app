@@ -8,25 +8,12 @@ const props = defineProps<{
 	markdown: string;
 }>();
 
-defineEmits<{ back: [] }>();
-
-const router = useRouter();
 const html = computed(() => marked.parse(props.markdown, { async: false, breaks: true }));
-
-function onContentClick(event: MouseEvent) {
-	const anchor = (event.target as HTMLElement).closest('a');
-	const href = anchor?.getAttribute('href');
-
-	if (href?.startsWith('/')) {
-		event.preventDefault();
-		void router.push(href);
-	}
-}
 </script>
 
 <template>
 	<section class="legal-page">
-		<button type="button" class="legal-back" @click="$emit('back')">
+		<RouterLink to="/" class="legal-back">
 			<svg
 				viewBox="0 0 24 24"
 				fill="none"
@@ -37,9 +24,8 @@ function onContentClick(event: MouseEvent) {
 				<path d="M15 18l-6-6 6-6" />
 			</svg>
 			{{ backLabel }}
-		</button>
-		<!-- eslint-disable-next-line vue/no-v-html -->
-		<div class="legal-content" v-html="html" @click="onContentClick"></div>
+		</RouterLink>
+		<div class="legal-content" v-html="html"></div>
 	</section>
 </template>
 

@@ -18,11 +18,13 @@ describe('RootStore', () => {
 			}),
 		);
 		const store = new RootStore();
+		const initializeGuest = vi.spyOn(store.guest, 'initialize').mockResolvedValue();
 
 		expect(store.guest).toBeDefined();
 		store.setAccessTokenProvider(() => Promise.resolve('token'));
 
 		store.start();
+		expect(initializeGuest).toHaveBeenCalledOnce();
 		await vi.advanceTimersByTimeAsync(0);
 		await vi.advanceTimersByTimeAsync(5_000);
 		expect(fetchMock.mock.calls.filter(([, options]) => !options?.method)).toHaveLength(2);
@@ -35,5 +37,27 @@ describe('RootStore', () => {
 
 		store[Symbol.dispose]();
 		expect(store.session.isPolling).toBe(false);
+	});
+
+	it('starts and disposes the visit store alongside the session store', () => {
+		// Arrange
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+			Response.json({ event: null, questions: [], counts: {} }),
+		);
+		const store = new RootStore();
+		const refreshVisit = vi.spyOn(store.visit, 'refresh').mockResolvedValue();
+		const disposeVisit = vi.spyOn(store.visit, Symbol.dispose);
+
+		// Act
+		store.start();
+
+		// Assert
+		expect(refreshVisit).toHaveBeenCalledOnce();
+
+		// Act
+		store[Symbol.dispose]();
+
+		// Assert
+		expect(disposeVisit).toHaveBeenCalledOnce();
 	});
 });

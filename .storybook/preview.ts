@@ -8,7 +8,6 @@ import { languages, type Locale } from '../src/locales';
 import '../src/styles/base.css';
 import '../src/styles/app-shell.css';
 import '../src/styles/admin.css';
-import '../src/styles/guest.css';
 import './preview.css';
 
 /** The locales whose script runs right to left, matching the `dir` binding in `App.vue`. */
@@ -18,9 +17,8 @@ const rightToLeftLocales: Locale[] = ['ar', 'fa'];
  * Which of the app's page wrappers a story renders inside, set per story with
  * `parameters: { shell: 'admin' }`.
  *
- * This matters more than it looks: every rule in `admin.css` is prefixed `.admin-dashboard` and
- * every rule in `guest.css` is prefixed `.checkin-card`, so an admin component rendered without
- * its shell is not merely mispositioned — it is unstyled.
+ * This matters more than it looks: every rule in `admin.css` is prefixed `.admin-dashboard`, so an
+ * admin component rendered without its shell is not merely mispositioned — it is unstyled.
  */
 const shells = {
 	guest: 'guest-layout',

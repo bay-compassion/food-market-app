@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
-import { adminTranslations } from '../../adminLocales';
+import { type AdminLocale, adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
@@ -12,7 +12,7 @@ import QueueGuestRow from './QueueGuestRow.vue';
 import type { ManualGuest, QueueGuest } from './types';
 
 const props = defineProps<{
-	locale: Locale;
+	locale: AdminLocale;
 	guests: QueueGuest[];
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;

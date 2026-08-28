@@ -4,16 +4,23 @@ export enum StorageKey {
 	/** Last-entered household composition, kept purely to prefill the lottery entry form — never
 	 *  sent to the server as part of identity. */
 	GUEST_HOUSEHOLD = 'bay-compassion.guest-household',
+	LOCALE = 'bay-compassion.locale',
+	RETURNING_VISITOR = 'bay-compassion.returning-visitor',
 }
 
 interface StorageKeyMap {
 	[StorageKey.GUEST_DEVICE_TOKEN]: string;
 	[StorageKey.GUEST_IDENTITY]: unknown;
 	[StorageKey.GUEST_HOUSEHOLD]: unknown;
+	[StorageKey.LOCALE]: string;
+	[StorageKey.RETURNING_VISITOR]: boolean;
 }
 
 export class StorageService {
-	get<K extends StorageKey>(key: K): StorageKeyMap[K] | null {
+	get<K extends StorageKey>(key: K): StorageKeyMap[K] | null;
+	get(key: string): unknown;
+	// oxlint-disable-next-line typescript/no-redundant-type-constituents
+	get<K extends StorageKey>(key: K | string): StorageKeyMap[K] | unknown | null {
 		const item = localStorage.getItem(key);
 
 		if (!item) {

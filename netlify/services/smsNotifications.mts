@@ -63,6 +63,7 @@ export async function deliverPendingSmsNotifications(options?: {
 		.select({
 			id: notificationDeliveries.id,
 			visitId: notificationDeliveries.visitId,
+			guestId: guests.id,
 			attempts: notificationDeliveries.attempts,
 			type: notificationDeliveries.type,
 			title: notificationDeliveries.title,
@@ -74,7 +75,7 @@ export async function deliverPendingSmsNotifications(options?: {
 		.from(notificationDeliveries)
 		.innerJoin(visits, eq(visits.id, notificationDeliveries.visitId))
 		.innerJoin(guests, eq(guests.id, visits.guestId))
-		.leftJoin(smsSubscriptions, eq(smsSubscriptions.visitId, visits.id))
+		.leftJoin(smsSubscriptions, eq(smsSubscriptions.guestId, guests.id))
 		.where(and(...conditions))
 		.orderBy(asc(notificationDeliveries.createdAt))
 		.limit(options?.limit ?? 250);
@@ -122,7 +123,7 @@ export async function deliverPendingSmsNotifications(options?: {
 				typeof cause === 'object' && cause && 'code' in cause ? Number(cause.code) : null;
 
 			if (code !== null && permanentFailureCodes.has(code)) {
-				await db.delete(smsSubscriptions).where(eq(smsSubscriptions.visitId, row.visitId));
+				await db.delete(smsSubscriptions).where(eq(smsSubscriptions.guestId, row.guestId));
 			}
 			const attempts = row.attempts + 1;
 

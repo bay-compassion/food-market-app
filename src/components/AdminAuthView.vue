@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { useAuth0 } from '@auth0/auth0-vue';
-import { computed } from 'vue';
+
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
 import { authReturnUrl, isAuth0Configured } from '../auth';
-import { translations, type Locale } from '../locales';
 import type { AdminView } from './admin/types';
 import AdminDashboard from './AdminDashboard.vue';
 
-const props = defineProps<{ locale: Locale; view: AdminView }>();
+const props = defineProps<{ view: AdminView }>();
 const emit = defineEmits<{ navigate: [view: AdminView] }>();
-const t = computed(() => translations[props.locale]);
+const t = useTranslation();
 const auth = isAuth0Configured ? useAuth0() : null;
 
 function signOut() {
@@ -31,7 +31,6 @@ function signOut() {
 			<button type="button" @click="signOut">{{ t.signOut }}</button>
 		</div>
 		<AdminDashboard
-			:locale="locale"
 			:view="view"
 			:get-access-token="auth.getAccessTokenSilently"
 			@navigate="emit('navigate', $event)"

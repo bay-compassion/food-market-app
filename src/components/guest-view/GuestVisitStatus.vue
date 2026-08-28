@@ -1,26 +1,33 @@
 <script setup lang="ts">
-import type { Translation } from '../../locales';
+import { computed } from 'vue';
+
+import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
+import { useTranslation } from '../../stores/hooks/use-translation';
+import { useRootStore } from '../../stores/root.store';
 import AppButton from '../AppButton.vue';
 
 defineProps<{
-	t: Translation;
-	isCalled: boolean;
 	successTitle: string;
 	successDescription: string;
-	visitStatusLabel: string;
-	queuePosition: number | null;
-	guestsAhead: number | null;
-	canCancelVisit: boolean;
-	isCancelling: boolean;
-	submissionError: string;
 }>();
 
 const emit = defineEmits<{ 'cancel-visit': [] }>();
+
+const t = useTranslation();
+const rootStore = useRootStore();
+const visit = rootStore.visit;
+
+const visitStatusLabel = computed(() =>
+	visit.activeVisit
+		? guestVisitStatusLabel(rootStore.translations.locale, visit.activeVisit.status)
+		: '',
+);
+const submissionError = computed(() => (visit.cancelError ? t.value.visitError : ''));
 </script>
 
 <template>
 	<div class="success-state">
-		<template v-if="isCalled">
+		<template v-if="visit.isCalled">
 			<div class="checkmark called-mark" aria-hidden="true">→</div>
 			<h2>{{ t.calledTitle }}</h2>
 			<p>{{ t.calledDescription }}</p>
@@ -28,14 +35,14 @@ const emit = defineEmits<{ 'cancel-visit': [] }>();
 		<template v-else>
 			<div class="checkmark">✓</div>
 			<h2>{{ successTitle }}</h2>
-			<div v-if="queuePosition" class="queue-standing">
+			<div v-if="visit.queuePosition" class="queue-standing">
 				<p class="queue-position">
 					<span>{{ t.queuePositionLabel }}</span>
-					<strong>{{ queuePosition }}</strong>
+					<strong>{{ visit.queuePosition }}</strong>
 				</p>
-				<p v-if="guestsAhead === 0" class="queue-next">{{ t.youAreNext }}</p>
-				<p v-else-if="guestsAhead !== null">
-					{{ t.guestsAheadOfYou }}: <strong>{{ guestsAhead }}</strong>
+				<p v-if="visit.guestsAhead === 0" class="queue-next">{{ t.youAreNext }}</p>
+				<p v-else-if="visit.guestsAhead !== null">
+					{{ t.guestsAheadOfYou }}: <strong>{{ visit.guestsAhead }}</strong>
 				</p>
 			</div>
 			<p v-else>
@@ -47,10 +54,10 @@ const emit = defineEmits<{ 'cancel-visit': [] }>();
 			{{ submissionError }}
 		</p>
 		<AppButton
-			v-if="canCancelVisit"
+			v-if="visit.canCancel"
 			type="button"
 			variant="secondary"
-			:disabled="isCancelling"
+			:disabled="visit.isCancelling"
 			@click="emit('cancel-visit')"
 		>
 			{{ t.cancelVisit }}
@@ -64,6 +71,12 @@ const emit = defineEmits<{ 'cancel-visit': [] }>();
 	min-height: 340px;
 	place-content: center;
 	text-align: center;
+}
+.submission-error {
+	margin: 0;
+	color: var(--color-error);
+	font-size: 13px;
+	line-height: 1.4;
 }
 .success-state h2 {
 	margin-bottom: 9px;

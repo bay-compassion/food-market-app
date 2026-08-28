@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { Translation } from '../locales';
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
 const props = withDefaults(
 	defineProps<{
-		t: Translation;
 		/** Ticked by the container so every display on the page shares one clock. */
 		now: number;
 		closesAt: Date;
@@ -16,6 +15,8 @@ const props = withDefaults(
 		transitionThresholdMs: 5 * 60_000,
 	},
 );
+
+const t = useTranslation();
 
 function pad(value: number) {
 	return String(value).padStart(2, '0');
@@ -51,7 +52,7 @@ const display = computed(() => {
  * second (which is hidden from assistive tech below).
  */
 const accessibleText = computed(() =>
-	props.t.registrationClosesInMinutes.replace(
+	t.value.registrationClosesInMinutes.replace(
 		'{minutes}',
 		String(Math.ceil(remainingMs.value / 60_000)),
 	),
