@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { computed } from 'vue';
 
+import { SessionStatusEnum } from '@/services/sessionStateMachine.ts';
+
 import {
 	MarketSessionStore,
 	type SessionEvent,
@@ -19,7 +21,7 @@ const scheduledEvent: SessionEvent = {
 	registrationClosesAt: '2026-08-25T19:00:00.000Z',
 	capacity: 50,
 	sessionMode: 'scheduled',
-	status: 'scheduled',
+	status: SessionStatusEnum.SCHEDULED,
 };
 
 afterEach(() => {
@@ -53,12 +55,17 @@ describe('MarketSessionStore', () => {
 		);
 		expect(status.value).toBe('scheduled');
 
-		store.applyServerState(overview({ ...scheduledEvent, status: 'registration_open' }));
+		store.applyServerState(
+			overview({ ...scheduledEvent, status: SessionStatusEnum.REGISTRATION_OPEN }),
+		);
 		expect(status.value).toBe('registration_open');
 	});
 
 	it('sends typed commands and applies the overview returned by the server', async () => {
-		const registrationOpen: SessionEvent = { ...scheduledEvent, status: 'registration_open' };
+		const registrationOpen: SessionEvent = {
+			...scheduledEvent,
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+		};
 		const fetchMock = vi
 			.spyOn(globalThis, 'fetch')
 			.mockResolvedValue(Response.json(overview(registrationOpen)));

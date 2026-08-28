@@ -92,6 +92,7 @@ describe('GuestStore', () => {
 		const storage = {
 			get: vi.fn().mockReturnValue('saved-device-token'),
 			set: vi.fn(),
+			remove: vi.fn(),
 		};
 		const store = new GuestStore({ storage, register });
 
@@ -110,7 +111,7 @@ describe('GuestStore', () => {
 		const register = vi
 			.fn()
 			.mockResolvedValue({ ...registration, deviceToken: 'new-device-token' });
-		const storage = { get: vi.fn().mockReturnValue(null), set: vi.fn() };
+		const storage = { get: vi.fn().mockReturnValue(null), set: vi.fn(), remove: vi.fn() };
 		const store = new GuestStore({ storage, register });
 
 		expect(store.isIdentified).toBe(false);
@@ -128,11 +129,12 @@ describe('GuestStore', () => {
 
 	it('restores identity from browser storage without retrieving guest data', () => {
 		const savedIdentity = { firstName: 'Ari', lastName: 'Guest', phone: '555-123-4567' };
-		const storage: Pick<StorageService, 'get' | 'set'> = {
+		const storage: Pick<StorageService, 'get' | 'set' | 'remove'> = {
 			get: vi.fn((key: StorageKey) =>
 				key === StorageKey.GUEST_DEVICE_TOKEN ? 'saved-device-token' : savedIdentity,
 			) as StorageService['get'],
 			set: vi.fn(),
+			remove: vi.fn(),
 		};
 		const register = vi.fn();
 
@@ -143,13 +145,14 @@ describe('GuestStore', () => {
 	});
 
 	it('does not trust a locally stored identity without a device credential', () => {
-		const storage: Pick<StorageService, 'get' | 'set'> = {
+		const storage: Pick<StorageService, 'get' | 'set' | 'remove'> = {
 			get: vi.fn((key: StorageKey) =>
 				key === StorageKey.GUEST_IDENTITY
 					? { firstName: 'Ari', lastName: 'Guest', phone: '555-123-4567' }
 					: null,
 			) as StorageService['get'],
 			set: vi.fn(),
+			remove: vi.fn(),
 		};
 
 		const store = new GuestStore({ storage, register: vi.fn() });
@@ -165,6 +168,7 @@ describe('GuestStore', () => {
 		const storage = {
 			get: vi.fn().mockReturnValue('stale-device-token'),
 			set: vi.fn(),
+			remove: vi.fn(),
 		};
 		const store = new GuestStore({ storage, register });
 
@@ -178,7 +182,7 @@ describe('GuestStore', () => {
 	});
 
 	it('does not identify the device when registration fails', async () => {
-		const storage = { get: vi.fn().mockReturnValue(null), set: vi.fn() };
+		const storage = { get: vi.fn().mockReturnValue(null), set: vi.fn(), remove: vi.fn() };
 		const store = new GuestStore({
 			storage,
 			register: vi.fn().mockRejectedValue(new Error('unreachable')),
@@ -193,7 +197,7 @@ describe('GuestStore', () => {
 		const signUp = vi
 			.fn()
 			.mockResolvedValue({ guestId: 'guest-1', deviceToken: 'new-device-token' });
-		const storage = { get: vi.fn().mockReturnValue(null), set: vi.fn() };
+		const storage = { get: vi.fn().mockReturnValue(null), set: vi.fn(), remove: vi.fn() };
 		const store = new GuestStore({ storage, signUp });
 
 		expect(store.isIdentified).toBe(false);
@@ -211,7 +215,11 @@ describe('GuestStore', () => {
 
 	it('signs an already-identified guest up using the saved device credential', async () => {
 		const signUp = vi.fn().mockResolvedValue({ guestId: 'guest-1' });
-		const storage = { get: vi.fn().mockReturnValue('saved-device-token'), set: vi.fn() };
+		const storage = {
+			get: vi.fn().mockReturnValue('saved-device-token'),
+			set: vi.fn(),
+			remove: vi.fn(),
+		};
 		const store = new GuestStore({ storage, signUp });
 
 		await store.signUp(signupInput);
@@ -248,6 +256,7 @@ describe('GuestStore', () => {
 				key === StorageKey.GUEST_DEVICE_TOKEN ? 'saved-device-token'.padEnd(32, 'x') : null,
 			),
 			set: vi.fn(),
+			remove: vi.fn(),
 		};
 		const store = new GuestStore({ request, storage });
 
@@ -283,6 +292,7 @@ describe('GuestStore', () => {
 				key === StorageKey.GUEST_DEVICE_TOKEN ? 'saved-device-token'.padEnd(32, 'x') : null,
 			),
 			set: vi.fn(),
+			remove: vi.fn(),
 		};
 		const store = new GuestStore({ request, storage });
 
@@ -317,6 +327,7 @@ describe('GuestStore', () => {
 				key === StorageKey.GUEST_DEVICE_TOKEN ? 'saved-device-token'.padEnd(32, 'x') : null,
 			),
 			set: vi.fn(),
+			remove: vi.fn(),
 		};
 		const store = new GuestStore({ request, storage });
 

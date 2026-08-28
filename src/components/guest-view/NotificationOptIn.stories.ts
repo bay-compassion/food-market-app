@@ -97,9 +97,10 @@ const meta: Meta<NotificationOptInArgs> = {
 			args,
 			guest: new GuestStore({
 				storage: {
-					get: (key) =>
+					get: (key: string) =>
 						key === StorageKey.GUEST_DEVICE_TOKEN ? 'story-device-token'.padEnd(32, 'x') : null,
 					set: () => undefined,
+					remove: () => undefined,
 				},
 			}),
 		}),

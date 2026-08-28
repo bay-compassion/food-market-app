@@ -8,9 +8,7 @@ import { TranslationStore } from './translation.store.ts';
 import { VisitStore } from './visit.store.ts';
 
 declare global {
-	interface Window {
-		rootStore: RootStore;
-	}
+	var rootStore: RootStore;
 }
 
 export class RootStore {

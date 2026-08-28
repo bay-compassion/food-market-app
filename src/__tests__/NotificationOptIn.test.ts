@@ -9,9 +9,10 @@ function mountOptIn() {
 	const guest = new GuestStore({
 		request: (input, init) => fetch(input, init),
 		storage: {
-			get: (key) =>
+			get: (key: string) =>
 				key === StorageKey.GUEST_DEVICE_TOKEN ? 'test-device-token'.padEnd(32, 'x') : null,
 			set: vi.fn(),
+			remove: vi.fn(),
 		},
 	});
 

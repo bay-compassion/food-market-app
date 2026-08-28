@@ -17,7 +17,7 @@ export class TranslationStore {
 	}
 
 	get adminTranslation() {
-		return adminTranslations[this.locale];
+		return adminTranslations['en'];
 	}
 
 	get dir(): 'rtl' | 'ltr' {

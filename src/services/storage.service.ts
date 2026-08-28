@@ -17,7 +17,10 @@ interface StorageKeyMap {
 }
 
 export class StorageService {
-	get<K extends StorageKey>(key: K): StorageKeyMap[K] | null {
+	get<K extends StorageKey>(key: K): StorageKeyMap[K] | null;
+	get(key: string): unknown;
+	// oxlint-disable-next-line typescript/no-redundant-type-constituents
+	get<K extends StorageKey>(key: K | string): StorageKeyMap[K] | unknown | null {
 		const item = localStorage.getItem(key);
 
 		if (!item) {
