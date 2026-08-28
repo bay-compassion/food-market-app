@@ -8,14 +8,23 @@ export type SessionStatus =
 	| 'service_started'
 	| 'ended';
 
+export enum SessionStatusEnum {
+	DRAFT = 'draft',
+	SCHEDULED = 'scheduled',
+	REGISTRATION_OPEN = 'registration_open',
+	REGISTRATION_CLOSED = 'registration_closed',
+	SERVICE_STARTED = 'service_started',
+	ENDED = 'ended',
+}
+
 /** Every status, in lifecycle order. */
 export const sessionStatuses: SessionStatus[] = [
-	'draft',
-	'scheduled',
-	'registration_open',
-	'registration_closed',
-	'service_started',
-	'ended',
+	SessionStatusEnum.DRAFT,
+	SessionStatusEnum.SCHEDULED,
+	SessionStatusEnum.REGISTRATION_OPEN,
+	SessionStatusEnum.REGISTRATION_CLOSED,
+	SessionStatusEnum.SERVICE_STARTED,
+	SessionStatusEnum.ENDED,
 ];
 
 export function isSessionStatus(value: unknown): value is SessionStatus {

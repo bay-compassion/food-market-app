@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { computed, ref } from 'vue';
 
-import { translations, type Locale } from '../../locales';
-import type { GuestFormState } from '../types';
+import type { Locale } from '../../locales';
+import { RootStore, rootStoreKey } from '../../services/root.store';
+import { SessionStatusEnum } from '../../services/sessionStateMachine';
+import type { Language } from '../../stores/translation.store';
 import GuestRegistrationForm from './GuestRegistrationForm.vue';
 import GuestSignupCard from './GuestSignupCard.vue';
 
@@ -10,17 +11,11 @@ import GuestSignupCard from './GuestSignupCard.vue';
  * The registration form itself — before a guest has submitted anything. Wrapped in
  * `GuestSignupCard` because its submission-error rules live in `guest.css`, scoped to
  * `.checkin-card`, and render unstyled without that ancestor.
+ *
+ * `GuestRegistrationForm` reads its guest fields, answers, and session data from `RootStore`
+ * rather than taking them as props, so each story seeds a fresh store and provides it instead of
+ * passing args straight through as props.
  */
-
-const emptyGuest = (): GuestFormState => ({
-	firstName: '',
-	lastName: '',
-	ageRange: '',
-	householdSize: '',
-	childrenCount: '',
-	seniorsCount: '',
-	phone: '',
-});
 
 const sampleQuestions = [
 	{
@@ -35,9 +30,8 @@ const sampleQuestions = [
 type GuestRegistrationFormArgs = {
 	locale: Locale;
 	context: 'queue' | 'early';
-	isIdentified: boolean;
 	askExtraQuestions: boolean;
-	submissionError: string;
+	submissionError: boolean;
 	isSubmitting: boolean;
 	/** `null` hides the countdown; a number shows it closing that many minutes from now. */
 	minutesRemaining: number | null;
@@ -53,48 +47,46 @@ const meta: Meta<GuestRegistrationFormArgs> = {
 	args: {
 		locale: 'en',
 		context: 'queue',
-		isIdentified: false,
 		askExtraQuestions: false,
-		submissionError: '',
+		submissionError: false,
 		isSubmitting: false,
 		minutesRemaining: null,
 	},
 	render: (args) => ({
 		components: { GuestSignupCard, GuestRegistrationForm },
 		setup() {
-			const guest = ref<GuestFormState>(emptyGuest());
-			const registrationAnswers = ref<Record<string, string | number>>({});
-			// A fixed pair, rather than a live-ticking ref, keeps the story stable rather than
-			// drifting while it sits open (see `QueueGuestRow.stories.ts` for the same convention).
-			const now = Date.now();
-			const registrationClosesAt = computed(() =>
-				args.minutesRemaining === null ? null : new Date(now + args.minutesRemaining * 60_000),
-			);
+			const rootStore = new RootStore();
 
-			return {
-				args,
-				guest,
-				registrationAnswers,
-				now,
-				registrationClosesAt,
-				t: computed(() => translations[args.locale]),
-				registrationQuestions: computed(() => (args.askExtraQuestions ? sampleQuestions : [])),
-			};
+			rootStore.translations.setLanguage(args.locale as Language);
+			rootStore.registration.submissionError = args.submissionError;
+			rootStore.registration.isSubmitting = args.isSubmitting;
+
+			const now = Date.now();
+
+			rootStore.session.applyServerState({
+				event:
+					args.minutesRemaining === null
+						? null
+						: {
+								id: 'story-event',
+								status: SessionStatusEnum.REGISTRATION_OPEN,
+								sessionMode: 'scheduled',
+								capacity: 100,
+								registrationOpensAt: new Date(now - 60_000).toISOString(),
+								registrationClosesAt: new Date(now + args.minutesRemaining * 60_000).toISOString(),
+							},
+				questions: args.askExtraQuestions ? sampleQuestions : [],
+				counts: {},
+			});
+
+			return { args, now, rootStore, rootStoreKey };
+		},
+		provide() {
+			return { [this.rootStoreKey]: this.rootStore };
 		},
 		template: `
 			<GuestSignupCard>
-				<GuestRegistrationForm
-					v-model:guest="guest"
-					v-model:registration-answers="registrationAnswers"
-					:t="t"
-					:context="args.context"
-					:is-identified="args.isIdentified"
-					:registration-questions="registrationQuestions"
-					:submission-error="args.submissionError"
-					:is-submitting="args.isSubmitting"
-					:now="now"
-					:registration-closes-at="registrationClosesAt"
-				/>
+				<GuestRegistrationForm :context="args.context" :now="now" />
 			</GuestSignupCard>
 		`,
 	}),
@@ -104,13 +96,10 @@ export default meta;
 
 type Story = StoryObj<GuestRegistrationFormArgs>;
 
-/** Registration open, not yet identified: sign-up and lottery-entry fields together. */
+/** Registration open, not yet identified: sign-up and lottery-entry fields together. Whether the
+ *  sign-up fields show now reads the guest store's cached identity directly, rather than an arg,
+ *  so this story can no longer force the identified state — see the running app instead. */
 export const RegistrationForm: Story = {};
-
-/** Registration open, already identified: only the lottery-entry fields — nothing to re-ask. */
-export const IdentifiedGuest: Story = {
-	args: { isIdentified: true },
-};
 
 /** Registration open, with the closing countdown showing above the form title. */
 export const RegistrationClosingSoon: Story = {
@@ -129,7 +118,7 @@ export const Submitting: Story = {
 
 /** A failed submission. The error sits directly above the submit button. */
 export const SubmissionFailed: Story = {
-	args: { submissionError: translations.en.submissionError },
+	args: { submissionError: true },
 };
 
 /** The `early` context: signing up ahead of the market — identity only, no lottery fields. */

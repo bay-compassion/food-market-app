@@ -1,37 +1,47 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
+
+import AppButton from '@/components/AppButton.vue';
+
 import type { Translation } from '../../locales';
 import GuestStateMessage from './GuestStateMessage.vue';
 
-defineProps<{
-	t: Translation;
-	/** Whether to offer a way to sign up early from this screen. */
-	showPreregisterCta: boolean;
-}>();
+const router = useRouter();
 
-const emit = defineEmits<{ preregister: [] }>();
+defineProps<{ t: Translation }>();
+
+function goToSignup() {
+	void router.push({ name: 'signup' });
+}
 </script>
 
 <template>
 	<GuestStateMessage
+		class="inactive-message"
 		:heading="t.guestView.notOpenState.heading"
-		:description="t.guestView.notOpenState.description"
+		:description="t.guestView.notOpenState.subheading"
 	>
-		<a
-			v-if="showPreregisterCta"
-			class="preregister-cta"
-			href="/signup"
-			@click.prevent="emit('preregister')"
-		>
-			{{ t.guestView.notOpenState.preregisterCta }}
-		</a>
+		<AppButton @click="goToSignup"> Preregister </AppButton>
+		<div class="inactive-details">
+			<p>{{ t.guestView.notOpenState.lotteryDescription }}</p>
+			<p>{{ t.guestView.notOpenState.selectionDescription }}</p>
+		</div>
 	</GuestStateMessage>
 </template>
 
 <style scoped>
-.preregister-cta {
-	margin: 12px auto 0;
-	color: var(--color-brand);
-	font-weight: 700;
-	text-decoration: underline;
+.inactive-message {
+	--state-description-max-width: 420px;
+}
+.inactive-details {
+	display: grid;
+	max-width: 420px;
+	gap: 16px;
+	margin-top: 20px;
+	color: var(--color-text-muted);
+	line-height: 1.55;
+	text-align: justify;
+	text-align-last: start;
+	hyphens: auto;
 }
 </style>

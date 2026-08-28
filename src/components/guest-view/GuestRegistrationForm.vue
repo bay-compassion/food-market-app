@@ -1,89 +1,97 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { Translation } from '../../locales';
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
+
+import type { RegistrationSubmitResult } from '../../services/registration.store';
+import { useRootStore } from '../../services/root.store';
 import AppButton from '../AppButton.vue';
 import RegistrationCountdown from '../RegistrationCountdown.vue';
-import type { GuestFormState } from '../types';
 import GuestLotteryForm from './GuestLotteryForm.vue';
 import GuestSignupForm from './GuestSignupForm.vue';
 
 const props = defineProps<{
-	t: Translation;
 	/** Which flow this instance represents — changes the copy shown for the form, and whether the
 	 *  lottery-entry fields render at all: "join the queue" only makes sense once registration is
 	 *  genuinely open. */
 	context: 'queue' | 'early';
-	/** Whether this device has a cached local identity (name and phone) to prefill — hides the
-	 *  sign-up fields when so, since there's nothing left to ask. A device token alone isn't
-	 *  enough: a legacy token with no locally cached profile still needs to collect the fields. */
-	isIdentified: boolean;
-	registrationQuestions: {
-		id: string;
-		prompt: string;
-		type: 'text' | 'scale';
-		required: boolean;
-	}[];
-	submissionError: string;
-	isSubmitting: boolean;
-	/** Ticked by the container so the countdown stays live; unused unless `registrationClosesAt` is set. */
+	/** Ticked by the container so the countdown stays live; unused unless `context` is `'queue'`. */
 	now: number;
-	/** When registration is genuinely open right now, the moment it closes; otherwise `null`. */
-	registrationClosesAt: Date | null;
 }>();
 
-const emit = defineEmits<{ submit: [] }>();
+const t = useTranslation();
+const emit = defineEmits<{ submitted: [result: RegistrationSubmitResult] }>();
 
-const guest = defineModel<GuestFormState>('guest', { required: true });
-const registrationAnswers = defineModel<Record<string, string | number>>('registrationAnswers', {
-	required: true,
-});
+const rootStore = useRootStore();
+const guestStore = rootStore.guest;
+const registrationStore = rootStore.registration;
+const session = rootStore.session;
 
-const showSignupFields = computed(() => props.context === 'early' || !props.isIdentified);
+const registrationQuestions = computed(() => session.currentState?.questions ?? []);
+/** When registration is genuinely open right now, the moment it closes; otherwise `null`. */
+const registrationClosesAt = computed(() => session.marketEvent?.registrationClosesAt ?? null);
+const submissionError = computed(() =>
+	registrationStore.submissionError ? t.value.submissionError : '',
+);
+
+/** Whether this device has a cached local identity (name and phone) to prefill — hides the
+ *  sign-up fields when so, since there's nothing left to ask. A device token alone isn't enough:
+ *  a legacy token with no locally cached profile still needs to collect the fields. */
+const showSignupFields = computed(() => props.context === 'early' || guestStore.identity === null);
 
 /** The strings that differ between joining today's queue and signing up ahead of time. */
 const copy = computed(() =>
 	props.context === 'early'
 		? {
-				formTitle: props.t.earlyFormTitle,
-				formDescription: props.t.earlyFormDescription,
-				submit: props.t.earlySubmit,
-				submitting: props.t.earlySubmitting,
+				formTitle: t.value.earlyFormTitle,
+				formDescription: t.value.earlyFormDescription,
+				submit: t.value.earlySubmit,
+				submitting: t.value.earlySubmitting,
 			}
 		: {
-				formTitle: props.t.formTitle,
-				formDescription: props.t.formDescription,
-				submit: props.t.submit,
-				submitting: props.t.submitting,
+				formTitle: t.value.formTitle,
+				formDescription: t.value.formDescription,
+				submit: t.value.submit,
+				submitting: t.value.submitting,
 			},
 );
+
+async function handleSubmit() {
+	const result = await registrationStore.submit(
+		props.context,
+		session.marketEvent?.id ?? null,
+		rootStore.translations.locale,
+	);
+
+	emit('submitted', result);
+}
 </script>
 
 <template>
-	<form @submit.prevent="emit('submit')">
+	<form @submit.prevent="handleSubmit">
 		<div class="form-heading">
 			<RegistrationCountdown
 				v-if="context === 'queue' && registrationClosesAt"
-				:t="t"
 				:now="now"
 				:closes-at="registrationClosesAt"
 			/>
 			<h2>{{ copy.formTitle }}</h2>
 			<p>{{ copy.formDescription }}</p>
 		</div>
-		<GuestSignupForm v-if="showSignupFields" v-model:guest="guest" :t="t" />
+		<GuestSignupForm v-if="showSignupFields" v-model:guest="registrationStore.guest" />
 		<GuestLotteryForm
 			v-if="context === 'queue'"
-			v-model:guest="guest"
-			v-model:registration-answers="registrationAnswers"
+			v-model:guest="registrationStore.guest"
+			v-model:registration-answers="registrationStore.registrationAnswers"
 			:t="t"
 			:registration-questions="registrationQuestions"
 		/>
 		<p v-if="submissionError" class="submission-error" role="alert">
 			{{ submissionError }}
 		</p>
-		<AppButton type="submit" :disabled="isSubmitting">
-			{{ isSubmitting ? copy.submitting : copy.submit }} <span aria-hidden="true">→</span>
+		<AppButton type="submit" :disabled="registrationStore.isSubmitting">
+			{{ registrationStore.isSubmitting ? copy.submitting : copy.submit }}
+			<span aria-hidden="true">→</span>
 		</AppButton>
 		<p class="privacy">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

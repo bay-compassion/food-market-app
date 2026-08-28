@@ -26,8 +26,9 @@ export interface GuestViewTranslations {
 	};
 	notOpenState: {
 		heading: string;
-		description: string;
-		preregisterCta: string;
+		subheading: string;
+		lotteryDescription: string;
+		selectionDescription: string;
 	};
 	registrationClosedState: {
 		heading: string;
@@ -159,9 +160,13 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				heading: 'Check back soon',
-				description: 'Please check back at the scheduled time above.',
-				preregisterCta: 'Sign up early for the next market',
+				heading: 'The Market Is Closed',
+				subheading:
+					'Registration will open again next Saturday at 10:30 AM and remain open until 11:30 AM.',
+				lotteryDescription:
+					'Because supplies are limited, the market uses a lottery system to randomly select shoppers each week. You may register for the lottery at any time during the one-hour window from 10:30 AM to 11:30 AM on Saturday. Registering early does not affect your chances of being selected, so there is no need to register early.',
+				selectionDescription:
+					'The lottery will run at 11:30 AM. If you are selected to shop, you will receive a number here in the app. If you consent to receiving text messages, you will also be notified by text message.',
 			},
 			registrationClosedState: {
 				heading: 'Registration is closed',
@@ -241,7 +246,7 @@ export const translations = {
 		smsConsentLabel:
 			'I agree to receive text messages from The Bay Compassion about my queue and visit status. Message frequency varies, typically no more than a few messages per market day. Message and data rates may apply. Reply STOP to unsubscribe or HELP for assistance. Consent is not required to receive food market service.',
 		smsEnable: 'Text me updates about this visit',
-		smsEnabled: 'Text message updates are enabled for this visit.',
+		smsEnabled: 'Text message updates are enabled for this and future visits.',
 		smsError: 'We could not enable text updates. Please try again.',
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
 		phone: 'Phone number',
@@ -295,9 +300,13 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				heading: 'Vuelva pronto',
-				description: 'Vuelva a consultar a la hora programada indicada arriba.',
-				preregisterCta: 'Regístrese temprano para el próximo mercado',
+				heading: 'El mercado está cerrado',
+				subheading:
+					'La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta hasta las 11:30 a. m.',
+				lotteryDescription:
+					'Debido a que los suministros son limitados, el mercado utiliza un sistema de lotería para seleccionar al azar a las personas que podrán comprar cada semana. Puede inscribirse en la lotería en cualquier momento durante el período de una hora entre las 10:30 a. m. y las 11:30 a. m. del sábado. Inscribirse temprano no afecta sus probabilidades de ser seleccionado, por lo que no es necesario hacerlo con anticipación.',
+				selectionDescription:
+					'La lotería se realizará a las 11:30 a. m. Si es seleccionado para comprar, recibirá un número aquí en la aplicación. Si acepta recibir mensajes de texto, también recibirá una notificación por mensaje de texto.',
 			},
 			registrationClosedState: {
 				heading: 'El registro está cerrado',
@@ -378,7 +387,8 @@ export const translations = {
 		smsConsentLabel:
 			'Acepto recibir mensajes de texto de The Bay Compassion sobre mi lugar en la fila y el estado de mi visita. La frecuencia varía; normalmente no recibiré más de unos pocos mensajes por día de mercado. Pueden aplicarse tarifas de mensajes y datos. Responda STOP para cancelar o HELP para recibir ayuda. El consentimiento no es necesario para recibir servicio en el mercado de alimentos.',
 		smsEnable: 'Envíenme actualizaciones por mensaje de texto sobre esta visita',
-		smsEnabled: 'Las actualizaciones por mensaje de texto están activadas para esta visita.',
+		smsEnabled:
+			'Las actualizaciones por mensaje de texto están activadas para esta visita y futuras visitas.',
 		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
 		phone: 'Número de teléfono',
@@ -432,9 +442,13 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				heading: 'به‌زودی دوباره سر بزنید',
-				description: 'لطفاً در زمان برنامه‌ریزی‌شده که در بالا آمده دوباره مراجعه کنید.',
-				preregisterCta: 'زودتر برای بازار بعدی ثبت‌نام کنید',
+				heading: 'بازار بسته است',
+				subheading:
+					'ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و تا ساعت ۱۱:۳۰ صبح ادامه خواهد داشت.',
+				lotteryDescription:
+					'به دلیل محدود بودن اقلام، بازار برای انتخاب تصادفی خریداران هر هفته از سیستم قرعه‌کشی استفاده می‌کند. می‌توانید در هر زمانی از بازه یک‌ساعته روز شنبه، از ساعت ۱۰:۳۰ تا ۱۱:۳۰ صبح، برای قرعه‌کشی ثبت‌نام کنید. ثبت‌نام زودتر تأثیری بر شانس انتخاب شدن شما ندارد، بنابراین نیازی نیست زود ثبت‌نام کنید.',
+				selectionDescription:
+					'قرعه‌کشی ساعت ۱۱:۳۰ صبح انجام می‌شود. اگر برای خرید انتخاب شوید، در همین برنامه یک شماره دریافت خواهید کرد. اگر با دریافت پیامک موافقت کرده باشید، از طریق پیامک نیز به شما اطلاع داده می‌شود.',
 			},
 			registrationClosedState: {
 				heading: 'ثبت‌نام بسته است',
@@ -514,7 +528,7 @@ export const translations = {
 		smsConsentLabel:
 			'موافقم پیامک‌هایی از The Bay Compassion درباره جایگاهم در صف و وضعیت این مراجعه دریافت کنم. تعداد پیام‌ها متغیر است و معمولاً از چند پیام در هر روز بازار بیشتر نمی‌شود. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک STOP و برای راهنمایی HELP را پاسخ دهید. رضایت به دریافت پیامک برای دریافت خدمات بازار مواد غذایی الزامی نیست.',
 		smsEnable: 'درباره این مراجعه به من پیامک بده',
-		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه فعال شدند.',
+		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه و مراجعه‌های آینده فعال شدند.',
 		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
 		phone: 'شماره تلفن',
@@ -568,9 +582,13 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				heading: 'Bumalik sa lalong madaling panahon',
-				description: 'Pakibalik sa oras na nakatakda sa itaas.',
-				preregisterCta: 'Magrehistro nang maaga para sa susunod na pamilihan',
+				heading: 'Sarado ang Pamilihan',
+				subheading:
+					'Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas hanggang 11:30 AM.',
+				lotteryDescription:
+					'Dahil limitado ang mga supply, gumagamit ang pamilihan ng sistema ng lottery upang random na pumili ng mga mamimili bawat linggo. Maaari kang magparehistro sa lottery anumang oras sa loob ng isang oras na pagitan ng 10:30 AM at 11:30 AM tuwing Sabado. Hindi naaapektuhan ng maagang pagpaparehistro ang iyong pagkakataong mapili, kaya hindi kailangang magparehistro nang maaga.',
+				selectionDescription:
+					'Gaganapin ang lottery nang 11:30 AM. Kung mapipili kang mamili, bibigyan ka ng numero dito sa app. Kung pumayag kang tumanggap ng mga text message, aabisuhan ka rin sa pamamagitan ng text message.',
 			},
 			registrationClosedState: {
 				heading: 'Sarado ang pagpaparehistro',
@@ -653,7 +671,8 @@ export const translations = {
 		smsConsentLabel:
 			'Sumasang-ayon akong tumanggap ng mga text message mula sa The Bay Compassion tungkol sa puwesto ko sa pila at katayuan ng pagbisitang ito. Nag-iiba ang dalas at karaniwang hindi hihigit sa ilang mensahe bawat araw ng pamilihan. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-unsubscribe o HELP para sa tulong. Hindi kailangang pumayag upang makatanggap ng serbisyo sa pamilihan ng pagkain.',
 		smsEnable: 'Padalhan ako ng text update tungkol sa pagbisitang ito',
-		smsEnabled: 'Naka-enable ang mga text message update para sa pagbisitang ito.',
+		smsEnabled:
+			'Naka-enable ang mga text message update para sa pagbisitang ito at mga susunod na pagbisita.',
 		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
 		phone: 'Numero ng telepono',
@@ -707,9 +726,12 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				heading: 'Vui lòng quay lại sau',
-				description: 'Vui lòng quay lại vào thời gian đã lên lịch ở trên.',
-				preregisterCta: 'Đăng ký sớm cho phiên chợ tiếp theo',
+				heading: 'Chợ hiện đang đóng cửa',
+				subheading: 'Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài đến 11:30 sáng.',
+				lotteryDescription:
+					'Do nguồn cung có hạn, chợ sử dụng hệ thống xổ số để chọn ngẫu nhiên người mua sắm mỗi tuần. Bạn có thể đăng ký tham gia xổ số vào bất kỳ lúc nào trong khung thời gian một giờ từ 10:30 đến 11:30 sáng thứ Bảy. Đăng ký sớm không làm tăng cơ hội được chọn, vì vậy bạn không cần đăng ký sớm.',
+				selectionDescription:
+					'Xổ số sẽ diễn ra lúc 11:30 sáng. Nếu được chọn để mua sắm, bạn sẽ nhận được một số thứ tự ngay trong ứng dụng. Nếu đồng ý nhận tin nhắn văn bản, bạn cũng sẽ được thông báo qua tin nhắn.',
 			},
 			registrationClosedState: {
 				heading: 'Đã đóng đăng ký',
@@ -791,7 +813,7 @@ export const translations = {
 		smsConsentLabel:
 			'Tôi đồng ý nhận tin nhắn từ The Bay Compassion về vị trí trong hàng đợi và trạng thái lượt ghé của tôi. Tần suất thay đổi, thường không quá vài tin nhắn trong mỗi ngày diễn ra chợ. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy đăng ký hoặc HELP để được hỗ trợ. Không bắt buộc đồng ý để nhận dịch vụ tại chợ thực phẩm.',
 		smsEnable: 'Nhắn tin cập nhật cho tôi về lượt ghé thăm này',
-		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé thăm này.',
+		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé này và các lượt ghé sau.',
 		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
 		phone: 'Số điện thoại',
@@ -845,9 +867,12 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				heading: '请稍后再来查看',
-				description: '请在上方显示的预定时间再来查看。',
-				preregisterCta: '提前登记下一次市场',
+				heading: '市场已关闭',
+				subheading: '登记将于下周六上午 10:30 再次开放，并持续至上午 11:30。',
+				lotteryDescription:
+					'由于物资有限，市场每周通过抽签随机选出购物者。您可以在周六上午 10:30 至 11:30 的一小时窗口内随时登记参加抽签。提前登记不会增加被选中的机会，因此无需提早登记。',
+				selectionDescription:
+					'抽签将于上午 11:30 进行。如果您获选购物，应用中会显示您的号码。如果您同意接收短信，也会收到短信通知。',
 			},
 			registrationClosedState: {
 				heading: '登记已关闭',
@@ -923,7 +948,7 @@ export const translations = {
 		smsConsentLabel:
 			'我同意接收 The Bay Compassion 发送的有关排队位置和到访状态的短信。短信频率不定，通常每个市场开放日不超过数条。可能会产生短信和数据费用。回复 STOP 可取消订阅，回复 HELP 可获取帮助。是否同意接收短信不影响获得食品市场服务。',
 		smsEnable: '通过短信通知我此次到访的更新',
-		smsEnabled: '此次到访的短信更新已启用。',
+		smsEnabled: '已为本次及今后的到访启用短信更新。',
 		smsError: '我们无法启用短信更新。请重试。',
 		seniorsCount: '您为多少老年人（55岁以上）采购',
 		phone: '电话号码',
@@ -976,9 +1001,13 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				heading: 'يرجى العودة قريبًا',
-				description: 'يرجى العودة في الوقت المحدد أعلاه.',
-				preregisterCta: 'سجّل مبكرًا للسوق القادم',
+				heading: 'السوق مغلق',
+				subheading:
+					'سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر حتى الساعة 11:30 صباحًا.',
+				lotteryDescription:
+					'نظرًا لمحدودية الإمدادات، يستخدم السوق نظام القرعة لاختيار المتسوقين عشوائيًا كل أسبوع. يمكنك التسجيل في القرعة في أي وقت خلال فترة الساعة الواحدة من 10:30 إلى 11:30 صباحًا يوم السبت. لا يؤثر التسجيل المبكر في فرص اختيارك، لذلك لا حاجة إلى التسجيل مبكرًا.',
+				selectionDescription:
+					'ستُجرى القرعة الساعة 11:30 صباحًا. إذا تم اختيارك للتسوق، فسيظهر لك رقم هنا في التطبيق. وإذا وافقت على تلقي الرسائل النصية، فسيتم إخطارك أيضًا برسالة نصية.',
 			},
 			registrationClosedState: {
 				heading: 'التسجيل مغلق',
@@ -1057,7 +1086,7 @@ export const translations = {
 		smsConsentLabel:
 			'أوافق على تلقي رسائل نصية من The Bay Compassion بشأن مكاني في قائمة الانتظار وحالة زيارتي. يختلف عدد الرسائل، وعادةً لا يتجاوز بضع رسائل في كل يوم سوق. قد تُطبق رسوم الرسائل والبيانات. أرسل STOP لإلغاء الاشتراك أو HELP للمساعدة. الموافقة ليست شرطًا لتلقي خدمة سوق المواد الغذائية.',
 		smsEnable: 'أرسل لي تحديثات نصية حول هذه الزيارة',
-		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة.',
+		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة والزيارات القادمة.',
 		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
 		phone: 'رقم الهاتف',

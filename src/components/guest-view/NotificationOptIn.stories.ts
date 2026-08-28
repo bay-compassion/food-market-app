@@ -7,10 +7,9 @@ import { StorageKey } from '../../services/storage.service';
 import NotificationOptIn from './NotificationOptIn.vue';
 
 /**
- * There is no backend behind Storybook, so the guest store's calls to `/api/push-subscription`
- * and `/api/sms-subscription` are stubbed here, keyed off the
- * `pushConfigured`/`smsConfigured` args so a story can show either channel on its own or both
- * together. Unknown URLs fall through to the real `fetch`.
+ * There is no backend behind Storybook, so the guest store's notification endpoint calls are
+ * stubbed here. Push remains configured in the store to verify that its controls stay hidden;
+ * `smsConfigured` controls the only channel currently shown to guests.
  *
  * Actually enabling push notifications still will not complete here: that needs a service worker
  * and a real subscription endpoint. The stub is for laying out the panel, not exercising that
@@ -26,8 +25,8 @@ const withNotificationEndpoints: Decorator = (story, context) => {
 		if (url === '/api/push-subscription') {
 			return Promise.resolve(
 				Response.json({
-					configured: context.args.pushConfigured,
-					publicKey: context.args.pushConfigured ? 'story-public-key' : null,
+					configured: true,
+					publicKey: 'story-public-key',
 				}),
 			);
 		}
@@ -58,7 +57,6 @@ const withNotificationEndpoints: Decorator = (story, context) => {
 
 type NotificationOptInArgs = {
 	locale: Locale;
-	pushConfigured: boolean;
 	smsConfigured: boolean;
 	/** Whether this phone already has active consent from a past visit — the server-side check
 	 *  that lets the guest skip the checkbox entirely. */
@@ -90,7 +88,6 @@ const meta: Meta<NotificationOptInArgs> = {
 	decorators: [withNotificationEndpoints],
 	args: {
 		locale: 'en',
-		pushConfigured: true,
 		smsConfigured: true,
 		smsSubscribed: false,
 	},
@@ -110,7 +107,6 @@ const meta: Meta<NotificationOptInArgs> = {
 			<div class="checkin-card" style="max-width: 360px;">
 				<NotificationOptIn
 					:guest="guest"
-					visit-token="story-visit-token"
 					:locale="args.locale"
 				/>
 			</div>
@@ -138,14 +134,8 @@ export const Default: Story = {
 	},
 };
 
-/** Only SMS is configured — the screen a reviewer needs to see, with no push clutter around it. */
-export const SmsOnly: Story = {
-	args: { pushConfigured: false },
-};
-
 /** A guest who has checked the box and confirmed — the enrollment confirmation state. */
 export const SmsConsentGiven: Story = {
-	args: { pushConfigured: false },
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(await canvas.findByRole('checkbox'));
 		await userEvent.click(canvas.getByRole('button', { name: translations.en.smsEnable }));
@@ -159,7 +149,7 @@ export const SmsConsentGiven: Story = {
  * instead of asking again.
  */
 export const AlreadySubscribed: Story = {
-	args: { pushConfigured: false, smsSubscribed: true },
+	args: { smsSubscribed: true },
 	play: async ({ canvas }) => {
 		await expect(await canvas.findByText(translations.en.smsEnabled)).toBeInTheDocument();
 		await expect(canvas.queryByRole('checkbox')).not.toBeInTheDocument();
@@ -168,12 +158,11 @@ export const AlreadySubscribed: Story = {
 
 /** Neither channel is configured, so the component renders nothing rather than an empty card. */
 export const Unconfigured: Story = {
-	args: { pushConfigured: false, smsConfigured: false },
+	args: { smsConfigured: false },
 };
 
 /** Right-to-left rendering, which the Arabic and Farsi locales need. */
 export const RightToLeft: Story = {
-	args: { pushConfigured: false },
 	globals: { locale: 'ar' },
 	play: async ({ canvas }) => {
 		await expect(

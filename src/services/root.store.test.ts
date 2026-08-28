@@ -18,11 +18,13 @@ describe('RootStore', () => {
 			}),
 		);
 		const store = new RootStore();
+		const initializeGuest = vi.spyOn(store.guest, 'initialize').mockResolvedValue();
 
 		expect(store.guest).toBeDefined();
 		store.setAccessTokenProvider(() => Promise.resolve('token'));
 
 		store.start();
+		expect(initializeGuest).toHaveBeenCalledOnce();
 		await vi.advanceTimersByTimeAsync(0);
 		await vi.advanceTimersByTimeAsync(5_000);
 		expect(fetchMock.mock.calls.filter(([, options]) => !options?.method)).toHaveLength(2);

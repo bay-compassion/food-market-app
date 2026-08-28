@@ -77,7 +77,7 @@ describe('resolveGuestCardState', () => {
 		).toEqual({ kind: 'form', context: 'early' });
 	});
 
-	it('shows the not-open screen without a CTA on /signup once already identified', () => {
+	it('shows the not-open screen on /signup once already identified', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith('draft'), now),
@@ -85,10 +85,10 @@ describe('resolveGuestCardState', () => {
 				isIdentified: true,
 				hasActiveVisit: false,
 			}),
-		).toEqual({ kind: 'not-open', showPreregisterCta: false });
+		).toEqual({ kind: 'not-open' });
 	});
 
-	it('offers the sign-up CTA off /signup when not yet identified', () => {
+	it('shows the not-open screen off /signup when not yet identified', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith('draft'), now),
@@ -96,10 +96,10 @@ describe('resolveGuestCardState', () => {
 				isIdentified: false,
 				hasActiveVisit: false,
 			}),
-		).toEqual({ kind: 'not-open', showPreregisterCta: true });
+		).toEqual({ kind: 'not-open' });
 	});
 
-	it('shows no CTA off /signup once already identified', () => {
+	it('shows the not-open screen off /signup once already identified', () => {
 		expect(
 			resolveGuestCardState({
 				phase: currentSessionPhase(eventWith('draft'), now),
@@ -107,19 +107,22 @@ describe('resolveGuestCardState', () => {
 				isIdentified: true,
 				hasActiveVisit: false,
 			}),
-		).toEqual({ kind: 'not-open', showPreregisterCta: false });
+		).toEqual({ kind: 'not-open' });
 	});
 
-	it('does not offer the early form once registration has closed, even on /signup', () => {
-		expect(
-			resolveGuestCardState({
-				phase: currentSessionPhase(eventWith('registration_closed'), now),
-				isPreregistration: true,
-				isIdentified: false,
-				hasActiveVisit: false,
-			}),
-		).toEqual({ kind: 'registration-closed' });
-	});
+	it.each(['registration-open', 'registration-closed', 'in-service', 'ended'] as const)(
+		'shows identity-only signup on /signup without a device token during %s',
+		(phase) => {
+			expect(
+				resolveGuestCardState({
+					phase,
+					isPreregistration: true,
+					isIdentified: false,
+					hasActiveVisit: true,
+				}),
+			).toEqual({ kind: 'form', context: 'early' });
+		},
+	);
 
 	it.each([
 		['registration_open', { kind: 'form', context: 'queue' }],
@@ -137,13 +140,13 @@ describe('resolveGuestCardState', () => {
 		).toEqual(expected);
 	});
 
-	it('respects a caller-supplied optimistic phase regardless of identification', () => {
+	it('respects a caller-supplied optimistic phase on the main route', () => {
 		// Mirrors `GuestView.vue` before `/api/market` has resolved: the form stays available
 		// rather than showing a "not open" screen the app can't actually confirm.
 		expect(
 			resolveGuestCardState({
 				phase: 'registration-open',
-				isPreregistration: true,
+				isPreregistration: false,
 				isIdentified: false,
 				hasActiveVisit: false,
 			}),

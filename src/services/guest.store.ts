@@ -26,7 +26,6 @@ export type GuestStoreOptions = {
 export class GuestStore {
 	private _deviceToken: string | null;
 	private _identity: GuestIdentity | null;
-	private _notificationVisitToken: string | null = null;
 	private _notificationSettingsLoaded = false;
 	private _pushConfigured = false;
 	private _pushPublicKey: string | null = null;
@@ -46,16 +45,16 @@ export class GuestStore {
 		return this._identity;
 	}
 
+	get isReturningVisitor(): boolean {
+		return this.storage?.get(StorageKey.RETURNING_VISITOR) ?? false;
+	}
+
 	get notificationSettingsLoaded(): boolean {
 		return this._notificationSettingsLoaded;
 	}
 
-	get notificationsAvailable(): boolean {
-		return this._pushConfigured || this._smsConfigured;
-	}
-
-	get notificationsEnabled(): boolean {
-		return this._pushState === 'enabled' || this._smsState === 'enabled';
+	get smsConsented(): boolean {
+		return this._smsState === 'enabled';
 	}
 
 	get pushConfigured(): boolean {
@@ -92,7 +91,7 @@ export class GuestStore {
 	}
 
 	get canEnableSms(): boolean {
-		return this._smsConfigured && this._notificationVisitToken !== null;
+		return this._smsConfigured && this._deviceToken !== null;
 	}
 
 	constructor(options: GuestStoreOptions = {}) {
@@ -111,6 +110,8 @@ export class GuestStore {
 		if (!this._deviceToken) {
 			return;
 		}
+
+		await this.loadNotificationSettings();
 	}
 
 	async register(input: GuestRegistrationInput): Promise<GuestRegistrationResult> {
@@ -154,12 +155,11 @@ export class GuestStore {
 		}
 	}
 
-	async loadNotificationSettings(visitToken: string): Promise<void> {
-		if (this._notificationSettingsLoaded && this._notificationVisitToken === visitToken) {
+	async loadNotificationSettings(): Promise<void> {
+		if (this._notificationSettingsLoaded) {
 			return;
 		}
 
-		this._notificationVisitToken = visitToken;
 		this._notificationSettingsLoaded = false;
 		this._pushConfigured = false;
 		this._pushPublicKey = null;
@@ -167,18 +167,17 @@ export class GuestStore {
 		this._smsConfigured = false;
 		this._smsState = 'idle';
 
-		await Promise.all([this.loadPushConfiguration(visitToken), this.loadSmsConfiguration()]);
-		await this.loadNotificationStatus(visitToken);
-
-		if (this._notificationVisitToken === visitToken) {
-			this._notificationSettingsLoaded = true;
-		}
+		await Promise.all([this.loadPushConfiguration(), this.loadSmsConfiguration()]);
+		await this.loadNotificationStatus();
+		this._notificationSettingsLoaded = true;
 	}
 
-	async enablePushNotifications(): Promise<void> {
-		const visitToken = this._notificationVisitToken;
+	async enablePushNotifications(visitToken: string): Promise<void> {
+		if (!this._pushPublicKey) {
+			await this.loadPushConfiguration(visitToken);
+		}
 
-		if (!visitToken || !this._pushPublicKey || !this.canEnablePush) {
+		if (!this._pushPublicKey || !this.canEnablePush) {
 			return;
 		}
 
@@ -205,16 +204,14 @@ export class GuestStore {
 	}
 
 	async enableSmsNotifications(consent: boolean): Promise<void> {
-		const visitToken = this._notificationVisitToken;
-
-		if (!visitToken || !this.canEnableSms || !consent) {
+		if (!this._deviceToken || !this.canEnableSms || !consent) {
 			return;
 		}
 
 		this._smsState = 'enabling';
 
 		try {
-			await this.saveSmsSubscription(visitToken);
+			await this.saveSmsSubscription();
 		} catch {
 			this._smsState = 'error';
 		}
@@ -274,7 +271,7 @@ export class GuestStore {
 		}
 	}
 
-	private async loadPushConfiguration(visitToken: string): Promise<void> {
+	private async loadPushConfiguration(visitToken?: string): Promise<void> {
 		try {
 			const response = await this.request('/api/push-subscription');
 
@@ -288,16 +285,26 @@ export class GuestStore {
 
 			this._pushConfigured = configuration.configured;
 			this._pushPublicKey = configuration.publicKey;
-			await this.syncExistingPushSubscription(visitToken);
+
+			if (visitToken) {
+				await this.syncExistingPushSubscription(visitToken);
+			}
 		} catch {
 			// Notification opt-in remains unavailable if its configuration cannot be loaded.
 		}
 	}
 
-	private async saveSmsSubscription(visitToken: string): Promise<void> {
+	private async saveSmsSubscription(): Promise<void> {
+		if (!this._deviceToken) {
+			throw new Error('identity');
+		}
+
 		const response = await this.request('/api/sms-subscription', {
 			method: 'POST',
-			headers: { Authorization: `Bearer ${visitToken}`, 'Content-Type': 'application/json' },
+			headers: {
+				Authorization: `Bearer ${this._deviceToken}`,
+				'Content-Type': 'application/json',
+			},
 			body: JSON.stringify({ consent: true }),
 		});
 
@@ -323,7 +330,7 @@ export class GuestStore {
 		}
 	}
 
-	private async loadNotificationStatus(visitToken: string): Promise<void> {
+	private async loadNotificationStatus(): Promise<void> {
 		if (!this._deviceToken) {
 			return;
 		}
@@ -343,15 +350,8 @@ export class GuestStore {
 			};
 
 			// Push must still exist in this browser, so its local service-worker subscription remains
-			// authoritative. SMS consent is guest-level state and remains true even if attaching it to
-			// this visit is temporarily unavailable.
-			if (status.smsConsented) {
-				this._smsState = 'enabled';
-
-				if (this._smsConfigured) {
-					await this.saveSmsSubscription(visitToken);
-				}
-			}
+			// authoritative. SMS consent is durable guest-level state.
+			this._smsState = status.smsConsented ? 'enabled' : 'idle';
 		} catch {
 			// A status lookup failure leaves the guest able to opt in again.
 		}

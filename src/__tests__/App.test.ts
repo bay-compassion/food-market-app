@@ -53,6 +53,7 @@ function mountApp() {
 		history: createMemoryHistory(),
 		routes: [
 			{ path: '/', name: 'guest', component: App },
+			{ path: '/signup', name: 'signup', component: App },
 			{ path: '/admin', name: 'admin', component: App },
 		],
 	});
@@ -71,12 +72,14 @@ describe('App', () => {
 	});
 
 	it('renders the guest queue form', async () => {
-		const wrapper = mountApp();
+		const wrapper = mountWithMarketStatus('registration_open');
 
 		await flushPromises();
 
 		expect(wrapper.text()).toContain('Welcome to the community food market');
 		expect(wrapper.text()).toContain('Number of people in your household');
+
+		vi.unstubAllGlobals();
 	});
 
 	it('uses the exact root URL Auth0 expects for redirects', () => {
@@ -84,7 +87,7 @@ describe('App', () => {
 	});
 
 	it('switches the guest copy to Spanish', async () => {
-		const wrapper = mountApp();
+		const wrapper = mountWithMarketStatus('registration_open');
 
 		await flushPromises();
 
@@ -106,6 +109,8 @@ describe('App', () => {
 		expect(wrapper.find('.hero').exists()).toBe(false);
 		expect((wrapper.find('select').element as HTMLSelectElement).value).toBe('es');
 		expect(wrapper.text()).toContain('Cuéntenos sobre usted');
+
+		vi.unstubAllGlobals();
 	});
 
 	it('offers the requested language options on the guest page', async () => {
@@ -122,7 +127,7 @@ describe('App', () => {
 	});
 
 	it('renders Persian in a right-to-left layout', async () => {
-		const wrapper = mountApp();
+		const wrapper = mountWithMarketStatus('registration_open');
 
 		await flushPromises();
 
@@ -130,6 +135,8 @@ describe('App', () => {
 
 		expect(wrapper.attributes('dir')).toBe('rtl');
 		expect(wrapper.text()).toContain('درباره خودتان بگویید');
+
+		vi.unstubAllGlobals();
 	});
 
 	it('sends the guest check-in to the API', async () => {
@@ -255,7 +262,7 @@ describe('App', () => {
 		await flushPromises();
 		// A device token with no locally cached identity (this test sets only the token, not
 		// `bay-compassion.guest-identity`) still shows the sign-up fields — there's nothing to
-		// prefill them with. See `GuestRegistrationForm`'s `isIdentified` prop.
+		// prefill them with. See `GuestRegistrationForm`'s `showSignupFields`.
 		await wrapper.find('input[autocomplete="given-name"]').setValue('Ada');
 		await wrapper.find('input[autocomplete="family-name"]').setValue('Lovelace');
 		await wrapper.find('input[type="tel"]').setValue('(555) 123-4567');
@@ -312,6 +319,55 @@ describe('App', () => {
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBeNull();
 		expect(wrapper.find('form').exists()).toBe(true);
 		expect(wrapper.text()).not.toContain('You’re in the queue!');
+
+		vi.unstubAllGlobals();
+	});
+
+	it('shows identity signup on /signup when the device token is missing', async () => {
+		window.localStorage.setItem('bay-compassion.visit-token', 'visit-token');
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation((url: string) =>
+				Promise.resolve(
+					url === '/api/visit'
+						? {
+								ok: true,
+								json: () =>
+									Promise.resolve({
+										id: 'visit-1',
+										status: 'waiting',
+										queuePosition: 2,
+										aheadOfYou: 1,
+									}),
+							}
+						: {
+								ok: true,
+								json: () =>
+									Promise.resolve({
+										event: {
+											id: 'event-1',
+											status: 'service_started',
+											registrationOpensAt: '2020-01-01T00:00:00.000Z',
+											registrationClosesAt: '2020-01-01T01:00:00.000Z',
+										},
+										questions: [],
+									}),
+							},
+				),
+			),
+		);
+
+		const wrapper = mountApp();
+
+		await wrapper.vm.$router.push('/signup');
+
+		await flushPromises();
+
+		expect(wrapper.find('input[autocomplete="given-name"]').exists()).toBe(true);
+		expect(wrapper.find('input[autocomplete="family-name"]').exists()).toBe(true);
+		expect(wrapper.find('input[type="tel"]').exists()).toBe(true);
+		expect(wrapper.find('input.count-other').exists()).toBe(false);
+		expect(wrapper.text()).not.toContain('Your place in line');
 
 		vi.unstubAllGlobals();
 	});
@@ -453,32 +509,50 @@ describe('App', () => {
 		return mountApp();
 	}
 
-	it('hides the schedule information alert while registration is open', async () => {
+	it('hides the inactive-market explanation while registration is open', async () => {
 		const wrapper = mountWithMarketStatus('registration_open');
 
 		await flushPromises();
 
-		expect(wrapper.text()).not.toContain(translations.en.guestView.scheduleInformation.heading);
+		expect(wrapper.text()).not.toContain(translations.en.guestView.notOpenState.heading);
 
 		vi.unstubAllGlobals();
 	});
 
-	it('hides the schedule information alert while the event is in progress', async () => {
+	it('hides the inactive-market explanation while the event is in progress', async () => {
 		const wrapper = mountWithMarketStatus('service_started');
 
 		await flushPromises();
 
-		expect(wrapper.text()).not.toContain(translations.en.guestView.scheduleInformation.heading);
+		expect(wrapper.text()).not.toContain(translations.en.guestView.notOpenState.heading);
 
 		vi.unstubAllGlobals();
 	});
 
-	it('shows the schedule information alert once registration has closed', async () => {
+	it('keeps the inactive-market explanation out of an active closed-registration session', async () => {
 		const wrapper = mountWithMarketStatus('registration_closed');
 
 		await flushPromises();
 
-		expect(wrapper.text()).toContain(translations.en.guestView.scheduleInformation.heading);
+		expect(wrapper.text()).not.toContain(translations.en.guestView.notOpenState.heading);
+
+		vi.unstubAllGlobals();
+	});
+
+	it('shows the full inactive-market explanation when the session is inactive', async () => {
+		const wrapper = mountWithMarketStatus('ended');
+
+		await flushPromises();
+
+		const inactiveCard = wrapper.get('.checkin-card');
+		const copy = translations.en.guestView.notOpenState;
+
+		expect(inactiveCard.text()).toContain(copy.heading);
+		expect(inactiveCard.text()).toContain(copy.subheading);
+		expect(inactiveCard.text()).toContain(copy.lotteryDescription);
+		expect(inactiveCard.text()).toContain(copy.selectionDescription);
+		expect(inactiveCard.find('a').exists()).toBe(false);
+		expect(inactiveCard.find('button').exists()).toBe(false);
 
 		vi.unstubAllGlobals();
 	});

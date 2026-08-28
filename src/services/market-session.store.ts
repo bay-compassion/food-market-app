@@ -2,7 +2,7 @@ import { markRaw } from 'vue';
 
 import { makeReactive } from './make-reactive.ts';
 import { PageVisibilityPoller } from './page-visibility-poller.ts';
-import type { SessionCommand, SessionMode, SessionStatus } from './sessionStateMachine.ts';
+import { type SessionCommand, type SessionMode, SessionStatusEnum } from './sessionStateMachine.ts';
 import type { VisitStatus } from './visitStateMachine.ts';
 
 export type SessionQuestion = {
@@ -18,7 +18,7 @@ export type SessionEvent = {
 	registrationClosesAt: string;
 	capacity: number;
 	sessionMode: SessionMode;
-	status: SessionStatus;
+	status: SessionStatusEnum;
 };
 
 export type MarketEventTiming = Pick<SessionEvent, 'id' | 'status' | 'sessionMode'> & {
@@ -74,6 +74,22 @@ export class MarketSessionStore {
 
 	get currentState(): SessionOverview | null {
 		return this._currentState;
+	}
+
+	get currentStatus(): SessionStatusEnum | null {
+		return this._currentState?.event?.status ?? null;
+	}
+
+	get isActive(): boolean {
+		if (!this.currentStatus) {
+			return false;
+		}
+
+		return [
+			SessionStatusEnum.REGISTRATION_OPEN,
+			SessionStatusEnum.REGISTRATION_CLOSED,
+			SessionStatusEnum.SERVICE_STARTED,
+		].includes(this.currentStatus);
 	}
 
 	get marketEvent(): MarketEventTiming | null {

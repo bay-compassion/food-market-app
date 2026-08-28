@@ -57,13 +57,33 @@ describe('GuestStore', () => {
 
 		it('should recognize the guest as registered', async () => {
 			// Arrange
-			const store = new GuestStore({ storage });
+			const request = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () => Promise.resolve({ pushSubscribed: false, smsConsented: false }),
+			});
+			const store = new GuestStore({ storage, request });
 
 			// Act
 			await store.initialize();
 
 			// Assert
 			expect(store.isIdentified).toBe(true);
+			expect(request).toHaveBeenCalledWith('/api/notification-status', {
+				headers: { Authorization: 'Bearer device-token' },
+			});
+		});
+
+		it('loads persistent SMS consent during initialization', async () => {
+			const request = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () => Promise.resolve({ pushSubscribed: false, smsConsented: true }),
+			});
+			const store = new GuestStore({ storage, request });
+
+			await store.initialize();
+
+			expect(store.smsState).toBe('enabled');
+			expect(store.smsConsented).toBe(true);
 		});
 	});
 
@@ -205,16 +225,12 @@ describe('GuestStore', () => {
 	});
 
 	it('loads notification availability and an existing consent into store state', async () => {
-		const request = vi.fn().mockImplementation((url: string, options?: RequestInit) => {
+		const request = vi.fn().mockImplementation((url: string) => {
 			if (url === '/api/notification-status') {
 				return Promise.resolve({
 					ok: true,
 					json: () => Promise.resolve({ pushSubscribed: false, smsConsented: true }),
 				});
-			}
-
-			if (url === '/api/sms-subscription' && options?.method === 'POST') {
-				return Promise.resolve({ ok: true });
 			}
 
 			return Promise.resolve({
@@ -235,26 +251,22 @@ describe('GuestStore', () => {
 		};
 		const store = new GuestStore({ request, storage });
 
-		await store.loadNotificationSettings('visit-token');
+		await store.loadNotificationSettings();
 
 		expect(store.notificationSettingsLoaded).toBe(true);
-		expect(store.notificationsAvailable).toBe(true);
-		expect(store.notificationsEnabled).toBe(true);
+		expect(store.smsConfigured).toBe(true);
+		expect(store.smsConsented).toBe(true);
 		expect(store.smsState).toBe('enabled');
 		expect(request).toHaveBeenCalledWith('/api/notification-status', {
 			headers: { Authorization: `Bearer ${'saved-device-token'.padEnd(32, 'x')}` },
 		});
-		expect(request).toHaveBeenCalledWith('/api/sms-subscription', {
-			method: 'POST',
-			headers: {
-				Authorization: 'Bearer visit-token',
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ consent: true }),
-		});
+		expect(request).not.toHaveBeenCalledWith(
+			'/api/sms-subscription',
+			expect.objectContaining({ method: 'POST' }),
+		);
 	});
 
-	it('restores SMS consent even when the channel cannot attach to the current visit', async () => {
+	it('restores SMS consent even when the channel is not configured', async () => {
 		const request = vi.fn().mockImplementation((url: string) =>
 			Promise.resolve({
 				ok: true,
@@ -274,9 +286,9 @@ describe('GuestStore', () => {
 		};
 		const store = new GuestStore({ request, storage });
 
-		await store.loadNotificationSettings('visit-token');
+		await store.loadNotificationSettings();
 
-		expect(store.notificationsEnabled).toBe(true);
+		expect(store.smsConsented).toBe(true);
 		expect(store.smsState).toBe('enabled');
 		expect(request).not.toHaveBeenCalledWith(
 			'/api/sms-subscription',
@@ -300,21 +312,27 @@ describe('GuestStore', () => {
 					),
 			});
 		});
-		const store = new GuestStore({ request, storage: null });
+		const storage = {
+			get: vi.fn((key: StorageKey) =>
+				key === StorageKey.GUEST_DEVICE_TOKEN ? 'saved-device-token'.padEnd(32, 'x') : null,
+			),
+			set: vi.fn(),
+		};
+		const store = new GuestStore({ request, storage });
 
-		await store.loadNotificationSettings('visit-token');
+		await store.loadNotificationSettings();
 
 		await store.enableSmsNotifications(true);
 
 		expect(request).toHaveBeenCalledWith('/api/sms-subscription', {
 			method: 'POST',
 			headers: {
-				Authorization: 'Bearer visit-token',
+				Authorization: `Bearer ${'saved-device-token'.padEnd(32, 'x')}`,
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({ consent: true }),
 		});
-		expect(store.notificationsEnabled).toBe(true);
+		expect(store.smsConsented).toBe(true);
 		expect(store.smsState).toBe('enabled');
 	});
 });

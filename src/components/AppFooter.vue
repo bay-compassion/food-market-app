@@ -26,21 +26,21 @@ function showTerms() {
 </script>
 
 <template>
-	<LegalDocumentView
-		v-if="isPrivacy"
-		:back-label="t.backToGuest"
-		:markdown="privacyMarkdown"
-		@back="$emit('back')"
-	/>
-	<LegalDocumentView
-		v-else-if="isTerms"
-		:back-label="t.backToGuest"
-		:markdown="termsMarkdown"
-		@back="$emit('back')"
-	/>
-	<footer v-else-if="!isQrCode" class="app-footer">
-		<a href="/privacy" @click.prevent="showPrivacy">{{ t.privacyPolicy }}</a>
+	<!--	<LegalDocumentView-->
+	<!--		v-if="isPrivacy"-->
+	<!--		:back-label="t.backToGuest"-->
+	<!--		:markdown="privacyMarkdown"-->
+	<!--		@back="$emit('back')"-->
+	<!--	/>-->
+	<!--	<LegalDocumentView-->
+	<!--		v-else-if="isTerms"-->
+	<!--		:back-label="t.backToGuest"-->
+	<!--		:markdown="termsMarkdown"-->
+	<!--		@back="$emit('back')"-->
+	<!--	/>-->
+	<footer class="app-footer">
+		<RouterLink to="/privacy">{{ t.privacyPolicy }}</RouterLink>
 		<span class="app-footer-divider" aria-hidden="true">·</span>
-		<a href="/terms" @click.prevent="showTerms">{{ t.termsAndConditions }}</a>
+		<RouterLink to="/terms">{{ t.termsAndConditions }}</RouterLink>
 	</footer>
 </template>

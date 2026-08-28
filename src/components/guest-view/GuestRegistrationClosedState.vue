@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Translation } from '../../locales';
+import GuestScheduleDetails from './GuestScheduleDetails.vue';
 import GuestStateMessage from './GuestStateMessage.vue';
 
 defineProps<{ t: Translation }>();
@@ -9,5 +10,9 @@ defineProps<{ t: Translation }>();
 	<GuestStateMessage
 		:heading="t.guestView.registrationClosedState.heading"
 		:description="t.guestView.registrationClosedState.description"
-	/>
+	>
+		<template #details>
+			<GuestScheduleDetails :t="t" />
+		</template>
+	</GuestStateMessage>
 </template>

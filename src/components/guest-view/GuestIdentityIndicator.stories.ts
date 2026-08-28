@@ -9,7 +9,6 @@ type GuestIdentityIndicatorArgs = {
 	locale: Locale;
 	identity: GuestIdentity;
 	smsSubscribed: boolean;
-	visitToken: string;
 };
 
 const originalFetch = window.fetch.bind(window);
@@ -60,7 +59,6 @@ const meta: Meta<GuestIdentityIndicatorArgs> = {
 	args: {
 		locale: 'en',
 		smsSubscribed: false,
-		visitToken: 'story-visit-token',
 		identity: {
 			firstName: 'Ari',
 			lastName: 'Guest',
@@ -77,7 +75,6 @@ const meta: Meta<GuestIdentityIndicatorArgs> = {
 				:identity="args.identity"
 				:t="t"
 				:locale="args.locale"
-				:visit-token="args.visitToken"
 			/>
 		`,
 	}),
@@ -108,6 +105,35 @@ export const Default: Story = {
 			}),
 		).toBeInTheDocument();
 		await expect(await canvas.findByRole('checkbox')).toBeInTheDocument();
+		await expect(
+			canvas.getByText((_, element) => {
+				const text = element?.textContent ?? '';
+
+				return (
+					text.includes(translations.en.smsConsentLabel) &&
+					!Array.from(element?.children ?? []).some((child) =>
+						(child.textContent ?? '').includes(translations.en.smsConsentLabel),
+					)
+				);
+			}),
+		).toBeInTheDocument();
+
+		const consent = canvas.getByRole('checkbox');
+		const approve = canvas.getByRole('button', { name: translations.en.smsEnable });
+
+		await expect(approve).toBeDisabled();
+		await userEvent.click(consent);
+		await expect(approve).toBeEnabled();
+		await userEvent.click(approve);
+
+		await expect(
+			await canvas.findByText(translations.en.guestView.identityIndicator.notificationsEnabled),
+		).toBeInTheDocument();
+		await expect(
+			canvas.queryByRole('heading', {
+				name: translations.en.guestView.identityIndicator.notificationsDialogTitle,
+			}),
+		).not.toBeInTheDocument();
 	},
 };
 
