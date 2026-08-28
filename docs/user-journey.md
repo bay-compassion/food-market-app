@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=9a13205002eb, src/components/guest-view/GuestView.vue=3ac57e70b11e, src/components/routes/SignupView.vue=2b8e489b26bc, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=70d500d010da, src/stores/registration.store.ts=192c5b21f93b, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=7a16d33461b1, src/stores/root.store.ts=0c69fac54725, src/stores/market-session.store.ts=e3a352a4cbdb, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.vue=9a13205002eb, src/components/guest-view/GuestView.vue=b4f8d6d30f86, src/components/routes/SignupView.vue=2b8e489b26bc, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=bb58e5b9f902, src/stores/registration.store.ts=192c5b21f93b, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=7a16d33461b1, src/stores/root.store.ts=0c69fac54725, src/stores/market-session.store.ts=e3a352a4cbdb, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
@@ -41,6 +41,9 @@ flowchart TD
 
     saved --> activeSession{Market session active?}
     activeSession -- no --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
+    inactiveScreen --> hasRunAlready{Has this market's<br/>session already ended?}
+    hasRunAlready -- no, not open yet --> preregisterOffer[Show "Preregister" button]
+    hasRunAlready -- yes, already ended --> noCta([No CTA — nothing to do<br/>until the next one is scheduled])
     activeSession -- yes --> hasIdentity{Saved device token<br/>and local profile?}
     hasIdentity -- yes --> identityShown[Show locally saved<br/>name and phone]
     hasIdentity -- no --> hasVisit
@@ -64,7 +67,7 @@ flowchart TD
     phase -- registration closed --> closedScreen([Registration-closed screen])
     phase -- service underway --> inServiceScreen([In-service screen])
 
-    inactiveScreen -. "Preregister" button .-> signupRoute
+    preregisterOffer -. "Preregister" button .-> signupRoute
     signupRoute([Guest visits /signup]) --> alreadyIdentified{Already has a<br/>device token?}
     alreadyIdentified -- yes --> redirectHome[Redirect to /]
     redirectHome --> saved
@@ -117,8 +120,10 @@ flowchart TD
   normal card resolution decides (queue form, visit status, or the session's current phase). A
   browser with no device token instead sees the identity-only form and, on success, an inline
   "you're signed up early" message on `/signup` itself. `GuestNotOpenState`'s "Preregister" button
-  (shown on `/` while the market is inactive) is the in-app link into this flow; a guest can also
-  land on `/signup` directly, e.g. from a QR code. `GuestRegistrationForm` (the composer) takes a
+  (shown on `/` while the market is inactive, unless that market's session has already ended, in
+  which case there is nothing left to preregister for until the next one is scheduled) is the
+  in-app link into this flow; a guest can also land on `/signup` directly, e.g. from a QR code.
+  `GuestRegistrationForm` (the composer) takes a
   `context` prop (`'queue' | 'early'`): `'early'` (only ever passed by `SignupView`) renders only the
   identity fields (`GuestSignupForm`, submitted through `GuestStore.signUp`, no visit created);
   `'queue'` (only ever passed by `GuestView`) renders the lottery-entry fields (`GuestLotteryForm`)
@@ -133,10 +138,11 @@ flowchart TD
   creates no visit.
 - **Inactive market states share one explanation card.** `MarketSessionStore.isActive` is the
   boundary: when it is false, `GuestView.vue` renders `GuestNotOpenState` with the next registration
-  window, lottery rules, and notification details. There is no early-signup link. When it is true,
-  the normal card resolver chooses among the registration form, visit status,
-  registration-closed message, and in-service message. The separate schedule alert is no longer
-  rendered above the card.
+  window, lottery rules, and notification details, plus an early-signup link — unless the session's
+  status is `ended`, in which case the card omits that button, since there is nothing scheduled yet
+  to preregister for. When `isActive` is true, the normal card resolver chooses among the
+  registration form, visit status, registration-closed message, and in-service message. The
+  separate schedule alert is no longer rendered above the card.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — is entered fresh at every visit and lives only on `visits`, not on the
   guest's identity.** `GuestLotteryForm` asks for these details each time a guest enters a session's
