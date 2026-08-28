@@ -1,3 +1,4 @@
+import { adminTranslations } from '@/adminLocales.ts';
 import { type Translation, translations } from '@/locales.ts';
 import { makeReactive } from '@/services/make-reactive.ts';
 import type { RootStore } from '@/services/root.store.ts';
@@ -12,6 +13,10 @@ export class TranslationStore {
 
 	get translation(): Translation {
 		return translations[this.locale];
+	}
+
+	get adminTranslation() {
+		return adminTranslations[this.locale];
 	}
 
 	get dir(): 'rtl' | 'ltr' {

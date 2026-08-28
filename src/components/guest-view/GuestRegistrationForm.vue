@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { useRootStore } from '@/services/root.store.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
+import type { RegistrationSubmitResult } from '@/stores/registration.store.ts';
 
-import type { RegistrationSubmitResult } from '../../services/registration.store';
-import { useRootStore } from '../../services/root.store';
 import AppButton from '../AppButton.vue';
 import RegistrationCountdown from '../RegistrationCountdown.vue';
 import GuestLotteryForm from './GuestLotteryForm.vue';

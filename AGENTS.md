@@ -25,6 +25,7 @@
 ## Localization
 
 - All user-facing text must be localized: labels, headings, buttons, validation and error messages, empty states, success messages, placeholders, and accessibility text.
+- Text related to the admin dashboard does not need to be localized.
 - When adding or changing user-facing text, add or update its translation for **every** language listed in `src/locales.ts` in the same change.
 - Use the translation system in `src/locales.ts`; do not leave hard-coded fallback text in components. Keep the `Translation` interface and every locale dictionary in sync.
 - `Translation` is being migrated incrementally from one flat set of keys into nested groups per feature area, e.g. `guestView: GuestViewTranslations` for components under `src/components/guest-view/`. When adding or touching translations for a feature area, put them under that area's nested `<Area>Translations` group (named after its `src/components/<area>/` folder) instead of adding another flat top-level key. Convert an existing flat cluster into a nested group opportunistically when you're already working in that area — don't do it as a drive-by unrelated change. `src/adminLocales.ts` predates this convention and is a separate top-level dictionary, not a nested group inside `Translation`; leave that split as-is.

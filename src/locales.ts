@@ -183,7 +183,7 @@ export const translations = {
 		},
 		admin: 'Admin',
 		adminDescription: 'Queue management tools are coming soon.',
-		adminEyebrow: 'Market team',
+		adminEyebrow: '',
 		adminTitle: 'A simpler way to welcome every neighbor.',
 		age: 'Age',
 		agePlaceholder: 'Select your age range',

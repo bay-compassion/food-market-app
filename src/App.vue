@@ -17,7 +17,6 @@ const t = useTranslation();
 const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
 const router = useRouter();
-const isAdmin = computed(() => route.name === 'admin');
 const isQrCode = computed(() => route.name === 'qr-code');
 const adminView = computed<AdminView>(() =>
 	isAdminView(route.params.view) ? route.params.view : 'current-session',
@@ -35,13 +34,6 @@ function showGuest() {
 			{{ t.authError }}
 		</p>
 		<router-view />
-
-		<!--		<AdminAuthView-->
-		<!--			v-else-->
-		<!--			:locale="translations.locale"-->
-		<!--			:view="adminView"-->
-		<!--			@navigate="navigateAdmin"-->
-		<!--		/>-->
 
 		<AppFooter :t="t" @back="showGuest" />
 	</main>
