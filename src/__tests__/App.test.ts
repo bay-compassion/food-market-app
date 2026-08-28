@@ -4,6 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import AdminAuthView from '@/components/AdminAuthView.vue';
+import GuestView from '@/components/guest-view/GuestView.vue';
+import PrivacyPage from '@/components/legal/PrivacyPage.vue';
+import TermsPage from '@/components/legal/TermsPage.vue';
+import SignupView from '@/components/routes/SignupView.vue';
+
 import App from '../App.vue';
 import { authReturnUrl } from '../auth';
 import AdminDashboard from '../components/AdminDashboard.vue';
@@ -52,9 +58,11 @@ function mountApp() {
 	const router = createRouter({
 		history: createMemoryHistory(),
 		routes: [
-			{ path: '/', name: 'guest', component: App },
-			{ path: '/signup', name: 'signup', component: App },
-			{ path: '/admin', name: 'admin', component: App },
+			{ path: '/', name: 'guest', component: GuestView },
+			{ path: '/privacy', name: 'privacy', component: PrivacyPage },
+			{ path: '/terms', name: 'terms', component: TermsPage },
+			{ path: '/signup', name: 'signup', component: SignupView },
+			{ path: '/admin', name: 'admin', component: AdminAuthView },
 		],
 	});
 

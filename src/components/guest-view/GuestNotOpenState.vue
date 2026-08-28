@@ -8,7 +8,9 @@ import GuestStateMessage from './GuestStateMessage.vue';
 
 const router = useRouter();
 
-defineProps<{ t: Translation }>();
+withDefaults(defineProps<{ t: Translation; allowPreregister?: boolean }>(), {
+	allowPreregister: true,
+});
 
 function goToSignup() {
 	void router.push({ name: 'signup' });
@@ -21,7 +23,7 @@ function goToSignup() {
 		:heading="t.guestView.notOpenState.heading"
 		:description="t.guestView.notOpenState.subheading"
 	>
-		<AppButton @click="goToSignup"> Preregister </AppButton>
+		<AppButton v-if="allowPreregister" @click="goToSignup"> Preregister </AppButton>
 		<div class="inactive-details">
 			<p>{{ t.guestView.notOpenState.lotteryDescription }}</p>
 			<p>{{ t.guestView.notOpenState.selectionDescription }}</p>

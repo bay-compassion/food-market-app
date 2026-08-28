@@ -1,6 +1,7 @@
 import { adminTranslations } from '@/adminLocales.ts';
 import { type Translation, translations } from '@/locales.ts';
 import { makeReactive } from '@/services/make-reactive.ts';
+import { StorageKey } from '@/services/storage.service.ts';
 
 import type { RootStore } from './root.store.ts';
 
@@ -25,8 +26,8 @@ export class TranslationStore {
 	}
 
 	constructor(private readonly rootStore: RootStore) {
-		this.locale = 'en';
-		this.language = this.detectLanguage();
+		this.locale = this.readSavedLanguage() ?? this.detectLanguage();
+		this.language = this.locale;
 
 		return makeReactive(this);
 	}
@@ -38,6 +39,15 @@ export class TranslationStore {
 
 		this.language = language;
 		this.locale = language;
+		window.localStorage.setItem(StorageKey.LOCALE, language);
+	}
+
+	/** Bypasses `StorageService` — the saved value is a bare language code, not JSON, so it can be
+	 *  read directly on a fresh visit, before there is a device to identify a returning one. */
+	private readSavedLanguage(): Language | null {
+		const saved = window.localStorage.getItem(StorageKey.LOCALE);
+
+		return saved && supportedLanguages.includes(saved as Language) ? (saved as Language) : null;
 	}
 
 	private detectLanguage(): Language {

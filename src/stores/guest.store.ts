@@ -26,6 +26,7 @@ export type GuestStoreOptions = {
 export class GuestStore {
 	private _deviceToken: string | null;
 	private _identity: GuestIdentity | null;
+	private _isReturningVisitor: boolean;
 	private _notificationSettingsLoaded = false;
 	private _pushConfigured = false;
 	private _pushPublicKey: string | null = null;
@@ -46,7 +47,7 @@ export class GuestStore {
 	}
 
 	get isReturningVisitor(): boolean {
-		return this.storage?.get(StorageKey.RETURNING_VISITOR) ?? false;
+		return this._isReturningVisitor;
 	}
 
 	get notificationSettingsLoaded(): boolean {
@@ -99,6 +100,7 @@ export class GuestStore {
 		this.request = options.request ?? ((input, init) => fetch(input, init));
 		this._deviceToken = this.storage?.get(StorageKey.GUEST_DEVICE_TOKEN) ?? null;
 		this._identity = this.readIdentity();
+		this._isReturningVisitor = this.storage?.get(StorageKey.RETURNING_VISITOR) ?? false;
 		this.submitRegistration = options.register ?? submitGuestRegistration;
 		this.submitSignup = options.signUp ?? submitGuestSignup;
 
@@ -133,6 +135,13 @@ export class GuestStore {
 		});
 
 		this.saveIdentity(result, input);
+	}
+
+	/** Called once a guest has picked a language, so future visits skip the language hero in
+	 *  favor of the compact picker in `AppBar`. */
+	markAsReturningVisitor(): void {
+		this._isReturningVisitor = true;
+		this.storage?.set(StorageKey.RETURNING_VISITOR, true);
 	}
 
 	async forget(): Promise<void> {

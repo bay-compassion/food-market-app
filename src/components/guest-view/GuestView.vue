@@ -10,6 +10,7 @@ import {
 	guestFormContext,
 	resolveGuestCardState,
 } from '../../services/guestCardState';
+import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
 import { useRootStore } from '../../stores/root.store';
 import type { Language } from '../../stores/translation.store';
@@ -32,6 +33,7 @@ const isReturningVisitor = toRef(guestDomain, 'isReturningVisitor');
 
 function selectLanguage(selected: Locale) {
 	translations.setLanguage(selected as Language);
+	guestDomain.markAsReturningVisitor();
 }
 
 let nowTimer: ReturnType<typeof setInterval> | undefined;
@@ -69,6 +71,9 @@ const cardState = computed(() =>
 		hasActiveVisit: visitStore.hasActiveVisit,
 	}),
 );
+/** Once a market has run its course, there is nothing left to preregister for until an admin
+ *  schedules the next one — unlike the "hasn't opened yet" case, which still welcomes it. */
+const canPreregister = computed(() => session.currentStatus !== SessionStatusEnum.ENDED);
 /** The success-state copy differs between joining today's queue and signing up ahead of time. */
 const successCopy = computed(() =>
 	guestFormContext(phase.value) === 'early'
@@ -110,6 +115,9 @@ onBeforeUnmount(() => {
 
 <template>
 	<section class="guest-layout">
+		<!-- Card that indicates who the guest has been identified as -->
+		<GuestIdentityIndicator v-if="guestIdentity" :identity="guestIdentity" />
+
 		<GuestLanguageHero
 			v-if="!isReturningVisitor"
 			:t="t"
@@ -117,14 +125,11 @@ onBeforeUnmount(() => {
 			@select-language="selectLanguage"
 		/>
 
-		<!-- Card that indicates who the guest has been identified as -->
-		<GuestIdentityIndicator v-if="guestIdentity" :identity="guestIdentity" />
-
 		<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
 		<template v-else>
 			<Card aria-live="polite">
 				<template v-if="!session.isActive">
-					<GuestNotOpenState :t="t" @preregister="goToSignup" />
+					<GuestNotOpenState :t="t" :allow-preregister="canPreregister" @preregister="goToSignup" />
 				</template>
 				<template v-else>
 					<GuestVisitStatus
