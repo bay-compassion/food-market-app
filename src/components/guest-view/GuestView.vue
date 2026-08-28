@@ -10,14 +10,9 @@ import {
 	guestFormContext,
 	resolveGuestCardState,
 } from '../../services/guestCardState';
-import {
-	cancelActiveVisit,
-	fetchActiveVisit,
-	type ActiveVisit,
-} from '../../services/guestVisitApi';
-import type { RegistrationSubmitResult } from '../../services/registration.store';
-import { useRootStore } from '../../services/root.store';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
+import type { RegistrationSubmitResult } from '../../stores/registration.store';
+import { useRootStore } from '../../stores/root.store';
 import type { Language } from '../../stores/translation.store';
 import GuestIdentityIndicator from './GuestIdentityIndicator.vue';
 import GuestLanguageHero from './GuestLanguageHero.vue';
@@ -30,6 +25,7 @@ import GuestVisitStatus from './GuestVisitStatus.vue';
 const rootStore = useRootStore();
 const guestDomain = rootStore.guest;
 const session = rootStore.session;
+const visitStore = rootStore.visit;
 const translations = rootStore.translations;
 const t = toRef(translations, 'translation');
 const locale = toRef(translations, 'locale');
@@ -39,18 +35,9 @@ function selectLanguage(selected: Locale) {
 	translations.setLanguage(selected as Language);
 }
 
-const visitTokenStorageKey = 'bay-compassion.visit-token';
-let visitRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 let nowTimer: ReturnType<typeof setInterval> | undefined;
 
-const isSubmitted = ref(false);
-const isCancelling = ref(false);
-/** Only ever set by `cancelVisit` — the registration form's own submission error lives on
- *  `rootStore.registration` and is displayed by `GuestRegistrationForm` itself. */
-const visitError = ref('');
-const activeVisit = ref<ActiveVisit | null>(null);
 const isStatusLoading = ref(true);
-const visitToken = ref<string | null>(window.localStorage.getItem(visitTokenStorageKey));
 const guestIdentity = computed(() => guestDomain.identity);
 
 /**
@@ -64,42 +51,15 @@ const hasLoadedRegistration = computed(() => session.currentState !== null);
 const now = ref(Date.now());
 
 const visitStatusLabel = computed(() => {
-	if (!activeVisit.value) {
+	if (!visitStore.activeVisit) {
 		return '';
 	}
 
-	return guestVisitStatusLabel(locale.value, activeVisit.value.status);
+	return guestVisitStatusLabel(locale.value, visitStore.activeVisit.status);
 });
-const canCancelVisit = computed(
-	() => activeVisit.value?.status === 'registered' || activeVisit.value?.status === 'waiting',
-);
-/**
- * A called guest still needs updates — refreshing only while the visit can be cancelled meant the
- * screen froze on "Called" and never moved on.
- */
-const isVisitActive = computed(
-	() =>
-		activeVisit.value?.status === 'registered' ||
-		activeVisit.value?.status === 'waiting' ||
-		activeVisit.value?.status === 'called',
-);
-const isCalled = computed(() => activeVisit.value?.status === 'called');
-const queuePosition = computed(() =>
-	activeVisit.value?.status === 'waiting' ? activeVisit.value.queuePosition : null,
-);
-const guestsAhead = computed(() =>
-	activeVisit.value?.status === 'waiting' ? activeVisit.value.aheadOfYou : null,
-);
-
-function scheduleVisitRefresh() {
-	if (visitRefreshTimer) {
-		clearTimeout(visitRefreshTimer);
-	}
-
-	if (isVisitActive.value) {
-		visitRefreshTimer = setTimeout(loadActiveVisit, 15_000);
-	}
-}
+/** Only ever set by `cancelVisit` — the registration form's own submission error lives on
+ *  `rootStore.registration` and is displayed by `GuestRegistrationForm` itself. */
+const visitError = computed(() => (visitStore.cancelError ? t.value.visitError : ''));
 const router = useRouter();
 const phase = computed(() =>
 	hasLoadedRegistration.value
@@ -117,7 +77,7 @@ const cardState = computed(() =>
 		phase: phase.value,
 		isIdentified: guestDomain.isIdentified,
 		isPreregistration: false,
-		hasActiveVisit: activeVisit.value !== null && isSubmitted.value,
+		hasActiveVisit: visitStore.hasActiveVisit,
 	}),
 );
 /** The success-state copy differs between joining today's queue and signing up ahead of time. */
@@ -136,73 +96,25 @@ function handleSubmitted(result: RegistrationSubmitResult) {
 		return;
 	}
 
-	window.localStorage.setItem(visitTokenStorageKey, result.registration.visitToken);
-	visitToken.value = result.registration.visitToken;
-	activeVisit.value = {
-		id: result.registration.id,
-		status: result.registration.status,
-		queuePosition: null,
-		aheadOfYou: null,
-	};
-	isSubmitted.value = true;
-	scheduleVisitRefresh();
+	visitStore.submit(result.registration);
 }
 
-async function loadActiveVisit() {
-	const token = window.localStorage.getItem(visitTokenStorageKey);
-
-	if (!token) {
-		return;
-	}
-	const lookup = await fetchActiveVisit(token);
-
-	if (!lookup.found) {
-		if (lookup.reason === 'unreachable') {
-			// Keep registration available if status refresh is temporarily unavailable.
-			return;
-		}
-		window.localStorage.removeItem(visitTokenStorageKey);
-		visitToken.value = null;
-		activeVisit.value = null;
-		isSubmitted.value = false;
-		scheduleVisitRefresh();
-
-		return;
-	}
-	activeVisit.value = lookup.visit;
-	isSubmitted.value = true;
-	scheduleVisitRefresh();
-}
-
-async function cancelVisit() {
-	const token = window.localStorage.getItem(visitTokenStorageKey);
-
-	if (!token || !window.confirm(t.value.cancelVisitConfirm)) {
+function cancelVisit() {
+	if (!window.confirm(t.value.cancelVisitConfirm)) {
 		return;
 	}
 
-	isCancelling.value = true;
-
-	try {
-		const visit = await cancelActiveVisit(token);
-
-		activeVisit.value = { ...activeVisit.value!, ...visit };
-	} catch {
-		visitError.value = t.value.visitError;
-	} finally {
-		isCancelling.value = false;
-	}
+	void visitStore.cancel();
 }
 
 onMounted(async () => {
 	nowTimer = setInterval(() => {
 		now.value = Date.now();
 	}, 1_000);
-	await Promise.all([session.getStatus().catch(() => undefined), loadActiveVisit()]);
+	await Promise.all([session.getStatus().catch(() => undefined), visitStore.refresh()]);
 	isStatusLoading.value = false;
 });
 onBeforeUnmount(() => {
-	clearTimeout(visitRefreshTimer);
 	clearInterval(nowTimer);
 });
 </script>
@@ -229,14 +141,14 @@ onBeforeUnmount(() => {
 					<GuestVisitStatus
 						v-if="cardState.kind === 'visit-status'"
 						:t="t"
-						:is-called="isCalled"
+						:is-called="visitStore.isCalled"
 						:success-title="successCopy.title"
 						:success-description="successCopy.description"
 						:visit-status-label="visitStatusLabel"
-						:queue-position="queuePosition"
-						:guests-ahead="guestsAhead"
-						:can-cancel-visit="canCancelVisit"
-						:is-cancelling="isCancelling"
+						:queue-position="visitStore.queuePosition"
+						:guests-ahead="visitStore.guestsAhead"
+						:can-cancel-visit="visitStore.canCancel"
+						:is-cancelling="visitStore.isCancelling"
 						:submission-error="visitError"
 						@cancel-visit="cancelVisit"
 					/>

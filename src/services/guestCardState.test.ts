@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { MarketEventTiming } from '../stores/market-session.store';
 import { currentSessionPhase, resolveGuestCardState } from './guestCardState';
-import type { MarketEventTiming } from './market-session.store';
 import type { SessionStatus } from './sessionStateMachine';
 
 const now = new Date('2026-07-18T16:30:00.000Z');

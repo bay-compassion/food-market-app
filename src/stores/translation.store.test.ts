@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { translations } from '../locales.ts';
-import { RootStore } from '../services/root.store.ts';
+import { RootStore } from './root.store.ts';
 import { TranslationStore } from './translation.store.ts';
 
 describe('TranslationStore', () => {

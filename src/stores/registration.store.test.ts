@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { StorageKey, StorageService } from '../services/storage.service';
 import { GuestStore } from './guest.store';
 import { RegistrationStore } from './registration.store';
-import { StorageKey, StorageService } from './storage.service';
 
 describe('RegistrationStore', () => {
 	let storage: StorageService;

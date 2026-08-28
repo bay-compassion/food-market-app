@@ -3,7 +3,7 @@ import { createApp, watch } from 'vue';
 import App from './App.vue';
 import { auth0 } from './auth';
 import router from './router';
-import { RootStore, rootStoreKey } from './services/root.store';
+import { RootStore, rootStoreKey } from './stores/root.store';
 
 // Order matters: tokens and resets first, then the app chrome, then the per-area stylesheets.
 import './styles/base.css';

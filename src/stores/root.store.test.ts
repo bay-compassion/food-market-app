@@ -38,4 +38,26 @@ describe('RootStore', () => {
 		store[Symbol.dispose]();
 		expect(store.session.isPolling).toBe(false);
 	});
+
+	it('starts and disposes the visit store alongside the session store', () => {
+		// Arrange
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+			Response.json({ event: null, questions: [], counts: {} }),
+		);
+		const store = new RootStore();
+		const refreshVisit = vi.spyOn(store.visit, 'refresh').mockResolvedValue();
+		const disposeVisit = vi.spyOn(store.visit, Symbol.dispose);
+
+		// Act
+		store.start();
+
+		// Assert
+		expect(refreshVisit).toHaveBeenCalledOnce();
+
+		// Act
+		store[Symbol.dispose]();
+
+		// Assert
+		expect(disposeVisit).toHaveBeenCalledOnce();
+	});
 });

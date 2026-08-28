@@ -2,7 +2,7 @@ import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
-import type { GuestIdentity } from '../../services/guest.store';
+import type { GuestIdentity } from '../../stores/guest.store';
 import GuestIdentityIndicator from './GuestIdentityIndicator.vue';
 
 type GuestIdentityIndicatorArgs = {

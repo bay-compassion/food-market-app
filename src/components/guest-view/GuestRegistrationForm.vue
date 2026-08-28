@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { useRootStore } from '@/services/root.store.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 import type { RegistrationSubmitResult } from '@/stores/registration.store.ts';
+import { useRootStore } from '@/stores/root.store.ts';
 
 import AppButton from '../AppButton.vue';
 import RegistrationCountdown from '../RegistrationCountdown.vue';

@@ -7,9 +7,7 @@ import { everyPermission, isAuth0Configured, permissionsFromToken } from '../aut
 import type { ServiceProgress } from '../services/demoScenario';
 import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
 import { lotteryWeightFor } from '../services/lotteryWeight';
-import type { SessionOverview } from '../services/market-session.store';
 import type { Permission } from '../services/permissions';
-import { useRootStore } from '../services/root.store';
 import {
 	currentSessionState,
 	type SessionCommand,
@@ -21,6 +19,8 @@ import {
 	type VisitStatus,
 } from '../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../services/visitStatusLabels';
+import type { SessionOverview } from '../stores/market-session.store';
+import { useRootStore } from '../stores/root.store';
 import DevModeView from './admin/DevModeView.vue';
 import GuestDatabaseView from './admin/GuestDatabaseView.vue';
 import QuestionBankView from './admin/QuestionBankView.vue';

@@ -1,24 +1,29 @@
-<!-- diagram-sources: src/App.vue=263177c98db6, src/components/guest-view/GuestView.vue=f35dbb04155a, src/components/routes/SignupView.vue=87d3db0303a5, src/services/guestCardState.ts=46374489e020, src/services/guest.store.ts=b44fda3e2a09, src/services/registration.store.ts=0317619252ef, src/services/guestVisitApi.ts=a06988c9ea56, src/services/root.store.ts=667a3db7fc67, src/services/market-session.store.ts=c0b6e0a0d133, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.vue=9a13205002eb, src/components/guest-view/GuestView.vue=b943b585f8bc, src/components/routes/SignupView.vue=2b8e489b26bc, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=120b90e2ff00, src/stores/registration.store.ts=192c5b21f93b, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=7a16d33461b1, src/stores/root.store.ts=23527d5ae986, src/stores/market-session.store.ts=e3a352a4cbdb, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
 The path a guest takes from opening the app to being served, and the state their visit is in at each
-step. Language selection lives in [`src/App.vue`](../src/App.vue); the registration form, status
+step. Language selection (`GuestLanguageHero`, shown until a returning visitor has picked one) lives
+in `GuestView`, backed by the root's shared `TranslationStore`; the registration form, status
 screen, and countdown are in
 [`src/components/guest-view/GuestView.vue`](../src/components/guest-view/GuestView.vue) (route `/`),
 with the identity-only sign-up screen in its own
 [`src/components/routes/SignupView.vue`](../src/components/routes/SignupView.vue) (route `/signup`).
 Both read the current market session from the shared
-[`src/services/root.store.ts`](../src/services/root.store.ts). The root's
-[`MarketSessionStore`](../src/services/market-session.store.ts) polls `/api/market` (is registration
-open?), while the root's [`GuestStore`](../src/services/guest.store.ts) owns the device credential
+[`src/stores/root.store.ts`](../src/stores/root.store.ts) — every store it composes
+(`src/stores/*.store.ts`) lives for the app's lifetime, not any one component's mount. The root's
+[`MarketSessionStore`](../src/stores/market-session.store.ts) polls `/api/market` (is registration
+open?), while the root's [`GuestStore`](../src/stores/guest.store.ts) owns the device credential
 used by `/api/guests` (register for a session), `/api/guest-signup` (identity only, no session), and
 `/api/notification-status` (retrieve consent) and `/api/sms-subscription` (grant or revoke SMS
 consent). Both routes render the shared `GuestRegistrationForm`, which reads and submits the
 in-progress form fields through the root's
-[`RegistrationStore`](../src/services/registration.store.ts) rather than through props, so `/` and
+[`RegistrationStore`](../src/stores/registration.store.ts) rather than through props, so `/` and
 `/signup` don't each wire up their own copy of that state. `/api/visit` (check status, cancel) is
-called through [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts).
+called through [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts), with the root's
+[`VisitStore`](../src/stores/visit.store.ts) owning the stored visit token, the active visit, and its
+refresh polling — it keeps polling in the background even while the guest is elsewhere in the app
+(e.g. `/admin` on the same device), stopping only when the root store itself is disposed.
 
 The diagram is written in [Mermaid](https://mermaid.js.org/), a plain-text diagram format GitHub
 renders automatically when viewing this file on github.com. It is maintained by hand — see
@@ -141,9 +146,10 @@ flowchart TD
   [`data-model.md`](data-model.md) for how this moved off `guests`. Each visit also snapshots the
   normalized phone number so later reconciliation can see earlier values after a guest renews their
   identity.
-- **The status screen polls.** It re-checks `/api/visit` on a timer for as long as the visit is
-  live — `registered`, `waiting`, or `called` — so the guest sees the lottery result and the call
-  even without notifications. Push is a convenience, never the only channel. Separately, the
+- **The visit status polls.** The root's `VisitStore` re-checks `/api/visit` on a timer for as long
+  as the visit is live — `registered`, `waiting`, or `called` — so the guest sees the lottery result
+  and the call even without notifications, and keeps doing so even if they wander to another route
+  on the same device. Push is a convenience, never the only channel. Separately, the
   application-level `MarketSessionStore` re-checks `/api/market` every five seconds while the page
   is visible. It pauses while the page is hidden or suspended, then refreshes immediately when the
   guest returns. Both the guest and admin screens observe that same state, so a guest sitting on

@@ -2,8 +2,8 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import NotificationOptIn from '../components/guest-view/NotificationOptIn.vue';
-import { GuestStore } from '../services/guest.store';
 import { StorageKey } from '../services/storage.service';
+import { GuestStore } from '../stores/guest.store';
 
 function mountOptIn() {
 	const guest = new GuestStore({

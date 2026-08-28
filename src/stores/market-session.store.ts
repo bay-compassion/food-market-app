@@ -1,9 +1,13 @@
 import { markRaw } from 'vue';
 
-import { makeReactive } from './make-reactive.ts';
-import { PageVisibilityPoller } from './page-visibility-poller.ts';
-import { type SessionCommand, type SessionMode, SessionStatusEnum } from './sessionStateMachine.ts';
-import type { VisitStatus } from './visitStateMachine.ts';
+import { makeReactive } from '../services/make-reactive.ts';
+import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
+import {
+	type SessionCommand,
+	type SessionMode,
+	SessionStatusEnum,
+} from '../services/sessionStateMachine.ts';
+import type { VisitStatus } from '../services/visitStateMachine.ts';
 
 export type SessionQuestion = {
 	id: string;

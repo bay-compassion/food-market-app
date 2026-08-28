@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import type { Locale } from '../../locales';
-import { RootStore, rootStoreKey } from '../../services/root.store';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
+import { RootStore, rootStoreKey } from '../../stores/root.store';
 import type { Language } from '../../stores/translation.store';
 import Card from '../ui/layout/Card.vue';
 import GuestRegistrationForm from './GuestRegistrationForm.vue';

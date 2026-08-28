@@ -1,11 +1,11 @@
 import { inject, type InjectionKey } from 'vue';
 
-import { TranslationStore } from '@/stores/translation.store.ts';
-
-import { RegistrationStore } from '../stores/registration.store.ts';
+import { StorageService } from '../services/storage.service.ts';
 import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore } from './market-session.store.ts';
-import { StorageService } from './storage.service.ts';
+import { RegistrationStore } from './registration.store.ts';
+import { TranslationStore } from './translation.store.ts';
+import { VisitStore } from './visit.store.ts';
 
 declare global {
 	interface Window {
@@ -19,6 +19,7 @@ export class RootStore {
 	readonly guest: GuestStore;
 	readonly registration: RegistrationStore;
 	readonly session: MarketSessionStore;
+	readonly visit: VisitStore;
 	readonly translations = new TranslationStore(this);
 	private getAccessToken: (() => Promise<string>) | null = null;
 
@@ -34,6 +35,7 @@ export class RootStore {
 				return { Authorization: `Bearer ${await this.getAccessToken()}` };
 			},
 		});
+		this.visit = new VisitStore();
 
 		globalThis.rootStore = this;
 	}
@@ -44,11 +46,13 @@ export class RootStore {
 
 	start(): void {
 		void this.guest.initialize();
+		void this.visit.refresh();
 		this.session.startPolling();
 	}
 
 	[Symbol.dispose](): void {
 		this.session[Symbol.dispose]();
+		this.visit[Symbol.dispose]();
 	}
 }
 

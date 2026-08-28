@@ -5,9 +5,9 @@ import {
 	type GuestRegistrationResult,
 	type GuestSignupInput,
 	type GuestSignupResult,
-} from './guestVisitApi.ts';
-import { makeReactive } from './make-reactive.ts';
-import { StorageKey, StorageService } from './storage.service.ts';
+} from '../services/guestVisitApi.ts';
+import { makeReactive } from '../services/make-reactive.ts';
+import { StorageKey, StorageService } from '../services/storage.service.ts';
 
 export type GuestIdentity = Pick<GuestRegistrationInput, 'firstName' | 'lastName' | 'phone'>;
 

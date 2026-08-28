@@ -2,8 +2,8 @@ import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
-import { GuestStore } from '../../services/guest.store';
 import { StorageKey } from '../../services/storage.service';
+import { GuestStore } from '../../stores/guest.store';
 import NotificationOptIn from './NotificationOptIn.vue';
 
 /**

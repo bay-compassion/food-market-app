@@ -1,8 +1,8 @@
 import type { GuestFormState } from '../components/types.ts';
-import type { GuestStore } from '../services/guest.store.ts';
 import type { GuestRegistrationResult } from '../services/guestVisitApi.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import { StorageKey, StorageService } from '../services/storage.service.ts';
+import type { GuestStore } from './guest.store.ts';
 
 export type RegistrationSubmitResult =
 	| { kind: 'signed-up' }

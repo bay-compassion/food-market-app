@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 
-import type { GuestIdentity } from '@/services/guest.store.ts';
-import { useRootStore } from '@/services/root.store.ts';
+import type { GuestIdentity } from '@/stores/guest.store.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
+import { useRootStore } from '@/stores/root.store.ts';
 
 import AppButton from '../AppButton.vue';
 import Dialog from '../ui/Dialog.vue';

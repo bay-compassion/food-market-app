@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
 import { translations, type Locale } from '../../locales';
-import type { GuestStore } from '../../services/guest.store';
+import type { GuestStore } from '../../stores/guest.store';
 import AppButton from '../AppButton.vue';
 
 const props = defineProps<{ guest: GuestStore }>();

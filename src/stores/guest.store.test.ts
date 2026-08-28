@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { GuestRegistrationInput, GuestSignupInput } from '../services/guestVisitApi';
+import { StorageKey, StorageService } from '../services/storage.service';
 import { GuestStore } from './guest.store';
-import type { GuestRegistrationInput, GuestSignupInput } from './guestVisitApi';
-import { StorageKey, StorageService } from './storage.service';
 
 const registration = { id: 'visit-1', status: 'registered' as const, visitToken: 'token-1' };
 const signupInput: GuestSignupInput = {
