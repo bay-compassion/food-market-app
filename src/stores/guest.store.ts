@@ -13,7 +13,7 @@ export type GuestIdentity = Pick<GuestRegistrationInput, 'firstName' | 'lastName
 
 export type GuestStoreOptions = {
 	request?: typeof fetch;
-	storage?: Pick<StorageService, 'get' | 'set'> | null;
+	storage?: Pick<StorageService, 'get' | 'set' | 'remove'> | null;
 	register?: (
 		payload: GuestRegistrationInput & { deviceToken: string | null },
 	) => Promise<GuestRegistrationResult>;
@@ -33,7 +33,7 @@ export class GuestStore {
 	private _smsConfigured = false;
 	private _smsState: 'idle' | 'enabling' | 'enabled' | 'error' = 'idle';
 	private readonly request: typeof fetch;
-	private readonly storage: Pick<StorageService, 'get' | 'set'> | null;
+	private readonly storage: Pick<StorageService, 'get' | 'set' | 'remove'> | null;
 	private readonly submitRegistration: NonNullable<GuestStoreOptions['register']>;
 	private readonly submitSignup: NonNullable<GuestStoreOptions['signUp']>;
 
@@ -133,6 +133,13 @@ export class GuestStore {
 		});
 
 		this.saveIdentity(result, input);
+	}
+
+	async forget(): Promise<void> {
+		this.storage?.remove(StorageKey.GUEST_DEVICE_TOKEN);
+		this.storage?.remove(StorageKey.GUEST_IDENTITY);
+		this._deviceToken = null;
+		this._identity = null;
 	}
 
 	/** Saves the credential a registration/sign-up response issued, and the identity it carried. */

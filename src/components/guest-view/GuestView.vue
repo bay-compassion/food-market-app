@@ -10,7 +10,6 @@ import {
 	guestFormContext,
 	resolveGuestCardState,
 } from '../../services/guestCardState';
-import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
 import { useRootStore } from '../../stores/root.store';
 import type { Language } from '../../stores/translation.store';
@@ -50,16 +49,6 @@ const hasLoadedRegistration = computed(() => session.currentState !== null);
 /** Ticks every second so the registration form's countdown stays live. */
 const now = ref(Date.now());
 
-const visitStatusLabel = computed(() => {
-	if (!visitStore.activeVisit) {
-		return '';
-	}
-
-	return guestVisitStatusLabel(locale.value, visitStore.activeVisit.status);
-});
-/** Only ever set by `cancelVisit` — the registration form's own submission error lives on
- *  `rootStore.registration` and is displayed by `GuestRegistrationForm` itself. */
-const visitError = computed(() => (visitStore.cancelError ? t.value.visitError : ''));
 const router = useRouter();
 const phase = computed(() =>
 	hasLoadedRegistration.value
@@ -140,16 +129,8 @@ onBeforeUnmount(() => {
 				<template v-else>
 					<GuestVisitStatus
 						v-if="cardState.kind === 'visit-status'"
-						:t="t"
-						:is-called="visitStore.isCalled"
 						:success-title="successCopy.title"
 						:success-description="successCopy.description"
-						:visit-status-label="visitStatusLabel"
-						:queue-position="visitStore.queuePosition"
-						:guests-ahead="visitStore.guestsAhead"
-						:can-cancel-visit="visitStore.canCancel"
-						:is-cancelling="visitStore.isCancelling"
-						:submission-error="visitError"
 						@cancel-visit="cancelVisit"
 					/>
 					<GuestRegistrationForm
