@@ -7,13 +7,8 @@ import { NotificationOptIn } from './NotificationOptIn';
 
 /**
  * There is no backend behind Storybook, so the guest store's notification endpoint calls are
- * stubbed here. Push remains configured in the store to verify that its controls stay hidden;
- * `smsConfigured` controls the only channel currently shown to guests.
- *
- * Actually enabling push notifications still will not complete here: that needs a service worker
- * and a real subscription endpoint. The stub is for laying out the panel, not exercising that
- * part of the flow — see `NotificationOptIn.test.tsx` for that coverage. Enabling SMS does
- * complete, since it is a plain POST with no browser API involved.
+ * stubbed here. Push remains configured in the store to verify that its controls stay hidden, and
+ * SMS remains available so the story represents the dialog's one reachable opt-in state.
  */
 /*
  * Seeded at module scope, not in the decorator below: the preview builds the story's `RootStore`
@@ -27,16 +22,7 @@ window.localStorage.setItem(
 
 const originalFetch = window.fetch.bind(window);
 
-type NotificationOptInArgs = {
-	smsConfigured: boolean;
-	/** Whether this phone already has active consent from a past visit — the server-side check
-	 *  that lets the guest skip the checkbox entirely. */
-	smsSubscribed: boolean;
-};
-
-const withNotificationEndpoints: Decorator = (Story, context) => {
-	const args = context.args as NotificationOptInArgs;
-
+const withNotificationEndpoints: Decorator = (Story) => {
 	window.fetch = (input, init) => {
 		const url = String(input instanceof Request ? input.url : input);
 
@@ -45,17 +31,11 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 		}
 
 		if (url === '/api/sms-subscription') {
-			if (init?.method === 'POST') {
-				return Promise.resolve(Response.json({ subscribed: true }));
-			}
-
-			return Promise.resolve(Response.json({ configured: args.smsConfigured }));
+			return Promise.resolve(Response.json({ configured: true }));
 		}
 
 		if (url === '/api/notification-status') {
-			return Promise.resolve(
-				Response.json({ pushSubscribed: false, smsConsented: args.smsSubscribed }),
-			);
+			return Promise.resolve(Response.json({ pushSubscribed: false, smsConsented: false }));
 		}
 
 		return originalFetch(input, init);
@@ -69,15 +49,11 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 };
 
 const meta = {
-	title: 'Guest/NotificationOptIn',
+	title: 'Guest/Identity/NotificationOptIn',
 	component: NotificationOptIn,
 	parameters: { shell: 'guest' },
 	decorators: [withNotificationEndpoints],
-	args: {
-		smsConfigured: true,
-		smsSubscribed: false,
-	},
-} satisfies Meta<NotificationOptInArgs>;
+} satisfies Meta<typeof NotificationOptIn>;
 
 export default meta;
 
@@ -102,33 +78,6 @@ export const Default: Story = {
 			canvas.getByRole('button', { name: translations.en.smsEnable }),
 		).toBeInTheDocument();
 	},
-};
-
-/** A guest who has checked the box and confirmed — the enrollment confirmation state. */
-export const SmsConsentGiven: Story = {
-	play: async ({ canvas, userEvent }) => {
-		await userEvent.click(await canvas.findByRole('checkbox'));
-		await userEvent.click(canvas.getByRole('button', { name: translations.en.smsEnable }));
-
-		await expect(await canvas.findByText(translations.en.smsEnabled)).toBeInTheDocument();
-	},
-};
-
-/**
- * A guest whose phone already consented on a past visit, so this skips straight to confirmation
- * instead of asking again.
- */
-export const AlreadySubscribed: Story = {
-	args: { smsSubscribed: true },
-	play: async ({ canvas }) => {
-		await expect(await canvas.findByText(translations.en.smsEnabled)).toBeInTheDocument();
-		await expect(canvas.queryByRole('checkbox')).not.toBeInTheDocument();
-	},
-};
-
-/** Neither channel is configured, so the component renders nothing rather than an empty card. */
-export const Unconfigured: Story = {
-	args: { smsConfigured: false },
 };
 
 /** Right-to-left rendering, which the Arabic and Farsi locales need. */

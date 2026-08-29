@@ -109,7 +109,7 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 };
 
 const meta = {
-	title: 'Guest/Identity Indicator',
+	title: 'Guest/Identity/Identity Indicator',
 	component: GuestIdentityIndicator,
 	tags: ['autodocs'],
 	parameters: {
