@@ -6,6 +6,12 @@
     // Extra safety for array and object lookups, but may have false positives.
     "noUncheckedIndexedAccess": true,
 
+    // Overrides the Vue base config's "preserve"/"vue" pair for the React migration. Nothing in
+    // this repo uses Vue's own JSX — components are single-file components — so JSX belongs to
+    // React, and `.vue` files are unaffected either way.
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+
     // Path mapping for cleaner imports.
     "paths": {
       "@/*": ["./src/*"]

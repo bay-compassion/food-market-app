@@ -1,5 +1,6 @@
+import { cleanup } from '@testing-library/react';
 import { config } from '@vue/test-utils';
-import { beforeEach } from 'vitest';
+import { afterEach, beforeEach } from 'vitest';
 
 import { RootStore, rootStoreKey } from '@/stores/root.store.ts';
 
@@ -26,3 +27,9 @@ Object.defineProperty(config.global.provide, rootStoreKey as symbol, {
 	enumerable: true,
 	get: () => (defaultStore ??= new RootStore()),
 });
+
+/**
+ * Unmounts anything left behind by `@testing-library/react`. Its automatic cleanup only registers
+ * when Vitest's globals are enabled, and this project imports `afterEach` explicitly instead.
+ */
+afterEach(cleanup);
