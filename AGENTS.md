@@ -32,6 +32,26 @@
 - Preserve culturally appropriate scripts and writing direction for translated content. Do not translate proper names such as `The Bay Compassion` unless the product direction explicitly calls for it.
 - After touching either locale file, run `npm run check:translations` (`scripts/check-translations.js`). TypeScript already guarantees every language has every key; this instead flags values still identical to English — a likely missed translation. It's advisory, not a hard gate: review each flagged value rather than assuming it's wrong.
 
+## React migration (in progress)
+
+- This app is being migrated from Vue to React. Both frameworks are installed and both Vite
+  plugins are registered; a file is only ever handled by one of them (`.vue` by
+  `@vitejs/plugin-vue`, `.tsx`/`.jsx` by the React plugin). Most of the app is still Vue — check
+  what a file actually is before assuming.
+- The React plugin is `@vitejs/plugin-react-swc`, not the default Babel one. That is deliberate:
+  `vite-plugin-vue-devtools` pins `@babel/core` 7 while `@vitejs/plugin-react` wants 8, which
+  cannot resolve while both frameworks are installed. Do not swap it back until Vue is gone. The
+  plugin logs a recommendation to switch on every run; ignore it.
+- New React components use Emotion (`@emotion/styled`) rather than a scoped `<style>` block, which
+  has no React equivalent. Emotion is MUI's own styling engine, so adopting it now means MUI can
+  land later without a second styling migration. The design tokens in `src/styles/base.css` are
+  plain CSS custom properties and keep working unchanged.
+- `src/react-bridge/` holds the migration scaffolding — currently `reactIsland`, which lets a Vue
+  parent render a React component. It is temporary and gets deleted once `App.vue` is React. Do
+  not build on it or extend it into a general interop layer.
+- Convert components leaves first: a component whose children are its own concern can become an
+  island, because a React root cannot render Vue-owned slot content.
+
 ## Style Conventions
 
 - Use kebab-case for file names except for components (where the casing matters).
