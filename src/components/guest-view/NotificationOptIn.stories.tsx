@@ -68,24 +68,6 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 	);
 };
 
-/**
- * The consent label shares its `<span>` with the inline Privacy Policy / Terms links, so the
- * element's own `textContent` is the label plus both link labels concatenated — never an exact
- * match for the label alone. This finds the innermost element whose text contains the label,
- * the standard testing-library recipe for text split across markup.
- */
-function consentTextMatcher(label: string) {
-	return (_: string, element: Element | null) => {
-		if (!element || !(element.textContent ?? '').includes(label)) {
-			return false;
-		}
-
-		return Array.from(element.children).every(
-			(child) => !(child.textContent ?? '').includes(label),
-		);
-	};
-}
-
 const meta = {
 	title: 'Guest/NotificationOptIn',
 	component: NotificationOptIn,
@@ -108,9 +90,14 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	play: async ({ canvas }) => {
-		await expect(
-			await canvas.findByText(consentTextMatcher(translations.en.smsConsentLabel)),
-		).toBeInTheDocument();
+		await expect(await canvas.findByText(translations.en.smsConsentLabel)).toBeInTheDocument();
+		const legalLinks = canvas.getByText(translations.en.privacyPolicy).parentElement;
+
+		await expect(legalLinks).toHaveClass('notification-legal-links');
+		await expect(getComputedStyle(legalLinks!).display).toBe('flex');
+		await expect(legalLinks).toContainElement(
+			canvas.getByRole('link', { name: translations.en.termsAndConditions }),
+		);
 		await expect(
 			canvas.getByRole('button', { name: translations.en.smsEnable }),
 		).toBeInTheDocument();
@@ -148,8 +135,6 @@ export const Unconfigured: Story = {
 export const RightToLeft: Story = {
 	globals: { locale: 'ar' },
 	play: async ({ canvas }) => {
-		await expect(
-			await canvas.findByText(consentTextMatcher(translations.ar.smsConsentLabel)),
-		).toBeInTheDocument();
+		await expect(await canvas.findByText(translations.ar.smsConsentLabel)).toBeInTheDocument();
 	},
 };

@@ -1,5 +1,5 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
 import { StorageKey, StorageService } from '../../services/storage.service';
@@ -184,13 +184,14 @@ export const NotificationConsentFlow: Story = {
 		});
 
 		await userEvent.click(notificationsButton);
+		const body = within(document.body);
 
 		await expect(
-			await canvas.findByRole('heading', { name: copy.notificationsDialogTitle }),
+			await body.findByRole('heading', { name: copy.notificationsDialogTitle }),
 		).toBeInTheDocument();
-		await expect(await canvas.findByRole('checkbox')).toBeInTheDocument();
+		await expect(await body.findByRole('checkbox')).toBeInTheDocument();
 		await expect(
-			canvas.getByText((_, element) => {
+			body.getByText((_, element) => {
 				const text = element?.textContent ?? '';
 
 				return (
@@ -202,8 +203,8 @@ export const NotificationConsentFlow: Story = {
 			}),
 		).toBeInTheDocument();
 
-		const consent = canvas.getByRole('checkbox');
-		const approve = canvas.getByRole('button', { name: translations.en.smsEnable });
+		const consent = body.getByRole('checkbox');
+		const approve = body.getByRole('button', { name: translations.en.smsEnable });
 
 		await expect(approve).toBeDisabled();
 		await userEvent.click(consent);
@@ -212,7 +213,7 @@ export const NotificationConsentFlow: Story = {
 
 		await expect(await canvas.findByText(copy.notificationsEnabled)).toBeInTheDocument();
 		await expect(
-			canvas.queryByRole('heading', { name: copy.notificationsDialogTitle }),
+			body.queryByRole('heading', { name: copy.notificationsDialogTitle }),
 		).not.toBeInTheDocument();
 	},
 };

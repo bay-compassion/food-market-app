@@ -95,6 +95,10 @@ describe('NotificationOptIn', () => {
 		expect(container.textContent).toContain('Reply STOP to unsubscribe or HELP for assistance');
 		expect(container.querySelector('a[href="/privacy"]')!.textContent).toBe('Privacy Policy');
 		expect(container.querySelector('a[href="/terms"]')!.textContent).toBe('Terms & Conditions');
+		expect(container.querySelector('a[href="/privacy"]')!.parentElement).toBe(
+			container.querySelector('a[href="/terms"]')!.parentElement,
+		);
+		expect(screen.getByRole('button', { name: 'Enable text updates' })).toBeDefined();
 		expect(container.querySelector('button')!.disabled).toBe(true);
 
 		await user.click(consent);
