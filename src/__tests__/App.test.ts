@@ -14,6 +14,7 @@ import App from '../App.vue';
 import { authReturnUrl } from '../auth';
 import AdminDashboard from '../components/AdminDashboard.vue';
 import { translations } from '../locales';
+import { setReactInputValue } from '../react-bridge/testing';
 
 // The real module only configures Auth0 when the VITE_AUTH0_* variables are set, which is true
 // locally but not in CI. Pretend it is configured so the admin surfaces use the client below.
@@ -185,9 +186,10 @@ describe('App', () => {
 		// (age range, household composition) both render, in one combined form. Selected by
 		// attribute rather than position — `GuestSignupForm` and `GuestLotteryForm` order their
 		// fields differently than the single form they replaced.
-		await wrapper.find('input[autocomplete="given-name"]').setValue('Ada');
-		await wrapper.find('input[autocomplete="family-name"]').setValue('Lovelace');
-		await wrapper.find('input[type="tel"]').setValue('(555) 123-4567');
+		// These three are React-rendered, so they need the setter Vue's `setValue` bypasses.
+		await setReactInputValue(wrapper.find('input[autocomplete="given-name"]'), 'Ada');
+		await setReactInputValue(wrapper.find('input[autocomplete="family-name"]'), 'Lovelace');
+		await setReactInputValue(wrapper.find('input[type="tel"]'), '(555) 123-4567');
 		await wrapper.find('select').setValue('18-29');
 		// Household, children, then seniors — `GuestLotteryForm`'s stable relative order.
 		const countInputs = wrapper.findAll('input.count-other');
@@ -271,9 +273,10 @@ describe('App', () => {
 		// A device token with no locally cached identity (this test sets only the token, not
 		// `bay-compassion.guest-identity`) still shows the sign-up fields — there's nothing to
 		// prefill them with. See `GuestRegistrationForm`'s `showSignupFields`.
-		await wrapper.find('input[autocomplete="given-name"]').setValue('Ada');
-		await wrapper.find('input[autocomplete="family-name"]').setValue('Lovelace');
-		await wrapper.find('input[type="tel"]').setValue('(555) 123-4567');
+		// These three are React-rendered, so they need the setter Vue's `setValue` bypasses.
+		await setReactInputValue(wrapper.find('input[autocomplete="given-name"]'), 'Ada');
+		await setReactInputValue(wrapper.find('input[autocomplete="family-name"]'), 'Lovelace');
+		await setReactInputValue(wrapper.find('input[type="tel"]'), '(555) 123-4567');
 		await wrapper.find('select').setValue('18-29');
 		const countInputs = wrapper.findAll('input.count-other');
 

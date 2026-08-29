@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { FormField } from '@/react-bridge/islands.ts';
+
 import type { Translation } from '../../locales';
 import { ageRanges } from '../../services/ageRanges';
 import CollapsingCountField from '../CollapsingCountField.vue';
-import FormField from '../FormField.vue';
 import type { GuestFormState } from '../types';
 
 const props = defineProps<{
@@ -30,15 +31,15 @@ const ageRangeLabels = computed<Record<(typeof ageRanges)[number], string>>(() =
 	'60-74': props.t.ageRange60to74,
 	'75+': props.t.ageRange75plus,
 }));
+
+const ageOptions = computed(() => [
+	{ value: '', label: props.t.agePlaceholder, disabled: true },
+	...ageRanges.map((range) => ({ value: range, label: ageRangeLabels.value[range] })),
+]);
 </script>
 
 <template>
-	<FormField v-model="guest.ageRange" :label="t.age" type="select" required>
-		<option value="" disabled>{{ t.agePlaceholder }}</option>
-		<option v-for="range in ageRanges" :key="range" :value="range">
-			{{ ageRangeLabels[range] }}
-		</option>
-	</FormField>
+	<FormField v-model="guest.ageRange" :label="t.age" type="select" required :options="ageOptions" />
 	<CollapsingCountField
 		v-model="guest.householdSize"
 		:label="t.household"

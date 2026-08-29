@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue';
 
-import { AppButton } from '@/react-bridge/islands.ts';
+import { AppButton, FormField, PhoneField } from '@/react-bridge/islands.ts';
 
 import { adminTranslations } from '../../adminLocales';
 import { translations, type Locale } from '../../locales';
@@ -12,8 +12,6 @@ import {
 	lotteryWeightTiers,
 	type LotteryWeightTier,
 } from '../../services/lotteryWeight';
-import FormField from '../FormField.vue';
-import PhoneField from '../PhoneField.vue';
 import type { ManualGuest } from './types';
 
 const props = defineProps<{
@@ -76,6 +74,11 @@ watch(
 function submit() {
 	emit('submit', { ...guest });
 }
+
+const ageOptions = computed(() => [
+	{ value: '', label: base.value.agePlaceholder, disabled: true },
+	...ageRanges.map((range) => ({ value: range, label: ageRangeLabels.value[range] })),
+]);
 </script>
 
 <template>
@@ -84,12 +87,13 @@ function submit() {
 		<FormField v-model="guest.firstName" :label="base.firstName" required />
 		<FormField v-model="guest.lastName" :label="base.lastName" required />
 		<div class="field-row">
-			<FormField v-model="guest.ageRange" :label="base.age" type="select" required>
-				<option value="" disabled>{{ base.agePlaceholder }}</option>
-				<option v-for="range in ageRanges" :key="range" :value="range">
-					{{ ageRangeLabels[range] }}
-				</option>
-			</FormField>
+			<FormField
+				v-model="guest.ageRange"
+				:label="base.age"
+				type="select"
+				required
+				:options="ageOptions"
+			/>
 			<FormField
 				v-model="guest.householdSize"
 				:label="base.household"
