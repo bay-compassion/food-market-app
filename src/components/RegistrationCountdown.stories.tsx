@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 
 import { translations, type Locale } from '../locales';
-import RegistrationCountdown from './RegistrationCountdown.vue';
+import { RegistrationCountdown } from './RegistrationCountdown';
 
 /**
  * The clock shown above the sign-up form while registration is open, counting down to the moment
@@ -15,7 +15,7 @@ import RegistrationCountdown from './RegistrationCountdown.vue';
  * five minutes) — a prop, not a constant, so a session with an unusually short or long window can
  * tune when it kicks in; the `CustomThreshold` story below exercises that.
  */
-type RegistrationCountdownArgs = {
+type CountdownArgs = {
 	locale: Locale;
 	hoursRemaining: number;
 	minutesRemaining: number;
@@ -30,16 +30,46 @@ function progressOf(canvasElement: HTMLElement) {
 }
 
 /**
- * The icon is the non-color signal that the clock has started blending toward the danger color
- * — color alone doesn't reliably read as "time is running out" for red-green color blindness.
+ * The icon is the non-color signal that the clock has started blending toward the danger color —
+ * color alone doesn't reliably read as "time is running out" for red-green color blindness.
  */
 function hasIcon(canvasElement: HTMLElement) {
 	return canvasElement.querySelector('.registration-countdown-icon') !== null;
 }
 
-const meta: Meta<RegistrationCountdownArgs> = {
+/**
+ * The component takes an absolute `closesAt`; a story is easier to drive — and to read — in terms
+ * of how much time is left, so this turns the remaining-time args into the props it wants.
+ */
+function RemainingTime({
+	locale,
+	hoursRemaining,
+	minutesRemaining,
+	secondsRemaining,
+	transitionThresholdMinutes,
+}: CountdownArgs) {
+	// A fixed pair, rather than a live-ticking value, keeps the story stable rather than
+	// drifting while it sits open (see `QueueGuestRow.stories.ts` for the same convention).
+	const now = Date.now();
+	const closesAt = new Date(
+		now + (hoursRemaining * 3_600 + minutesRemaining * 60 + secondsRemaining) * 1_000,
+	);
+	const t = translations[locale];
+
+	return (
+		<RegistrationCountdown
+			now={now}
+			closesAt={closesAt}
+			closesInLabel={t.registrationClosesIn}
+			minutesRemainingTemplate={t.registrationClosesInMinutes}
+			transitionThresholdMs={transitionThresholdMinutes * 60_000}
+		/>
+	);
+}
+
+const meta = {
 	title: 'Guest/RegistrationCountdown',
-	component: RegistrationCountdown,
+	component: RemainingTime,
 	parameters: { shell: 'guest' },
 	args: {
 		locale: 'en',
@@ -48,42 +78,13 @@ const meta: Meta<RegistrationCountdownArgs> = {
 		secondsRemaining: 0,
 		transitionThresholdMinutes: 5,
 	},
-	render: (args) => ({
-		components: { RegistrationCountdown },
-		setup() {
-			// A fixed pair, rather than a live-ticking ref, keeps the story stable rather than drifting
-			// while it sits open (see `QueueGuestRow.stories.ts` for the same convention).
-			const now = Date.now();
-			const closesAt = new Date(
-				now +
-					(args.hoursRemaining * 3_600 + args.minutesRemaining * 60 + args.secondsRemaining) *
-						1_000,
-			);
-
-			return {
-				t: translations[args.locale],
-				now,
-				closesAt,
-				transitionThresholdMs: args.transitionThresholdMinutes * 60_000,
-			};
-		},
-		template: `
-			<RegistrationCountdown
-				:t="t"
-				:now="now"
-				:closes-at="closesAt"
-				:transition-threshold-ms="transitionThresholdMs"
-			/>
-		`,
-	}),
-};
+} satisfies Meta<typeof RemainingTime>;
 
 export default meta;
 
-type Story = StoryObj<RegistrationCountdownArgs>;
+type Story = StoryObj<typeof meta>;
 
-/** Ahead of the threshold — pure brand color, and the common case while a guest fills out the
- *  form. */
+/** Ahead of the threshold — pure brand color, and the common case while a guest fills the form. */
 export const PlentyOfTime: Story = {
 	play: async ({ canvas, canvasElement }) => {
 		await expect(canvas.getByText('15:00')).toBeInTheDocument();
@@ -92,8 +93,10 @@ export const PlentyOfTime: Story = {
 	},
 };
 
-/** Halfway through the transition window (five minutes, by default) — the background is an even
- *  blend of brand and danger color. */
+/**
+ * Halfway through the transition window (five minutes, by default) — the background is an even
+ * blend of brand and danger color.
+ */
 export const HalfwayThroughTransition: Story = {
 	args: { minutesRemaining: 2, secondsRemaining: 30 },
 	play: async ({ canvas, canvasElement }) => {

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { FormField } from '@/react-bridge/islands.ts';
+import { CollapsingCountField, FormField } from '@/react-bridge/islands.ts';
 
 import type { Translation } from '../../locales';
 import { ageRanges } from '../../services/ageRanges';
-import CollapsingCountField from '../CollapsingCountField.vue';
 import type { GuestFormState } from '../types';
 
 const props = defineProps<{

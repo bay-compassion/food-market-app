@@ -1,39 +1,48 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { expect } from 'storybook/test';
-import { ref } from 'vue';
 
 import { translations } from '../locales';
-import CollapsingCountField from './CollapsingCountField.vue';
-
-type CollapsingCountFieldArgs = {
-	label: string;
-	modelValue: number | string;
-	options: number[];
-	required: boolean;
-	max?: number;
-	otherLabel: string;
-	otherPlaceholder: string;
-	backLabel: string;
-	hint?: string;
-};
+import { CollapsingCountField, type CollapsingCountFieldProps } from './CollapsingCountField';
 
 /**
- * An A/B alternative to `CountField`. Rather than sitting beside the buttons at a fixed width, the
- * number field takes over the row: focusing it collapses the buttons into a single "<n" button, and
- * clearing it (directly, or via that button) brings the buttons back.
+ * A count field whose number input takes over the row: focusing it collapses the buttons into a
+ * single "<n" button, and clearing it — directly, or via that button — brings the buttons back.
  *
  * `otherLabel`, `otherPlaceholder`, and `backLabel` come from `locales.ts` (`countOtherLabel`,
- * `countOtherPlaceholder`, `countBackLabel`) even though this component isn't wired into the app
- * yet — they're real user-facing text, so they're translated like any other, ready for whichever
- * language a reviewer picks in the toolbar once this is wired in for real.
+ * `countOtherPlaceholder`, `countBackLabel`), so a reviewer can drive them from the toolbar's
+ * language picker like any other user-facing text.
  */
-const meta: Meta<CollapsingCountFieldArgs> = {
+
+/** `onChange` is optional here: the wrapper owns the value, so a story need not supply one. */
+type ControlledProps = Omit<CollapsingCountFieldProps, 'onChange'> & {
+	onChange?: CollapsingCountFieldProps['onChange'];
+};
+
+/** A story owns the value the way the parent component would, so typing actually works. */
+function Controlled({ value: initial, onChange, ...props }: ControlledProps) {
+	const [value, setValue] = useState(initial);
+
+	return (
+		<CollapsingCountField
+			{...props}
+			value={value}
+			onChange={(next) => {
+				setValue(next);
+				onChange?.(next);
+			}}
+		/>
+	);
+}
+
+const meta = {
 	title: 'Primitives/CollapsingCountField',
-	component: CollapsingCountField,
+	component: Controlled,
 	parameters: { shell: 'guest' },
+	argTypes: { onChange: { action: 'change' } },
 	args: {
 		label: 'Number of children you’re shopping for',
-		modelValue: '',
+		value: '',
 		options: [0, 1, 2, 3],
 		required: true,
 		max: 30,
@@ -41,43 +50,35 @@ const meta: Meta<CollapsingCountFieldArgs> = {
 		otherPlaceholder: translations.en.countOtherPlaceholder,
 		backLabel: translations.en.countBackLabel,
 	},
-	render: (args) => ({
-		components: { CollapsingCountField },
-		setup() {
-			// A story owns the value the way the parent component would, so typing actually works.
-			const value = ref(args.modelValue);
-
-			return { args, value };
-		},
-		template: `<CollapsingCountField v-bind="args" v-model="value" />`,
-	}),
-};
+} satisfies Meta<typeof Controlled>;
 
 export default meta;
 
-type Story = StoryObj<CollapsingCountFieldArgs>;
+type Story = StoryObj<typeof meta>;
 
 /** The plain case: buttons showing, number field collapsed to a "4+" placeholder. */
 export const Empty: Story = {};
 
 /** One of the quick-select buttons is the current value — the number field stays collapsed. */
 export const ButtonSelected: Story = {
-	args: { modelValue: 2 },
+	args: { value: 2 },
 };
 
 /** A count higher than any button. The buttons start collapsed away in favor of the number field. */
 export const CustomCount: Story = {
-	args: { modelValue: 12 },
+	args: { value: 12 },
 };
 
-/** Household size starts at 1, not 0, offers a different set of buttons, and clarifies who to
- *  count in the household total. */
+/**
+ * Household size starts at 1, not 0, offers a different set of buttons, and clarifies who to count
+ * in the household total.
+ */
 export const HouseholdSize: Story = {
 	args: {
 		label: 'Number of people in your household',
 		hint: 'Include yourself',
 		options: [1, 2, 3, 4],
-		modelValue: 1,
+		value: 1,
 	},
 };
 
@@ -120,7 +121,7 @@ export const CollapseAndExpand: Story = {
  * same button, still active, rather than on nothing.
  */
 export const FocusingLeavesTheButtonValueAlone: Story = {
-	args: { modelValue: 2 },
+	args: { value: 2 },
 	play: async ({ canvas, userEvent }) => {
 		const numberField = await canvas.findByRole('spinbutton', {
 			name: translations.en.countOtherLabel,
@@ -139,25 +140,17 @@ export const FocusingLeavesTheButtonValueAlone: Story = {
 };
 
 /**
- * Whichever way the count is set, `required` on the number field is enough for a form built around
- * this component to know whether it's complete — clicking a button clears and satisfies it exactly
- * like typing a custom value does.
+ * Whichever way the count is set, the validity anchor is enough for a form built around this
+ * component to know whether it's complete — clicking a button satisfies it exactly like typing a
+ * custom value does.
  */
 export const RequiredValidation: Story = {
-	args: { modelValue: '' },
-	render: (args) => ({
-		components: { CollapsingCountField },
-		setup() {
-			const value = ref(args.modelValue);
-
-			return { args, value };
-		},
-		template: `
-			<form>
-				<CollapsingCountField v-bind="args" v-model="value" />
-			</form>
-		`,
-	}),
+	args: { value: '' },
+	render: (args) => (
+		<form>
+			<Controlled {...args} />
+		</form>
+	),
 	play: async ({ canvasElement, canvas, userEvent }) => {
 		const form = canvasElement.querySelector('form') as HTMLFormElement;
 

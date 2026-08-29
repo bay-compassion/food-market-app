@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { AppButton } from '@/react-bridge/islands.ts';
+import { AppButton, RegistrationCountdown } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 import type { RegistrationSubmitResult } from '@/stores/registration.store.ts';
 import { useRootStore } from '@/stores/root.store.ts';
 
-import RegistrationCountdown from '../RegistrationCountdown.vue';
 import GuestLotteryForm from './GuestLotteryForm.vue';
 import GuestSignupForm from './GuestSignupForm.vue';
 
@@ -74,7 +73,9 @@ async function handleSubmit() {
 			<RegistrationCountdown
 				v-if="context === 'queue' && registrationClosesAt"
 				:now="now"
-				:closes-at="registrationClosesAt"
+				:closesAt="registrationClosesAt"
+				:closesInLabel="t.registrationClosesIn"
+				:minutesRemainingTemplate="t.registrationClosesInMinutes"
 			/>
 			<h2>{{ copy.formTitle }}</h2>
 			<p>{{ copy.formDescription }}</p>

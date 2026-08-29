@@ -23,17 +23,17 @@ onMounted(() => {
 	void guest.loadNotificationSettings();
 });
 
-watch(
-	() => guest.smsConsented,
-	(consented) => {
-		if (consented) {
-			notificationsDialogOpen.value = false;
-		}
-	},
-);
 const notificationSettingsLoaded = fromMobx(() => guest.notificationSettingsLoaded);
 const smsConfigured = fromMobx(() => guest.smsConfigured);
 const smsConsented = fromMobx(() => guest.smsConsented);
+
+// Watching `() => guest.smsConsented` directly would never fire: the guest store is a MobX
+// observable, which Vue does not track. The dialog has to close off the `fromMobx` ref.
+watch(smsConsented, (consented) => {
+	if (consented) {
+		notificationsDialogOpen.value = false;
+	}
+});
 </script>
 
 <template>

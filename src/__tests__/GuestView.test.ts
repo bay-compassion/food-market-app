@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import GuestView from '../components/guest-view/GuestView.vue';
+import { setReactInputValue } from '../react-bridge/testing';
 import { RootStore, rootStoreKey } from '../stores/root.store';
 
 const marketOverview = {
@@ -106,16 +107,16 @@ describe('GuestView', () => {
 		const { wrapper } = mountGuestView();
 
 		await flushPromises();
-		await wrapper.find('input[autocomplete="given-name"]').setValue('Ada');
-		await wrapper.find('input[autocomplete="family-name"]').setValue('Lovelace');
-		await wrapper.find('input[type="tel"]').setValue('(555) 123-4567');
+		await setReactInputValue(wrapper.find('input[autocomplete="given-name"]'), 'Ada');
+		await setReactInputValue(wrapper.find('input[autocomplete="family-name"]'), 'Lovelace');
+		await setReactInputValue(wrapper.find('input[type="tel"]'), '(555) 123-4567');
 		await wrapper.find('select').setValue('18-29');
 
 		const countInputs = wrapper.findAll('input.count-other');
 
-		await countInputs[0]!.setValue('2');
-		await countInputs[1]!.setValue('1');
-		await countInputs[2]!.setValue('0');
+		await setReactInputValue(countInputs[0]!, '2');
+		await setReactInputValue(countInputs[1]!, '1');
+		await setReactInputValue(countInputs[2]!, '0');
 
 		// Act
 		await wrapper.find('form').trigger('submit');

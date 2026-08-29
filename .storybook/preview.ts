@@ -1,7 +1,9 @@
 import type { Preview } from '@storybook/vue3-vite';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
+import { provide } from 'vue';
 
 import { languages, type Locale } from '../src/locales';
+import { RootStore, rootStoreKey } from '../src/stores/root.store';
 
 // The app's own stylesheets, in the same order `main.ts` loads them, so a story in isolation
 // inherits exactly the cascade it would get inside the running app.
@@ -9,9 +11,6 @@ import '../src/styles/base.css';
 import '../src/styles/app-shell.css';
 import '../src/styles/admin.css';
 import './preview.css';
-
-/** The locales whose script runs right to left, matching the `dir` binding in `App.vue`. */
-const rightToLeftLocales: Locale[] = ['ar', 'fa'];
 
 /**
  * Which of the app's page wrappers a story renders inside, set per story with
@@ -78,17 +77,25 @@ const preview: Preview = {
 				? story({ args: { ...context.args, locale: context.globals.locale as Locale } })
 				: story(),
 
-		/** Wraps the story in its page shell and the writing direction its locale calls for. */
+		/**
+		 * Wraps the story in its page shell and the writing direction its locale calls for, and
+		 * provides the root store the shell would provide in the real app.
+		 *
+		 * The store is not optional scaffolding: `useTranslation()` reads it through `useStore()`,
+		 * which throws when nothing is provided, so any component resolving its own copy — rather
+		 * than taking every string as a prop — cannot render at all without this. Each story gets a
+		 * fresh instance, so one story's writes cannot leak into the next.
+		 */
 		(story, context) => ({
 			components: { story },
 			setup() {
-				const locale = context.globals.locale as Locale;
+				const store = new RootStore();
 				const shell: Shell = (context.parameters.shell as Shell | undefined) ?? 'bare';
 
-				return {
-					shellClass: shells[shell],
-					direction: rightToLeftLocales.includes(locale) ? 'rtl' : 'ltr',
-				};
+				store.translations.setLanguage(context.globals.locale as Locale);
+				provide(rootStoreKey, store);
+
+				return { shellClass: shells[shell], direction: store.translations.dir };
 			},
 			template: '<div :class="shellClass" :dir="direction"><story /></div>',
 		}),
