@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import { FormField, PhoneField } from '@/react-bridge/islands.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
-import FormField from '../FormField.vue';
-import PhoneField from '../PhoneField.vue';
 import type { GuestFormState } from '../types';
 
 const t = useTranslation();
