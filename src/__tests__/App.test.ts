@@ -194,9 +194,9 @@ describe('App', () => {
 		// Household, children, then seniors — `GuestLotteryForm`'s stable relative order.
 		const countInputs = wrapper.findAll('input.count-other');
 
-		await countInputs[0]!.setValue('2');
-		await countInputs[1]!.setValue('1');
-		await countInputs[2]!.setValue('0');
+		await setReactInputValue(countInputs[0]!, '2');
+		await setReactInputValue(countInputs[1]!, '1');
+		await setReactInputValue(countInputs[2]!, '0');
 		await wrapper.find('form').trigger('submit');
 		await flushPromises();
 
@@ -280,9 +280,9 @@ describe('App', () => {
 		await wrapper.find('select').setValue('18-29');
 		const countInputs = wrapper.findAll('input.count-other');
 
-		await countInputs[0]!.setValue('2');
-		await countInputs[1]!.setValue('1');
-		await countInputs[2]!.setValue('0');
+		await setReactInputValue(countInputs[0]!, '2');
+		await setReactInputValue(countInputs[1]!, '1');
+		await setReactInputValue(countInputs[2]!, '0');
 		await wrapper.find('form').trigger('submit');
 		await flushPromises();
 
