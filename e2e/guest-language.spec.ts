@@ -17,7 +17,7 @@ test('first-time guest can choose a language', async ({ page }) => {
 	await languageGroup.getByRole('button', { name: 'Español' }).click();
 
 	// Choosing a language marks the visitor as returning, which swaps the language hero below for
-	// a compact picker in the header — see `selectLanguage` in `src/App.vue`.
+	// a compact picker in the header — see `selectLanguage` in `src/components/guest-view/GuestView.tsx`.
 	await expect(languageGroup).not.toBeVisible();
 	const headerPicker = page.getByLabel('Idioma');
 

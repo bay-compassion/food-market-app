@@ -1,3 +1,5 @@
+import { runInAction } from 'mobx';
+
 import {
 	submitGuestRegistration,
 	submitGuestSignup,
@@ -190,7 +192,7 @@ export class GuestStore {
 
 		await Promise.all([this.loadPushConfiguration(), this.loadSmsConfiguration()]);
 		await this.loadNotificationStatus();
-		this._notificationSettingsLoaded = true;
+		runInAction(() => (this._notificationSettingsLoaded = true));
 	}
 
 	async enablePushNotifications(visitToken: string): Promise<void> {
@@ -220,7 +222,7 @@ export class GuestStore {
 
 			await this.savePushSubscription(subscription, visitToken);
 		} catch {
-			this._pushState = 'error';
+			runInAction(() => (this._pushState = 'error'));
 		}
 	}
 
@@ -234,7 +236,7 @@ export class GuestStore {
 		try {
 			await this.saveSmsSubscription();
 		} catch {
-			this._smsState = 'error';
+			runInAction(() => (this._smsState = 'error'));
 		}
 	}
 
@@ -277,7 +279,7 @@ export class GuestStore {
 		if (!response.ok) {
 			throw new Error('subscription');
 		}
-		this._pushState = 'enabled';
+		runInAction(() => (this._pushState = 'enabled'));
 	}
 
 	private async syncExistingPushSubscription(visitToken: string): Promise<void> {
@@ -304,8 +306,10 @@ export class GuestStore {
 				publicKey: string | null;
 			};
 
-			this._pushConfigured = configuration.configured;
-			this._pushPublicKey = configuration.publicKey;
+			runInAction(() => {
+				this._pushConfigured = configuration.configured;
+				this._pushPublicKey = configuration.publicKey;
+			});
 
 			if (visitToken) {
 				await this.syncExistingPushSubscription(visitToken);
@@ -333,7 +337,7 @@ export class GuestStore {
 			throw new Error('subscription');
 		}
 
-		this._smsState = 'enabled';
+		runInAction(() => (this._smsState = 'enabled'));
 	}
 
 	private async loadSmsConfiguration(): Promise<void> {
@@ -345,7 +349,7 @@ export class GuestStore {
 			}
 			const configuration = (await response.json()) as { configured: boolean };
 
-			this._smsConfigured = configuration.configured;
+			runInAction(() => (this._smsConfigured = configuration.configured));
 		} catch {
 			// Notification opt-in remains unavailable if its configuration cannot be loaded.
 		}
@@ -372,7 +376,7 @@ export class GuestStore {
 
 			// Push must still exist in this browser, so its local service-worker subscription remains
 			// authoritative. SMS consent is durable guest-level state.
-			this._smsState = status.smsConsented ? 'enabled' : 'idle';
+			runInAction(() => (this._smsState = status.smsConsented ? 'enabled' : 'idle'));
 		} catch {
 			// A status lookup failure leaves the guest able to opt in again.
 		}

@@ -7,20 +7,21 @@
   // CSS imports in `preview.ts` resolve, via its `vite/client` reference.
   "include": [
     ".storybook/**/*.ts",
-    ".storybook/**/*.vue",
-    ".storybook-react/**/*.ts",
-    ".storybook-react/**/*.tsx",
+    ".storybook/**/*.tsx",
     "vitest.storybook.config.ts",
-    "vitest.storybook-react.config.ts",
     "env.d.ts"
   ],
   "exclude": [],
+
+  // The preview imports application modules; referencing the app project is what lets a composite
+  // build resolve them without pulling all of `src` into this project's own file list.
+  "references": [{ "path": "./tsconfig.app.json" }],
 
   "compilerOptions": {
     // `main.ts` and the Vitest config read paths and run in Node.
     "types": ["node"],
 
-    // `vue-tsc --build` produces a .tsbuildinfo file for incremental type-checking.
+    // `tsc --build` produces a .tsbuildinfo file for incremental type-checking.
     // Specified here to keep it out of the root directory.
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.storybook.tsbuildinfo"
   }

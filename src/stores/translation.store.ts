@@ -3,8 +3,6 @@ import { type Translation, translations } from '@/locales.ts';
 import { makeReactive } from '@/services/make-reactive.ts';
 import { StorageKey } from '@/services/storage.service.ts';
 
-import type { RootStore } from './root.store.ts';
-
 export type Language = keyof typeof translations;
 
 const supportedLanguages = Object.keys(translations) as Language[];
@@ -25,11 +23,11 @@ export class TranslationStore {
 		return ['ar', 'fa'].includes(this.locale) ? 'rtl' : 'ltr';
 	}
 
-	constructor(private readonly rootStore: RootStore) {
+	constructor() {
 		this.locale = this.readSavedLanguage() ?? this.detectLanguage();
 		this.language = this.locale;
 
-		return makeReactive(this, { rootStore: false });
+		return makeReactive(this);
 	}
 
 	setLanguage(language: Language): void {

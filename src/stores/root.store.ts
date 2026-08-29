@@ -1,5 +1,3 @@
-import { inject, type InjectionKey } from 'vue';
-
 import { AdminApi } from '../services/admin-api.ts';
 import type { Permission } from '../services/permissions.ts';
 import { StorageService } from '../services/storage.service.ts';
@@ -22,7 +20,7 @@ export class RootStore {
 	readonly registration: RegistrationStore;
 	readonly session: MarketSessionStore;
 	readonly visit: VisitStore;
-	readonly translations = new TranslationStore(this);
+	readonly translations = new TranslationStore();
 	private getAccessToken: (() => Promise<string>) | null = null;
 	private readPermissions: (() => Promise<Permission[]>) | null = null;
 
@@ -69,14 +67,4 @@ export class RootStore {
 		this.session[Symbol.dispose]();
 		this.visit[Symbol.dispose]();
 	}
-}
-
-export const rootStoreKey: InjectionKey<RootStore> = Symbol('RootStore');
-
-/**
- * Reads the application store. The local fallback keeps isolated component tests and Storybook
- * stories useful without making each one reproduce the application bootstrap.
- */
-export function useRootStore(): RootStore {
-	return inject(rootStoreKey, null) ?? new RootStore();
 }

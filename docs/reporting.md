@@ -15,7 +15,7 @@ Three pieces, deliberately kept apart:
   server so the two cannot disagree about a report's shape.
 - [`netlify/services/reports.mts`](../netlify/services/reports.mts) — the SQL, one function per
   report. The server returns **data only**: no column headings, no formatted numbers.
-- [`src/components/admin/ReportsView.vue`](../src/components/admin/ReportsView.vue) and its two
+- [`src/components/admin/ReportsView.tsx`](../src/components/admin/ReportsView.tsx) and its two
   children — the screen. Headings come from `adminLocales.ts` and numbers are formatted in the
   reader's locale, which is why the server never sends text.
 

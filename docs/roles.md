@@ -100,7 +100,7 @@ single click, which is a different exposure from reading today's line.
 
 ## The dev-mode data loader
 
-The Dev Mode screen (`src/components/admin/DevModeView.vue`, behind `POST /api/demo-data`) lets
+The Dev Mode screen (`src/components/admin/DevModeView.tsx`, behind `POST /api/demo-data`) lets
 someone holding `manage:demo-data` replace whatever session is currently live with fake guests and
 visits staged at any point on the session lifecycle — for demos and screenshots. Loading a scenario
 archives the current session the same way `close_session` would, so it is destructive to whatever
