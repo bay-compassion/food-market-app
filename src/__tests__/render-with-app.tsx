@@ -2,6 +2,7 @@ import { render, type RenderResult } from '@testing-library/react';
 import type { ReactElement, ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
+import { AppThemeProvider } from '../components/AppThemeProvider';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
 
@@ -21,7 +22,7 @@ export type RenderWithAppResult = RenderResult & {
 };
 
 /**
- * Renders a component with the two things the real app always supplies: the root store and a
+ * Renders a component with the things the real app always supplies: the MUI theme, root store, and
  * router.
  *
  * The store is built here rather than in `test-setup.ts` because several of its constituent
@@ -39,9 +40,11 @@ export function renderWithApp(
 	);
 
 	const result = render(
-		<RootStoreProvider store={store}>
-			<RouterProvider router={router} />
-		</RootStoreProvider>,
+		<AppThemeProvider>
+			<RootStoreProvider store={store}>
+				<RouterProvider router={router} />
+			</RootStoreProvider>
+		</AppThemeProvider>,
 	);
 
 	return { ...result, store, currentPath: () => router.state.location.pathname };
