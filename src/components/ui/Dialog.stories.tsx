@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 
 import { AppButton } from '../AppButton';
 import { Dialog } from './Dialog';
@@ -50,8 +50,9 @@ export const Default: Story = {
 		await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
 
 		await userEvent.click(canvas.getByRole('button', { name: 'Open dialog' }));
+		const body = within(document.body);
 
-		await expect(await canvas.findByRole('dialog')).toBeInTheDocument();
-		await expect(canvas.getByRole('heading', { name: 'Dialog title' })).toBeInTheDocument();
+		await expect(await body.findByRole('dialog')).toBeInTheDocument();
+		await expect(body.getByRole('heading', { name: 'Dialog title' })).toBeInTheDocument();
 	},
 };

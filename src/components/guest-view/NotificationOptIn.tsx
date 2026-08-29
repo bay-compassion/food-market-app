@@ -1,30 +1,18 @@
 import styled from '@emotion/styled';
+import { Button, Link } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
-import { AppButton } from '../AppButton';
 
 const Consent = styled.div`
 	display: grid;
 	gap: 18px;
 `;
 
-const Option = styled.div`
-	display: grid;
-	gap: 12px;
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: var(--color-surface-soft);
-
-	p {
-		margin: 0;
-		font-size: 14px;
-	}
-`;
-
 const Enabled = styled.p`
+	margin: 0;
 	font-weight: 700;
 `;
 
@@ -43,6 +31,18 @@ const ConsentLabel = styled.label`
 	span {
 		font-weight: 400;
 		line-height: 1.55;
+	}
+`;
+
+const LegalLinks = styled.div`
+	display: flex;
+	justify-content: space-around;
+	align-items: flex-start;
+	gap: 16px;
+	font-size: 14px;
+
+	a {
+		min-width: 0;
 	}
 `;
 
@@ -73,37 +73,35 @@ export const NotificationOptIn = observer(function NotificationOptIn() {
 
 	return (
 		<Consent className="notification-consent">
-			<Option className="notification-option">
-				{guest.smsState === 'enabled' ? (
-					<Enabled className="notification-enabled">{t.smsEnabled}</Enabled>
-				) : (
-					<>
-						<ConsentLabel className="sms-consent">
-							<input
-								type="checkbox"
-								checked={smsConsent}
-								onChange={(event) => setSmsConsent(event.target.checked)}
-							/>
-							<span>
-								{t.smsConsentLabel} <a href="/privacy">{t.privacyPolicy}</a> ·{' '}
-								<a href="/terms">{t.termsAndConditions}</a>
-							</span>
-						</ConsentLabel>
-						<AppButton
-							type="button"
-							variant="secondary"
-							disabled={!smsConsent || guest.smsState === 'enabling'}
-							onClick={() => void guest.enableSmsNotifications(smsConsent)}
-							label={t.smsEnable}
+			{guest.smsState === 'enabled' ? (
+				<Enabled className="notification-enabled">{t.smsEnabled}</Enabled>
+			) : (
+				<>
+					<ConsentLabel className="sms-consent">
+						<input
+							type="checkbox"
+							checked={smsConsent}
+							onChange={(event) => setSmsConsent(event.target.checked)}
 						/>
-						{guest.smsState === 'error' ? (
-							<SubmissionError className="submission-error" role="alert">
-								{t.smsError}
-							</SubmissionError>
-						) : null}
-					</>
-				)}
-			</Option>
+						<span>{t.smsConsentLabel}</span>
+					</ConsentLabel>
+					<LegalLinks className="notification-legal-links">
+						<Link href="/privacy">{t.privacyPolicy}</Link>
+						<Link href="/terms">{t.termsAndConditions}</Link>
+					</LegalLinks>
+					<Button
+						disabled={!smsConsent || guest.smsState === 'enabling'}
+						onClick={() => void guest.enableSmsNotifications(smsConsent)}
+					>
+						{t.smsEnable}
+					</Button>
+					{guest.smsState === 'error' ? (
+						<SubmissionError className="submission-error" role="alert">
+							{t.smsError}
+						</SubmissionError>
+					) : null}
+				</>
+			)}
 		</Consent>
 	);
 });

@@ -40,6 +40,16 @@ export const appTheme = createTheme({
 		},
 	},
 	components: {
+		MuiAlert: {
+			defaultProps: {
+				variant: 'outlined',
+			},
+		},
+		MuiButton: {
+			defaultProps: {
+				variant: 'contained',
+			},
+		},
 		MuiCard: {
 			defaultProps: {
 				variant: 'outlined',

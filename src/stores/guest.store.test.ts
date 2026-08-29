@@ -309,6 +309,32 @@ describe('GuestStore', () => {
 		);
 	});
 
+	it('rejects notification settings retrieval when the status request fails', async () => {
+		// Arrange
+		const request = vi.fn().mockImplementation((url: string) =>
+			Promise.resolve({
+				ok: url !== '/api/notification-status',
+				json: () => Promise.resolve({ configured: false, publicKey: null }),
+			}),
+		);
+		const storage = {
+			get: vi.fn((key: StorageKey) =>
+				key === StorageKey.GUEST_DEVICE_TOKEN ? 'saved-device-token' : null,
+			),
+			set: vi.fn(),
+			remove: vi.fn(),
+		};
+		const store = new GuestStore({ request, storage });
+
+		// Act
+		const retrieval = store.loadNotificationSettings();
+
+		// Assert
+		expect(store.loadNotificationSettings()).toBe(retrieval);
+		await expect(retrieval).rejects.toThrow('notification-status');
+		expect(store.notificationSettingsLoaded).toBe(false);
+	});
+
 	it('restores SMS consent even when the channel is not configured', async () => {
 		const request = vi.fn().mockImplementation((url: string) =>
 			Promise.resolve({

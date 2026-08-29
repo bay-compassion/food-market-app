@@ -1,18 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Dialog } from '../components/ui/Dialog';
-
-let showModal: Mock<(this: HTMLDialogElement) => void>;
-
-beforeEach(() => {
-	showModal = vi.fn(function (this: HTMLDialogElement) {
-		this.setAttribute('open', '');
-	});
-	HTMLDialogElement.prototype.showModal = showModal;
-});
 
 /** A host that owns `open`, the way every real caller does. */
 function Host({ initialOpen, onClose }: { initialOpen: boolean; onClose?: () => void }) {
@@ -45,15 +36,12 @@ describe('Dialog', () => {
 
 		render(<Host initialOpen={false} />);
 
-		expect(document.querySelector('dialog')).toBeNull();
-		expect(showModal).not.toHaveBeenCalled();
+		expect(screen.queryByRole('dialog')).toBeNull();
 
 		await user.click(screen.getByRole('button', { name: 'Open it' }));
 
-		const dialog = document.querySelector('dialog')!;
+		const dialog = screen.getByRole('dialog');
 
-		expect(showModal).toHaveBeenCalledOnce();
-		expect(dialog.getAttribute('open')).not.toBeNull();
 		expect(dialog.getAttribute('aria-labelledby')).toBe(
 			screen.getByRole('heading', { name: 'Consent form' }).id,
 		);
@@ -73,12 +61,9 @@ describe('Dialog', () => {
 			</Dialog>,
 		);
 
-		const dialog = document.querySelector('dialog')!;
-
 		await user.click(screen.getByRole('button', { name: 'Close consent form' }));
-		dialog.dispatchEvent(new Event('cancel', { bubbles: true, cancelable: true }));
-		// A click landing on the element itself, rather than its panel, is a backdrop click.
-		dialog.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		await user.keyboard('{Escape}');
+		await user.click(document.querySelector<HTMLElement>('.MuiBackdrop-root')!);
 
 		expect(onClose).toHaveBeenCalledTimes(3);
 	});
@@ -88,10 +73,10 @@ describe('Dialog', () => {
 
 		render(<Host initialOpen />);
 
-		expect(document.querySelector('dialog')).not.toBeNull();
+		expect(screen.getByRole('dialog')).toBeDefined();
 
 		await user.click(screen.getByRole('button', { name: 'Close consent form' }));
 
-		expect(document.querySelector('dialog')).toBeNull();
+		expect(screen.queryByRole('dialog')).toBeNull();
 	});
 });

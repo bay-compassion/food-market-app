@@ -1,31 +1,76 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 
-import { translations } from '../../locales';
-import { StorageKey } from '../../services/storage.service';
+import { translations, type Locale } from '../../locales';
+import { StorageKey, StorageService } from '../../services/storage.service';
 import type { GuestIdentity } from '../../stores/guest.store';
+import { RootStoreProvider } from '../../stores/react/store-context';
+import { RootStore } from '../../stores/root.store';
 import { GuestIdentityIndicator } from './GuestIdentityIndicator';
 
 type GuestIdentityIndicatorArgs = {
-	identity: GuestIdentity;
+	locale: Locale;
+	identity: GuestIdentity | null;
+	deviceToken: string | null;
 	/** Read by the decorator's stubbed `/api/notification-status`, not by the component. */
 	smsSubscribed: boolean;
+	forceDisableSms: boolean;
+	notificationStatus: 'success' | 'loading' | 'error';
 };
 
-/** The indicator plus the arg the stubbed endpoint reads, so both drive the controls panel. */
-function Indicator({ identity }: GuestIdentityIndicatorArgs) {
-	return <GuestIdentityIndicator identity={identity} />;
+class MemoryStorage implements Storage {
+	private readonly values = new Map<string, string>();
+
+	get length() {
+		return this.values.size;
+	}
+
+	clear() {
+		this.values.clear();
+	}
+
+	getItem(key: string) {
+		return this.values.get(key) ?? null;
+	}
+
+	key(index: number) {
+		return Array.from(this.values.keys())[index] ?? null;
+	}
+
+	removeItem(key: string) {
+		this.values.delete(key);
+	}
+
+	setItem(key: string, value: string) {
+		this.values.set(key, value);
+	}
 }
 
-/*
- * Seeded at module scope, not in the decorator below: the preview builds the story's `RootStore`
- * in a decorator of its own that wraps this one, and `GuestStore` reads the device token in its
- * constructor — by the time a story-level decorator runs, the store already exists without it.
- */
-window.localStorage.setItem(
-	StorageKey.GUEST_DEVICE_TOKEN,
-	JSON.stringify('story-device-token'.padEnd(32, 'x')),
-);
+/** Provides the component with the same seeded store shape it receives in the running app. */
+const withGuestStore: Decorator = (Story, context) => {
+	const { deviceToken, identity, locale, forceDisableSms } =
+		context.args as GuestIdentityIndicatorArgs;
+	const storage = new StorageService(new MemoryStorage());
+
+	if (deviceToken) {
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, deviceToken);
+	}
+
+	if (identity) {
+		storage.set(StorageKey.GUEST_IDENTITY, identity);
+	}
+
+	const store = new RootStore({ storage });
+
+	store.translations.setLanguage(locale);
+	store.guest.forceDisableSms = forceDisableSms;
+
+	return (
+		<RootStoreProvider store={store}>
+			<Story />
+		</RootStoreProvider>
+	);
+};
 
 const originalFetch = window.fetch.bind(window);
 
@@ -44,6 +89,14 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 		}
 
 		if (url === '/api/notification-status') {
+			if (args.notificationStatus === 'loading') {
+				return new Promise<Response>(() => undefined);
+			}
+
+			if (args.notificationStatus === 'error') {
+				return Promise.resolve(new Response(null, { status: 503 }));
+			}
+
 			return Promise.resolve(
 				Response.json({ pushSubscribed: false, smsConsented: args.smsSubscribed }),
 			);
@@ -56,35 +109,54 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 };
 
 const meta = {
-	title: 'Guest/Identity Indicator',
-	component: Indicator,
+	title: 'Guest/Identity/Identity Indicator',
+	component: GuestIdentityIndicator,
 	tags: ['autodocs'],
 	parameters: {
 		shell: 'guest',
 		docs: {
 			description: {
 				component:
-					'Indicates that this browser has identified a guest. It displays only the name and phone number saved in client-side storage and never retrieves guest profile data from the server.',
+					'Shows whether this browser has identified a guest. Identified guests see only the name and phone number saved in client-side storage, while unidentified guests get a path to sign up.',
 			},
 		},
 	},
-	decorators: [withNotificationEndpoints],
+	decorators: [withGuestStore, withNotificationEndpoints],
 	args: {
+		locale: 'en',
+		deviceToken: 'story-device-token'.padEnd(32, 'x'),
 		smsSubscribed: false,
+		forceDisableSms: false,
+		notificationStatus: 'success',
 		identity: {
 			firstName: 'Ari',
 			lastName: 'Guest',
 			phone: '(555) 123-4567',
 		},
 	},
-} satisfies Meta<typeof Indicator>;
+} satisfies Meta<typeof GuestIdentityIndicator>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-	play: async ({ canvas, userEvent }) => {
+/** With no device credential or locally stored identity, the indicator offers preregistration. */
+export const NotIdentified: Story = {
+	args: { deviceToken: null, identity: null },
+	play: async ({ canvas }) => {
+		const copy = translations.en.guestView.identityIndicator;
+
+		await expect(
+			canvas.getByRole('complementary', { name: copy.unidentifiedHeading }),
+		).toBeInTheDocument();
+		await expect(canvas.getByText(copy.unidentifiedMessage)).toBeInTheDocument();
+		await expect(canvas.getByRole('button', { name: copy.preregisterAction })).toBeInTheDocument();
+	},
+};
+
+export const Identified: Story = {
+	name: 'Identified, notifications disabled',
+	play: async ({ canvas }) => {
 		const copy = translations.en.guestView.identityIndicator;
 
 		await expect(canvas.getByText(copy.heading)).toBeInTheDocument();
@@ -96,15 +168,30 @@ export const Default: Story = {
 		});
 
 		await expect(notificationsButton).toBeInTheDocument();
+		await expect(
+			canvas.queryByRole('heading', { name: copy.notificationsDialogTitle }),
+		).not.toBeInTheDocument();
+	},
+};
+
+/** Interaction coverage kept out of the sidebar so the visual stories remain stable. */
+export const NotificationConsentFlow: Story = {
+	tags: ['!dev'],
+	play: async ({ canvas, userEvent }) => {
+		const copy = translations.en.guestView.identityIndicator;
+		const notificationsButton = await canvas.findByRole('button', {
+			name: copy.notificationsAction,
+		});
 
 		await userEvent.click(notificationsButton);
+		const body = within(document.body);
 
 		await expect(
-			await canvas.findByRole('heading', { name: copy.notificationsDialogTitle }),
+			await body.findByRole('heading', { name: copy.notificationsDialogTitle }),
 		).toBeInTheDocument();
-		await expect(await canvas.findByRole('checkbox')).toBeInTheDocument();
+		await expect(await body.findByRole('checkbox')).toBeInTheDocument();
 		await expect(
-			canvas.getByText((_, element) => {
+			body.getByText((_, element) => {
 				const text = element?.textContent ?? '';
 
 				return (
@@ -116,8 +203,8 @@ export const Default: Story = {
 			}),
 		).toBeInTheDocument();
 
-		const consent = canvas.getByRole('checkbox');
-		const approve = canvas.getByRole('button', { name: translations.en.smsEnable });
+		const consent = body.getByRole('checkbox');
+		const approve = body.getByRole('button', { name: translations.en.smsEnable });
 
 		await expect(approve).toBeDisabled();
 		await userEvent.click(consent);
@@ -126,8 +213,26 @@ export const Default: Story = {
 
 		await expect(await canvas.findByText(copy.notificationsEnabled)).toBeInTheDocument();
 		await expect(
-			canvas.queryByRole('heading', { name: copy.notificationsDialogTitle }),
+			body.queryByRole('heading', { name: copy.notificationsDialogTitle }),
 		).not.toBeInTheDocument();
+	},
+};
+
+export const NotificationsLoading: Story = {
+	args: { notificationStatus: 'loading' },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole('status')).toHaveTextContent(
+			translations.en.guestView.identityIndicator.notificationsLoading,
+		);
+	},
+};
+
+export const NotificationsError: Story = {
+	args: { notificationStatus: 'error' },
+	play: async ({ canvas }) => {
+		await expect(await canvas.findByRole('alert')).toHaveTextContent(
+			translations.en.guestView.identityIndicator.notificationsError,
+		);
 	},
 };
 

@@ -64,6 +64,8 @@ describe('GuestView', () => {
 
 	it('renders the queue registration form when no visit token is stored', async () => {
 		// Arrange
+		const user = userEvent.setup();
+
 		vi.stubGlobal('fetch', fetchRespondingWith({}));
 
 		// Act
@@ -74,6 +76,10 @@ describe('GuestView', () => {
 			expect(container.textContent).toContain('Number of people in your household'),
 		);
 		expect(container.textContent).toContain('Welcome to the community food market');
+		expect(screen.getByText('Not recognized on this device')).toBeDefined();
+
+		await user.click(screen.getByRole('button', { name: 'Preregister' }));
+		expect(screen.getByText('signup')).toBeDefined();
 	});
 
 	it('shows visit status and saves the visit token after a successful submission', async () => {

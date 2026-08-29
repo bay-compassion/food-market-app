@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=4871267cdea8, src/components/routes/SignupView.tsx=46e4b4a201de, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=64585643e156, src/stores/registration.store.ts=50e057e32fc4, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=b9a78935166d, src/stores/root.store.ts=5cf28fc66053, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=b8d0d92bda68, src/components/routes/SignupView.tsx=46e4b4a201de, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=50e057e32fc4, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=b9a78935166d, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
@@ -39,24 +39,32 @@ flowchart TD
     seen -- yes --> saved[Opens in the saved language]
     pick --> saved
 
-    saved --> activeSession{Market session active?}
-    activeSession -- no --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
-    inactiveScreen --> hasRunAlready{Has this market's<br/>session already ended?}
-    hasRunAlready -- no, not open yet --> preregisterOffer[Show "Preregister" button]
-    hasRunAlready -- yes, already ended --> noCta([No CTA — nothing to do<br/>until the next one is scheduled])
-    activeSession -- yes --> hasIdentity{Saved device token<br/>and local profile?}
+    saved --> hasIdentity{Saved device token<br/>and local profile?}
+    hasIdentity -- no device token --> unidentified[Show preregistration message:<br/>does not enter the lottery,<br/>and "Preregister" button]
+    unidentified -. "Preregister" button .-> signupRoute
+    unidentified --> activeSession
+    hasIdentity -- token only --> activeSession
     hasIdentity -- yes --> identityShown[Show locally saved<br/>name and phone]
-    hasIdentity -- no --> hasVisit
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
-    deviceAuth --> notificationState{SMS consent granted?}
+    deviceAuth --> notificationRequest{Status retrieval}
+    notificationRequest -- pending --> notificationLoading[Show loading indicator]
+    notificationRequest -- failed --> notificationError[Show notification status error]
+    notificationRequest -- succeeded --> notificationState{SMS consent granted?}
     notificationState -- yes --> notificationEnabled[Show "Notifications Enabled"]
     notificationState -- no --> notifyButton[Show "Notify Me About Updates"]
     notifyButton -. opens .-> offer{Consent dialog:<br/>approve the full SMS terms?}
     offer -- yes --> subscribed[Save consent for the guest;<br/>server finds their active visit<br/>for any catch-up text]
     offer -- no --> notifyButton
     subscribed --> notificationEnabled
-    notificationEnabled --> hasVisit{Saved visit token<br/>on this device?}
-    notifyButton --> hasVisit
+    notificationEnabled --> activeSession{Market session active?}
+    notifyButton --> activeSession
+    notificationError --> activeSession
+
+    activeSession -- no --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
+    inactiveScreen --> hasRunAlready{Has this market's<br/>session already ended?}
+    hasRunAlready -- no, not open yet --> preregisterOffer[Show "Preregister" button]
+    hasRunAlready -- yes, already ended --> noCta([No CTA — nothing to do<br/>until the next one is scheduled])
+    activeSession -- yes --> hasVisit{Saved visit token<br/>on this device?}
     hasVisit -- yes --> status[Status screen]
     hasVisit -- no --> canRegister{Registration open?}
 
@@ -187,10 +195,12 @@ flowchart TD
   same credential authorizes `/api/sms-subscription`; no visit token participates in consent. On a
   new opt-in, the server looks up the guest's visit in the newest non-ended market event and sends
   the appropriate catch-up text if that visit has a live status. The identity indicator shows a
-  single SMS opt-in button before consent and replaces it with a compact enabled status afterward.
-  Push notification plumbing remains in place, but push controls are not currently shown to guests.
-  Admin broadcasts still reach eligible visits over any subscribed channel whose visit isn't
-  cancelled.
+  loading indicator while retrieving notification state, a local error if retrieval fails, and a
+  single SMS opt-in button before consent that becomes a compact enabled status afterward. A guest
+  without a device credential instead sees a preregistration message and button in the indicator,
+  explicitly clarifying that preregistration does not enter the lottery. Push notification plumbing
+  remains in place, but push controls are not currently shown to guests.
+  Admin broadcasts still reach eligible visits over any subscribed channel whose visit isn't cancelled.
 - **Cancelling is only possible before service.** The cancel button appears only while the visit is
   `registered` or `waiting`, and not at all once the session has ended.
 - **A closing session resolves anyone left over.** Ending a session marks every visit still
