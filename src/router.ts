@@ -3,8 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import AdminAuthView from '@/components/AdminAuthView.vue';
 import GuestView from '@/components/guest-view/GuestView.vue';
-import PrivacyPage from '@/components/legal/PrivacyPage.vue';
-import TermsPage from '@/components/legal/TermsPage.vue';
 import QrCodeView from '@/components/QrCodeView.vue';
 import SignupView from '@/components/routes/SignupView.vue';
 
@@ -15,15 +13,18 @@ const router = createRouter({
 	routes: [
 		{ path: '/', name: 'guest', component: GuestView },
 		{ path: '/signup', name: 'signup', component: SignupView },
+		// Loaded on demand. These are the only React screens so far, so splitting them keeps React
+		// out of the bundle a guest downloads to register — the path that matters on a phone in a
+		// queue. Revisit once React is on the critical path anyway.
 		{
 			path: '/privacy',
 			name: 'privacy',
-			component: PrivacyPage,
+			component: () => import('@/components/legal/PrivacyPage.vue'),
 		},
 		{
 			path: '/terms',
 			name: 'terms',
-			component: TermsPage,
+			component: () => import('@/components/legal/TermsPage.vue'),
 		},
 		{ path: '/qr-code', name: 'qr-code', component: QrCodeView },
 		{

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import AppBar from '@/components/ui/app-bar/AppBar.vue';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
@@ -18,16 +18,11 @@ const dir = fromMobx(() => translations.dir);
 
 const authenticationError = computed(() => auth0?.error.value ?? null);
 const route = useRoute();
-const router = useRouter();
 // The route is Vue-reactive, so these stay plain computeds; only `dir` comes from a store.
 const isQrCode = computed(() => route.name === 'qr-code');
 const adminView = computed<AdminView>(() =>
 	isAdminView(route.params.view) ? route.params.view : 'current-session',
 );
-
-function showGuest() {
-	void router.push({ name: 'guest' });
-}
 </script>
 
 <template>
@@ -41,6 +36,6 @@ function showGuest() {
 		</p>
 		<router-view />
 
-		<AppFooter :t="t" @back="showGuest" />
+		<AppFooter :t="t" />
 	</main>
 </template>
