@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
 const props = withDefaults(
@@ -22,13 +23,13 @@ function pad(value: number) {
 	return String(value).padStart(2, '0');
 }
 
-const remainingMs = computed(() => props.closesAt.valueOf() - props.now);
+const remainingMs = fromMobx(() => props.closesAt.valueOf() - props.now);
 /**
  * How far into the color transition the clock is: `0` at (or above) `transitionThresholdMs`
  * remaining, `1` at zero remaining. The template feeds this to `color-mix()` as a CSS custom
  * property, so the background is computed by CSS rather than snapped between fixed swatches.
  */
-const progress = computed(() =>
+const progress = fromMobx(() =>
 	Math.min(1, Math.max(0, 1 - remainingMs.value / props.transitionThresholdMs)),
 );
 /**
@@ -36,7 +37,7 @@ const progress = computed(() =>
  * there is a full hour or more left, rather than dropped by a fixed cutoff — so the format always
  * reflects the actual remaining time instead of an assumption about how long windows usually run.
  */
-const display = computed(() => {
+const display = fromMobx(() => {
 	const totalSeconds = Math.floor(remainingMs.value / 1_000);
 	const hours = Math.floor(totalSeconds / 3_600);
 	const minutes = Math.floor((totalSeconds % 3_600) / 60);
@@ -51,7 +52,7 @@ const display = computed(() => {
  * kept to whole minutes — it only changes once a minute even though the visible clock ticks every
  * second (which is hidden from assistive tech below).
  */
-const accessibleText = computed(() =>
+const accessibleText = fromMobx(() =>
 	t.value.registrationClosesInMinutes.replace(
 		'{minutes}',
 		String(Math.ceil(remainingMs.value / 60_000)),

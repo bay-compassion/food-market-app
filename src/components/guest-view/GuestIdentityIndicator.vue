@@ -2,6 +2,7 @@
 import { onMounted, ref, watch } from 'vue';
 
 import type { GuestIdentity } from '@/stores/guest.store.ts';
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 import { useRootStore } from '@/stores/root.store.ts';
 
@@ -30,6 +31,9 @@ watch(
 		}
 	},
 );
+const notificationSettingsLoaded = fromMobx(() => guest.notificationSettingsLoaded);
+const smsConfigured = fromMobx(() => guest.smsConfigured);
+const smsConsented = fromMobx(() => guest.smsConsented);
 </script>
 
 <template>
@@ -57,15 +61,15 @@ watch(
 			</div>
 		</div>
 
-		<div v-if="guest.notificationSettingsLoaded" class="notification-status">
-			<p v-if="guest.smsConsented" class="notifications-enabled" aria-live="polite">
+		<div v-if="notificationSettingsLoaded" class="notification-status">
+			<p v-if="smsConsented" class="notifications-enabled" aria-live="polite">
 				<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 					<path d="m5 12 4 4L19 6" />
 				</svg>
 				{{ t.guestView.identityIndicator.notificationsEnabled }}
 			</p>
 			<AppButton
-				v-else-if="guest.smsConfigured"
+				v-else-if="smsConfigured"
 				type="button"
 				variant="secondary"
 				@click="notificationsDialogOpen = true"

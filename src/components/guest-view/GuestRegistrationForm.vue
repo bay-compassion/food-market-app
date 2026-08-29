@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 import type { RegistrationSubmitResult } from '@/stores/registration.store.ts';
 import { useRootStore } from '@/stores/root.store.ts';
@@ -27,20 +28,20 @@ const guestStore = rootStore.guest;
 const registrationStore = rootStore.registration;
 const session = rootStore.session;
 
-const registrationQuestions = computed(() => session.currentState?.questions ?? []);
+const registrationQuestions = fromMobx(() => session.currentState?.questions ?? []);
 /** When registration is genuinely open right now, the moment it closes; otherwise `null`. */
-const registrationClosesAt = computed(() => session.marketEvent?.registrationClosesAt ?? null);
-const submissionError = computed(() =>
+const registrationClosesAt = fromMobx(() => session.marketEvent?.registrationClosesAt ?? null);
+const submissionError = fromMobx(() =>
 	registrationStore.submissionError ? t.value.submissionError : '',
 );
 
 /** Whether this device has a cached local identity (name and phone) to prefill — hides the
  *  sign-up fields when so, since there's nothing left to ask. A device token alone isn't enough:
  *  a legacy token with no locally cached profile still needs to collect the fields. */
-const showSignupFields = computed(() => props.context === 'early' || guestStore.identity === null);
+const showSignupFields = fromMobx(() => props.context === 'early' || guestStore.identity === null);
 
 /** The strings that differ between joining today's queue and signing up ahead of time. */
-const copy = computed(() =>
+const copy = fromMobx(() =>
 	props.context === 'early'
 		? {
 				formTitle: t.value.earlyFormTitle,

@@ -1,12 +1,28 @@
-import { reactive } from 'vue';
+import { makeAutoObservable, type AnnotationsMap } from 'mobx';
 
 /**
- * Enhances the provided class instance by making it reactive.
- * This allows the instance to track and respond to changes in real-time.
+ * Makes a store class observable, so reads of its fields and getters are tracked and writes
+ * notify whatever is watching.
  *
- * @param {T} instance - The class instance to be made reactive.
- * @return {T} The reactive version of the provided class instance.
+ * Call it as the last statement of a constructor — MobX only annotates fields that already
+ * exist, so anything assigned afterwards would be invisible. The class must not extend another
+ * class or be extended, which `makeAutoObservable` rejects outright.
+ *
+ * `nonObservable` is where a store opts its collaborators out: a `fetch`, a storage service, or
+ * another store is a dependency rather than state, and making one observable would wrap it in a
+ * proxy for no benefit. Internal bookkeeping that nothing renders — a timer handle, a request
+ * revision counter — belongs there too.
+ *
+ * @param instance - The store to make observable. Returned unchanged; MobX annotates in place.
+ * @param nonObservable - Field names to leave alone, as `{ storage: false }`.
  */
-export function makeReactive<T extends object>(instance: T): T {
-	return reactive(instance) as T;
+export function makeReactive<T extends object>(
+	instance: T,
+	nonObservable?: Record<string, false>,
+): T {
+	// MobX types annotations against `keyof T`, which omits the private fields these stores keep
+	// their dependencies in. The map only ever turns annotation *off*, so widening it is safe.
+	makeAutoObservable(instance, nonObservable as AnnotationsMap<T, never>);
+
+	return instance;
 }

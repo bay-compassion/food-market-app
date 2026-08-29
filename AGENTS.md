@@ -42,6 +42,15 @@
   `vite-plugin-vue-devtools` pins `@babel/core` 7 while `@vitejs/plugin-react` wants 8, which
   cannot resolve while both frameworks are installed. Do not swap it back until Vue is gone. The
   plugin logs a recommendation to switch on every run; ignore it.
+- **Stores are MobX observables, and Vue does not track them.** Anything a Vue component reads
+  from a store must go through `fromMobx` in `src/stores/hooks/`, which keeps a Vue computed and
+  a MobX reaction in step so derivations mixing store state with local refs stay correct. Reading
+  a store inline in a template, or via Vue's `toRef`/`computed`, renders once and then goes
+  stale — silently, with no error. `useTranslation()` already routes through it, so `t` is safe.
+  `mobx-vue-lite`'s `<Observer>` was tried and removed: Vue's compiled templates hand back cached
+  vnodes, so re-invoking the slot does not re-evaluate bindings and it renders stale.
+- Store methods are actions, but only synchronously. Any write after an `await` — including in a
+  `catch` or `finally` — needs `runInAction`, or MobX warns and the write escapes batching.
 - New React components use Emotion (`@emotion/styled`) rather than a scoped `<style>` block, which
   has no React equivalent. Emotion is MUI's own styling engine, so adopting it now means MUI can
   land later without a second styling migration. The design tokens in `src/styles/base.css` are

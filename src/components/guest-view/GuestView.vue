@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, toRef } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import Card from '@/components/ui/layout/Card.vue';
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 
 import type { Locale } from '../../locales';
 import {
@@ -27,9 +28,9 @@ const guestDomain = rootStore.guest;
 const session = rootStore.session;
 const visitStore = rootStore.visit;
 const translations = rootStore.translations;
-const t = toRef(translations, 'translation');
-const locale = toRef(translations, 'locale');
-const isReturningVisitor = toRef(guestDomain, 'isReturningVisitor');
+const t = fromMobx(() => translations.translation);
+const locale = fromMobx(() => translations.locale);
+const isReturningVisitor = fromMobx(() => guestDomain.isReturningVisitor);
 
 function selectLanguage(selected: Locale) {
 	translations.setLanguage(selected as Language);
@@ -39,7 +40,7 @@ function selectLanguage(selected: Locale) {
 let nowTimer: ReturnType<typeof setInterval> | undefined;
 
 const isStatusLoading = ref(true);
-const guestIdentity = computed(() => guestDomain.identity);
+const guestIdentity = fromMobx(() => guestDomain.identity);
 
 /**
  * Whether `/api/market` has ever returned usable data. Stays `false` while it hasn't, including
@@ -47,12 +48,12 @@ const guestIdentity = computed(() => guestDomain.identity);
  * as registration being open, so the form is still available rather than blocking a guest behind
  * a "not open" screen the app can't actually confirm.
  */
-const hasLoadedRegistration = computed(() => session.currentState !== null);
+const hasLoadedRegistration = fromMobx(() => session.currentState !== null);
 /** Ticks every second so the registration form's countdown stays live. */
 const now = ref(Date.now());
 
 const router = useRouter();
-const phase = computed(() =>
+const phase = fromMobx(() =>
 	hasLoadedRegistration.value
 		? currentSessionPhase(session.marketEvent, new Date(now.value))
 		: 'registration-open',
@@ -63,7 +64,7 @@ const phase = computed(() =>
  * `guestRegistration.mts`. `isPreregistration` is always `false` here — the `/signup` route
  * renders `SignupView` instead, which is the only place that flag ever applies.
  */
-const cardState = computed(() =>
+const cardState = fromMobx(() =>
 	resolveGuestCardState({
 		phase: phase.value,
 		isIdentified: guestDomain.isIdentified,
@@ -73,9 +74,9 @@ const cardState = computed(() =>
 );
 /** Once a market has run its course, there is nothing left to preregister for until an admin
  *  schedules the next one — unlike the "hasn't opened yet" case, which still welcomes it. */
-const canPreregister = computed(() => session.currentStatus !== SessionStatusEnum.ENDED);
+const canPreregister = fromMobx(() => session.currentStatus !== SessionStatusEnum.ENDED);
 /** The success-state copy differs between joining today's queue and signing up ahead of time. */
-const successCopy = computed(() =>
+const successCopy = fromMobx(() =>
 	guestFormContext(phase.value) === 'early'
 		? { title: t.value.earlySuccessTitle, description: t.value.earlySuccessDescription }
 		: { title: t.value.successTitle, description: t.value.successDescription },
@@ -111,6 +112,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
 	clearInterval(nowTimer);
 });
+const isSessionActive = fromMobx(() => session.isActive);
 </script>
 
 <template>
@@ -128,7 +130,7 @@ onBeforeUnmount(() => {
 		<p v-if="isStatusLoading" class="status-loading" aria-live="polite">{{ t.statusLoading }}</p>
 		<template v-else>
 			<Card aria-live="polite">
-				<template v-if="!session.isActive">
+				<template v-if="!isSessionActive">
 					<GuestNotOpenState :t="t" :allow-preregister="canPreregister" @preregister="goToSignup" />
 				</template>
 				<template v-else>

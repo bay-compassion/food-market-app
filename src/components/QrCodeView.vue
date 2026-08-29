@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
 import { createQrCodeSvg } from '../services/qrCode';
@@ -14,8 +15,8 @@ import { createQrCodeSvg } from '../services/qrCode';
 
 const t = useTranslation();
 const router = useRouter();
-const homeUrl = computed(() => window.location.origin + router.resolve({ name: 'guest' }).href);
-const qrSvg = computed(() => createQrCodeSvg(homeUrl.value));
+const homeUrl = fromMobx(() => window.location.origin + router.resolve({ name: 'guest' }).href);
+const qrSvg = fromMobx(() => createQrCodeSvg(homeUrl.value));
 
 function showGuest() {
 	void router.push({ name: 'guest' });

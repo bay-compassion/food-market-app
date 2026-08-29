@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useAdminTranslation } from '@/stores/hooks/use-translation.ts';
 
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
@@ -46,8 +47,8 @@ rootStore.setPermissionReader(async () =>
 
 const t = useAdminTranslation();
 const activeView = ref<AdminView>(props.view);
-const event = computed(() => session.currentState?.event ?? null);
-const counts = computed(() => session.currentState?.counts ?? {});
+const event = fromMobx(() => session.currentState?.event ?? null);
+const counts = fromMobx(() => session.currentState?.counts ?? {});
 const questions = ref<Question[]>([]);
 const searchQuery = ref('');
 const settings = ref<SessionSettings>(defaultSessionSettings());
@@ -64,8 +65,8 @@ const statuses: GuestStatus[] = [
 	'no_show',
 	'cancelled',
 ];
-const statusLabels = computed<Record<GuestStatus, string>>(() => adminVisitStatusLabels(locale));
-const viewLabels = computed<Record<AdminView, string>>(() => ({
+const statusLabels = fromMobx<Record<GuestStatus, string>>(() => adminVisitStatusLabels(locale));
+const viewLabels = fromMobx<Record<AdminView, string>>(() => ({
 	'current-session': t.value.currentSession,
 	queue: t.value.queue,
 	'question-bank': t.value.questionBank,
@@ -74,13 +75,20 @@ const viewLabels = computed<Record<AdminView, string>>(() => ({
 	reports: t.value.reports,
 	'dev-mode': t.value.devMode,
 }));
-const navigation = computed<{ id: AdminView; label: string }[]>(() =>
+const navigation = fromMobx<{ id: AdminView; label: string }[]>(() =>
 	admin.views.map((id) => ({ id, label: viewLabels.value[id] })),
 );
-const feedback = computed(() => adminFeedbackText(admin.feedback, t.value));
+const feedback = fromMobx(() => adminFeedbackText(admin.feedback, t.value));
+// Store values the template binds are pulled through `fromMobx` rather than read inline:
+// `Observer` re-invokes the slot, but Vue's compiled templates hand back cached vnodes, so an
+// inline `admin.x` can render stale.
+const isBusy = fromMobx(() => admin.isBusy);
+const guests = fromMobx(() => admin.guests);
+const history = fromMobx(() => admin.history);
+const canExportGuestData = fromMobx(() => admin.can('export:guest-data'));
 
-const sessionState = computed(() => currentSessionState(event.value?.status));
-const sessionStatusLabel = computed(() => {
+const sessionState = fromMobx(() => currentSessionState(event.value?.status));
+const sessionStatusLabel = fromMobx(() => {
 	switch (sessionState.value) {
 		case 'scheduled':
 			return t.value.scheduled;
@@ -95,10 +103,10 @@ const sessionStatusLabel = computed(() => {
 	}
 });
 /** With no session configured there is nothing to add a guest to. */
-const sessionAdmissions = computed(() =>
+const sessionAdmissions = fromMobx(() =>
 	event.value ? admissionsFor(event.value.status) : ([] as GuestAdmission[]),
 );
-const currentSessionGuests = computed(() =>
+const currentSessionGuests = fromMobx(() =>
 	admin.sessionGuests
 		.filter((guest) => guest.marketEventId === event.value?.id)
 		.sort(
@@ -107,10 +115,10 @@ const currentSessionGuests = computed(() =>
 				(second.queuePosition ?? Number.MAX_SAFE_INTEGER),
 		),
 );
-const registeredSessionGuests = computed(() =>
+const registeredSessionGuests = fromMobx(() =>
 	currentSessionGuests.value.filter((guest) => guest.status === 'registered'),
 );
-const outstandingCount = computed(() => (counts.value.waiting ?? 0) + (counts.value.called ?? 0));
+const outstandingCount = fromMobx(() => (counts.value.waiting ?? 0) + (counts.value.called ?? 0));
 
 watch(
 	() => props.view,
@@ -330,7 +338,7 @@ onMounted(loadDashboard);
 				:status-labels="statusLabels"
 				:registered-guests="registeredSessionGuests"
 				:admissions="sessionAdmissions"
-				:busy="admin.isBusy"
+				:busy="isBusy"
 				@save-settings="saveSettings"
 				@save-and-start-registration="saveAndStartRegistration"
 				@postpone-registration="postponeRegistration"
@@ -350,7 +358,7 @@ onMounted(loadDashboard);
 				:status-labels="statusLabels"
 				:service-started="sessionState === 'service_started'"
 				:admissions="sessionAdmissions"
-				:busy="admin.isBusy"
+				:busy="isBusy"
 				@call-next="admin.callNext"
 				@run="runGuestCommand"
 				@add-guest="addManualGuest"
@@ -362,7 +370,7 @@ onMounted(loadDashboard);
 				v-else-if="activeView === 'question-bank'"
 				v-model:questions="questions"
 				:locale="locale"
-				:busy="admin.isBusy"
+				:busy="isBusy"
 				:editable="event === null || event.status === 'draft'"
 				@save="saveSettings"
 			/>
@@ -371,17 +379,17 @@ onMounted(loadDashboard);
 				v-else-if="activeView === 'reports'"
 				:locale="locale"
 				:get-access-token="getAccessToken"
-				:can-export="admin.can('export:guest-data')"
+				:can-export="canExportGuestData"
 			/>
 
 			<GuestDatabaseView
 				v-else-if="activeView === 'guest-database'"
 				v-model:search-query="searchQuery"
 				:locale="locale"
-				:guests="admin.guests"
+				:guests="guests"
 				:status-labels="statusLabels"
 				:admissions="sessionAdmissions"
-				:busy="admin.isBusy"
+				:busy="isBusy"
 				@search="admin.searchGuests(searchQuery)"
 				@run="runGuestCommand"
 				@add-guest="addManualGuest"
@@ -390,15 +398,15 @@ onMounted(loadDashboard);
 			<DevModeView
 				v-else-if="activeView === 'dev-mode'"
 				:locale="locale"
-				:busy="admin.isBusy"
+				:busy="isBusy"
 				@load="loadScenario"
 			/>
 
 			<SessionHistoryView
 				v-else
 				:locale="locale"
-				:history="admin.history"
-				:busy="admin.isBusy"
+				:history="history"
+				:busy="isBusy"
 				@add-guest="addManualGuest"
 			/>
 		</div>

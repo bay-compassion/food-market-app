@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
+
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
@@ -27,11 +29,11 @@ const emit = defineEmits<{
 }>();
 
 const { admin } = useRootStore();
-const t = computed(() => adminTranslations.en);
+const t = fromMobx(() => adminTranslations.en);
 /** `null` while still checking. */
 const enabled = ref<boolean | null>(null);
 
-const stageTitles = computed<Record<SessionStatus, string>>(() => ({
+const stageTitles = fromMobx<Record<SessionStatus, string>>(() => ({
 	draft: t.value.devStageDraftTitle,
 	scheduled: t.value.devStageScheduledTitle,
 	registration_open: t.value.devStageRegistrationOpenTitle,
@@ -39,7 +41,7 @@ const stageTitles = computed<Record<SessionStatus, string>>(() => ({
 	service_started: t.value.devStageServiceStartedTitle,
 	ended: t.value.devStageEndedTitle,
 }));
-const stageDescriptions = computed<Record<SessionStatus, string>>(() => ({
+const stageDescriptions = fromMobx<Record<SessionStatus, string>>(() => ({
 	draft: t.value.devStageDraftDescription,
 	scheduled: t.value.devStageScheduledDescription,
 	registration_open: t.value.devStageRegistrationOpenDescription,
@@ -47,7 +49,7 @@ const stageDescriptions = computed<Record<SessionStatus, string>>(() => ({
 	service_started: t.value.devStageServiceStartedDescription,
 	ended: t.value.devStageEndedDescription,
 }));
-const progressLabels = computed<Record<ServiceProgress, string>>(() => ({
+const progressLabels = fromMobx<Record<ServiceProgress, string>>(() => ({
 	just_started: t.value.devProgressJustStarted,
 	halfway: t.value.devProgressHalfway,
 	nearly_done: t.value.devProgressNearlyDone,

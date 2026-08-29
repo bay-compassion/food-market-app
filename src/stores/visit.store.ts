@@ -89,7 +89,13 @@ export class VisitStore {
 		this.cancelRequest = options.cancelVisit ?? cancelActiveVisit;
 		this._visitToken = this.storage.getItem(visitTokenStorageKey);
 
-		return makeReactive(this);
+		return makeReactive(this, {
+			storage: false,
+			lookupActiveVisit: false,
+			cancelRequest: false,
+			refreshTimer: false,
+			refreshRequest: false,
+		});
 	}
 
 	[Symbol.dispose](): void {

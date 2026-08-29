@@ -29,7 +29,7 @@ export class TranslationStore {
 		this.locale = this.readSavedLanguage() ?? this.detectLanguage();
 		this.language = this.locale;
 
-		return makeReactive(this);
+		return makeReactive(this, { rootStore: false });
 	}
 
 	setLanguage(language: Language): void {
