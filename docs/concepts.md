@@ -7,7 +7,7 @@ conversations with an AI coding agent — using this app's own files as examples
 ## Frontend, backend, and database — and why they're kept separate
 
 **The frontend** is the part that runs in a guest's or admin's web browser: the screens, buttons,
-and forms. In this repo that's everything in `src/`. It's built with Vue (see below).
+and forms. In this repo that's everything in `src/`. It's built with React (see below).
 
 **The backend** is code that runs on a server, not in anyone's browser. In this repo that's
 `netlify/functions/` — small programs that handle things like "someone submitted a check-in form"
@@ -68,18 +68,18 @@ and is easy to get subtly wrong.
 A **frontend framework** solves this by letting you describe _what the page should look like given
 the current data_, and it handles updating the actual page for you whenever that data changes. It
 also lets you break the page into reusable pieces called **components** — for instance, this app
-has a component for a single form field (`src/FormField.vue`) used in several forms, instead of
+has a component for a single form field (`src/components/FormField.tsx`) used in several forms, instead of
 copy-pasting the same markup everywhere.
 
-This app uses **Vue** (specifically Vue 3, with its "Composition API" and `<script setup>` style —
-if you see either phrase in a file or in `AGENTS.md`, that's just naming the specific flavor of Vue
-used consistently throughout this codebase). Every file ending in `.vue` in `src/` is a component.
+This app uses **React**. A component is a function returning **JSX** — markup written inline in
+TypeScript — which is why component files end in `.tsx` rather than `.ts`. Every file ending in
+`.tsx` in `src/components/` is a component.
 
 ## Dependencies (npm packages)
 
 This app doesn't write every line of code it needs from scratch — it relies on other people's
 published, reusable code, called **dependencies** or **packages**. `package.json` lists which ones
-this project uses (Vue itself is one); the actual downloaded code lives in `node_modules/`, which
+this project uses (React itself is one); the actual downloaded code lives in `node_modules/`, which
 is never edited by hand and isn't stored in Git. Each dependency is code you didn't write, from
 someone you've likely never met, that this app now trusts to behave correctly and safely — which is
 exactly why `AGENTS.md` says to prefer the project's existing patterns over adding a new one: every

@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.vue=095239e1fbab, src/components/guest-view/GuestView.vue=be3d81472552, src/components/routes/SignupView.vue=36b82226401e, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=cab00b2fc330, src/stores/registration.store.ts=50e057e32fc4, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=0a3296378fda, src/stores/root.store.ts=432832496d18, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=10e34e26d54c, src/components/routes/SignupView.tsx=46e4b4a201de, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=64585643e156, src/stores/registration.store.ts=50e057e32fc4, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=b9a78935166d, src/stores/root.store.ts=5cf28fc66053, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
@@ -6,9 +6,9 @@ The path a guest takes from opening the app to being served, and the state their
 step. Language selection (`GuestLanguageHero`, shown until a returning visitor has picked one) lives
 in `GuestView`, backed by the root's shared `TranslationStore`; the registration form, status
 screen, and countdown are in
-[`src/components/guest-view/GuestView.vue`](../src/components/guest-view/GuestView.vue) (route `/`),
+[`src/components/guest-view/GuestView.tsx`](../src/components/guest-view/GuestView.tsx) (route `/`),
 with the identity-only sign-up screen in its own
-[`src/components/routes/SignupView.vue`](../src/components/routes/SignupView.vue) (route `/signup`).
+[`src/components/routes/SignupView.tsx`](../src/components/routes/SignupView.tsx) (route `/signup`).
 Both read the current market session from the shared
 [`src/stores/root.store.ts`](../src/stores/root.store.ts) — every store it composes
 (`src/stores/*.store.ts`) lives for the app's lifetime, not any one component's mount. The root's
@@ -113,7 +113,7 @@ flowchart TD
   name and phone number under `bay-compassion.guest-identity`. The identity indicator reads only
   that browser-local copy; it never retrieves a guest profile from the server. A legacy token with
   no local profile therefore shows no indicator until the guest registers again.
-- **`/signup` is its own route (`SignupView.vue`) for creating a guest identity without a visit.**
+- **`/signup` is its own route (`SignupView.tsx`) for creating a guest identity without a visit.**
   Signing up (name and phone, via `/api/guest-signup`) is decoupled from lottery registration.
   `SignupView` redirects to `/` as soon as it mounts if the browser already has a device token —
   there's nothing left to ask, so the guest lands back on `GuestView`, which shows whatever its
@@ -137,7 +137,7 @@ flowchart TD
   the standalone `'early'` sign-up path talks to a different endpoint (`/api/guest-signup`) and
   creates no visit.
 - **Inactive market states share one explanation card.** `MarketSessionStore.isActive` is the
-  boundary: when it is false, `GuestView.vue` renders `GuestNotOpenState` with the next registration
+  boundary: when it is false, `GuestView` renders `GuestNotOpenState` with the next registration
   window, lottery rules, and notification details, plus an early-signup link — unless the session's
   status is `ended`, in which case the card omits that button, since there is nothing scheduled yet
   to preregister for. When `isActive` is true, the normal card resolver chooses among the

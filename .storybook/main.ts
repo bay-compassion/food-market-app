@@ -1,18 +1,12 @@
-import type { StorybookConfig } from '@storybook/vue3-vite';
+import type { StorybookConfig } from '@storybook/react-vite';
 import type { PluginOption } from 'vite';
 
 /**
  * Storybook reuses the project's `vite.config.ts` — that is what gives stories the `@` alias and
- * the Vue plugin, since `@storybook/vue3-vite` deliberately does not supply its own. Two of that
- * config's plugins have no place here: `@netlify/vite-plugin` starts the Netlify functions dev
- * server, and `vite-plugin-vue-devtools` injects an overlay that fights Storybook's own toolbar.
- *
- * Matching on the name rather than the import is what keeps this working: `vueDevTools()` expands
- * into four plugins (`vite-plugin-inspect`, two `vite-plugin-vue-inspector` passes, and
- * `vite-plugin-vue-devtools`), and it hands them back as a promise of an array, so the list has to
- * be awaited and flattened before anything can be matched against it.
+ * the React plugin. `@netlify/vite-plugin` is dropped here because it starts the Netlify functions
+ * dev server, which a component workshop has no use for.
  */
-const excludedPlugins = /netlify|devtools|inspect/;
+const excludedPlugins = /netlify/;
 
 /** A flattened plugin list also holds `false`, `null`, and `undefined`, none of which have a name. */
 function pluginName(plugin: unknown): string {
@@ -20,12 +14,10 @@ function pluginName(plugin: unknown): string {
 }
 
 const config: StorybookConfig = {
-	// Stories sit beside the components they document; the design system pages are Storybook-only
-	// content, so they stay out of `src/` rather than adding a docs folder to the app source.
-	stories: ['../src/**/*.stories.ts', './docs/**/*.stories.ts', './docs/**/*.mdx'],
-	addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-vitest'],
+	stories: ['./docs/**/*.mdx', './docs/**/*.stories.tsx', '../src/**/*.stories.tsx'],
+	addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
 	framework: {
-		name: '@storybook/vue3-vite',
+		name: '@storybook/react-vite',
 		options: {},
 	},
 	async viteFinal(viteConfig) {

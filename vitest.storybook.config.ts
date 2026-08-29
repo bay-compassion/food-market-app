@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
-import vue from '@vitejs/plugin-vue';
+import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
@@ -19,10 +19,10 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
 	plugins: [
-		// This file is its own vite config — `vite.config.ts` is not loaded — so the Vue plugin and
-		// the `@` alias have to be declared here or every `.vue` import fails to parse. Declaring
-		// them rather than merging the app config is what keeps the Netlify dev-server plugin out.
-		vue(),
+		// This file is its own vite config — `vite.config.ts` is not loaded — so the React plugin and
+		// the `@` alias have to be declared here or every import fails to resolve. Declaring them
+		// rather than merging the app config is what keeps the Netlify dev-server plugin out.
+		react(),
 		// Returns a promise of several plugins; Vite resolves those in place, so no await is needed.
 		storybookTest({
 			configDir: '.storybook',

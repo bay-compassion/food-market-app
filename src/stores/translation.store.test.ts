@@ -51,7 +51,7 @@ describe('TranslationStore', () => {
 		window.localStorage.setItem(StorageKey.LOCALE, 'es');
 
 		// Act
-		const returningStore = new TranslationStore(rootStore);
+		const returningStore = new TranslationStore();
 
 		// Assert
 		expect(returningStore.locale).toBe('es');
@@ -62,7 +62,7 @@ describe('TranslationStore', () => {
 		window.localStorage.setItem(StorageKey.LOCALE, 'klingon');
 
 		// Act
-		const returningStore = new TranslationStore(rootStore);
+		const returningStore = new TranslationStore();
 
 		// Assert
 		expect(returningStore.locale).toBe('en');

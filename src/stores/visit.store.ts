@@ -1,3 +1,5 @@
+import { runInAction } from 'mobx';
+
 import {
 	cancelActiveVisit,
 	fetchActiveVisit,
@@ -144,11 +146,13 @@ export class VisitStore {
 		try {
 			const visit = await this.cancelRequest(this._visitToken);
 
-			this._activeVisit = { ...this._activeVisit!, ...visit };
+			runInAction(() => {
+				this._activeVisit = { ...this._activeVisit!, ...visit };
+			});
 		} catch {
-			this._cancelError = true;
+			runInAction(() => (this._cancelError = true));
 		} finally {
-			this._isCancelling = false;
+			runInAction(() => (this._isCancelling = false));
 		}
 	}
 
@@ -165,15 +169,19 @@ export class VisitStore {
 				return;
 			}
 			this.storage.removeItem(visitTokenStorageKey);
-			this._visitToken = null;
-			this._activeVisit = null;
-			this._isSubmitted = false;
+			runInAction(() => {
+				this._visitToken = null;
+				this._activeVisit = null;
+				this._isSubmitted = false;
+			});
 			this.scheduleRefresh();
 
 			return;
 		}
-		this._activeVisit = lookup.visit;
-		this._isSubmitted = true;
+		runInAction(() => {
+			this._activeVisit = lookup.visit;
+			this._isSubmitted = true;
+		});
 		this.scheduleRefresh();
 	}
 

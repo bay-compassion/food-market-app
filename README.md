@@ -2,7 +2,7 @@
 
 The Bay Compassion is a mobile-first check-in app for a community food market. Guests can choose their language, share the details needed for their visit, and join the queue. The app currently supports English, Spanish, Farsi, Tagalog, Vietnamese, Chinese, and Arabic. An early admin view is also available for future queue-management tools.
 
-The frontend is a Vue 3 app in `src/`. Guest submissions are handled by a Netlify Function and stored with Netlify DB through Drizzle.
+The frontend is a React app in `src/`. Guest submissions are handled by a Netlify Function and stored with Netlify DB through Drizzle.
 
 New to how apps like this are put together? Start with [`docs/concepts.md`](docs/concepts.md) —
 a primer on frontend/backend/database, frameworks, secrets, and migrations, written for a
@@ -65,7 +65,7 @@ npm install
 npm start
 ```
 
-`npm start` runs `netlify dev`, which serves the Vue app and Netlify Functions together. Follow the command output to open the local URL.
+`npm start` runs `netlify dev`, which serves the app and Netlify Functions together. Follow the command output to open the local URL.
 
 To work only on the frontend, you can also run:
 
@@ -196,7 +196,7 @@ importantly, how to connect it without handing it the app's own database credent
 
 ## Project structure
 
-- `src/` — Vue 3 frontend
+- `src/` — React frontend
 - `public/` — static frontend assets
 - `netlify/functions/` — API endpoints, including guest check-in
 - `netlify/database/migrations/` — Netlify DB migrations; read [`docs/migrations.md`](docs/migrations.md)

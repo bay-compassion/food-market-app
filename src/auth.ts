@@ -1,4 +1,3 @@
-import { createAuth0 } from '@auth0/auth0-vue';
 import { decodeJwt } from 'jose';
 
 import { grantedPermissions, permissions, type Permission } from './services/permissions';
@@ -11,18 +10,19 @@ const settings = domain && clientId && audience ? { domain, clientId, audience }
 
 export const authReturnUrl = new URL('/', window.location.origin).toString();
 
-export const auth0 = settings
-	? createAuth0({
+/** What `Auth0Provider` needs, or `null` when the environment has no Auth0 configured. */
+export const auth0Settings = settings
+	? {
 			domain: settings.domain,
 			clientId: settings.clientId,
 			authorizationParams: {
 				audience: settings.audience,
 				redirect_uri: authReturnUrl,
 			},
-		})
+		}
 	: null;
 
-export const isAuth0Configured = auth0 !== null;
+export const isAuth0Configured = auth0Settings !== null;
 
 /**
  * The permissions in an access token, read **without verifying the signature**.

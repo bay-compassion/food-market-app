@@ -1,14 +1,39 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": ["env.d.ts", "src/**/*"],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
+    "composite": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": [],
+
+    // Vite compiles each module on its own and never reads types, so emit is TypeScript's only
+    // job here: `tsc --build` type-checks and writes declarations, nothing more.
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationDir": "./node_modules/.tmp/types",
+
+    "strict": true,
+    // This codebase writes explicit `.ts`/`.tsx` extensions on relative imports, which Vite
+    // resolves directly. Emit is declarations-only, so TypeScript allows it.
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "useDefineForClassFields": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
     // Extra safety for array and object lookups, but may have false positives.
     "noUncheckedIndexedAccess": true,
 
-    // Overrides the Vue base config's "preserve"/"vue" pair for the React migration. Nothing in
-    // this repo uses Vue's own JSX — components are single-file components — so JSX belongs to
-    // React, and `.vue` files are unaffected either way.
     "jsx": "react-jsx",
     "jsxImportSource": "react",
 
@@ -17,7 +42,7 @@
       "@/*": ["./src/*"]
     },
 
-    // `vue-tsc --build` produces a .tsbuildinfo file for incremental type-checking.
+    // `tsc --build` produces a .tsbuildinfo file for incremental type-checking.
     // Specified here to keep it out of the root directory.
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
   }
