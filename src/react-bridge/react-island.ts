@@ -1,7 +1,18 @@
 import { createElement, type ComponentType } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
-import { defineComponent, h, onBeforeUnmount, onMounted, shallowRef, watchEffect } from 'vue';
+import {
+	defineComponent,
+	h,
+	inject,
+	onBeforeUnmount,
+	onMounted,
+	shallowRef,
+	watchEffect,
+} from 'vue';
+
+import { RootStoreProvider } from '@/stores/react/store-context.tsx';
+import { rootStoreKey } from '@/stores/root.store.ts';
 
 /**
  * Wraps a React component so a Vue parent can render it as an ordinary child.
@@ -20,6 +31,11 @@ import { defineComponent, h, onBeforeUnmount, onMounted, shallowRef, watchEffect
  *   for leaf components: anything whose children are its own concern. That matches the order the
  *   migration converts components in anyway.
  *
+ * The application store is carried across the boundary: it is injected from Vue here and provided
+ * to the React tree, so a React component reads it with its own `useRootStore()` instead of having
+ * every field threaded through as a prop. When `App.vue` becomes React the provider moves to the
+ * root and this goes away with the rest of the bridge.
+ *
  * The host element is `display: contents` so it is not itself a box: these components sit inside
  * flex and grid containers whose styling addresses direct children, and an extra `<div>` in the
  * layout tree would break that silently.
@@ -36,6 +52,9 @@ export function reactIsland<P extends object>(Component: ComponentType<P>) {
 		inheritAttrs: false,
 		setup(_props, { attrs }) {
 			const host = shallowRef<HTMLElement>();
+			// Injected at setup rather than read per render: it is the same store for this component's
+			// whole life, and `inject` is only valid here.
+			const store = inject(rootStoreKey, null);
 			let root: Root | null = null;
 
 			onMounted(() => {
@@ -44,7 +63,14 @@ export function reactIsland<P extends object>(Component: ComponentType<P>) {
 				// Spreading inside the effect is what subscribes it: reading every key registers the
 				// dependency, so a changed prop re-renders the React tree in place.
 				watchEffect(() =>
-					flushSync(() => root?.render(createElement(Component, { ...attrs } as P))),
+					flushSync(() =>
+						root?.render(
+							createElement(RootStoreProvider, {
+								store,
+								children: createElement(Component, { ...attrs } as P),
+							}),
+						),
+					),
 				);
 			});
 

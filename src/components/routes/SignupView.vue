@@ -2,9 +2,9 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import GuestRegistrationForm from '@/components/guest-view/GuestRegistrationForm.vue';
 import GuestStateMessage from '@/components/guest-view/GuestStateMessage.vue';
 import Card from '@/components/ui/layout/Card.vue';
+import { GuestRegistrationForm } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import type { RegistrationSubmitResult } from '@/stores/registration.store.ts';
 import { useStore } from '@/stores/use-store.ts';

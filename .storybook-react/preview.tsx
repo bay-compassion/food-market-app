@@ -2,6 +2,8 @@ import type { Preview } from '@storybook/react-vite';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 
 import { languages, type Locale } from '../src/locales';
+import { RootStoreProvider } from '../src/stores/react/store-context';
+import { RootStore } from '../src/stores/root.store';
 
 // The app's own stylesheets, in the same order `main.ts` loads them, so a story in isolation
 // inherits exactly the cascade it would get inside the running app.
@@ -9,9 +11,6 @@ import '../src/styles/base.css';
 import '../src/styles/app-shell.css';
 import '../src/styles/admin.css';
 import '../.storybook/preview.css';
-
-/** The locales whose script runs right to left, matching the `dir` binding in `App.vue`. */
-const rightToLeftLocales: Locale[] = ['ar', 'fa'];
 
 /**
  * Which of the app's page wrappers a story renders inside, set per story with
@@ -69,15 +68,27 @@ const preview: Preview = {
 				<Story />
 			),
 
-		/** Wraps the story in its page shell and the writing direction its locale calls for. */
+		/**
+		 * Wraps the story in its page shell and the writing direction its locale calls for, and
+		 * provides the root store the app would provide in real use.
+		 *
+		 * The store is not optional scaffolding: `useRootStore()` throws without a provider, so any
+		 * component resolving its own copy — rather than taking every string as a prop — cannot
+		 * render at all without this. Each story gets a fresh instance, so one story's writes cannot
+		 * leak into the next.
+		 */
 		(Story, context) => {
-			const locale = context.globals.locale as Locale;
+			const store = new RootStore();
 			const shell: Shell = (context.parameters.shell as Shell | undefined) ?? 'bare';
 
+			store.translations.setLanguage(context.globals.locale as Locale);
+
 			return (
-				<div className={shells[shell]} dir={rightToLeftLocales.includes(locale) ? 'rtl' : 'ltr'}>
-					<Story />
-				</div>
+				<RootStoreProvider store={store}>
+					<div className={shells[shell]} dir={store.translations.dir}>
+						<Story />
+					</div>
+				</RootStoreProvider>
 			);
 		},
 	],
