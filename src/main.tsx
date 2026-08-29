@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 
 import { auth0Settings } from './auth';
+import { AppThemeProvider } from './components/AppThemeProvider';
 import { router } from './router';
 import { RootStoreProvider } from './stores/react/store-context';
 import { RootStore } from './stores/root.store';
@@ -22,15 +23,17 @@ const rootStore = new RootStore();
  */
 const tree = (
 	<StrictMode>
-		<Auth0Provider
-			domain={auth0Settings?.domain ?? ''}
-			clientId={auth0Settings?.clientId ?? ''}
-			authorizationParams={auth0Settings?.authorizationParams}
-		>
-			<RootStoreProvider store={rootStore}>
-				<RouterProvider router={router} />
-			</RootStoreProvider>
-		</Auth0Provider>
+		<AppThemeProvider>
+			<Auth0Provider
+				domain={auth0Settings?.domain ?? ''}
+				clientId={auth0Settings?.clientId ?? ''}
+				authorizationParams={auth0Settings?.authorizationParams}
+			>
+				<RootStoreProvider store={rootStore}>
+					<RouterProvider router={router} />
+				</RootStoreProvider>
+			</Auth0Provider>
+		</AppThemeProvider>
 	</StrictMode>
 );
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -484,7 +484,7 @@ describe('App', () => {
 	it('hides the inactive-market explanation while registration is open', async () => {
 		const { container } = renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.querySelector('.card')).not.toBeNull());
+		await screen.findByRole('heading', { name: translations.en.formTitle });
 
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});
@@ -492,7 +492,9 @@ describe('App', () => {
 	it('hides the inactive-market explanation while the event is in progress', async () => {
 		const { container } = renderWithMarketStatus('service_started');
 
-		await waitFor(() => expect(container.querySelector('.card')).not.toBeNull());
+		await screen.findByRole('heading', {
+			name: translations.en.guestView.serviceState.inProgressHeading,
+		});
 
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});
@@ -500,25 +502,26 @@ describe('App', () => {
 	it('keeps the inactive-market explanation out of an active closed-registration session', async () => {
 		const { container } = renderWithMarketStatus('registration_closed');
 
-		await waitFor(() => expect(container.querySelector('.card')).not.toBeNull());
+		await screen.findByRole('heading', {
+			name: translations.en.guestView.registrationClosedState.heading,
+		});
 
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});
 
 	it('shows the full inactive-market explanation when the session is inactive', async () => {
-		const { container } = renderWithMarketStatus('ended');
+		renderWithMarketStatus('ended');
 		const copy = translations.en.guestView.notOpenState;
 
-		await waitFor(() => expect(container.textContent).toContain(copy.heading));
+		const heading = await screen.findByRole('heading', { name: copy.heading });
+		const inactiveState = within(heading.parentElement!);
 
-		const inactiveCard = container.querySelector('.card')!;
-
-		expect(inactiveCard.textContent).toContain(copy.subheading);
-		expect(inactiveCard.textContent).toContain(copy.lotteryDescription);
-		expect(inactiveCard.textContent).toContain(copy.selectionDescription);
-		expect(inactiveCard.querySelector('a')).toBeNull();
+		expect(inactiveState.getByText(copy.subheading)).not.toBeNull();
+		expect(inactiveState.getByText(copy.lotteryDescription)).not.toBeNull();
+		expect(inactiveState.getByText(copy.selectionDescription)).not.toBeNull();
+		expect(inactiveState.queryByRole('link')).toBeNull();
 		// An ended session has nothing left to preregister for, so the button goes with it.
-		expect(inactiveCard.querySelector('button')).toBeNull();
+		expect(inactiveState.queryByRole('button')).toBeNull();
 	});
 
 	it('shows an error when an admin session cannot be verified', async () => {

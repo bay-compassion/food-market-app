@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 
+import { AppThemeProvider } from '../src/components/AppThemeProvider';
 import { languages, type Locale } from '../src/locales';
 import { RootStoreProvider } from '../src/stores/react/store-context';
 import { RootStore } from '../src/stores/root.store';
@@ -105,9 +106,11 @@ const preview: Preview = {
 			]);
 
 			return (
-				<RootStoreProvider store={store}>
-					<RouterProvider router={router} />
-				</RootStoreProvider>
+				<AppThemeProvider>
+					<RootStoreProvider store={store}>
+						<RouterProvider router={router} />
+					</RootStoreProvider>
+				</AppThemeProvider>
 			);
 		},
 	],
