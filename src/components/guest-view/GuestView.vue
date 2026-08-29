@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 import Card from '@/components/ui/layout/Card.vue';
+import { GuestRegistrationForm } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 
 import type { Locale } from '../../locales';
@@ -19,7 +19,6 @@ import GuestIdentityIndicator from './GuestIdentityIndicator.vue';
 import GuestLanguageHero from './GuestLanguageHero.vue';
 import GuestNotOpenState from './GuestNotOpenState.vue';
 import GuestRegistrationClosedState from './GuestRegistrationClosedState.vue';
-import GuestRegistrationForm from './GuestRegistrationForm.vue';
 import GuestServiceState from './GuestServiceState.vue';
 import GuestVisitStatus from './GuestVisitStatus.vue';
 
@@ -52,7 +51,6 @@ const hasLoadedRegistration = fromMobx(() => session.currentState !== null);
 /** Ticks every second so the registration form's countdown stays live. */
 const now = ref(Date.now());
 
-const router = useRouter();
 const phase = fromMobx(() =>
 	hasLoadedRegistration.value
 		? currentSessionPhase(session.marketEvent, new Date(now.value))
@@ -81,10 +79,6 @@ const successCopy = fromMobx(() =>
 		? { title: t.value.earlySuccessTitle, description: t.value.earlySuccessDescription }
 		: { title: t.value.successTitle, description: t.value.successDescription },
 );
-
-function goToSignup() {
-	void router.push({ name: 'signup' });
-}
 
 function handleSubmitted(result: RegistrationSubmitResult) {
 	if (result.kind !== 'registered') {
@@ -131,7 +125,7 @@ const isSessionActive = fromMobx(() => session.isActive);
 		<template v-else>
 			<Card aria-live="polite">
 				<template v-if="!isSessionActive">
-					<GuestNotOpenState :t="t" :allow-preregister="canPreregister" @preregister="goToSignup" />
+					<GuestNotOpenState :t="t" :allow-preregister="canPreregister" />
 				</template>
 				<template v-else>
 					<GuestVisitStatus

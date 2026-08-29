@@ -36,6 +36,17 @@ export class RegistrationStore {
 		return makeReactive(this, { guestStore: false, storage: false });
 	}
 
+	/** Applies an edit from the form. An action, so the write is batched and MobX does not warn
+	 *  about a mutation reaching an observed observable from outside one. */
+	updateGuest(patch: Partial<GuestFormState>): void {
+		Object.assign(this.guest, patch);
+	}
+
+	/** The answer to one of the session's configured registration questions. */
+	setAnswer(questionId: string, value: string | number): void {
+		this.registrationAnswers[questionId] = value;
+	}
+
 	/** `context` decides which endpoint this submits to — see `GuestRegistrationForm`'s `context`
 	 *  prop for what each one means. */
 	async submit(
