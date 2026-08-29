@@ -2,21 +2,25 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
+import { useTranslation } from '@/stores/hooks/use-translation.ts';
+
 import { createQrCodeSvg } from '../services/qrCode';
 
-const props = defineProps<{
-	backLabel: string;
-	title: string;
-	description: string;
-	imageAlt: string;
-	printLabel: string;
-}>();
+/**
+ * The printable poster that points guests at the app. This is a route component, so it reads its
+ * own text and does its own navigating rather than taking either as props — the same shape as the
+ * legal pages next door.
+ */
 
-defineEmits<{ back: [] }>();
-
+const t = useTranslation();
 const router = useRouter();
-const homeUrl = computed(() => window.location.origin + router.resolve({ name: 'guest' }).href);
-const qrSvg = computed(() => createQrCodeSvg(homeUrl.value));
+const homeUrl = fromMobx(() => window.location.origin + router.resolve({ name: 'guest' }).href);
+const qrSvg = fromMobx(() => createQrCodeSvg(homeUrl.value));
+
+function showGuest() {
+	void router.push({ name: 'guest' });
+}
 
 function print() {
 	window.print();
@@ -26,7 +30,7 @@ function print() {
 <template>
 	<section class="qr-page">
 		<div class="qr-page-controls">
-			<button type="button" class="qr-back" @click="$emit('back')">
+			<button type="button" class="qr-back" @click="showGuest">
 				<svg
 					viewBox="0 0 24 24"
 					fill="none"
@@ -36,7 +40,7 @@ function print() {
 				>
 					<path d="M15 18l-6-6 6-6" />
 				</svg>
-				{{ backLabel }}
+				{{ t.backToGuest }}
 			</button>
 			<button type="button" class="qr-print" @click="print">
 				<svg
@@ -51,13 +55,13 @@ function print() {
 					/>
 					<rect x="6" y="14" width="12" height="7" />
 				</svg>
-				{{ props.printLabel }}
+				{{ t.qrCodePrint }}
 			</button>
 		</div>
-		<h1>{{ props.title }}</h1>
-		<p class="qr-description">{{ props.description }}</p>
+		<h1>{{ t.qrCodeTitle }}</h1>
+		<p class="qr-description">{{ t.qrCodeDescription }}</p>
 		<!-- eslint-disable-next-line vue/no-v-html -->
-		<div class="qr-code" role="img" :aria-label="props.imageAlt" v-html="qrSvg"></div>
+		<div class="qr-code" role="img" :aria-label="t.qrCodeImageAlt" v-html="qrSvg"></div>
 		<p class="qr-url">{{ homeUrl }}</p>
 	</section>
 </template>

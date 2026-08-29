@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
 import { translations, type Locale } from '../../locales';
@@ -15,12 +16,14 @@ const smsConsent = ref(false);
 onMounted(() => {
 	void guest.loadNotificationSettings();
 });
+const smsConfigured = fromMobx(() => guest.smsConfigured);
+const smsState = fromMobx(() => guest.smsState);
 </script>
 
 <template>
 	<div class="notification-consent">
-		<div v-if="guest.smsConfigured" class="notification-option">
-			<p v-if="guest.smsState === 'enabled'" class="notification-enabled">{{ t.smsEnabled }}</p>
+		<div v-if="smsConfigured" class="notification-option">
+			<p v-if="smsState === 'enabled'" class="notification-enabled">{{ t.smsEnabled }}</p>
 			<template v-else>
 				<label class="sms-consent">
 					<input v-model="smsConsent" type="checkbox" />
@@ -34,12 +37,12 @@ onMounted(() => {
 				<AppButton
 					type="button"
 					variant="secondary"
-					:disabled="!smsConsent || guest.smsState === 'enabling'"
+					:disabled="!smsConsent || smsState === 'enabling'"
 					@click="guest.enableSmsNotifications(smsConsent)"
 				>
 					{{ t.smsEnable }}
 				</AppButton>
-				<p v-if="guest.smsState === 'error'" class="submission-error" role="alert">
+				<p v-if="smsState === 'error'" class="submission-error" role="alert">
 					{{ t.smsError }}
 				</p>
 			</template>

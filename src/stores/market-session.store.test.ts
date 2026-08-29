@@ -1,5 +1,5 @@
+import { autorun } from 'mobx';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { computed } from 'vue';
 
 import { SessionStatusEnum } from '@/services/sessionStateMachine.ts';
 
@@ -42,23 +42,31 @@ describe('MarketSessionStore', () => {
 	});
 
 	it('derives a reactive market event with Date timing values', () => {
+		// Arrange — `autorun` records the derived status on every recomputation, which is what
+		// proves the getter is observed rather than merely correct when read.
 		const store = new MarketSessionStore();
-		const status = computed(() => store.marketEvent?.status);
+		const seen: (string | undefined)[] = [];
+		const stop = autorun(() => seen.push(store.marketEvent?.status));
 
+		// Act
 		store.applyServerState(overview(scheduledEvent));
 
+		// Assert
 		expect(store.marketEvent?.registrationOpensAt).toEqual(
 			new Date(scheduledEvent.registrationOpensAt),
 		);
 		expect(store.marketEvent?.registrationClosesAt).toEqual(
 			new Date(scheduledEvent.registrationClosesAt),
 		);
-		expect(status.value).toBe('scheduled');
 
+		// Act
 		store.applyServerState(
 			overview({ ...scheduledEvent, status: SessionStatusEnum.REGISTRATION_OPEN }),
 		);
-		expect(status.value).toBe('registration_open');
+		stop();
+
+		// Assert
+		expect(seen).toEqual([undefined, 'scheduled', 'registration_open']);
 	});
 
 	it('sends typed commands and applies the overview returned by the server', async () => {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, toRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { languages } from '@/locales.ts';
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import type { Language } from '@/stores/translation.store.ts';
 import { useStore } from '@/stores/use-store.ts';
 
@@ -10,13 +10,13 @@ interface Props {}
 
 const props = defineProps<Props>();
 const { guest, translations } = useStore();
-const t = toRef(translations, 'translation');
-const locale = toRef(translations, 'locale');
-const isReturningVisitor = toRef(guest, 'isReturningVisitor');
+const t = fromMobx(() => translations.translation);
+const locale = fromMobx(() => translations.locale);
+const isReturningVisitor = fromMobx(() => guest.isReturningVisitor);
 
 const router = useRouter();
 const route = useRoute();
-const isAdmin = computed(() => route.name === 'admin');
+const isAdmin = fromMobx(() => route.name === 'admin');
 
 function setLocale(payload: Event) {
 	const target = payload.target as HTMLSelectElement;

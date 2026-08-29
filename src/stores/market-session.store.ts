@@ -1,4 +1,4 @@
-import { markRaw } from 'vue';
+import { runInAction } from 'mobx';
 
 import { makeReactive } from '../services/make-reactive.ts';
 import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
@@ -128,7 +128,13 @@ export class MarketSessionStore {
 		this.pollIntervalMs = options.pollIntervalMs ?? defaultPollIntervalMs;
 		this.requestHeaders = options.requestHeaders ?? (() => ({}));
 
-		return makeReactive(this);
+		return makeReactive(this, {
+			pollIntervalMs: false,
+			requestHeaders: false,
+			pagePoller: false,
+			statusRequest: false,
+			requestRevision: false,
+		});
 	}
 
 	[Symbol.dispose](): void {
@@ -137,14 +143,11 @@ export class MarketSessionStore {
 
 	startPolling(): void {
 		if (!this.pagePoller) {
-			this.pagePoller = markRaw(
-				new PageVisibilityPoller(
-					() => void this.poll(),
-					this.pollIntervalMs,
-					(isPolling) => {
-						this._isPolling = isPolling;
-					},
-				),
+			this.pagePoller = new PageVisibilityPoller(
+				() => void this.poll(),
+				this.pollIntervalMs,
+				// A callback from outside the store, so the write needs to be an action of its own.
+				(isPolling) => runInAction(() => (this._isPolling = isPolling)),
 			);
 		}
 
@@ -212,18 +215,18 @@ export class MarketSessionStore {
 			const overview = (await response.json()) as SessionOverview;
 
 			if (revision === this.requestRevision) {
-				this._currentState = overview;
+				runInAction(() => (this._currentState = overview));
 			}
 
 			return true;
 		} catch (cause) {
 			if (revision === this.requestRevision) {
-				this._error = errorFrom(cause, 'Failed to update the market session');
+				runInAction(() => (this._error = errorFrom(cause, 'Failed to update the market session')));
 			}
 
 			return false;
 		} finally {
-			this._pendingCommands -= 1;
+			runInAction(() => (this._pendingCommands -= 1));
 		}
 	}
 
@@ -257,17 +260,17 @@ export class MarketSessionStore {
 			const overview = (await response.json()) as SessionOverview;
 
 			if (revision === this.requestRevision) {
-				this._currentState = overview;
+				runInAction(() => (this._currentState = overview));
 			}
 		} catch (cause) {
 			const error = errorFrom(cause, 'Failed to fetch market status');
 
 			if (revision === this.requestRevision) {
-				this._error = error;
+				runInAction(() => (this._error = error));
 			}
 			throw error;
 		} finally {
-			this._isLoading = false;
+			runInAction(() => (this._isLoading = false));
 		}
 	}
 }

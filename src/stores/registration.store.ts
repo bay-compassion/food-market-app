@@ -33,7 +33,7 @@ export class RegistrationStore {
 		this.storage = options.storage === undefined ? new StorageService() : options.storage;
 		this.guest = this.prefillGuest();
 
-		return makeReactive(this);
+		return makeReactive(this, { guestStore: false, storage: false });
 	}
 
 	/** `context` decides which endpoint this submits to — see `GuestRegistrationForm`'s `context`

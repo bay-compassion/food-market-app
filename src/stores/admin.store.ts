@@ -1,3 +1,5 @@
+import { runInAction } from 'mobx';
+
 import type { Locale } from '../locales.ts';
 import {
 	AdminApi,
@@ -81,7 +83,7 @@ export class AdminStore {
 		this.api = options.api ?? new AdminApi();
 		this.readPermissions = options.readPermissions ?? (async () => []);
 
-		return makeReactive(this);
+		return makeReactive(this, { api: false, readPermissions: false, session: false });
 	}
 
 	can(permission: Permission): boolean {
@@ -99,9 +101,11 @@ export class AdminStore {
 	 */
 	async load(): Promise<void> {
 		try {
-			this._permissions = await this.readPermissions();
+			const permissions = await this.readPermissions();
+
+			runInAction(() => (this._permissions = permissions));
 		} catch {
-			this._permissions = [];
+			runInAction(() => (this._permissions = []));
 		}
 
 		try {
@@ -111,22 +115,28 @@ export class AdminStore {
 				await this.refreshAll();
 			}
 		} catch {
-			this._feedback = { kind: 'error' };
+			runInAction(() => (this._feedback = { kind: 'error' }));
 		}
 	}
 
 	async refreshGuests(search = ''): Promise<void> {
-		this._guests = await this.api.listAllGuests(search);
+		const guests = await this.api.listAllGuests(search);
+
+		runInAction(() => (this._guests = guests));
 	}
 
 	async refreshSessionGuests(): Promise<void> {
 		const eventId = this.session.currentState?.event?.id ?? null;
 
-		this._sessionGuests = eventId ? await this.api.listSessionGuests(eventId) : [];
+		const guests = eventId ? await this.api.listSessionGuests(eventId) : [];
+
+		runInAction(() => (this._sessionGuests = guests));
 	}
 
 	async refreshHistory(): Promise<void> {
-		this._history = await this.api.listHistory();
+		const history = await this.api.listHistory();
+
+		runInAction(() => (this._history = history));
 	}
 
 	/** Reloads a guest list without letting a failure surface as an unhandled rejection. */
@@ -140,7 +150,7 @@ export class AdminStore {
 				throw new Error('save');
 			}
 
-			this._feedback = { kind: 'saved' };
+			runInAction(() => (this._feedback = { kind: 'saved' }));
 
 			return true;
 		}, false);
@@ -153,8 +163,11 @@ export class AdminStore {
 			}
 
 			await Promise.all([this.refreshGuests(), this.refreshSessionGuests()]);
-			this._feedback =
-				action === 'run_lottery' ? { kind: 'draw-complete' } : { kind: 'session-updated' };
+			runInAction(
+				() =>
+					(this._feedback =
+						action === 'run_lottery' ? { kind: 'draw-complete' } : { kind: 'session-updated' }),
+			);
 		}, undefined);
 	}
 
@@ -164,7 +177,7 @@ export class AdminStore {
 				throw new Error('postpone');
 			}
 
-			this._feedback = { kind: 'session-updated' };
+			runInAction(() => (this._feedback = { kind: 'session-updated' }));
 
 			return true;
 		}, false);
@@ -181,7 +194,7 @@ export class AdminStore {
 				throw new Error('override');
 			}
 
-			this._feedback = { kind: 'saved' };
+			runInAction(() => (this._feedback = { kind: 'saved' }));
 
 			return true;
 		}, false);
@@ -195,14 +208,16 @@ export class AdminStore {
 	async runGuestCommand(guest: QueueGuest, command: VisitCommand): Promise<void> {
 		const previous = guest.status;
 
-		guest.status = visitCommandTarget(command);
+		runInAction(() => (guest.status = visitCommandTarget(command)));
 
 		try {
 			await this.api.runGuestCommand(guest.id, command);
 			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
 		} catch {
-			guest.status = previous;
-			this._feedback = { kind: 'error' };
+			runInAction(() => {
+				guest.status = previous;
+				this._feedback = { kind: 'error' };
+			});
 		}
 	}
 
@@ -227,7 +242,7 @@ export class AdminStore {
 			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
 
 			if (!called.length) {
-				this._feedback = { kind: 'no-waiting-guests' };
+				runInAction(() => (this._feedback = { kind: 'no-waiting-guests' }));
 			}
 		}, undefined);
 	}
@@ -236,9 +251,12 @@ export class AdminStore {
 		return this.run(async () => {
 			const recipients = await this.api.sendBroadcast(message);
 
-			this._feedback = recipients
-				? { kind: 'broadcast-queued', recipients }
-				: { kind: 'broadcast-no-recipients' };
+			runInAction(
+				() =>
+					(this._feedback = recipients
+						? { kind: 'broadcast-queued', recipients }
+						: { kind: 'broadcast-no-recipients' }),
+			);
 
 			return recipients > 0;
 		}, false);
@@ -253,7 +271,7 @@ export class AdminStore {
 		await this.run(async () => {
 			this.session.applyServerState(await this.api.loadDemoScenario(...parameters));
 			await this.refreshAll();
-			this._feedback = { kind: 'demo-loaded' };
+			runInAction(() => (this._feedback = { kind: 'demo-loaded' }));
 		}, undefined);
 	}
 
@@ -266,17 +284,25 @@ export class AdminStore {
 	 * throws. `onFailure` is what the caller gets back in that case.
 	 */
 	private async run<T>(action: () => Promise<T>, onFailure: T): Promise<T> {
-		this._isBusy = true;
-		this._feedback = null;
+		runInAction(() => {
+			this._isBusy = true;
+			this._feedback = null;
+		});
 
 		try {
 			return await action();
 		} catch {
-			this._feedback = { kind: 'error' };
+			runInAction(() => {
+				this._feedback = { kind: 'error' };
+			});
 
 			return onFailure;
 		} finally {
-			this._isBusy = false;
+			// `finally` resumes on a later tick than the call that entered `run`, so this write is
+			// outside that action and needs one of its own.
+			runInAction(() => {
+				this._isBusy = false;
+			});
 		}
 	}
 }

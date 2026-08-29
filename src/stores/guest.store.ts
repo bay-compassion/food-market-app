@@ -104,7 +104,12 @@ export class GuestStore {
 		this.submitRegistration = options.register ?? submitGuestRegistration;
 		this.submitSignup = options.signUp ?? submitGuestSignup;
 
-		return makeReactive(this);
+		return makeReactive(this, {
+			request: false,
+			storage: false,
+			submitRegistration: false,
+			submitSignup: false,
+		});
 	}
 
 	async initialize(): Promise<void> {

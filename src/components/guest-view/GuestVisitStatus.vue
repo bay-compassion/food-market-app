@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { fromMobx } from '@/stores/hooks/from-mobx.ts';
+
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import { useTranslation } from '../../stores/hooks/use-translation';
 import { useRootStore } from '../../stores/root.store';
@@ -17,17 +19,18 @@ const t = useTranslation();
 const rootStore = useRootStore();
 const visit = rootStore.visit;
 
-const visitStatusLabel = computed(() =>
+const visitStatusLabel = fromMobx(() =>
 	visit.activeVisit
 		? guestVisitStatusLabel(rootStore.translations.locale, visit.activeVisit.status)
 		: '',
 );
-const submissionError = computed(() => (visit.cancelError ? t.value.visitError : ''));
+const submissionError = fromMobx(() => (visit.cancelError ? t.value.visitError : ''));
+const isCalled = fromMobx(() => visit.isCalled);
 </script>
 
 <template>
 	<div class="success-state">
-		<template v-if="visit.isCalled">
+		<template v-if="isCalled">
 			<div class="checkmark called-mark" aria-hidden="true">→</div>
 			<h2>{{ t.calledTitle }}</h2>
 			<p>{{ t.calledDescription }}</p>
