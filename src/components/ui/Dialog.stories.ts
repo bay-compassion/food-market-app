@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect } from 'storybook/test';
 import { ref } from 'vue';
 
-import AppButton from '../AppButton.vue';
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import Dialog from './Dialog.vue';
 
 type DialogArgs = {
@@ -25,7 +26,7 @@ const meta: Meta<DialogArgs> = {
 			return { args, open: ref(false) };
 		},
 		template: `
-			<AppButton type="button" @click="open = true">Open dialog</AppButton>
+			<AppButton type="button" @click="open = true" label="Open dialog" />
 			<Dialog
 				:open="open"
 				:title="args.title"
@@ -33,7 +34,7 @@ const meta: Meta<DialogArgs> = {
 				@close="open = false"
 			>
 				<p>Dialog content can contain forms, messages, or other focused tasks.</p>
-				<template #actions><AppButton type="button">Continue</AppButton></template>
+				<template #actions><AppButton type="button" label="Continue" /></template>
 			</Dialog>
 		`,
 	}),

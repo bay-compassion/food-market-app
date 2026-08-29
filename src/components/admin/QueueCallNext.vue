@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
-import AppButton from '../AppButton.vue';
 
 const props = defineProps<{ locale: Locale; waitingCount: number; busy?: boolean }>();
 
@@ -19,7 +20,7 @@ const t = computed(() => adminTranslations.en);
 			<span>{{ t.callNextCount }}</span>
 			<input v-model.number="count" type="number" min="1" max="50" step="1" required />
 		</label>
-		<AppButton type="submit" :disabled="busy || waitingCount === 0">{{ t.callNext }}</AppButton>
+		<AppButton type="submit" :disabled="busy || waitingCount === 0" :label="t.callNext" />
 	</form>
 </template>
 

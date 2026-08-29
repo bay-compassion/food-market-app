@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
 import { csvFilename, toCsv } from '../../services/reportCsv';
@@ -12,7 +14,6 @@ import {
 	type ReportId,
 	type ReportRow,
 } from '../../services/reports';
-import AppButton from '../AppButton.vue';
 import ReportFilters from './ReportFilters.vue';
 import ReportTable from './ReportTable.vue';
 
@@ -174,9 +175,12 @@ onMounted(loadReport);
 		<p v-else-if="!isBusy && !feedback" class="empty-state">{{ t.reportEmpty }}</p>
 
 		<div class="report-actions">
-			<AppButton type="button" :disabled="isBusy || !rows.length" @click="downloadReportCsv">
-				{{ t.reportDownloadCsv }}
-			</AppButton>
+			<AppButton
+				type="button"
+				:disabled="isBusy || !rows.length"
+				@click="downloadReportCsv"
+				:label="t.reportDownloadCsv"
+			/>
 		</div>
 	</section>
 
@@ -187,9 +191,12 @@ onMounted(loadReport);
 		<p>{{ t.reportExportVisitsHelp }}</p>
 		<p class="privacy-note">{{ t.reportPrivacyNote }}</p>
 		<div class="report-actions">
-			<AppButton type="button" :disabled="isBusy" @click="downloadVisitExport">
-				{{ t.reportDownloadCsv }}
-			</AppButton>
+			<AppButton
+				type="button"
+				:disabled="isBusy"
+				@click="downloadVisitExport"
+				:label="t.reportDownloadCsv"
+			/>
 		</div>
 	</section>
 </template>

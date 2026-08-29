@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { CurrentSessionState, SessionCommand } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
-import AppButton from '../AppButton.vue';
 import AddGuestSection from './AddGuestSection.vue';
 import SessionBroadcastForm from './SessionBroadcastForm.vue';
 import SessionGuestList from './SessionGuestList.vue';
@@ -96,15 +97,21 @@ function formatEventDate(value: string) {
 						step="1"
 						required
 				/></label>
-				<AppButton type="submit" variant="secondary" :disabled="busy">
-					{{ t.postponeRegistration }}
-				</AppButton>
+				<AppButton
+					type="submit"
+					variant="secondary"
+					:disabled="busy"
+					:label="t.postponeRegistration"
+				/>
 			</form>
 		</div>
 		<div class="standalone-action">
-			<AppButton type="button" :disabled="busy" @click="emit('run', 'open_registration')">
-				{{ t.openRegistrationNow }}
-			</AppButton>
+			<AppButton
+				type="button"
+				:disabled="busy"
+				@click="emit('run', 'open_registration')"
+				:label="t.openRegistrationNow"
+			/>
 		</div>
 	</section>
 
@@ -129,24 +136,28 @@ function formatEventDate(value: string) {
 					<option value="30"></option>
 					<option value="60"></option>
 				</datalist>
-				<AppButton type="submit" variant="secondary" :disabled="busy">
-					{{ t.extendRegistration }}
-				</AppButton>
+				<AppButton
+					type="submit"
+					variant="secondary"
+					:disabled="busy"
+					:label="t.extendRegistration"
+				/>
 			</form>
 			<form @submit.prevent="emit('saveCapacityOverride')">
 				<label
 					><span>{{ t.capacity }}</span
 					><input v-model.number="settings.capacity" type="number" min="1" max="10000" required
 				/></label>
-				<AppButton type="submit" variant="secondary" :disabled="busy">
-					{{ t.updateCapacity }}
-				</AppButton>
+				<AppButton type="submit" variant="secondary" :disabled="busy" :label="t.updateCapacity" />
 			</form>
 		</div>
 		<div class="standalone-action">
-			<AppButton type="button" :disabled="busy" @click="emit('run', 'close_registration')">
-				{{ t.closeRegistration }}
-			</AppButton>
+			<AppButton
+				type="button"
+				:disabled="busy"
+				@click="emit('run', 'close_registration')"
+				:label="t.closeRegistration"
+			/>
 		</div>
 	</section>
 
@@ -161,11 +172,14 @@ function formatEventDate(value: string) {
 				variant="secondary"
 				:disabled="busy"
 				@click="emit('run', 'reopen_registration')"
-				>{{ t.reopenRegistration }}</AppButton
-			>
-			<AppButton type="button" :disabled="busy" @click="emit('run', 'run_lottery')">{{
-				t.runLottery
-			}}</AppButton>
+				:label="t.reopenRegistration"
+			/>
+			<AppButton
+				type="button"
+				:disabled="busy"
+				@click="emit('run', 'run_lottery')"
+				:label="t.runLottery"
+			/>
 		</div>
 	</section>
 
@@ -175,7 +189,7 @@ function formatEventDate(value: string) {
 			<p>{{ t.guestList }}</p>
 		</div>
 		<div class="action-buttons">
-			<AppButton type="button" @click="emit('navigateQueue')">{{ t.goToQueue }}</AppButton>
+			<AppButton type="button" @click="emit('navigateQueue')" :label="t.goToQueue" />
 		</div>
 	</section>
 
@@ -207,9 +221,8 @@ function formatEventDate(value: string) {
 			variant="secondary"
 			:disabled="busy"
 			@click="emit('run', 'reset_session')"
-		>
-			{{ t.resetSession }}
-		</AppButton>
+			:label="t.resetSession"
+		/>
 	</section>
 </template>
 

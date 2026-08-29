@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import { adminTranslations } from '../../adminLocales';
 import { translations, type Locale } from '../../locales';
 import { ageRanges } from '../../services/ageRanges';
@@ -10,7 +12,6 @@ import {
 	lotteryWeightTiers,
 	type LotteryWeightTier,
 } from '../../services/lotteryWeight';
-import AppButton from '../AppButton.vue';
 import FormField from '../FormField.vue';
 import PhoneField from '../PhoneField.vue';
 import type { ManualGuest } from './types';
@@ -146,7 +147,7 @@ function submit() {
 		</label>
 		<div class="manual-actions">
 			<button type="button" @click="emit('cancel')">{{ t.cancel }}</button
-			><AppButton type="submit" :disabled="busy">{{ t.saveGuest }}</AppButton>
+			><AppButton type="submit" :disabled="busy" :label="t.saveGuest" />
 		</div>
 	</form>
 </template>

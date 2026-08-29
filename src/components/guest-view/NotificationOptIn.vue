@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 
 import { translations, type Locale } from '../../locales';
 import type { GuestStore } from '../../stores/guest.store';
-import AppButton from '../AppButton.vue';
 
 const props = defineProps<{ guest: GuestStore }>();
 const guest = props.guest;
@@ -39,9 +39,8 @@ const smsState = fromMobx(() => guest.smsState);
 					variant="secondary"
 					:disabled="!smsConsent || smsState === 'enabling'"
 					@click="guest.enableSmsNotifications(smsConsent)"
-				>
-					{{ t.smsEnable }}
-				</AppButton>
+					:label="t.smsEnable"
+				/>
 				<p v-if="smsState === 'error'" class="submission-error" role="alert">
 					{{ t.smsError }}
 				</p>

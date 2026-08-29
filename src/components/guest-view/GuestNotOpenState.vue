@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
-import AppButton from '@/components/AppButton.vue';
+import { AppButton } from '@/react-bridge/islands.ts';
 
 import type { Translation } from '../../locales';
 import GuestStateMessage from './GuestStateMessage.vue';
@@ -23,7 +23,11 @@ function goToSignup() {
 		:heading="t.guestView.notOpenState.heading"
 		:description="t.guestView.notOpenState.subheading"
 	>
-		<AppButton v-if="allowPreregister" @click="goToSignup"> Preregister </AppButton>
+		<AppButton
+			v-if="allowPreregister"
+			@click="goToSignup"
+			:label="t.guestView.notOpenState.preregisterAction"
+		/>
 		<div class="inactive-details">
 			<p>{{ t.guestView.notOpenState.lotteryDescription }}</p>
 			<p>{{ t.guestView.notOpenState.selectionDescription }}</p>

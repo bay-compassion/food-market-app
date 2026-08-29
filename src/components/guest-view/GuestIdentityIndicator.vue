@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
 import type { GuestIdentity } from '@/stores/guest.store.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 import { useRootStore } from '@/stores/root.store.ts';
 
-import AppButton from '../AppButton.vue';
 import Dialog from '../ui/Dialog.vue';
 import NotificationOptIn from './NotificationOptIn.vue';
 
@@ -73,9 +73,8 @@ const smsConsented = fromMobx(() => guest.smsConsented);
 				type="button"
 				variant="secondary"
 				@click="notificationsDialogOpen = true"
-			>
-				{{ t.guestView.identityIndicator.notificationsAction }}
-			</AppButton>
+				:label="t.guestView.identityIndicator.notificationsAction"
+			/>
 		</div>
 	</aside>
 

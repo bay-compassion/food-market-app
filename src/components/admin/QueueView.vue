@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
-import AppButton from '../AppButton.vue';
 import AddGuestSection from './AddGuestSection.vue';
 import QueueCallNext from './QueueCallNext.vue';
 import QueueGuestRow from './QueueGuestRow.vue';
@@ -74,9 +75,12 @@ onBeforeUnmount(() => clearInterval(waitingTimeTimer));
 	<section v-if="!serviceStarted" class="admin-section queue-empty">
 		<h2>{{ t.queue }}</h2>
 		<p>{{ t.queueNotStarted }}</p>
-		<AppButton type="button" variant="secondary" @click="emit('navigateCurrentSession')">
-			{{ t.goToCurrentSession }}
-		</AppButton>
+		<AppButton
+			type="button"
+			variant="secondary"
+			@click="emit('navigateCurrentSession')"
+			:label="t.goToCurrentSession"
+		/>
 	</section>
 
 	<template v-else>
@@ -158,9 +162,12 @@ onBeforeUnmount(() => clearInterval(waitingTimeTimer));
 		</section>
 
 		<div class="standalone-action">
-			<AppButton type="button" :disabled="busy" @click="emit('closeSession')">
-				{{ t.closeSession }}
-			</AppButton>
+			<AppButton
+				type="button"
+				:disabled="busy"
+				@click="emit('closeSession')"
+				:label="t.closeSession"
+			/>
 		</div>
 	</template>
 </template>

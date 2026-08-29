@@ -1,11 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import EyebrowLabel from './EyebrowLabel.vue';
-
-type EyebrowLabelArgs = {
-	tone: 'on-brand' | 'brand';
-	label: string;
-};
+import { EyebrowLabel } from './EyebrowLabel';
 
 /**
  * The small rule-and-caption that sits above a heading.
@@ -14,7 +9,7 @@ type EyebrowLabelArgs = {
  * dark brand hero, and `brand` is dark, for the white admin page. Each story therefore renders on
  * the background its tone is meant for — `on-brand` shown on white would be invisible.
  */
-const meta: Meta<EyebrowLabelArgs> = {
+const meta = {
 	title: 'Primitives/EyebrowLabel',
 	component: EyebrowLabel,
 	argTypes: {
@@ -24,38 +19,30 @@ const meta: Meta<EyebrowLabelArgs> = {
 		tone: 'on-brand',
 		label: 'Compassion Food',
 	},
-};
+} satisfies Meta<typeof EyebrowLabel>;
 
 export default meta;
 
-type Story = StoryObj<EyebrowLabelArgs>;
+type Story = StoryObj<typeof meta>;
 
 /** On the brand-colored hero at the top of the guest screen. */
 export const OnBrand: Story = {
 	args: { tone: 'on-brand' },
-	render: (args) => ({
-		components: { EyebrowLabel },
-		setup: () => ({ args }),
-		template: `
-			<div class="hero">
-				<EyebrowLabel :tone="args.tone">{{ args.label }}</EyebrowLabel>
-				<h1>Welcome</h1>
-			</div>
-		`,
-	}),
+	render: (args) => (
+		<div className="hero">
+			<EyebrowLabel {...args} />
+			<h1>Welcome</h1>
+		</div>
+	),
 };
 
 /** On the white background of the admin screens. */
 export const Brand: Story = {
 	args: { tone: 'brand', label: 'Team access' },
-	render: (args) => ({
-		components: { EyebrowLabel },
-		setup: () => ({ args }),
-		template: `
-			<div>
-				<EyebrowLabel :tone="args.tone">{{ args.label }}</EyebrowLabel>
-				<h1 style="color: var(--color-brand);">Market admin</h1>
-			</div>
-		`,
-	}),
+	render: (args) => (
+		<div>
+			<EyebrowLabel {...args} />
+			<h1 style={{ color: 'var(--color-brand)' }}>Market admin</h1>
+		</div>
+	),
 };
