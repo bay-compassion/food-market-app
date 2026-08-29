@@ -8,12 +8,16 @@ import { RegistrationStore } from './registration.store.ts';
 import { TranslationStore } from './translation.store.ts';
 import { VisitStore } from './visit.store.ts';
 
+export type RootStoreOptions = {
+	storage?: StorageService;
+};
+
 declare global {
 	var rootStore: RootStore;
 }
 
 export class RootStore {
-	readonly storage = new StorageService();
+	readonly storage: StorageService;
 
 	readonly admin: AdminStore;
 	readonly guest: GuestStore;
@@ -24,7 +28,8 @@ export class RootStore {
 	private getAccessToken: (() => Promise<string>) | null = null;
 	private readPermissions: (() => Promise<Permission[]>) | null = null;
 
-	constructor() {
+	constructor(options: RootStoreOptions = {}) {
+		this.storage = options.storage ?? new StorageService();
 		this.guest = new GuestStore({ storage: this.storage });
 		this.registration = new RegistrationStore(this.guest, { storage: this.storage });
 		this.session = new MarketSessionStore({ requestHeaders: () => this.requestHeaders() });

@@ -19,6 +19,11 @@ export interface GuestViewTranslations {
 		notificationsAction: string;
 		notificationsDialogTitle: string;
 		notificationsEnabled: string;
+		notificationsError: string;
+		notificationsLoading: string;
+		preregisterAction: string;
+		unidentifiedHeading: string;
+		unidentifiedMessage: string;
 	};
 	scheduleInformation: {
 		heading: string;
@@ -152,6 +157,13 @@ export const translations = {
 				notificationsAction: 'Notify Me About Updates',
 				notificationsDialogTitle: 'Notification Updates',
 				notificationsEnabled: 'Notifications Enabled',
+				notificationsError:
+					'We could not retrieve your notification status. Please try again later.',
+				notificationsLoading: 'Checking notification status…',
+				preregisterAction: 'Preregister',
+				unidentifiedHeading: 'Not recognized on this device',
+				unidentifiedMessage:
+					'Preregister so this device can remember you for future visits. Note: this does not enter you into the lottery.',
 			},
 			scheduleInformation: {
 				heading: 'Registration opens every Saturday at 10:30 AM',
@@ -293,6 +305,13 @@ export const translations = {
 				notificationsAction: 'Notificarme sobre novedades',
 				notificationsDialogTitle: 'Actualizaciones por notificación',
 				notificationsEnabled: 'Notificaciones activadas',
+				notificationsError:
+					'No pudimos consultar el estado de sus notificaciones. Inténtelo de nuevo más tarde.',
+				notificationsLoading: 'Consultando el estado de las notificaciones…',
+				preregisterAction: 'Preinscribirse',
+				unidentifiedHeading: 'Dispositivo no reconocido',
+				unidentifiedMessage:
+					'Preinscríbase para que este dispositivo pueda recordarle en futuras visitas. Nota: esto no le inscribe en el sorteo.',
 			},
 			scheduleInformation: {
 				heading: 'El registro abre todos los sábados a las 10:30 a. m.',
@@ -436,6 +455,12 @@ export const translations = {
 				notificationsAction: 'مرا از به‌روزرسانی‌ها باخبر کنید',
 				notificationsDialogTitle: 'به‌روزرسانی‌های اعلان',
 				notificationsEnabled: 'اعلان‌ها فعال هستند',
+				notificationsError: 'وضعیت اعلان‌های شما دریافت نشد. لطفاً بعداً دوباره تلاش کنید.',
+				notificationsLoading: 'در حال بررسی وضعیت اعلان‌ها…',
+				preregisterAction: 'پیش‌ثبت‌نام',
+				unidentifiedHeading: 'در این دستگاه شناسایی نشده‌اید',
+				unidentifiedMessage:
+					'پیش‌ثبت‌نام کنید تا این دستگاه شما را برای مراجعات بعدی به خاطر بسپارد. توجه: این کار شما را وارد قرعه‌کشی نمی‌کند.',
 			},
 			scheduleInformation: {
 				heading: 'ثبت‌نام هر شنبه ساعت ۱۰:۳۰ صبح باز می‌شود',
@@ -577,6 +602,13 @@ export const translations = {
 				notificationsAction: 'Abisuhan Ako Tungkol sa mga Update',
 				notificationsDialogTitle: 'Mga Update sa Abiso',
 				notificationsEnabled: 'Naka-enable ang mga Abiso',
+				notificationsError:
+					'Hindi namin makuha ang status ng iyong mga abiso. Pakisubukang muli mamaya.',
+				notificationsLoading: 'Sinusuri ang status ng mga abiso…',
+				preregisterAction: 'Magparehistro nang maaga',
+				unidentifiedHeading: 'Hindi nakilala sa device na ito',
+				unidentifiedMessage:
+					'Magparehistro nang maaga para maalala ka ng device na ito sa mga susunod na pagbisita. Tandaan: hindi ka nito isinasali sa lottery.',
 			},
 			scheduleInformation: {
 				heading: 'Nagbubukas ang pagpaparehistro tuwing Sabado nang 10:30 AM',
@@ -722,6 +754,12 @@ export const translations = {
 				notificationsAction: 'Thông báo cho tôi về cập nhật',
 				notificationsDialogTitle: 'Cập nhật thông báo',
 				notificationsEnabled: 'Đã bật thông báo',
+				notificationsError: 'Không thể tải trạng thái thông báo của bạn. Vui lòng thử lại sau.',
+				notificationsLoading: 'Đang kiểm tra trạng thái thông báo…',
+				preregisterAction: 'Đăng ký trước',
+				unidentifiedHeading: 'Chưa được nhận dạng trên thiết bị này',
+				unidentifiedMessage:
+					'Đăng ký trước để thiết bị này có thể ghi nhớ bạn cho những lần ghé sau. Lưu ý: việc này không đưa bạn vào danh sách xổ số.',
 			},
 			scheduleInformation: {
 				heading: 'Đăng ký mở vào mỗi thứ Bảy lúc 10:30 sáng',
@@ -864,6 +902,12 @@ export const translations = {
 				notificationsAction: '有更新时通知我',
 				notificationsDialogTitle: '通知更新',
 				notificationsEnabled: '通知已启用',
+				notificationsError: '无法获取您的通知状态。请稍后重试。',
+				notificationsLoading: '正在检查通知状态…',
+				preregisterAction: '提前登记',
+				unidentifiedHeading: '此设备尚未识别您',
+				unidentifiedMessage:
+					'提前登记后，此设备便可在您今后到访时记住您。注意：这不会让您进入抽签。',
 			},
 			scheduleInformation: {
 				heading: '登记每周六上午 10:30 开放',
@@ -999,6 +1043,12 @@ export const translations = {
 				notificationsAction: 'أبلغني بالتحديثات',
 				notificationsDialogTitle: 'تحديثات الإشعارات',
 				notificationsEnabled: 'تم تفعيل الإشعارات',
+				notificationsError: 'تعذر استرداد حالة إشعاراتك. يرجى المحاولة مرة أخرى لاحقًا.',
+				notificationsLoading: 'جارٍ التحقق من حالة الإشعارات…',
+				preregisterAction: 'التسجيل المسبق',
+				unidentifiedHeading: 'لم يتم التعرّف عليك على هذا الجهاز',
+				unidentifiedMessage:
+					'سجّل مسبقًا لكي يتذكرك هذا الجهاز في زياراتك المستقبلية. ملاحظة: هذا لا يدخلك في القرعة.',
 			},
 			scheduleInformation: {
 				heading: 'يُفتح التسجيل كل يوم سبت الساعة 10:30 صباحًا',

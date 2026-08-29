@@ -24,30 +24,74 @@ export type GuestStoreOptions = {
 	) => Promise<GuestSignupResult>;
 };
 
-/** Owns the durable, device-local credential used for self-service guest registration. */
+/**
+ * The `GuestStore` class manages guest user data and interactions, such as registration, notifications, and device token storage.
+ * It provides methods for initializing, registering, signing up, managing notifications, and persisting data across user sessions.
+ *
+ * @remarks
+ * To reduce the friction that might come with passwords and PIN codes, guests are identified rather than authenticated.
+ * An *identified* guest is a user whose device has been assigned a *device token*. This can lead to the situation where
+ * the same person in the real world may be represented by multiple `guest` records in the database, but that is a compromise
+ * that we have accepted.
+ *
+ * Moreover, to prevent unauthorized leakage of user data, user information is never retrieved from the server.
+ * Instead, the guest's identity is stored locally in storage.
+ */
 export class GuestStore {
 	private _deviceToken: string | null;
 	private _identity: GuestIdentity | null;
+
 	private _isReturningVisitor: boolean;
 	private _notificationSettingsLoaded = false;
+	private _notificationSettingsPromise: Promise<void> | null = null;
+
 	private _pushConfigured = false;
 	private _pushPublicKey: string | null = null;
 	private _pushState: 'idle' | 'enabling' | 'enabled' | 'error' = 'idle';
+
 	private _smsConfigured = false;
 	private _smsState: 'idle' | 'enabling' | 'enabled' | 'error' = 'idle';
+
 	private readonly request: typeof fetch;
 	private readonly storage: Pick<StorageService, 'get' | 'set' | 'remove'> | null;
 	private readonly submitRegistration: NonNullable<GuestStoreOptions['register']>;
 	private readonly submitSignup: NonNullable<GuestStoreOptions['signUp']>;
 
+	/**
+	 * Returns whether the user has been *identified*.
+	 */
 	get isIdentified(): boolean {
 		return this._deviceToken !== null;
 	}
 
+	/**
+	 * Returns the guest's identity.
+	 *
+	 * @remarks
+	 * Note: after creation, the identity is not retrieved again from the server.
+	 * Instead, the guest's identity is stored locally in storage.
+	 */
 	get identity(): GuestIdentity | null {
 		return this._identity;
 	}
 
+	get displayedName() {
+		if (!this.isIdentified || !this.identity) {
+			return null;
+		}
+
+		const { firstName, lastName } = this.identity;
+		const lastInitial = lastName?.charAt(0);
+
+		return `${firstName} ${lastInitial}`;
+	}
+
+	/**
+	 * A returning visitor is a guest who launched the app before and has chosen a language.
+	 *
+	 * @remarks
+	 * This is not equivalent to an *identified* guest.
+	 */
 	get isReturningVisitor(): boolean {
 		return this._isReturningVisitor;
 	}
@@ -97,6 +141,8 @@ export class GuestStore {
 		return this._smsConfigured && this._deviceToken !== null;
 	}
 
+	forceDisableSms: boolean = false;
+
 	constructor(options: GuestStoreOptions = {}) {
 		this.storage = options.storage === undefined ? new StorageService() : options.storage;
 		this.request = options.request ?? ((input, init) => fetch(input, init));
@@ -107,6 +153,7 @@ export class GuestStore {
 		this.submitSignup = options.signUp ?? submitGuestSignup;
 
 		return makeReactive(this, {
+			_notificationSettingsPromise: false,
 			request: false,
 			storage: false,
 			submitRegistration: false,
@@ -120,7 +167,11 @@ export class GuestStore {
 			return;
 		}
 
-		await this.loadNotificationSettings();
+		try {
+			await this.loadNotificationSettings();
+		} catch {
+			// The identity indicator owns the user-facing error state for this optional request.
+		}
 	}
 
 	async register(input: GuestRegistrationInput): Promise<GuestRegistrationResult> {
@@ -178,11 +229,21 @@ export class GuestStore {
 		}
 	}
 
-	async loadNotificationSettings(): Promise<void> {
-		if (this._notificationSettingsLoaded) {
-			return;
+	loadNotificationSettings(): Promise<void> {
+		if (this._notificationSettingsPromise) {
+			return this._notificationSettingsPromise;
 		}
 
+		if (this._notificationSettingsLoaded || this.forceDisableSms) {
+			return Promise.resolve();
+		}
+
+		this._notificationSettingsPromise = this.retrieveNotificationSettings();
+
+		return this._notificationSettingsPromise;
+	}
+
+	private async retrieveNotificationSettings(): Promise<void> {
 		this._notificationSettingsLoaded = false;
 		this._pushConfigured = false;
 		this._pushPublicKey = null;
@@ -360,26 +421,22 @@ export class GuestStore {
 			return;
 		}
 
-		try {
-			const response = await this.request('/api/notification-status', {
-				headers: { Authorization: `Bearer ${this._deviceToken}` },
-			});
+		const response = await this.request('/api/notification-status', {
+			headers: { Authorization: `Bearer ${this._deviceToken}` },
+		});
 
-			if (!response.ok) {
-				return;
-			}
-
-			const status = (await response.json()) as {
-				pushSubscribed: boolean;
-				smsConsented: boolean;
-			};
-
-			// Push must still exist in this browser, so its local service-worker subscription remains
-			// authoritative. SMS consent is durable guest-level state.
-			runInAction(() => (this._smsState = status.smsConsented ? 'enabled' : 'idle'));
-		} catch {
-			// A status lookup failure leaves the guest able to opt in again.
+		if (!response.ok) {
+			throw new Error('notification-status');
 		}
+
+		const status = (await response.json()) as {
+			pushSubscribed: boolean;
+			smsConsented: boolean;
+		};
+
+		// Push must still exist in this browser, so its local service-worker subscription remains
+		// authoritative. SMS consent is durable guest-level state.
+		runInAction(() => (this._smsState = status.smsConsented ? 'enabled' : 'idle'));
 	}
 
 	private readIdentity(): GuestIdentity | null {

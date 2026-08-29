@@ -17,11 +17,13 @@ interface StorageKeyMap {
 }
 
 export class StorageService {
+	constructor(private readonly storage: Storage = localStorage) {}
+
 	get<K extends StorageKey>(key: K): StorageKeyMap[K] | null;
 	get(key: string): unknown;
 	// oxlint-disable-next-line typescript/no-redundant-type-constituents
 	get<K extends StorageKey>(key: K | string): StorageKeyMap[K] | unknown | null {
-		const item = localStorage.getItem(key);
+		const item = this.storage.getItem(key);
 
 		if (!item) {
 			return null;
@@ -37,14 +39,14 @@ export class StorageService {
 	}
 
 	set<K extends StorageKey>(key: K, value: StorageKeyMap[K]): void {
-		localStorage.setItem(key, JSON.stringify(value));
+		this.storage.setItem(key, JSON.stringify(value));
 	}
 
 	remove<K extends StorageKey>(key: K): void {
-		localStorage.removeItem(key);
+		this.storage.removeItem(key);
 	}
 
 	clear(): void {
-		localStorage.clear();
+		this.storage.clear();
 	}
 }

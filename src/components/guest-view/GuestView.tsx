@@ -108,7 +108,7 @@ export const GuestView = observer(function GuestView() {
 	return (
 		<section className="guest-layout">
 			{/* Card that indicates who the guest has been identified as */}
-			{guest.identity ? <GuestIdentityIndicator identity={guest.identity} /> : null}
+			<GuestIdentityIndicator />
 
 			{!guest.isReturningVisitor ? <GuestLanguageHero onSelectLanguage={selectLanguage} /> : null}
 
@@ -144,5 +144,13 @@ export const GuestView = observer(function GuestView() {
 				</Card>
 			)}
 		</section>
+	);
+});
+
+export const GuestStatusCard = observer(function GuestStatusCard() {
+	return (
+		<Card>
+			<div></div>
+		</Card>
 	);
 });

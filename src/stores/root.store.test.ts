@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { StorageKey, StorageService } from '../services/storage.service';
 import { RootStore } from './root.store';
 
 afterEach(() => {
@@ -8,6 +9,41 @@ afterEach(() => {
 });
 
 describe('RootStore', () => {
+	it('shares an injected storage service with guest and registration stores', () => {
+		// Arrange
+		const values = new Map<string, string>();
+		const memoryStorage: Storage = {
+			get length() {
+				return values.size;
+			},
+			clear: () => values.clear(),
+			getItem: (key) => values.get(key) ?? null,
+			key: (index) => Array.from(values.keys())[index] ?? null,
+			removeItem: (key) => values.delete(key),
+			setItem: (key, value) => values.set(key, value),
+		};
+		const storage = new StorageService(memoryStorage);
+
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'device-token');
+		storage.set(StorageKey.GUEST_IDENTITY, {
+			firstName: 'Ari',
+			lastName: 'Guest',
+			phone: '555-123-4567',
+		});
+
+		// Act
+		const store = new RootStore({ storage });
+
+		// Assert
+		expect(store.storage).toBe(storage);
+		expect(store.guest.displayedName).toBe('Ari G');
+		expect(store.registration.guest).toMatchObject({
+			firstName: 'Ari',
+			lastName: 'Guest',
+			phone: '555-123-4567',
+		});
+	});
+
 	it('shares authentication and application lifetime with the session store', async () => {
 		vi.useFakeTimers();
 		const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
