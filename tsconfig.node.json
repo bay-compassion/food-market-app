@@ -7,6 +7,7 @@
     "cypress.config.*",
     "playwright.config.*",
     "eslint.config.*",
+    "scripts/capture-twilio-opt-in.mts",
     "e2e/**/*.ts"
   ],
   "compilerOptions": {

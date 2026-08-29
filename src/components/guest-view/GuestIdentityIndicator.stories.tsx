@@ -150,7 +150,9 @@ export const NotIdentified: Story = {
 			canvas.getByRole('complementary', { name: copy.unidentifiedHeading }),
 		).toBeInTheDocument();
 		await expect(canvas.getByText(copy.unidentifiedMessage)).toBeInTheDocument();
-		await expect(canvas.getByRole('button', { name: copy.preregisterAction })).toBeInTheDocument();
+		await expect(
+			canvas.getByRole('button', { name: copy.saveInformationAction }),
+		).toBeInTheDocument();
 	},
 };
 

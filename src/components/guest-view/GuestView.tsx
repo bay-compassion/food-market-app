@@ -8,7 +8,6 @@ import {
 	guestFormContext,
 	resolveGuestCardState,
 } from '../../services/guestCardState';
-import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
@@ -94,15 +93,10 @@ export const GuestView = observer(function GuestView() {
 		isPreregistration: false,
 		hasActiveVisit: visit.hasActiveVisit,
 	});
-	/**
-	 * Once a market has run its course, there is nothing left to preregister for until an admin
-	 * schedules the next one — unlike the "hasn't opened yet" case, which still welcomes it.
-	 */
-	const canPreregister = session.currentStatus !== SessionStatusEnum.ENDED;
-	/** The success-state copy differs between joining today's queue and signing up ahead of time. */
+	/** The success-state copy differs between joining today's queue and saving information. */
 	const successCopy =
 		guestFormContext(phase) === 'early'
-			? { title: t.earlySuccessTitle, description: t.earlySuccessDescription }
+			? { title: t.signupView.successTitle, description: t.signupView.successDescription }
 			: { title: t.successTitle, description: t.successDescription };
 
 	return (
@@ -120,7 +114,7 @@ export const GuestView = observer(function GuestView() {
 				<Card aria-live="polite">
 					<CardContent>
 						{!session.isActive ? (
-							<GuestNotOpenState allowPreregister={canPreregister} />
+							<GuestNotOpenState />
 						) : cardState.kind === 'visit-status' ? (
 							<GuestVisitStatus
 								successTitle={successCopy.title}

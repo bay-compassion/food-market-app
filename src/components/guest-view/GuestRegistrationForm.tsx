@@ -100,10 +100,10 @@ export const GuestRegistrationForm = observer(function GuestRegistrationForm({
 	const copy =
 		context === 'early'
 			? {
-					formTitle: t.earlyFormTitle,
-					formDescription: t.earlyFormDescription,
-					submit: t.earlySubmit,
-					submitting: t.earlySubmitting,
+					formTitle: t.signupView.formTitle,
+					formDescription: t.signupView.formDescription,
+					submit: t.signupView.submit,
+					submitting: t.signupView.submitting,
 				}
 			: {
 					formTitle: t.formTitle,

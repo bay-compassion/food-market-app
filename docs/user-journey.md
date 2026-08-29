@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=b8d0d92bda68, src/components/routes/SignupView.tsx=46e4b4a201de, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=50e057e32fc4, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=b9a78935166d, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=df38c9795645, src/components/routes/SignupView.tsx=c194e00e6c59, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=50e057e32fc4, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=b9a78935166d, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
@@ -40,8 +40,8 @@ flowchart TD
     pick --> saved
 
     saved --> hasIdentity{Saved device token<br/>and local profile?}
-    hasIdentity -- no device token --> unidentified[Show preregistration message:<br/>does not enter the lottery,<br/>and "Preregister" button]
-    unidentified -. "Preregister" button .-> signupRoute
+    hasIdentity -- no device token --> unidentified[Offer to save information:<br/>does not enter the lottery,<br/>and "Save my information" button]
+    unidentified -. "Save my information" button .-> signupRoute
     unidentified --> activeSession
     hasIdentity -- token only --> activeSession
     hasIdentity -- yes --> identityShown[Show locally saved<br/>name and phone]
@@ -61,9 +61,6 @@ flowchart TD
     notificationError --> activeSession
 
     activeSession -- no --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
-    inactiveScreen --> hasRunAlready{Has this market's<br/>session already ended?}
-    hasRunAlready -- no, not open yet --> preregisterOffer[Show "Preregister" button]
-    hasRunAlready -- yes, already ended --> noCta([No CTA — nothing to do<br/>until the next one is scheduled])
     activeSession -- yes --> hasVisit{Saved visit token<br/>on this device?}
     hasVisit -- yes --> status[Status screen]
     hasVisit -- no --> canRegister{Registration open?}
@@ -75,14 +72,13 @@ flowchart TD
     phase -- registration closed --> closedScreen([Registration-closed screen])
     phase -- service underway --> inServiceScreen([In-service screen])
 
-    preregisterOffer -. "Preregister" button .-> signupRoute
     signupRoute([Guest visits /signup]) --> alreadyIdentified{Already has a<br/>device token?}
     alreadyIdentified -- yes --> redirectHome[Redirect to /]
     redirectHome --> saved
     alreadyIdentified -- no --> signupOnlyForm[Sign-up form:<br/>name and phone only —<br/>no session or household data]
     signupOnlyForm --> signupSubmit["POST /api/guest-signup<br/>(creates/updates the guest,<br/>no visit)"]
     signupSubmit --> saveSignupIdentity[Save entered name and phone,<br/>and any issued device token]
-    saveSignupIdentity --> signupSuccess([Show "You're signed up early!"<br/>on /signup])
+    saveSignupIdentity --> signupSuccess([Show "Your information is saved"<br/>on /signup])
 
     combinedForm --> questions[Answer this session's<br/>registration questions]
     lotteryOnlyForm --> questions
@@ -127,10 +123,9 @@ flowchart TD
   there's nothing left to ask, so the guest lands back on `GuestView`, which shows whatever its
   normal card resolution decides (queue form, visit status, or the session's current phase). A
   browser with no device token instead sees the identity-only form and, on success, an inline
-  "you're signed up early" message on `/signup` itself. `GuestNotOpenState`'s "Preregister" button
-  (shown on `/` while the market is inactive, unless that market's session has already ended, in
-  which case there is nothing left to preregister for until the next one is scheduled) is the
-  in-app link into this flow; a guest can also land on `/signup` directly, e.g. from a QR code.
+  "your information is saved" message on `/signup` itself. The unidentified
+  `GuestIdentityIndicator` provides the in-app link into this flow; a guest can also land on
+  `/signup` directly, e.g. from a QR code.
   `GuestRegistrationForm` (the composer) takes a
   `context` prop (`'queue' | 'early'`): `'early'` (only ever passed by `SignupView`) renders only the
   identity fields (`GuestSignupForm`, submitted through `GuestStore.signUp`, no visit created);
@@ -146,11 +141,11 @@ flowchart TD
   creates no visit.
 - **Inactive market states share one explanation card.** `MarketSessionStore.isActive` is the
   boundary: when it is false, `GuestView` renders `GuestNotOpenState` with the next registration
-  window, lottery rules, and notification details, plus an early-signup link — unless the session's
-  status is `ended`, in which case the card omits that button, since there is nothing scheduled yet
-  to preregister for. When `isActive` is true, the normal card resolver chooses among the
-  registration form, visit status, registration-closed message, and in-service message. The
-  separate schedule alert is no longer rendered above the card.
+  window, lottery rules, and notification details, separated by a divider. Saving information is
+  offered separately by `GuestIdentityIndicator` when the device has no saved identity. When
+  `isActive` is true, the normal card resolver chooses among the registration form, visit status,
+  registration-closed message, and in-service message. The separate schedule alert is no longer
+  rendered above the card.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — is entered fresh at every visit and lives only on `visits`, not on the
   guest's identity.** `GuestLotteryForm` asks for these details each time a guest enters a session's

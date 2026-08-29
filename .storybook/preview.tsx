@@ -92,7 +92,7 @@ const preview: Preview = {
 			});
 			const shell: Shell = (context.parameters.shell as Shell | undefined) ?? 'bare';
 
-			// A router as well as the store: a component that navigates (the Preregister button, the
+			// A router as well as the store: a component that navigates (the save-information button, the
 			// app bar's mode toggle) throws outright without one, rather than merely failing to move.
 			const router = createMemoryRouter([
 				{
