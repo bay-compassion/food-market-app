@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
-import { type AdminLocale, adminTranslations } from '../../adminLocales';
+import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
@@ -12,7 +12,7 @@ import QueueGuestRow from './QueueGuestRow.vue';
 import type { ManualGuest, QueueGuest } from './types';
 
 const props = defineProps<{
-	locale: AdminLocale;
+	locale: Locale;
 	guests: QueueGuest[];
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;
@@ -28,7 +28,7 @@ const emit = defineEmits<{
 	navigateCurrentSession: [];
 }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const callBatchSize = ref(1);
 const showResolved = ref(false);
 // Drives the "called N min ago" labels. A minute's resolution needs nothing finer than this.

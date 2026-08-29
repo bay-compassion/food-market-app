@@ -10,7 +10,7 @@ import type { HistoricalEvent, ManualGuest } from './types';
 const props = defineProps<{ locale: Locale; history: HistoricalEvent[]; busy?: boolean }>();
 const emit = defineEmits<{ addGuest: [guest: ManualGuest, marketEventId: string] }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const openEventId = ref<string | null>(null);
 
 /** A finished session only accepts an after-the-fact record of someone already served. */

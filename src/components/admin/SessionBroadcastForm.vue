@@ -9,7 +9,7 @@ const props = defineProps<{ locale: Locale; busy?: boolean }>();
 const emit = defineEmits<{ send: [] }>();
 const broadcast = defineModel<{ title: string; body: string }>({ required: true });
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 </script>
 
 <template>

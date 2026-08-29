@@ -10,7 +10,7 @@ const selectedReport = defineModel<ReportId>('selectedReport', { required: true 
 const from = defineModel<string>('from', { required: true });
 const to = defineModel<string>('to', { required: true });
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 </script>
 
 <template>

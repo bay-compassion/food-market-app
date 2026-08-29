@@ -23,7 +23,7 @@ const emit = defineEmits<{
 }>();
 const searchQuery = defineModel<string>('searchQuery', { required: true });
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const base = computed(() => translations[props.locale]);
 
 function guestLanguageLabel(locale: Locale) {

@@ -5,6 +5,7 @@ import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
 import { serviceProgressLevels, type ServiceProgress } from '../../services/demoScenario';
 import { sessionStatuses, type SessionStatus } from '../../services/sessionStateMachine';
+import { useRootStore } from '../../stores/root.store';
 import AppButton from '../AppButton.vue';
 
 /**
@@ -19,14 +20,14 @@ import AppButton from '../AppButton.vue';
 
 const props = defineProps<{
 	locale: Locale;
-	getAccessToken: () => Promise<string>;
 	busy?: boolean;
 }>();
 const emit = defineEmits<{
 	load: [stage: SessionStatus, serviceProgress: ServiceProgress | undefined];
 }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const { admin } = useRootStore();
+const t = computed(() => adminTranslations.en);
 /** `null` while still checking. */
 const enabled = ref<boolean | null>(null);
 
@@ -53,15 +54,7 @@ const progressLabels = computed<Record<ServiceProgress, string>>(() => ({
 }));
 
 async function checkEnabled() {
-	try {
-		const response = await fetch('/api/demo-data', {
-			headers: { Authorization: `Bearer ${await props.getAccessToken()}` },
-		});
-
-		enabled.value = response.ok ? ((await response.json()) as { enabled: boolean }).enabled : false;
-	} catch {
-		enabled.value = false;
-	}
+	enabled.value = await admin.isDemoDataEnabled();
 }
 
 onMounted(checkEnabled);

@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed } from 'vue';
 
-import { type AdminLocale, adminTranslations } from '../../adminLocales';
+import { adminTranslations } from '../../adminLocales';
+import type { Locale } from '../../locales';
 import { guestAdmissions, type GuestAdmission } from '../../services/guestAdmission';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { busyQueue, busyQueueCounts, queueGuest } from './queueGuests.fixture';
@@ -16,7 +17,7 @@ import QueueView from './QueueView.vue';
  * to the session setup.
  */
 type QueueViewArgs = {
-	locale: AdminLocale;
+	locale: Locale;
 	serviceStarted: boolean;
 	busy: boolean;
 	admissions: GuestAdmission[];

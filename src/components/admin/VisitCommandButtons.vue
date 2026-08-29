@@ -13,7 +13,7 @@ const props = defineProps<{ locale: Locale; status: VisitStatus; disabled?: bool
 
 defineEmits<{ run: [command: VisitCommand] }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const commands = computed(() => visitCommandsFrom(props.status));
 const labels = computed<Record<VisitCommand, string>>(() => ({
 	select: t.value.waiting,

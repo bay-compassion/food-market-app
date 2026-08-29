@@ -8,7 +8,7 @@ import type { ReportColumn, ReportRow } from '../../services/reports';
 
 const props = defineProps<{ locale: Locale; columns: ReportColumn[]; rows: ReportRow[] }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 
 /** Numbers read far more easily down a column when they end in the same place. */
 function isNumeric(column: ReportColumn) {

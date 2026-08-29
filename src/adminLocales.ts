@@ -1,5 +1,4 @@
-import { languages } from './locales';
-import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports';
+import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
 
 export interface AdminTranslation {
 	adHocSession: string;
@@ -172,8 +171,12 @@ export interface AdminTranslation {
 	devProgressNearlyDone: string;
 }
 
-export type AdminLocale = Extract<(typeof languages)[number]['code'], 'en'>;
-
+/**
+ * The admin dashboard's text. English only by product decision — see the localization section of
+ * `CLAUDE.md`; only the guest-facing app is translated. Read it as `adminTranslations.en` rather
+ * than by the app's current locale, which admin screens still receive for real work: formatting
+ * dates and report cells, and naming a guest's own language out of `translations`.
+ */
 export const adminTranslations = {
 	en: {
 		adHocSession: 'Start when ready',
@@ -399,4 +402,4 @@ export const adminTranslations = {
 		devProgressHalfway: 'Halfway',
 		devProgressNearlyDone: 'Nearly done',
 	},
-} satisfies Record<AdminLocale, AdminTranslation>;
+} satisfies Record<'en', AdminTranslation>;
