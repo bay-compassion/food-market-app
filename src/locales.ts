@@ -25,6 +25,7 @@ export interface GuestViewTranslations {
 		body: string;
 	};
 	notOpenState: {
+		preregisterAction: string;
 		heading: string;
 		subheading: string;
 		lotteryDescription: string;
@@ -160,6 +161,7 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
+				preregisterAction: 'Preregister',
 				heading: 'The Market Is Closed',
 				subheading:
 					'Registration will open again next Saturday at 10:30 AM and remain open until 11:30 AM.',
@@ -300,6 +302,7 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
+				preregisterAction: 'Preinscribirse',
 				heading: 'El mercado está cerrado',
 				subheading:
 					'La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta hasta las 11:30 a. m.',
@@ -442,6 +445,7 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
+				preregisterAction: 'پیش‌ثبت‌نام',
 				heading: 'بازار بسته است',
 				subheading:
 					'ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و تا ساعت ۱۱:۳۰ صبح ادامه خواهد داشت.',
@@ -582,6 +586,7 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
+				preregisterAction: 'Magparehistro nang maaga',
 				heading: 'Sarado ang Pamilihan',
 				subheading:
 					'Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas hanggang 11:30 AM.',
@@ -726,6 +731,7 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
+				preregisterAction: 'Đăng ký trước',
 				heading: 'Chợ hiện đang đóng cửa',
 				subheading: 'Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài đến 11:30 sáng.',
 				lotteryDescription:
@@ -867,6 +873,7 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
+				preregisterAction: '提前登记',
 				heading: '市场已关闭',
 				subheading: '登记将于下周六上午 10:30 再次开放，并持续至上午 11:30。',
 				lotteryDescription:
@@ -1001,6 +1008,7 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
+				preregisterAction: 'التسجيل المسبق',
 				heading: 'السوق مغلق',
 				subheading:
 					'سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر حتى الساعة 11:30 صباحًا.',

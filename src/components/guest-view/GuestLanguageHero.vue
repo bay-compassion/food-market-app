@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { EyebrowLabel } from '@/react-bridge/islands.ts';
+
 import { languages, type Locale, type Translation } from '../../locales';
-import EyebrowLabel from '../EyebrowLabel.vue';
 
 defineProps<{
 	t: Translation;
@@ -11,7 +12,7 @@ defineEmits<{ 'select-language': [locale: Locale] }>();
 
 <template>
 	<div class="hero">
-		<EyebrowLabel>{{ t.compassionFood }}</EyebrowLabel>
+		<EyebrowLabel :label="t.compassionFood" />
 		<h1>{{ t.welcome }}</h1>
 		<p class="hero-copy">{{ t.heroCopy }}</p>
 		<section class="language-selector" :aria-label="t.language">

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useTranslation } from '@/stores/hooks/use-translation.ts';
 import type { RegistrationSubmitResult } from '@/stores/registration.store.ts';
 import { useRootStore } from '@/stores/root.store.ts';
 
-import AppButton from '../AppButton.vue';
 import RegistrationCountdown from '../RegistrationCountdown.vue';
 import GuestLotteryForm from './GuestLotteryForm.vue';
 import GuestSignupForm from './GuestSignupForm.vue';
@@ -90,10 +90,12 @@ async function handleSubmit() {
 		<p v-if="submissionError" class="submission-error" role="alert">
 			{{ submissionError }}
 		</p>
-		<AppButton type="submit" :disabled="registrationStore.isSubmitting">
-			{{ registrationStore.isSubmitting ? copy.submitting : copy.submit }}
-			<span aria-hidden="true">→</span>
-		</AppButton>
+		<AppButton
+			type="submit"
+			:disabled="registrationStore.isSubmitting"
+			:label="registrationStore.isSubmitting ? copy.submitting : copy.submit"
+			trailing="→"
+		/>
 		<p class="privacy">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<rect x="5" y="10" width="14" height="10" rx="2" />

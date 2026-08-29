@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 
+import { EyebrowLabel } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 import { useAdminTranslation } from '@/stores/hooks/use-translation.ts';
 
@@ -27,7 +28,6 @@ import ReportsView from './admin/ReportsView.vue';
 import SessionHistoryView from './admin/SessionHistoryView.vue';
 import SessionView from './admin/SessionView.vue';
 import type { AdminView, ManualGuest, Question, QueueGuest, SessionSettings } from './admin/types';
-import EyebrowLabel from './EyebrowLabel.vue';
 
 type GuestStatus = VisitStatus;
 
@@ -307,9 +307,7 @@ onMounted(loadDashboard);
 			     screen a worker uses, and that chrome pushes the controls off a phone screen. -->
 			<header class="admin-heading" :class="{ compact: activeView === 'queue' }">
 				<div>
-					<EyebrowLabel v-if="activeView !== 'queue'" tone="brand">
-						{{ t.adminEyebrow }}
-					</EyebrowLabel>
+					<EyebrowLabel v-if="activeView !== 'queue'" tone="brand" :label="t.adminEyebrow" />
 					<h1>{{ navigation.find((item) => item.id === activeView)?.label }}</h1>
 					<p v-if="activeView !== 'queue'">{{ t.adminDescription }}</p>
 				</div>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import { useTranslation } from '../../stores/hooks/use-translation';
 import { useRootStore } from '../../stores/root.store';
-import AppButton from '../AppButton.vue';
 
 defineProps<{
 	successTitle: string;
@@ -62,9 +62,8 @@ const isCalled = fromMobx(() => visit.isCalled);
 			variant="secondary"
 			:disabled="visit.isCancelling"
 			@click="emit('cancel-visit')"
-		>
-			{{ t.cancelVisit }}
-		</AppButton>
+			:label="t.cancelVisit"
+		/>
 	</div>
 </template>
 

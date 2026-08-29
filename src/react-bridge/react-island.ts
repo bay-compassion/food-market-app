@@ -1,4 +1,5 @@
 import { createElement, type ComponentType } from 'react';
+import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { defineComponent, h, onBeforeUnmount, onMounted, shallowRef, watchEffect } from 'vue';
 
@@ -22,6 +23,11 @@ import { defineComponent, h, onBeforeUnmount, onMounted, shallowRef, watchEffect
  * The host element is `display: contents` so it is not itself a box: these components sit inside
  * flex and grid containers whose styling addresses direct children, and an extra `<div>` in the
  * layout tree would break that silently.
+ *
+ * Rendering is flushed synchronously. React would otherwise commit on a later tick than the Vue
+ * parent that mounted it, which shows up two ways: a frame where the island is present but empty,
+ * and Vue tests that await Vue's queue and find nothing rendered yet. Islands should behave like
+ * the components they replaced.
  */
 export function reactIsland<P extends object>(Component: ComponentType<P>) {
 	return defineComponent({
@@ -37,7 +43,9 @@ export function reactIsland<P extends object>(Component: ComponentType<P>) {
 
 				// Spreading inside the effect is what subscribes it: reading every key registers the
 				// dependency, so a changed prop re-renders the React tree in place.
-				watchEffect(() => root?.render(createElement(Component, { ...attrs } as P)));
+				watchEffect(() =>
+					flushSync(() => root?.render(createElement(Component, { ...attrs } as P))),
+				);
 			});
 
 			onBeforeUnmount(() => {

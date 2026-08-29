@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
 import { fromMobx } from '@/stores/hooks/from-mobx.ts';
 
 import { adminTranslations } from '../../adminLocales';
@@ -8,7 +9,6 @@ import type { Locale } from '../../locales';
 import { serviceProgressLevels, type ServiceProgress } from '../../services/demoScenario';
 import { sessionStatuses, type SessionStatus } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/root.store';
-import AppButton from '../AppButton.vue';
 
 /**
  * Loads fake data staged at a chosen point on the session lifecycle, for demos and screenshots.
@@ -84,9 +84,8 @@ onMounted(checkEnabled);
 						variant="secondary"
 						:disabled="busy"
 						@click="emit('load', 'service_started', progress)"
-					>
-						{{ progressLabels[progress] }}
-					</AppButton>
+						:label="progressLabels[progress]"
+					/>
 				</div>
 				<AppButton
 					v-else
@@ -94,9 +93,8 @@ onMounted(checkEnabled);
 					variant="secondary"
 					:disabled="busy"
 					@click="emit('load', stage, undefined)"
-				>
-					{{ t.devModeLoad }}
-				</AppButton>
+					:label="t.devModeLoad"
+				/>
 			</article>
 		</div>
 	</section>

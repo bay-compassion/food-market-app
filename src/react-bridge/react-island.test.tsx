@@ -22,9 +22,9 @@ function Greeting({ name }: { name: string }) {
 const GreetingIsland = reactIsland(Greeting);
 
 /**
- * Lets both frameworks catch up. Draining Vue's queue runs `onMounted`, which is only where the
- * React root gets created; React then commits on a later tick, which is what `act` flushes. One
- * Vue flush on its own leaves the island mounted but empty.
+ * Draining Vue's queue is enough: `onMounted` creates the React root and the island flushes the
+ * render synchronously, so there is no later React tick to wait for. `act` is still used to keep
+ * React from warning about updates outside it.
  */
 async function settle() {
 	await act(async () => {
@@ -96,6 +96,15 @@ describe('reactIsland', () => {
 		const host = wrapper.element.firstElementChild as HTMLElement;
 
 		expect(host.style.display).toBe('contents');
+	});
+
+	it('renders synchronously with its Vue parent', () => {
+		// Arrange & Act — no flush at all: the island commits during mount, which is what lets the
+		// Vue tests around it await Vue's queue and nothing more.
+		const { wrapper } = hostWithName('Ada');
+
+		// Assert
+		expect(wrapper.text()).toContain('Hello, Ada');
 	});
 
 	it('unmounts the React root with its Vue parent', async () => {

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
-import AppButton from '../AppButton.vue';
 import type { SessionSettings } from './types';
 
 const props = defineProps<{ locale: Locale; busy?: boolean }>();
@@ -60,12 +61,15 @@ const t = computed(() => adminTranslations.en);
 				><input v-model.number="settings.capacity" type="number" min="1" max="10000" required
 			/></label>
 			<div class="form-actions">
-				<AppButton type="submit" variant="secondary" :disabled="busy">
-					{{ t.saveSettings }}
-				</AppButton>
-				<AppButton type="button" :disabled="busy" @click="emit('saveAndStart')">
-					{{ settings.sessionMode === 'scheduled' ? t.scheduleRegistration : t.openRegistration }}
-				</AppButton>
+				<AppButton type="submit" variant="secondary" :disabled="busy" :label="t.saveSettings" />
+				<AppButton
+					type="button"
+					:disabled="busy"
+					@click="emit('saveAndStart')"
+					:label="
+						settings.sessionMode === 'scheduled' ? t.scheduleRegistration : t.openRegistration
+					"
+				/>
 			</div>
 		</form>
 	</section>

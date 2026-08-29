@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { AppButton } from '@/react-bridge/islands.ts';
+
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
-import AppButton from '../AppButton.vue';
 import type { Question } from './types';
 
 const props = defineProps<{ locale: Locale; busy?: boolean; editable: boolean }>();
@@ -37,7 +38,7 @@ function addQuestion() {
 					{{ t.remove }}
 				</button>
 			</div>
-			<AppButton type="submit" :disabled="busy || !editable">{{ t.saveSettings }}</AppButton>
+			<AppButton type="submit" :disabled="busy || !editable" :label="t.saveSettings" />
 		</form>
 	</section>
 </template>
