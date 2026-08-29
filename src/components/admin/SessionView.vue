@@ -41,7 +41,7 @@ const extensionMinutes = defineModel<number>('extensionMinutes', { required: tru
 const postponementMinutes = defineModel<number>('postponementMinutes', { required: true });
 const broadcast = defineModel<{ title: string; body: string }>('broadcast', { required: true });
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const showsRegisteredGuests = computed(
 	() =>
 		!!props.event &&

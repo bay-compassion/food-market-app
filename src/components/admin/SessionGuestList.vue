@@ -7,7 +7,7 @@ import type { QueueGuest } from './types';
 
 const props = defineProps<{ locale: Locale; guests: QueueGuest[] }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const base = computed(() => translations[props.locale]);
 
 function guestLanguageLabel(locale: Locale) {

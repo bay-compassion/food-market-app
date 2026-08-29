@@ -27,7 +27,7 @@ const emit = defineEmits<{
 }>();
 
 const { admin } = useRootStore();
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 /** `null` while still checking. */
 const enabled = ref<boolean | null>(null);
 

@@ -29,7 +29,7 @@ const props = defineProps<{
 	canExport: boolean;
 }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const range = defaultReportRange();
 const selectedReport = ref<ReportId>('session-summary');
 const from = ref(range.from);

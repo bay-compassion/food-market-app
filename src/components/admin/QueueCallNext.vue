@@ -10,7 +10,7 @@ const props = defineProps<{ locale: Locale; waitingCount: number; busy?: boolean
 defineEmits<{ call: [] }>();
 const count = defineModel<number>('count', { required: true });
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 </script>
 
 <template>

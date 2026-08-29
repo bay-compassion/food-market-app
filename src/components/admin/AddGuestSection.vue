@@ -15,7 +15,7 @@ import type { ManualGuest } from './types';
 const props = defineProps<{ locale: Locale; admissions: GuestAdmission[]; busy?: boolean }>();
 const emit = defineEmits<{ addGuest: [guest: ManualGuest] }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const showForm = ref(false);
 
 // A session that cannot accept anyone right now offers no button at all.

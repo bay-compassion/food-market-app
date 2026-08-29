@@ -23,7 +23,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ submit: [guest: ManualGuest]; cancel: [] }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 const base = computed(() => translations[props.locale]);
 const guest = reactive<ManualGuest>({
 	firstName: '',

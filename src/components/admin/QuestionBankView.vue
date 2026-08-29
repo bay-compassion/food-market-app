@@ -10,7 +10,7 @@ const props = defineProps<{ locale: Locale; busy?: boolean; editable: boolean }>
 const questions = defineModel<Question[]>('questions', { required: true });
 const emit = defineEmits<{ save: [] }>();
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 
 function addQuestion() {
 	questions.value.push({ prompt: '', type: 'text', required: false });

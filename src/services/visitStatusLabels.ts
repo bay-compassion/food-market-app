@@ -1,4 +1,4 @@
-import { type AdminLocale, adminTranslations } from '../adminLocales';
+import { adminTranslations } from '../adminLocales';
 import { translations, type Locale } from '../locales';
 import type { VisitStatus } from './visitStateMachine';
 
@@ -27,8 +27,8 @@ export function guestVisitStatusLabel(locale: Locale, status: VisitStatus): stri
 }
 
 /** How the admin screens name every visit status. */
-export function adminVisitStatusLabels(locale: AdminLocale): Record<VisitStatus, string> {
-	const t = adminTranslations[locale];
+export function adminVisitStatusLabels(locale: Locale): Record<VisitStatus, string> {
+	const t = adminTranslations.en;
 	const base = translations[locale];
 
 	return {

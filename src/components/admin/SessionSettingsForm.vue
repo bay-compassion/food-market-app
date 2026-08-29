@@ -10,7 +10,7 @@ const props = defineProps<{ locale: Locale; busy?: boolean }>();
 const emit = defineEmits<{ save: []; saveAndStart: [] }>();
 const settings = defineModel<SessionSettings>({ required: true });
 
-const t = computed(() => adminTranslations[props.locale]);
+const t = computed(() => adminTranslations.en);
 </script>
 
 <template>
