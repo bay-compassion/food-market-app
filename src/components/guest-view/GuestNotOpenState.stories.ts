@@ -14,6 +14,7 @@ import GuestNotOpenState from './GuestNotOpenState.vue';
 
 type GuestNotOpenStateArgs = {
 	locale: Locale;
+	allowPreregister: boolean;
 };
 
 const meta: Meta<GuestNotOpenStateArgs> = {
@@ -22,6 +23,7 @@ const meta: Meta<GuestNotOpenStateArgs> = {
 	parameters: { shell: 'guest' },
 	args: {
 		locale: 'en',
+		allowPreregister: true,
 	},
 	render: (args) => ({
 		components: { Card, GuestNotOpenState },
@@ -30,7 +32,7 @@ const meta: Meta<GuestNotOpenStateArgs> = {
 		},
 		template: `
 			<Card aria-live="polite">
-				<GuestNotOpenState :t="t" />
+				<GuestNotOpenState :t="t" :allow-preregister="args.allowPreregister" />
 			</Card>
 		`,
 	}),
@@ -40,7 +42,10 @@ export default meta;
 
 type Story = StoryObj<GuestNotOpenStateArgs>;
 
-/** No event exists yet, or it's still `draft`/`scheduled` off the `/signup` route. */
+/**
+ * No event exists yet, or it's still `draft`/`scheduled`, seen from a route other than `/signup` —
+ * so the state offers a way through to pre-registration.
+ */
 export const NotOpen: Story = {
 	play: async ({ canvas }) => {
 		const copy = translations.en.guestView.notOpenState;
@@ -50,6 +55,22 @@ export const NotOpen: Story = {
 		await expect(canvas.getByText(copy.lotteryDescription)).toBeInTheDocument();
 		await expect(canvas.getByText(copy.selectionDescription)).toBeInTheDocument();
 		await expect(canvas.queryByRole('link')).not.toBeInTheDocument();
+		await expect(
+			await canvas.findByRole('button', { name: copy.preregisterAction }),
+		).toBeInTheDocument();
+	},
+};
+
+/**
+ * The same state on `/signup` itself, where the pre-registration button would only lead back to
+ * the page the guest is already on.
+ */
+export const NotOpenOnSignup: Story = {
+	args: { allowPreregister: false },
+	play: async ({ canvas }) => {
+		const copy = translations.en.guestView.notOpenState;
+
+		await expect(canvas.getByRole('heading', { name: copy.heading })).toBeInTheDocument();
 		await expect(canvas.queryByRole('button')).not.toBeInTheDocument();
 	},
 };

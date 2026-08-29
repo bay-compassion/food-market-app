@@ -11,6 +11,7 @@
     ".storybook-react/**/*.ts",
     ".storybook-react/**/*.tsx",
     "vitest.storybook.config.ts",
+    "vitest.storybook-react.config.ts",
     "env.d.ts"
   ],
   "exclude": [],
