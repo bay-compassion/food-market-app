@@ -26,7 +26,7 @@ export const appTheme = createTheme({
 		warning: { main: '#7a4e00' },
 	},
 	shape: {
-		borderRadius: 8,
+		borderRadius: 24,
 	},
 	typography: {
 		fontFamily: 'Roboto, Arial, sans-serif',
@@ -37,6 +37,19 @@ export const appTheme = createTheme({
 			lineHeight: 1.05,
 			letterSpacing: '-0.01em',
 			textTransform: 'uppercase',
+		},
+	},
+	components: {
+		MuiCard: {
+			defaultProps: {
+				variant: 'outlined',
+			},
+			styleOverrides: {
+				root: {
+					borderWidth: 2,
+					borderColor: 'var(--color-brand)',
+				},
+			},
 		},
 	},
 });

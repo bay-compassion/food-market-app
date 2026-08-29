@@ -1,3 +1,4 @@
+import { Card, CardContent } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
@@ -12,7 +13,6 @@ import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
 import type { Language } from '../../stores/translation.store';
-import { Card } from '../ui/layout/Card';
 import { GuestIdentityIndicator } from './GuestIdentityIndicator';
 import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
@@ -118,27 +118,29 @@ export const GuestView = observer(function GuestView() {
 				</p>
 			) : (
 				<Card aria-live="polite">
-					{!session.isActive ? (
-						<GuestNotOpenState allowPreregister={canPreregister} />
-					) : cardState.kind === 'visit-status' ? (
-						<GuestVisitStatus
-							successTitle={successCopy.title}
-							successDescription={successCopy.description}
-							onCancelVisit={cancelVisit}
-						/>
-					) : cardState.kind === 'form' ? (
-						<GuestRegistrationForm
-							context={cardState.context}
-							now={now}
-							onSubmitted={handleSubmitted}
-						/>
-					) : cardState.kind === 'not-open' ? (
-						<GuestNotOpenState />
-					) : cardState.kind === 'registration-closed' ? (
-						<GuestRegistrationClosedState />
-					) : (
-						<GuestServiceState hasEnded={cardState.kind === 'ended'} />
-					)}
+					<CardContent>
+						{!session.isActive ? (
+							<GuestNotOpenState allowPreregister={canPreregister} />
+						) : cardState.kind === 'visit-status' ? (
+							<GuestVisitStatus
+								successTitle={successCopy.title}
+								successDescription={successCopy.description}
+								onCancelVisit={cancelVisit}
+							/>
+						) : cardState.kind === 'form' ? (
+							<GuestRegistrationForm
+								context={cardState.context}
+								now={now}
+								onSubmitted={handleSubmitted}
+							/>
+						) : cardState.kind === 'not-open' ? (
+							<GuestNotOpenState />
+						) : cardState.kind === 'registration-closed' ? (
+							<GuestRegistrationClosedState />
+						) : (
+							<GuestServiceState hasEnded={cardState.kind === 'ended'} />
+						)}
+					</CardContent>
 				</Card>
 			)}
 		</section>
