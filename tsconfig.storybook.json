@@ -8,6 +8,8 @@
   "include": [
     ".storybook/**/*.ts",
     ".storybook/**/*.vue",
+    ".storybook-react/**/*.ts",
+    ".storybook-react/**/*.tsx",
     "vitest.storybook.config.ts",
     "env.d.ts"
   ],
