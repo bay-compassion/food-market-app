@@ -2,6 +2,8 @@ import { Card, CardContent } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
+import { SessionStatusEnum } from '@/services/sessionStateMachine.ts';
+
 import type { Locale } from '../../locales';
 import {
 	currentSessionPhase,
@@ -101,8 +103,12 @@ export const GuestView = observer(function GuestView() {
 
 	return (
 		<section className="guest-layout">
-			{/* Card that indicates who the guest has been identified as */}
-			<GuestIdentityCard />
+			{/* Card that indicates who the guest has been identified.
+			 * Hidden when the registration is open and the guest hasn't previously saved information because the combined form will be shown.
+			 */}
+			{guest.isIdentified && session.currentStatus !== SessionStatusEnum.REGISTRATION_OPEN ? (
+				<GuestIdentityCard />
+			) : null}
 
 			{!guest.isReturningVisitor ? <GuestLanguageHero onSelectLanguage={selectLanguage} /> : null}
 

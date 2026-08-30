@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { Alert, Button, Card, CircularProgress } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { Component, Suspense, use, useEffect, useState, type ReactNode } from 'react';
+import { Component, type ReactNode, Suspense, use, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { useRootStore } from '../../../stores/react/store-context';
