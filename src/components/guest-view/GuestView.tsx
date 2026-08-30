@@ -12,11 +12,11 @@ import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
 import type { Language } from '../../stores/translation.store';
+import { GuestCombinedForm } from './forms/GuestCombinedForm';
 import { GuestIdentityIndicator } from './GuestIdentityIndicator';
 import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
-import { GuestRegistrationForm } from './GuestRegistrationForm';
 import { GuestServiceState } from './GuestServiceState';
 import { GuestVisitStatus } from './GuestVisitStatus';
 
@@ -122,7 +122,7 @@ export const GuestView = observer(function GuestView() {
 								onCancelVisit={cancelVisit}
 							/>
 						) : cardState.kind === 'form' ? (
-							<GuestRegistrationForm
+							<GuestCombinedForm
 								context={cardState.context}
 								now={now}
 								onSubmitted={handleSubmitted}

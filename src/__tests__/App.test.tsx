@@ -206,7 +206,7 @@ describe('App', () => {
 
 		// Not yet identified, so the sign-up fields (name, phone) and the lottery-entry fields
 		// (age range, household composition) both render, in one combined form. Selected by
-		// attribute rather than position — `GuestSignupForm` and `GuestLotteryForm` order their
+		// attribute rather than position — `GuestInformationForm` and `GuestLotteryForm` order their
 		// fields differently than the single form they replaced.
 		await user.type(container.querySelector('input[autocomplete="given-name"]')!, 'Ada');
 		await user.type(container.querySelector('input[autocomplete="family-name"]')!, 'Lovelace');
@@ -316,7 +316,7 @@ describe('App', () => {
 
 		// A device token with no locally cached identity (this test sets only the token, not
 		// `bay-compassion.guest-identity`) still shows the sign-up fields — there's nothing to
-		// prefill them with. See `GuestRegistrationForm`'s `showSignupFields`.
+		// prefill them with. See `GuestCombinedForm`'s `showSignupFields`.
 		await waitFor(() =>
 			expect(container.querySelector('.number-spinner-input input')).not.toBeNull(),
 		);

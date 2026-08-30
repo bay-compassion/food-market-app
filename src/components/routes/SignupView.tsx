@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
-import { GuestRegistrationForm } from '../guest-view/GuestRegistrationForm';
+import { GuestCombinedForm } from '../guest-view/forms/GuestCombinedForm';
 import { GuestStateMessage } from '../guest-view/GuestStateMessage';
 import { Card } from '../ui/layout/Card';
 
@@ -40,7 +40,7 @@ export const SignupView = observer(function SignupView() {
 						description={t.signupView.successDescription}
 					/>
 				) : (
-					<GuestRegistrationForm context="early" now={Date.now()} onSubmitted={handleSubmitted} />
+					<GuestCombinedForm context="early" now={Date.now()} onSubmitted={handleSubmitted} />
 				)}
 			</Card>
 		</section>

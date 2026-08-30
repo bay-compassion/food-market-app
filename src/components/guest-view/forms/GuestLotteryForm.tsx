@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
-import { ageRanges, type AgeRange } from '../../services/ageRanges';
-import type { SessionQuestion } from '../../stores/market-session.store';
-import { useRootStore } from '../../stores/react/store-context';
-import { useTranslation } from '../../stores/react/use-translation';
-import { FormField, type FormFieldOption } from '../FormField';
-import { NumberSpinner } from '../NumberSpinner';
+import { ageRanges, type AgeRange } from '../../../services/ageRanges';
+import type { SessionQuestion } from '../../../stores/market-session.store';
+import { useRootStore } from '../../../stores/react/store-context';
+import { useTranslation } from '../../../stores/react/use-translation';
+import { FormField, type FormFieldOption } from '../../FormField';
+import { NumberSpinner } from '../../NumberSpinner';
 
 export type GuestLotteryFormProps = {
 	/** The session's own questions, which vary per market event. Owned by the container, since it

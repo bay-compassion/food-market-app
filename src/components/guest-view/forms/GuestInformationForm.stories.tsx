@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 
-import { translations } from '../../locales';
-import { GuestSignupForm } from './GuestSignupForm';
+import { translations } from '../../../locales';
+import { GuestInformationForm } from './GuestInformationForm';
 
 /**
  * The identity-only fields — first name, last name, phone — shared by the standalone early
@@ -13,8 +13,8 @@ import { GuestSignupForm } from './GuestSignupForm';
  * The language comes from that same store, which the toolbar's locale picker drives.
  */
 const meta = {
-	title: 'Guest/GuestSignupForm',
-	component: GuestSignupForm,
+	title: 'Guest/Forms/Information Form',
+	component: GuestInformationForm,
 	parameters: { shell: 'guest' },
 	decorators: [
 		(Story) => (
@@ -23,7 +23,7 @@ const meta = {
 			</form>
 		),
 	],
-} satisfies Meta<typeof GuestSignupForm>;
+} satisfies Meta<typeof GuestInformationForm>;
 
 export default meta;
 

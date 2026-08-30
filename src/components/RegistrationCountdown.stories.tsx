@@ -6,7 +6,7 @@ import { RegistrationCountdown } from './RegistrationCountdown';
 
 /**
  * The clock shown above the sign-up form while registration is open, counting down to the moment
- * it closes. `GuestRegistrationForm` renders it only when `context === 'queue'` — genuinely open
+ * it closes. `GuestCombinedForm` renders it only when `context === 'queue'` — genuinely open
  * right now, not a pre-registration window.
  *
  * The background blends from brand to danger color via CSS `color-mix()`, driven by a

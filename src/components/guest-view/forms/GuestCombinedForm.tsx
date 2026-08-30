@@ -2,15 +2,15 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 import type { FormEvent } from 'react';
 
-import { useRootStore } from '../../stores/react/store-context';
-import { useTranslation } from '../../stores/react/use-translation';
-import type { RegistrationSubmitResult } from '../../stores/registration.store';
-import { AppButton } from '../AppButton';
-import { RegistrationCountdown } from '../RegistrationCountdown';
+import { useRootStore } from '../../../stores/react/store-context';
+import { useTranslation } from '../../../stores/react/use-translation';
+import type { RegistrationSubmitResult } from '../../../stores/registration.store';
+import { AppButton } from '../../AppButton';
+import { RegistrationCountdown } from '../../RegistrationCountdown';
+import { GuestInformationForm } from './GuestInformationForm';
 import { GuestLotteryForm } from './GuestLotteryForm';
-import { GuestSignupForm } from './GuestSignupForm';
 
-export type GuestRegistrationFormProps = {
+export type GuestCombinedFormProps = {
 	/**
 	 * Which flow this instance represents — changes the copy shown for the form, and whether the
 	 * lottery-entry fields render at all: "join the queue" only makes sense once registration is
@@ -74,14 +74,14 @@ const Privacy = styled.p`
  * of a session that has not opened yet.
  *
  * It owns the copy and the phase decisions — which fields to show, which wording to use, when the
- * countdown is meaningful — and leaves the fields themselves to `GuestSignupForm` and
+ * countdown is meaningful — and leaves the fields themselves to `GuestInformationForm` and
  * `GuestLotteryForm`, which read the same registration store.
  */
-export const GuestRegistrationForm = observer(function GuestRegistrationForm({
+export const GuestCombinedForm = observer(function GuestCombinedForm({
 	context,
 	now,
 	onSubmitted,
-}: GuestRegistrationFormProps) {
+}: GuestCombinedFormProps) {
 	const t = useTranslation();
 	const rootStore = useRootStore();
 	const { guest, registration, session } = rootStore;
@@ -138,7 +138,7 @@ export const GuestRegistrationForm = observer(function GuestRegistrationForm({
 				<h2>{copy.formTitle}</h2>
 				<p>{copy.formDescription}</p>
 			</Heading>
-			{showSignupFields ? <GuestSignupForm /> : null}
+			{showSignupFields ? <GuestInformationForm /> : null}
 			{context === 'queue' ? (
 				<GuestLotteryForm registrationQuestions={registrationQuestions} />
 			) : null}

@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=df38c9795645, src/components/routes/SignupView.tsx=c194e00e6c59, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=50e057e32fc4, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=b9a78935166d, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=0e07531dd5ed, src/components/routes/SignupView.tsx=3169ee3caf7f, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=34a0315a1d8f, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=5e34b8fc3d95, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
@@ -16,7 +16,7 @@ Both read the current market session from the shared
 open?), while the root's [`GuestStore`](../src/stores/guest.store.ts) owns the device credential
 used by `/api/guests` (register for a session), `/api/guest-signup` (identity only, no session), and
 `/api/notification-status` (retrieve consent) and `/api/sms-subscription` (grant or revoke SMS
-consent). Both routes render the shared `GuestRegistrationForm`, which reads and submits the
+consent). Both routes render the shared `GuestCombinedForm`, which reads and submits the
 in-progress form fields through the root's
 [`RegistrationStore`](../src/stores/registration.store.ts) rather than through props, so `/` and
 `/signup` don't each wire up their own copy of that state. `/api/visit` (check status, cancel) is
@@ -126,15 +126,15 @@ flowchart TD
   "your information is saved" message on `/signup` itself. The unidentified
   `GuestIdentityIndicator` provides the in-app link into this flow; a guest can also land on
   `/signup` directly, e.g. from a QR code.
-  `GuestRegistrationForm` (the composer) takes a
+  `GuestCombinedForm` (the composer) takes a
   `context` prop (`'queue' | 'early'`): `'early'` (only ever passed by `SignupView`) renders only the
-  identity fields (`GuestSignupForm`, submitted through `GuestStore.signUp`, no visit created);
+  identity fields (`GuestInformationForm`, submitted through `GuestStore.signUp`, no visit created);
   `'queue'` (only ever passed by `GuestView`) renders the lottery-entry fields (`GuestLotteryForm`)
   plus the identity fields too, unless the device already has a cached local identity to skip
   re-asking for. Both routes read and write the in-progress form through the shared
   `RegistrationStore` instead of taking it as props.
 - **Signing up and entering the lottery are visually one screen but two components.**
-  `GuestRegistrationForm` composes `GuestSignupForm` (name, phone) and `GuestLotteryForm` (age
+  `GuestCombinedForm` composes `GuestInformationForm` (name, phone) and `GuestLotteryForm` (age
   range, household size, children/seniors, per-session questions) inside a single `<form>` — one
   submit either way, so the wire contract to `/api/guests` for a lottery entry is unchanged. Only
   the standalone `'early'` sign-up path talks to a different endpoint (`/api/guest-signup`) and

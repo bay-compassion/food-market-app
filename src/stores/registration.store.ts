@@ -15,7 +15,7 @@ export type RegistrationStoreOptions = {
 
 /**
  * Owns the guest registration form's in-progress state: the fields, the lottery answers, and the
- * submission itself. Both the `/` and `/signup` routes render `GuestRegistrationForm` against this
+ * submission itself. Both the `/` and `/signup` routes render `GuestCombinedForm` against this
  * store instead of each wiring up and prop-drilling the same state independently.
  */
 export class RegistrationStore {
@@ -47,7 +47,7 @@ export class RegistrationStore {
 		this.registrationAnswers[questionId] = value;
 	}
 
-	/** `context` decides which endpoint this submits to — see `GuestRegistrationForm`'s `context`
+	/** `context` decides which endpoint this submits to — see `GuestCombinedForm`'s `context`
 	 *  prop for what each one means. */
 	async submit(
 		context: 'queue' | 'early',

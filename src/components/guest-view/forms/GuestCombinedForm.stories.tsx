@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 import { expect, fn } from 'storybook/test';
 
-import { translations, type Locale } from '../../locales';
-import { SessionStatusEnum } from '../../services/sessionStateMachine';
-import type { SessionQuestion } from '../../stores/market-session.store';
-import { RootStoreProvider } from '../../stores/react/store-context';
-import { RootStore } from '../../stores/root.store';
-import { GuestRegistrationForm } from './GuestRegistrationForm';
+import { translations, type Locale } from '../../../locales';
+import { SessionStatusEnum } from '../../../services/sessionStateMachine';
+import type { SessionQuestion } from '../../../stores/market-session.store';
+import { RootStoreProvider } from '../../../stores/react/store-context';
+import { RootStore } from '../../../stores/root.store';
+import { GuestCombinedForm } from './GuestCombinedForm';
 
 /**
  * The registration form itself — before a guest has submitted anything.
@@ -92,13 +92,13 @@ function SeededForm({ context, onSubmitted, locale, ...seed }: RegistrationFormA
 	// sits open, matching `RegistrationCountdown`'s own stories.
 	return (
 		<RootStoreProvider store={store}>
-			<GuestRegistrationForm context={context} now={Date.now()} onSubmitted={onSubmitted} />
+			<GuestCombinedForm context={context} now={Date.now()} onSubmitted={onSubmitted} />
 		</RootStoreProvider>
 	);
 }
 
 const meta = {
-	title: 'Guest/GuestRegistrationForm',
+	title: 'Guest/Forms/Combined Form',
 	component: SeededForm,
 	parameters: { shell: 'guest' },
 	argTypes: {

@@ -104,7 +104,7 @@ export class VisitStore {
 		clearTimeout(this.refreshTimer);
 	}
 
-	/** Records a registration just submitted through `GuestRegistrationForm`. */
+	/** Records a registration just submitted through `GuestCombinedForm`. */
 	submit(registration: GuestRegistrationResult): void {
 		this.storage.setItem(visitTokenStorageKey, registration.visitToken);
 		this._visitToken = registration.visitToken;
