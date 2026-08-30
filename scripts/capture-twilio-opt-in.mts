@@ -27,7 +27,7 @@ const storageKeys = {
 const fictionalIdentity = {
 	firstName: 'Sample',
 	lastName: 'Guest',
-	phone: '(202) 555-0142',
+	phone: '(555) 555-0142',
 };
 
 async function mockApplicationApi(page: Page) {
