@@ -84,7 +84,7 @@ function SeededVisitStatus({
 	const t = translations[locale];
 	const successCopy =
 		context === 'early'
-			? { title: t.earlySuccessTitle, description: t.earlySuccessDescription }
+			? { title: t.signupView.successTitle, description: t.signupView.successDescription }
 			: { title: t.successTitle, description: t.successDescription };
 
 	return (

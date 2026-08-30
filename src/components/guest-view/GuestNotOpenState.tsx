@@ -1,19 +1,8 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
-import { useNavigate } from 'react-router';
 
 import { useTranslation } from '../../stores/react/use-translation';
-import { AppButton } from '../AppButton';
 import { GuestStateMessage } from './GuestStateMessage';
-
-export type GuestNotOpenStateProps = {
-	/**
-	 * Whether to offer the way through to pre-registration. False on `/signup` itself, where the
-	 * button would only lead back to the page the guest is already on, and once a session has
-	 * ended, when there is nothing scheduled left to pre-register for.
-	 */
-	allowPreregister?: boolean;
-};
 
 const Message = styled(GuestStateMessage)`
 	--state-description-max-width: 420px;
@@ -31,19 +20,22 @@ const Details = styled.div`
 	hyphens: auto;
 `;
 
+const Divider = styled.hr`
+	width: 100%;
+	max-width: 420px;
+	margin: 24px 0 0;
+	border: 0;
+	border-top: 1px solid var(--color-border);
+`;
+
 /** The market is closed: when it next opens, how the lottery works, and how to hear about it. */
-export const GuestNotOpenState = observer(function GuestNotOpenState({
-	allowPreregister = true,
-}: GuestNotOpenStateProps) {
+export const GuestNotOpenState = observer(function GuestNotOpenState() {
 	const t = useTranslation();
-	const navigate = useNavigate();
 	const copy = t.guestView.notOpenState;
 
 	return (
 		<Message className="inactive-message" heading={copy.heading} description={copy.subheading}>
-			{allowPreregister ? (
-				<AppButton label={copy.preregisterAction} onClick={() => void navigate('/signup')} />
-			) : null}
+			<Divider />
 			<Details className="inactive-details">
 				<p>{copy.lotteryDescription}</p>
 				<p>{copy.selectionDescription}</p>

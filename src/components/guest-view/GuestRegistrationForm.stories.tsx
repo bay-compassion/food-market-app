@@ -163,12 +163,12 @@ export const SubmissionFailed: Story = {
 	},
 };
 
-/** The `early` context: signing up ahead of the market — identity only, no lottery fields. */
+/** The `early` context: saving information for later — identity only, no lottery fields. */
 export const EarlySignupForm: Story = {
 	args: { context: 'early' },
 	play: async ({ canvas }) => {
 		await expect(
-			canvas.getByRole('heading', { name: translations.en.earlyFormTitle }),
+			canvas.getByRole('heading', { name: translations.en.signupView.formTitle }),
 		).toBeInTheDocument();
 		await expect(canvas.queryByLabelText(translations.en.age)).not.toBeInTheDocument();
 	},

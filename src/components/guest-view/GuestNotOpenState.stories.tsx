@@ -14,7 +14,6 @@ const meta = {
 	title: 'Guest/Session States/Inactive',
 	component: GuestNotOpenState,
 	parameters: { shell: 'guest' },
-	args: { allowPreregister: true },
 	decorators: [
 		(Story) => (
 			<Card aria-live="polite">
@@ -29,8 +28,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * No event exists yet, or it's still `draft`/`scheduled`, seen from a route other than `/signup` —
- * so the state offers a way through to pre-registration.
+ * No event exists yet, or it's still `draft`/`scheduled`, so the state explains the next market
+ * and how its lottery works.
  */
 export const NotOpen: Story = {
 	play: async ({ canvas }) => {
@@ -41,23 +40,8 @@ export const NotOpen: Story = {
 		await expect(canvas.getByText(copy.lotteryDescription)).toBeInTheDocument();
 		await expect(canvas.getByText(copy.selectionDescription)).toBeInTheDocument();
 		await expect(canvas.queryByRole('link')).not.toBeInTheDocument();
-		await expect(
-			await canvas.findByRole('button', { name: copy.preregisterAction }),
-		).toBeInTheDocument();
-	},
-};
-
-/**
- * The same state on `/signup` itself, where the pre-registration button would only lead back to
- * the page the guest is already on.
- */
-export const NotOpenOnSignup: Story = {
-	args: { allowPreregister: false },
-	play: async ({ canvas }) => {
-		const copy = translations.en.guestView.notOpenState;
-
-		await expect(canvas.getByRole('heading', { name: copy.heading })).toBeInTheDocument();
 		await expect(canvas.queryByRole('button')).not.toBeInTheDocument();
+		await expect(canvas.getByRole('separator')).toBeInTheDocument();
 	},
 };
 

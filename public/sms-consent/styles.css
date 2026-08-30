@@ -1,0 +1,261 @@
+/* Standalone styles for the publicly reviewable SMS consent evidence page. */
+:root {
+	font-family: Arial, Helvetica, sans-serif;
+	color: #101010;
+	background: #f1f5f3;
+	font-synthesis: none;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	line-height: 1.55;
+}
+
+a {
+	color: #075d65;
+	text-underline-offset: 0.18em;
+}
+
+a:focus-visible {
+	outline: 3px solid #ffb545;
+	outline-offset: 3px;
+}
+
+.site-header {
+	display: flex;
+	align-items: center;
+	min-height: 76px;
+	padding: 14px max(20px, calc((100% - 1120px) / 2));
+	background: #023940;
+}
+
+.brand {
+	display: inline-flex;
+	gap: 10px;
+	align-items: center;
+	color: #fff;
+	font-size: 1rem;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	text-decoration: none;
+}
+
+.brand img {
+	display: block;
+	width: 32px;
+	height: auto;
+}
+
+main,
+footer {
+	width: min(100% - 40px, 1040px);
+	margin-inline: auto;
+}
+
+main {
+	padding-block: 64px 80px;
+}
+
+.hero {
+	max-width: 760px;
+	margin-bottom: 36px;
+}
+
+.eyebrow,
+.step-number {
+	margin: 0 0 8px;
+	color: #075d65;
+	font-size: 0.82rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+	margin-top: 0;
+}
+
+h1,
+h2 {
+	line-height: 1.15;
+}
+
+h1 {
+	margin-bottom: 20px;
+	font-size: clamp(2.5rem, 7vw, 4.5rem);
+	letter-spacing: -0.04em;
+}
+
+h2 {
+	margin-bottom: 14px;
+	font-size: clamp(1.45rem, 3vw, 2rem);
+	letter-spacing: -0.02em;
+}
+
+.lede {
+	margin-bottom: 0;
+	color: #3d453f;
+	font-size: 1.2rem;
+}
+
+.summary,
+.explanation,
+.program-details {
+	padding: clamp(22px, 4vw, 36px);
+	border: 1px solid #aab7b0;
+	border-radius: 20px;
+	background: #fff;
+}
+
+.summary,
+.explanation {
+	margin-bottom: 24px;
+}
+
+.summary dl {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 20px;
+	margin: 24px 0;
+}
+
+.summary dl div {
+	padding-left: 14px;
+	border-left: 3px solid #38a9a1;
+}
+
+dt {
+	margin-bottom: 4px;
+	color: #60746a;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+dd {
+	margin: 0;
+	font-weight: 700;
+}
+
+.policy-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 24px;
+}
+
+.explanation p:last-child,
+.step-copy p:last-child,
+.program-details ul,
+footer p {
+	margin-bottom: 0;
+}
+
+.evidence {
+	display: grid;
+	gap: 24px;
+	margin: 48px 0;
+	padding: 0;
+	list-style: none;
+}
+
+.evidence article {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(280px, 390px);
+	gap: clamp(28px, 6vw, 72px);
+	align-items: start;
+	padding: clamp(22px, 4vw, 38px);
+	border-radius: 20px;
+	background: #fff;
+	box-shadow: 0 10px 35px rgb(1 42 47 / 8%);
+}
+
+.step-copy {
+	position: sticky;
+	top: 24px;
+	padding-top: 10px;
+}
+
+.evidence article > a {
+	display: block;
+	border-radius: 14px;
+}
+
+.evidence img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border: 1px solid #c7d1cc;
+	border-radius: 14px;
+	box-shadow: 0 8px 24px rgb(1 42 47 / 12%);
+}
+
+.program-details li + li {
+	margin-top: 8px;
+}
+
+footer {
+	display: flex;
+	justify-content: space-between;
+	gap: 24px;
+	padding-block: 24px 40px;
+	border-top: 1px solid #aab7b0;
+	color: #60746a;
+	font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+	main,
+	footer {
+		width: min(100% - 28px, 1040px);
+	}
+
+	main {
+		padding-block: 40px 56px;
+	}
+
+	.summary dl,
+	.evidence article {
+		grid-template-columns: 1fr;
+	}
+
+	.step-copy {
+		position: static;
+		padding-top: 0;
+	}
+
+	footer {
+		flex-direction: column;
+		gap: 6px;
+	}
+}
+
+@media print {
+	:root {
+		background: #fff;
+	}
+
+	.site-header {
+		padding-inline: 0;
+	}
+
+	main,
+	footer {
+		width: 100%;
+	}
+
+	.evidence article {
+		break-inside: avoid;
+		box-shadow: none;
+	}
+
+	.step-copy {
+		position: static;
+	}
+}

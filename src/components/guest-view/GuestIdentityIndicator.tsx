@@ -213,7 +213,7 @@ export const GuestIdentityIndicator = observer(function GuestIdentityIndicator()
 					<div className="identity-heading">{copy.unidentifiedHeading}</div>
 					<p className="unidentified-message">{copy.unidentifiedMessage}</p>
 				</div>
-				<Button onClick={() => void navigate('/signup')}>{copy.preregisterAction}</Button>
+				<Button onClick={() => void navigate('/signup')}>{copy.saveInformationAction}</Button>
 			</IdentityCard>
 		);
 	}

@@ -76,9 +76,9 @@ describe('GuestView', () => {
 			expect(container.textContent).toContain('Number of people in your household'),
 		);
 		expect(container.textContent).toContain('Welcome to the community food market');
-		expect(screen.getByText('Not recognized on this device')).toBeDefined();
+		expect(screen.getByText('Save your information for next time')).toBeDefined();
 
-		await user.click(screen.getByRole('button', { name: 'Preregister' }));
+		await user.click(screen.getByRole('button', { name: 'Save my information' }));
 		expect(screen.getByText('signup')).toBeDefined();
 	});
 

@@ -9,12 +9,12 @@ import { GuestRegistrationForm } from '../guest-view/GuestRegistrationForm';
 import { GuestStateMessage } from '../guest-view/GuestStateMessage';
 import { Card } from '../ui/layout/Card';
 
-/** `/signup`: creating a guest identity ahead of a session, without joining a queue. */
+/** `/signup`: saving a guest identity for later visits, without joining a queue. */
 export const SignupView = observer(function SignupView() {
 	const t = useTranslation();
 	const { guest } = useRootStore();
 	const navigate = useNavigate();
-	const [isSignedUp, setIsSignedUp] = useState(false);
+	const [isInformationSaved, setIsInformationSaved] = useState(false);
 
 	// Signing up (identity only) only makes sense before a device has one — an already-identified
 	// guest has nothing left to ask here, so send them to the page that reflects their real state
@@ -27,17 +27,22 @@ export const SignupView = observer(function SignupView() {
 
 	function handleSubmitted(result: RegistrationSubmitResult) {
 		if (result.kind === 'signed-up') {
-			setIsSignedUp(true);
+			setIsInformationSaved(true);
 		}
 	}
 
 	return (
-		<Card aria-live="polite">
-			{isSignedUp ? (
-				<GuestStateMessage heading={t.earlySuccessTitle} description={t.earlySuccessDescription} />
-			) : (
-				<GuestRegistrationForm context="early" now={Date.now()} onSubmitted={handleSubmitted} />
-			)}
-		</Card>
+		<section className="guest-layout">
+			<Card aria-live="polite">
+				{isInformationSaved ? (
+					<GuestStateMessage
+						heading={t.signupView.successTitle}
+						description={t.signupView.successDescription}
+					/>
+				) : (
+					<GuestRegistrationForm context="early" now={Date.now()} onSubmitted={handleSubmitted} />
+				)}
+			</Card>
+		</section>
 	);
 });

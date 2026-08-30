@@ -9,6 +9,17 @@ NODE_VERSION = "24.15.0"
 directory = "netlify/functions"
 
 [[redirects]]
+from = "/sms-consent"
+to = "/sms-consent/"
+status = 301
+
+[[redirects]]
+from = "/sms-consent/"
+to = "/sms-consent/index.html"
+status = 200
+force = true
+
+[[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200

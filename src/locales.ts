@@ -21,7 +21,7 @@ export interface GuestViewTranslations {
 		notificationsEnabled: string;
 		notificationsError: string;
 		notificationsLoading: string;
-		preregisterAction: string;
+		saveInformationAction: string;
 		unidentifiedHeading: string;
 		unidentifiedMessage: string;
 	};
@@ -30,7 +30,6 @@ export interface GuestViewTranslations {
 		body: string;
 	};
 	notOpenState: {
-		preregisterAction: string;
 		heading: string;
 		subheading: string;
 		lotteryDescription: string;
@@ -48,8 +47,18 @@ export interface GuestViewTranslations {
 	};
 }
 
+export interface SignupViewTranslations {
+	formDescription: string;
+	formTitle: string;
+	submit: string;
+	submitting: string;
+	successDescription: string;
+	successTitle: string;
+}
+
 export interface Translation {
 	guestView: GuestViewTranslations;
+	signupView: SignupViewTranslations;
 	admin: string;
 	adminDescription: string;
 	adminEyebrow: string;
@@ -76,12 +85,6 @@ export interface Translation {
 	countOtherPlaceholder: string;
 	currentStatus: string;
 	chooseAnswer: string;
-	earlyFormDescription: string;
-	earlyFormTitle: string;
-	earlySubmit: string;
-	earlySubmitting: string;
-	earlySuccessDescription: string;
-	earlySuccessTitle: string;
 	firstName: string;
 	formDescription: string;
 	formTitle: string;
@@ -160,10 +163,10 @@ export const translations = {
 				notificationsError:
 					'We could not retrieve your notification status. Please try again later.',
 				notificationsLoading: 'Checking notification status…',
-				preregisterAction: 'Preregister',
-				unidentifiedHeading: 'Not recognized on this device',
+				saveInformationAction: 'Save my information',
+				unidentifiedHeading: 'Save your information for next time',
 				unidentifiedMessage:
-					'Preregister so this device can remember you for future visits. Note: this does not enter you into the lottery.',
+					'Save your name and phone number so you do not need to enter them again on your next visit. This does not enter you in the lottery.',
 			},
 			scheduleInformation: {
 				heading: 'Registration opens every Saturday at 10:30 AM',
@@ -173,7 +176,6 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				preregisterAction: 'Preregister',
 				heading: 'The Market Is Closed',
 				subheading:
 					'Registration will open again next Saturday at 10:30 AM and remain open until 11:30 AM.',
@@ -222,13 +224,16 @@ export const translations = {
 		countOtherPlaceholder: 'Enter value',
 		currentStatus: 'Current status',
 		chooseAnswer: 'Choose an answer',
-		earlyFormDescription: 'Sign up now and we’ll have everything ready when the market opens.',
-		earlyFormTitle: 'Reserve your spot early',
-		earlySubmit: 'Sign up early',
-		earlySubmitting: 'Signing up…',
-		earlySuccessDescription:
-			'We’ll let you know as soon as registration opens. Thank you for planning ahead.',
-		earlySuccessTitle: 'You’re signed up early!',
+		signupView: {
+			formDescription:
+				'Save your name and phone number so you do not need to enter them again on your next visit. This does not enter you in the lottery or save a place in line.',
+			formTitle: 'Save your information for next time',
+			submit: 'Save my information',
+			submitting: 'Saving…',
+			successDescription:
+				'You will not need to enter it again on your next visit. You have not entered the lottery or saved a place in line.',
+			successTitle: 'Your information is saved',
+		},
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
 		formTitle: 'Tell us about you',
@@ -264,7 +269,7 @@ export const translations = {
 		smsError: 'We could not enable text updates. Please try again.',
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
 		phone: 'Phone number',
-		privacy: 'Your information is only used to help us serve you today.',
+		privacy: 'Your information is only used to help us serve you.',
 		privacyPolicy: 'Privacy Policy',
 		qrCodeDescription:
 			'Scan this code with a phone camera, or visit the link below, to open the check-in page.',
@@ -308,10 +313,10 @@ export const translations = {
 				notificationsError:
 					'No pudimos consultar el estado de sus notificaciones. Inténtelo de nuevo más tarde.',
 				notificationsLoading: 'Consultando el estado de las notificaciones…',
-				preregisterAction: 'Preinscribirse',
-				unidentifiedHeading: 'Dispositivo no reconocido',
+				saveInformationAction: 'Guardar mi información',
+				unidentifiedHeading: 'Guarde su información para la próxima vez',
 				unidentifiedMessage:
-					'Preinscríbase para que este dispositivo pueda recordarle en futuras visitas. Nota: esto no le inscribe en el sorteo.',
+					'Guarde su nombre y número de teléfono para no tener que ingresarlos de nuevo en su próxima visita. Esto no le inscribe en el sorteo.',
 			},
 			scheduleInformation: {
 				heading: 'El registro abre todos los sábados a las 10:30 a. m.',
@@ -321,7 +326,6 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				preregisterAction: 'Preinscribirse',
 				heading: 'El mercado está cerrado',
 				subheading:
 					'La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta hasta las 11:30 a. m.',
@@ -370,13 +374,16 @@ export const translations = {
 		countOtherPlaceholder: 'Ingrese un valor',
 		currentStatus: 'Estado actual',
 		chooseAnswer: 'Elija una respuesta',
-		earlyFormDescription: 'Regístrese ahora y tendremos todo listo cuando abra el mercado.',
-		earlyFormTitle: 'Reserve su lugar con anticipación',
-		earlySubmit: 'Registrarse con anticipación',
-		earlySubmitting: 'Registrando…',
-		earlySuccessDescription:
-			'Le avisaremos en cuanto se abra el registro. Gracias por planear con tiempo.',
-		earlySuccessTitle: '¡Se registró con anticipación!',
+		signupView: {
+			formDescription:
+				'Guarde su nombre y número de teléfono para no tener que ingresarlos de nuevo en su próxima visita. Esto no le inscribe en el sorteo ni reserva un lugar en la fila.',
+			formTitle: 'Guarde su información para la próxima vez',
+			submit: 'Guardar mi información',
+			submitting: 'Guardando…',
+			successDescription:
+				'No tendrá que ingresarla de nuevo en su próxima visita. No se ha inscrito en el sorteo ni ha reservado un lugar en la fila.',
+			successTitle: 'Su información está guardada',
+		},
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
@@ -414,7 +421,7 @@ export const translations = {
 		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
 		phone: 'Número de teléfono',
-		privacy: 'Su información solo se utiliza para atenderle hoy.',
+		privacy: 'Su información solo se utiliza para atenderle.',
 		privacyPolicy: 'Política de privacidad',
 		qrCodeDescription:
 			'Escanee este código con la cámara de un teléfono, o visite el enlace de abajo, para abrir la página de registro.',
@@ -457,10 +464,10 @@ export const translations = {
 				notificationsEnabled: 'اعلان‌ها فعال هستند',
 				notificationsError: 'وضعیت اعلان‌های شما دریافت نشد. لطفاً بعداً دوباره تلاش کنید.',
 				notificationsLoading: 'در حال بررسی وضعیت اعلان‌ها…',
-				preregisterAction: 'پیش‌ثبت‌نام',
-				unidentifiedHeading: 'در این دستگاه شناسایی نشده‌اید',
+				saveInformationAction: 'ذخیره اطلاعات من',
+				unidentifiedHeading: 'اطلاعات خود را برای دفعه بعد ذخیره کنید',
 				unidentifiedMessage:
-					'پیش‌ثبت‌نام کنید تا این دستگاه شما را برای مراجعات بعدی به خاطر بسپارد. توجه: این کار شما را وارد قرعه‌کشی نمی‌کند.',
+					'نام و شماره تلفن خود را ذخیره کنید تا در مراجعه بعدی نیازی به وارد کردن دوباره آن‌ها نداشته باشید. این کار شما را وارد قرعه‌کشی نمی‌کند.',
 			},
 			scheduleInformation: {
 				heading: 'ثبت‌نام هر شنبه ساعت ۱۰:۳۰ صبح باز می‌شود',
@@ -470,7 +477,6 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				preregisterAction: 'پیش‌ثبت‌نام',
 				heading: 'بازار بسته است',
 				subheading:
 					'ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و تا ساعت ۱۱:۳۰ صبح ادامه خواهد داشت.',
@@ -519,13 +525,16 @@ export const translations = {
 		countOtherPlaceholder: 'مقدار را وارد کنید',
 		currentStatus: 'وضعیت فعلی',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
-		earlyFormDescription: 'همین حالا ثبت‌نام کنید تا هنگام باز شدن بازار همه‌چیز آماده باشد.',
-		earlyFormTitle: 'زودتر جای خود را رزرو کنید',
-		earlySubmit: 'ثبت‌نام زودهنگام',
-		earlySubmitting: 'در حال ثبت‌نام…',
-		earlySuccessDescription:
-			'به محض باز شدن ثبت‌نام به شما اطلاع می‌دهیم. از برنامه‌ریزی زودهنگام شما سپاسگزاریم.',
-		earlySuccessTitle: 'شما زودهنگام ثبت‌نام کردید!',
+		signupView: {
+			formDescription:
+				'نام و شماره تلفن خود را ذخیره کنید تا در مراجعه بعدی نیازی به وارد کردن دوباره آن‌ها نداشته باشید. این کار شما را وارد قرعه‌کشی نمی‌کند و جایی در صف رزرو نمی‌کند.',
+			formTitle: 'اطلاعات خود را برای دفعه بعد ذخیره کنید',
+			submit: 'ذخیره اطلاعات من',
+			submitting: 'در حال ذخیره…',
+			successDescription:
+				'در مراجعه بعدی نیازی به وارد کردن دوباره آن‌ها ندارید. شما وارد قرعه‌کشی نشده‌اید و جایی در صف رزرو نکرده‌اید.',
+			successTitle: 'اطلاعات شما ذخیره شد',
+		},
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
 		formTitle: 'درباره خودتان بگویید',
@@ -561,7 +570,7 @@ export const translations = {
 		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
 		phone: 'شماره تلفن',
-		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی امروز استفاده می‌شود.',
+		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی به شما استفاده می‌شود.',
 		privacyPolicy: 'سیاست حفظ حریم خصوصی',
 		qrCodeDescription:
 			'این کد را با دوربین گوشی اسکن کنید یا از پیوند زیر بازدید کنید تا صفحه ثبت‌نام باز شود.',
@@ -605,10 +614,10 @@ export const translations = {
 				notificationsError:
 					'Hindi namin makuha ang status ng iyong mga abiso. Pakisubukang muli mamaya.',
 				notificationsLoading: 'Sinusuri ang status ng mga abiso…',
-				preregisterAction: 'Magparehistro nang maaga',
-				unidentifiedHeading: 'Hindi nakilala sa device na ito',
+				saveInformationAction: 'I-save ang aking impormasyon',
+				unidentifiedHeading: 'I-save ang iyong impormasyon para sa susunod',
 				unidentifiedMessage:
-					'Magparehistro nang maaga para maalala ka ng device na ito sa mga susunod na pagbisita. Tandaan: hindi ka nito isinasali sa lottery.',
+					'I-save ang iyong pangalan at numero ng telepono para hindi mo na kailangang ilagay muli ang mga ito sa susunod mong pagbisita. Hindi ka nito isinasali sa lottery.',
 			},
 			scheduleInformation: {
 				heading: 'Nagbubukas ang pagpaparehistro tuwing Sabado nang 10:30 AM',
@@ -618,7 +627,6 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				preregisterAction: 'Magparehistro nang maaga',
 				heading: 'Sarado ang Pamilihan',
 				subheading:
 					'Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas hanggang 11:30 AM.',
@@ -667,14 +675,16 @@ export const translations = {
 		countOtherPlaceholder: 'Ilagay ang halaga',
 		currentStatus: 'Kasalukuyang katayuan',
 		chooseAnswer: 'Pumili ng sagot',
-		earlyFormDescription:
-			'Magrehistro na ngayon at ihahanda namin ang lahat pagbukas ng pamilihan.',
-		earlyFormTitle: 'Mag-reserba nang maaga',
-		earlySubmit: 'Magrehistro nang maaga',
-		earlySubmitting: 'Nagrerehistro…',
-		earlySuccessDescription:
-			'Ipaaalam namin sa inyo sa sandaling magbukas ang pagpaparehistro. Salamat sa maagang paghahanda.',
-		earlySuccessTitle: 'Narehistro ka na nang maaga!',
+		signupView: {
+			formDescription:
+				'I-save ang iyong pangalan at numero ng telepono para hindi mo na kailangang ilagay muli ang mga ito sa susunod mong pagbisita. Hindi ka nito isinasali sa lottery o nirereserbahan ng puwesto sa pila.',
+			formTitle: 'I-save ang iyong impormasyon para sa susunod',
+			submit: 'I-save ang aking impormasyon',
+			submitting: 'Sine-save…',
+			successDescription:
+				'Hindi mo na ito kailangang ilagay muli sa susunod mong pagbisita. Hindi ka pa kasali sa lottery at wala kang nakareserbang puwesto sa pila.',
+			successTitle: 'Naka-save na ang iyong impormasyon',
+		},
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
@@ -713,7 +723,7 @@ export const translations = {
 		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
 		phone: 'Numero ng telepono',
-		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayo ngayon.',
+		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayong mapagsilbihan.',
 		privacyPolicy: 'Patakaran sa Privacy',
 		qrCodeDescription:
 			'I-scan ang code na ito gamit ang camera ng telepono, o bisitahin ang link sa ibaba, para buksan ang pahina ng pag-check in.',
@@ -756,10 +766,10 @@ export const translations = {
 				notificationsEnabled: 'Đã bật thông báo',
 				notificationsError: 'Không thể tải trạng thái thông báo của bạn. Vui lòng thử lại sau.',
 				notificationsLoading: 'Đang kiểm tra trạng thái thông báo…',
-				preregisterAction: 'Đăng ký trước',
-				unidentifiedHeading: 'Chưa được nhận dạng trên thiết bị này',
+				saveInformationAction: 'Lưu thông tin của tôi',
+				unidentifiedHeading: 'Lưu thông tin cho lần sau',
 				unidentifiedMessage:
-					'Đăng ký trước để thiết bị này có thể ghi nhớ bạn cho những lần ghé sau. Lưu ý: việc này không đưa bạn vào danh sách xổ số.',
+					'Lưu tên và số điện thoại để bạn không phải nhập lại trong lần ghé tiếp theo. Việc này không đưa bạn vào danh sách xổ số.',
 			},
 			scheduleInformation: {
 				heading: 'Đăng ký mở vào mỗi thứ Bảy lúc 10:30 sáng',
@@ -769,7 +779,6 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				preregisterAction: 'Đăng ký trước',
 				heading: 'Chợ hiện đang đóng cửa',
 				subheading: 'Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài đến 11:30 sáng.',
 				lotteryDescription:
@@ -817,14 +826,16 @@ export const translations = {
 		countOtherPlaceholder: 'Nhập giá trị',
 		currentStatus: 'Trạng thái hiện tại',
 		chooseAnswer: 'Chọn câu trả lời',
-		earlyFormDescription:
-			'Đăng ký ngay và chúng tôi sẽ chuẩn bị sẵn sàng mọi thứ khi phiên chợ mở.',
-		earlyFormTitle: 'Đăng ký sớm để giữ chỗ',
-		earlySubmit: 'Đăng ký sớm',
-		earlySubmitting: 'Đang đăng ký…',
-		earlySuccessDescription:
-			'Chúng tôi sẽ báo cho bạn ngay khi đăng ký mở. Cảm ơn bạn đã chuẩn bị trước.',
-		earlySuccessTitle: 'Bạn đã đăng ký sớm!',
+		signupView: {
+			formDescription:
+				'Lưu tên và số điện thoại để bạn không phải nhập lại trong lần ghé tiếp theo. Việc này không đưa bạn vào danh sách xổ số hoặc giữ chỗ trong hàng đợi.',
+			formTitle: 'Lưu thông tin cho lần sau',
+			submit: 'Lưu thông tin của tôi',
+			submitting: 'Đang lưu…',
+			successDescription:
+				'Bạn sẽ không phải nhập lại trong lần ghé tiếp theo. Bạn chưa tham gia xổ số hoặc giữ chỗ trong hàng đợi.',
+			successTitle: 'Thông tin của bạn đã được lưu',
+		},
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
@@ -861,7 +872,7 @@ export const translations = {
 		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
 		phone: 'Số điện thoại',
-		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn hôm nay.',
+		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn.',
 		privacyPolicy: 'Chính sách quyền riêng tư',
 		qrCodeDescription:
 			'Quét mã này bằng camera điện thoại, hoặc truy cập liên kết bên dưới, để mở trang đăng ký.',
@@ -904,10 +915,10 @@ export const translations = {
 				notificationsEnabled: '通知已启用',
 				notificationsError: '无法获取您的通知状态。请稍后重试。',
 				notificationsLoading: '正在检查通知状态…',
-				preregisterAction: '提前登记',
-				unidentifiedHeading: '此设备尚未识别您',
+				saveInformationAction: '保存我的信息',
+				unidentifiedHeading: '保存信息，方便下次使用',
 				unidentifiedMessage:
-					'提前登记后，此设备便可在您今后到访时记住您。注意：这不会让您进入抽签。',
+					'保存您的姓名和电话号码，下次到访时就无需再次输入。这不会让您进入抽签。',
 			},
 			scheduleInformation: {
 				heading: '登记每周六上午 10:30 开放',
@@ -917,7 +928,6 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				preregisterAction: '提前登记',
 				heading: '市场已关闭',
 				subheading: '登记将于下周六上午 10:30 再次开放，并持续至上午 11:30。',
 				lotteryDescription:
@@ -963,12 +973,15 @@ export const translations = {
 		countOtherPlaceholder: '输入数值',
 		currentStatus: '当前状态',
 		chooseAnswer: '请选择答案',
-		earlyFormDescription: '现在登记，等市场开放时我们会准备就绪。',
-		earlyFormTitle: '提前预留名额',
-		earlySubmit: '提前登记',
-		earlySubmitting: '正在登记…',
-		earlySuccessDescription: '登记一开放我们就会通知您。感谢您提前规划。',
-		earlySuccessTitle: '您已提前登记！',
+		signupView: {
+			formDescription:
+				'保存您的姓名和电话号码，下次到访时就无需再次输入。这不会让您进入抽签，也不会在队列中预留位置。',
+			formTitle: '保存信息，方便下次使用',
+			submit: '保存我的信息',
+			submitting: '正在保存…',
+			successDescription: '下次到访时无需再次输入。您尚未进入抽签，也未在队列中预留位置。',
+			successTitle: '您的信息已保存',
+		},
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
 		formTitle: '请告诉我们您的信息',
@@ -1003,7 +1016,7 @@ export const translations = {
 		smsError: '我们无法启用短信更新。请重试。',
 		seniorsCount: '您为多少老年人（55岁以上）采购',
 		phone: '电话号码',
-		privacy: '您的信息仅用于帮助我们今天为您提供服务。',
+		privacy: '您的信息仅用于帮助我们为您提供服务。',
 		privacyPolicy: '隐私政策',
 		qrCodeDescription: '用手机相机扫描此二维码，或访问下方链接，打开登记页面。',
 		qrCodeImageAlt: '链接到登记页面的二维码',
@@ -1045,10 +1058,10 @@ export const translations = {
 				notificationsEnabled: 'تم تفعيل الإشعارات',
 				notificationsError: 'تعذر استرداد حالة إشعاراتك. يرجى المحاولة مرة أخرى لاحقًا.',
 				notificationsLoading: 'جارٍ التحقق من حالة الإشعارات…',
-				preregisterAction: 'التسجيل المسبق',
-				unidentifiedHeading: 'لم يتم التعرّف عليك على هذا الجهاز',
+				saveInformationAction: 'حفظ معلوماتي',
+				unidentifiedHeading: 'احفظ معلوماتك للمرة القادمة',
 				unidentifiedMessage:
-					'سجّل مسبقًا لكي يتذكرك هذا الجهاز في زياراتك المستقبلية. ملاحظة: هذا لا يدخلك في القرعة.',
+					'احفظ اسمك ورقم هاتفك حتى لا تضطر إلى إدخالهما مرة أخرى في زيارتك القادمة. هذا لا يدخلك في القرعة.',
 			},
 			scheduleInformation: {
 				heading: 'يُفتح التسجيل كل يوم سبت الساعة 10:30 صباحًا',
@@ -1058,7 +1071,6 @@ export const translations = {
 				`,
 			},
 			notOpenState: {
-				preregisterAction: 'التسجيل المسبق',
 				heading: 'السوق مغلق',
 				subheading:
 					'سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر حتى الساعة 11:30 صباحًا.',
@@ -1107,12 +1119,16 @@ export const translations = {
 		countOtherPlaceholder: 'أدخل القيمة',
 		currentStatus: 'الحالة الحالية',
 		chooseAnswer: 'اختر إجابة',
-		earlyFormDescription: 'سجّل الآن وسنكون جاهزين تمامًا عند افتتاح السوق.',
-		earlyFormTitle: 'احجز مكانك مبكرًا',
-		earlySubmit: 'التسجيل المبكر',
-		earlySubmitting: 'جارٍ التسجيل…',
-		earlySuccessDescription: 'سنخبرك بمجرد فتح التسجيل. شكرًا لتخطيطك المسبق.',
-		earlySuccessTitle: 'لقد سجّلت مبكرًا!',
+		signupView: {
+			formDescription:
+				'احفظ اسمك ورقم هاتفك حتى لا تضطر إلى إدخالهما مرة أخرى في زيارتك القادمة. هذا لا يدخلك في القرعة ولا يحجز لك مكانًا في قائمة الانتظار.',
+			formTitle: 'احفظ معلوماتك للمرة القادمة',
+			submit: 'حفظ معلوماتي',
+			submitting: 'جارٍ الحفظ…',
+			successDescription:
+				'لن تضطر إلى إدخالها مرة أخرى في زيارتك القادمة. لم تدخل القرعة ولم يُحجز لك مكان في قائمة الانتظار.',
+			successTitle: 'تم حفظ معلوماتك',
+		},
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
 		formTitle: 'أخبرنا عنك',
@@ -1148,7 +1164,7 @@ export const translations = {
 		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
 		phone: 'رقم الهاتف',
-		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك اليوم.',
+		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك.',
 		privacyPolicy: 'سياسة الخصوصية',
 		qrCodeDescription:
 			'امسح هذا الرمز بكاميرا الهاتف، أو تفضل بزيارة الرابط أدناه، لفتح صفحة التسجيل.',

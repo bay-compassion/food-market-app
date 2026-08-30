@@ -391,6 +391,12 @@ describe('App', () => {
 			expect(container.querySelector('input[autocomplete="given-name"]')).not.toBeNull(),
 		);
 
+		expect(container.querySelector('.guest-layout')).not.toBeNull();
+		expect(
+			screen.getByRole('heading', { name: translations.en.signupView.formTitle }),
+		).not.toBeNull();
+		expect(screen.getByText(translations.en.signupView.formDescription)).not.toBeNull();
+		expect(screen.getByRole('button', { name: translations.en.signupView.submit })).not.toBeNull();
 		expect(container.querySelector('input[autocomplete="family-name"]')).not.toBeNull();
 		expect(container.querySelector('input[type="tel"]')).not.toBeNull();
 		expect(container.querySelector('input.count-other')).toBeNull();
