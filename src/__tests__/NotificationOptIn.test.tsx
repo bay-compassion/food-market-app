@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NotificationOptIn } from '../components/guest-view/NotificationOptIn';
+import { NotificationOptIn } from '../components/guest-view/identity/NotificationOptIn';
 import { StorageKey } from '../services/storage.service';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';

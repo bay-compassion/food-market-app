@@ -13,12 +13,12 @@ import { useTranslation } from '../../stores/react/use-translation';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
 import type { Language } from '../../stores/translation.store';
 import { GuestCombinedForm } from './forms/GuestCombinedForm';
-import { GuestIdentityIndicator } from './GuestIdentityIndicator';
 import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 import { GuestServiceState } from './GuestServiceState';
 import { GuestVisitStatus } from './GuestVisitStatus';
+import { GuestIdentityCard } from './identity/GuestIdentityCard';
 
 /** The guest home screen (`/`): identity, language, and whichever card the session phase calls for. */
 export const GuestView = observer(function GuestView() {
@@ -102,7 +102,7 @@ export const GuestView = observer(function GuestView() {
 	return (
 		<section className="guest-layout">
 			{/* Card that indicates who the guest has been identified as */}
-			<GuestIdentityIndicator />
+			<GuestIdentityCard />
 
 			{!guest.isReturningVisitor ? <GuestLanguageHero onSelectLanguage={selectLanguage} /> : null}
 

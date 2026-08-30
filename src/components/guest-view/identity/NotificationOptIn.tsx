@@ -3,8 +3,8 @@ import { Button, Checkbox, FormControlLabel, Link } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
-import { useRootStore } from '../../stores/react/store-context';
-import { useTranslation } from '../../stores/react/use-translation';
+import { useRootStore } from '../../../stores/react/store-context';
+import { useTranslation } from '../../../stores/react/use-translation';
 
 const Consent = styled.div`
 	display: grid;

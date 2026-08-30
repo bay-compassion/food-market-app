@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=0e07531dd5ed, src/components/routes/SignupView.tsx=3169ee3caf7f, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=34a0315a1d8f, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=5e34b8fc3d95, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=1ab83838e9c0, src/components/routes/SignupView.tsx=3169ee3caf7f, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=34a0315a1d8f, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=5e34b8fc3d95, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
@@ -124,7 +124,7 @@ flowchart TD
   normal card resolution decides (queue form, visit status, or the session's current phase). A
   browser with no device token instead sees the identity-only form and, on success, an inline
   "your information is saved" message on `/signup` itself. The unidentified
-  `GuestIdentityIndicator` provides the in-app link into this flow; a guest can also land on
+  `GuestIdentityCard` provides the in-app link into this flow; a guest can also land on
   `/signup` directly, e.g. from a QR code.
   `GuestCombinedForm` (the composer) takes a
   `context` prop (`'queue' | 'early'`): `'early'` (only ever passed by `SignupView`) renders only the
@@ -142,7 +142,7 @@ flowchart TD
 - **Inactive market states share one explanation card.** `MarketSessionStore.isActive` is the
   boundary: when it is false, `GuestView` renders `GuestNotOpenState` with the next registration
   window, lottery rules, and notification details, separated by a divider. Saving information is
-  offered separately by `GuestIdentityIndicator` when the device has no saved identity. When
+  offered separately by `GuestIdentityCard` when the device has no saved identity. When
   `isActive` is true, the normal card resolver chooses among the registration form, visit status,
   registration-closed message, and in-service message. The separate schedule alert is no longer
   rendered above the card.
