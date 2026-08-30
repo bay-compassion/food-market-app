@@ -103,8 +103,21 @@ async function capturePreregistration() {
 	await mockApplicationApi(page);
 	await page.goto(`${baseUrl}/signup`);
 	await page.getByRole('heading', { name: 'Save your information for next time' }).waitFor();
-	await page.getByRole('link', { name: 'Privacy Policy' }).waitFor();
-	await page.getByRole('link', { name: 'Terms & Conditions' }).waitFor();
+	const legalLinks = [
+		page.getByRole('link', { name: 'Privacy Policy' }),
+		page.getByRole('link', { name: 'Terms & Conditions' }),
+	];
+
+	for (const link of legalLinks) {
+		await link.waitFor();
+		const bounds = await link.boundingBox();
+		const viewport = page.viewportSize();
+
+		if (!bounds || !viewport || bounds.y + bounds.height > viewport.height) {
+			throw new Error('The preregistration legal links must fit within the screenshot viewport.');
+		}
+	}
+
 	await screenshot(page, '01-preregistration.png');
 }
 
