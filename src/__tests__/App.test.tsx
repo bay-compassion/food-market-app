@@ -214,7 +214,7 @@ describe('App', () => {
 		await user.selectOptions(container.querySelector('select')!, '18-29');
 
 		// Household, children, then seniors — `GuestLotteryForm`'s stable relative order.
-		const countInputs = container.querySelectorAll<HTMLInputElement>('input.count-other');
+		const countInputs = container.querySelectorAll<HTMLInputElement>('.count-other input');
 
 		await user.type(countInputs[0]!, '2');
 		await user.type(countInputs[1]!, '1');
@@ -248,7 +248,7 @@ describe('App', () => {
 		vi.stubGlobal('fetch', fetchMock);
 		const { container } = renderApp();
 
-		await waitFor(() => expect(container.querySelector('input.count-other')).not.toBeNull());
+		await waitFor(() => expect(container.querySelector('.count-other input')).not.toBeNull());
 		await fillRegistration(container);
 
 		await waitFor(() => expect(container.textContent).toContain('You’re in the queue!'));
@@ -315,7 +315,7 @@ describe('App', () => {
 		// A device token with no locally cached identity (this test sets only the token, not
 		// `bay-compassion.guest-identity`) still shows the sign-up fields — there's nothing to
 		// prefill them with. See `GuestRegistrationForm`'s `showSignupFields`.
-		await waitFor(() => expect(container.querySelector('input.count-other')).not.toBeNull());
+		await waitFor(() => expect(container.querySelector('.count-other input')).not.toBeNull());
 		await fillRegistration(container);
 
 		await waitFor(() => expect(container.textContent).toContain('Current status: Registered'));
@@ -399,7 +399,7 @@ describe('App', () => {
 		expect(screen.getByRole('button', { name: translations.en.signupView.submit })).not.toBeNull();
 		expect(container.querySelector('input[autocomplete="family-name"]')).not.toBeNull();
 		expect(container.querySelector('input[type="tel"]')).not.toBeNull();
-		expect(container.querySelector('input.count-other')).toBeNull();
+		expect(container.querySelector('.count-other input')).toBeNull();
 		expect(container.textContent).not.toContain('Your place in line');
 	});
 

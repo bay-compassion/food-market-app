@@ -8,7 +8,8 @@ import { FormField, type FormFieldProps } from './FormField';
  * The labelled input every form on the guest side is built from.
  *
  * `type` does more than pick an input type: `select` swaps the input for a `<select>` built from
- * the `options` prop, which is how the age range field works.
+ * the `options` prop, which is how the age range field works, and `textarea` for a multi-line box
+ * `rows` tall, which is what a free-text registration question gets.
  */
 
 /** `onChange` is optional here: the wrapper owns the value, so a story need not supply one. */
@@ -37,7 +38,10 @@ const meta = {
 	component: Controlled,
 	parameters: { shell: 'guest' },
 	argTypes: {
-		type: { control: 'select', options: ['text', 'number', 'tel', 'password', 'select'] },
+		type: {
+			control: 'select',
+			options: ['text', 'number', 'tel', 'password', 'select', 'textarea'],
+		},
 		onChange: { action: 'change' },
 	},
 	args: {
@@ -93,6 +97,14 @@ export const Select: Story = {
 			...ageRanges.map((range) => ({ value: range, label: range })),
 		],
 	},
+};
+
+/**
+ * `type="textarea"` is the free-text answer to a registration question: several lines tall, and
+ * left untrimmed as it is typed so the spaces between words survive.
+ */
+export const Textarea: Story = {
+	args: { label: 'How did you travel here today?', type: 'textarea', rows: 3, value: '' },
 };
 
 /** Several fields stacked, which is how they are actually seen. */

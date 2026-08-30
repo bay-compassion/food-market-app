@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Button, Link } from '@mui/material';
+import { Button, Checkbox, FormControlLabel, Link } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
@@ -14,24 +14,6 @@ const Consent = styled.div`
 const Enabled = styled.p`
 	margin: 0;
 	font-weight: 700;
-`;
-
-const ConsentLabel = styled.label`
-	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-
-	input {
-		flex: 0 0 auto;
-		width: 20px;
-		height: 20px;
-		margin-top: 2px;
-	}
-
-	span {
-		font-weight: 400;
-		line-height: 1.55;
-	}
 `;
 
 const LegalLinks = styled.div`
@@ -77,14 +59,16 @@ export const NotificationOptIn = observer(function NotificationOptIn() {
 				<Enabled className="notification-enabled">{t.smsEnabled}</Enabled>
 			) : (
 				<>
-					<ConsentLabel className="sms-consent">
-						<input
-							type="checkbox"
-							checked={smsConsent}
-							onChange={(event) => setSmsConsent(event.target.checked)}
-						/>
-						<span>{t.smsConsentLabel}</span>
-					</ConsentLabel>
+					<FormControlLabel
+						className="sms-consent"
+						control={
+							<Checkbox
+								checked={smsConsent}
+								onChange={(event) => setSmsConsent(event.target.checked)}
+							/>
+						}
+						label={t.smsConsentLabel}
+					/>
 					<LegalLinks className="notification-legal-links">
 						<Link href="/privacy">{t.privacyPolicy}</Link>
 						<Link href="/terms">{t.termsAndConditions}</Link>

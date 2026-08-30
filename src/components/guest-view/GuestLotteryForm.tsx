@@ -1,4 +1,3 @@
-import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
 import { ageRanges, type AgeRange } from '../../services/ageRanges';
@@ -16,30 +15,6 @@ export type GuestLotteryFormProps = {
 
 /** The scale answers on offer, 1 through 10. */
 const scaleValues = Array.from({ length: 10 }, (_, index) => index + 1);
-
-const Question = styled.label`
-	display: grid;
-	gap: 8px;
-
-	> span {
-		font-family: var(--font-heading);
-		font-size: 16px;
-		font-weight: 700;
-	}
-
-	select,
-	textarea {
-		width: 100%;
-		padding: 14px 16px;
-		border: 2px solid var(--color-border);
-		border-radius: var(--radius-md);
-		color: var(--color-text);
-		background: var(--color-background);
-		font-family: var(--font-body);
-		font-size: 16px;
-		font-weight: 400;
-	}
-`;
 
 /**
  * What entering the lottery asks for beyond identity: who the guest is shopping for, and whatever
@@ -66,6 +41,11 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 	const ageOptions: FormFieldOption[] = [
 		{ value: '', label: t.agePlaceholder, disabled: true },
 		...ageRanges.map((range) => ({ value: range, label: ageRangeLabels[range] })),
+	];
+
+	const scaleOptions: FormFieldOption[] = [
+		{ value: '', label: t.chooseAnswer, disabled: true },
+		...scaleValues.map((value) => ({ value: String(value), label: String(value) })),
 	];
 
 	/** The three counts differ only in their label and hint, so they share everything else. */
@@ -107,39 +87,34 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 				value={guest.seniorsCount}
 				onChange={(value) => registration.updateGuest({ seniorsCount: value })}
 			/>
-			{registrationQuestions.map((question) => (
-				<Question key={question.id} className="dynamic-question">
-					<span>{question.prompt}</span>
-					{question.type === 'scale' ? (
-						<select
-							value={registration.registrationAnswers[question.id] ?? ''}
-							required={question.required}
-							// The scale is stored as a number, matching the `v-model.number` this replaced —
-							// the answers go to the API as they are held here.
-							onChange={(event) => registration.setAnswer(question.id, Number(event.target.value))}
-						>
-							<option value="" disabled>
-								{t.chooseAnswer}
-							</option>
-							{scaleValues.map((value) => (
-								<option key={value} value={value}>
-									{value}
-								</option>
-							))}
-						</select>
-					) : (
-						<textarea
-							value={registration.registrationAnswers[question.id] ?? ''}
-							required={question.required}
-							rows={3}
-							// Trimmed on the way out rather than on every keystroke: trimming as the guest
-							// types would eat the space between words as soon as it was pressed.
-							onChange={(event) => registration.setAnswer(question.id, event.target.value)}
-							onBlur={(event) => registration.setAnswer(question.id, event.target.value.trim())}
-						/>
-					)}
-				</Question>
-			))}
+			{registrationQuestions.map((question) =>
+				question.type === 'scale' ? (
+					<FormField
+						key={question.id}
+						label={question.prompt}
+						type="select"
+						value={registration.registrationAnswers[question.id] ?? ''}
+						// The scale is stored as a number, matching the `v-model.number` this replaced —
+						// the answers go to the API as they are held here.
+						onChange={(value) => registration.setAnswer(question.id, Number(value))}
+						required={question.required}
+						options={scaleOptions}
+					/>
+				) : (
+					<FormField
+						key={question.id}
+						label={question.prompt}
+						type="textarea"
+						rows={3}
+						value={registration.registrationAnswers[question.id] ?? ''}
+						onChange={(value) => registration.setAnswer(question.id, value)}
+						// Trimmed on the way out rather than on every keystroke: trimming as the guest
+						// types would eat the space between words as soon as it was pressed.
+						onBlur={(value) => registration.setAnswer(question.id, value.trim())}
+						required={question.required}
+					/>
+				),
+			)}
 		</>
 	);
 });
