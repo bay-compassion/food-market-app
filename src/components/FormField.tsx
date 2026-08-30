@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
-import type { ChangeEvent } from 'react';
+import { FormControl, FormLabel, OutlinedInput, Select } from '@mui/material';
+import { useId } from 'react';
 
 import { parseNumericInput } from '../services/numericInput';
 
@@ -13,6 +13,10 @@ export type FormFieldProps = {
 	label: string;
 	value: string | number;
 	onChange: (value: string | number) => void;
+	/**
+	 * An `<input>` type, or one of two shapes of its own: `select` renders a native picker built
+	 * from `options`, and `textarea` a multi-line box `rows` tall.
+	 */
 	type?: string;
 	required?: boolean;
 	min?: number | string;
@@ -20,6 +24,8 @@ export type FormFieldProps = {
 	inputmode?: 'text' | 'numeric' | 'tel' | 'none' | 'decimal' | 'search' | 'email' | 'url';
 	autocomplete?: string;
 	placeholder?: string;
+	/** How tall `type="textarea"` starts out. Ignored for every other type. */
+	rows?: number;
 	/**
 	 * Transforms the raw typed text before it is reported, such as formatting phone digits into
 	 * `(555) 123-4567`. A keystroke the formatter rejects simply never reaches the value, and the
@@ -28,40 +34,11 @@ export type FormFieldProps = {
 	format?: (value: string) => string;
 	/** The choices for `type="select"`. Ignored for every other type. */
 	options?: FormFieldOption[];
+	/** Reports the value once editing finishes, for work too coarse to do per keystroke. */
+	onBlur?: (value: string) => void;
 };
 
-const Field = styled.label`
-	display: grid;
-	gap: 8px;
-	color: var(--color-text);
-
-	> span {
-		font-family: var(--font-heading);
-		font-size: 16px;
-		font-weight: 700;
-	}
-
-	input,
-	select {
-		width: 100%;
-		height: 58px;
-		padding: 0 16px;
-		color: var(--color-text);
-		font-family: var(--font-body);
-		font-size: 16px;
-		font-weight: 400;
-		border: 2px solid var(--color-border);
-		border-radius: var(--radius-md);
-		outline: 0;
-		background: var(--color-background);
-	}
-
-	input::placeholder {
-		color: var(--color-placeholder);
-	}
-`;
-
-/** A labelled text, number, or select input. */
+/** A labelled text, number, select, or multi-line input. */
 export function FormField({
 	label,
 	value,
@@ -73,45 +50,68 @@ export function FormField({
 	inputmode,
 	autocomplete,
 	placeholder,
+	rows,
 	format,
 	options,
+	onBlur,
 }: FormFieldProps) {
-	function handleChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-		const raw = event.target.value;
+	const inputId = useId();
 
+	function handleChange(raw: string) {
 		if (format) {
 			onChange(format(raw));
 
 			return;
 		}
 
-		onChange(type === 'number' ? parseNumericInput(raw) : raw.trim());
+		if (type === 'number') {
+			onChange(parseNumericInput(raw));
+
+			return;
+		}
+
+		// Free text is left exactly as typed: trimming it per keystroke would eat the space between
+		// words the moment it was pressed.
+		onChange(type === 'textarea' ? raw : raw.trim());
 	}
 
 	return (
-		<Field className="form-field">
-			<span>{label}</span>
+		<FormControl className="form-field" fullWidth>
+			{/* `required` is deliberately left off the label: the control carries it for validation,
+			    and the design marks required fields by their copy rather than an asterisk. */}
+			<FormLabel htmlFor={inputId}>{label}</FormLabel>
 			{type === 'select' ? (
-				<select value={value} required={required} onChange={handleChange}>
+				<Select
+					native
+					id={inputId}
+					value={value}
+					required={required}
+					input={<OutlinedInput />}
+					// `Select` widens its reported value to match the `string | number` it was given.
+					onChange={(event) => handleChange(String(event.target.value))}
+					onBlur={(event) => onBlur?.(event.target.value)}
+				>
 					{options?.map((option) => (
 						<option key={option.value} value={option.value} disabled={option.disabled}>
 							{option.label}
 						</option>
 					))}
-				</select>
+				</Select>
 			) : (
-				<input
+				<OutlinedInput
+					id={inputId}
 					value={value}
-					type={type}
+					type={type === 'textarea' ? undefined : type}
+					multiline={type === 'textarea'}
+					rows={type === 'textarea' ? rows : undefined}
 					required={required}
-					min={min}
-					max={max}
-					inputMode={inputmode}
+					inputProps={{ min, max, inputMode: inputmode }}
 					autoComplete={autocomplete}
 					placeholder={placeholder}
-					onChange={handleChange}
+					onChange={(event) => handleChange(event.target.value)}
+					onBlur={(event) => onBlur?.(event.target.value)}
 				/>
 			)}
-		</Field>
+		</FormControl>
 	);
 }

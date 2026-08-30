@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Button, OutlinedInput, ToggleButton } from '@mui/material';
 import { useId, useState, type ChangeEvent } from 'react';
 
 import { parseNumericInput } from '../services/numericInput';
@@ -69,7 +70,11 @@ const Buttons = styled.div`
 	overflow: hidden;
 `;
 
-const countOption = `
+/**
+ * The chrome the two kinds of button share. The number field needs none of it: it is an
+ * `OutlinedInput`, so the theme already gives it this same height, border, and radius.
+ */
+const countButton = `
 	height: 58px;
 	min-width: 58px;
 	padding: 0 12px;
@@ -77,33 +82,41 @@ const countOption = `
 	font-family: var(--font-body);
 	font-size: 16px;
 	font-weight: 700;
+	line-height: 1;
 	text-align: center;
+	text-transform: none;
 	border: 2px solid var(--color-border);
 	border-radius: var(--radius-md);
-	outline: 0;
 	background: var(--color-background);
 `;
 
-const OptionButton = styled.button<{ $active?: boolean }>`
-	${countOption}
+/**
+ * A quick-select count. `ToggleButton` rather than a plain button because that is what these are —
+ * one pressed option out of a row — and it reports `aria-pressed` for the active one on its own.
+ */
+const OptionButton = styled(ToggleButton)`
+	${countButton}
 
-	${({ $active }) =>
-		$active
-			? `
-	color: var(--color-on-brand);
-	border-color: var(--color-brand);
-	background: var(--color-brand);
-`
-			: ''}
+	&.Mui-selected,
+	&.Mui-selected:hover {
+		color: var(--color-on-brand);
+		border-color: var(--color-brand);
+		background: var(--color-brand);
+	}
 `;
 
-const OtherInput = styled.input`
-	${countOption}
-	min-width: 0;
-	font-weight: 400;
+/** The action that collapses the number field away again — not one of the options. */
+const BackButton = styled(Button)`
+	${countButton}
+`;
 
-	&::placeholder {
-		color: var(--color-placeholder);
+/** `min-width: 0` so the number field can shrink into whatever the buttons leave of the row. */
+const OtherInput = styled(OutlinedInput)`
+	min-width: 0;
+
+	input {
+		padding: 0 12px;
+		text-align: center;
 	}
 `;
 
@@ -174,7 +187,7 @@ export function CollapsingCountField({
 		setDraftValue(isCustomValue ? String(value) : '');
 	}
 
-	function handleOtherInput(event: ChangeEvent<HTMLInputElement>) {
+	function handleOtherInput(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
 		setDraftValue(event.target.value);
 		onChange(parseNumericInput(event.target.value));
 	}
@@ -203,22 +216,23 @@ export function CollapsingCountField({
 			>
 				<Buttons className="count-buttons">
 					{showExpanded ? (
-						<OptionButton
+						<BackButton
 							type="button"
+							variant="outlined"
 							className="count-option count-back"
 							aria-label={backLabel}
 							onClick={handleBack}
 						>
 							{`<${boundary}`}
-						</OptionButton>
+						</BackButton>
 					) : (
 						options.map((option) => (
 							<OptionButton
 								key={option}
 								type="button"
 								className="count-option"
-								$active={isActive(option)}
-								aria-pressed={isActive(option)}
+								value={option}
+								selected={isActive(option)}
 								onClick={() => onChange(option)}
 							>
 								{option}
@@ -229,11 +243,13 @@ export function CollapsingCountField({
 				<OtherInput
 					className="count-option count-other"
 					type="number"
-					aria-label={otherLabel}
 					value={displayValue}
-					min={boundary}
-					max={max}
-					inputMode="numeric"
+					inputProps={{
+						'aria-label': otherLabel,
+						min: boundary,
+						max,
+						inputMode: 'numeric',
+					}}
 					placeholder={showExpanded ? otherPlaceholder : `${boundary}+`}
 					onChange={handleOtherInput}
 					onFocus={handleFocus}
