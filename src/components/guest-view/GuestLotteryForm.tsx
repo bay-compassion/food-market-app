@@ -4,8 +4,8 @@ import { ageRanges, type AgeRange } from '../../services/ageRanges';
 import type { SessionQuestion } from '../../stores/market-session.store';
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
-import { CollapsingCountField } from '../CollapsingCountField';
 import { FormField, type FormFieldOption } from '../FormField';
+import { NumberSpinner } from '../NumberSpinner';
 
 export type GuestLotteryFormProps = {
 	/** The session's own questions, which vary per market event. Owned by the container, since it
@@ -48,13 +48,12 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 		...scaleValues.map((value) => ({ value: String(value), label: String(value) })),
 	];
 
-	/** The three counts differ only in their label and hint, so they share everything else. */
+	/** The three counts differ only in their label, hint, and floor, so they share the rest. */
 	const countProps = {
 		required: true,
 		max: 30,
-		otherLabel: t.countOtherLabel,
-		otherPlaceholder: t.countOtherPlaceholder,
-		backLabel: t.countBackLabel,
+		decrementLabel: t.countDecrementLabel,
+		incrementLabel: t.countIncrementLabel,
 	};
 
 	return (
@@ -67,23 +66,27 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 				required
 				options={ageOptions}
 			/>
-			<CollapsingCountField
+			<NumberSpinner
 				{...countProps}
 				label={t.household}
 				hint={t.householdHint}
-				options={[1, 2, 3, 4]}
+				// A household always has at least the guest in it, where the other two counts can
+				// legitimately be nobody.
+				min={1}
 				value={guest.householdSize}
 				onChange={(value) => registration.updateGuest({ householdSize: value })}
 			/>
-			<CollapsingCountField
+			<NumberSpinner
 				{...countProps}
 				label={t.childrenCount}
+				min={0}
 				value={guest.childrenCount}
 				onChange={(value) => registration.updateGuest({ childrenCount: value })}
 			/>
-			<CollapsingCountField
+			<NumberSpinner
 				{...countProps}
 				label={t.seniorsCount}
+				min={0}
 				value={guest.seniorsCount}
 				onChange={(value) => registration.updateGuest({ seniorsCount: value })}
 			/>

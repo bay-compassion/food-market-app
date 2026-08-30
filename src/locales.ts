@@ -80,9 +80,8 @@ export interface Translation {
 	cancelVisitConfirm: string;
 	childrenCount: string;
 	compassionFood: string;
-	countBackLabel: string;
-	countOtherLabel: string;
-	countOtherPlaceholder: string;
+	countDecrementLabel: string;
+	countIncrementLabel: string;
 	currentStatus: string;
 	chooseAnswer: string;
 	firstName: string;
@@ -219,9 +218,8 @@ export const translations = {
 		cancelVisitConfirm: 'Cancel your place in the queue for this visit?',
 		childrenCount: 'Number of children you’re shopping for',
 		compassionFood: 'Compassion Food',
-		countBackLabel: 'Choose a smaller number',
-		countOtherLabel: 'Or enter another number',
-		countOtherPlaceholder: 'Enter value',
+		countDecrementLabel: 'Decrease count',
+		countIncrementLabel: 'Increase count',
 		currentStatus: 'Current status',
 		chooseAnswer: 'Choose an answer',
 		signupView: {
@@ -369,9 +367,8 @@ export const translations = {
 		cancelVisitConfirm: '¿Cancelar su lugar en la fila para esta visita?',
 		childrenCount: 'Número de niños para quienes está comprando',
 		compassionFood: 'Alimentos con Compasión',
-		countBackLabel: 'Elegir un número menor',
-		countOtherLabel: 'O escriba otro número',
-		countOtherPlaceholder: 'Ingrese un valor',
+		countDecrementLabel: 'Disminuir el número',
+		countIncrementLabel: 'Aumentar el número',
 		currentStatus: 'Estado actual',
 		chooseAnswer: 'Elija una respuesta',
 		signupView: {
@@ -520,9 +517,8 @@ export const translations = {
 		cancelVisitConfirm: 'جای خود را در صف این بازدید لغو می‌کنید؟',
 		childrenCount: 'تعداد کودکانی که برای آن‌ها خرید می‌کنید',
 		compassionFood: 'غذای دلسوزانه',
-		countBackLabel: 'انتخاب عدد کوچک‌تر',
-		countOtherLabel: 'یا عدد دیگری وارد کنید',
-		countOtherPlaceholder: 'مقدار را وارد کنید',
+		countDecrementLabel: 'کاهش تعداد',
+		countIncrementLabel: 'افزایش تعداد',
 		currentStatus: 'وضعیت فعلی',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
 		signupView: {
@@ -670,9 +666,8 @@ export const translations = {
 		cancelVisitConfirm: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 		childrenCount: 'Bilang ng mga batang binibilhan mo',
 		compassionFood: 'Pagkaing May Malasakit',
-		countBackLabel: 'Pumili ng mas maliit na numero',
-		countOtherLabel: 'O maglagay ng ibang numero',
-		countOtherPlaceholder: 'Ilagay ang halaga',
+		countDecrementLabel: 'Bawasan ang bilang',
+		countIncrementLabel: 'Dagdagan ang bilang',
 		currentStatus: 'Kasalukuyang katayuan',
 		chooseAnswer: 'Pumili ng sagot',
 		signupView: {
@@ -821,9 +816,8 @@ export const translations = {
 		cancelVisitConfirm: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 		childrenCount: 'Số trẻ em bạn đang mua sắm cho',
 		compassionFood: 'Thực Phẩm Nhân Ái',
-		countBackLabel: 'Chọn số nhỏ hơn',
-		countOtherLabel: 'Hoặc nhập số khác',
-		countOtherPlaceholder: 'Nhập giá trị',
+		countDecrementLabel: 'Giảm số lượng',
+		countIncrementLabel: 'Tăng số lượng',
 		currentStatus: 'Trạng thái hiện tại',
 		chooseAnswer: 'Chọn câu trả lời',
 		signupView: {
@@ -968,9 +962,8 @@ export const translations = {
 		cancelVisitConfirm: '要取消本次到访的排队位置吗？',
 		childrenCount: '您为多少儿童采购',
 		compassionFood: '关爱食品',
-		countBackLabel: '选择较小的数字',
-		countOtherLabel: '或输入其他数字',
-		countOtherPlaceholder: '输入数值',
+		countDecrementLabel: '减少数量',
+		countIncrementLabel: '增加数量',
 		currentStatus: '当前状态',
 		chooseAnswer: '请选择答案',
 		signupView: {
@@ -1114,9 +1107,8 @@ export const translations = {
 		cancelVisitConfirm: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
 		childrenCount: 'عدد الأطفال الذين تتسوق من أجلهم',
 		compassionFood: 'طعام الرحمة',
-		countBackLabel: 'اختيار رقم أصغر',
-		countOtherLabel: 'أو أدخل رقمًا آخر',
-		countOtherPlaceholder: 'أدخل القيمة',
+		countDecrementLabel: 'إنقاص العدد',
+		countIncrementLabel: 'زيادة العدد',
 		currentStatus: 'الحالة الحالية',
 		chooseAnswer: 'اختر إجابة',
 		signupView: {
