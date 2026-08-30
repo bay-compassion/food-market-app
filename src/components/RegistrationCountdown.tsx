@@ -1,17 +1,12 @@
 import styled from '@emotion/styled';
-import type { CSSProperties } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState, type CSSProperties } from 'react';
 
-export type RegistrationCountdownProps = {
-	/** Ticked by the container so every display on the page shares one clock. */
-	now: number;
-	closesAt: Date;
-	/** The caption above the clock, e.g. "Registration closes in". */
-	closesInLabel: string;
-	/** The screen-reader sentence, with `{minutes}` replaced by the whole minutes remaining. */
-	minutesRemainingTemplate: string;
-	/** Remaining time at or below this starts blending the clock toward the danger color. */
-	transitionThresholdMs?: number;
-};
+import { SessionStatusEnum } from '../services/sessionStateMachine';
+import { useRootStore } from '../stores/react/store-context';
+import { useTranslation } from '../stores/react/use-translation';
+
+const transitionThresholdMs = 5 * 60_000;
 
 const Countdown = styled.div`
 	margin-bottom: 16px;
@@ -71,7 +66,7 @@ function pad(value: number) {
  * reflects the actual remaining time instead of an assumption about how long windows usually run.
  */
 function clockText(remainingMs: number): string {
-	const totalSeconds = Math.floor(remainingMs / 1_000);
+	const totalSeconds = Math.ceil(remainingMs / 1_000);
 	const hours = Math.floor(totalSeconds / 3_600);
 	const minutes = Math.floor((totalSeconds % 3_600) / 60);
 	const seconds = totalSeconds % 60;
@@ -82,13 +77,22 @@ function clockText(remainingMs: number): string {
 }
 
 /** How long is left to register, counting down, warming toward the danger color as it runs out. */
-export function RegistrationCountdown({
-	now,
-	closesAt,
-	closesInLabel,
-	minutesRemainingTemplate,
-	transitionThresholdMs = 5 * 60_000,
-}: RegistrationCountdownProps) {
+export const RegistrationCountdown = observer(function RegistrationCountdown() {
+	const t = useTranslation();
+	const { session } = useRootStore();
+	const [now, setNow] = useState(() => Date.now());
+	const closesAt = session.marketEvent?.registrationClosesAt;
+
+	useEffect(() => {
+		const timer = setInterval(() => setNow(Date.now()), 1_000);
+
+		return () => clearInterval(timer);
+	}, []);
+
+	if (session.currentStatus !== SessionStatusEnum.REGISTRATION_OPEN || !closesAt) {
+		return null;
+	}
+
 	const remainingMs = closesAt.valueOf() - now;
 
 	if (remainingMs <= 0) {
@@ -106,7 +110,7 @@ export function RegistrationCountdown({
 	 * is kept to whole minutes — it changes once a minute even though the visible clock ticks every
 	 * second (and is hidden from assistive technology).
 	 */
-	const accessibleText = minutesRemainingTemplate.replace(
+	const accessibleText = t.registrationClosesInMinutes.replace(
 		'{minutes}',
 		String(Math.ceil(remainingMs / 60_000)),
 	);
@@ -138,11 +142,11 @@ export function RegistrationCountdown({
 							<path d="M12 17h.01" strokeLinecap="round" />
 						</WarningIcon>
 					) : null}
-					{closesInLabel}
+					{t.registrationClosesIn}
 				</Label>
 				<Digits className="registration-countdown-digits">{clockText(remainingMs)}</Digits>
 			</Clock>
 			<span className="sr-only">{accessibleText}</span>
 		</Countdown>
 	);
-}
+});

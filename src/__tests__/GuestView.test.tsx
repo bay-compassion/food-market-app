@@ -82,6 +82,23 @@ describe('GuestView', () => {
 		expect(screen.getByText('signup')).toBeDefined();
 	});
 
+	it('renders the registration countdown immediately above the form', async () => {
+		// Arrange
+		vi.stubGlobal('fetch', fetchRespondingWith({}));
+
+		// Act
+		const { container } = renderGuestView();
+
+		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
+
+		// Assert
+		const form = container.querySelector('form');
+		const countdown = container.querySelector('.registration-countdown');
+
+		expect(countdown).not.toBeNull();
+		expect(countdown?.nextElementSibling?.contains(form)).toBe(true);
+	});
+
 	it('shows visit status and saves the visit token after a successful submission', async () => {
 		// Arrange
 		const user = userEvent.setup();

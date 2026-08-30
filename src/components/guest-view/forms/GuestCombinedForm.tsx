@@ -1,12 +1,11 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import type { FormEvent } from 'react';
 
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import type { RegistrationSubmitResult } from '../../../stores/registration.store';
-import { AppButton } from '../../AppButton';
-import { RegistrationCountdown } from '../../RegistrationCountdown';
 import { GuestInformationForm } from './GuestInformationForm';
 import { GuestLotteryForm } from './GuestLotteryForm';
 
@@ -17,8 +16,6 @@ export type GuestCombinedFormProps = {
 	 * genuinely open.
 	 */
 	context: 'queue' | 'early';
-	/** Ticked by the container so the countdown stays live; unused unless `context` is `'queue'`. */
-	now: number;
 	onSubmitted: (result: RegistrationSubmitResult) => void;
 };
 
@@ -73,13 +70,12 @@ const Privacy = styled.p`
  * The registration form, in both the flows it serves: joining today's queue, and signing up ahead
  * of a session that has not opened yet.
  *
- * It owns the copy and the phase decisions — which fields to show, which wording to use, when the
- * countdown is meaningful — and leaves the fields themselves to `GuestInformationForm` and
- * `GuestLotteryForm`, which read the same registration store.
+ * It owns the copy and field decisions — which fields to show and which wording to use — and
+ * leaves the fields themselves to `GuestInformationForm` and `GuestLotteryForm`, which read the
+ * same registration store.
  */
 export const GuestCombinedForm = observer(function GuestCombinedForm({
 	context,
-	now,
 	onSubmitted,
 }: GuestCombinedFormProps) {
 	const t = useTranslation();
@@ -87,8 +83,6 @@ export const GuestCombinedForm = observer(function GuestCombinedForm({
 	const { guest, registration, session } = rootStore;
 
 	const registrationQuestions = session.currentState?.questions ?? [];
-	/** When registration is genuinely open right now, the moment it closes; otherwise `null`. */
-	const registrationClosesAt = session.marketEvent?.registrationClosesAt ?? null;
 	/**
 	 * Whether this device has a cached local identity (name and phone) to prefill — hides the
 	 * sign-up fields when so, since there's nothing left to ask. A device token alone isn't enough:
@@ -127,14 +121,6 @@ export const GuestCombinedForm = observer(function GuestCombinedForm({
 	return (
 		<Form onSubmit={(event) => void handleSubmit(event)}>
 			<Heading className="form-heading">
-				{context === 'queue' && registrationClosesAt ? (
-					<RegistrationCountdown
-						now={now}
-						closesAt={registrationClosesAt}
-						closesInLabel={t.registrationClosesIn}
-						minutesRemainingTemplate={t.registrationClosesInMinutes}
-					/>
-				) : null}
 				<h2>{copy.formTitle}</h2>
 				<p>{copy.formDescription}</p>
 			</Heading>
@@ -147,12 +133,9 @@ export const GuestCombinedForm = observer(function GuestCombinedForm({
 					{t.submissionError}
 				</SubmissionError>
 			) : null}
-			<AppButton
-				type="submit"
-				disabled={registration.isSubmitting}
-				label={registration.isSubmitting ? copy.submitting : copy.submit}
-				trailing="→"
-			/>
+			<Button type="submit" disabled={registration.isSubmitting} size="large">
+				{registration.isSubmitting ? copy.submitting : copy.submit}
+			</Button>
 			<Privacy className="privacy">
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 					<rect x="5" y="10" width="14" height="10" rx="2" />

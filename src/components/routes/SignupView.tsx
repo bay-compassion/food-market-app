@@ -40,7 +40,7 @@ export const SignupView = observer(function SignupView() {
 						description={t.signupView.successDescription}
 					/>
 				) : (
-					<GuestCombinedForm context="early" now={Date.now()} onSubmitted={handleSubmitted} />
+					<GuestCombinedForm context="early" onSubmitted={handleSubmitted} />
 				)}
 			</Card>
 		</section>

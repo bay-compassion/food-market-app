@@ -14,6 +14,7 @@ import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import type { RegistrationSubmitResult } from '../../stores/registration.store';
 import type { Language } from '../../stores/translation.store';
+import { RegistrationCountdown } from '../RegistrationCountdown';
 import { GuestCombinedForm } from './forms/GuestCombinedForm';
 import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
@@ -29,7 +30,7 @@ export const GuestView = observer(function GuestView() {
 	const { guest, session, visit, translations } = rootStore;
 
 	const [isStatusLoading, setIsStatusLoading] = useState(true);
-	/** Ticks every second so the registration form's countdown stays live. */
+	/** Ticks every second so the session phase stays current. */
 	const [now, setNow] = useState(() => Date.now());
 
 	useEffect(() => {
@@ -117,31 +118,30 @@ export const GuestView = observer(function GuestView() {
 					{t.statusLoading}
 				</p>
 			) : (
-				<Card aria-live="polite">
-					<CardContent>
-						{!session.isActive ? (
-							<GuestNotOpenState />
-						) : cardState.kind === 'visit-status' ? (
-							<GuestVisitStatus
-								successTitle={successCopy.title}
-								successDescription={successCopy.description}
-								onCancelVisit={cancelVisit}
-							/>
-						) : cardState.kind === 'form' ? (
-							<GuestCombinedForm
-								context={cardState.context}
-								now={now}
-								onSubmitted={handleSubmitted}
-							/>
-						) : cardState.kind === 'not-open' ? (
-							<GuestNotOpenState />
-						) : cardState.kind === 'registration-closed' ? (
-							<GuestRegistrationClosedState />
-						) : (
-							<GuestServiceState hasEnded={cardState.kind === 'ended'} />
-						)}
-					</CardContent>
-				</Card>
+				<>
+					<RegistrationCountdown />
+					<Card aria-live="polite">
+						<CardContent>
+							{!session.isActive ? (
+								<GuestNotOpenState />
+							) : cardState.kind === 'visit-status' ? (
+								<GuestVisitStatus
+									successTitle={successCopy.title}
+									successDescription={successCopy.description}
+									onCancelVisit={cancelVisit}
+								/>
+							) : cardState.kind === 'form' ? (
+								<GuestCombinedForm context={cardState.context} onSubmitted={handleSubmitted} />
+							) : cardState.kind === 'not-open' ? (
+								<GuestNotOpenState />
+							) : cardState.kind === 'registration-closed' ? (
+								<GuestRegistrationClosedState />
+							) : (
+								<GuestServiceState hasEnded={cardState.kind === 'ended'} />
+							)}
+						</CardContent>
+					</Card>
+				</>
 			)}
 		</section>
 	);

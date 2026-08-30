@@ -1,26 +1,26 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 
-import { translations, type Locale } from '../locales';
+import type { Locale } from '../locales';
+import { SessionStatusEnum } from '../services/sessionStateMachine';
+import { RootStoreProvider } from '../stores/react/store-context';
+import { RootStore } from '../stores/root.store';
 import { RegistrationCountdown } from './RegistrationCountdown';
 
 /**
  * The clock shown above the sign-up form while registration is open, counting down to the moment
- * it closes. `GuestCombinedForm` renders it only when `context === 'queue'` — genuinely open
- * right now, not a pre-registration window.
+ * it closes. `GuestView` renders it immediately above `GuestCombinedForm` only when registration
+ * is genuinely open, not during a pre-registration window.
  *
  * The background blends from brand to danger color via CSS `color-mix()`, driven by a
  * `--registration-countdown-progress` custom property (`0` = brand, `1` = danger) rather than
- * snapping between fixed swatches. The blend starts at `transitionThresholdMs` remaining (default
- * five minutes) — a prop, not a constant, so a session with an unusually short or long window can
- * tune when it kicks in; the `CustomThreshold` story below exercises that.
+ * snapping between fixed swatches. The blend starts at five minutes remaining.
  */
 type CountdownArgs = {
 	locale: Locale;
 	hoursRemaining: number;
 	minutesRemaining: number;
 	secondsRemaining: number;
-	transitionThresholdMinutes: number;
 };
 
 function progressOf(canvasElement: HTMLElement) {
@@ -38,32 +38,39 @@ function hasIcon(canvasElement: HTMLElement) {
 }
 
 /**
- * The component takes an absolute `closesAt`; a story is easier to drive — and to read — in terms
- * of how much time is left, so this turns the remaining-time args into the props it wants.
+ * The component reads an absolute `closesAt` from the session store; a story is easier to drive —
+ * and to read — in terms of how much time is left, so this seeds the matching server state.
  */
 function RemainingTime({
 	locale,
 	hoursRemaining,
 	minutesRemaining,
 	secondsRemaining,
-	transitionThresholdMinutes,
 }: CountdownArgs) {
-	// A fixed pair, rather than a live-ticking value, keeps the story stable rather than
-	// drifting while it sits open (see `QueueGuestRow.stories.ts` for the same convention).
 	const now = Date.now();
 	const closesAt = new Date(
 		now + (hoursRemaining * 3_600 + minutesRemaining * 60 + secondsRemaining) * 1_000,
 	);
-	const t = translations[locale];
+	const store = new RootStore();
+
+	store.translations.setLanguage(locale);
+	store.session.applyServerState({
+		event: {
+			id: 'countdown-story',
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+			sessionMode: 'ad_hoc',
+			capacity: 100,
+			registrationOpensAt: new Date(now - 60_000).toISOString(),
+			registrationClosesAt: closesAt.toISOString(),
+		},
+		questions: [],
+		counts: {},
+	});
 
 	return (
-		<RegistrationCountdown
-			now={now}
-			closesAt={closesAt}
-			closesInLabel={t.registrationClosesIn}
-			minutesRemainingTemplate={t.registrationClosesInMinutes}
-			transitionThresholdMs={transitionThresholdMinutes * 60_000}
-		/>
+		<RootStoreProvider store={store}>
+			<RegistrationCountdown />
+		</RootStoreProvider>
 	);
 }
 
@@ -76,7 +83,6 @@ const meta = {
 		hoursRemaining: 0,
 		minutesRemaining: 15,
 		secondsRemaining: 0,
-		transitionThresholdMinutes: 5,
 	},
 } satisfies Meta<typeof RemainingTime>;
 
@@ -101,7 +107,7 @@ export const HalfwayThroughTransition: Story = {
 	args: { minutesRemaining: 2, secondsRemaining: 30 },
 	play: async ({ canvas, canvasElement }) => {
 		await expect(canvas.getByText('02:30')).toBeInTheDocument();
-		await expect(progressOf(canvasElement)).toBeCloseTo(0.5, 5);
+		await expect(progressOf(canvasElement)).toBeCloseTo(0.5, 3);
 		await expect(hasIcon(canvasElement)).toBe(true);
 	},
 };
@@ -112,20 +118,6 @@ export const NearlyClosed: Story = {
 	play: async ({ canvas, canvasElement }) => {
 		await expect(canvas.getByText('00:10')).toBeInTheDocument();
 		await expect(progressOf(canvasElement)).toBeCloseTo(1, 1);
-		await expect(hasIcon(canvasElement)).toBe(true);
-	},
-};
-
-/**
- * The threshold is a prop, not a fixed constant: a ten-minute threshold means eight minutes left
- * is already 20% blended, well before the default five-minute threshold would have started
- * anything.
- */
-export const CustomThreshold: Story = {
-	args: { minutesRemaining: 8, transitionThresholdMinutes: 10 },
-	play: async ({ canvas, canvasElement }) => {
-		await expect(canvas.getByText('08:00')).toBeInTheDocument();
-		await expect(progressOf(canvasElement)).toBeCloseTo(0.2, 5);
 		await expect(hasIcon(canvasElement)).toBe(true);
 	},
 };
