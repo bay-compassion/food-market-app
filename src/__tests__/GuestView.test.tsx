@@ -107,7 +107,7 @@ describe('GuestView', () => {
 		await user.type(container.querySelector('input[type="tel"]')!, '5551234567');
 		await user.selectOptions(container.querySelector('select')!, '18-29');
 
-		const countInputs = container.querySelectorAll<HTMLInputElement>('.count-other input');
+		const countInputs = container.querySelectorAll<HTMLInputElement>('.number-spinner-input input');
 
 		await user.type(countInputs[0]!, '2');
 		await user.type(countInputs[1]!, '1');

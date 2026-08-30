@@ -53,22 +53,27 @@ export const Default: Story = {
 };
 
 /**
- * Household size starts its buttons at 1 while the other two counts start at 0 — the household
- * always contains at least the guest.
+ * Household size stops at 1 while the other two counts go down to 0 — the household always
+ * contains at least the guest, where there may genuinely be no children.
  */
-export const CountsAreSelectable: Story = {
+export const CountsHaveTheirOwnFloor: Story = {
 	play: async ({ canvas, userEvent }) => {
 		const household = canvas.getByRole('group', { name: translations.en.household });
 		const children = canvas.getByRole('group', { name: translations.en.childrenCount });
+		const stepDown = (group: HTMLElement) =>
+			within(group).getByRole('button', { name: translations.en.countDecrementLabel });
 
-		await expect(within(household).queryByRole('button', { name: '0' })).not.toBeInTheDocument();
-		await expect(within(children).getByRole('button', { name: '0' })).toBeInTheDocument();
-
-		await userEvent.click(within(household).getByRole('button', { name: '3' }));
-		await expect(within(household).getByRole('button', { name: '3' })).toHaveAttribute(
-			'aria-pressed',
-			'true',
+		await userEvent.click(
+			within(household).getByRole('button', { name: translations.en.countIncrementLabel }),
 		);
+		await expect(within(household).getByRole('textbox')).toHaveValue('1');
+		await expect(stepDown(household)).toBeDisabled();
+
+		await userEvent.click(
+			within(children).getByRole('button', { name: translations.en.countIncrementLabel }),
+		);
+		await expect(within(children).getByRole('textbox')).toHaveValue('0');
+		await expect(stepDown(children)).toBeDisabled();
 	},
 };
 
