@@ -104,6 +104,12 @@ export const RegistrationForm: Story = {
 		).toBeInTheDocument();
 		await expect(canvas.getByLabelText(translations.en.firstName)).toBeInTheDocument();
 		await expect(canvas.getByLabelText(translations.en.age)).toBeInTheDocument();
+		await expect(
+			canvas.getByRole('group', { name: translations.en.guestView.forms.informationLegend }),
+		).toBeInTheDocument();
+		await expect(
+			canvas.getByRole('group', { name: translations.en.guestView.forms.lotteryLegend }),
+		).toBeInTheDocument();
 		await expect(canvas.getByRole('button', { name: translations.en.submit })).toBeEnabled();
 	},
 };
@@ -112,6 +118,9 @@ export const RegistrationForm: Story = {
 export const WithRegistrationQuestions: Story = {
 	args: { askExtraQuestions: true },
 	play: async ({ canvas }) => {
+		await expect(
+			canvas.getByRole('group', { name: translations.en.guestView.forms.questionsLegend }),
+		).toBeInTheDocument();
 		await expect(canvas.getByText(sampleQuestions[0]!.prompt)).toBeInTheDocument();
 	},
 };

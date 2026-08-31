@@ -6,6 +6,7 @@ import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { FormField, type FormFieldOption } from '../../FormField';
 import { NumberSpinner } from '../../NumberSpinner';
+import { FormSection } from './FormSection';
 
 export type GuestLotteryFormProps = {
 	/** The session's own questions, which vary per market event. Owned by the container, since it
@@ -58,66 +59,72 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 
 	return (
 		<>
-			<FormField
-				label={t.age}
-				type="select"
-				value={guest.ageRange}
-				onChange={(value) => registration.updateGuest({ ageRange: value as AgeRange | '' })}
-				required
-				options={ageOptions}
-			/>
-			<NumberSpinner
-				{...countProps}
-				label={t.household}
-				hint={t.householdHint}
-				// A household always has at least the guest in it, where the other two counts can
-				// legitimately be nobody.
-				min={1}
-				value={guest.householdSize}
-				onChange={(value) => registration.updateGuest({ householdSize: value })}
-			/>
-			<NumberSpinner
-				{...countProps}
-				label={t.childrenCount}
-				min={0}
-				value={guest.childrenCount}
-				onChange={(value) => registration.updateGuest({ childrenCount: value })}
-			/>
-			<NumberSpinner
-				{...countProps}
-				label={t.seniorsCount}
-				min={0}
-				value={guest.seniorsCount}
-				onChange={(value) => registration.updateGuest({ seniorsCount: value })}
-			/>
-			{registrationQuestions.map((question) =>
-				question.type === 'scale' ? (
-					<FormField
-						key={question.id}
-						label={question.prompt}
-						type="select"
-						value={registration.registrationAnswers[question.id] ?? ''}
-						// The scale is stored as a number, matching the `v-model.number` this replaced —
-						// the answers go to the API as they are held here.
-						onChange={(value) => registration.setAnswer(question.id, Number(value))}
-						required={question.required}
-						options={scaleOptions}
-					/>
-				) : (
-					<FormField
-						key={question.id}
-						label={question.prompt}
-						type="textarea"
-						rows={3}
-						value={registration.registrationAnswers[question.id] ?? ''}
-						onChange={(value) => registration.setAnswer(question.id, value)}
-						// Trimmed on the way out rather than on every keystroke: trimming as the guest
-						// types would eat the space between words as soon as it was pressed.
-						onBlur={(value) => registration.setAnswer(question.id, value.trim())}
-						required={question.required}
-					/>
-				),
-			)}
+			<FormSection legend={t.guestView.forms.lotteryLegend}>
+				<FormField
+					label={t.age}
+					type="select"
+					value={guest.ageRange}
+					onChange={(value) => registration.updateGuest({ ageRange: value as AgeRange | '' })}
+					required
+					options={ageOptions}
+				/>
+				<NumberSpinner
+					{...countProps}
+					label={t.household}
+					hint={t.householdHint}
+					// A household always has at least the guest in it, where the other two counts can
+					// legitimately be nobody.
+					min={1}
+					value={guest.householdSize}
+					onChange={(value) => registration.updateGuest({ householdSize: value })}
+				/>
+				<NumberSpinner
+					{...countProps}
+					label={t.childrenCount}
+					min={0}
+					value={guest.childrenCount}
+					onChange={(value) => registration.updateGuest({ childrenCount: value })}
+				/>
+				<NumberSpinner
+					{...countProps}
+					label={t.seniorsCount}
+					min={0}
+					value={guest.seniorsCount}
+					onChange={(value) => registration.updateGuest({ seniorsCount: value })}
+				/>
+			</FormSection>
+			{registrationQuestions.length > 0 ? (
+				<FormSection legend={t.guestView.forms.questionsLegend}>
+					{registrationQuestions.map((question) =>
+						question.type === 'scale' ? (
+							<FormField
+								key={question.id}
+								label={question.prompt}
+								type="select"
+								value={registration.registrationAnswers[question.id] ?? ''}
+								// The scale is stored as a number, matching the `v-model.number` this
+								// replaced — the answers go to the API as they are held here.
+								onChange={(value) => registration.setAnswer(question.id, Number(value))}
+								required={question.required}
+								options={scaleOptions}
+							/>
+						) : (
+							<FormField
+								key={question.id}
+								label={question.prompt}
+								type="textarea"
+								rows={3}
+								value={registration.registrationAnswers[question.id] ?? ''}
+								onChange={(value) => registration.setAnswer(question.id, value)}
+								// Trimmed on the way out rather than on every keystroke: trimming as the
+								// guest types would eat the space between words as soon as it was pressed.
+								onBlur={(value) => registration.setAnswer(question.id, value.trim())}
+								required={question.required}
+							/>
+						),
+					)}
+				</FormSection>
+			) : null}
 		</>
 	);
 });

@@ -13,6 +13,11 @@ export const languages = [
 export type Locale = (typeof languages)[number]['code'];
 
 export interface GuestViewTranslations {
+	forms: {
+		informationLegend: string;
+		lotteryLegend: string;
+		questionsLegend: string;
+	};
 	identityIndicator: {
 		closeNotificationsDialog: string;
 		heading: string;
@@ -153,6 +158,11 @@ export interface Translation {
 export const translations = {
 	en: {
 		guestView: {
+			forms: {
+				informationLegend: 'Your information',
+				lotteryLegend: 'Lottery entry details',
+				questionsLegend: 'Questions',
+			},
 			identityIndicator: {
 				closeNotificationsDialog: 'Close notification updates',
 				heading: 'Recognized on this device',
@@ -302,6 +312,11 @@ export const translations = {
 	},
 	es: {
 		guestView: {
+			forms: {
+				informationLegend: 'Su información',
+				lotteryLegend: 'Datos de inscripción al sorteo',
+				questionsLegend: 'Preguntas',
+			},
 			identityIndicator: {
 				closeNotificationsDialog: 'Cerrar actualizaciones de notificaciones',
 				heading: 'Reconocido en este dispositivo',
@@ -453,6 +468,11 @@ export const translations = {
 	},
 	fa: {
 		guestView: {
+			forms: {
+				informationLegend: 'اطلاعات شما',
+				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
+				questionsLegend: 'پرسش‌ها',
+			},
 			identityIndicator: {
 				closeNotificationsDialog: 'بستن به‌روزرسانی اعلان‌ها',
 				heading: 'شناسایی‌شده در این دستگاه',
@@ -601,6 +621,11 @@ export const translations = {
 	},
 	tl: {
 		guestView: {
+			forms: {
+				informationLegend: 'Iyong impormasyon',
+				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
+				questionsLegend: 'Mga tanong',
+			},
 			identityIndicator: {
 				closeNotificationsDialog: 'Isara ang mga update sa abiso',
 				heading: 'Nakilala sa device na ito',
@@ -753,6 +778,11 @@ export const translations = {
 	},
 	vi: {
 		guestView: {
+			forms: {
+				informationLegend: 'Thông tin của bạn',
+				lotteryLegend: 'Thông tin tham gia xổ số',
+				questionsLegend: 'Câu hỏi',
+			},
 			identityIndicator: {
 				closeNotificationsDialog: 'Đóng cập nhật thông báo',
 				heading: 'Đã nhận dạng trên thiết bị này',
@@ -901,6 +931,11 @@ export const translations = {
 	},
 	zh: {
 		guestView: {
+			forms: {
+				informationLegend: '您的信息',
+				lotteryLegend: '抽签登记信息',
+				questionsLegend: '问题',
+			},
 			identityIndicator: {
 				closeNotificationsDialog: '关闭通知更新',
 				heading: '已在此设备上识别',
@@ -1043,6 +1078,11 @@ export const translations = {
 	},
 	ar: {
 		guestView: {
+			forms: {
+				informationLegend: 'معلوماتك',
+				lotteryLegend: 'تفاصيل التسجيل في القرعة',
+				questionsLegend: 'أسئلة',
+			},
 			identityIndicator: {
 				closeNotificationsDialog: 'إغلاق تحديثات الإشعارات',
 				heading: 'تم التعرّف عليك على هذا الجهاز',
