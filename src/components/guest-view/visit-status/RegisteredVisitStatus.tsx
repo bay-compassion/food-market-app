@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { RegistrationCountdown } from '@/components/RegistrationCountdown.tsx';
 import type { VisitStatusTranslations } from '@/locales.ts';
 
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
@@ -16,11 +17,7 @@ export function RegisteredVisitStatus({
 			icon="✓"
 			heading={copy.registered.header}
 			description={copy.registered.details}
-			details={
-				<p>
-					{copy.currentStatusLabel}: <strong>{copy.labels.registered}</strong>
-				</p>
-			}
+			details={<RegistrationCountdown />}
 			footer={footer}
 		/>
 	);

@@ -37,7 +37,6 @@ export interface VisitStatusTranslations {
 		header: string;
 		details: string;
 	};
-	currentStatusLabel: string;
 	cancelAction: string;
 	cancelConfirmation: string;
 	updateError: string;
@@ -72,6 +71,10 @@ export interface GuestViewTranslations {
 		selectionDescription: string;
 	};
 	registrationClosedState: {
+		heading: string;
+		description: string;
+	};
+	lotteryPendingState: {
 		heading: string;
 		description: string;
 	};
@@ -206,8 +209,13 @@ export const translations = {
 					'The lottery will run at 11:30 AM. If you are selected to shop, you will receive a number here in the app. If you consent to receiving text messages, you will also be notified by text message.',
 			},
 			registrationClosedState: {
-				heading: 'Registration is closed',
-				description: 'Please check with a market team member for help.',
+				heading: 'Registration has closed',
+				description:
+					'We’re finishing registrations already in progress. The lottery will be drawn shortly.',
+			},
+			lotteryPendingState: {
+				heading: 'Lottery will be drawn shortly',
+				description: 'Registration has closed. Please check back shortly for your result.',
 			},
 			serviceState: {
 				inProgressHeading: 'Today’s market is underway',
@@ -225,8 +233,8 @@ export const translations = {
 					cancelled: 'Cancelled',
 				},
 				registered: {
-					header: 'You’re in the queue!',
-					details: 'We’ll let you know when it’s your turn. Thank you for being here.',
+					header: 'You’re in the lottery!',
+					details: 'We’ll let you know after the lottery is drawn. Thank you for being here.',
 				},
 				waiting: {
 					header: 'You’re in the queue!',
@@ -236,7 +244,6 @@ export const translations = {
 					youAreNext: 'You are next',
 				},
 				called: { header: 'It’s your turn', details: 'Please come to the table now.' },
-				currentStatusLabel: 'Current status',
 				cancelAction: 'Cancel this visit',
 				cancelConfirmation: 'Cancel your place in the queue for this visit?',
 				updateError: 'We could not update this visit. Please ask a market team member for help.',
@@ -366,8 +373,13 @@ export const translations = {
 					'La lotería se realizará a las 11:30 a. m. Si es seleccionado para comprar, recibirá un número aquí en la aplicación. Si acepta recibir mensajes de texto, también recibirá una notificación por mensaje de texto.',
 			},
 			registrationClosedState: {
-				heading: 'El registro está cerrado',
-				description: 'Pida ayuda a un miembro del equipo del mercado.',
+				heading: 'El registro ha cerrado',
+				description:
+					'Estamos terminando las inscripciones que ya estaban en curso. El sorteo se realizará en breve.',
+			},
+			lotteryPendingState: {
+				heading: 'El sorteo se realizará pronto',
+				description: 'El registro ha cerrado. Vuelva a consultar pronto para ver el resultado.',
 			},
 			serviceState: {
 				inProgressHeading: 'El mercado de hoy está en curso',
@@ -385,8 +397,8 @@ export const translations = {
 					cancelled: 'Cancelado',
 				},
 				registered: {
-					header: '¡Ya está en la fila!',
-					details: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
+					header: '¡Está participando en el sorteo!',
+					details: 'Le avisaremos después del sorteo. Gracias por estar aquí.',
 				},
 				waiting: {
 					header: '¡Ya está en la fila!',
@@ -396,7 +408,6 @@ export const translations = {
 					youAreNext: 'Usted es el siguiente',
 				},
 				called: { header: 'Es su turno', details: 'Por favor, acérquese al mostrador ahora.' },
-				currentStatusLabel: 'Estado actual',
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
 				updateError: 'No pudimos actualizar esta visita. Pida ayuda al equipo del mercado.',
@@ -527,8 +538,13 @@ export const translations = {
 					'قرعه‌کشی ساعت ۱۱:۳۰ صبح انجام می‌شود. اگر برای خرید انتخاب شوید، در همین برنامه یک شماره دریافت خواهید کرد. اگر با دریافت پیامک موافقت کرده باشید، از طریق پیامک نیز به شما اطلاع داده می‌شود.',
 			},
 			registrationClosedState: {
-				heading: 'ثبت‌نام بسته است',
-				description: 'برای کمک با یکی از اعضای تیم بازار صحبت کنید.',
+				heading: 'ثبت‌نام بسته شده است',
+				description:
+					'در حال تکمیل ثبت‌نام‌هایی هستیم که از قبل شروع شده‌اند. قرعه‌کشی به‌زودی انجام خواهد شد.',
+			},
+			lotteryPendingState: {
+				heading: 'قرعه‌کشی به‌زودی انجام می‌شود',
+				description: 'ثبت‌نام بسته شده است. لطفاً برای دیدن نتیجه به‌زودی دوباره بررسی کنید.',
 			},
 			serviceState: {
 				inProgressHeading: 'بازار امروز در حال برگزاری است',
@@ -546,8 +562,8 @@ export const translations = {
 					cancelled: 'لغوشده',
 				},
 				registered: {
-					header: 'شما در صف هستید!',
-					details: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
+					header: 'شما در قرعه‌کشی هستید!',
+					details: 'پس از انجام قرعه‌کشی به شما اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
 				},
 				waiting: {
 					header: 'شما در صف هستید!',
@@ -557,7 +573,6 @@ export const translations = {
 					youAreNext: 'شما نفر بعدی هستید',
 				},
 				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به میز مراجعه کنید.' },
-				currentStatusLabel: 'وضعیت فعلی',
 				cancelAction: 'لغو این بازدید',
 				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
 				updateError: 'این بازدید به‌روزرسانی نشد. از یکی از اعضای تیم بازار کمک بخواهید.',
@@ -687,8 +702,14 @@ export const translations = {
 					'Gaganapin ang lottery nang 11:30 AM. Kung mapipili kang mamili, bibigyan ka ng numero dito sa app. Kung pumayag kang tumanggap ng mga text message, aabisuhan ka rin sa pamamagitan ng text message.',
 			},
 			registrationClosedState: {
-				heading: 'Sarado ang pagpaparehistro',
-				description: 'Humingi ng tulong sa isang miyembro ng pangkat ng pamilihan.',
+				heading: 'Sarado na ang pagpaparehistro',
+				description:
+					'Tinatapos namin ang mga pagpaparehistrong nasimulan na. Bubunutin na ang lottery sa ilang sandali.',
+			},
+			lotteryPendingState: {
+				heading: 'Malapit nang ganapin ang lottery',
+				description:
+					'Sarado na ang pagpaparehistro. Bumalik sa ilang sandali para makita ang iyong resulta.',
 			},
 			serviceState: {
 				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
@@ -706,8 +727,8 @@ export const translations = {
 					cancelled: 'Kinansela',
 				},
 				registered: {
-					header: 'Nasa pila na kayo!',
-					details: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
+					header: 'Kasali na kayo sa lottery!',
+					details: 'Ipaaalam namin sa inyo pagkatapos ng lottery. Salamat sa pagpunta.',
 				},
 				waiting: {
 					header: 'Nasa pila na kayo!',
@@ -717,7 +738,6 @@ export const translations = {
 					youAreNext: 'Kayo na ang susunod',
 				},
 				called: { header: 'Kayo na po ang susunod', details: 'Pumunta na po kayo sa mesa ngayon.' },
-				currentStatusLabel: 'Kasalukuyang katayuan',
 				cancelAction: 'Kanselahin ang pagbisitang ito',
 				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 				updateError: 'Hindi namin ma-update ang pagbisitang ito. Humingi ng tulong sa pangkat.',
@@ -848,8 +868,13 @@ export const translations = {
 					'Xổ số sẽ diễn ra lúc 11:30 sáng. Nếu được chọn để mua sắm, bạn sẽ nhận được một số thứ tự ngay trong ứng dụng. Nếu đồng ý nhận tin nhắn văn bản, bạn cũng sẽ được thông báo qua tin nhắn.',
 			},
 			registrationClosedState: {
-				heading: 'Đã đóng đăng ký',
-				description: 'Vui lòng nhờ nhân viên chợ hỗ trợ.',
+				heading: 'Đăng ký đã đóng',
+				description:
+					'Chúng tôi đang hoàn tất những đăng ký đã được bắt đầu. Xổ số sẽ được tiến hành trong ít phút nữa.',
+			},
+			lotteryPendingState: {
+				heading: 'Sắp tiến hành xổ số',
+				description: 'Đăng ký đã đóng. Vui lòng quay lại sau ít phút để xem kết quả.',
 			},
 			serviceState: {
 				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
@@ -867,8 +892,8 @@ export const translations = {
 					cancelled: 'Đã hủy',
 				},
 				registered: {
-					header: 'Bạn đã vào hàng đợi!',
-					details: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
+					header: 'Bạn đã tham gia xổ số!',
+					details: 'Chúng tôi sẽ thông báo cho bạn sau khi xổ số. Cảm ơn bạn đã đến.',
 				},
 				waiting: {
 					header: 'Bạn đã vào hàng đợi!',
@@ -878,7 +903,6 @@ export const translations = {
 					youAreNext: 'Bạn là người tiếp theo',
 				},
 				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến quầy ngay bây giờ.' },
-				currentStatusLabel: 'Trạng thái hiện tại',
 				cancelAction: 'Hủy lượt ghé này',
 				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 				updateError: 'Không thể cập nhật lượt ghé này. Vui lòng nhờ nhân viên chợ hỗ trợ.',
@@ -1007,8 +1031,12 @@ export const translations = {
 					'抽签将于上午 11:30 进行。如果您获选购物，应用中会显示您的号码。如果您同意接收短信，也会收到短信通知。',
 			},
 			registrationClosedState: {
-				heading: '登记已关闭',
-				description: '请向市场工作人员寻求帮助。',
+				heading: '登记已结束',
+				description: '我们正在完成已经开始的登记。抽签即将进行。',
+			},
+			lotteryPendingState: {
+				heading: '即将抽签',
+				description: '登记已结束。请稍后回来查看结果。',
 			},
 			serviceState: {
 				inProgressHeading: '今天的市场正在进行中',
@@ -1024,7 +1052,7 @@ export const translations = {
 					no_show: '未到场',
 					cancelled: '已取消',
 				},
-				registered: { header: '您已加入队列！', details: '轮到您时我们会通知您。感谢您的到来。' },
+				registered: { header: '您已参加抽签！', details: '抽签后我们会通知您。感谢您的到来。' },
 				waiting: {
 					header: '您已加入队列！',
 					details: '轮到您时我们会通知您。感谢您的到来。',
@@ -1033,7 +1061,6 @@ export const translations = {
 					youAreNext: '下一位就是您',
 				},
 				called: { header: '轮到您了', details: '请现在到服务台来。' },
-				currentStatusLabel: '当前状态',
 				cancelAction: '取消本次到访',
 				cancelConfirmation: '要取消本次到访的排队位置吗？',
 				updateError: '无法更新本次到访。请向市场工作人员寻求帮助。',
@@ -1159,8 +1186,12 @@ export const translations = {
 					'ستُجرى القرعة الساعة 11:30 صباحًا. إذا تم اختيارك للتسوق، فسيظهر لك رقم هنا في التطبيق. وإذا وافقت على تلقي الرسائل النصية، فسيتم إخطارك أيضًا برسالة نصية.',
 			},
 			registrationClosedState: {
-				heading: 'التسجيل مغلق',
-				description: 'يرجى طلب المساعدة من أحد أعضاء فريق السوق.',
+				heading: 'أُغلق التسجيل',
+				description: 'نعمل على إكمال التسجيلات التي بدأت بالفعل. سيُجرى السحب بعد قليل.',
+			},
+			lotteryPendingState: {
+				heading: 'سيُجرى السحب قريبًا',
+				description: 'أُغلق التسجيل. يرجى العودة بعد قليل للاطلاع على نتيجتك.',
 			},
 			serviceState: {
 				inProgressHeading: 'سوق اليوم جارٍ الآن',
@@ -1178,8 +1209,8 @@ export const translations = {
 					cancelled: 'ملغاة',
 				},
 				registered: {
-					header: 'أنت الآن في قائمة الانتظار!',
-					details: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
+					header: 'أنت مشارك في السحب!',
+					details: 'سنخبرك بعد إجراء السحب. شكرًا لوجودك معنا.',
 				},
 				waiting: {
 					header: 'أنت الآن في قائمة الانتظار!',
@@ -1189,7 +1220,6 @@ export const translations = {
 					youAreNext: 'أنت التالي',
 				},
 				called: { header: 'حان دورك', details: 'يرجى التوجه إلى الطاولة الآن.' },
-				currentStatusLabel: 'الحالة الحالية',
 				cancelAction: 'إلغاء هذه الزيارة',
 				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
 				updateError: 'تعذر تحديث هذه الزيارة. يرجى طلب المساعدة من فريق السوق.',

@@ -201,7 +201,9 @@ describe('GuestView', () => {
 		fireEvent.submit(container.querySelector('form')!);
 
 		// Assert
-		await waitFor(() => expect(container.textContent).toContain('You’re in the queue!'));
+		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
+		expect(container.querySelector('.registration-countdown')).not.toBeNull();
+		expect(container.textContent).not.toContain('Current status');
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBe('token-1');
 	});
 

@@ -60,11 +60,7 @@ export function WaitingVisitStatus({
 				</p>
 			) : null}
 		</QueueStanding>
-	) : (
-		<p>
-			{copy.currentStatusLabel}: <strong>{copy.labels.waiting}</strong>
-		</p>
-	);
+	) : null;
 
 	return (
 		<GuestVisitStatusPanel

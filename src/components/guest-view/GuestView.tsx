@@ -11,6 +11,7 @@ import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import type { Language } from '../../stores/translation.store';
 import { GuestLanguageHero } from './GuestLanguageHero';
+import { GuestLotteryPendingState } from './GuestLotteryPendingState';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 import { GuestServiceState } from './GuestServiceState';
@@ -87,11 +88,18 @@ const MarketStatus = observer(function MarketStatus({ status }: { status: Promis
 			case SessionStatusEnum.REGISTRATION_OPEN:
 				return <RegistrationOpenState />;
 			case SessionStatusEnum.REGISTRATION_CLOSED:
-			case SessionStatusEnum.LOTTERY_PENDING:
 				return (
 					<Card aria-live="polite">
 						<CardContent>
 							<GuestRegistrationClosedState />
+						</CardContent>
+					</Card>
+				);
+			case SessionStatusEnum.LOTTERY_PENDING:
+				return (
+					<Card aria-live="polite">
+						<CardContent>
+							<GuestLotteryPendingState />
 						</CardContent>
 					</Card>
 				);

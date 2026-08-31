@@ -1,6 +1,8 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
+import { expect } from 'storybook/test';
 
-import type { Locale } from '../../locales';
+import { translations, type Locale } from '../../locales';
+import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
@@ -68,8 +70,21 @@ const withVisitEndpoint: Decorator = (Story, context) => {
 /** Seeds a store from the mocked endpoint above, then renders the panel against it. */
 function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisitStatusArgs) {
 	const store = new RootStore();
+	const now = Date.now();
 
 	store.translations.setLanguage(locale);
+	store.session.applyServerState({
+		event: {
+			id: 'story-market',
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+			sessionMode: 'ad_hoc',
+			capacity: 100,
+			registrationOpensAt: new Date(now - 60_000).toISOString(),
+			registrationClosesAt: new Date(now + 15 * 60_000).toISOString(),
+		},
+		questions: [],
+		counts: {},
+	});
 	void store.visit.refresh().then(() => {
 		if (isCancelling || submissionError) {
 			void store.visit.cancel();
@@ -111,7 +126,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** Registered for today, before the lottery or queue has placed the guest. */
-export const Registered: Story = {};
+export const Registered: Story = {
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(translations.en.guestView.visitStatus.registered.header),
+		).toBeInTheDocument();
+		await expect(canvas.getByText(translations.en.registrationClosesIn)).toBeInTheDocument();
+	},
+};
 
 /** In line, with a place in the queue and a count of the guests ahead. */
 export const Waiting: Story = {

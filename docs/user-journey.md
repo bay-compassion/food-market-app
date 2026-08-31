@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=a08d0e85bfbe, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=51666aa28851, src/stores/market-session.store.ts=39ff6052aa90, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/functions/guest-information.mts=49a04c93875b, netlify/functions/lottery-registration.mts=8bea7a78f824, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=cb2e6fb8f4a7 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=4cdad1d076cd, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=51666aa28851, src/stores/market-session.store.ts=39ff6052aa90, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/functions/guest-information.mts=49a04c93875b, netlify/functions/lottery-registration.mts=8bea7a78f824, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=cb2e6fb8f4a7 -->
 
 # Guest journey
 
@@ -154,10 +154,10 @@ flowchart TD
   current-market visit can show registration, queue, call,
   or outcome details; a cancelled visit falls back to the market state so the guest can register
   again while registration remains open. A visit from another market cannot override today's
-  screen. Both `registration_closed` and `lottery_pending` show the registration-closed message
-  when there is no visit to present, while the server briefly continues accepting already-in-flight
-  submissions during the former. There is no separate client-side card-state or session-phase
-  model.
+  screen. When there is no visit to present, `registration_closed` explains that already-in-flight
+  submissions are being finished during the brief grace period; `lottery_pending` has its own card
+  explaining that the frozen lottery pool will be drawn shortly. There is no separate client-side
+  card-state or session-phase model beyond those server-owned statuses.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — is entered fresh at every visit and lives only on `visits`, not on the
   guest's identity.** `GuestLotteryForm` asks for these details each time a guest enters a session's

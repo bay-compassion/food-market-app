@@ -259,7 +259,7 @@ describe('App', () => {
 		);
 		await fillRegistration(container);
 
-		await waitFor(() => expect(container.textContent).toContain('You’re in the queue!'));
+		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
 
 		const registrationCall = fetchMock.mock.calls.find(
 			([url]) => url === '/api/lottery-registration',
@@ -293,7 +293,7 @@ describe('App', () => {
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('Ada L');
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('(555) 123-4567');
 		expect(container.querySelector('.guest-identity')!.nextElementSibling?.textContent).toContain(
-			'You’re in the queue!',
+			'You’re in the lottery!',
 		);
 	});
 
@@ -330,7 +330,8 @@ describe('App', () => {
 		);
 		await fillRegistration(container);
 
-		await waitFor(() => expect(container.textContent).toContain('Current status: Registered'));
+		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
+		expect(container.textContent).not.toContain('Current status');
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/lottery-registration',
@@ -564,14 +565,29 @@ describe('App', () => {
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});
 
-	it('keeps the inactive-market explanation out of an active closed-registration session', async () => {
+	it('shows the registration grace-period message after registration closes', async () => {
 		const { container } = await renderWithMarketStatus('registration_closed');
+		const copy = translations.en.guestView.registrationClosedState;
 
-		await screen.findByRole('heading', {
-			name: translations.en.guestView.registrationClosedState.heading,
-		});
+		await screen.findByRole('heading', { name: copy.heading });
 
+		expect(container.textContent).toContain(copy.description);
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.scheduleInformation.heading,
+		);
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
+	});
+
+	it('shows a dedicated lottery-pending message once the registration pool is final', async () => {
+		const { container } = await renderWithMarketStatus('lottery_pending');
+		const copy = translations.en.guestView.lotteryPendingState;
+
+		await screen.findByRole('heading', { name: 'Lottery will be drawn shortly' });
+
+		expect(container.textContent).toContain(copy.description);
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.registrationClosedState.description,
+		);
 	});
 
 	it('shows the full inactive-market explanation when the session is inactive', async () => {
