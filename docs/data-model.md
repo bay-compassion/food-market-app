@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=359f0d17cfcc -->
+<!-- diagram-sources: db/schema.mts=8c6fd77a392f -->
 
 # Database structure
 

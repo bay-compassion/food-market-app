@@ -47,6 +47,19 @@
   component its own instance, so two components in one tree quietly stop agreeing.
 - Store methods are actions, but only synchronously. Any write after an `await` — including in a
   `catch` or `finally` — needs `runInAction`, or MobX warns and the write escapes batching.
+- **A domain class is constructed _from_ state, never the owner of it.** If a store holds one
+  long-lived instance, that instance's getters are invisible to MobX and every `observer()`
+  component reading them goes stale — silently, the same failure mode as a missing `observer()`.
+  Expose it as a `computed` that builds a fresh value object each time the state changes:
+
+  ```ts
+  get rules(): SessionRules {
+  	return new SessionRules(this._status, this._event);
+  }
+  ```
+
+  This also keeps the class free of any MobX import, which is what lets the server use it.
+
 - Components use Emotion (`@emotion/styled`) for their own styles. Emotion is MUI's own styling
   engine, so MUI can land later without a second styling migration. The design tokens in
   `src/styles/base.css` are plain CSS custom properties and keep working unchanged; shared
@@ -64,16 +77,19 @@
 
 - Use TypeScript and React's existing conventions.
 - Keep components small and single-purpose. A component file should do one recognizable job — one screen, one card, one form, one row. Treat roughly 250 lines as the point at which a component should be split _before_ anything more is added to it, and treat the second copy of a piece of markup as the signal to extract it rather than duplicate it. Splitting an existing oversized component while you are working in it is expected, not optional.
-- Compose components with a container that owns view-level state (e.g. computed phase/copy logic) and orchestrates side effects; children take that as props and call callbacks back up. A child with no such view-level state of its own may instead read app-lifetime shared state directly from the root store (`useRootStore()`, or a thin hook like `useTranslation()`) rather than have every field threaded through as a prop — see `GuestCombinedForm.tsx`, `GuestIdentityCard.tsx`, and `GuestVisitStatus.tsx`. Reach for props and callbacks first; reach into the store directly only for state that already lives there for the app's lifetime, not as a shortcut around passing data a container actually computes. Do not add a state-management library for this.
+- Compose components so that domain state is **read, not threaded**. A component that needs app-lifetime state reads it from the root store (`useRootStore()`, or a thin hook like `useTranslation()`) and is wrapped in `observer()` — see `GuestView.tsx`, `GuestCombinedForm.tsx`, `GuestIdentityCard.tsx`, and `GuestVisitStatus.tsx`. Keep props and callbacks for what a parent genuinely computes for one child, for one-off presentational configuration, and for anything a child should not be able to reach on its own. A long prop list is the symptom to watch for: `AdminDashboard.tsx` handing `SessionView` 25 props is precisely what this rule exists to prevent, and most of those props are values a store getter should expose directly. Do not add a state-management library for this.
 - "Avoid premature generalization" means don't invent abstractions for cases that don't exist yet. It does not mean leaving duplicated markup in place, and it does not mean keeping a component large — extracting something that already has two call sites is not premature.
-- Whenever practical, implement business logic in separate services rather than alongside presentation code.
+- Business logic belongs in a class, not in a component and not in a loose function. For derived state prefer a MobX `computed` on the relevant store; for a domain action, a store method. A special case bolted into a component to handle a state transition is always a signal that the transition belongs in a domain class or store instead.
+- **The first-parameter test.** A function whose first parameter carries the domain state is already a method with an explicit receiver, written C-style rather than C++-style. `admissionsFor(status)`, `canRunSessionCommand(status, command)`, and `automaticSessionStatus(session, now)` are `this.admissions`, `this.canRun(command)`, and `this.statusAt(now)` with the `this` passed by hand. Convert those to classes with getters — the type they take (`SessionTiming`, `SessionSettings`) is usually already declared and simply has no methods yet. Converting them is not adding a layer; it is deleting an argument, which is also what removes the derived props a container would otherwise have to thread down.
+- Loose functions remain the right call for genuine utilities: type guards over `unknown` (`isVisitStatus`, `isSessionStatus`) and pure formatters and parsers (`toCsv`, `formatUsPhone`, `toLocalDateTimeInput`). These take a primitive, not an instance, so there is no receiver being smuggled. Lookups keyed by an enum (`visitCommandTarget`, `admissionVisitStatus`) belong as `static` members or plain const maps.
 - Follow the repository formatter: tabs, single quotes, semicolons, and a 100-character print width. Run `npm run format` after edits when needed.
 - The app lives in `src/`; static assets live in `public/`; database schema code is in `db/`; and Netlify functions are in `netlify/functions/`.
 - Netlify deploys every file in `netlify/functions/` as a function, and function names may only contain alphanumeric characters, hyphens, or underscores. Keep tests for those handlers in `netlify/test/functions/`; a colocated `name.test.ts` fails the deploy. Tests elsewhere, including `netlify/lib/` and `netlify/services/`, stay colocated.
-- Within `src/`: shared components sit directly in `src/components/`, and components belonging to one feature go in a subfolder named for it (for example `src/components/admin/`). Frontend business logic goes in `src/services/`. CSS shared across components, rather than owned by one of them, belongs in `src/styles/` and is imported once from `src/main.tsx`.
+- Within `src/`: shared components sit directly in `src/components/`, and components belonging to one feature go in a subfolder named for it (for example `src/components/admin/`). Business logic goes in `src/services/`. CSS shared across components, rather than owned by one of them, belongs in `src/styles/` and is imported once from `src/main.tsx`.
+- **`src/services/` is not frontend-only.** Sixteen files under `netlify/`, plus `db/schema.mts`, import from it — it is the de facto shared layer between browser and server. Anything placed there must therefore stay free of MobX, React, and DOM APIs, which is the practical reason domain classes are plain TypeScript rather than stores. Server code imports it with a real runtime extension (`../../src/services/reports.js`), as NodeNext resolution requires.
 - This is currently a Netlify-targeted application. Keep deployment configuration and server-side work compatible with the Netlify setup in `netlify.toml` and `netlify/`.
 - Before creating or editing anything under `netlify/database/migrations/`, read `docs/migrations.md` and complete its pre-merge checklist. Migrations apply automatically to production on the next build — never merge or deploy a migration yourself; a human must review and merge it.
-- TypeScript configuration is split by environment: `tsconfig.app.json`, `tsconfig.node.json`, `tsconfig.vitest.json`, and `tsconfig.storybook.json` are referenced from `tsconfig.json`.
+- TypeScript configuration is split by environment: `tsconfig.app.json`, `tsconfig.node.json`, `tsconfig.vitest.json`, `tsconfig.storybook.json`, and `tsconfig.netlify.json` are referenced from `tsconfig.json`. `tsconfig.netlify.json` covers `netlify/`, `db/`, and the server-side database scripts at the app's strictness. Without it those files belong to no project at all, and oxlint's type-aware pass silently falls back to default compiler options there — `strict` still applies, but `noUncheckedIndexedAccess` does not, so an unchecked `list[0]` is an error in `src/` and passes on the server.
 - `oxlint` uses type-aware checks; treat warnings as worth resolving when they affect changed code.
 - The Mermaid diagrams in `docs/data-model.md`, `docs/session-lifecycle.md`, and `docs/user-journey.md` are maintained by hand and fingerprint the source files they describe. `npm run check:diagrams` fails when one of those files changed; update the affected diagram if the change made it wrong, then run `npm run check:diagrams -- --update` to re-stamp. Re-stamping without looking at the diagram defeats the check.
 - The project uses Node 24 (see `.nvmrc`).

@@ -7,6 +7,7 @@
     { "path": "./tsconfig.node.json" },
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.vitest.json" },
-    { "path": "./tsconfig.storybook.json" }
+    { "path": "./tsconfig.storybook.json" },
+    { "path": "./tsconfig.netlify.json" }
   ]
 }

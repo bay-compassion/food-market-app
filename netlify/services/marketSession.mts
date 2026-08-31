@@ -57,7 +57,10 @@ export async function getCurrentEvent() {
 	const automaticStatus = automaticSessionStatus(event, now);
 
 	if (automaticStatus !== event.status) {
-		const graceEndsAt = event.registrationGraceEndsAt ?? registrationGraceDeadline(event);
+		// `event` is a `let` reassigned below, so TypeScript drops its non-null narrowing inside the
+		// transaction closure. Capturing it as a const keeps the narrowing without changing behaviour.
+		const current = event;
+		const graceEndsAt = current.registrationGraceEndsAt ?? registrationGraceDeadline(current);
 		const updated = await db.transaction(async (tx) => {
 			const [changed] = await tx
 				.update(marketEvents)
@@ -67,19 +70,19 @@ export async function getCurrentEvent() {
 						? { registrationGraceEndsAt: graceEndsAt }
 						: {}),
 				})
-				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
+				.where(and(eq(marketEvents.id, current.id), eq(marketEvents.status, current.status)))
 				.returning();
 
 			if (
 				changed &&
-				(event.status === 'scheduled' || event.status === 'registration_open') &&
+				(current.status === 'scheduled' || current.status === 'registration_open') &&
 				(automaticStatus === 'registration_closed' || automaticStatus === 'lottery_pending') &&
 				notificationsEnabled()
 			) {
 				const registrations = await tx
 					.select({ visitId: visits.id })
 					.from(visits)
-					.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+					.where(and(eq(visits.marketEventId, current.id), eq(visits.status, 'registered')));
 
 				await queueNotification(
 					tx,
@@ -92,7 +95,7 @@ export async function getCurrentEvent() {
 			return changed;
 		});
 
-		event = updated ?? (await getLatestActiveEvent()) ?? event;
+		event = updated ?? (await getLatestActiveEvent()) ?? current;
 	}
 
 	return event;
