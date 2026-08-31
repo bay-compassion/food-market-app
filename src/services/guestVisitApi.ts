@@ -6,8 +6,9 @@ import type { VisitStatus } from './visitStateMachine';
  * state rather than parsing responses.
  */
 
-export type ActiveVisit = {
+export type CurrentVisit = {
 	id: string;
+	marketEventId: string;
 	status: VisitStatus;
 	queuePosition: number | null;
 	aheadOfYou: number | null;
@@ -77,15 +78,15 @@ export async function submitGuestSignup(payload: GuestSignupPayload): Promise<Gu
 	return (await response.json()) as GuestSignupResult;
 }
 
-export type ActiveVisitLookup =
-	| { found: true; visit: ActiveVisit }
+export type CurrentVisitLookup =
+	| { found: true; visit: CurrentVisit }
 	// The stored token no longer resolves to a visit — cancelled, expired, or from a prior session.
 	| { found: false; reason: 'expired' }
 	// The request itself failed — say nothing about whether the visit still exists.
 	| { found: false; reason: 'unreachable' };
 
 /** Looks up the visit for a stored visit token. */
-export async function fetchActiveVisit(token: string): Promise<ActiveVisitLookup> {
+export async function fetchCurrentVisit(token: string): Promise<CurrentVisitLookup> {
 	try {
 		const response = await fetch('/api/visit', {
 			headers: { Authorization: `Bearer ${token}` },
@@ -95,14 +96,14 @@ export async function fetchActiveVisit(token: string): Promise<ActiveVisitLookup
 			return { found: false, reason: 'expired' };
 		}
 
-		return { found: true, visit: (await response.json()) as ActiveVisit };
+		return { found: true, visit: (await response.json()) as CurrentVisit };
 	} catch {
 		return { found: false, reason: 'unreachable' };
 	}
 }
 
 /** Cancels an in-progress visit. Throws if the server rejects it. */
-export async function cancelActiveVisit(
+export async function cancelCurrentVisit(
 	token: string,
 ): Promise<{ id: string; status: VisitStatus }> {
 	const response = await fetch('/api/visit', {

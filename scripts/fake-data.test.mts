@@ -137,6 +137,7 @@ describe('buildScenario', () => {
 			'scheduled',
 			'registration_open',
 			'registration_closed',
+			'lottery_pending',
 			'service_started',
 			'ended',
 		] as const) {
@@ -174,6 +175,14 @@ describe('buildScenario', () => {
 		expect(
 			data.visits.every((visit) => visit.status === 'registered' && visit.queuePosition === null),
 		).toBe(true);
+	});
+
+	it('lottery_pending: the frozen pool is ready for the draw', () => {
+		const data = buildScenarioFor({ stage: 'lottery_pending' });
+
+		expect(data.sessions[0]!.registrationGraceEndsAt! <= now).toBe(true);
+		expect(data.visits.length).toBeGreaterThan(0);
+		expect(data.visits.every((visit) => visit.status === 'registered')).toBe(true);
 	});
 
 	it('ended: nothing is left waiting or called', () => {

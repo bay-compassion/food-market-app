@@ -10,9 +10,10 @@ import { GuestVisitStatus } from './GuestVisitStatus';
 
 /**
  * `GuestView` is a container: it owns `localStorage`, polling timers, and a router, none of which
- * can be made to hold several different states at once inside one page. What a guest actually sees
- * once a visit exists is `GuestVisitStatus` inside `Card`'s shell, driven entirely by
- * `VisitStatus` — this story renders one side by side per named status, the same way
+ * can be made to hold several different states at once inside one page. This catalogs
+ * `GuestVisitStatus` inside `Card`'s shell for every named `VisitStatus`; `GuestView` presents one
+ * only after matching the visit to the displayed market, and lets `cancelled` fall back to market
+ * status. The story renders statuses side by side, the same way
  * `QueueGuestRow.stories.tsx`'s `EachStatus` story does for the admin queue row. See
  * `GuestVisitStatus.stories.tsx` for each status on its own with full controls.
  *
@@ -52,7 +53,13 @@ function VisitStatusRow({
 		}
 
 		return Promise.resolve(
-			Response.json({ id: `story-${status}`, status, queuePosition, aheadOfYou }),
+			Response.json({
+				id: `story-${status}`,
+				marketEventId: 'story-market',
+				status,
+				queuePosition,
+				aheadOfYou,
+			}),
 		);
 	};
 	void store.visit.refresh();

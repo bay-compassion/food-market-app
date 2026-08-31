@@ -76,24 +76,30 @@ function clockText(remainingMs: number): string {
 		: `${pad(minutes)}:${pad(seconds)}`;
 }
 
+function useCountdownTimer(endTime: Date | string) {
+	const end = new Date(endTime);
+	const [countdown, setCountdown] = useState(() => Date.now());
+
+	useEffect(() => {
+		const timer = setInterval(() => setCountdown(Date.now()), 1_000);
+
+		return () => clearInterval(timer);
+	}, [endTime]);
+
+	return end.valueOf() - countdown;
+}
+
 /** How long is left to register, counting down, warming toward the danger color as it runs out. */
 export const RegistrationCountdown = observer(function RegistrationCountdown() {
 	const t = useTranslation();
 	const { session } = useRootStore();
-	const [now, setNow] = useState(() => Date.now());
 	const closesAt = session.marketEvent?.registrationClosesAt;
-
-	useEffect(() => {
-		const timer = setInterval(() => setNow(Date.now()), 1_000);
-
-		return () => clearInterval(timer);
-	}, []);
 
 	if (session.currentStatus !== SessionStatusEnum.REGISTRATION_OPEN || !closesAt) {
 		return null;
 	}
 
-	const remainingMs = closesAt.valueOf() - now;
+	const remainingMs = useCountdownTimer(closesAt);
 
 	if (remainingMs <= 0) {
 		return null;

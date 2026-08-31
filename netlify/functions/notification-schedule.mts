@@ -3,6 +3,7 @@ import { and, eq, inArray, lte } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, visits } from '../../db/schema.mjs';
+import { registrationGraceDeadline } from '../../src/services/sessionStateMachine.js';
 import { deliverQueuedNotifications, queueNotification } from '../services/notifications.mjs';
 import { notificationsEnabled } from '../services/pushNotifications.mjs';
 
@@ -18,7 +19,7 @@ export default async () => {
 		.where(and(eq(marketEvents.status, 'scheduled'), lte(marketEvents.registrationOpensAt, now)));
 
 	const dueEvents = await db
-		.select({ id: marketEvents.id })
+		.select({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt })
 		.from(marketEvents)
 		.where(
 			and(
@@ -29,9 +30,10 @@ export default async () => {
 
 	for (const event of dueEvents) {
 		await db.transaction(async (tx) => {
+			const registrationGraceEndsAt = registrationGraceDeadline(event);
 			const [closed] = await tx
 				.update(marketEvents)
-				.set({ status: 'registration_closed' })
+				.set({ status: 'registration_closed', registrationGraceEndsAt })
 				.where(
 					and(
 						eq(marketEvents.id, event.id),

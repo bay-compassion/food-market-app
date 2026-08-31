@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=55fdcd8ff226 -->
+<!-- diagram-sources: db/schema.mts=359f0d17cfcc -->
 
 # Database structure
 
@@ -27,6 +27,7 @@ erDiagram
         uuid id PK
         timestamptz registration_opens_at
         timestamptz registration_closes_at
+        timestamptz registration_grace_ends_at "nullable; freezes the lottery pool when reached"
         integer capacity
         text session_mode "scheduled | ad_hoc"
         text status "see session-lifecycle.md"

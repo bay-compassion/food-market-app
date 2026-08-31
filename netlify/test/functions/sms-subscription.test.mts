@@ -91,7 +91,7 @@ describe('sms-subscription handler POST', () => {
 		queueResult([]); // existing subscription lookup
 		queueResult(undefined); // insert...onConflictDoUpdate
 		queueResult([{ id: 'event-1' }]); // current event lookup
-		queueResult([{ id: 'visit-1', status: 'waiting' }]); // guest's active visit lookup
+		queueResult([{ id: 'visit-1', status: 'waiting' }]); // guest's current-market visit lookup
 		vi.mocked(deliverPendingSmsNotifications).mockResolvedValueOnce({
 			sent: 1,
 			failed: 0,
@@ -111,13 +111,13 @@ describe('sms-subscription handler POST', () => {
 		);
 	});
 
-	it('subscribes without a catch-up notification when the guest has no active visit', async () => {
+	it('subscribes without a catch-up notification when the guest has no current-market visit', async () => {
 		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
 		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
 		queueResult([]); // existing subscription lookup
 		queueResult(undefined); // insert...onConflictDoUpdate
 		queueResult([{ id: 'event-1' }]); // current event lookup
-		queueResult([]); // guest's active visit lookup
+		queueResult([]); // guest's current-market visit lookup
 
 		const response = await handler(request('POST', { token: validToken, body: { consent: true } }));
 

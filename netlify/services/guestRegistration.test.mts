@@ -163,7 +163,7 @@ describe('registerGuest eligibility', () => {
 		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
 
-	it.each(['registration_closed', 'service_started', 'ended'])(
+	it.each(['lottery_pending', 'service_started', 'ended'])(
 		'rejects a self submission once the session is %s',
 		async (status) => {
 			queueResult([
@@ -183,7 +183,7 @@ describe('registerGuest eligibility', () => {
 		},
 	);
 
-	it('allows a self submission while the session is still in draft', async () => {
+	it('rejects a self submission while the session is still in draft', async () => {
 		queueResult([
 			{
 				id: 'event-1',
@@ -193,17 +193,14 @@ describe('registerGuest eligibility', () => {
 				registrationClosesAt: new Date(Date.now() + 120_000),
 			},
 		]);
-		queueResult([]); // no registration questions
-		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
-		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission())!;
 
 		const result = await registerGuest(submission);
 
-		expect(result.ok).toBe(true);
+		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
 
-	it('allows a self submission once the session is scheduled but not open yet', async () => {
+	it('rejects a self submission once the session is scheduled but not open yet', async () => {
 		queueResult([
 			{
 				id: 'event-1',
@@ -213,14 +210,49 @@ describe('registerGuest eligibility', () => {
 				registrationClosesAt: new Date(Date.now() + 120_000),
 			},
 		]);
-		queueResult([]); // no registration questions
-		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
-		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission())!;
 
 		const result = await registerGuest(submission);
 
-		expect(result.ok).toBe(true);
+		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+	});
+
+	it('accepts an in-flight self submission during the post-close grace period', async () => {
+		const graceEvent = {
+			id: 'event-1',
+			status: 'registration_closed',
+			sessionMode: 'scheduled',
+			registrationOpensAt: new Date(Date.now() - 120_000),
+			registrationClosesAt: new Date(Date.now() - 10_000),
+			registrationGraceEndsAt: new Date(Date.now() + 20_000),
+		};
+
+		queueResult([graceEvent]);
+		queueResult([]); // no registration questions
+		queueResult([graceEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
+		queueResult([{ id: 'visit-1', status: 'registered' }]);
+
+		const result = await registerGuest(parseSubmission(selfSubmission())!);
+
+		expect(result).toMatchObject({ ok: true, status: 201 });
+	});
+
+	it('rejects a self submission after the post-close grace period', async () => {
+		queueResult([
+			{
+				id: 'event-1',
+				status: 'registration_closed',
+				sessionMode: 'scheduled',
+				registrationOpensAt: new Date(Date.now() - 120_000),
+				registrationClosesAt: new Date(Date.now() - 60_000),
+				registrationGraceEndsAt: new Date(Date.now() - 30_000),
+			},
+		]);
+
+		const result = await registerGuest(parseSubmission(selfSubmission())!);
+
+		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
 
 	it('rejects a self submission missing a required registration answer', async () => {
@@ -309,6 +341,7 @@ describe('registerGuest happy paths', () => {
 	it('creates a new guest and visit for a first-time self registration', async () => {
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions
+		queueResult([openEvent]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
 		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission())!;
@@ -333,6 +366,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions
 		queueResult([]); // submitted token does not identify a guest
+		queueResult([openEvent]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-2', firstName: 'Ari' }]); // insert guests
 		queueResult([{ id: 'visit-2', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
@@ -354,6 +388,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([]); // no registration questions
 		queueResult([{ id: 'guest-1', firstName: 'Old' }]); // device credential lookup
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // existing visit lookup
+		queueResult([openEvent]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // tx.update visits returning
 		const submission = parseSubmission(
@@ -400,6 +435,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([]); // no registration questions
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
 		queueResult([]); // no existing visit for this event
+		queueResult([openEvent]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning (identity only)
 		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(
@@ -424,6 +460,7 @@ describe('registerGuest happy paths', () => {
 
 	it('creates an admin-added guest directly into the waiting queue with no visit token', async () => {
 		queueResult([{ status: 'service_started' }]); // admin event status check
+		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
 		queueResult([{ position: 6 }]); // nextQueuePosition — highest position so far
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // insert visits
@@ -437,6 +474,7 @@ describe('registerGuest happy paths', () => {
 
 	it('appends a walk-in to the end of the queue by default', async () => {
 		queueResult([{ status: 'service_started' }]);
+		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ position: 6 }]);
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
@@ -450,6 +488,7 @@ describe('registerGuest happy paths', () => {
 
 	it('enters a pre-lottery guest into the draw with no queue position', async () => {
 		queueResult([{ status: 'registration_open' }]); // admin event status check
+		queueResult([{ status: 'registration_open' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
 		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ source: 'admin', admission: 'lottery' }))!;
@@ -462,6 +501,7 @@ describe('registerGuest happy paths', () => {
 
 	it('stores the weight a worker chose for a guest entering the draw', async () => {
 		queueResult([{ status: 'registration_open' }]);
+		queueResult([{ status: 'registration_open' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ id: 'visit-1', status: 'registered' }]);
 		const submission = parseSubmission(
@@ -475,6 +515,7 @@ describe('registerGuest happy paths', () => {
 
 	it('ignores a weight on a guest who is not going into the draw', async () => {
 		queueResult([{ status: 'service_started' }]);
+		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ position: 6 }]);
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
@@ -491,6 +532,7 @@ describe('registerGuest happy paths', () => {
 	it('leaves a self-registration on even odds whatever the payload claims', async () => {
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions
+		queueResult([openEvent]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ id: 'visit-1', status: 'registered' }]);
 		const submission = parseSubmission(selfSubmission({ lotteryWeight: 99 }))!;
@@ -503,6 +545,7 @@ describe('registerGuest happy paths', () => {
 
 	it('records a guest served out of band once the session has ended', async () => {
 		queueResult([{ status: 'ended' }]); // admin event status check
+		queueResult([{ status: 'ended' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
 		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ source: 'admin', admission: 'served' }))!;
@@ -516,6 +559,7 @@ describe('registerGuest happy paths', () => {
 
 	it('puts a walk-in at the front of the queue when the worker asks for next up', async () => {
 		queueResult([{ status: 'service_started' }]);
+		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ position: 6 }]); // highest position so far
 		queueResult([{ position: 3 }]); // front of the waiting guests

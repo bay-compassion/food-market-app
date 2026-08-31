@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=d0dcab223ab0, src/components/routes/SignupView.tsx=0100784f6b84, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=f75fd164fc3e, src/stores/visit.store.ts=5e34b8fc3d95, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=6c4d4a0c4581, netlify/functions/guest-information.mts=49a04c93875b, netlify/functions/lottery-registration.mts=8bea7a78f824, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=adf50d520944, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=7b3a9fa3b800, src/stores/visit.store.ts=dcc0cb668d41, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=b65d45fd416a, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/functions/guest-information.mts=49a04c93875b, netlify/functions/lottery-registration.mts=8bea7a78f824, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=cb2e6fb8f4a7 -->
 
 # Guest journey
 
@@ -22,7 +22,7 @@ and `GuestSignupForm` for identity-only signup—which share the same visual for
 in-progress fields through the root's [`RegistrationStore`](../src/stores/registration.store.ts).
 `/api/visit` (check status, cancel) is
 called through [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts), with the root's
-[`VisitStore`](../src/stores/visit.store.ts) owning the stored visit token, the active visit, and its
+[`VisitStore`](../src/stores/visit.store.ts) owning the stored visit token, the current visit, and its
 refresh polling — it keeps polling in the background even while the guest is elsewhere in the app
 (e.g. `/admin` on the same device), stopping only when the root store itself is disposed.
 
@@ -52,7 +52,7 @@ flowchart TD
     notificationState -- yes --> notificationEnabled[Show "Notifications Enabled"]
     notificationState -- no --> notifyButton[Show "Notify Me About Updates"]
     notifyButton -. opens .-> offer{Consent dialog:<br/>approve the full SMS terms?}
-    offer -- yes --> subscribed[Save consent for the guest;<br/>server finds their active visit<br/>for any catch-up text]
+    offer -- yes --> subscribed[Save consent for the guest;<br/>server finds their current-market visit<br/>for any catch-up text]
     offer -- no --> notifyButton
     subscribed --> notificationEnabled
     notificationEnabled --> activeSession{Market session active?}
@@ -63,7 +63,9 @@ flowchart TD
     inactiveIdentity -. "Save my information" button .-> signupRoute
     inactiveIdentity --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
     activeSession -- yes --> hasVisit{Saved visit token<br/>on this device?}
-    hasVisit -- yes --> status[Status screen]
+    hasVisit -- yes --> currentVisit{Visit belongs to this market<br/>and is not cancelled?}
+    currentVisit -- yes --> status[Visit status or outcome screen]
+    currentVisit -- no --> canRegister
     hasVisit -- no --> canRegister{Registration open?}
 
     canRegister -- yes --> cachedIdentity{Cached local<br/>name and phone?}
@@ -72,7 +74,7 @@ flowchart TD
     canRegister -- no --> nonOpenIdentity[Show identity card:<br/>saved identity or offer to save information]
     nonOpenIdentity -. "Save my information" button .-> signupRoute
     nonOpenIdentity --> phase{Which active phase is<br/>the session in?}
-    phase -- registration closed --> closedScreen([Registration-closed screen])
+    phase -- registration closed<br/>or lottery pending --> closedScreen([Registration-closed screen])
     phase -- service underway --> inServiceScreen([In-service screen])
 
     signupRoute([Guest visits /signup]) --> alreadyIdentified{Already has a<br/>device token?}
@@ -93,8 +95,9 @@ flowchart TD
     saveIdentity --> registered[Visit created: registered]
     registered --> status
 
-    status --> regClosed[Registration closes<br/>push/sms: registration_closed]
-    regClosed --> lottery{Lottery}
+    status --> regClosed[Registration closes<br/>30-second grace period<br/>push/sms: registration_closed]
+    regClosed --> lotteryPending[lottery_pending:<br/>registration pool frozen]
+    lotteryPending --> lottery{Lottery}
     lottery -- selected --> waiting[waiting: guest sees their place in line<br/>and how many are ahead<br/>push/sms: lottery_selected]
     lottery -- not selected --> notPlaced([not_placed<br/>push/sms: lottery_not_selected])
 
@@ -103,7 +106,8 @@ flowchart TD
     called --> noShow([no_show])
     noShow -. "worker returns them<br/>to the queue" .-> waiting
 
-    status -. "guest cancels while<br/>registered or waiting" .-> cancelled([cancelled])
+    status -. "guest cancels while<br/>registered or waiting" .-> cancelled[cancelled]
+    cancelled --> canRegister
 ```
 
 ## Things worth knowing about this path
@@ -125,7 +129,7 @@ flowchart TD
   registration.
   `SignupView` redirects to `/` as soon as it mounts if the browser already has a device token —
   there's nothing left to ask, so the guest lands back on `GuestView`, which shows whatever its
-  normal card resolution decides (queue form, visit status, or the session's current phase). A
+  normal status resolution decides (lottery form, visit status, or the current session status). A
   browser with no device token instead sees the identity-only form and, on success, an inline
   "your information is saved" message on `/signup` itself. The unidentified
   `GuestIdentityCard` provides the in-app link into this flow; a guest can also land on
@@ -144,13 +148,15 @@ flowchart TD
   creates no visit. Lottery registration carries the same identity fields and invokes the shared
   guest-information persistence service inside the visit transaction, so both writes succeed or
   fail together.
-- **Inactive market states share one explanation card.** `MarketSessionStore.isActive` is the
-  boundary: when it is false, `GuestView` renders `GuestNotOpenState` with the next registration
-  window, lottery rules, and notification details, separated by a divider. Saving information is
-  offered separately by `GuestIdentityCard` when the device has no saved identity. When
-  `isActive` is true, the normal card resolver chooses among the registration form, visit status,
-  registration-closed message, and in-service message. The separate schedule alert is no longer
-  rendered above the card.
+- **Market status and visit status remain separate.** `GuestView` matches the visit's
+  `marketEventId` to the market being displayed, then composes that guest-specific state with
+  `MarketSessionStore.currentStatus`. A current-market visit can show registration, queue, call,
+  or outcome details; a cancelled visit falls back to the market state so the guest can register
+  again while registration remains open. A visit from another market cannot override today's
+  screen. Both `registration_closed` and `lottery_pending` show the registration-closed message
+  when there is no visit to present, while the server briefly continues accepting already-in-flight
+  submissions during the former. There is no separate client-side card-state or session-phase
+  model.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — is entered fresh at every visit and lives only on `visits`, not on the
   guest's identity.** `GuestLotteryForm` asks for these details each time a guest enters a session's
@@ -161,9 +167,10 @@ flowchart TD
   normalized phone number so later reconciliation can see earlier values after a guest renews their
   identity.
 - **The visit status polls.** The root's `VisitStore` re-checks `/api/visit` on a timer for as long
-  as the visit is live — `registered`, `waiting`, or `called` — so the guest sees the lottery result
-  and the call even without notifications, and keeps doing so even if they wander to another route
-  on the same device. Push is a convenience, never the only channel. Separately, the
+  as the visit may still change — `registered`, `waiting`, `called`, or `no_show` — so the guest
+  sees the lottery result, call, or return to the queue even without notifications, and keeps doing
+  so if they wander to another route on the same device. Push is a convenience, never the only
+  channel. Separately, the
   application-level `MarketSessionStore` re-checks `/api/market` every five seconds while the page
   is visible. It pauses while the page is hidden or suspended, then refreshes immediately when the
   guest returns. Both the guest and admin screens observe that same state, so a guest sitting on
@@ -176,7 +183,8 @@ flowchart TD
 - **An admin can add a guest directly, at any stage of the session.** Those visits are created with
   `source: admin`, and how far the session has progressed decides what the worker may choose —
   see `admissionsFor` in [`src/services/guestAdmission.ts`](../src/services/guestAdmission.ts):
-  - Before the draw, the worker picks between entering the guest in the lottery (`registered`, no
+  - While registration is open or in its grace period, the worker picks between entering the guest
+    in the lottery (`registered`, no
     queue position, exactly like a self-registration) and handing them a spot outright (`waiting`,
     at the front of the waiting guests or the end). A reserved spot comes out of `capacity`, so it
     is one fewer place for the draw to give away.
@@ -184,7 +192,8 @@ flowchart TD
     (standard, higher, highest) which maps to a `lottery_weight` multiplier. This shifts the odds
     without guaranteeing anything: a weighted guest can still miss out. Only a worker can set it,
     and only on a guest going into the draw; a self-registration is always weighted 1.
-  - Once service has started the lottery is over, so a walk-in can only go straight into the line.
+  - Once the grace period ends (`lottery_pending`), the lottery pool is frozen. From then through
+    service, a walk-in can only go straight into the line.
   - Once the session has ended, the only thing left to record is `served` — someone who was handed
     food outside the app. That visit never joins a queue.
 - **Notifications are best-effort.** SMS requires an explicit consent step (separate from just

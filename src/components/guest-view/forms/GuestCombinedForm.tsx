@@ -14,14 +14,11 @@ export const GuestCombinedForm = observer(function GuestCombinedForm() {
 	const registrationQuestions = session.currentState?.questions ?? [];
 
 	async function submit() {
-		const result = await registration.submit(
-			'queue',
-			session.marketEvent?.id ?? null,
-			rootStore.translations.locale,
-		);
+		const marketEventId = session.marketEvent?.id ?? null;
+		const result = await registration.submit('queue', marketEventId, rootStore.translations.locale);
 
-		if (result.kind === 'registered') {
-			visit.submit(result.registration);
+		if (result.kind === 'registered' && marketEventId) {
+			visit.submit(result.registration, marketEventId);
 		}
 	}
 

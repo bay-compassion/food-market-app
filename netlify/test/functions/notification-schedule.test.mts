@@ -66,7 +66,7 @@ describe('notification-schedule handler', () => {
 	it('closes a due event and enqueues registration_closed notifications for registered visits', async () => {
 		vi.mocked(notificationsEnabled).mockReturnValueOnce(true);
 		queueResult(undefined); // bulk open
-		queueResult([{ id: 'event-1' }]); // due events
+		queueResult([{ id: 'event-1', registrationClosesAt: new Date() }]); // due events
 		queueResult([{ id: 'event-1' }]); // tx.update ... returning
 		queueResult([{ visitId: 'visit-1' }, { visitId: 'visit-2' }]); // tx.select registrations
 		vi.mocked(deliverQueuedNotifications).mockResolvedValueOnce({
@@ -89,7 +89,7 @@ describe('notification-schedule handler', () => {
 	it('does not enqueue anything when another process already closed the event first', async () => {
 		vi.mocked(notificationsEnabled).mockReturnValueOnce(true);
 		queueResult(undefined);
-		queueResult([{ id: 'event-1' }]);
+		queueResult([{ id: 'event-1', registrationClosesAt: new Date() }]);
 		queueResult([]); // tx.update ... returning — no row matched, lost the race
 		vi.mocked(deliverQueuedNotifications).mockResolvedValueOnce({
 			sent: 0,
@@ -108,7 +108,7 @@ describe('notification-schedule handler', () => {
 	it('skips the notification insert when the closed event had no registered visits', async () => {
 		vi.mocked(notificationsEnabled).mockReturnValueOnce(true);
 		queueResult(undefined);
-		queueResult([{ id: 'event-1' }]);
+		queueResult([{ id: 'event-1', registrationClosesAt: new Date() }]);
 		queueResult([{ id: 'event-1' }]);
 		queueResult([]); // no registered visits
 		vi.mocked(deliverQueuedNotifications).mockResolvedValueOnce({

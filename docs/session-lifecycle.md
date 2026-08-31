@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=38c5e443f733, netlify/services/marketSession.mts=644de638659d, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.mts=9ff110f41a51 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=54d3cac97d4f, netlify/services/marketSession.mts=ee814ef26121, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.mts=9ff110f41a51 -->
 
 # Session lifecycle
 
@@ -18,9 +18,8 @@ Companion diagrams: [`data-model.md`](data-model.md) for the database tables, an
 these states.
 
 Transitions labelled with a command name are admin actions. Those marked _(automatic)_ happen on
-their own once wall-clock time passes the session's registration window — `automaticSessionStatus`
-is applied whenever the current session is read, so a session left alone still closes registration
-on time.
+their own when wall-clock time passes the registration or grace-period deadline —
+`automaticSessionStatus` is applied whenever the current session is read.
 
 ```mermaid
 stateDiagram-v2
@@ -31,13 +30,15 @@ stateDiagram-v2
 
     scheduled --> scheduled : postpone_registration
     scheduled --> registration_open : open_registration<br/>or open time passes (automatic)
-    scheduled --> registration_closed : whole window already<br/>passed (automatic)
+    scheduled --> registration_closed : close time passes (automatic)
+    scheduled --> lottery_pending : close time and grace period<br/>already passed (automatic)
 
     registration_open --> registration_open : update_registration
     registration_open --> registration_closed : close_registration<br/>or close time passes (automatic)
 
     registration_closed --> registration_open : reopen_registration
-    registration_closed --> service_started : run_lottery
+    registration_closed --> lottery_pending : grace period ends (automatic)
+    lottery_pending --> service_started : run_lottery
 
     service_started --> ended : close_session
     ended --> [*]
@@ -61,9 +62,11 @@ the future; `ad_hoc` sessions are opened by hand straight from `draft`.
   arrives.
 - **`registration_open`** — guests can register. Each registration creates a `visits` row with
   status `registered`.
-- **`registration_closed`** — registration is over and everyone waiting to hear back is holding a
-  `registered` visit. Reaching this state queues a `registration_closed` notification for each of
-  them.
+- **`registration_closed`** — the form is closed, but an in-flight self-service request may still
+  commit during the 30-second grace period. Reaching this state queues a `registration_closed`
+  notification for everyone already holding a `registered` visit.
+- **`lottery_pending`** — the grace period has ended and the registration pool is frozen. New
+  lottery entries are rejected, and the draw can now run without racing a late request.
 - **`service_started`** — the lottery has run. Up to `capacity` visits become `waiting` with a
   `queue_position`; the rest become `not_placed`. Workers run the queue from here — see
   [the visit lifecycle](#the-visit-lifecycle) below.

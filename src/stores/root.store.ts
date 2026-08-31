@@ -33,7 +33,7 @@ export class RootStore {
 		this.guest = new GuestStore({ storage: this.storage });
 		this.registration = new RegistrationStore(this.guest, { storage: this.storage });
 		this.session = new MarketSessionStore({ requestHeaders: () => this.requestHeaders() });
-		this.visit = new VisitStore();
+		this.visit = new VisitStore(this);
 		this.admin = new AdminStore(this.session, {
 			api: new AdminApi({ requestHeaders: () => this.requestHeaders() }),
 			readPermissions: () => this.readPermissions?.() ?? Promise.resolve([]),

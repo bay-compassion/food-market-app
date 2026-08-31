@@ -54,7 +54,10 @@ function fetchRespondingWith(handlers: {
 			return Promise.resolve(
 				result === undefined
 					? { ok: false, json: () => Promise.resolve({}) }
-					: { ok: true, json: () => Promise.resolve(result) },
+					: {
+							ok: true,
+							json: () => Promise.resolve({ marketEventId: 'event-1', ...Object(result) }),
+						},
 			);
 		}
 

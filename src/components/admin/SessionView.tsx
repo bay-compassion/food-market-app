@@ -185,10 +185,13 @@ export const SessionView = observer(function SessionView({
 	const { translations } = useRootStore();
 
 	const showsRegisteredGuests =
-		!!event && (sessionState === 'registration_open' || sessionState === 'registration_closed');
+		!!event &&
+		['registration_open', 'registration_closed', 'lottery_pending'].includes(sessionState);
 	const showsBroadcast =
 		!!event &&
-		['registration_open', 'registration_closed', 'service_started'].includes(sessionState);
+		['registration_open', 'registration_closed', 'lottery_pending', 'service_started'].includes(
+			sessionState,
+		);
 
 	function formatEventDate(value: string) {
 		return new Intl.DateTimeFormat(translations.locale, {
@@ -334,8 +337,8 @@ export const SessionView = observer(function SessionView({
 			) : sessionState === 'registration_closed' ? (
 				<ActionCard className="admin-section action-card">
 					<div>
-						<h2>{t.lotteryActions}</h2>
-						<p>{t.closed}</p>
+						<h2>{t.closed}</h2>
+						<p>{t.guestList}</p>
 					</div>
 					<div className="action-buttons">
 						<AppButton
@@ -345,6 +348,15 @@ export const SessionView = observer(function SessionView({
 							onClick={() => onRun('reopen_registration')}
 							label={t.reopenRegistration}
 						/>
+					</div>
+				</ActionCard>
+			) : sessionState === 'lottery_pending' ? (
+				<ActionCard className="admin-section action-card">
+					<div>
+						<h2>{t.lotteryActions}</h2>
+						<p>{t.lotteryPendingHelp}</p>
+					</div>
+					<div className="action-buttons">
 						<AppButton
 							type="button"
 							disabled={busy}

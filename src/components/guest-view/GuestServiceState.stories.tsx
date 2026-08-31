@@ -6,7 +6,7 @@ import { Card } from '../ui/layout/Card';
 import { GuestServiceState } from './GuestServiceState';
 
 /**
- * Shown to a guest without an active visit while the market is `service_started` or `ended`.
+ * Shown when there is no current-market visit to present and the market is underway or ended.
  * Wrapped in `Card` for the frame this screen normally sits inside.
  */
 const meta = {

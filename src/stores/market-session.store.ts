@@ -20,6 +20,7 @@ export type SessionEvent = {
 	id: string;
 	registrationOpensAt: string;
 	registrationClosesAt: string;
+	registrationGraceEndsAt?: string | null;
 	capacity: number;
 	sessionMode: SessionMode;
 	status: SessionStatusEnum;
@@ -92,6 +93,7 @@ export class MarketSessionStore {
 		return [
 			SessionStatusEnum.REGISTRATION_OPEN,
 			SessionStatusEnum.REGISTRATION_CLOSED,
+			SessionStatusEnum.LOTTERY_PENDING,
 			SessionStatusEnum.SERVICE_STARTED,
 		].includes(this.currentStatus);
 	}
@@ -189,6 +191,24 @@ export class MarketSessionStore {
 		this.requestRevision += 1;
 		this._currentState = overview;
 		this._error = null;
+	}
+
+	onStateChanged(overview: SessionOverview) {
+		if (!overview?.event) {
+			return;
+		}
+
+		switch (overview.event.status) {
+			case SessionStatusEnum.REGISTRATION_OPEN:
+				// Handle idle state
+				break;
+			case SessionStatusEnum.LOTTERY_PENDING:
+				// Handle lottery pending state
+				break;
+			case SessionStatusEnum.SERVICE_STARTED:
+				// Handle service started state
+				break;
+		}
 	}
 
 	private async sendMutation(method: 'POST' | 'PUT', body: object): Promise<boolean> {

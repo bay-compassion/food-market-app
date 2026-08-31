@@ -12,7 +12,7 @@ import {
 	type QueuePlacement,
 } from '../../src/services/guestAdmission.js';
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
-import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
+import { acceptsSelfRegistration } from '../../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import {
 	findGuestByDeviceToken,
@@ -185,17 +185,10 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 		}
 
 		const now = new Date();
-		const effectiveStatus = automaticSessionStatus(event, now);
 
-		// Guests may register as soon as an event exists at all — including `draft`, before an admin
-		// has scheduled registration — so signing up ahead of time doesn't depend on what stage the
-		// session is in. Only once the window has genuinely passed (closed, service started, or the
-		// session ended) does self-registration stop making sense.
-		if (
-			effectiveStatus === 'registration_closed' ||
-			effectiveStatus === 'service_started' ||
-			effectiveStatus === 'ended'
-		) {
+		// Once the guest UI closes, an already-in-flight request may still land during the short grace
+		// period. `lottery_pending` is the hard boundary where the pool has been frozen.
+		if (!acceptsSelfRegistration(event, now)) {
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
@@ -252,68 +245,102 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 	const deviceCredential =
 		submission.source === 'self' && !existingGuest ? issueDeviceToken() : null;
 	const visitCredential = issueVisitToken();
-	const registration = await db.transaction(async (tx) => {
-		const guest = await persistGuestInformation(tx, {
-			existingGuest,
-			information: submission,
-			deviceTokenHash: deviceCredential?.tokenHash ?? null,
-		});
-		// Only a guest going straight into the line needs a position now. Everyone else is either
-		// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
-		const queuePosition =
-			submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
-				? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
-				: null;
-		const [visit] = existingVisit
-			? await tx
-					.update(visits)
-					.set({
-						accessTokenHash: visitCredential.tokenHash,
-						answers: submission.answers,
-						ageRange: submission.ageRange,
-						householdSize: submission.householdSize,
-						childrenCount: submission.childrenCount,
-						seniorsCount: submission.seniorsCount,
-						normalizedPhone: normalizePhone(submission.phone),
-						status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
-					})
-					.where(eq(visits.id, existingVisit.id))
-					.returning({ id: visits.id, status: visits.status })
-			: await tx
-					.insert(visits)
-					.values({
-						guestId: guest.id,
-						marketEventId: submission.marketEventId!,
-						status:
-							submission.source === 'admin'
-								? admissionVisitStatus(submission.admission)
-								: 'registered',
-						queuePosition,
-						answers: submission.answers,
-						source: submission.source,
-						accessTokenHash: visitCredential.tokenHash,
-						isFirstVisit,
-						ageRange: submission.ageRange,
-						householdSize: submission.householdSize,
-						childrenCount: submission.childrenCount,
-						seniorsCount: submission.seniorsCount,
-						normalizedPhone: normalizePhone(submission.phone),
-						// Only a guest actually entering the draw can carry anything but the default odds.
-						lotteryWeight:
-							submission.source === 'admin' && submission.admission === 'lottery'
-								? submission.lotteryWeight
-								: 1,
-					})
-					.returning({ id: visits.id, status: visits.status });
+	const registration = await db
+		.transaction(async (tx) => {
+			const [event] = await tx
+				.select()
+				.from(marketEvents)
+				.where(eq(marketEvents.id, submission.marketEventId!))
+				.limit(1)
+				.for('update');
 
+			if (
+				!event ||
+				(submission.source === 'self' && !acceptsSelfRegistration(event, new Date())) ||
+				(submission.source === 'admin' && !canAdmitGuest(event.status, submission.admission))
+			) {
+				throw new Error('INVALID_REGISTRATION_STATE');
+			}
+
+			const guest = await persistGuestInformation(tx, {
+				existingGuest,
+				information: submission,
+				deviceTokenHash: deviceCredential?.tokenHash ?? null,
+			});
+			// Only a guest going straight into the line needs a position now. Everyone else is either
+			// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
+			const queuePosition =
+				submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
+					? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
+					: null;
+			const [visit] = existingVisit
+				? await tx
+						.update(visits)
+						.set({
+							accessTokenHash: visitCredential.tokenHash,
+							answers: submission.answers,
+							ageRange: submission.ageRange,
+							householdSize: submission.householdSize,
+							childrenCount: submission.childrenCount,
+							seniorsCount: submission.seniorsCount,
+							normalizedPhone: normalizePhone(submission.phone),
+							status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
+						})
+						.where(eq(visits.id, existingVisit.id))
+						.returning({ id: visits.id, status: visits.status })
+				: await tx
+						.insert(visits)
+						.values({
+							guestId: guest.id,
+							marketEventId: submission.marketEventId!,
+							status:
+								submission.source === 'admin'
+									? admissionVisitStatus(submission.admission)
+									: 'registered',
+							queuePosition,
+							answers: submission.answers,
+							source: submission.source,
+							accessTokenHash: visitCredential.tokenHash,
+							isFirstVisit,
+							ageRange: submission.ageRange,
+							householdSize: submission.householdSize,
+							childrenCount: submission.childrenCount,
+							seniorsCount: submission.seniorsCount,
+							normalizedPhone: normalizePhone(submission.phone),
+							// Only a guest actually entering the draw can carry anything but the default odds.
+							lotteryWeight:
+								submission.source === 'admin' && submission.admission === 'lottery'
+									? submission.lotteryWeight
+									: 1,
+						})
+						.returning({ id: visits.id, status: visits.status });
+
+			return {
+				id: visit!.id,
+				guestId: guest.id,
+				status: visit!.status,
+				visitToken: submission.source === 'self' ? visitCredential.token : undefined,
+				deviceToken: deviceCredential?.token,
+			};
+		})
+		.catch((cause: unknown) => {
+			if (cause instanceof Error && cause.message === 'INVALID_REGISTRATION_STATE') {
+				return null;
+			}
+
+			throw cause;
+		});
+
+	if (!registration) {
 		return {
-			id: visit!.id,
-			guestId: guest.id,
-			status: visit!.status,
-			visitToken: submission.source === 'self' ? visitCredential.token : undefined,
-			deviceToken: deviceCredential?.token,
+			ok: false,
+			status: 409,
+			error:
+				submission.source === 'self'
+					? 'Registration is not open.'
+					: 'That way of adding a guest is not available while the session is in this state.',
 		};
-	});
+	}
 
 	return { ok: true, status: existingVisit ? 200 : 201, body: registration };
 }

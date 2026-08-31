@@ -39,6 +39,7 @@ function chain() {
 		'orderBy',
 		'limit',
 		'groupBy',
+		'for',
 		'values',
 		'set',
 		'returning',

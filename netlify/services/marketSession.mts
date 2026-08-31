@@ -7,6 +7,7 @@ import {
 	canRunSessionCommand,
 	openingWindow,
 	postponedWindow,
+	registrationGraceDeadline,
 	sessionCommandTarget,
 	type SessionMode,
 	type SessionStatus,
@@ -56,14 +57,25 @@ export async function getCurrentEvent() {
 	const automaticStatus = automaticSessionStatus(event, now);
 
 	if (automaticStatus !== event.status) {
+		const graceEndsAt = event.registrationGraceEndsAt ?? registrationGraceDeadline(event);
 		const updated = await db.transaction(async (tx) => {
 			const [changed] = await tx
 				.update(marketEvents)
-				.set({ status: automaticStatus })
+				.set({
+					status: automaticStatus,
+					...(automaticStatus === 'registration_closed' || automaticStatus === 'lottery_pending'
+						? { registrationGraceEndsAt: graceEndsAt }
+						: {}),
+				})
 				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
 				.returning();
 
-			if (changed && automaticStatus === 'registration_closed' && notificationsEnabled()) {
+			if (
+				changed &&
+				(event.status === 'scheduled' || event.status === 'registration_open') &&
+				(automaticStatus === 'registration_closed' || automaticStatus === 'lottery_pending') &&
+				notificationsEnabled()
+			) {
 				const registrations = await tx
 					.select({ visitId: visits.id })
 					.from(visits)
@@ -439,7 +451,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 	}
 	const [updated] = await db
 		.update(marketEvents)
-		.set({ status: target, ...window })
+		.set({ status: target, registrationGraceEndsAt: null, ...window })
 		.where(and(eq(marketEvents.id, event.id), inArray(marketEvents.status, ['draft', 'scheduled'])))
 		.returning({ id: marketEvents.id });
 
@@ -469,6 +481,7 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 		.update(marketEvents)
 		.set({
 			status: target,
+			registrationGraceEndsAt: null,
 			registrationClosesAt:
 				event.registrationClosesAt > minimumClose ? event.registrationClosesAt : minimumClose,
 		})
@@ -535,9 +548,12 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 		};
 	}
 	const closed = await db.transaction(async (tx) => {
+		const registrationGraceEndsAt = registrationGraceDeadline({
+			registrationClosesAt: new Date(),
+		});
 		const [updated] = await tx
 			.update(marketEvents)
-			.set({ status: target })
+			.set({ status: target, registrationGraceEndsAt })
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
 			.returning({ id: marketEvents.id });
 
@@ -578,41 +594,58 @@ export async function runLottery(
 	shuffleFn: <T extends { lotteryWeight: number }>(items: T[]) => T[] = weightedShuffle,
 ): Promise<ActionResult> {
 	if (!canRunSessionCommand(event.status, 'run_lottery', event.sessionMode)) {
-		return { ok: false, status: 409, error: 'The lottery can only run after registration closes.' };
+		return {
+			ok: false,
+			status: 409,
+			error: 'The lottery can only run after the registration grace period ends.',
+		};
 	}
-	const registrations = await db
-		.select({ id: visits.id, lotteryWeight: visits.lotteryWeight })
-		.from(visits)
-		.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
-	const shuffled = shuffleFn(registrations);
 	const lotteryTarget = sessionCommandTarget('run_lottery');
 
 	if (!lotteryTarget) {
 		return { ok: false, status: 500, error: 'The lottery transition is not configured.' };
 	}
-	// A worker can place a guest straight into the line before the draw. Those guests are already
-	// `waiting` with a position, so they take up a slot and the winners have to queue behind them —
-	// otherwise the draw would hand out a position 1 that is already spoken for.
-	const [placed] = await db
-		.select({
-			count: sql<number>`count(*)::int`,
-			highestPosition: sql<number | null>`max(${visits.queuePosition})`,
-		})
-		.from(visits)
-		.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'waiting')));
-	const reservedCount = placed?.count ?? 0;
-	const positionOffset = placed?.highestPosition ?? 0;
-	const remainingCapacity = Math.max(0, event.capacity - reservedCount);
-	const selectedRegistrations = shuffled.slice(0, remainingCapacity);
-	const selected = selectedRegistrations.map(({ id }) => id);
-	const notPlaced = shuffled.slice(remainingCapacity).map(({ id }) => id);
 
-	await db
+	const completed = await db
 		.transaction(async (tx) => {
+			// Registration takes this same row lock before its final eligibility check. Once this
+			// transaction observes `lottery_pending`, no late visit can enter the frozen pool.
+			const [lockedEvent] = await tx
+				.select()
+				.from(marketEvents)
+				.where(eq(marketEvents.id, event.id))
+				.limit(1)
+				.for('update');
+
+			if (!lockedEvent || lockedEvent.status !== 'lottery_pending') {
+				throw new Error('INVALID_SESSION_TRANSITION');
+			}
+
+			const registrations = await tx
+				.select({ id: visits.id, lotteryWeight: visits.lotteryWeight })
+				.from(visits)
+				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
+			const shuffled = shuffleFn(registrations);
+			// A worker can place a guest straight into the line before the draw. Those guests are
+			// already `waiting`, so they use capacity and the winners queue behind them.
+			const [placed] = await tx
+				.select({
+					count: sql<number>`count(*)::int`,
+					highestPosition: sql<number | null>`max(${visits.queuePosition})`,
+				})
+				.from(visits)
+				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'waiting')));
+			const reservedCount = placed?.count ?? 0;
+			const positionOffset = placed?.highestPosition ?? 0;
+			const remainingCapacity = Math.max(0, lockedEvent.capacity - reservedCount);
+			const selectedRegistrations = shuffled.slice(0, remainingCapacity);
+			const selected = selectedRegistrations.map(({ id }) => id);
+			const notPlaced = shuffled.slice(remainingCapacity).map(({ id }) => id);
+
 			const [started] = await tx
 				.update(marketEvents)
 				.set({ status: lotteryTarget })
-				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_closed')))
+				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'lottery_pending')))
 				.returning({ id: marketEvents.id });
 
 			if (!started) {
@@ -644,16 +677,17 @@ export async function runLottery(
 					await queueNotification(tx, notPlaced, 'lottery_not_selected', 'lottery_not_selected');
 				}
 			}
+
+			return true;
 		})
 		.catch((cause: unknown) => {
 			if (cause instanceof Error && cause.message === 'INVALID_SESSION_TRANSITION') {
-				return null;
+				return false;
 			}
 			throw cause;
 		});
-	const refreshed = await getCurrentEvent();
 
-	if (refreshed?.status !== lotteryTarget) {
+	if (!completed) {
 		return {
 			ok: false,
 			status: 409,

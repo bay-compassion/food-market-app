@@ -8,10 +8,10 @@ import { Card } from '../ui/layout/Card';
 import { GuestVisitStatus } from './GuestVisitStatus';
 
 /**
- * What a guest sees once they have an active visit, in every status it can be in. Wrapped in
+ * What a guest sees once they have a current visit, in every status it can be in. Wrapped in
  * `Card` for the frame this screen normally sits inside.
  *
- * `GuestVisitStatus` reads the active visit from the root store rather than taking it as props,
+ * `GuestVisitStatus` reads the current visit from the root store rather than taking it as props,
  * so each story seeds a fresh store — via a mocked `/api/visit` — instead of passing visit fields
  * straight through as props.
  */
@@ -44,6 +44,7 @@ const withVisitEndpoint: Decorator = (Story, context) => {
 			return Promise.resolve(
 				Response.json({
 					id: 'story-visit',
+					marketEventId: 'story-market',
 					status: args.visitStatus,
 					queuePosition: args.queuePosition,
 					aheadOfYou: args.aheadOfYou,
@@ -163,6 +164,11 @@ export const Served: Story = {
 /** The guest was not drawn in the lottery. */
 export const NotPlaced: Story = {
 	args: { visitStatus: 'not_placed' },
+};
+
+/** A worker marked the guest absent, but may still return them to the queue. */
+export const NoShow: Story = {
+	args: { visitStatus: 'no_show' },
 };
 
 /** The guest cancelled their own visit. */

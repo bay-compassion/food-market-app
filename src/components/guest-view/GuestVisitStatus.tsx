@@ -98,9 +98,15 @@ export const GuestVisitStatus = observer(function GuestVisitStatus({
 	const rootStore = useRootStore();
 	const { visit } = rootStore;
 
-	const visitStatusLabel = visit.activeVisit
-		? guestVisitStatusLabel(rootStore.translations.locale, visit.activeVisit.status)
+	const visitStatusLabel = visit.currentVisit
+		? guestVisitStatusLabel(rootStore.translations.locale, visit.currentVisit.status)
 		: '';
+
+	const isOutcome =
+		visit.currentVisit?.status === 'served' ||
+		visit.currentVisit?.status === 'not_placed' ||
+		visit.currentVisit?.status === 'no_show' ||
+		visit.currentVisit?.status === 'cancelled';
 
 	return (
 		<State className="success-state">
@@ -111,6 +117,13 @@ export const GuestVisitStatus = observer(function GuestVisitStatus({
 					</Checkmark>
 					<h2>{t.calledTitle}</h2>
 					<p>{t.calledDescription}</p>
+				</>
+			) : isOutcome ? (
+				<>
+					<Checkmark className="checkmark outcome-mark" aria-hidden="true">
+						•
+					</Checkmark>
+					<h2>{visitStatusLabel}</h2>
 				</>
 			) : (
 				<>
