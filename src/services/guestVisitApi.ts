@@ -2,8 +2,8 @@ import type { GuestFormState } from '../components/types';
 import type { VisitStatus } from './visitStateMachine';
 
 /**
- * The guest-facing `/api/guests` and `/api/visit` calls, kept out of `GuestView` so its component
- * stays about orchestrating state rather than parsing responses.
+ * Guest-facing API calls, kept out of `GuestView` so its component stays about orchestrating
+ * state rather than parsing responses.
  */
 
 export type ActiveVisit = {
@@ -34,7 +34,7 @@ export type GuestRegistrationResult = {
 export async function submitGuestRegistration(
 	payload: GuestRegistrationPayload,
 ): Promise<GuestRegistrationResult> {
-	const response = await fetch('/api/guests', {
+	const response = await fetch('/api/lottery-registration', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
@@ -64,7 +64,7 @@ export type GuestSignupResult = {
 
 /** Submits an identity-only sign-up: no session, no household data. Throws if the server rejects it. */
 export async function submitGuestSignup(payload: GuestSignupPayload): Promise<GuestSignupResult> {
-	const response = await fetch('/api/guest-signup', {
+	const response = await fetch('/api/guest-information', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),

@@ -255,7 +255,9 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.textContent).toContain('You’re in the queue!'));
 
-		const registrationCall = fetchMock.mock.calls.find(([url]) => url === '/api/guests');
+		const registrationCall = fetchMock.mock.calls.find(
+			([url]) => url === '/api/lottery-registration',
+		);
 		const body = JSON.parse(registrationCall?.[1]?.body as string) as Record<string, unknown>;
 
 		expect(body).toMatchObject({
@@ -325,7 +327,7 @@ describe('App', () => {
 		await waitFor(() => expect(container.textContent).toContain('Current status: Registered'));
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/guests',
+			'/api/lottery-registration',
 			expect.objectContaining({
 				body: expect.stringContaining('"deviceToken":"saved-device-token"'),
 			}),

@@ -111,35 +111,8 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 	});
 });
 
-describe('guests handler POST (self-service registration is intentionally public)', () => {
-	it('does not check permissions for a self-service submission with no Authorization header', async () => {
-		queueResult([]); // marketEvents lookup for the submitted marketEventId — none found
-
-		const response = await handler(
-			request('POST', {
-				body: {
-					firstName: 'Ari',
-					lastName: 'Guest',
-					ageRange: '18-29',
-					householdSize: 2,
-					childrenCount: 0,
-					seniorsCount: 0,
-					phone: '555-123-4567',
-					locale: 'en',
-					deviceToken: null,
-					marketEventId: 'event-1',
-				},
-			}),
-		);
-
-		// The submitted event doesn't exist in this stub, so registration is correctly rejected —
-		// the point of this test is that it's rejected with a business-logic 409, not a 401, and
-		// No permission check happens on the public self-service path.
-		expect(response.status).toBe(409);
-		expect(requirePermission).not.toHaveBeenCalled();
-	});
-
-	it('requires Auth0 for an admin-source submission', async () => {
+describe('guests handler POST (admin only)', () => {
+	it('requires Auth0 before inspecting the submission', async () => {
 		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
 
 		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
@@ -165,11 +138,27 @@ describe('guests handler POST (self-service registration is intentionally public
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
-	it('returns 400 for an invalid submission before any auth or database check', async () => {
-		const response = await handler(request('POST', { body: { firstName: '' } }));
+	it('rejects self-service submissions once authorized', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+
+		const response = await handler(
+			request('POST', {
+				body: {
+					firstName: 'Ari',
+					lastName: 'Guest',
+					ageRange: '18-29',
+					householdSize: 2,
+					childrenCount: 0,
+					seniorsCount: 0,
+					phone: '555-123-4567',
+					locale: 'en',
+					deviceToken: null,
+					marketEventId: 'event-1',
+				},
+			}),
+		);
 
 		expect(response.status).toBe(400);
-		expect(requirePermission).not.toHaveBeenCalled();
 		expect(db.select).not.toHaveBeenCalled();
 	});
 });

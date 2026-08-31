@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
-import { expect, fn } from 'storybook/test';
+import { expect } from 'storybook/test';
 
 import { translations, type Locale } from '../../../locales';
 import type { SessionQuestion } from '../../../stores/market-session.store';
@@ -35,8 +35,6 @@ type SeededState = {
 type RegistrationFormArgs = SeededState & {
 	/** Driven by the toolbar's locale picker, per the repo's story convention. */
 	locale: Locale;
-	context: 'queue' | 'early';
-	onSubmitted: (result: unknown) => void;
 };
 
 /**
@@ -69,14 +67,14 @@ function seededStore(
  * The story's own view of the form: the seeded state is not props the component takes, so it is
  * turned into a store here and provided around it.
  */
-function SeededForm({ context, onSubmitted, locale, ...seed }: RegistrationFormArgs) {
+function SeededForm({ locale, ...seed }: RegistrationFormArgs) {
 	// This store nests inside — and so overrides — the preview decorator's, which is why it has to
 	// carry the toolbar's locale across too.
 	const store = seededStore(seed, locale);
 
 	return (
 		<RootStoreProvider store={store}>
-			<GuestCombinedForm context={context} onSubmitted={onSubmitted} />
+			<GuestCombinedForm />
 		</RootStoreProvider>
 	);
 }
@@ -85,13 +83,8 @@ const meta = {
 	title: 'Guest/Forms/Combined Form',
 	component: SeededForm,
 	parameters: { shell: 'guest' },
-	argTypes: {
-		context: { control: 'inline-radio', options: ['queue', 'early'] },
-	},
 	args: {
 		locale: 'en',
-		context: 'queue',
-		onSubmitted: fn(),
 	},
 } satisfies Meta<typeof SeededForm>;
 
@@ -136,17 +129,6 @@ export const SubmissionFailed: Story = {
 	args: { submissionError: true },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole('alert')).toHaveTextContent(translations.en.submissionError);
-	},
-};
-
-/** The `early` context: saving information for later — identity only, no lottery fields. */
-export const EarlySignupForm: Story = {
-	args: { context: 'early' },
-	play: async ({ canvas }) => {
-		await expect(
-			canvas.getByRole('heading', { name: translations.en.signupView.formTitle }),
-		).toBeInTheDocument();
-		await expect(canvas.queryByLabelText(translations.en.age)).not.toBeInTheDocument();
 	},
 };
 

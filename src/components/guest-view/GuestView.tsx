@@ -1,18 +1,13 @@
-import { Card, CardContent } from '@mui/material';
+import { Card, CardContent, CircularProgress } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
 
 import { SessionStatusEnum } from '@/services/sessionStateMachine.ts';
 
 import type { Locale } from '../../locales';
-import {
-	currentSessionPhase,
-	guestFormContext,
-	resolveGuestCardState,
-} from '../../services/guestCardState';
+import { currentSessionPhase, resolveGuestCardState } from '../../services/guestCardState';
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
-import type { RegistrationSubmitResult } from '../../stores/registration.store';
 import type { Language } from '../../stores/translation.store';
 import { RegistrationCountdown } from '../RegistrationCountdown';
 import { GuestCombinedForm } from './forms/GuestCombinedForm';
@@ -20,7 +15,6 @@ import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 import { GuestServiceState } from './GuestServiceState';
-import { GuestVisitStatus } from './GuestVisitStatus';
 import { GuestIdentityCard } from './identity/GuestIdentityCard';
 
 /** The guest home screen (`/`): identity, language, and whichever card the session phase calls for. */
@@ -29,7 +23,11 @@ export const GuestView = observer(function GuestView() {
 	const rootStore = useRootStore();
 	const { guest, session, visit, translations } = rootStore;
 
-	const [isStatusLoading, setIsStatusLoading] = useState(true);
+	const [status] = useState(() =>
+		Promise.all([session.getStatus().catch(() => undefined), visit.refresh()]).then(
+			() => undefined,
+		),
+	);
 	/** Ticks every second so the session phase stays current. */
 	const [now, setNow] = useState(() => Date.now());
 
@@ -39,56 +37,52 @@ export const GuestView = observer(function GuestView() {
 		return () => clearInterval(timer);
 	}, []);
 
-	useEffect(() => {
-		let cancelled = false;
-
-		void Promise.all([session.getStatus().catch(() => undefined), visit.refresh()]).then(() => {
-			if (!cancelled) {
-				setIsStatusLoading(false);
-			}
-		});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [session, visit]);
-
 	function selectLanguage(selected: Locale) {
 		translations.setLanguage(selected as Language);
 		guest.markAsReturningVisitor();
 	}
 
-	function handleSubmitted(result: RegistrationSubmitResult) {
-		if (result.kind !== 'registered') {
-			return;
-		}
+	return (
+		<section className="guest-layout">
+			{!guest.isReturningVisitor ? <GuestLanguageHero onSelectLanguage={selectLanguage} /> : null}
 
-		visit.submit(result.registration);
-	}
+			<Suspense
+				fallback={
+					<p className="status-loading" role="status">
+						<CircularProgress size={24} aria-hidden="true" />
+						{t.statusLoading}
+					</p>
+				}
+			>
+				<MarketStatus status={status} now={now} />
+			</Suspense>
+		</section>
+	);
+});
 
-	function cancelVisit() {
-		if (!window.confirm(t.cancelVisitConfirm)) {
-			return;
-		}
+const MarketStatus = observer(function MarketStatus({
+	status,
+	now,
+}: {
+	status: Promise<void>;
+	now: number;
+}) {
+	use(status);
 
-		void visit.cancel();
-	}
+	const { guest, session, visit } = useRootStore();
 
 	/**
-	 * Whether `/api/market` has ever returned usable data. Stays `false` while it hasn't, including
-	 * when the optional configuration endpoint can't be reached — the phase below treats that the
-	 * same as registration being open, so the form is still available rather than blocking a guest
-	 * behind a "not open" screen the app can't actually confirm.
+	 * If the optional configuration endpoint failed, keep registration available rather than
+	 * blocking a guest behind a "not open" state the app could not actually confirm.
 	 */
-	const hasLoadedRegistration = session.currentState !== null;
-	const phase = hasLoadedRegistration
+	const phase = session.currentState
 		? currentSessionPhase(session.marketEvent, new Date(now))
 		: 'registration-open';
+
 	/**
-	 * Which of the signup card's states applies right now. An active visit always wins — see
-	 * `resolveGuestCardState` for the full precedence, which mirrors the server-side gate in
-	 * `guestRegistration.mts`. `isPreregistration` is always `false` here — the `/signup` route
-	 * renders `SignupView` instead, which is the only place that flag ever applies.
+	 * An active visit always wins — see `resolveGuestCardState` for the full precedence, which
+	 * mirrors the server-side gate in `guestRegistration.mts`. The `/signup` route is the only place
+	 * where `isPreregistration` applies.
 	 */
 	const cardState = resolveGuestCardState({
 		phase,
@@ -96,61 +90,45 @@ export const GuestView = observer(function GuestView() {
 		isPreregistration: false,
 		hasActiveVisit: visit.hasActiveVisit,
 	});
-	/** The success-state copy differs between joining today's queue and saving information. */
-	const successCopy =
-		guestFormContext(phase) === 'early'
-			? { title: t.signupView.successTitle, description: t.signupView.successDescription }
-			: { title: t.successTitle, description: t.successDescription };
+
+	/**
+	 * An identified guest needs the card to establish whose lottery-only form is shown. When market
+	 * status is unavailable or registration is not open, the card also gives an unidentified guest
+	 * a route to save their information independently of a visit.
+	 */
+	const showIdentityCard =
+		guest.isIdentified || session.currentStatus !== SessionStatusEnum.REGISTRATION_OPEN;
+
+	const render = () => {
+		if (!session.isActive) {
+			return <GuestNotOpenState />;
+		}
+
+		switch (session.currentStatus) {
+			case SessionStatusEnum.REGISTRATION_OPEN:
+				return (
+					<>
+						<RegistrationCountdown />
+						<Card aria-live="polite">
+							<CardContent>
+								<GuestCombinedForm />
+							</CardContent>
+						</Card>
+					</>
+				);
+			case SessionStatusEnum.REGISTRATION_CLOSED:
+				return <GuestRegistrationClosedState />;
+			case SessionStatusEnum.SERVICE_STARTED:
+				return <GuestServiceState hasEnded={cardState.kind === 'ended'} />;
+			default:
+				return <GuestNotOpenState />;
+		}
+	};
 
 	return (
-		<section className="guest-layout">
-			{/* Card that indicates who the guest has been identified.
-			 * Hidden when the registration is open and the guest hasn't previously saved information because the combined form will be shown.
-			 */}
-			{guest.isIdentified && session.currentStatus !== SessionStatusEnum.REGISTRATION_OPEN ? (
-				<GuestIdentityCard />
-			) : null}
-
-			{!guest.isReturningVisitor ? <GuestLanguageHero onSelectLanguage={selectLanguage} /> : null}
-
-			{isStatusLoading ? (
-				<p className="status-loading" aria-live="polite">
-					{t.statusLoading}
-				</p>
-			) : (
-				<>
-					<RegistrationCountdown />
-					<Card aria-live="polite">
-						<CardContent>
-							{!session.isActive ? (
-								<GuestNotOpenState />
-							) : cardState.kind === 'visit-status' ? (
-								<GuestVisitStatus
-									successTitle={successCopy.title}
-									successDescription={successCopy.description}
-									onCancelVisit={cancelVisit}
-								/>
-							) : cardState.kind === 'form' ? (
-								<GuestCombinedForm context={cardState.context} onSubmitted={handleSubmitted} />
-							) : cardState.kind === 'not-open' ? (
-								<GuestNotOpenState />
-							) : cardState.kind === 'registration-closed' ? (
-								<GuestRegistrationClosedState />
-							) : (
-								<GuestServiceState hasEnded={cardState.kind === 'ended'} />
-							)}
-						</CardContent>
-					</Card>
-				</>
-			)}
-		</section>
-	);
-});
-
-export const GuestStatusCard = observer(function GuestStatusCard() {
-	return (
-		<Card>
-			<div></div>
-		</Card>
+		<>
+			{showIdentityCard ? <GuestIdentityCard /> : null}
+			{render()}
+		</>
 	);
 });

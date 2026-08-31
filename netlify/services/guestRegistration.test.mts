@@ -4,12 +4,8 @@ import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
 
-import {
-	parseSignupSubmission,
-	parseSubmission,
-	registerGuest,
-	registerGuestSignup,
-} from './guestRegistration.mjs';
+import { parseGuestInformation, saveGuestInformation } from './guest-information.mjs';
+import { parseSubmission, registerGuest } from './guestRegistration.mjs';
 
 const savedDeviceToken = 'device-token-from-this-browser-12345678901234567890';
 
@@ -547,9 +543,9 @@ function signupSubmission(overrides: Record<string, unknown> = {}) {
 	};
 }
 
-describe('parseSignupSubmission', () => {
+describe('parseGuestInformation', () => {
 	it('parses a valid sign-up with no device token', () => {
-		expect(parseSignupSubmission(signupSubmission())).toEqual({
+		expect(parseGuestInformation(signupSubmission())).toEqual({
 			firstName: 'Ari',
 			lastName: 'Guest',
 			phone: '555-123-4567',
@@ -560,36 +556,36 @@ describe('parseSignupSubmission', () => {
 
 	it('accepts a saved device token', () => {
 		expect(
-			parseSignupSubmission(signupSubmission({ deviceToken: savedDeviceToken })),
+			parseGuestInformation(signupSubmission({ deviceToken: savedDeviceToken })),
 		).toMatchObject({
 			deviceToken: savedDeviceToken,
 		});
 	});
 
 	it('rejects a malformed device token', () => {
-		expect(parseSignupSubmission(signupSubmission({ deviceToken: 'too-short' }))).toBeNull();
+		expect(parseGuestInformation(signupSubmission({ deviceToken: 'too-short' }))).toBeNull();
 	});
 
 	it('rejects a missing phone number', () => {
-		expect(parseSignupSubmission(signupSubmission({ phone: '' }))).toBeNull();
+		expect(parseGuestInformation(signupSubmission({ phone: '' }))).toBeNull();
 	});
 
 	it('rejects an unsupported locale', () => {
-		expect(parseSignupSubmission(signupSubmission({ locale: 'de' }))).toBeNull();
+		expect(parseGuestInformation(signupSubmission({ locale: 'de' }))).toBeNull();
 	});
 
 	it('rejects a missing first or last name', () => {
-		expect(parseSignupSubmission(signupSubmission({ firstName: '' }))).toBeNull();
-		expect(parseSignupSubmission(signupSubmission({ lastName: '' }))).toBeNull();
+		expect(parseGuestInformation(signupSubmission({ firstName: '' }))).toBeNull();
+		expect(parseGuestInformation(signupSubmission({ lastName: '' }))).toBeNull();
 	});
 
 	it('rejects a non-object payload', () => {
-		expect(parseSignupSubmission('not an object')).toBeNull();
-		expect(parseSignupSubmission(null)).toBeNull();
+		expect(parseGuestInformation('not an object')).toBeNull();
+		expect(parseGuestInformation(null)).toBeNull();
 	});
 });
 
-describe('registerGuestSignup', () => {
+describe('saveGuestInformation', () => {
 	function insertedGuest() {
 		return db.insert.mock.results
 			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
@@ -607,7 +603,7 @@ describe('registerGuestSignup', () => {
 	it('creates a new guest and issues a device token for a first-time sign-up', async () => {
 		queueResult([{ id: 'guest-1' }]); // insert guests
 
-		const result = await registerGuestSignup(parseSignupSubmission(signupSubmission())!);
+		const result = await saveGuestInformation(parseGuestInformation(signupSubmission())!);
 
 		expect(result.ok).toBe(true);
 		expect(result).toMatchObject({ status: 201, body: { guestId: 'guest-1' } });
@@ -623,7 +619,7 @@ describe('registerGuestSignup', () => {
 	it('never touches visits for a sign-up', async () => {
 		queueResult([{ id: 'guest-1' }]); // insert guests
 
-		await registerGuestSignup(parseSignupSubmission(signupSubmission())!);
+		await saveGuestInformation(parseGuestInformation(signupSubmission())!);
 
 		expect(db.select).not.toHaveBeenCalled();
 	});
@@ -632,8 +628,8 @@ describe('registerGuestSignup', () => {
 		queueResult([{ id: 'guest-1', firstName: 'Old' }]); // device credential lookup
 		queueResult([{ id: 'guest-1', firstName: 'Renewed' }]); // tx.update guest returning
 
-		const result = await registerGuestSignup(
-			parseSignupSubmission(
+		const result = await saveGuestInformation(
+			parseGuestInformation(
 				signupSubmission({ deviceToken: savedDeviceToken, firstName: 'Renewed' }),
 			)!,
 		);
@@ -652,8 +648,8 @@ describe('registerGuestSignup', () => {
 		queueResult([]); // submitted token does not identify a guest
 		queueResult([{ id: 'guest-2' }]); // insert guests
 
-		const result = await registerGuestSignup(
-			parseSignupSubmission(signupSubmission({ deviceToken: savedDeviceToken }))!,
+		const result = await saveGuestInformation(
+			parseGuestInformation(signupSubmission({ deviceToken: savedDeviceToken }))!,
 		);
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });

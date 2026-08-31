@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -24,6 +24,16 @@ function renderGuestView() {
 		store,
 		routes: [{ path: '/signup', element: <div>signup</div> }],
 	});
+}
+
+async function renderLoadedGuestView() {
+	let rendered!: ReturnType<typeof renderGuestView>;
+
+	await act(async () => {
+		rendered = renderGuestView();
+	});
+
+	return rendered;
 }
 
 function fetchRespondingWith(handlers: {
@@ -62,24 +72,78 @@ describe('GuestView', () => {
 		vi.useRealTimers();
 	});
 
+	it('shows a Suspense fallback with a progress spinner while status loads', () => {
+		// Arrange
+		vi.stubGlobal(
+			'fetch',
+			vi.fn((url: string) =>
+				url === '/api/market'
+					? new Promise(() => undefined)
+					: Promise.resolve({ ok: true, json: () => Promise.resolve({}) }),
+			),
+		);
+
+		// Act
+		renderGuestView();
+
+		// Assert
+		const loadingStatus = screen.getByRole('status');
+
+		expect(loadingStatus.textContent).toContain('Checking today’s market status…');
+		expect(loadingStatus.querySelector('.MuiCircularProgress-root')).not.toBeNull();
+	});
+
 	it('renders the queue registration form when no visit token is stored', async () => {
 		// Arrange
-		const user = userEvent.setup();
-
 		vi.stubGlobal('fetch', fetchRespondingWith({}));
 
 		// Act
-		const { container } = renderGuestView();
+		const { container } = await renderLoadedGuestView();
 
 		// Assert
 		await waitFor(() =>
 			expect(container.textContent).toContain('Number of people in your household'),
 		);
 		expect(container.textContent).toContain('Welcome to the community food market');
-		expect(screen.getByText('Save your information for next time')).toBeDefined();
+		expect(screen.queryByRole('button', { name: 'Save my information' })).toBeNull();
+	});
 
-		await user.click(screen.getByRole('button', { name: 'Save my information' }));
-		expect(screen.getByText('signup')).toBeDefined();
+	it('keeps identification available when market status cannot be retrieved', async () => {
+		// Arrange
+		vi.stubGlobal(
+			'fetch',
+			vi.fn((url: string) =>
+				Promise.resolve(
+					url === '/api/market'
+						? { ok: false, json: () => Promise.resolve({}) }
+						: { ok: true, json: () => Promise.resolve({}) },
+				),
+			),
+		);
+
+		// Act
+		await renderLoadedGuestView();
+
+		// Assert
+		expect(screen.getByRole('button', { name: 'Save my information' })).toBeDefined();
+	});
+
+	it('shows an identified guest with the lottery-only form while registration is open', async () => {
+		// Arrange
+		window.localStorage.setItem('bay-compassion.guest-device-token', JSON.stringify('guest-token'));
+		window.localStorage.setItem(
+			'bay-compassion.guest-identity',
+			JSON.stringify({ firstName: 'Ada', lastName: 'Lovelace', phone: '5551234567' }),
+		);
+		vi.stubGlobal('fetch', fetchRespondingWith({}));
+
+		// Act
+		const { container } = await renderLoadedGuestView();
+
+		// Assert
+		expect(container.querySelector('.guest-identity')).not.toBeNull();
+		expect(container.querySelector('input[autocomplete="given-name"]')).toBeNull();
+		expect(container.textContent).toContain('Number of people in your household');
 	});
 
 	it('renders the registration countdown immediately above the form', async () => {
@@ -87,7 +151,7 @@ describe('GuestView', () => {
 		vi.stubGlobal('fetch', fetchRespondingWith({}));
 
 		// Act
-		const { container } = renderGuestView();
+		const { container } = await renderLoadedGuestView();
 
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
@@ -115,7 +179,7 @@ describe('GuestView', () => {
 		);
 
 		vi.stubGlobal('fetch', fetchMock);
-		const { container } = renderGuestView();
+		const { container } = await renderLoadedGuestView();
 
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
@@ -149,7 +213,7 @@ describe('GuestView', () => {
 		);
 
 		// Act
-		const { container } = renderGuestView();
+		const { container } = await renderLoadedGuestView();
 
 		// Assert
 		await waitFor(() => expect(container.textContent).toContain('Your place in line'));
@@ -167,7 +231,7 @@ describe('GuestView', () => {
 		);
 
 		// Act
-		const { container } = renderGuestView();
+		const { container } = await renderLoadedGuestView();
 
 		// Assert
 		await waitFor(() => expect(container.textContent).toContain('It’s your turn'));
@@ -185,7 +249,7 @@ describe('GuestView', () => {
 		// initial load, and switching clocks afterwards would leave that interval on the real one.
 		vi.useFakeTimers();
 		vi.stubGlobal('fetch', fetchMock);
-		renderGuestView();
+		await renderLoadedGuestView();
 
 		await vi.runOnlyPendingTimersAsync();
 
@@ -209,7 +273,7 @@ describe('GuestView', () => {
 
 		vi.useFakeTimers();
 		vi.stubGlobal('fetch', fetchMock);
-		const { unmount } = renderGuestView();
+		const { unmount } = await renderLoadedGuestView();
 
 		await vi.runOnlyPendingTimersAsync();
 
@@ -234,7 +298,7 @@ describe('GuestView', () => {
 
 		vi.useFakeTimers();
 		vi.stubGlobal('fetch', fetchMock);
-		const { store } = renderGuestView();
+		const { store } = await renderLoadedGuestView();
 
 		await vi.runOnlyPendingTimersAsync();
 
@@ -256,7 +320,7 @@ describe('GuestView', () => {
 		vi.stubGlobal('fetch', fetchRespondingWith({ visit: () => undefined }));
 
 		// Act
-		const { container } = renderGuestView();
+		const { container } = await renderLoadedGuestView();
 
 		// Assert
 		await waitFor(() =>
@@ -280,7 +344,7 @@ describe('GuestView', () => {
 
 		vi.stubGlobal('fetch', fetchMock);
 		vi.spyOn(window, 'confirm').mockReturnValue(true);
-		renderGuestView();
+		await renderLoadedGuestView();
 
 		// Act
 		await user.click(await screen.findByRole('button', { name: 'Cancel this visit' }));
@@ -307,7 +371,7 @@ describe('GuestView', () => {
 
 		vi.stubGlobal('fetch', fetchMock);
 		vi.spyOn(window, 'confirm').mockReturnValue(false);
-		renderGuestView();
+		await renderLoadedGuestView();
 
 		// Act
 		await user.click(await screen.findByRole('button', { name: 'Cancel this visit' }));

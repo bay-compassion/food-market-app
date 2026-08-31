@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=a553f363ece6, src/components/routes/SignupView.tsx=46f9fe4c1e8e, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=34a0315a1d8f, src/services/guestVisitApi.ts=a06988c9ea56, src/stores/visit.store.ts=5e34b8fc3d95, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guestRegistration.mts=db37a56e6484, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=d0dcab223ab0, src/components/routes/SignupView.tsx=0100784f6b84, src/services/guestCardState.ts=dd7c42b8c34a, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=f75fd164fc3e, src/stores/visit.store.ts=5e34b8fc3d95, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=64c01d5698fe, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=6c4d4a0c4581, netlify/functions/guest-information.mts=49a04c93875b, netlify/functions/lottery-registration.mts=8bea7a78f824, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=0b089d690ac5 -->
 
 # Guest journey
 
@@ -14,12 +14,13 @@ Both read the current market session from the shared
 (`src/stores/*.store.ts`) lives for the app's lifetime, not any one component's mount. The root's
 [`MarketSessionStore`](../src/stores/market-session.store.ts) polls `/api/market` (is registration
 open?), while the root's [`GuestStore`](../src/stores/guest.store.ts) owns the device credential
-used by `/api/guests` (register for a session), `/api/guest-signup` (identity only, no session), and
+used by `/api/lottery-registration` (register for a session), `/api/guest-information` (identity
+only, no session), and
 `/api/notification-status` (retrieve consent) and `/api/sms-subscription` (grant or revoke SMS
-consent). Both routes render the shared `GuestCombinedForm`, which reads and submits the
-in-progress form fields through the root's
-[`RegistrationStore`](../src/stores/registration.store.ts) rather than through props, so `/` and
-`/signup` don't each wire up their own copy of that state. `/api/visit` (check status, cancel) is
+consent). The routes render dedicated zero-prop forms—`GuestCombinedForm` for market registration
+and `GuestSignupForm` for identity-only signup—which share the same visual form shell and read the
+in-progress fields through the root's [`RegistrationStore`](../src/stores/registration.store.ts).
+`/api/visit` (check status, cancel) is
 called through [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts), with the root's
 [`VisitStore`](../src/stores/visit.store.ts) owning the stored visit token, the active visit, and its
 refresh polling — it keeps polling in the background even while the guest is elsewhere in the app
@@ -40,9 +41,7 @@ flowchart TD
     pick --> saved
 
     saved --> hasIdentity{Saved device token<br/>and local profile?}
-    hasIdentity -- no device token --> unidentified[Offer to save information:<br/>does not enter the lottery,<br/>and "Save my information" button]
-    unidentified -. "Save my information" button .-> signupRoute
-    unidentified --> activeSession
+    hasIdentity -- no device token --> activeSession
     hasIdentity -- token only --> activeSession
     hasIdentity -- yes --> identityShown[Show locally saved<br/>name and phone]
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
@@ -60,15 +59,19 @@ flowchart TD
     notifyButton --> activeSession
     notificationError --> activeSession
 
-    activeSession -- no --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
+    activeSession -- no --> inactiveIdentity[Show identity card:<br/>saved identity or offer to save information]
+    inactiveIdentity -. "Save my information" button .-> signupRoute
+    inactiveIdentity --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
     activeSession -- yes --> hasVisit{Saved visit token<br/>on this device?}
     hasVisit -- yes --> status[Status screen]
     hasVisit -- no --> canRegister{Registration open?}
 
     canRegister -- yes --> cachedIdentity{Cached local<br/>name and phone?}
     cachedIdentity -- no --> combinedForm[Sign-up fields — name, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
-    cachedIdentity -- yes --> lotteryOnlyForm[Lottery-entry fields only:<br/>age range, household size,<br/>children/seniors]
-    canRegister -- no --> phase{Which active phase is<br/>the session in?}
+    cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card and<br/>lottery-entry fields only:<br/>age range, household size,<br/>children/seniors]
+    canRegister -- no --> nonOpenIdentity[Show identity card:<br/>saved identity or offer to save information]
+    nonOpenIdentity -. "Save my information" button .-> signupRoute
+    nonOpenIdentity --> phase{Which active phase is<br/>the session in?}
     phase -- registration closed --> closedScreen([Registration-closed screen])
     phase -- service underway --> inServiceScreen([In-service screen])
 
@@ -76,15 +79,15 @@ flowchart TD
     alreadyIdentified -- yes --> redirectHome[Redirect to /]
     redirectHome --> saved
     alreadyIdentified -- no --> signupOnlyForm[Sign-up form:<br/>name and phone only —<br/>no session or household data]
-    signupOnlyForm --> signupSubmit["POST /api/guest-signup<br/>(creates/updates the guest,<br/>no visit)"]
+    signupOnlyForm --> signupSubmit["POST /api/guest-information<br/>(creates/updates the guest,<br/>no visit)"]
     signupSubmit --> saveSignupIdentity[Save entered name and phone,<br/>and any issued device token]
     saveSignupIdentity --> signupSuccess([Show "Your information is saved"<br/>on /signup])
 
     combinedForm --> questions[Answer this session's<br/>registration questions]
     lotteryOnlyForm --> questions
     questions --> identity{Saved device token?}
-    identity -- yes --> submit[Submit with saved token]
-    identity -- no --> firstSubmit[Submit without a device token]
+    identity -- yes --> submit["POST /api/lottery-registration<br/>with saved token"]
+    identity -- no --> firstSubmit["POST /api/lottery-registration<br/>without a device token"]
     firstSubmit --> saveIdentity[Save entered name and phone<br/>in this browser only]
     submit --> saveIdentity
     saveIdentity --> registered[Visit created: registered]
@@ -118,7 +121,8 @@ flowchart TD
   that browser-local copy; it never retrieves a guest profile from the server. A legacy token with
   no local profile therefore shows no indicator until the guest registers again.
 - **`/signup` is its own route (`SignupView.tsx`) for creating a guest identity without a visit.**
-  Signing up (name and phone, via `/api/guest-signup`) is decoupled from lottery registration.
+  Saving information (name and phone, via `/api/guest-information`) is decoupled from lottery
+  registration.
   `SignupView` redirects to `/` as soon as it mounts if the browser already has a device token —
   there's nothing left to ask, so the guest lands back on `GuestView`, which shows whatever its
   normal card resolution decides (queue form, visit status, or the session's current phase). A
@@ -126,19 +130,20 @@ flowchart TD
   "your information is saved" message on `/signup` itself. The unidentified
   `GuestIdentityCard` provides the in-app link into this flow; a guest can also land on
   `/signup` directly, e.g. from a QR code.
-  `GuestCombinedForm` (the composer) takes a
-  `context` prop (`'queue' | 'early'`): `'early'` (only ever passed by `SignupView`) renders only the
-  identity fields (`GuestInformationForm`, submitted through `GuestStore.signUp`, no visit created);
-  `'queue'` (only ever passed by `GuestView`) renders the lottery-entry fields (`GuestLotteryForm`)
-  plus the identity fields too, unless the device already has a cached local identity to skip
-  re-asking for. Both routes read and write the in-progress form through the shared
-  `RegistrationStore` instead of taking it as props.
+  `GuestSignupForm` renders only the identity fields (`GuestInformationForm`, submitted through
+  `GuestStore.signUp`, no visit created). `GuestCombinedForm` renders the lottery-entry fields
+  (`GuestLotteryForm`) plus the identity fields unless the device already has a cached local
+  identity. Both are zero-prop store consumers and read and write the in-progress fields through
+  the shared `RegistrationStore`.
 - **Signing up and entering the lottery are visually one screen but two components.**
   `GuestCombinedForm` composes `GuestInformationForm` (name, phone) and `GuestLotteryForm` (age
-  range, household size, children/seniors, per-session questions) inside a single `<form>` — one
-  submit either way, so the wire contract to `/api/guests` for a lottery entry is unchanged. Only
-  the standalone `'early'` sign-up path talks to a different endpoint (`/api/guest-signup`) and
-  creates no visit.
+  range, household size, children/seniors, per-session questions) inside a single `<form>`, while
+  `GuestSignupForm` composes only `GuestInformationForm`. Both reuse `GuestForm` for their shared
+  heading, submission state, error, button, and privacy treatment. Market registration submits to
+  `/api/lottery-registration`; the standalone sign-up path submits to `/api/guest-information` and
+  creates no visit. Lottery registration carries the same identity fields and invokes the shared
+  guest-information persistence service inside the visit transaction, so both writes succeed or
+  fail together.
 - **Inactive market states share one explanation card.** `MarketSessionStore.isActive` is the
   boundary: when it is false, `GuestView` renders `GuestNotOpenState` with the next registration
   window, lottery rules, and notification details, separated by a divider. Saving information is

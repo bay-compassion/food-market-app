@@ -1,3 +1,5 @@
+import { runInAction } from 'mobx';
+
 import type { GuestFormState } from '../components/types.ts';
 import type { GuestRegistrationResult } from '../services/guestVisitApi.ts';
 import { makeReactive } from '../services/make-reactive.ts';
@@ -15,8 +17,8 @@ export type RegistrationStoreOptions = {
 
 /**
  * Owns the guest registration form's in-progress state: the fields, the lottery answers, and the
- * submission itself. Both the `/` and `/signup` routes render `GuestCombinedForm` against this
- * store instead of each wiring up and prop-drilling the same state independently.
+ * submission itself. The market-registration and identity-signup forms both use this store instead
+ * of wiring up separate copies of the same field state.
  */
 export class RegistrationStore {
 	guest: GuestFormState;
@@ -47,8 +49,7 @@ export class RegistrationStore {
 		this.registrationAnswers[questionId] = value;
 	}
 
-	/** `context` decides which endpoint this submits to — see `GuestCombinedForm`'s `context`
-	 *  prop for what each one means. */
+	/** The flow decides whether this creates a market visit or saves identity only. */
 	async submit(
 		context: 'queue' | 'early',
 		marketEventId: string | null,
@@ -87,11 +88,11 @@ export class RegistrationStore {
 
 			return { kind: 'registered', registration };
 		} catch {
-			this.submissionError = true;
+			runInAction(() => (this.submissionError = true));
 
 			return { kind: 'error' };
 		} finally {
-			this.isSubmitting = false;
+			runInAction(() => (this.isSubmitting = false));
 		}
 	}
 
