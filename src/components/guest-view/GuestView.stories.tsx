@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { translations, type Locale } from '../../locales';
+import type { Locale } from '../../locales';
 import { visitStatuses, type VisitStatus } from '../../services/visitStateMachine';
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import { RootStoreProvider } from '../../stores/react/store-context';
@@ -64,17 +64,11 @@ function VisitStatusRow({
 	};
 	void store.visit.refresh();
 
-	const t = translations[locale];
-
 	return (
 		<RootStoreProvider store={store}>
 			<section className="guest-layout" style={{ width: 'auto', padding: 0 }}>
 				<Card aria-live="polite">
-					<GuestVisitStatus
-						successTitle={t.successTitle}
-						successDescription={t.successDescription}
-						onCancelVisit={() => void store.visit.cancel()}
-					/>
+					<GuestVisitStatus onCancelVisit={() => void store.visit.cancel()} />
 				</Card>
 			</section>
 		</RootStoreProvider>

@@ -80,7 +80,7 @@ export async function submitGuestSignup(payload: GuestSignupPayload): Promise<Gu
 
 export type CurrentVisitLookup =
 	| { found: true; visit: CurrentVisit }
-	// The stored token no longer resolves to a visit — cancelled, expired, or from a prior session.
+	// The stored token no longer resolves to a visit — expired, ended, or otherwise unavailable.
 	| { found: false; reason: 'expired' }
 	// The request itself failed — say nothing about whether the visit still exists.
 	| { found: false; reason: 'unreachable' };

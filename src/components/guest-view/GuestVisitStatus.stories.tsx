@@ -1,6 +1,6 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
 
-import { translations, type Locale } from '../../locales';
+import type { Locale } from '../../locales';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
@@ -23,7 +23,6 @@ type GuestVisitStatusArgs = {
 	visitStatus: VisitStatus;
 	queuePosition: number | null;
 	aheadOfYou: number | null;
-	context: 'queue' | 'early';
 	isCancelling: boolean;
 	submissionError: boolean;
 };
@@ -67,12 +66,7 @@ const withVisitEndpoint: Decorator = (Story, context) => {
 };
 
 /** Seeds a store from the mocked endpoint above, then renders the panel against it. */
-function SeededVisitStatus({
-	locale,
-	context,
-	isCancelling,
-	submissionError,
-}: GuestVisitStatusArgs) {
+function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisitStatusArgs) {
 	const store = new RootStore();
 
 	store.translations.setLanguage(locale);
@@ -82,20 +76,10 @@ function SeededVisitStatus({
 		}
 	});
 
-	const t = translations[locale];
-	const successCopy =
-		context === 'early'
-			? { title: t.signupView.successTitle, description: t.signupView.successDescription }
-			: { title: t.successTitle, description: t.successDescription };
-
 	return (
 		<RootStoreProvider store={store}>
 			<Card aria-live="polite">
-				<GuestVisitStatus
-					successTitle={successCopy.title}
-					successDescription={successCopy.description}
-					onCancelVisit={() => void store.visit.cancel()}
-				/>
+				<GuestVisitStatus onCancelVisit={() => void store.visit.cancel()} />
 			</Card>
 		</RootStoreProvider>
 	);
@@ -111,14 +95,12 @@ const meta = {
 			control: 'select',
 			options: ['registered', 'waiting', 'called', 'served', 'not_placed', 'no_show', 'cancelled'],
 		},
-		context: { control: 'inline-radio', options: ['queue', 'early'] },
 	},
 	args: {
 		locale: 'en',
 		visitStatus: 'registered',
 		queuePosition: null,
 		aheadOfYou: null,
-		context: 'queue',
 		isCancelling: false,
 		submissionError: false,
 	},
@@ -127,11 +109,6 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
-
-/** Confirmation after signing up early — no queue position exists yet. */
-export const EarlySignupConfirmed: Story = {
-	args: { context: 'early' },
-};
 
 /** Registered for today, before the lottery or queue has placed the guest. */
 export const Registered: Story = {};

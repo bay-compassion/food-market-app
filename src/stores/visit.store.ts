@@ -1,7 +1,7 @@
 import { type IReactionDisposer, reaction, runInAction } from 'mobx';
 
 import type { VisitStatus } from '@/services/visitStateMachine.ts';
-import type { RootStore } from '@/stores/root.store.ts';
+import type { SessionOverview } from '@/stores/market-session.store.ts';
 
 import {
 	cancelCurrentVisit,
@@ -18,6 +18,10 @@ export type VisitStoreOptions = {
 	storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 	lookupCurrentVisit?: typeof fetchCurrentVisit;
 	cancelVisit?: typeof cancelCurrentVisit;
+};
+
+type VisitStoreRoot = {
+	session: { readonly currentState: SessionOverview | null };
 };
 
 /**
@@ -86,7 +90,7 @@ export class VisitStore {
 	}
 
 	constructor(
-		private readonly rootStore: RootStore,
+		private readonly rootStore: VisitStoreRoot,
 		options: VisitStoreOptions = {},
 	) {
 		this.storage = options.storage ?? window.localStorage;
@@ -96,13 +100,21 @@ export class VisitStore {
 
 		this.disposers.add(
 			reaction(
-				() => this.rootStore.session.currentState,
-				(state) => {
-					if (!this.currentVisit || !state) {
+				() => {
+					const sessionState = this.rootStore.session.currentState;
+
+					return [
+						sessionState !== null,
+						sessionState?.event?.id ?? null,
+						this.currentVisit?.marketEventId ?? null,
+					] as const;
+				},
+				([hasSessionState, marketEventId, visitMarketEventId]) => {
+					if (!hasSessionState || !visitMarketEventId) {
 						return;
 					}
 
-					if (state.event?.id !== this.currentVisit.marketEventId) {
+					if (marketEventId !== visitMarketEventId) {
 						this.reset();
 					}
 				},
@@ -129,6 +141,7 @@ export class VisitStore {
 	}
 
 	reset() {
+		this.storage.removeItem(visitTokenStorageKey);
 		this._visitToken = null;
 		this._currentVisit = null;
 	}

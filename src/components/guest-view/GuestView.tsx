@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Suspense, use, useState } from 'react';
 
 import { RegistrationOpenState } from '@/components/guest-view/states/RegistrationOpenState.tsx';
+import { visitTakesPrecedence } from '@/services/guest-visit-presentation.ts';
 import { SessionStatusEnum } from '@/services/sessionStateMachine.ts';
 
 import type { Locale } from '../../locales';
@@ -11,7 +12,9 @@ import { useTranslation } from '../../stores/react/use-translation';
 import type { Language } from '../../stores/translation.store';
 import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
+import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 import { GuestServiceState } from './GuestServiceState';
+import { GuestVisitState } from './GuestVisitState';
 import { GuestIdentityCard } from './identity/GuestIdentityCard';
 
 /** The guest home screen (`/`): identity, language, and whichever card the market status calls for. */
@@ -52,7 +55,7 @@ export const GuestView = observer(function GuestView() {
 const MarketStatus = observer(function MarketStatus({ status }: { status: Promise<void> }) {
 	use(status);
 
-	const { guest, session } = useRootStore();
+	const { guest, session, visit } = useRootStore();
 
 	/**
 	 * An identified guest needs the card to establish whose lottery-only form is shown. When market
@@ -73,6 +76,10 @@ const MarketStatus = observer(function MarketStatus({ status }: { status: Promis
 			);
 		}
 
+		if (visitTakesPrecedence(session.currentStatus, visit.status)) {
+			return <GuestVisitState />;
+		}
+
 		switch (session.currentStatus) {
 			// If market retrieval failed, preserve the optimistic registration fallback. The server
 			// remains authoritative and rejects the request if registration has actually closed.
@@ -81,8 +88,21 @@ const MarketStatus = observer(function MarketStatus({ status }: { status: Promis
 				return <RegistrationOpenState />;
 			case SessionStatusEnum.REGISTRATION_CLOSED:
 			case SessionStatusEnum.LOTTERY_PENDING:
+				return (
+					<Card aria-live="polite">
+						<CardContent>
+							<GuestRegistrationClosedState />
+						</CardContent>
+					</Card>
+				);
 			case SessionStatusEnum.SERVICE_STARTED:
-				return <GuestServiceState />;
+				return (
+					<Card aria-live="polite">
+						<CardContent>
+							<GuestServiceState />
+						</CardContent>
+					</Card>
+				);
 			default:
 				return <GuestNotOpenState />;
 		}

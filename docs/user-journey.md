@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=adf50d520944, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=7b3a9fa3b800, src/stores/visit.store.ts=dcc0cb668d41, src/stores/root.store.ts=4580a908281c, src/stores/market-session.store.ts=b65d45fd416a, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/functions/guest-information.mts=49a04c93875b, netlify/functions/lottery-registration.mts=8bea7a78f824, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=cb2e6fb8f4a7 -->
+<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=a08d0e85bfbe, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=404b6be26a0a, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=51666aa28851, src/stores/market-session.store.ts=39ff6052aa90, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/functions/guest-information.mts=49a04c93875b, netlify/functions/lottery-registration.mts=8bea7a78f824, netlify/functions/visit.mts=c3df43d3e2fa, netlify/functions/sms-subscription.mts=cb2e6fb8f4a7 -->
 
 # Guest journey
 
@@ -148,9 +148,10 @@ flowchart TD
   creates no visit. Lottery registration carries the same identity fields and invokes the shared
   guest-information persistence service inside the visit transaction, so both writes succeed or
   fail together.
-- **Market status and visit status remain separate.** `GuestView` matches the visit's
-  `marketEventId` to the market being displayed, then composes that guest-specific state with
-  `MarketSessionStore.currentStatus`. A current-market visit can show registration, queue, call,
+- **Market status and visit status remain separate.** `VisitStore` keeps its current visit scoped
+  to the market being displayed by matching `marketEventId` whenever either side loads, then
+  `GuestView` composes that guest-specific state with `MarketSessionStore.currentStatus`. A
+  current-market visit can show registration, queue, call,
   or outcome details; a cancelled visit falls back to the market state so the guest can register
   again while registration remains open. A visit from another market cannot override today's
   screen. Both `registration_closed` and `lottery_pending` show the registration-closed message

@@ -12,6 +12,37 @@ export const languages = [
 
 export type Locale = (typeof languages)[number]['code'];
 
+export interface VisitStatusTranslations {
+	labels: {
+		registered: string;
+		waiting: string;
+		called: string;
+		served: string;
+		not_placed: string;
+		no_show: string;
+		cancelled: string;
+	};
+	registered: {
+		header: string;
+		details: string;
+	};
+	waiting: {
+		header: string;
+		details: string;
+		queuePositionLabel: string;
+		guestsAheadLabel: string;
+		youAreNext: string;
+	};
+	called: {
+		header: string;
+		details: string;
+	};
+	currentStatusLabel: string;
+	cancelAction: string;
+	cancelConfirmation: string;
+	updateError: string;
+}
+
 export interface GuestViewTranslations {
 	forms: {
 		informationLegend: string;
@@ -47,9 +78,8 @@ export interface GuestViewTranslations {
 	serviceState: {
 		inProgressHeading: string;
 		inProgressDescription: string;
-		endedHeading: string;
-		endedDescription: string;
 	};
+	visitStatus: VisitStatusTranslations;
 }
 
 export interface SignupViewTranslations {
@@ -81,13 +111,10 @@ export interface Translation {
 	authError: string;
 	authLoading: string;
 	backToGuest: string;
-	cancelVisit: string;
-	cancelVisitConfirm: string;
 	childrenCount: string;
 	compassionFood: string;
 	countDecrementLabel: string;
 	countIncrementLabel: string;
-	currentStatus: string;
 	chooseAnswer: string;
 	firstName: string;
 	formDescription: string;
@@ -136,22 +163,7 @@ export interface Translation {
 	submit: string;
 	submitting: string;
 	termsAndConditions: string;
-	successDescription: string;
-	successTitle: string;
-	queuePositionLabel: string;
-	guestsAheadOfYou: string;
-	youAreNext: string;
-	calledTitle: string;
-	calledDescription: string;
-	statusCancelled: string;
-	statusCalled: string;
 	statusLoading: string;
-	statusNoShow: string;
-	statusNotPlaced: string;
-	statusRegistered: string;
-	statusServed: string;
-	statusWaiting: string;
-	visitError: string;
 	welcome: string;
 }
 
@@ -201,9 +213,33 @@ export const translations = {
 				inProgressHeading: 'Today’s market is underway',
 				inProgressDescription:
 					'Registration is closed for today. If you haven’t checked in yet, please speak with a market team member.',
-				endedHeading: 'Today’s market has ended',
-				endedDescription:
-					'Thank you for being part of our community. Check the schedule above for the next one.',
+			},
+			visitStatus: {
+				labels: {
+					registered: 'Registered',
+					waiting: 'Waiting',
+					called: 'Called',
+					served: 'Served',
+					not_placed: 'Not placed',
+					no_show: 'No show',
+					cancelled: 'Cancelled',
+				},
+				registered: {
+					header: 'You’re in the queue!',
+					details: 'We’ll let you know when it’s your turn. Thank you for being here.',
+				},
+				waiting: {
+					header: 'You’re in the queue!',
+					details: 'We’ll let you know when it’s your turn. Thank you for being here.',
+					queuePositionLabel: 'Your place in line',
+					guestsAheadLabel: 'Guests ahead of you',
+					youAreNext: 'You are next',
+				},
+				called: { header: 'It’s your turn', details: 'Please come to the table now.' },
+				currentStatusLabel: 'Current status',
+				cancelAction: 'Cancel this visit',
+				cancelConfirmation: 'Cancel your place in the queue for this visit?',
+				updateError: 'We could not update this visit. Please ask a market team member for help.',
 			},
 		},
 		admin: 'Admin',
@@ -224,13 +260,10 @@ export const translations = {
 		authError: 'We could not verify your admin session. Please try signing in again.',
 		authLoading: 'Verifying your admin session…',
 		backToGuest: 'Back to guest check-in',
-		cancelVisit: 'Cancel this visit',
-		cancelVisitConfirm: 'Cancel your place in the queue for this visit?',
 		childrenCount: 'Number of children you’re shopping for',
 		compassionFood: 'Compassion Food',
 		countDecrementLabel: 'Decrease count',
 		countIncrementLabel: 'Increase count',
-		currentStatus: 'Current status',
 		chooseAnswer: 'Choose an answer',
 		signupView: {
 			formDescription:
@@ -292,22 +325,7 @@ export const translations = {
 		submit: 'Join the queue',
 		submitting: 'Joining the queue…',
 		termsAndConditions: 'Terms & Conditions',
-		successDescription: 'We’ll let you know when it’s your turn. Thank you for being here.',
-		successTitle: 'You’re in the queue!',
-		queuePositionLabel: 'Your place in line',
-		guestsAheadOfYou: 'Guests ahead of you',
-		youAreNext: 'You are next',
-		calledTitle: 'It’s your turn',
-		calledDescription: 'Please come to the table now.',
-		statusCancelled: 'Cancelled',
-		statusCalled: 'Called',
 		statusLoading: 'Checking today’s market status…',
-		statusNoShow: 'No show',
-		statusNotPlaced: 'Not placed',
-		statusRegistered: 'Registered',
-		statusServed: 'Served',
-		statusWaiting: 'Waiting',
-		visitError: 'We could not update this visit. Please ask a market team member for help.',
 		welcome: 'Welcome to the community food market',
 	},
 	es: {
@@ -355,9 +373,33 @@ export const translations = {
 				inProgressHeading: 'El mercado de hoy está en curso',
 				inProgressDescription:
 					'El registro está cerrado por hoy. Si aún no se ha registrado, hable con un miembro del equipo del mercado.',
-				endedHeading: 'El mercado de hoy ha terminado',
-				endedDescription:
-					'Gracias por ser parte de nuestra comunidad. Consulte el horario indicado arriba para el próximo mercado.',
+			},
+			visitStatus: {
+				labels: {
+					registered: 'Registrado',
+					waiting: 'En espera',
+					called: 'Llamado',
+					served: 'Atendido',
+					not_placed: 'Sin lugar',
+					no_show: 'No se presentó',
+					cancelled: 'Cancelado',
+				},
+				registered: {
+					header: '¡Ya está en la fila!',
+					details: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
+				},
+				waiting: {
+					header: '¡Ya está en la fila!',
+					details: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
+					queuePositionLabel: 'Su lugar en la fila',
+					guestsAheadLabel: 'Invitados delante de usted',
+					youAreNext: 'Usted es el siguiente',
+				},
+				called: { header: 'Es su turno', details: 'Por favor, acérquese al mostrador ahora.' },
+				currentStatusLabel: 'Estado actual',
+				cancelAction: 'Cancelar esta visita',
+				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
+				updateError: 'No pudimos actualizar esta visita. Pida ayuda al equipo del mercado.',
 			},
 		},
 		admin: 'Administración',
@@ -378,13 +420,10 @@ export const translations = {
 		authError: 'No pudimos verificar su sesión de administración. Intente iniciar sesión de nuevo.',
 		authLoading: 'Verificando su sesión de administración…',
 		backToGuest: 'Volver al registro',
-		cancelVisit: 'Cancelar esta visita',
-		cancelVisitConfirm: '¿Cancelar su lugar en la fila para esta visita?',
 		childrenCount: 'Número de niños para quienes está comprando',
 		compassionFood: 'Alimentos con Compasión',
 		countDecrementLabel: 'Disminuir el número',
 		countIncrementLabel: 'Aumentar el número',
-		currentStatus: 'Estado actual',
 		chooseAnswer: 'Elija una respuesta',
 		signupView: {
 			formDescription:
@@ -448,22 +487,7 @@ export const translations = {
 		submit: 'Unirse a la fila',
 		submitting: 'Uniéndose a la fila…',
 		termsAndConditions: 'Términos y condiciones',
-		successDescription: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
-		successTitle: '¡Ya está en la fila!',
-		queuePositionLabel: 'Su lugar en la fila',
-		guestsAheadOfYou: 'Invitados delante de usted',
-		youAreNext: 'Usted es el siguiente',
-		calledTitle: 'Es su turno',
-		calledDescription: 'Por favor, acérquese al mostrador ahora.',
-		statusCancelled: 'Cancelado',
-		statusCalled: 'Llamado',
 		statusLoading: 'Consultando el estado del mercado de hoy…',
-		statusNoShow: 'No se presentó',
-		statusNotPlaced: 'Sin lugar',
-		statusRegistered: 'Registrado',
-		statusServed: 'Atendido',
-		statusWaiting: 'En espera',
-		visitError: 'No pudimos actualizar esta visita. Pida ayuda al equipo del mercado.',
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
 	},
 	fa: {
@@ -510,9 +534,33 @@ export const translations = {
 				inProgressHeading: 'بازار امروز در حال برگزاری است',
 				inProgressDescription:
 					'ثبت‌نام برای امروز بسته شده است. اگر هنوز ثبت‌نام نکرده‌اید، لطفاً با یکی از اعضای تیم بازار صحبت کنید.',
-				endedHeading: 'بازار امروز به پایان رسید',
-				endedDescription:
-					'از اینکه بخشی از جامعه ما هستید سپاسگزاریم. برای بازار بعدی، برنامه بالا را بررسی کنید.',
+			},
+			visitStatus: {
+				labels: {
+					registered: 'ثبت‌شده',
+					waiting: 'در انتظار',
+					called: 'فراخوانده‌شده',
+					served: 'خدمت‌رسانی‌شده',
+					not_placed: 'انتخاب‌نشده',
+					no_show: 'غایب',
+					cancelled: 'لغوشده',
+				},
+				registered: {
+					header: 'شما در صف هستید!',
+					details: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
+				},
+				waiting: {
+					header: 'شما در صف هستید!',
+					details: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
+					queuePositionLabel: 'جایگاه شما در صف',
+					guestsAheadLabel: 'مهمانان جلوتر از شما',
+					youAreNext: 'شما نفر بعدی هستید',
+				},
+				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به میز مراجعه کنید.' },
+				currentStatusLabel: 'وضعیت فعلی',
+				cancelAction: 'لغو این بازدید',
+				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
+				updateError: 'این بازدید به‌روزرسانی نشد. از یکی از اعضای تیم بازار کمک بخواهید.',
 			},
 		},
 		admin: 'مدیریت',
@@ -533,13 +581,10 @@ export const translations = {
 		authError: 'نتوانستیم نشست مدیریت شما را تأیید کنیم. لطفاً دوباره وارد شوید.',
 		authLoading: 'در حال تأیید نشست مدیریت…',
 		backToGuest: 'بازگشت به ثبت‌نام مهمان',
-		cancelVisit: 'لغو این بازدید',
-		cancelVisitConfirm: 'جای خود را در صف این بازدید لغو می‌کنید؟',
 		childrenCount: 'تعداد کودکانی که برای آن‌ها خرید می‌کنید',
 		compassionFood: 'غذای دلسوزانه',
 		countDecrementLabel: 'کاهش تعداد',
 		countIncrementLabel: 'افزایش تعداد',
-		currentStatus: 'وضعیت فعلی',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
 		signupView: {
 			formDescription:
@@ -601,22 +646,7 @@ export const translations = {
 		submit: 'پیوستن به صف',
 		submitting: 'در حال پیوستن به صف…',
 		termsAndConditions: 'شرایط و ضوابط',
-		successDescription: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
-		successTitle: 'شما در صف هستید!',
-		queuePositionLabel: 'جایگاه شما در صف',
-		guestsAheadOfYou: 'مهمانان جلوتر از شما',
-		youAreNext: 'شما نفر بعدی هستید',
-		calledTitle: 'نوبت شماست',
-		calledDescription: 'لطفاً همین حالا به میز مراجعه کنید.',
-		statusCancelled: 'لغوشده',
-		statusCalled: 'فراخوانده‌شده',
 		statusLoading: 'در حال بررسی وضعیت بازار امروز…',
-		statusNoShow: 'غایب',
-		statusNotPlaced: 'انتخاب‌نشده',
-		statusRegistered: 'ثبت‌شده',
-		statusServed: 'خدمت‌رسانی‌شده',
-		statusWaiting: 'در انتظار',
-		visitError: 'این بازدید به‌روزرسانی نشد. از یکی از اعضای تیم بازار کمک بخواهید.',
 		welcome: 'به بازار غذای جامعه خوش آمدید',
 	},
 	tl: {
@@ -664,9 +694,33 @@ export const translations = {
 				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
 				inProgressDescription:
 					'Sarado na ang pagpaparehistro para ngayong araw. Kung hindi ka pa nag-check in, makipag-usap sa isang miyembro ng pangkat ng pamilihan.',
-				endedHeading: 'Natapos na ang pamilihan ngayong araw',
-				endedDescription:
-					'Salamat sa pagiging bahagi ng aming komunidad. Tingnan ang iskedyul sa itaas para sa susunod na pamilihan.',
+			},
+			visitStatus: {
+				labels: {
+					registered: 'Nakarehistro',
+					waiting: 'Naghihintay',
+					called: 'Tinawag',
+					served: 'Napagsilbihan',
+					not_placed: 'Hindi napili',
+					no_show: 'Hindi dumating',
+					cancelled: 'Kinansela',
+				},
+				registered: {
+					header: 'Nasa pila na kayo!',
+					details: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
+				},
+				waiting: {
+					header: 'Nasa pila na kayo!',
+					details: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
+					queuePositionLabel: 'Ang inyong puwesto sa pila',
+					guestsAheadLabel: 'Mga bisita bago kayo',
+					youAreNext: 'Kayo na ang susunod',
+				},
+				called: { header: 'Kayo na po ang susunod', details: 'Pumunta na po kayo sa mesa ngayon.' },
+				currentStatusLabel: 'Kasalukuyang katayuan',
+				cancelAction: 'Kanselahin ang pagbisitang ito',
+				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
+				updateError: 'Hindi namin ma-update ang pagbisitang ito. Humingi ng tulong sa pangkat.',
 			},
 		},
 		admin: 'Admin',
@@ -687,13 +741,10 @@ export const translations = {
 		authError: 'Hindi namin ma-verify ang iyong admin session. Subukang mag-sign in muli.',
 		authLoading: 'Vine-verify ang iyong admin session…',
 		backToGuest: 'Bumalik sa pag-check in ng bisita',
-		cancelVisit: 'Kanselahin ang pagbisitang ito',
-		cancelVisitConfirm: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 		childrenCount: 'Bilang ng mga batang binibilhan mo',
 		compassionFood: 'Pagkaing May Malasakit',
 		countDecrementLabel: 'Bawasan ang bilang',
 		countIncrementLabel: 'Dagdagan ang bilang',
-		currentStatus: 'Kasalukuyang katayuan',
 		chooseAnswer: 'Pumili ng sagot',
 		signupView: {
 			formDescription:
@@ -758,22 +809,7 @@ export const translations = {
 		submit: 'Sumali sa pila',
 		submitting: 'Sumasali sa pila…',
 		termsAndConditions: 'Mga Tuntunin at Kundisyon',
-		successDescription: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
-		successTitle: 'Nasa pila na kayo!',
-		queuePositionLabel: 'Ang inyong puwesto sa pila',
-		guestsAheadOfYou: 'Mga bisita bago kayo',
-		youAreNext: 'Kayo na ang susunod',
-		calledTitle: 'Kayo na po ang susunod',
-		calledDescription: 'Pumunta na po kayo sa mesa ngayon.',
-		statusCancelled: 'Kinansela',
-		statusCalled: 'Tinawag',
 		statusLoading: 'Sinusuri ang katayuan ng palengke ngayon…',
-		statusNoShow: 'Hindi dumating',
-		statusNotPlaced: 'Hindi napili',
-		statusRegistered: 'Nakarehistro',
-		statusServed: 'Napagsilbihan',
-		statusWaiting: 'Naghihintay',
-		visitError: 'Hindi namin ma-update ang pagbisitang ito. Humingi ng tulong sa pangkat.',
 		welcome: 'Maligayang pagdating sa pamilihan ng pagkaing pangkomunidad',
 	},
 	vi: {
@@ -819,9 +855,33 @@ export const translations = {
 				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
 				inProgressDescription:
 					'Đăng ký đã đóng cho hôm nay. Nếu bạn chưa đăng ký, vui lòng trao đổi với nhân viên chợ.',
-				endedHeading: 'Phiên chợ hôm nay đã kết thúc',
-				endedDescription:
-					'Cảm ơn bạn đã là một phần của cộng đồng chúng tôi. Xem lịch ở trên cho phiên chợ tiếp theo.',
+			},
+			visitStatus: {
+				labels: {
+					registered: 'Đã đăng ký',
+					waiting: 'Đang chờ',
+					called: 'Đã gọi',
+					served: 'Đã phục vụ',
+					not_placed: 'Không được chọn',
+					no_show: 'Không đến',
+					cancelled: 'Đã hủy',
+				},
+				registered: {
+					header: 'Bạn đã vào hàng đợi!',
+					details: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
+				},
+				waiting: {
+					header: 'Bạn đã vào hàng đợi!',
+					details: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
+					queuePositionLabel: 'Vị trí của bạn trong hàng',
+					guestsAheadLabel: 'Số khách trước bạn',
+					youAreNext: 'Bạn là người tiếp theo',
+				},
+				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến quầy ngay bây giờ.' },
+				currentStatusLabel: 'Trạng thái hiện tại',
+				cancelAction: 'Hủy lượt ghé này',
+				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
+				updateError: 'Không thể cập nhật lượt ghé này. Vui lòng nhờ nhân viên chợ hỗ trợ.',
 			},
 		},
 		admin: 'Quản trị',
@@ -842,13 +902,10 @@ export const translations = {
 		authError: 'Không thể xác minh phiên quản trị của bạn. Vui lòng đăng nhập lại.',
 		authLoading: 'Đang xác minh phiên quản trị…',
 		backToGuest: 'Quay lại đăng ký khách',
-		cancelVisit: 'Hủy lượt ghé này',
-		cancelVisitConfirm: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 		childrenCount: 'Số trẻ em bạn đang mua sắm cho',
 		compassionFood: 'Thực Phẩm Nhân Ái',
 		countDecrementLabel: 'Giảm số lượng',
 		countIncrementLabel: 'Tăng số lượng',
-		currentStatus: 'Trạng thái hiện tại',
 		chooseAnswer: 'Chọn câu trả lời',
 		signupView: {
 			formDescription:
@@ -911,22 +968,7 @@ export const translations = {
 		submit: 'Vào hàng đợi',
 		submitting: 'Đang vào hàng đợi…',
 		termsAndConditions: 'Điều khoản và Điều kiện',
-		successDescription: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
-		successTitle: 'Bạn đã vào hàng đợi!',
-		queuePositionLabel: 'Vị trí của bạn trong hàng',
-		guestsAheadOfYou: 'Số khách trước bạn',
-		youAreNext: 'Bạn là người tiếp theo',
-		calledTitle: 'Đã đến lượt bạn',
-		calledDescription: 'Vui lòng đến quầy ngay bây giờ.',
-		statusCancelled: 'Đã hủy',
-		statusCalled: 'Đã gọi',
 		statusLoading: 'Đang kiểm tra tình trạng chợ hôm nay…',
-		statusNoShow: 'Không đến',
-		statusNotPlaced: 'Không được chọn',
-		statusRegistered: 'Đã đăng ký',
-		statusServed: 'Đã phục vụ',
-		statusWaiting: 'Đang chờ',
-		visitError: 'Không thể cập nhật lượt ghé này. Vui lòng nhờ nhân viên chợ hỗ trợ.',
 		welcome: 'Chào mừng đến với chợ thực phẩm cộng đồng',
 	},
 	zh: {
@@ -971,8 +1013,30 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: '今天的市场正在进行中',
 				inProgressDescription: '今天的登记已关闭。如果您还未登记，请联系市场工作人员。',
-				endedHeading: '今天的市场已结束',
-				endedDescription: '感谢您成为我们社区的一员。请查看上方的时间安排，了解下一次市场。',
+			},
+			visitStatus: {
+				labels: {
+					registered: '已登记',
+					waiting: '等待中',
+					called: '已叫号',
+					served: '已服务',
+					not_placed: '未入选',
+					no_show: '未到场',
+					cancelled: '已取消',
+				},
+				registered: { header: '您已加入队列！', details: '轮到您时我们会通知您。感谢您的到来。' },
+				waiting: {
+					header: '您已加入队列！',
+					details: '轮到您时我们会通知您。感谢您的到来。',
+					queuePositionLabel: '您的排队位置',
+					guestsAheadLabel: '您前面的访客',
+					youAreNext: '下一位就是您',
+				},
+				called: { header: '轮到您了', details: '请现在到服务台来。' },
+				currentStatusLabel: '当前状态',
+				cancelAction: '取消本次到访',
+				cancelConfirmation: '要取消本次到访的排队位置吗？',
+				updateError: '无法更新本次到访。请向市场工作人员寻求帮助。',
 			},
 		},
 		admin: '管理',
@@ -993,13 +1057,10 @@ export const translations = {
 		authError: '无法验证您的管理员会话。请重新登录。',
 		authLoading: '正在验证管理员会话…',
 		backToGuest: '返回访客登记',
-		cancelVisit: '取消本次到访',
-		cancelVisitConfirm: '要取消本次到访的排队位置吗？',
 		childrenCount: '您为多少儿童采购',
 		compassionFood: '关爱食品',
 		countDecrementLabel: '减少数量',
 		countIncrementLabel: '增加数量',
-		currentStatus: '当前状态',
 		chooseAnswer: '请选择答案',
 		signupView: {
 			formDescription:
@@ -1058,22 +1119,7 @@ export const translations = {
 		submit: '加入队列',
 		submitting: '正在加入队列…',
 		termsAndConditions: '条款和条件',
-		successDescription: '轮到您时我们会通知您。感谢您的到来。',
-		successTitle: '您已加入队列！',
-		queuePositionLabel: '您的排队位置',
-		guestsAheadOfYou: '您前面的访客',
-		youAreNext: '下一位就是您',
-		calledTitle: '轮到您了',
-		calledDescription: '请现在到服务台来。',
-		statusCancelled: '已取消',
-		statusCalled: '已叫号',
 		statusLoading: '正在查询今天的市场状态…',
-		statusNoShow: '未到场',
-		statusNotPlaced: '未入选',
-		statusRegistered: '已登记',
-		statusServed: '已服务',
-		statusWaiting: '等待中',
-		visitError: '无法更新本次到访。请向市场工作人员寻求帮助。',
 		welcome: '欢迎来到社区食品市场',
 	},
 	ar: {
@@ -1120,9 +1166,33 @@ export const translations = {
 				inProgressHeading: 'سوق اليوم جارٍ الآن',
 				inProgressDescription:
 					'أُغلق التسجيل لهذا اليوم. إذا لم تكن قد سجّلت الدخول بعد، يرجى التحدث مع أحد أعضاء فريق السوق.',
-				endedHeading: 'انتهى سوق اليوم',
-				endedDescription:
-					'شكرًا لكونك جزءًا من مجتمعنا. يرجى مراجعة الجدول أعلاه لمعرفة موعد السوق القادم.',
+			},
+			visitStatus: {
+				labels: {
+					registered: 'مسجل',
+					waiting: 'قيد الانتظار',
+					called: 'تم استدعاؤه',
+					served: 'تمت خدمته',
+					not_placed: 'لم يتم اختياره',
+					no_show: 'لم يحضر',
+					cancelled: 'ملغاة',
+				},
+				registered: {
+					header: 'أنت الآن في قائمة الانتظار!',
+					details: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
+				},
+				waiting: {
+					header: 'أنت الآن في قائمة الانتظار!',
+					details: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
+					queuePositionLabel: 'مكانك في الصف',
+					guestsAheadLabel: 'الضيوف الذين أمامك',
+					youAreNext: 'أنت التالي',
+				},
+				called: { header: 'حان دورك', details: 'يرجى التوجه إلى الطاولة الآن.' },
+				currentStatusLabel: 'الحالة الحالية',
+				cancelAction: 'إلغاء هذه الزيارة',
+				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
+				updateError: 'تعذر تحديث هذه الزيارة. يرجى طلب المساعدة من فريق السوق.',
 			},
 		},
 		admin: 'الإدارة',
@@ -1143,13 +1213,10 @@ export const translations = {
 		authError: 'تعذر التحقق من جلسة الإدارة. يرجى محاولة تسجيل الدخول مرة أخرى.',
 		authLoading: 'جارٍ التحقق من جلسة الإدارة…',
 		backToGuest: 'العودة إلى تسجيل الضيف',
-		cancelVisit: 'إلغاء هذه الزيارة',
-		cancelVisitConfirm: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
 		childrenCount: 'عدد الأطفال الذين تتسوق من أجلهم',
 		compassionFood: 'طعام الرحمة',
 		countDecrementLabel: 'إنقاص العدد',
 		countIncrementLabel: 'زيادة العدد',
-		currentStatus: 'الحالة الحالية',
 		chooseAnswer: 'اختر إجابة',
 		signupView: {
 			formDescription:
@@ -1211,22 +1278,7 @@ export const translations = {
 		submit: 'انضم إلى قائمة الانتظار',
 		submitting: 'جارٍ الانضمام إلى قائمة الانتظار…',
 		termsAndConditions: 'الشروط والأحكام',
-		successDescription: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
-		successTitle: 'أنت الآن في قائمة الانتظار!',
-		queuePositionLabel: 'مكانك في الصف',
-		guestsAheadOfYou: 'الضيوف الذين أمامك',
-		youAreNext: 'أنت التالي',
-		calledTitle: 'حان دورك',
-		calledDescription: 'يرجى التوجه إلى الطاولة الآن.',
-		statusCancelled: 'ملغاة',
-		statusCalled: 'تم استدعاؤه',
 		statusLoading: 'جارٍ التحقق من حالة السوق اليوم…',
-		statusNoShow: 'لم يحضر',
-		statusNotPlaced: 'لم يتم اختياره',
-		statusRegistered: 'مسجل',
-		statusServed: 'تمت خدمته',
-		statusWaiting: 'قيد الانتظار',
-		visitError: 'تعذر تحديث هذه الزيارة. يرجى طلب المساعدة من فريق السوق.',
 		welcome: 'مرحبًا بكم في سوق الطعام المجتمعي',
 	},
 } as const satisfies Record<Locale, Translation>;

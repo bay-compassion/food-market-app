@@ -1,6 +1,9 @@
+import { observable } from 'mobx';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { VisitStore } from './visit.store';
+import { SessionStatusEnum } from '../services/sessionStateMachine';
+import type { SessionOverview } from './market-session.store';
+import { VisitStore, type VisitStoreOptions } from './visit.store';
 
 const visitTokenKey = 'bay-compassion.visit-token';
 const registered = { id: 'visit-1', status: 'registered' as const, visitToken: 'token-1' };
@@ -11,6 +14,41 @@ const currentRegisteredVisit = {
 	queuePosition: null,
 	aheadOfYou: null,
 };
+
+function sessionOverview(eventId: string): SessionOverview {
+	return {
+		event: {
+			id: eventId,
+			registrationOpensAt: '2026-01-01T10:00:00.000Z',
+			registrationClosesAt: '2026-01-01T11:00:00.000Z',
+			capacity: 50,
+			sessionMode: 'scheduled',
+			status: SessionStatusEnum.SERVICE_STARTED,
+		},
+		questions: [],
+		counts: {},
+	};
+}
+
+function createVisitStoreHarness(options: VisitStoreOptions = {}) {
+	const currentState = observable.box<SessionOverview | null>(null);
+	const rootStore = {
+		session: {
+			get currentState() {
+				return currentState.get();
+			},
+		},
+	};
+
+	return {
+		store: new VisitStore(rootStore, options),
+		setMarketEvent: (eventId: string) => currentState.set(sessionOverview(eventId)),
+	};
+}
+
+function createVisitStore(options: VisitStoreOptions = {}) {
+	return createVisitStoreHarness(options).store;
+}
 
 describe('VisitStore', () => {
 	beforeEach(() => {
@@ -25,7 +63,7 @@ describe('VisitStore', () => {
 	describe('submit', () => {
 		it('saves the visit token and records the current market visit', () => {
 			// Arrange
-			const store = new VisitStore();
+			const store = createVisitStore();
 
 			// Act
 			store.submit(registered, 'event-1');
@@ -47,7 +85,7 @@ describe('VisitStore', () => {
 			const lookupCurrentVisit = vi
 				.fn()
 				.mockResolvedValue({ found: true, visit: currentRegisteredVisit });
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			store.submit(registered, 'event-1');
@@ -62,7 +100,7 @@ describe('VisitStore', () => {
 		it('does nothing without a stored token', async () => {
 			// Arrange
 			const lookupCurrentVisit = vi.fn();
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			await store.refresh();
@@ -78,7 +116,7 @@ describe('VisitStore', () => {
 			const lookupCurrentVisit = vi
 				.fn()
 				.mockResolvedValue({ found: true, visit: currentRegisteredVisit });
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			await store.refresh();
@@ -87,11 +125,65 @@ describe('VisitStore', () => {
 			expect(store.currentVisit).toEqual(currentRegisteredVisit);
 		});
 
+		it('discards a visit from another market when the session loads first', async () => {
+			// Arrange
+			window.localStorage.setItem(visitTokenKey, 'token-1');
+			const lookupCurrentVisit = vi
+				.fn()
+				.mockResolvedValue({ found: true, visit: currentRegisteredVisit });
+			const { store, setMarketEvent } = createVisitStoreHarness({ lookupCurrentVisit });
+
+			setMarketEvent('event-2');
+
+			// Act
+			await store.refresh();
+
+			// Assert
+			expect(store.currentVisit).toBeNull();
+			expect(window.localStorage.getItem(visitTokenKey)).toBeNull();
+		});
+
+		it('discards a visit from another market when the visit loads first', async () => {
+			// Arrange
+			window.localStorage.setItem(visitTokenKey, 'token-1');
+			const lookupCurrentVisit = vi
+				.fn()
+				.mockResolvedValue({ found: true, visit: currentRegisteredVisit });
+			const { store, setMarketEvent } = createVisitStoreHarness({ lookupCurrentVisit });
+
+			await store.refresh();
+
+			// Act
+			setMarketEvent('event-2');
+
+			// Assert
+			expect(store.currentVisit).toBeNull();
+			expect(window.localStorage.getItem(visitTokenKey)).toBeNull();
+		});
+
+		it('keeps a visit belonging to the loaded market', async () => {
+			// Arrange
+			window.localStorage.setItem(visitTokenKey, 'token-1');
+			const lookupCurrentVisit = vi
+				.fn()
+				.mockResolvedValue({ found: true, visit: currentRegisteredVisit });
+			const { store, setMarketEvent } = createVisitStoreHarness({ lookupCurrentVisit });
+
+			setMarketEvent('event-1');
+
+			// Act
+			await store.refresh();
+
+			// Assert
+			expect(store.currentVisit).toEqual(currentRegisteredVisit);
+			expect(window.localStorage.getItem(visitTokenKey)).toBe('token-1');
+		});
+
 		it('clears an expired token', async () => {
 			// Arrange
 			window.localStorage.setItem(visitTokenKey, 'expired-token');
 			const lookupCurrentVisit = vi.fn().mockResolvedValue({ found: false, reason: 'expired' });
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			await store.refresh();
@@ -105,7 +197,7 @@ describe('VisitStore', () => {
 			// Arrange
 			window.localStorage.setItem(visitTokenKey, 'token-1');
 			const lookupCurrentVisit = vi.fn().mockResolvedValue({ found: false, reason: 'unreachable' });
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			await store.refresh();
@@ -123,7 +215,7 @@ describe('VisitStore', () => {
 				found: true,
 				visit: { ...currentRegisteredVisit, status: 'served' },
 			});
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			await store.refresh();
@@ -141,7 +233,7 @@ describe('VisitStore', () => {
 				found: true,
 				visit: { ...currentRegisteredVisit, status: 'no_show' },
 			});
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			await store.refresh();
@@ -160,7 +252,7 @@ describe('VisitStore', () => {
 					resolveLookup = resolve;
 				}),
 			);
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			// Act
 			const first = store.refresh();
@@ -178,7 +270,7 @@ describe('VisitStore', () => {
 		it('does nothing without a stored token', async () => {
 			// Arrange
 			const cancelVisit = vi.fn();
-			const store = new VisitStore({ cancelVisit });
+			const store = createVisitStore({ cancelVisit });
 
 			// Act
 			await store.cancel();
@@ -191,7 +283,7 @@ describe('VisitStore', () => {
 			// Arrange
 			window.localStorage.setItem(visitTokenKey, 'token-1');
 			const cancelVisit = vi.fn().mockResolvedValue({ id: 'visit-1', status: 'cancelled' });
-			const store = new VisitStore({
+			const store = createVisitStore({
 				cancelVisit,
 				lookupCurrentVisit: vi
 					.fn()
@@ -212,7 +304,7 @@ describe('VisitStore', () => {
 			// Arrange
 			window.localStorage.setItem(visitTokenKey, 'token-1');
 			const cancelVisit = vi.fn().mockRejectedValue(new Error('cancel'));
-			const store = new VisitStore({ cancelVisit });
+			const store = createVisitStore({ cancelVisit });
 
 			// Act
 			await store.cancel();
@@ -230,7 +322,7 @@ describe('VisitStore', () => {
 			const lookupCurrentVisit = vi
 				.fn()
 				.mockResolvedValue({ found: true, visit: currentRegisteredVisit });
-			const store = new VisitStore({ lookupCurrentVisit });
+			const store = createVisitStore({ lookupCurrentVisit });
 
 			store.submit(registered, 'event-1');
 

@@ -13,17 +13,7 @@ import type { VisitStatus } from './visitStateMachine';
 
 /** How the guest-facing screens name a visit status. */
 export function guestVisitStatusLabel(locale: Locale, status: VisitStatus): string {
-	const t = translations[locale];
-
-	return {
-		registered: t.statusRegistered,
-		waiting: t.statusWaiting,
-		called: t.statusCalled,
-		served: t.statusServed,
-		not_placed: t.statusNotPlaced,
-		no_show: t.statusNoShow,
-		cancelled: t.statusCancelled,
-	}[status];
+	return translations[locale].guestView.visitStatus.labels[status];
 }
 
 /** How the admin screens name every visit status. */
@@ -33,7 +23,7 @@ export function adminVisitStatusLabels(locale: Locale): Record<VisitStatus, stri
 
 	return {
 		waiting: t.waiting,
-		called: base.statusCalled,
+		called: base.guestView.visitStatus.labels.called,
 		served: t.served,
 		registered: t.registered,
 		not_placed: t.notPlaced,
