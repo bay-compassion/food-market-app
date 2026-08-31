@@ -93,7 +93,7 @@ describe('queue handler call_next', () => {
 
 	it('rejects calling guests before service starts', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
-		queueResult([activeEvent('registration_closed')]);
+		queueResult([activeEvent('lottery_pending')]);
 
 		const response = await handler(request('POST', { action: 'call_next', count: 1 }));
 

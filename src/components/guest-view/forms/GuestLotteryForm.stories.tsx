@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
-import { translations } from '../../locales';
-import type { SessionQuestion } from '../../stores/market-session.store';
+import { translations } from '../../../locales';
+import type { SessionQuestion } from '../../../stores/market-session.store';
 import { GuestLotteryForm } from './GuestLotteryForm';
 
 /**
@@ -25,7 +25,7 @@ const sampleQuestions: SessionQuestion[] = [
 ];
 
 const meta = {
-	title: 'Guest/GuestLotteryForm',
+	title: 'Guest/Forms/Lottery Form',
 	component: GuestLotteryForm,
 	parameters: { shell: 'guest' },
 	args: { registrationQuestions: [] },

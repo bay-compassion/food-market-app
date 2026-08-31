@@ -34,10 +34,11 @@ The database, in turn, is only ever reached through the backend, never directly 
 An **API** (application programming interface) is the agreed-upon way two separate programs talk
 to each other — here, how the frontend running in a browser asks the backend to do something. Each
 **endpoint** is one specific thing the backend can be asked to do. In this repo, each file in
-`netlify/functions/` is one endpoint: `netlify/functions/guests.mts`, for example, is the
-`/api/guests` endpoint, and its code decides what happens for a `GET`, `POST`, or `PATCH` request
-sent to that address. When you read that "the frontend calls an API," it means the browser sent a
-request to one of these files and is waiting for a response back.
+`netlify/functions/` is one endpoint: `netlify/functions/guest-information.mts`, for example, is
+the `/api/guest-information` endpoint and saves a guest's identity without registering a visit.
+`netlify/functions/lottery-registration.mts` owns lottery entry, while `/api/guests` is reserved
+for authenticated administrative listing and commands. When you read that "the frontend calls an
+API," it means the browser sent a request to one of these files and is waiting for a response back.
 
 ## Authentication vs. authorization
 

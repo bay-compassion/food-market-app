@@ -1,13 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
-import { expect, fn } from 'storybook/test';
+import { expect } from 'storybook/test';
 
-import { translations, type Locale } from '../../locales';
-import { SessionStatusEnum } from '../../services/sessionStateMachine';
-import type { SessionQuestion } from '../../stores/market-session.store';
-import { RootStoreProvider } from '../../stores/react/store-context';
-import { RootStore } from '../../stores/root.store';
-import { GuestRegistrationForm } from './GuestRegistrationForm';
+import { translations, type Locale } from '../../../locales';
+import type { SessionQuestion } from '../../../stores/market-session.store';
+import { RootStoreProvider } from '../../../stores/react/store-context';
+import { RootStore } from '../../../stores/root.store';
+import { GuestCombinedForm } from './GuestCombinedForm';
 
 /**
  * The registration form itself — before a guest has submitted anything.
@@ -31,15 +30,11 @@ type SeededState = {
 	askExtraQuestions?: boolean;
 	submissionError?: boolean;
 	isSubmitting?: boolean;
-	/** `undefined` hides the countdown; a number shows it closing that many minutes from now. */
-	minutesRemaining?: number;
 };
 
 type RegistrationFormArgs = SeededState & {
 	/** Driven by the toolbar's locale picker, per the repo's story convention. */
 	locale: Locale;
-	context: 'queue' | 'early';
-	onSubmitted: (result: unknown) => void;
 };
 
 /**
@@ -47,11 +42,10 @@ type RegistrationFormArgs = SeededState & {
  * response goes through, so a story cannot drift into a shape the server could not produce.
  */
 function seededStore(
-	{ askExtraQuestions, submissionError, isSubmitting, minutesRemaining }: SeededState,
+	{ askExtraQuestions, submissionError, isSubmitting }: SeededState,
 	locale: Locale,
 ) {
 	const store = new RootStore();
-	const now = Date.now();
 
 	store.translations.setLanguage(locale);
 	// Direct writes to observables belong in an action; these two have no setter of their own
@@ -61,17 +55,7 @@ function seededStore(
 		store.registration.isSubmitting = isSubmitting ?? false;
 	});
 	store.session.applyServerState({
-		event:
-			minutesRemaining === undefined
-				? null
-				: {
-						id: 'story-event',
-						status: SessionStatusEnum.REGISTRATION_OPEN,
-						sessionMode: 'scheduled',
-						capacity: 100,
-						registrationOpensAt: new Date(now - 60_000).toISOString(),
-						registrationClosesAt: new Date(now + minutesRemaining * 60_000).toISOString(),
-					},
+		event: null,
 		questions: askExtraQuestions ? sampleQuestions : [],
 		counts: {},
 	});
@@ -83,31 +67,24 @@ function seededStore(
  * The story's own view of the form: the seeded state is not props the component takes, so it is
  * turned into a store here and provided around it.
  */
-function SeededForm({ context, onSubmitted, locale, ...seed }: RegistrationFormArgs) {
+function SeededForm({ locale, ...seed }: RegistrationFormArgs) {
 	// This store nests inside — and so overrides — the preview decorator's, which is why it has to
 	// carry the toolbar's locale across too.
 	const store = seededStore(seed, locale);
 
-	// A fixed value rather than a live-ticking clock keeps the countdown stable while the story
-	// sits open, matching `RegistrationCountdown`'s own stories.
 	return (
 		<RootStoreProvider store={store}>
-			<GuestRegistrationForm context={context} now={Date.now()} onSubmitted={onSubmitted} />
+			<GuestCombinedForm />
 		</RootStoreProvider>
 	);
 }
 
 const meta = {
-	title: 'Guest/GuestRegistrationForm',
+	title: 'Guest/Forms/Combined Form',
 	component: SeededForm,
 	parameters: { shell: 'guest' },
-	argTypes: {
-		context: { control: 'inline-radio', options: ['queue', 'early'] },
-	},
 	args: {
 		locale: 'en',
-		context: 'queue',
-		onSubmitted: fn(),
 	},
 } satisfies Meta<typeof SeededForm>;
 
@@ -127,15 +104,13 @@ export const RegistrationForm: Story = {
 		).toBeInTheDocument();
 		await expect(canvas.getByLabelText(translations.en.firstName)).toBeInTheDocument();
 		await expect(canvas.getByLabelText(translations.en.age)).toBeInTheDocument();
+		await expect(
+			canvas.getByRole('group', { name: translations.en.guestView.forms.informationLegend }),
+		).toBeInTheDocument();
+		await expect(
+			canvas.getByRole('group', { name: translations.en.guestView.forms.lotteryLegend }),
+		).toBeInTheDocument();
 		await expect(canvas.getByRole('button', { name: translations.en.submit })).toBeEnabled();
-	},
-};
-
-/** Registration open, with the closing countdown showing above the form title. */
-export const RegistrationClosingSoon: Story = {
-	args: { minutesRemaining: 5 },
-	play: async ({ canvasElement }) => {
-		await expect(canvasElement.querySelector('.registration-countdown')).toBeInTheDocument();
 	},
 };
 
@@ -143,6 +118,9 @@ export const RegistrationClosingSoon: Story = {
 export const WithRegistrationQuestions: Story = {
 	args: { askExtraQuestions: true },
 	play: async ({ canvas }) => {
+		await expect(
+			canvas.getByRole('group', { name: translations.en.guestView.forms.questionsLegend }),
+		).toBeInTheDocument();
 		await expect(canvas.getByText(sampleQuestions[0]!.prompt)).toBeInTheDocument();
 	},
 };
@@ -160,17 +138,6 @@ export const SubmissionFailed: Story = {
 	args: { submissionError: true },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole('alert')).toHaveTextContent(translations.en.submissionError);
-	},
-};
-
-/** The `early` context: saving information for later — identity only, no lottery fields. */
-export const EarlySignupForm: Story = {
-	args: { context: 'early' },
-	play: async ({ canvas }) => {
-		await expect(
-			canvas.getByRole('heading', { name: translations.en.signupView.formTitle }),
-		).toBeInTheDocument();
-		await expect(canvas.queryByLabelText(translations.en.age)).not.toBeInTheDocument();
 	},
 };
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -59,7 +59,7 @@ const adminToken = accessTokenWith([
 	'export:guest-data',
 ]);
 
-function renderApp(initialPath = '/') {
+async function renderApp(initialPath = '/') {
 	const router = createMemoryRouter(
 		[
 			{
@@ -76,11 +76,17 @@ function renderApp(initialPath = '/') {
 		{ initialEntries: [initialPath] },
 	);
 
-	return render(
-		<RootStoreProvider store={new RootStore()}>
-			<RouterProvider router={router} />
-		</RootStoreProvider>,
-	);
+	let result!: ReturnType<typeof render>;
+
+	await act(async () => {
+		result = render(
+			<RootStoreProvider store={new RootStore()}>
+				<RouterProvider router={router} />
+			</RootStoreProvider>,
+		);
+	});
+
+	return result;
 }
 
 function renderDashboard(getAccessToken = vi.fn().mockResolvedValue(adminToken)) {
@@ -120,7 +126,7 @@ describe('App', () => {
 		vi.useRealTimers();
 	});
 
-	function renderWithMarketStatus(status: string) {
+	async function renderWithMarketStatus(status: string) {
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockImplementation((url: string) =>
@@ -139,7 +145,7 @@ describe('App', () => {
 	}
 
 	it('renders the guest queue form', async () => {
-		const { container } = renderWithMarketStatus('registration_open');
+		const { container } = await renderWithMarketStatus('registration_open');
 
 		await waitFor(() =>
 			expect(container.textContent).toContain('Number of people in your household'),
@@ -153,7 +159,7 @@ describe('App', () => {
 
 	it('switches the guest copy to Spanish', async () => {
 		const user = userEvent.setup();
-		const { container } = renderWithMarketStatus('registration_open');
+		const { container } = await renderWithMarketStatus('registration_open');
 
 		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(7));
 
@@ -168,7 +174,7 @@ describe('App', () => {
 		window.localStorage.setItem('bay-compassion.locale', 'es');
 		window.localStorage.setItem('bay-compassion.returning-visitor', 'true');
 
-		const { container } = renderWithMarketStatus('registration_open');
+		const { container } = await renderWithMarketStatus('registration_open');
 
 		await waitFor(() => expect(container.textContent).toContain('Cuéntenos sobre usted'));
 
@@ -177,7 +183,7 @@ describe('App', () => {
 	});
 
 	it('offers the requested language options on the guest page', async () => {
-		const { container } = renderWithMarketStatus('registration_open');
+		const { container } = await renderWithMarketStatus('registration_open');
 
 		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(7));
 
@@ -190,7 +196,7 @@ describe('App', () => {
 
 	it('renders Persian in a right-to-left layout', async () => {
 		const user = userEvent.setup();
-		const { container } = renderWithMarketStatus('registration_open');
+		const { container } = await renderWithMarketStatus('registration_open');
 
 		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(7));
 
@@ -206,7 +212,7 @@ describe('App', () => {
 
 		// Not yet identified, so the sign-up fields (name, phone) and the lottery-entry fields
 		// (age range, household composition) both render, in one combined form. Selected by
-		// attribute rather than position — `GuestSignupForm` and `GuestLotteryForm` order their
+		// attribute rather than position — `GuestInformationForm` and `GuestLotteryForm` order their
 		// fields differently than the single form they replaced.
 		await user.type(container.querySelector('input[autocomplete="given-name"]')!, 'Ada');
 		await user.type(container.querySelector('input[autocomplete="family-name"]')!, 'Lovelace');
@@ -246,16 +252,18 @@ describe('App', () => {
 		);
 
 		vi.stubGlobal('fetch', fetchMock);
-		const { container } = renderApp();
+		const { container } = await renderApp();
 
 		await waitFor(() =>
 			expect(container.querySelector('.number-spinner-input input')).not.toBeNull(),
 		);
 		await fillRegistration(container);
 
-		await waitFor(() => expect(container.textContent).toContain('You’re in the queue!'));
+		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
 
-		const registrationCall = fetchMock.mock.calls.find(([url]) => url === '/api/guests');
+		const registrationCall = fetchMock.mock.calls.find(
+			([url]) => url === '/api/lottery-registration',
+		);
 		const body = JSON.parse(registrationCall?.[1]?.body as string) as Record<string, unknown>;
 
 		expect(body).toMatchObject({
@@ -284,8 +292,8 @@ describe('App', () => {
 		});
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('Ada L');
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('(555) 123-4567');
-		expect(container.querySelector('.guest-layout')!.firstElementChild).toBe(
-			container.querySelector('.guest-identity'),
+		expect(container.querySelector('.guest-identity')!.nextElementSibling?.textContent).toContain(
+			'You’re in the lottery!',
 		);
 	});
 
@@ -312,20 +320,21 @@ describe('App', () => {
 		);
 
 		vi.stubGlobal('fetch', fetchMock);
-		const { container } = renderApp();
+		const { container } = await renderApp();
 
 		// A device token with no locally cached identity (this test sets only the token, not
 		// `bay-compassion.guest-identity`) still shows the sign-up fields — there's nothing to
-		// prefill them with. See `GuestRegistrationForm`'s `showSignupFields`.
+		// prefill them with. See `GuestCombinedForm`'s `showSignupFields`.
 		await waitFor(() =>
 			expect(container.querySelector('.number-spinner-input input')).not.toBeNull(),
 		);
 		await fillRegistration(container);
 
-		await waitFor(() => expect(container.textContent).toContain('Current status: Registered'));
+		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
+		expect(container.textContent).not.toContain('Current status');
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/guests',
+			'/api/lottery-registration',
 			expect.objectContaining({
 				body: expect.stringContaining('"deviceToken":"saved-device-token"'),
 			}),
@@ -355,7 +364,7 @@ describe('App', () => {
 			),
 		);
 
-		const { container } = renderApp();
+		const { container } = await renderApp();
 
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
@@ -389,7 +398,7 @@ describe('App', () => {
 			),
 		);
 
-		const { container } = renderApp('/signup');
+		const { container } = await renderApp('/signup');
 
 		await waitFor(() =>
 			expect(container.querySelector('input[autocomplete="given-name"]')).not.toBeNull(),
@@ -407,18 +416,20 @@ describe('App', () => {
 		expect(container.textContent).not.toContain('Your place in line');
 	});
 
-	function renderWithVisit(visit: Record<string, unknown>) {
+	async function renderWithVisit(visit: Record<string, unknown>, marketStatus = 'service_started') {
 		window.localStorage.setItem('bay-compassion.visit-token', 'visit-token');
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockImplementation((url: string) =>
 				Promise.resolve(
 					url === '/api/visit'
-						? { ok: true, json: () => Promise.resolve(visit) }
+						? {
+								ok: true,
+								json: () => Promise.resolve({ marketEventId: 'event-1', ...visit }),
+							}
 						: {
 								ok: true,
-								json: () =>
-									Promise.resolve({ event: marketEvent('service_started'), questions: [] }),
+								json: () => Promise.resolve({ event: marketEvent(marketStatus), questions: [] }),
 							},
 				),
 			),
@@ -428,7 +439,7 @@ describe('App', () => {
 	}
 
 	it('shows a waiting guest their place in line and how many are ahead', async () => {
-		const { container } = renderWithVisit({
+		const { container } = await renderWithVisit({
 			id: 'visit-1',
 			status: 'waiting',
 			queuePosition: 7,
@@ -442,7 +453,7 @@ describe('App', () => {
 	});
 
 	it('tells a waiting guest when nobody is ahead of them', async () => {
-		const { container } = renderWithVisit({
+		const { container } = await renderWithVisit({
 			id: 'visit-1',
 			status: 'waiting',
 			queuePosition: 1,
@@ -455,7 +466,7 @@ describe('App', () => {
 	});
 
 	it('replaces the waiting copy with a call to the table once the guest is called', async () => {
-		const { container } = renderWithVisit({
+		const { container } = await renderWithVisit({
 			id: 'visit-1',
 			status: 'called',
 			queuePosition: 2,
@@ -470,11 +481,56 @@ describe('App', () => {
 		expect(container.textContent).not.toContain('Cancel this visit');
 	});
 
+	it('shows a terminal visit outcome without queue-success copy', async () => {
+		const { container } = await renderWithVisit({
+			id: 'visit-1',
+			status: 'not_placed',
+			queuePosition: null,
+			aheadOfYou: null,
+		});
+
+		await waitFor(() => expect(container.textContent).toContain('Not placed'));
+
+		expect(container.textContent).not.toContain('You’re in the queue!');
+	});
+
+	it('lets a cancelled guest register again while the market is open', async () => {
+		const { container } = await renderWithVisit(
+			{
+				id: 'visit-1',
+				status: 'cancelled',
+				queuePosition: null,
+				aheadOfYou: null,
+			},
+			'registration_open',
+		);
+
+		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
+
+		expect(container.textContent).not.toContain('You’re in the queue!');
+	});
+
+	it('does not let a visit from another market override the current market', async () => {
+		const { container } = await renderWithVisit({
+			id: 'visit-1',
+			marketEventId: 'older-event',
+			status: 'waiting',
+			queuePosition: 2,
+			aheadOfYou: 1,
+		});
+
+		await screen.findByRole('heading', {
+			name: translations.en.guestView.serviceState.inProgressHeading,
+		});
+
+		expect(container.textContent).not.toContain('Your place in line');
+	});
+
 	it('keeps refreshing after a guest has been called', async () => {
 		// Fake timers are installed before rendering: the poll interval is created during the
 		// initial load, and switching clocks afterwards would leave that interval on the real one.
 		vi.useFakeTimers();
-		renderWithVisit({ id: 'visit-1', status: 'called', queuePosition: 2, aheadOfYou: null });
+		await renderWithVisit({ id: 'visit-1', status: 'called', queuePosition: 2, aheadOfYou: null });
 
 		await vi.runOnlyPendingTimersAsync();
 
@@ -492,7 +548,7 @@ describe('App', () => {
 	});
 
 	it('hides the inactive-market explanation while registration is open', async () => {
-		const { container } = renderWithMarketStatus('registration_open');
+		const { container } = await renderWithMarketStatus('registration_open');
 
 		await screen.findByRole('heading', { name: translations.en.formTitle });
 
@@ -500,7 +556,7 @@ describe('App', () => {
 	});
 
 	it('hides the inactive-market explanation while the event is in progress', async () => {
-		const { container } = renderWithMarketStatus('service_started');
+		const { container } = await renderWithMarketStatus('service_started');
 
 		await screen.findByRole('heading', {
 			name: translations.en.guestView.serviceState.inProgressHeading,
@@ -509,18 +565,33 @@ describe('App', () => {
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});
 
-	it('keeps the inactive-market explanation out of an active closed-registration session', async () => {
-		const { container } = renderWithMarketStatus('registration_closed');
+	it('shows the registration grace-period message after registration closes', async () => {
+		const { container } = await renderWithMarketStatus('registration_closed');
+		const copy = translations.en.guestView.registrationClosedState;
 
-		await screen.findByRole('heading', {
-			name: translations.en.guestView.registrationClosedState.heading,
-		});
+		await screen.findByRole('heading', { name: copy.heading });
 
+		expect(container.textContent).toContain(copy.description);
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.scheduleInformation.heading,
+		);
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});
 
+	it('shows a dedicated lottery-pending message once the registration pool is final', async () => {
+		const { container } = await renderWithMarketStatus('lottery_pending');
+		const copy = translations.en.guestView.lotteryPendingState;
+
+		await screen.findByRole('heading', { name: 'Lottery will be drawn shortly' });
+
+		expect(container.textContent).toContain(copy.description);
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.registrationClosedState.description,
+		);
+	});
+
 	it('shows the full inactive-market explanation when the session is inactive', async () => {
-		renderWithMarketStatus('ended');
+		await renderWithMarketStatus('ended');
 		const copy = translations.en.guestView.notOpenState;
 
 		const heading = await screen.findByRole('heading', { name: copy.heading });
@@ -536,7 +607,7 @@ describe('App', () => {
 
 	it('shows an error when an admin session cannot be verified', async () => {
 		const user = userEvent.setup();
-		const { container } = renderWithMarketStatus('registration_open');
+		const { container } = await renderWithMarketStatus('registration_open');
 
 		await user.click(container.querySelector('.mode-button')!);
 
@@ -624,8 +695,13 @@ describe('App', () => {
 		},
 		{
 			status: 'registration_closed',
-			shown: ['Reopen registration', 'Run lottery draw', 'Broadcast notification', 'Add guest'],
-			hidden: ['Registration settings', 'Today’s overview'],
+			shown: ['Reopen registration', 'Broadcast notification', 'Add guest'],
+			hidden: ['Registration settings', 'Today’s overview', 'Run lottery draw'],
+		},
+		{
+			status: 'lottery_pending',
+			shown: ['Run lottery draw', 'Broadcast notification', 'Add guest'],
+			hidden: ['Registration settings', 'Today’s overview', 'Reopen registration'],
 		},
 		{
 			// Queue management moved to its own view, so current-session only points at it.

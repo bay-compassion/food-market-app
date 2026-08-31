@@ -1,6 +1,8 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
+import { expect } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
+import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
@@ -8,10 +10,10 @@ import { Card } from '../ui/layout/Card';
 import { GuestVisitStatus } from './GuestVisitStatus';
 
 /**
- * What a guest sees once they have an active visit, in every status it can be in. Wrapped in
+ * What a guest sees once they have a current visit, in every status it can be in. Wrapped in
  * `Card` for the frame this screen normally sits inside.
  *
- * `GuestVisitStatus` reads the active visit from the root store rather than taking it as props,
+ * `GuestVisitStatus` reads the current visit from the root store rather than taking it as props,
  * so each story seeds a fresh store — via a mocked `/api/visit` — instead of passing visit fields
  * straight through as props.
  */
@@ -23,7 +25,6 @@ type GuestVisitStatusArgs = {
 	visitStatus: VisitStatus;
 	queuePosition: number | null;
 	aheadOfYou: number | null;
-	context: 'queue' | 'early';
 	isCancelling: boolean;
 	submissionError: boolean;
 };
@@ -44,6 +45,7 @@ const withVisitEndpoint: Decorator = (Story, context) => {
 			return Promise.resolve(
 				Response.json({
 					id: 'story-visit',
+					marketEventId: 'story-market',
 					status: args.visitStatus,
 					queuePosition: args.queuePosition,
 					aheadOfYou: args.aheadOfYou,
@@ -66,35 +68,33 @@ const withVisitEndpoint: Decorator = (Story, context) => {
 };
 
 /** Seeds a store from the mocked endpoint above, then renders the panel against it. */
-function SeededVisitStatus({
-	locale,
-	context,
-	isCancelling,
-	submissionError,
-}: GuestVisitStatusArgs) {
+function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisitStatusArgs) {
 	const store = new RootStore();
+	const now = Date.now();
 
 	store.translations.setLanguage(locale);
+	store.session.applyServerState({
+		event: {
+			id: 'story-market',
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+			sessionMode: 'ad_hoc',
+			capacity: 100,
+			registrationOpensAt: new Date(now - 60_000).toISOString(),
+			registrationClosesAt: new Date(now + 15 * 60_000).toISOString(),
+		},
+		questions: [],
+		counts: {},
+	});
 	void store.visit.refresh().then(() => {
 		if (isCancelling || submissionError) {
 			void store.visit.cancel();
 		}
 	});
 
-	const t = translations[locale];
-	const successCopy =
-		context === 'early'
-			? { title: t.signupView.successTitle, description: t.signupView.successDescription }
-			: { title: t.successTitle, description: t.successDescription };
-
 	return (
 		<RootStoreProvider store={store}>
 			<Card aria-live="polite">
-				<GuestVisitStatus
-					successTitle={successCopy.title}
-					successDescription={successCopy.description}
-					onCancelVisit={() => void store.visit.cancel()}
-				/>
+				<GuestVisitStatus onCancelVisit={() => void store.visit.cancel()} />
 			</Card>
 		</RootStoreProvider>
 	);
@@ -110,14 +110,12 @@ const meta = {
 			control: 'select',
 			options: ['registered', 'waiting', 'called', 'served', 'not_placed', 'no_show', 'cancelled'],
 		},
-		context: { control: 'inline-radio', options: ['queue', 'early'] },
 	},
 	args: {
 		locale: 'en',
 		visitStatus: 'registered',
 		queuePosition: null,
 		aheadOfYou: null,
-		context: 'queue',
 		isCancelling: false,
 		submissionError: false,
 	},
@@ -127,13 +125,15 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Confirmation after signing up early — no queue position exists yet. */
-export const EarlySignupConfirmed: Story = {
-	args: { context: 'early' },
-};
-
 /** Registered for today, before the lottery or queue has placed the guest. */
-export const Registered: Story = {};
+export const Registered: Story = {
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(translations.en.guestView.visitStatus.registered.header),
+		).toBeInTheDocument();
+		await expect(canvas.getByText(translations.en.registrationClosesIn)).toBeInTheDocument();
+	},
+};
 
 /** In line, with a place in the queue and a count of the guests ahead. */
 export const Waiting: Story = {
@@ -163,6 +163,11 @@ export const Served: Story = {
 /** The guest was not drawn in the lottery. */
 export const NotPlaced: Story = {
 	args: { visitStatus: 'not_placed' },
+};
+
+/** A worker marked the guest absent, but may still return them to the queue. */
+export const NoShow: Story = {
+	args: { visitStatus: 'no_show' },
 };
 
 /** The guest cancelled their own visit. */

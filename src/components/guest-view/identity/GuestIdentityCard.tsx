@@ -1,12 +1,12 @@
 import styled from '@emotion/styled';
 import { Alert, Button, Card, CircularProgress } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { Component, Suspense, use, useEffect, useState, type ReactNode } from 'react';
+import { Component, type ReactNode, Suspense, use, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { useRootStore } from '../../stores/react/store-context';
-import { useTranslation } from '../../stores/react/use-translation';
-import { Dialog } from '../ui/Dialog';
+import { useRootStore } from '../../../stores/react/store-context';
+import { useTranslation } from '../../../stores/react/use-translation';
+import { Dialog } from '../../ui/Dialog';
 import { NotificationOptIn } from './NotificationOptIn';
 
 const IdentityCard = styled(Card)`
@@ -195,7 +195,7 @@ const NotificationStatus = observer(function NotificationStatus({
  * It shows only what local storage holds and never retrieves a guest profile from the server. A
  * device without a complete cached identity instead gets a direct path to preregistration.
  */
-export const GuestIdentityIndicator = observer(function GuestIdentityIndicator() {
+export const GuestIdentityCard = observer(function GuestIdentityCard() {
 	const t = useTranslation();
 	const { guest } = useRootStore();
 	const { identity } = guest;

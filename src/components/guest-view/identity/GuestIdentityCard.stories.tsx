@@ -1,14 +1,14 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
-import { translations, type Locale } from '../../locales';
-import { StorageKey, StorageService } from '../../services/storage.service';
-import type { GuestIdentity } from '../../stores/guest.store';
-import { RootStoreProvider } from '../../stores/react/store-context';
-import { RootStore } from '../../stores/root.store';
-import { GuestIdentityIndicator } from './GuestIdentityIndicator';
+import { translations, type Locale } from '../../../locales';
+import { StorageKey, StorageService } from '../../../services/storage.service';
+import type { GuestIdentity } from '../../../stores/guest.store';
+import { RootStoreProvider } from '../../../stores/react/store-context';
+import { RootStore } from '../../../stores/root.store';
+import { GuestIdentityCard } from './GuestIdentityCard';
 
-type GuestIdentityIndicatorArgs = {
+type GuestIdentityCardArgs = {
 	locale: Locale;
 	identity: GuestIdentity | null;
 	deviceToken: string | null;
@@ -48,8 +48,7 @@ class MemoryStorage implements Storage {
 
 /** Provides the component with the same seeded store shape it receives in the running app. */
 const withGuestStore: Decorator = (Story, context) => {
-	const { deviceToken, identity, locale, forceDisableSms } =
-		context.args as GuestIdentityIndicatorArgs;
+	const { deviceToken, identity, locale, forceDisableSms } = context.args as GuestIdentityCardArgs;
 	const storage = new StorageService(new MemoryStorage());
 
 	if (deviceToken) {
@@ -75,7 +74,7 @@ const withGuestStore: Decorator = (Story, context) => {
 const originalFetch = window.fetch.bind(window);
 
 const withNotificationEndpoints: Decorator = (Story, context) => {
-	const args = context.args as GuestIdentityIndicatorArgs;
+	const args = context.args as GuestIdentityCardArgs;
 
 	window.fetch = (input, init) => {
 		const url = String(input instanceof Request ? input.url : input);
@@ -109,8 +108,8 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 };
 
 const meta = {
-	title: 'Guest/Identity/Identity Indicator',
-	component: GuestIdentityIndicator,
+	title: 'Guest/Identity/Identity Card',
+	component: GuestIdentityCard,
 	tags: ['autodocs'],
 	parameters: {
 		shell: 'guest',
@@ -134,13 +133,13 @@ const meta = {
 			phone: '(555) 123-4567',
 		},
 	},
-} satisfies Meta<typeof GuestIdentityIndicator>;
+} satisfies Meta<typeof GuestIdentityCard>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** With no device credential or locally stored identity, the indicator offers preregistration. */
+/** With no device credential or locally stored identity, the card offers preregistration. */
 export const NotIdentified: Story = {
 	args: { deviceToken: null, identity: null },
 	play: async ({ canvas }) => {

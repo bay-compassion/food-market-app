@@ -37,10 +37,12 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | Endpoint                           | Requires                                                |
 | ---------------------------------- | ------------------------------------------------------- |
 | `GET /api/market`                  | nothing — the guest app depends on it                   |
+| `POST /api/guest-information`      | nothing — saves guest identity only                     |
+| `POST /api/lottery-registration`   | nothing — public self-service lottery entry             |
 | `GET /api/market?view=history`     | `run:queue`                                             |
 | `PUT /api/market`                  | `manage:sessions`                                       |
 | `POST /api/market`                 | `manage:sessions`, except `close_session` → `run:queue` |
-| `GET`, `POST`, `PATCH /api/guests` | `run:queue` (self-service registration stays open)      |
+| `GET`, `POST`, `PATCH /api/guests` | `run:queue`                                             |
 | `POST /api/queue`                  | `run:queue`                                             |
 | `POST /api/broadcast`              | `manage:sessions`                                       |
 | `GET /api/reports`                 | `read:reports`                                          |

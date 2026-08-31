@@ -83,16 +83,8 @@ async function createGuest(request: Request) {
 
 	const submission = parseSubmission(body);
 
-	if (!submission) {
-		return error('Please provide valid guest information.');
-	}
-
-	if (submission.source === 'admin') {
-		const forbidden = await requirePermission(request, 'run:queue');
-
-		if (forbidden) {
-			return forbidden;
-		}
+	if (!submission || submission.source !== 'admin') {
+		return error('Please provide a valid administrative guest registration.');
 	}
 
 	const result = await registerGuest(submission);
@@ -138,6 +130,12 @@ export default async (request: Request) => {
 	}
 
 	if (request.method === 'POST') {
+		const forbidden = await requirePermission(request, 'run:queue');
+
+		if (forbidden) {
+			return forbidden;
+		}
+
 		return createGuest(request);
 	}
 

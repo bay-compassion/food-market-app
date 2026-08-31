@@ -63,7 +63,9 @@ export default async (request: Request) => {
 
 	if (
 		!event ||
-		!['registration_open', 'registration_closed', 'service_started'].includes(event.status)
+		!['registration_open', 'registration_closed', 'lottery_pending', 'service_started'].includes(
+			event.status,
+		)
 	) {
 		return error('Broadcasts require an active session.', 409);
 	}

@@ -7,6 +7,7 @@ vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
 import broadcastHandler from '../../functions/broadcast.mjs';
 import guestsHandler from '../../functions/guests.mjs';
+import lotteryRegistrationHandler from '../../functions/lottery-registration.mjs';
 import marketHandler from '../../functions/market.mjs';
 import queueHandler from '../../functions/queue.mjs';
 import reportsHandler from '../../functions/reports.mjs';
@@ -147,8 +148,8 @@ describe('endpoint permissions', () => {
 	it('leaves self-service registration open, with no permission check at all', async () => {
 		queueResult([]);
 
-		await guestsHandler(
-			json('https://x/api/guests', 'POST', {
+		await lotteryRegistrationHandler(
+			json('https://x/api/lottery-registration', 'POST', {
 				firstName: 'Ana',
 				lastName: 'Reyes',
 				ageRange: '30-44',

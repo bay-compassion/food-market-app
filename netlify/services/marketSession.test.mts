@@ -208,6 +208,20 @@ describe('getCurrentEvent', () => {
 		expect(event?.status).toBe('registration_closed');
 		expect(db.insert).toHaveBeenCalledTimes(1);
 	});
+
+	it('freezes registration as lottery_pending when the grace deadline passes', async () => {
+		const closed = baseEvent({
+			status: 'registration_closed',
+			registrationGraceEndsAt: new Date(Date.now() - 1000),
+		});
+
+		queueResult([closed]);
+		queueResult([{ ...closed, status: 'lottery_pending' }]);
+
+		const event = await getCurrentEvent();
+
+		expect(event?.status).toBe('lottery_pending');
+	});
 });
 
 describe('weightedShuffle', () => {
@@ -286,14 +300,15 @@ describe('runLottery', () => {
 		expect(result).toEqual({
 			ok: false,
 			status: 409,
-			error: 'The lottery can only run after registration closes.',
+			error: 'The lottery can only run after the registration grace period ends.',
 		});
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
 	it('selects up to capacity and marks the remainder not_placed, in shuffle order', async () => {
-		const event = baseEvent({ status: 'registration_closed', capacity: 2 });
+		const event = baseEvent({ status: 'lottery_pending', capacity: 2 });
 
+		queueResult([event]); // locked market event
 		queueResult([{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }]); // registered visits
 		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
@@ -301,7 +316,6 @@ describe('runLottery', () => {
 		queueResult(undefined); // tx.insert notificationDeliveries (selected)
 		queueResult(undefined); // tx.update visits set not_placed
 		queueResult(undefined); // tx.insert notificationDeliveries (not placed)
-		queueResult([baseEvent({ status: 'service_started' })]); // refresh getCurrentEvent
 
 		const result = await runLottery(event, identity);
 
@@ -309,12 +323,12 @@ describe('runLottery', () => {
 	});
 
 	it('skips the bulk update and notification inserts when there are no registrations', async () => {
-		const event = baseEvent({ status: 'registration_closed', capacity: 5 });
+		const event = baseEvent({ status: 'lottery_pending', capacity: 5 });
 
+		queueResult([event]); // locked market event
 		queueResult([]); // no registered visits
 		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning
-		queueResult([baseEvent({ status: 'service_started' })]); // refresh
 
 		const result = await runLottery(event, identity);
 
@@ -325,8 +339,9 @@ describe('runLottery', () => {
 	it('leaves room for guests a worker placed in the line before the draw', async () => {
 		// Capacity 3 with two spots already handed out: only one registration can still win, and it
 		// has to queue behind the reserved pair rather than reusing position 1.
-		const event = baseEvent({ status: 'registration_closed', capacity: 3 });
+		const event = baseEvent({ status: 'lottery_pending', capacity: 3 });
 
+		queueResult([event]); // locked market event
 		queueResult([{ id: 'v1' }, { id: 'v2' }]); // registered visits
 		queueResult([{ count: 2, highestPosition: 2 }]); // two guests already waiting
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
@@ -334,7 +349,6 @@ describe('runLottery', () => {
 		queueResult(undefined); // tx.insert notificationDeliveries (selected)
 		queueResult(undefined); // tx.update visits set not_placed
 		queueResult(undefined); // tx.insert notificationDeliveries (not placed)
-		queueResult([baseEvent({ status: 'service_started' })]); // refresh getCurrentEvent
 
 		const result = await runLottery(event, identity);
 
@@ -348,12 +362,9 @@ describe('runLottery', () => {
 	});
 
 	it('returns 409 when a concurrent process already moved the session before the lottery started', async () => {
-		const event = baseEvent({ status: 'registration_closed', capacity: 5 });
+		const event = baseEvent({ status: 'lottery_pending', capacity: 5 });
 
-		queueResult([]); // registrations
-		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
-		queueResult([]); // tx.update ... returning — no row matched, lost the race
-		queueResult([baseEvent({ status: 'registration_closed' })]); // refresh still shows the old status
+		queueResult([]); // locked event lookup — another process already moved it
 
 		const result = await runLottery(event, identity);
 

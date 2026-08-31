@@ -1,8 +1,8 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 
-import { translations } from '../../locales';
-import { StorageKey } from '../../services/storage.service';
+import { translations } from '../../../locales';
+import { StorageKey } from '../../../services/storage.service';
 import { NotificationOptIn } from './NotificationOptIn';
 
 /**
@@ -49,7 +49,7 @@ const withNotificationEndpoints: Decorator = (Story) => {
 };
 
 const meta = {
-	title: 'Guest/Identity/NotificationOptIn',
+	title: 'Guest/Identity/Notification Opt-In',
 	component: NotificationOptIn,
 	parameters: { shell: 'guest' },
 	decorators: [withNotificationEndpoints],

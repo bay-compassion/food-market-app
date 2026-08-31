@@ -4,10 +4,10 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
 
-import handler from '../../functions/guest-signup.mjs';
+import handler from '../../functions/guest-information.mjs';
 
 function request(method: string, options: { body?: unknown } = {}) {
-	return new Request('https://example.com/api/guest-signup', {
+	return new Request('https://example.com/api/guest-information', {
 		method,
 		headers: options.body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
 		body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
@@ -18,7 +18,7 @@ afterEach(() => {
 	resetDbStub();
 });
 
-describe('guest-signup handler routing', () => {
+describe('guest-information handler routing', () => {
 	it('returns 405 for unsupported methods', async () => {
 		const response = await handler(request('GET'));
 
@@ -26,7 +26,7 @@ describe('guest-signup handler routing', () => {
 	});
 });
 
-describe('guest-signup handler POST', () => {
+describe('guest-information handler POST', () => {
 	it('returns 400 for an invalid submission before any database check', async () => {
 		const response = await handler(request('POST', { body: { firstName: '' } }));
 
@@ -34,8 +34,8 @@ describe('guest-signup handler POST', () => {
 		expect(db.insert).not.toHaveBeenCalled();
 	});
 
-	it('creates a new guest and returns a device token for a first-time sign-up', async () => {
-		queueResult([{ id: 'guest-1' }]); // insert guests
+	it('creates a new guest without creating a visit', async () => {
+		queueResult([{ id: 'guest-1' }]);
 
 		const response = await handler(
 			request('POST', {
@@ -50,17 +50,16 @@ describe('guest-signup handler POST', () => {
 		);
 
 		expect(response.status).toBe(201);
-		const body = (await response.json()) as { guestId: string; deviceToken?: string };
 
-		expect(body.guestId).toBe('guest-1');
-		expect(body.deviceToken).toBeTruthy();
+		await expect(response.json()).resolves.toMatchObject({ guestId: 'guest-1' });
+		expect(db.select).not.toHaveBeenCalled();
 	});
 
-	it('updates the existing guest and returns no new token for an identified device', async () => {
+	it('updates the existing guest for an identified device', async () => {
 		const deviceToken = 'device-token-from-this-browser-12345678901234567890';
 
-		queueResult([{ id: 'guest-1', firstName: 'Old' }]); // device credential lookup
-		queueResult([{ id: 'guest-1', firstName: 'Renewed' }]); // tx.update guest returning
+		queueResult([{ id: 'guest-1', firstName: 'Old' }]);
+		queueResult([{ id: 'guest-1', firstName: 'Renewed' }]);
 
 		const response = await handler(
 			request('POST', {
@@ -75,9 +74,6 @@ describe('guest-signup handler POST', () => {
 		);
 
 		expect(response.status).toBe(200);
-		const body = (await response.json()) as { guestId: string; deviceToken?: string };
-
-		expect(body.guestId).toBe('guest-1');
-		expect(body.deviceToken).toBeUndefined();
+		await expect(response.json()).resolves.toEqual({ guestId: 'guest-1' });
 	});
 });

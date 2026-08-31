@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	acceptsSelfRegistration,
 	automaticSessionStatus,
 	canRunSessionCommand,
 	currentSessionState,
@@ -23,7 +24,7 @@ describe('sessionStateMachine', () => {
 		['scheduled', 'open_registration', 'registration_open'],
 		['registration_open', 'close_registration', 'registration_closed'],
 		['registration_closed', 'reopen_registration', 'registration_open'],
-		['registration_closed', 'run_lottery', 'service_started'],
+		['lottery_pending', 'run_lottery', 'service_started'],
 		['service_started', 'close_session', 'ended'],
 	] as const)('allows %s → %s → %s', (status, command, target) => {
 		expect(canRunSessionCommand(status, command, 'scheduled')).toBe(true);
@@ -44,8 +45,26 @@ describe('sessionStateMachine', () => {
 		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T16:30:00.000Z'))).toBe(
 			'registration_open',
 		);
-		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T17:01:00.000Z'))).toBe(
+		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T17:00:15.000Z'))).toBe(
 			'registration_closed',
+		);
+		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T17:01:00.000Z'))).toBe(
+			'lottery_pending',
+		);
+	});
+
+	it('accepts self-registration only while open or during the post-close grace period', () => {
+		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T15:59:00.000Z'))).toBe(
+			false,
+		);
+		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T16:30:00.000Z'))).toBe(
+			true,
+		);
+		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T17:00:15.000Z'))).toBe(
+			true,
+		);
+		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T17:01:00.000Z'))).toBe(
+			false,
 		);
 	});
 
@@ -66,5 +85,6 @@ describe('sessionStateMachine', () => {
 		expect(currentSessionState('draft')).toBe('inactive');
 		expect(currentSessionState('ended')).toBe('inactive');
 		expect(currentSessionState('service_started')).toBe('service_started');
+		expect(currentSessionState('lottery_pending')).toBe('lottery_pending');
 	});
 });

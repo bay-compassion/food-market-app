@@ -111,6 +111,7 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 	}
 
 	.event-state.registration_closed,
+	.event-state.lottery_pending,
 	.event-state.inactive {
 		background: #fff1d8;
 		color: #7a4b00;
@@ -286,6 +287,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 				return t.open;
 			case 'registration_closed':
 				return t.closed;
+			case 'lottery_pending':
+				return t.lotteryPending;
 			case 'service_started':
 				return t.serviceStarted;
 			default:

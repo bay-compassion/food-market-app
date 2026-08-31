@@ -52,6 +52,8 @@ export interface AdminTranslation {
 	historySessions: string;
 	householdCount: string;
 	lotteryActions: string;
+	lotteryPending: string;
+	lotteryPendingHelp: string;
 	lotteryWeightHelp: string;
 	lotteryWeightLabel: string;
 	weightHigher: string;
@@ -162,6 +164,8 @@ export interface AdminTranslation {
 	devStageRegistrationOpenDescription: string;
 	devStageRegistrationClosedTitle: string;
 	devStageRegistrationClosedDescription: string;
+	devStageLotteryPendingTitle: string;
+	devStageLotteryPendingDescription: string;
 	devStageServiceStartedTitle: string;
 	devStageServiceStartedDescription: string;
 	devStageEndedTitle: string;
@@ -234,6 +238,8 @@ export const adminTranslations = {
 		historySessions: 'Session history',
 		householdCount: 'Household',
 		lotteryActions: 'Lottery actions',
+		lotteryPending: 'Lottery pending',
+		lotteryPendingHelp: 'The registration pool is frozen. The lottery is ready to run.',
 		lotteryWeightHelp:
 			'Higher odds do not guarantee a spot — the guest can still miss out. Leave this at standard unless there is a reason to favour them.',
 		lotteryWeightLabel: 'Chance in the draw',
@@ -394,6 +400,9 @@ export const adminTranslations = {
 		devStageRegistrationOpenDescription: 'Guests are signing up right now.',
 		devStageRegistrationClosedTitle: 'Registration closed',
 		devStageRegistrationClosedDescription: 'Sign-ups are over, and the lottery has not run yet.',
+		devStageLotteryPendingTitle: 'Lottery pending',
+		devStageLotteryPendingDescription:
+			'The grace period has ended and the registration pool is frozen for the draw.',
 		devStageServiceStartedTitle: 'Service in progress',
 		devStageServiceStartedDescription: 'The lottery has run and the queue is live.',
 		devStageEndedTitle: 'Ended',

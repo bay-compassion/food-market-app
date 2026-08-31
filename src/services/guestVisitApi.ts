@@ -2,12 +2,13 @@ import type { GuestFormState } from '../components/types';
 import type { VisitStatus } from './visitStateMachine';
 
 /**
- * The guest-facing `/api/guests` and `/api/visit` calls, kept out of `GuestView` so its component
- * stays about orchestrating state rather than parsing responses.
+ * Guest-facing API calls, kept out of `GuestView` so its component stays about orchestrating
+ * state rather than parsing responses.
  */
 
-export type ActiveVisit = {
+export type CurrentVisit = {
 	id: string;
+	marketEventId: string;
 	status: VisitStatus;
 	queuePosition: number | null;
 	aheadOfYou: number | null;
@@ -34,7 +35,7 @@ export type GuestRegistrationResult = {
 export async function submitGuestRegistration(
 	payload: GuestRegistrationPayload,
 ): Promise<GuestRegistrationResult> {
-	const response = await fetch('/api/guests', {
+	const response = await fetch('/api/lottery-registration', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
@@ -64,7 +65,7 @@ export type GuestSignupResult = {
 
 /** Submits an identity-only sign-up: no session, no household data. Throws if the server rejects it. */
 export async function submitGuestSignup(payload: GuestSignupPayload): Promise<GuestSignupResult> {
-	const response = await fetch('/api/guest-signup', {
+	const response = await fetch('/api/guest-information', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
@@ -77,15 +78,15 @@ export async function submitGuestSignup(payload: GuestSignupPayload): Promise<Gu
 	return (await response.json()) as GuestSignupResult;
 }
 
-export type ActiveVisitLookup =
-	| { found: true; visit: ActiveVisit }
-	// The stored token no longer resolves to a visit — cancelled, expired, or from a prior session.
+export type CurrentVisitLookup =
+	| { found: true; visit: CurrentVisit }
+	// The stored token no longer resolves to a visit — expired, ended, or otherwise unavailable.
 	| { found: false; reason: 'expired' }
 	// The request itself failed — say nothing about whether the visit still exists.
 	| { found: false; reason: 'unreachable' };
 
 /** Looks up the visit for a stored visit token. */
-export async function fetchActiveVisit(token: string): Promise<ActiveVisitLookup> {
+export async function fetchCurrentVisit(token: string): Promise<CurrentVisitLookup> {
 	try {
 		const response = await fetch('/api/visit', {
 			headers: { Authorization: `Bearer ${token}` },
@@ -95,14 +96,14 @@ export async function fetchActiveVisit(token: string): Promise<ActiveVisitLookup
 			return { found: false, reason: 'expired' };
 		}
 
-		return { found: true, visit: (await response.json()) as ActiveVisit };
+		return { found: true, visit: (await response.json()) as CurrentVisit };
 	} catch {
 		return { found: false, reason: 'unreachable' };
 	}
 }
 
 /** Cancels an in-progress visit. Throws if the server rejects it. */
-export async function cancelActiveVisit(
+export async function cancelCurrentVisit(
 	token: string,
 ): Promise<{ id: string; status: VisitStatus }> {
 	const response = await fetch('/api/visit', {

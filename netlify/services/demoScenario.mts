@@ -24,6 +24,7 @@ const scenarioSizeByStage: Record<SessionStatus, { guests: number; capacity: num
 	scheduled: { guests: 0, capacity: 30 },
 	registration_open: { guests: 22, capacity: 30 },
 	registration_closed: { guests: 34, capacity: 30 },
+	lottery_pending: { guests: 34, capacity: 30 },
 	service_started: { guests: 40, capacity: 30 },
 	ended: { guests: 40, capacity: 30 },
 };

@@ -1,81 +1,17 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
-import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import { AppButton } from '../AppButton';
+import { CalledVisitStatus } from './visit-status/CalledVisitStatus';
+import { CompletedVisitStatus } from './visit-status/CompletedVisitStatus';
+import { RegisteredVisitStatus } from './visit-status/RegisteredVisitStatus';
+import { WaitingVisitStatus } from './visit-status/WaitingVisitStatus';
 
 export type GuestVisitStatusProps = {
-	successTitle: string;
-	successDescription: string;
 	onCancelVisit: () => void;
 };
-
-const State = styled.div`
-	display: grid;
-	min-height: 340px;
-	place-content: center;
-	text-align: center;
-
-	h2 {
-		margin-bottom: 9px;
-		font-family: var(--font-heading);
-		font-size: 29px;
-		letter-spacing: -0.01em;
-		text-transform: uppercase;
-		color: var(--color-text);
-	}
-
-	p {
-		max-width: 280px;
-		margin: 0 auto 27px;
-		color: var(--color-text-muted);
-		font-size: 16px;
-		line-height: 1.55;
-	}
-`;
-
-const Checkmark = styled.div<{ $called?: boolean }>`
-	display: grid;
-	width: 58px;
-	height: 58px;
-	place-self: center;
-	place-items: center;
-	margin-bottom: 19px;
-	border-radius: var(--radius-md);
-	color: var(--color-on-brand);
-	background: ${({ $called }) => ($called ? 'var(--color-error)' : 'var(--color-brand)')};
-	font-size: ${({ $called }) => ($called ? '34px' : '29px')};
-`;
-
-const QueueStanding = styled.div`
-	margin-bottom: 27px;
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: var(--color-surface-soft);
-
-	p {
-		margin-bottom: 0;
-	}
-`;
-
-const QueuePosition = styled.p`
-	display: grid;
-	gap: 4px;
-	margin-bottom: 8px;
-
-	strong {
-		font-family: var(--font-heading);
-		font-size: 44px;
-		line-height: 1;
-		color: var(--color-brand);
-	}
-`;
-
-const QueueNext = styled.p`
-	font-weight: 700;
-`;
 
 const SubmissionError = styled.p`
 	margin: 0;
@@ -84,63 +20,24 @@ const SubmissionError = styled.p`
 	line-height: 1.4;
 `;
 
-/**
- * Where the guest stands once they have a visit: their place in line, or — the moment they are
- * called — a panel that replaces the whole card rather than a changed status word, since a guest
- * glancing at their phone across the room has to catch it.
- */
+/** Chooses the focused presentation for the guest's current visit state. */
 export const GuestVisitStatus = observer(function GuestVisitStatus({
-	successTitle,
-	successDescription,
 	onCancelVisit,
 }: GuestVisitStatusProps) {
 	const t = useTranslation();
-	const rootStore = useRootStore();
-	const { visit } = rootStore;
+	const { visit } = useRootStore();
+	const status = visit.currentVisit?.status;
+	const copy = t.guestView.visitStatus;
 
-	const visitStatusLabel = visit.activeVisit
-		? guestVisitStatusLabel(rootStore.translations.locale, visit.activeVisit.status)
-		: '';
+	if (!status) {
+		return null;
+	}
 
-	return (
-		<State className="success-state">
-			{visit.isCalled ? (
-				<>
-					<Checkmark className="checkmark called-mark" $called aria-hidden="true">
-						→
-					</Checkmark>
-					<h2>{t.calledTitle}</h2>
-					<p>{t.calledDescription}</p>
-				</>
-			) : (
-				<>
-					<Checkmark className="checkmark">✓</Checkmark>
-					<h2>{successTitle}</h2>
-					{visit.queuePosition ? (
-						<QueueStanding className="queue-standing">
-							<QueuePosition className="queue-position">
-								<span>{t.queuePositionLabel}</span>
-								<strong>{visit.queuePosition}</strong>
-							</QueuePosition>
-							{visit.guestsAhead === 0 ? (
-								<QueueNext className="queue-next">{t.youAreNext}</QueueNext>
-							) : visit.guestsAhead !== null ? (
-								<p>
-									{t.guestsAheadOfYou}: <strong>{visit.guestsAhead}</strong>
-								</p>
-							) : null}
-						</QueueStanding>
-					) : (
-						<p>
-							{t.currentStatus}: <strong>{visitStatusLabel}</strong>
-						</p>
-					)}
-					<p>{successDescription}</p>
-				</>
-			)}
+	const footer = (
+		<>
 			{visit.cancelError ? (
 				<SubmissionError className="submission-error" role="alert">
-					{t.visitError}
+					{copy.updateError}
 				</SubmissionError>
 			) : null}
 			{visit.canCancel ? (
@@ -149,9 +46,30 @@ export const GuestVisitStatus = observer(function GuestVisitStatus({
 					variant="secondary"
 					disabled={visit.isCancelling}
 					onClick={onCancelVisit}
-					label={t.cancelVisit}
+					label={copy.cancelAction}
 				/>
 			) : null}
-		</State>
+		</>
 	);
+
+	switch (status) {
+		case 'registered':
+			return <RegisteredVisitStatus copy={copy} footer={footer} />;
+		case 'waiting':
+			return (
+				<WaitingVisitStatus
+					copy={copy}
+					queuePosition={visit.queuePosition}
+					guestsAhead={visit.guestsAhead}
+					footer={footer}
+				/>
+			);
+		case 'called':
+			return <CalledVisitStatus copy={copy.called} />;
+		case 'served':
+		case 'not_placed':
+		case 'no_show':
+		case 'cancelled':
+			return <CompletedVisitStatus heading={copy.labels[status]} />;
+	}
 });

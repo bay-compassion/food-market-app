@@ -6,10 +6,11 @@ import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore } from './market-session.store.ts';
 import { RegistrationStore } from './registration.store.ts';
 import { TranslationStore } from './translation.store.ts';
-import { VisitStore } from './visit.store.ts';
+import { VisitStore, type VisitStoreOptions } from './visit.store.ts';
 
 export type RootStoreOptions = {
 	storage?: StorageService;
+	visit?: VisitStoreOptions;
 };
 
 declare global {
@@ -33,7 +34,7 @@ export class RootStore {
 		this.guest = new GuestStore({ storage: this.storage });
 		this.registration = new RegistrationStore(this.guest, { storage: this.storage });
 		this.session = new MarketSessionStore({ requestHeaders: () => this.requestHeaders() });
-		this.visit = new VisitStore();
+		this.visit = new VisitStore(this, options.visit);
 		this.admin = new AdminStore(this.session, {
 			api: new AdminApi({ requestHeaders: () => this.requestHeaders() }),
 			readPermissions: () => this.readPermissions?.() ?? Promise.resolve([]),

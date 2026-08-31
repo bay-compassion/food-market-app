@@ -1,37 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
 import { useTranslation } from '../../stores/react/use-translation';
-import { GuestScheduleDetails } from './GuestScheduleDetails';
 import { GuestStateMessage } from './GuestStateMessage';
 
-export type GuestServiceStateProps = {
-	/** `false` while service is underway (`service_started`); `true` once the session has `ended`. */
-	hasEnded: boolean;
-};
-
-/**
- * Service is underway, or over. Only the ended state offers the schedule: while the market is
- * running there is nothing to come back for.
- */
-export const GuestServiceState = observer(function GuestServiceState({
-	hasEnded,
-}: GuestServiceStateProps) {
+/** The market is serving guests, but this device has no current-market visit to present. */
+export const GuestServiceState = observer(function GuestServiceState() {
 	const t = useTranslation();
-	const copy = hasEnded
-		? {
-				heading: t.guestView.serviceState.endedHeading,
-				description: t.guestView.serviceState.endedDescription,
-			}
-		: {
-				heading: t.guestView.serviceState.inProgressHeading,
-				description: t.guestView.serviceState.inProgressDescription,
-			};
+	const copy = t.guestView.serviceState;
 
 	return (
-		<GuestStateMessage
-			heading={copy.heading}
-			description={copy.description}
-			details={hasEnded ? <GuestScheduleDetails /> : undefined}
-		/>
+		<GuestStateMessage heading={copy.inProgressHeading} description={copy.inProgressDescription} />
 	);
 });

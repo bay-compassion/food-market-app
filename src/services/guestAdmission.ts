@@ -27,6 +27,7 @@ const admissionsByStatus: Record<SessionStatus, GuestAdmission[]> = {
 	scheduled: ['lottery', 'queue'],
 	registration_open: ['lottery', 'queue'],
 	registration_closed: ['lottery', 'queue'],
+	lottery_pending: ['queue'],
 	service_started: ['queue'],
 	ended: ['served'],
 };

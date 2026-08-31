@@ -20,6 +20,8 @@ export const marketEvents = pgTable('market_events', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	registrationOpensAt: timestamp('registration_opens_at', { withTimezone: true }).notNull(),
 	registrationClosesAt: timestamp('registration_closes_at', { withTimezone: true }).notNull(),
+	/** The brief late-arrival window after the guest UI closes registration. */
+	registrationGraceEndsAt: timestamp('registration_grace_ends_at', { withTimezone: true }),
 	capacity: integer('capacity').notNull(),
 	sessionMode: text('session_mode').$type<SessionMode>().notNull().default('scheduled'),
 	status: text('status').$type<SessionStatus>().notNull().default('draft'),

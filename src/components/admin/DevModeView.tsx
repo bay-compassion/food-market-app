@@ -83,6 +83,7 @@ export const DevModeView = observer(function DevModeView({ busy, onLoad }: DevMo
 		scheduled: t.devStageScheduledTitle,
 		registration_open: t.devStageRegistrationOpenTitle,
 		registration_closed: t.devStageRegistrationClosedTitle,
+		lottery_pending: t.devStageLotteryPendingTitle,
 		service_started: t.devStageServiceStartedTitle,
 		ended: t.devStageEndedTitle,
 	};
@@ -91,6 +92,7 @@ export const DevModeView = observer(function DevModeView({ busy, onLoad }: DevMo
 		scheduled: t.devStageScheduledDescription,
 		registration_open: t.devStageRegistrationOpenDescription,
 		registration_closed: t.devStageRegistrationClosedDescription,
+		lottery_pending: t.devStageLotteryPendingDescription,
 		service_started: t.devStageServiceStartedDescription,
 		ended: t.devStageEndedDescription,
 	};

@@ -43,6 +43,7 @@ export type PlannedSession = {
 	id: string;
 	registrationOpensAt: Date;
 	registrationClosesAt: Date;
+	registrationGraceEndsAt?: Date | null;
 	capacity: number;
 	sessionMode: SessionMode;
 	status: SessionStatus;
@@ -671,7 +672,7 @@ function scenarioTiming(stage: SessionStatus, now: Date) {
 				serviceStartsAt,
 			};
 		default:
-			// registration_closed, service_started, ended: registration is over either way.
+			// registration_closed, lottery_pending, service_started, ended: the public window is over.
 			return {
 				registrationOpensAt: minutesAfter(now, -180),
 				registrationClosesAt: minutesAfter(now, -90),
@@ -700,6 +701,12 @@ export function buildScenario(options: ScenarioOptions): FakeData {
 		capacity,
 		sessionMode: 'scheduled',
 		status: stage,
+		registrationGraceEndsAt:
+			stage === 'registration_closed'
+				? minutesAfter(now, 0.5)
+				: stage === 'lottery_pending'
+					? minutesAfter(now, -1)
+					: null,
 		createdAt: daysBefore(registrationOpensAt, 2),
 	};
 	const questions = buildQuestions(session);
@@ -708,7 +715,7 @@ export function buildScenario(options: ScenarioOptions): FakeData {
 
 	if (stage === 'registration_open') {
 		visits = buildOpenSessionVisits(session, questions, guests, now, random);
-	} else if (stage === 'registration_closed') {
+	} else if (stage === 'registration_closed' || stage === 'lottery_pending') {
 		visits = buildOpenSessionVisits(session, questions, guests, registrationClosesAt, random);
 	} else if (stage === 'service_started') {
 		const progress = progressFractions[options.serviceProgress ?? 'halfway'];

@@ -13,7 +13,7 @@ function error(message: string, status = 400) {
 	return Response.json({ error: message }, { status });
 }
 
-async function activeVisitForGuest(guestId: string) {
+async function currentMarketVisitForGuest(guestId: string) {
 	const [event] = await db
 		.select({ id: marketEvents.id })
 		.from(marketEvents)
@@ -92,9 +92,9 @@ export default async (request: Request) => {
 		return Response.json({ subscribed: true });
 	}
 
-	const activeVisit = await activeVisitForGuest(guest.id);
+	const currentVisit = await currentMarketVisitForGuest(guest.id);
 
-	if (!activeVisit) {
+	if (!currentVisit) {
 		return Response.json({ subscribed: true });
 	}
 
@@ -106,14 +106,14 @@ export default async (request: Request) => {
 		not_placed: 'lottery_not_selected',
 		called: 'called',
 	};
-	const currentNotification = catchUpNotifications[activeVisit.status];
+	const currentNotification = catchUpNotifications[currentVisit.status];
 
 	if (currentNotification) {
-		await requeueNotification(db, [activeVisit.id], currentNotification, currentNotification, [
+		await requeueNotification(db, [currentVisit.id], currentNotification, currentNotification, [
 			'sms',
 		]);
 		await deliverPendingSmsNotifications({
-			visitIds: [activeVisit.id],
+			visitIds: [currentVisit.id],
 			types: [currentNotification],
 			limit: 1,
 		});

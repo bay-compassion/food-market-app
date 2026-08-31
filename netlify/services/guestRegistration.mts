@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
+import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
 import { isAgeRange, type AgeRange } from '../../src/services/ageRanges.js';
 import {
 	admissionNeedsQueuePosition,
@@ -12,19 +12,15 @@ import {
 	type QueuePlacement,
 } from '../../src/services/guestAdmission.js';
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
-import { automaticSessionStatus } from '../../src/services/sessionStateMachine.js';
+import { acceptsSelfRegistration } from '../../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import {
-	hashDeviceToken,
-	issueDeviceToken,
-	issueVisitToken,
-	normalizePhone,
-} from './guestCredentials.mjs';
+	findGuestByDeviceToken,
+	guestLocales,
+	persistGuestInformation,
+} from './guest-information.mjs';
+import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
 import { nextQueuePosition } from './visitQueue.mjs';
-
-type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
-
-const locales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 
 export type GuestSubmission = {
 	firstName: string;
@@ -34,7 +30,7 @@ export type GuestSubmission = {
 	childrenCount: number;
 	seniorsCount: number;
 	phone: string;
-	locale: (typeof locales)[number];
+	locale: (typeof guestLocales)[number];
 	marketEventId: string | null;
 	answers: Record<string, string | number>;
 	source: 'self' | 'admin';
@@ -56,18 +52,6 @@ export type RegisterGuestResult =
 				deviceToken?: string;
 			};
 	  }
-	| { ok: false; status: number; error: string };
-
-export type GuestSignupSubmission = {
-	firstName: string;
-	lastName: string;
-	phone: string;
-	locale: (typeof locales)[number];
-	deviceToken: string | null;
-};
-
-export type RegisterGuestSignupResult =
-	| { ok: true; status: 200 | 201; body: { guestId: string; deviceToken?: string } }
 	| { ok: false; status: number; error: string };
 
 function isAnswers(value: unknown): value is Record<string, string | number> {
@@ -109,7 +93,7 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 		phone.length > 40 ||
 		normalizedPhone.length < 8 ||
 		normalizedPhone.length > 16 ||
-		!locales.some((item) => item === locale) ||
+		!guestLocales.some((item) => item === locale) ||
 		!isAnswers(answers) ||
 		(source === 'self' &&
 			rawDeviceToken !== undefined &&
@@ -151,123 +135,6 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 		admission,
 		lotteryWeight,
 	};
-}
-
-/** Parses an identity-only sign-up: name and phone, with no session or household data. */
-export function parseSignupSubmission(value: unknown): GuestSignupSubmission | null {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-
-	const body = value as Record<string, unknown>;
-	const firstName = typeof body.firstName === 'string' ? body.firstName.trim() : '';
-	const lastName = typeof body.lastName === 'string' ? body.lastName.trim() : '';
-	const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-	const locale = body.locale;
-	const rawDeviceToken = body.deviceToken;
-	const deviceToken = typeof rawDeviceToken === 'string' ? rawDeviceToken.trim() : null;
-	const normalizedPhone = normalizePhone(phone);
-
-	if (
-		!phone ||
-		phone.length > 40 ||
-		normalizedPhone.length < 8 ||
-		normalizedPhone.length > 16 ||
-		!locales.some((item) => item === locale) ||
-		(rawDeviceToken !== undefined &&
-			rawDeviceToken !== null &&
-			(!deviceToken || deviceToken.length < 32 || deviceToken.length > 200)) ||
-		!firstName ||
-		!lastName ||
-		firstName.length > 100 ||
-		lastName.length > 100
-	) {
-		return null;
-	}
-
-	return {
-		firstName,
-		lastName,
-		phone,
-		locale: locale as GuestSignupSubmission['locale'],
-		deviceToken,
-	};
-}
-
-/** Creates or updates a guest's identity fields only. Never touches `visits`. */
-async function upsertGuestIdentity(
-	tx: Transaction,
-	options: {
-		existingGuest: typeof guests.$inferSelect | null;
-		firstName: string;
-		lastName: string;
-		phone: string;
-		locale: string;
-		deviceTokenHash: string | null;
-	},
-): Promise<typeof guests.$inferSelect> {
-	if (options.existingGuest) {
-		const [updated] = await tx
-			.update(guests)
-			.set({
-				firstName: options.firstName,
-				lastName: options.lastName,
-				phone: options.phone,
-				normalizedPhone: normalizePhone(options.phone),
-				locale: options.locale,
-			})
-			.where(eq(guests.id, options.existingGuest.id))
-			.returning();
-
-		return updated!;
-	}
-
-	const [created] = await tx
-		.insert(guests)
-		.values({
-			firstName: options.firstName,
-			lastName: options.lastName,
-			phone: options.phone,
-			normalizedPhone: normalizePhone(options.phone),
-			deviceTokenHash: options.deviceTokenHash,
-			locale: options.locale,
-		})
-		.returning();
-
-	return created!;
-}
-
-/** Signs a guest up: creates or updates their identity only, with no session attached. */
-export async function registerGuestSignup(
-	submission: GuestSignupSubmission,
-): Promise<RegisterGuestSignupResult> {
-	let existingGuest: typeof guests.$inferSelect | null = null;
-
-	if (submission.deviceToken) {
-		const [identifiedGuest] = await db
-			.select()
-			.from(guests)
-			.where(eq(guests.deviceTokenHash, hashDeviceToken(submission.deviceToken)))
-			.limit(1);
-
-		existingGuest = identifiedGuest ?? null;
-	}
-
-	const deviceCredential = existingGuest ? null : issueDeviceToken();
-	const result = await db.transaction(async (tx) => {
-		const guest = await upsertGuestIdentity(tx, {
-			existingGuest,
-			firstName: submission.firstName,
-			lastName: submission.lastName,
-			phone: submission.phone,
-			locale: submission.locale,
-			deviceTokenHash: deviceCredential?.tokenHash ?? null,
-		});
-
-		return { guestId: guest.id, deviceToken: deviceCredential?.token };
-	});
-
-	return { ok: true, status: existingGuest ? 200 : 201, body: result };
 }
 
 /**
@@ -318,17 +185,10 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 		}
 
 		const now = new Date();
-		const effectiveStatus = automaticSessionStatus(event, now);
 
-		// Guests may register as soon as an event exists at all — including `draft`, before an admin
-		// has scheduled registration — so signing up ahead of time doesn't depend on what stage the
-		// session is in. Only once the window has genuinely passed (closed, service started, or the
-		// session ended) does self-registration stop making sense.
-		if (
-			effectiveStatus === 'registration_closed' ||
-			effectiveStatus === 'service_started' ||
-			effectiveStatus === 'ended'
-		) {
+		// Once the guest UI closes, an already-in-flight request may still land during the short grace
+		// period. `lottery_pending` is the hard boundary where the pool has been frozen.
+		if (!acceptsSelfRegistration(event, now)) {
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
@@ -362,18 +222,9 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 		}
 	}
 
-	let existingGuest: typeof guests.$inferSelect | null = null;
+	const existingGuest =
+		submission.source === 'self' ? await findGuestByDeviceToken(submission.deviceToken) : null;
 	let existingVisit: { id: string; status: VisitStatus } | null = null;
-
-	if (submission.source === 'self' && submission.deviceToken) {
-		const [identifiedGuest] = await db
-			.select()
-			.from(guests)
-			.where(eq(guests.deviceTokenHash, hashDeviceToken(submission.deviceToken)))
-			.limit(1);
-
-		existingGuest = identifiedGuest ?? null;
-	}
 
 	if (existingGuest) {
 		const [visit] = await db
@@ -394,71 +245,102 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 	const deviceCredential =
 		submission.source === 'self' && !existingGuest ? issueDeviceToken() : null;
 	const visitCredential = issueVisitToken();
-	const registration = await db.transaction(async (tx) => {
-		const guest = await upsertGuestIdentity(tx, {
-			existingGuest,
-			firstName: submission.firstName,
-			lastName: submission.lastName,
-			phone: submission.phone,
-			locale: submission.locale,
-			deviceTokenHash: deviceCredential?.tokenHash ?? null,
-		});
-		// Only a guest going straight into the line needs a position now. Everyone else is either
-		// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
-		const queuePosition =
-			submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
-				? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
-				: null;
-		const [visit] = existingVisit
-			? await tx
-					.update(visits)
-					.set({
-						accessTokenHash: visitCredential.tokenHash,
-						answers: submission.answers,
-						ageRange: submission.ageRange,
-						householdSize: submission.householdSize,
-						childrenCount: submission.childrenCount,
-						seniorsCount: submission.seniorsCount,
-						normalizedPhone: normalizePhone(submission.phone),
-						status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
-					})
-					.where(eq(visits.id, existingVisit.id))
-					.returning({ id: visits.id, status: visits.status })
-			: await tx
-					.insert(visits)
-					.values({
-						guestId: guest.id,
-						marketEventId: submission.marketEventId!,
-						status:
-							submission.source === 'admin'
-								? admissionVisitStatus(submission.admission)
-								: 'registered',
-						queuePosition,
-						answers: submission.answers,
-						source: submission.source,
-						accessTokenHash: visitCredential.tokenHash,
-						isFirstVisit,
-						ageRange: submission.ageRange,
-						householdSize: submission.householdSize,
-						childrenCount: submission.childrenCount,
-						seniorsCount: submission.seniorsCount,
-						normalizedPhone: normalizePhone(submission.phone),
-						// Only a guest actually entering the draw can carry anything but the default odds.
-						lotteryWeight:
-							submission.source === 'admin' && submission.admission === 'lottery'
-								? submission.lotteryWeight
-								: 1,
-					})
-					.returning({ id: visits.id, status: visits.status });
+	const registration = await db
+		.transaction(async (tx) => {
+			const [event] = await tx
+				.select()
+				.from(marketEvents)
+				.where(eq(marketEvents.id, submission.marketEventId!))
+				.limit(1)
+				.for('update');
 
+			if (
+				!event ||
+				(submission.source === 'self' && !acceptsSelfRegistration(event, new Date())) ||
+				(submission.source === 'admin' && !canAdmitGuest(event.status, submission.admission))
+			) {
+				throw new Error('INVALID_REGISTRATION_STATE');
+			}
+
+			const guest = await persistGuestInformation(tx, {
+				existingGuest,
+				information: submission,
+				deviceTokenHash: deviceCredential?.tokenHash ?? null,
+			});
+			// Only a guest going straight into the line needs a position now. Everyone else is either
+			// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
+			const queuePosition =
+				submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
+					? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
+					: null;
+			const [visit] = existingVisit
+				? await tx
+						.update(visits)
+						.set({
+							accessTokenHash: visitCredential.tokenHash,
+							answers: submission.answers,
+							ageRange: submission.ageRange,
+							householdSize: submission.householdSize,
+							childrenCount: submission.childrenCount,
+							seniorsCount: submission.seniorsCount,
+							normalizedPhone: normalizePhone(submission.phone),
+							status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
+						})
+						.where(eq(visits.id, existingVisit.id))
+						.returning({ id: visits.id, status: visits.status })
+				: await tx
+						.insert(visits)
+						.values({
+							guestId: guest.id,
+							marketEventId: submission.marketEventId!,
+							status:
+								submission.source === 'admin'
+									? admissionVisitStatus(submission.admission)
+									: 'registered',
+							queuePosition,
+							answers: submission.answers,
+							source: submission.source,
+							accessTokenHash: visitCredential.tokenHash,
+							isFirstVisit,
+							ageRange: submission.ageRange,
+							householdSize: submission.householdSize,
+							childrenCount: submission.childrenCount,
+							seniorsCount: submission.seniorsCount,
+							normalizedPhone: normalizePhone(submission.phone),
+							// Only a guest actually entering the draw can carry anything but the default odds.
+							lotteryWeight:
+								submission.source === 'admin' && submission.admission === 'lottery'
+									? submission.lotteryWeight
+									: 1,
+						})
+						.returning({ id: visits.id, status: visits.status });
+
+			return {
+				id: visit!.id,
+				guestId: guest.id,
+				status: visit!.status,
+				visitToken: submission.source === 'self' ? visitCredential.token : undefined,
+				deviceToken: deviceCredential?.token,
+			};
+		})
+		.catch((cause: unknown) => {
+			if (cause instanceof Error && cause.message === 'INVALID_REGISTRATION_STATE') {
+				return null;
+			}
+
+			throw cause;
+		});
+
+	if (!registration) {
 		return {
-			id: visit!.id,
-			guestId: guest.id,
-			status: visit!.status,
-			visitToken: submission.source === 'self' ? visitCredential.token : undefined,
-			deviceToken: deviceCredential?.token,
+			ok: false,
+			status: 409,
+			error:
+				submission.source === 'self'
+					? 'Registration is not open.'
+					: 'That way of adding a guest is not available while the session is in this state.',
 		};
-	});
+	}
 
 	return { ok: true, status: existingVisit ? 200 : 201, body: registration };
 }
