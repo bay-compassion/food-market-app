@@ -1,4 +1,4 @@
-import { Config } from '@netlify/functions';
+import type { Config } from '@netlify/functions';
 
 import { parseSubmission, registerGuest } from '../services/guestRegistration.mjs';
 

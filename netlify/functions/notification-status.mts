@@ -1,4 +1,4 @@
-import { Config } from '@netlify/functions';
+import type { Config } from '@netlify/functions';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';

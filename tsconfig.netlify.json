@@ -1,0 +1,53 @@
+// TSConfig for server-side code: the Netlify functions and the database layer they share.
+//
+// This exists so `netlify/` and `db/` are checked at the same strictness as the app. Without it
+// they belong to no project at all, and oxlint's type-aware pass silently falls back to default
+// compiler options there — `strict` still applies, but `noUncheckedIndexedAccess` does not, so an
+// unchecked `list[0]` is an error in `src/` and passes in `netlify/`.
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+
+  "include": [
+    "netlify/**/*.mts",
+    "db/**/*.mts",
+    // Server-side database scripts: `fake-data.mts` is imported by
+    // `netlify/services/demoScenario.mts`, and `seed-fake-data.mts` drives it from the CLI.
+    "scripts/fake-data.mts",
+    "scripts/seed-fake-data.mts"
+  ],
+
+  // Server code imports types and pure domain helpers from `src/services/` — 16 files do, plus
+  // `db/schema.mts`. Referencing the app project is what lets those imports resolve here without
+  // pulling all of `src/` into this project's own file list.
+  "references": [{ "path": "./tsconfig.app.json" }],
+
+  "compilerOptions": {
+    "composite": true,
+
+    // These files are `.mts` running on Node under `"type": "module"`, and their relative imports
+    // carry real runtime extensions (`./visitQueue.mjs`, `../../src/services/reports.js`).
+    // NodeNext is the resolution mode that understands that; `bundler` (what the app uses) does
+    // not, because nothing bundles this code.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "types": ["node"],
+
+    // Type-checking only — Netlify builds and runs these files itself.
+    "noEmit": true,
+
+    // Match `tsconfig.app.json`'s safety settings. `noUncheckedIndexedAccess` is the one that was
+    // missing on the server, which does lottery draws and queue-position arithmetic.
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.netlify.tsbuildinfo"
+  }
+}

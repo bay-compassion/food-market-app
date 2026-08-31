@@ -12,9 +12,9 @@ import {
 	uuid,
 } from 'drizzle-orm/pg-core';
 
-import type { AgeRange } from '../src/services/ageRanges';
-import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine';
-import type { VisitStatus } from '../src/services/visitStateMachine';
+import type { AgeRange } from '../src/services/ageRanges.js';
+import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine.js';
+import type { VisitStatus } from '../src/services/visitStateMachine.js';
 
 export const marketEvents = pgTable('market_events', {
 	id: uuid('id').defaultRandom().primaryKey(),

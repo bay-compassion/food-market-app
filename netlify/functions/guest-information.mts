@@ -1,4 +1,4 @@
-import { Config } from '@netlify/functions';
+import type { Config } from '@netlify/functions';
 
 import { parseGuestInformation, saveGuestInformation } from '../services/guest-information.mjs';
 

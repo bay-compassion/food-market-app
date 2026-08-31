@@ -1,4 +1,4 @@
-import { Config } from '@netlify/functions';
+import type { Config } from '@netlify/functions';
 
 import { isServiceProgress } from '../../src/services/demoScenario.js';
 import { isSessionStatus } from '../../src/services/sessionStateMachine.js';

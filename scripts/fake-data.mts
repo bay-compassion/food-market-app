@@ -225,7 +225,7 @@ function calendarDay(date: Date) {
 }
 
 function buildGuests(options: { guests: number; now: Date }, random: Random) {
-	return Array.from({ length: options.guests }, (unused, index) => {
+	return Array.from({ length: options.guests }, (_unused, index) => {
 		const locale = pickShare(random, localeShares);
 		const names = namesByLocale[locale];
 		// A 555 number is never a real one, and the shared prefix makes seeded guests easy to spot.
@@ -449,7 +449,7 @@ function buildSessionVisits(
 		serviceStartsAt,
 		questions,
 		attendees,
-		(position, unusedPlacedCount, rand) => resolvePlacedVisit(serviceStartsAt, position, rand),
+		(position, _unusedPlacedCount, rand) => resolvePlacedVisit(serviceStartsAt, position, rand),
 		random,
 	);
 }
