@@ -6,10 +6,10 @@ vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
 import { requirePermission } from '../../lib/auth.mjs';
-import handler from '../../routes/guests/guests.mjs';
+import handler from '../../routes/admin/guests.mjs';
 
 function request(method: string, options: { path?: string; body?: unknown } = {}) {
-	return new Request(`https://example.com/api/guests${options.path ?? ''}`, {
+	return new Request(`https://example.com/api/admin/guests${options.path ?? ''}`, {
 		method,
 		headers: options.body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
 		body: options.body !== undefined ? JSON.stringify(options.body) : undefined,

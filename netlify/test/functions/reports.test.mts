@@ -6,10 +6,10 @@ vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
 import { requirePermission } from '../../lib/auth.mjs';
-import handler from '../../routes/reports/reports.mjs';
+import handler from '../../routes/admin/reports.mjs';
 
 function request(query = '?report=session-summary&from=2026-01-01&to=2026-08-08') {
-	return new Request(`https://example.com/api/reports${query}`);
+	return new Request(`https://example.com/api/admin/reports${query}`);
 }
 
 afterEach(() => {
@@ -20,7 +20,7 @@ afterEach(() => {
 describe('reports handler', () => {
 	it('returns 405 for anything but GET', async () => {
 		const response = await handler(
-			new Request('https://example.com/api/reports', { method: 'POST' }),
+			new Request('https://example.com/api/admin/reports', { method: 'POST' }),
 		);
 
 		expect(response.status).toBe(405);

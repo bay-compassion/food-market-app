@@ -110,15 +110,11 @@ async function updateGuest(request: Request) {
 
 export const guestRoutes = createRouter();
 
-guestRoutes.get('/api/guests', withPermission('run:queue'), (context) =>
-	listGuests(context.req.raw),
-);
-guestRoutes.post('/api/guests', withPermission('run:queue'), (context) =>
-	createGuest(context.req.raw),
-);
-guestRoutes.patch('/api/guests', withPermission('run:queue'), (context) =>
+guestRoutes.get('/guests', withPermission('run:queue'), (context) => listGuests(context.req.raw));
+guestRoutes.post('/guests', withPermission('run:queue'), (context) => createGuest(context.req.raw));
+guestRoutes.patch('/guests', withPermission('run:queue'), (context) =>
 	updateGuest(context.req.raw),
 );
-guestRoutes.all('/api/guests', methodNotAllowed);
+guestRoutes.all('/guests', methodNotAllowed);
 
-export default routeHandler(guestRoutes);
+export default routeHandler(createRouter().route('/api/admin', guestRoutes));

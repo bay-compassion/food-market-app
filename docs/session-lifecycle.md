@@ -136,7 +136,7 @@ recovery path — a guest marked no-show who turns up after all, or one called b
 to `waiting` and is notified again when re-called — so it clears `called_at` on the way out.
 Nothing transitions out of `served`, so `served_at` is only ever written once.
 
-Workers call guests in batches. `call_next` on `/api/queue` takes the next N waiting guests in
+Workers call guests in batches. `call_next` on `/api/admin/queue` takes the next N waiting guests in
 queue order and calls them in a single statement, so two workers running the queue at the same time
 cannot claim the same guest.
 

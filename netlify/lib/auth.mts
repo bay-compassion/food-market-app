@@ -45,16 +45,25 @@ export async function verifyAuth0Token(request: Request) {
  * not help. The browser needs to tell those apart — retrying the first is right and retrying the
  * second is a loop.
  */
-export async function requirePermission(request: Request, permission: Permission) {
-	let claims;
+export async function requirePermission(
+	request: Request,
+	permission: Permission,
+	verifiedPermissions?: Permission[],
+) {
+	let permissions = verifiedPermissions;
 
 	try {
-		claims = await verifyAuth0Token(request);
+		// Standalone route handlers still fail closed without the parent middleware.
+		if (!permissions) {
+			const { payload } = await verifyAuth0Token(request);
+
+			permissions = grantedPermissions(payload.permissions);
+		}
 	} catch {
 		return Response.json({ error: 'Authorization required.' }, { status: 401 });
 	}
 
-	if (!hasPermission(grantedPermissions(claims.payload.permissions), permission)) {
+	if (!hasPermission(permissions, permission)) {
 		return Response.json({ error: 'Your account does not have access to this.' }, { status: 403 });
 	}
 

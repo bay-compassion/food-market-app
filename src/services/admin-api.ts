@@ -88,24 +88,30 @@ export class AdminApi {
 			params.set('q', search.trim());
 		}
 
-		return this.readJson<AdminGuest[]>(await this.get(`/api/guests?${params}`), 'guests');
+		return this.readJson<AdminGuest[]>(await this.get(`/api/admin/guests?${params}`), 'guests');
 	}
 
 	/** The guests attached to one session. */
 	async listSessionGuests(marketEventId: string): Promise<AdminGuest[]> {
 		const params = new URLSearchParams({ marketEventId });
 
-		return this.readJson<AdminGuest[]>(await this.get(`/api/guests?${params}`), 'session-guests');
+		return this.readJson<AdminGuest[]>(
+			await this.get(`/api/admin/guests?${params}`),
+			'session-guests',
+		);
 	}
 
 	/** Sessions that have finished, for the history screen. */
 	async listHistory(): Promise<HistoricalEvent[]> {
-		return this.readJson<HistoricalEvent[]>(await this.get('/api/market?view=history'), 'history');
+		return this.readJson<HistoricalEvent[]>(
+			await this.get('/api/admin/market?view=history'),
+			'history',
+		);
 	}
 
 	/** Moves one guest through the visit lifecycle — calling, serving, marking a no-show. */
 	async runGuestCommand(id: string, command: VisitCommand): Promise<void> {
-		this.assertOk(await this.send('PATCH', '/api/guests', { id, command }), 'command');
+		this.assertOk(await this.send('PATCH', '/api/admin/guests', { id, command }), 'command');
 	}
 
 	/**
@@ -117,7 +123,7 @@ export class AdminApi {
 		context: { marketEventId: string | null; locale: Locale },
 	): Promise<void> {
 		this.assertOk(
-			await this.send('POST', '/api/guests', {
+			await this.send('POST', '/api/admin/guests', {
 				...guest,
 				// The form speaks in named tiers; the API takes the multiplier behind one.
 				lotteryWeight: lotteryWeightFor(guest.lotteryWeightTier),
@@ -132,7 +138,7 @@ export class AdminApi {
 
 	/** Calls the next `count` waiting guests forward. Resolves to the visit ids actually called. */
 	async callNext(count: number): Promise<string[]> {
-		const response = await this.send('POST', '/api/queue', { action: 'call_next', count });
+		const response = await this.send('POST', '/api/admin/queue', { action: 'call_next', count });
 		const { called } = await this.readJson<{ called: string[] }>(response, 'call_next');
 
 		return called;
@@ -140,7 +146,7 @@ export class AdminApi {
 
 	/** Sends a push and SMS broadcast. Resolves to how many recipients it was queued for. */
 	async sendBroadcast(message: { title: string; body: string }): Promise<number> {
-		const response = await this.send('POST', '/api/broadcast', message);
+		const response = await this.send('POST', '/api/admin/broadcast', message);
 		const { queued } = await this.readJson<{ queued: number }>(response, 'broadcast');
 
 		return queued;
@@ -149,7 +155,7 @@ export class AdminApi {
 	/** Whether the deployment will serve demo data at all. */
 	async isDemoDataEnabled(): Promise<boolean> {
 		try {
-			const response = await this.get('/api/demo-data');
+			const response = await this.get('/api/admin/demo-data');
 
 			return response.ok ? (await response.json()).enabled === true : false;
 		} catch {
@@ -162,7 +168,7 @@ export class AdminApi {
 		stage: SessionStatus,
 		serviceProgress?: ServiceProgress,
 	): Promise<SessionOverview> {
-		const response = await this.send('POST', '/api/demo-data', { stage, serviceProgress });
+		const response = await this.send('POST', '/api/admin/demo-data', { stage, serviceProgress });
 
 		return this.readJson<SessionOverview>(response, 'demo-data');
 	}

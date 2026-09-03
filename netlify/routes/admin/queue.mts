@@ -13,7 +13,7 @@ const maximumBatchSize = 50;
 
 export const queueRoutes = createRouter();
 
-queueRoutes.post('/api/queue', withPermission('run:queue'), async (context) => {
+queueRoutes.post('/queue', withPermission('run:queue'), async (context) => {
 	const body = await jsonBody(context.req.raw);
 	const { action, count } = (body ?? {}) as Record<string, unknown>;
 
@@ -38,6 +38,6 @@ queueRoutes.post('/api/queue', withPermission('run:queue'), async (context) => {
 
 	return Response.json({ called: await callNextVisits(event.id, batchSize) });
 });
-queueRoutes.all('/api/queue', methodNotAllowed);
+queueRoutes.all('/queue', methodNotAllowed);
 
-export default routeHandler(queueRoutes);
+export default routeHandler(createRouter().route('/api/admin', queueRoutes));

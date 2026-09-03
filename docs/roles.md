@@ -34,27 +34,27 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 
 ## What each endpoint requires
 
-| Endpoint                           | Requires                                                |
-| ---------------------------------- | ------------------------------------------------------- |
-| `GET /api/market`                  | nothing — the guest app depends on it                   |
-| `POST /api/guest-information`      | nothing — saves guest identity only                     |
-| `POST /api/lottery-registration`   | nothing — public self-service lottery entry             |
-| `GET /api/market?view=history`     | `run:queue`                                             |
-| `PUT /api/market`                  | `manage:sessions`                                       |
-| `POST /api/market`                 | `manage:sessions`, except `close_session` → `run:queue` |
-| `GET`, `POST`, `PATCH /api/guests` | `run:queue`                                             |
-| `POST /api/queue`                  | `run:queue`                                             |
-| `POST /api/broadcast`              | `manage:sessions`                                       |
-| `GET /api/reports`                 | `read:reports`                                          |
-| `GET /api/reports?view=export`     | `export:guest-data`                                     |
-| `GET`, `POST /api/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
+| Endpoint                                 | Requires                                                |
+| ---------------------------------------- | ------------------------------------------------------- |
+| `GET /api/market`                        | nothing — the guest app depends on it                   |
+| `POST /api/guest-information`            | nothing — saves guest identity only                     |
+| `POST /api/lottery-registration`         | nothing — public self-service lottery entry             |
+| `GET /api/admin/market?view=history`     | `run:queue`                                             |
+| `PUT /api/admin/market`                  | `manage:sessions`                                       |
+| `POST /api/admin/market`                 | `manage:sessions`, except `close_session` → `run:queue` |
+| `GET`, `POST`, `PATCH /api/admin/guests` | `run:queue`                                             |
+| `POST /api/admin/queue`                  | `run:queue`                                             |
+| `POST /api/admin/broadcast`              | `manage:sessions`                                       |
+| `GET /api/admin/reports`                 | `read:reports`                                          |
+| `GET /api/admin/reports?view=export`     | `export:guest-data`                                     |
+| `GET`, `POST /api/admin/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session
 history** is where a worker records someone served out of band, which is the same job as running
 the queue, just after the fact.
 
-`netlify/test/functions/permissions.test.ts` asserts this table endpoint by endpoint. Getting one
+`netlify/test/functions/permissions.test.mts` asserts this table endpoint by endpoint. Getting one
 of these backwards is exactly the mistake that would hand every volunteer the guest database, so
 it is checked rather than trusted.
 
@@ -78,11 +78,16 @@ claim nothing reads yet, so you can confirm tokens look right and merge afterwar
 
 ## How it is enforced
 
-`requirePermission` in [`netlify/lib/auth.mts`](../netlify/lib/auth.mts) verifies the token against
-Auth0's keys and checks the claim. It answers **401** when the token is missing or invalid, meaning
-sign in, and **403** when the token is fine but lacks the permission, meaning signing in again will
-not help — the browser needs to tell those apart, because retrying the first is right and retrying
-the second is a loop.
+The Hono admin router in [`netlify/routes/admin/index.mts`](../netlify/routes/admin/index.mts)
+is mounted at `/api/admin`. Its `withAuth0` middleware verifies every request against Auth0's keys
+before route dispatch and stores the verified permissions in the request context. Missing or
+invalid tokens receive **401**. Route-level `withPermission` middleware reuses those permissions
+and returns **403** when the token lacks the required permission.
+
+Add protected endpoints to this router using relative paths; the parent gate also covers new
+routes without an explicit permission middleware. Each operation must still declare its required
+permission. Keep public guest routes outside this subtree. `/api/market` serves only the guest
+overview; history and mutations use `/api/admin/market`. Old administrative URLs are not aliases.
 
 The browser also reads the permissions out of the access token, in
 [`src/auth.ts`](../src/auth.ts), to decide which navigation items and buttons to show. **That is
@@ -90,9 +95,10 @@ not security.** It reads the token without verifying it, and it only exists so a
 offered a button that would come back 403. The server is what enforces this; the hidden button is a
 courtesy.
 
-With no Auth0 configured at all — the usual local development setup — there is no token to read and
-no server-side gate either, so the admin area grants every permission rather than locking a
-developer out of the app they are working on.
+With no Auth0 configured — the usual Vite-only development setup — the browser grants every
+permission so the admin screens remain available. Vite does not run the Netlify API; when the
+backend is running, admin requests still require a valid Auth0 token and fail closed without
+Auth0 configuration.
 
 ## What this does not do
 
@@ -102,13 +108,13 @@ single click, which is a different exposure from reading today's line.
 
 ## The dev-mode data loader
 
-The Dev Mode screen (`src/components/admin/DevModeView.tsx`, behind `POST /api/demo-data`) lets
+The Dev Mode screen (`src/components/admin/DevModeView.tsx`, behind `POST /api/admin/demo-data`) lets
 someone holding `manage:demo-data` replace whatever session is currently live with fake guests and
 visits staged at any point on the session lifecycle — for demos and screenshots. Loading a scenario
 archives the current session the same way `close_session` would, so it is destructive to whatever
 is live at the time.
 
-Because of that, the permission alone is not enough: `POST /api/demo-data` also checks
+Because of that, the permission alone is not enough: `POST /api/admin/demo-data` also checks
 `ENABLE_DEMO_DATA_TOOLS`, an environment variable that has to be set to `true` for the specific
 Netlify deploy context it should run on. A deploy that never sets it answers every request with a
 plain 404, indistinguishable from a route that was never registered, regardless of who is asking.

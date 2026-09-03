@@ -10,10 +10,10 @@ vi.mock('../../services/pushNotifications.mjs', () => ({
 }));
 
 import { requirePermission } from '../../lib/auth.mjs';
-import handler from '../../routes/market/queue.mjs';
+import handler from '../../routes/admin/queue.mjs';
 
 function request(method: string, body?: unknown) {
-	return new Request('https://example.com/api/queue', {
+	return new Request('https://example.com/api/admin/queue', {
 		method,
 		headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
 		body: body === undefined ? undefined : JSON.stringify(body),
@@ -131,7 +131,7 @@ describe('queue handler call_next', () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await handler(
-			new Request('https://example.com/api/queue', {
+			new Request('https://example.com/api/admin/queue', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: 'not json',

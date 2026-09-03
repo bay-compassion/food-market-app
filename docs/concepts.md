@@ -37,7 +37,7 @@ to each other — here, how the frontend running in a browser asks the backend t
 **endpoint** is one specific thing the backend can be asked to do. For example,
 `netlify/routes/guests/guest-information.mts` handles `/api/guest-information` and saves a guest's
 identity without registering a visit. The neighboring `lottery-registration.mts` handles lottery
-entry, while `/api/guests` is reserved for authenticated administrative listing and commands.
+entry, while `/api/admin/guests` is reserved for authenticated administrative listing and commands.
 These endpoints share one deployed Netlify function, but each has explicit HTTP methods and
 authorization rules. When you read that "the frontend calls an API," it means the browser sent a
 request to an endpoint and is waiting for a response back.

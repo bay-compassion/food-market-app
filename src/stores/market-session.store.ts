@@ -222,7 +222,7 @@ export class MarketSessionStore {
 
 			headers.set('Content-Type', 'application/json');
 
-			const response = await fetch('/api/market', {
+			const response = await fetch('/api/admin/market', {
 				method,
 				headers,
 				body: JSON.stringify(body),

@@ -31,7 +31,7 @@ function parseBroadcast(value: unknown) {
 
 export const broadcastRoutes = createRouter();
 
-broadcastRoutes.post('/api/broadcast', withPermission('manage:sessions'), async (context) => {
+broadcastRoutes.post('/broadcast', withPermission('manage:sessions'), async (context) => {
 	if (!pushConfiguration().configured && !smsConfiguration().configured) {
 		return jsonError('Notifications are not configured.', 503);
 	}
@@ -93,6 +93,6 @@ broadcastRoutes.post('/api/broadcast', withPermission('manage:sessions'), async 
 
 	return Response.json({ queued: recipients.length, sent: result.sent });
 });
-broadcastRoutes.all('/api/broadcast', methodNotAllowed);
+broadcastRoutes.all('/broadcast', methodNotAllowed);
 
-export default routeHandler(broadcastRoutes);
+export default routeHandler(createRouter().route('/api/admin', broadcastRoutes));

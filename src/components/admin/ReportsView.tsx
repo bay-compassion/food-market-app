@@ -98,7 +98,9 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 			const params = new URLSearchParams({ from, to });
 
 			params.set('report', selectedReport);
-			const response = await fetch(`/api/reports?${params}`, { headers: await authHeaders() });
+			const response = await fetch(`/api/admin/reports?${params}`, {
+				headers: await authHeaders(),
+			});
 
 			if (!response.ok) {
 				throw new Error('report');
@@ -161,7 +163,9 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 			const params = new URLSearchParams({ from, to });
 
 			params.set('view', 'export');
-			const response = await fetch(`/api/reports?${params}`, { headers: await authHeaders() });
+			const response = await fetch(`/api/admin/reports?${params}`, {
+				headers: await authHeaders(),
+			});
 
 			if (!response.ok) {
 				throw new Error('export');

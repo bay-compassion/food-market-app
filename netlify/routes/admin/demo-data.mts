@@ -44,9 +44,9 @@ export const demoRoutes = createRouter();
 
 // Gate on the permission before anything else, so an unauthenticated caller cannot use this
 // endpoint's responses to learn whether demo data tools are even enabled here.
-demoRoutes.use('/api/demo-data', withPermission('manage:demo-data'));
-demoRoutes.get('/api/demo-data', () => Response.json({ enabled: demoDataToolsEnabled() }));
-demoRoutes.post('/api/demo-data', (context) => runLoad(context.req.raw));
-demoRoutes.all('/api/demo-data', methodNotAllowed);
+demoRoutes.use('/demo-data', withPermission('manage:demo-data'));
+demoRoutes.get('/demo-data', () => Response.json({ enabled: demoDataToolsEnabled() }));
+demoRoutes.post('/demo-data', (context) => runLoad(context.req.raw));
+demoRoutes.all('/demo-data', methodNotAllowed);
 
-export default routeHandler(demoRoutes);
+export default routeHandler(createRouter().route('/api/admin', demoRoutes));

@@ -73,7 +73,7 @@ To work only on the frontend, you can also run:
 npm run dev
 ```
 
-This Vite server does not run the `/api/guests` Netlify Function.
+This Vite server does not run the Netlify API function, including `/api/admin/guests`.
 
 ### Fake data
 

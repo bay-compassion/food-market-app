@@ -10,11 +10,11 @@ vi.mock('../../services/demoScenario.mjs', () => ({
 }));
 
 import { requirePermission } from '../../lib/auth.mjs';
-import handler from '../../routes/demo/demo-data.mjs';
+import handler from '../../routes/admin/demo-data.mjs';
 import { demoDataToolsEnabled, loadScenario } from '../../services/demoScenario.mjs';
 
 function request(method: string, options: { body?: unknown } = {}) {
-	return new Request('https://example.com/api/demo-data', {
+	return new Request('https://example.com/api/admin/demo-data', {
 		method,
 		headers: options.body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
 		body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
@@ -49,7 +49,7 @@ describe('demo-data handler routing', () => {
 	});
 });
 
-describe('GET /api/demo-data', () => {
+describe('GET /api/admin/demo-data', () => {
 	it('reports whether demo data tools are enabled on this deploy', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(demoDataToolsEnabled).mockReturnValueOnce(true);
@@ -60,7 +60,7 @@ describe('GET /api/demo-data', () => {
 	});
 });
 
-describe('POST /api/demo-data', () => {
+describe('POST /api/admin/demo-data', () => {
 	it('rejects an invalid stage', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 

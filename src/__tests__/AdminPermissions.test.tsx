@@ -52,7 +52,7 @@ function renderDashboard(
 					Promise.resolve(
 						url.startsWith('/api/market') && !url.includes('history')
 							? { event, questions: [], counts: {} }
-							: url.startsWith('/api/reports')
+							: url.startsWith('/api/admin/reports')
 								? { rows: [] }
 								: [],
 					),
@@ -135,9 +135,11 @@ describe('admin navigation by permission', () => {
 
 		await waitFor(() => expect(navigationLabels(container)).toEqual([t.reports]));
 
-		const urls = vi.mocked(fetch).mock.calls.map((call) => String(call[0]));
+		const urls = vi
+			.mocked(fetch)
+			.mock.calls.map(([input]) => (input instanceof Request ? input.url : input.toString()));
 
-		expect(urls.some((url) => url.startsWith('/api/guests'))).toBe(false);
+		expect(urls.some((url) => url.startsWith('/api/admin/guests'))).toBe(false);
 	});
 
 	// manage:demo-data is deliberately not part of `worker` or `admin` — see docs/roles.md — so an

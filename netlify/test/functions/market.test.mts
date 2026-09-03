@@ -6,10 +6,11 @@ vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
 import { requirePermission } from '../../lib/auth.mjs';
-import handler from '../../routes/market/market.mjs';
+import handler from '../../routes/admin/market.mjs';
+import publicHandler from '../../routes/market/market.mjs';
 
 function request(method: string, options: { path?: string; body?: unknown } = {}) {
-	return new Request(`https://example.com/api/market${options.path ?? ''}`, {
+	return new Request(`https://example.com/api/admin/market${options.path ?? ''}`, {
 		method,
 		headers: options.body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
 		body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
@@ -33,7 +34,7 @@ describe('market handler GET (default overview is public)', () => {
 	it('returns the overview without requiring auth', async () => {
 		queueResult([]); // no active market event
 
-		const response = await handler(request('GET'));
+		const response = await publicHandler(new Request('https://example.com/api/market'));
 
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toEqual({ event: null, questions: [], counts: {} });

@@ -3,28 +3,30 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
-vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
+vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn(), verifyAuth0Token: vi.fn() }));
 
 import handler, { config } from '../../functions/api.mjs';
-import { requirePermission } from '../../lib/auth.mjs';
+import { requirePermission, verifyAuth0Token } from '../../lib/auth.mjs';
 
 const paths = [
+	'/api/admin/market',
 	'/api/market',
-	'/api/queue',
-	'/api/guests',
+	'/api/admin/queue',
+	'/api/admin/guests',
 	'/api/lottery-registration',
 	'/api/guest-information',
 	'/api/visit',
 	'/api/push-subscription',
 	'/api/sms-subscription',
 	'/api/notification-status',
-	'/api/broadcast',
-	'/api/reports',
-	'/api/demo-data',
+	'/api/admin/broadcast',
+	'/api/admin/reports',
+	'/api/admin/demo-data',
 ];
 
 beforeEach(() => {
 	vi.stubEnv('NOTIFICATIONS_ENABLED', 'false');
+	vi.mocked(verifyAuth0Token).mockRejectedValue(new Error('Missing token'));
 	vi.mocked(requirePermission).mockImplementation(async () =>
 		Response.json({ error: 'Authorization required.' }, { status: 401 }),
 	);
@@ -33,12 +35,17 @@ beforeEach(() => {
 afterEach(() => {
 	resetDbStub();
 	vi.mocked(requirePermission).mockReset();
+	vi.mocked(verifyAuth0Token).mockReset();
 	vi.unstubAllEnvs();
 });
 
 describe('consolidated API routing', () => {
 	it('registers every canonical API path on the Netlify function', () => {
-		expect(config.path).toEqual(paths);
+		expect(config.path).toEqual([
+			'/api/admin',
+			'/api/admin/*',
+			...paths.filter((path) => !path.startsWith('/api/admin/')),
+		]);
 	});
 
 	it.each(paths)('rejects HEAD before dispatching %s', async (path) => {
@@ -59,8 +66,8 @@ describe('consolidated API routing', () => {
 
 	it.each([
 		['/api/market', 'GET', 200, { event: null, questions: [], counts: {} }],
-		['/api/queue', 'POST', 401, { error: 'Authorization required.' }],
-		['/api/guests', 'GET', 401, { error: 'Authorization required.' }],
+		['/api/admin/queue', 'POST', 401, { error: 'Authorization required.' }],
+		['/api/admin/guests', 'GET', 401, { error: 'Authorization required.' }],
 		[
 			'/api/lottery-registration',
 			'POST',
@@ -72,9 +79,9 @@ describe('consolidated API routing', () => {
 		['/api/push-subscription', 'GET', 200, { configured: false, publicKey: null }],
 		['/api/sms-subscription', 'GET', 200, { configured: false }],
 		['/api/notification-status', 'GET', 401, { error: 'Device access could not be verified.' }],
-		['/api/broadcast', 'POST', 401, { error: 'Authorization required.' }],
-		['/api/reports', 'GET', 401, { error: 'Authorization required.' }],
-		['/api/demo-data', 'GET', 401, { error: 'Authorization required.' }],
+		['/api/admin/broadcast', 'POST', 401, { error: 'Authorization required.' }],
+		['/api/admin/reports', 'GET', 401, { error: 'Authorization required.' }],
+		['/api/admin/demo-data', 'GET', 401, { error: 'Authorization required.' }],
 	] as const)('dispatches %s %s through the mounted router', async (path, method, status, body) => {
 		queueResult([]);
 		const request = new Request(
@@ -90,7 +97,7 @@ describe('consolidated API routing', () => {
 
 	it.each([
 		['/api/market', 405, 'Method not allowed'],
-		['/api/demo-data', 401, 'Authorization required.'],
+		['/api/admin/demo-data', 401, 'Authorization required.'],
 		['/api/visit', 401, 'Visit access could not be verified.'],
 		['/api/push-subscription', 503, 'Push notifications are not configured.'],
 		['/api/sms-subscription', 503, 'SMS notifications are not configured.'],

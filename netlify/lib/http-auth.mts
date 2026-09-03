@@ -1,7 +1,7 @@
 import { createMiddleware } from 'hono/factory';
 
-import type { Permission } from '../../src/services/permissions.js';
-import { requirePermission } from './auth.mjs';
+import { grantedPermissions, type Permission } from '../../src/services/permissions.js';
+import { requirePermission, verifyAuth0Token } from './auth.mjs';
 import { authorizedGuest } from './deviceAuth.mjs';
 import { jsonError } from './http.mjs';
 import { authorizedVisit } from './visitAuth.mjs';
@@ -18,9 +18,30 @@ export type VisitAccessEnv = {
 	};
 };
 
+export type AdminEnv = {
+	Variables: { permissions: Permission[] };
+};
+
+/** Authenticate every request in the admin subtree before dispatching a route. */
+export const withAuth0 = createMiddleware<AdminEnv>(async (context, next) => {
+	try {
+		const { payload } = await verifyAuth0Token(context.req.raw);
+
+		context.set('permissions', grantedPermissions(payload.permissions));
+	} catch {
+		return jsonError('Authorization required.', 401);
+	}
+
+	await next();
+});
+
 export function withPermission(permission: Permission) {
-	return createMiddleware(async (context, next) => {
-		const forbidden = await requirePermission(context.req.raw, permission);
+	return createMiddleware<AdminEnv>(async (context, next) => {
+		const forbidden = await requirePermission(
+			context.req.raw,
+			permission,
+			context.get('permissions'),
+		);
 
 		if (forbidden) {
 			return forbidden;
