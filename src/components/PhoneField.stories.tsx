@@ -5,7 +5,7 @@ import { expect } from 'storybook/test';
 import { PhoneField, type PhoneFieldProps } from './PhoneField';
 
 /**
- * A `FormField` that formats digits into `(555) 123-4567` as the guest types. Try typing a run of
+ * A text field that formats digits into `(555) 123-4567` as the guest types. Try typing a run of
  * digits into the control to see the formatting apply live.
  */
 

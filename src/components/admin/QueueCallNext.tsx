@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import type { FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { AppButton } from '../AppButton';
 
 export type QueueCallNextProps = {
 	waitingCount: number;
@@ -49,7 +49,9 @@ export function QueueCallNext({
 					onChange={(event) => onCountChange(Number(event.target.value))}
 				/>
 			</label>
-			<AppButton type="submit" disabled={busy || waitingCount === 0} label={t.callNext} />
+			<Button type="submit" disabled={busy || waitingCount === 0}>
+				{t.callNext}
+			</Button>
 		</Form>
 	);
 }

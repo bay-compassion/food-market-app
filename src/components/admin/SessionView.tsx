@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import type { FormEvent } from 'react';
 
@@ -7,10 +8,12 @@ import type { GuestAdmission } from '../../services/guestAdmission';
 import type { CurrentSessionState, SessionCommand } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
-import { AppButton } from '../AppButton';
 import { AddGuestSection } from './AddGuestSection';
+import { SessionActionCard } from './SessionActionCard';
 import { SessionBroadcastForm, type Broadcast } from './SessionBroadcastForm';
 import { SessionGuestList } from './SessionGuestList';
+import { SessionOverrideCard } from './SessionOverrideCard';
+import { SessionOverview } from './SessionOverview';
 import { SessionSettingsForm } from './SessionSettingsForm';
 import type { AdminMarketEvent, ManualGuest, QueueGuest, SessionSettings } from './types';
 
@@ -42,93 +45,6 @@ export type SessionViewProps = {
 	onNavigateQueue: () => void;
 };
 
-const StatGrid = styled.div`
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 10px;
-	margin-top: 14px;
-
-	.stat-card {
-		display: grid;
-		gap: 2px;
-		min-height: 92px;
-		padding: 15px;
-		border-radius: var(--radius-md);
-		color: white;
-		background: var(--color-brand);
-	}
-
-	.stat-card:first-of-type {
-		grid-column: span 2;
-	}
-
-	.stat-card strong {
-		font-family: var(--font-heading);
-		font-size: 32px;
-	}
-
-	.stat-card span {
-		font-size: 13px;
-	}
-
-	@media (min-width: 560px) {
-		grid-template-columns: repeat(5, 1fr);
-
-		.stat-card:first-of-type {
-			grid-column: auto;
-		}
-	}
-`;
-
-const ActionCard = styled.section`
-	display: flex;
-	justify-content: space-between;
-	gap: 14px;
-	align-items: flex-start;
-
-	.action-buttons {
-		display: grid;
-		gap: 10px;
-		width: 100%;
-	}
-
-	@media (min-width: 560px) {
-		align-items: center;
-
-		.action-buttons {
-			width: auto;
-		}
-	}
-`;
-
-const OverrideCard = styled.section`
-	.override-grid {
-		display: grid;
-		gap: 18px;
-	}
-
-	.override-grid form {
-		margin-top: 0;
-		padding: 16px;
-		border-radius: var(--radius-md);
-		background: #f3f6f4;
-	}
-
-	.standalone-action {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: 18px;
-		padding-top: 18px;
-		border-top: 1px solid #dce3df;
-	}
-
-	@media (min-width: 560px) {
-		.override-grid {
-			grid-template-columns: 1fr 1fr;
-		}
-	}
-`;
-
 const ResetCard = styled.section`
 	display: flex;
 	flex-wrap: wrap;
@@ -140,16 +56,6 @@ const ResetCard = styled.section`
 		max-width: 560px;
 		color: var(--color-text-subtle);
 		line-height: 1.5;
-	}
-
-	.app-button.secondary {
-		color: var(--color-error);
-		box-shadow: inset 0 0 0 1.5px var(--color-error);
-	}
-
-	.app-button.secondary:hover:not(:disabled) {
-		color: white;
-		background: var(--color-error);
 	}
 `;
 
@@ -210,17 +116,7 @@ export const SessionView = observer(function SessionView({
 	return (
 		<>
 			{sessionState === 'service_started' ? (
-				<section className="admin-section">
-					<h2>{t.overview}</h2>
-					<StatGrid className="stat-grid">
-						{statuses.map((status) => (
-							<article key={status} className="stat-card">
-								<strong>{counts[status] ?? 0}</strong>
-								<span>{statusLabels[status]}</span>
-							</article>
-						))}
-					</StatGrid>
-				</section>
+				<SessionOverview statuses={statuses} counts={counts} statusLabels={statusLabels} />
 			) : null}
 
 			{sessionState === 'inactive' ? (
@@ -232,149 +128,116 @@ export const SessionView = observer(function SessionView({
 					onSaveAndStart={onSaveAndStartRegistration}
 				/>
 			) : sessionState === 'scheduled' ? (
-				<OverrideCard className="admin-section settings-card">
-					<h2>{t.scheduled}</h2>
-					<p>
-						{t.scheduledFor} {formatEventDate(event!.registrationOpensAt)}
-					</p>
-					<div className="override-grid">
-						<form onSubmit={submitting(onPostponeRegistration)}>
-							<label>
-								<span>{t.postponeByMinutes}</span>
-								<input
-									type="number"
-									min="1"
-									max="1440"
-									step="1"
-									required
-									value={postponementMinutes}
-									onChange={(changeEvent) =>
-										onPostponementMinutesChange(Number(changeEvent.target.value))
-									}
-								/>
-							</label>
-							<AppButton
-								type="submit"
-								variant="secondary"
-								disabled={busy}
-								label={t.postponeRegistration}
+				<SessionOverrideCard
+					title={t.scheduled}
+					description={
+						<>
+							{t.scheduledFor} {formatEventDate(event!.registrationOpensAt)}
+						</>
+					}
+					action={
+						<Button type="button" disabled={busy} onClick={() => onRun('open_registration')}>
+							{t.openRegistrationNow}
+						</Button>
+					}
+				>
+					<form onSubmit={submitting(onPostponeRegistration)}>
+						<label>
+							<span>{t.postponeByMinutes}</span>
+							<input
+								type="number"
+								min="1"
+								max="1440"
+								step="1"
+								required
+								value={postponementMinutes}
+								onChange={(changeEvent) =>
+									onPostponementMinutesChange(Number(changeEvent.target.value))
+								}
 							/>
-						</form>
-					</div>
-					<div className="standalone-action">
-						<AppButton
-							type="button"
-							disabled={busy}
-							onClick={() => onRun('open_registration')}
-							label={t.openRegistrationNow}
-						/>
-					</div>
-				</OverrideCard>
+						</label>
+						<Button type="submit" variant="outlined" disabled={busy}>
+							{t.postponeRegistration}
+						</Button>
+					</form>
+				</SessionOverrideCard>
 			) : sessionState === 'registration_open' ? (
-				<OverrideCard className="admin-section settings-card">
-					<h2>{t.registrationOverrides}</h2>
-					<p>{t.overridesHelp}</p>
-					<div className="override-grid">
-						<form onSubmit={submitting(onExtendRegistration)}>
-							<label>
-								<span>{t.extendRegistrationMinutes}</span>
-								<input
-									type="number"
-									min="1"
-									max="1440"
-									step="1"
-									list="registration-extension-options"
-									required
-									value={extensionMinutes}
-									onChange={(changeEvent) =>
-										onExtensionMinutesChange(Number(changeEvent.target.value))
-									}
-								/>
-							</label>
-							<datalist id="registration-extension-options">
-								<option value="15" />
-								<option value="30" />
-								<option value="60" />
-							</datalist>
-							<AppButton
-								type="submit"
-								variant="secondary"
-								disabled={busy}
-								label={t.extendRegistration}
+				<SessionOverrideCard
+					title={t.registrationOverrides}
+					description={t.overridesHelp}
+					action={
+						<Button type="button" disabled={busy} onClick={() => onRun('close_registration')}>
+							{t.closeRegistration}
+						</Button>
+					}
+				>
+					<form onSubmit={submitting(onExtendRegistration)}>
+						<label>
+							<span>{t.extendRegistrationMinutes}</span>
+							<input
+								type="number"
+								min="1"
+								max="1440"
+								step="1"
+								list="registration-extension-options"
+								required
+								value={extensionMinutes}
+								onChange={(changeEvent) =>
+									onExtensionMinutesChange(Number(changeEvent.target.value))
+								}
 							/>
-						</form>
-						<form onSubmit={submitting(onSaveCapacityOverride)}>
-							<label>
-								<span>{t.capacity}</span>
-								<input
-									type="number"
-									min="1"
-									max="10000"
-									required
-									value={settings.capacity}
-									onChange={(changeEvent) =>
-										onSettingsChange({ ...settings, capacity: Number(changeEvent.target.value) })
-									}
-								/>
-							</label>
-							<AppButton
-								type="submit"
-								variant="secondary"
-								disabled={busy}
-								label={t.updateCapacity}
+						</label>
+						<datalist id="registration-extension-options">
+							<option value="15" />
+							<option value="30" />
+							<option value="60" />
+						</datalist>
+						<Button type="submit" variant="outlined" disabled={busy}>
+							{t.extendRegistration}
+						</Button>
+					</form>
+					<form onSubmit={submitting(onSaveCapacityOverride)}>
+						<label>
+							<span>{t.capacity}</span>
+							<input
+								type="number"
+								min="1"
+								max="10000"
+								required
+								value={settings.capacity}
+								onChange={(changeEvent) =>
+									onSettingsChange({ ...settings, capacity: Number(changeEvent.target.value) })
+								}
 							/>
-						</form>
-					</div>
-					<div className="standalone-action">
-						<AppButton
-							type="button"
-							disabled={busy}
-							onClick={() => onRun('close_registration')}
-							label={t.closeRegistration}
-						/>
-					</div>
-				</OverrideCard>
+						</label>
+						<Button type="submit" variant="outlined" disabled={busy}>
+							{t.updateCapacity}
+						</Button>
+					</form>
+				</SessionOverrideCard>
 			) : sessionState === 'registration_closed' ? (
-				<ActionCard className="admin-section action-card">
-					<div>
-						<h2>{t.closed}</h2>
-						<p>{t.guestList}</p>
-					</div>
-					<div className="action-buttons">
-						<AppButton
-							type="button"
-							variant="secondary"
-							disabled={busy}
-							onClick={() => onRun('reopen_registration')}
-							label={t.reopenRegistration}
-						/>
-					</div>
-				</ActionCard>
+				<SessionActionCard title={t.closed} description={t.guestList}>
+					<Button
+						type="button"
+						variant="outlined"
+						disabled={busy}
+						onClick={() => onRun('reopen_registration')}
+					>
+						{t.reopenRegistration}
+					</Button>
+				</SessionActionCard>
 			) : sessionState === 'lottery_pending' ? (
-				<ActionCard className="admin-section action-card">
-					<div>
-						<h2>{t.lotteryActions}</h2>
-						<p>{t.lotteryPendingHelp}</p>
-					</div>
-					<div className="action-buttons">
-						<AppButton
-							type="button"
-							disabled={busy}
-							onClick={() => onRun('run_lottery')}
-							label={t.runLottery}
-						/>
-					</div>
-				</ActionCard>
+				<SessionActionCard title={t.lotteryActions} description={t.lotteryPendingHelp}>
+					<Button type="button" disabled={busy} onClick={() => onRun('run_lottery')}>
+						{t.runLottery}
+					</Button>
+				</SessionActionCard>
 			) : (
-				<ActionCard className="admin-section action-card">
-					<div>
-						<h2>{t.serviceStarted}</h2>
-						<p>{t.guestList}</p>
-					</div>
-					<div className="action-buttons">
-						<AppButton type="button" onClick={onNavigateQueue} label={t.goToQueue} />
-					</div>
-				</ActionCard>
+				<SessionActionCard title={t.serviceStarted} description={t.guestList}>
+					<Button type="button" onClick={onNavigateQueue}>
+						{t.goToQueue}
+					</Button>
+				</SessionActionCard>
 			)}
 
 			{showsRegisteredGuests ? <SessionGuestList guests={registeredGuests} /> : null}
@@ -397,13 +260,15 @@ export const SessionView = observer(function SessionView({
 						<h2>{t.resetSession}</h2>
 						<p>{t.resetSessionHelp}</p>
 					</div>
-					<AppButton
+					<Button
 						type="button"
-						variant="secondary"
+						variant="outlined"
+						color="error"
 						disabled={busy}
 						onClick={() => onRun('reset_session')}
-						label={t.resetSession}
-					/>
+					>
+						{t.resetSession}
+					</Button>
 				</ResetCard>
 			) : null}
 		</>

@@ -148,7 +148,7 @@ export function NumberSpinner({
 				</Field>
 			)}
 		>
-			{/* `required` is deliberately left off the label, matching `FormField`: the control
+			{/* `required` is deliberately left off the label, matching text fields: the control
 			    carries it for validation, and the design marks required fields by their copy
 			    rather than an asterisk. */}
 			<FormLabel id={labelId} htmlFor={inputId}>

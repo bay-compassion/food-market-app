@@ -1,8 +1,8 @@
+import { TextField } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
-import { FormField } from '../../FormField';
 import { PhoneField } from '../../PhoneField';
 import { FormSection } from './FormSection';
 
@@ -20,19 +20,19 @@ export const GuestInformationForm = observer(function GuestInformationForm() {
 
 	return (
 		<FormSection legend={t.guestView.forms.informationLegend}>
-			<FormField
+			<TextField
 				label={t.firstName}
 				value={registration.guest.firstName}
-				onChange={(value) => registration.updateGuest({ firstName: String(value) })}
+				onChange={(event) => registration.updateGuest({ firstName: event.target.value.trim() })}
 				required
-				autocomplete="given-name"
+				autoComplete="given-name"
 			/>
-			<FormField
+			<TextField
 				label={t.lastName}
 				value={registration.guest.lastName}
-				onChange={(value) => registration.updateGuest({ lastName: String(value) })}
+				onChange={(event) => registration.updateGuest({ lastName: event.target.value.trim() })}
 				required
-				autocomplete="family-name"
+				autoComplete="family-name"
 			/>
 			<PhoneField
 				label={t.phone}

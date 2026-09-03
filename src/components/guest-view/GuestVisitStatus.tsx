@@ -1,9 +1,9 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
-import { AppButton } from '../AppButton';
 import { CalledVisitStatus } from './visit-status/CalledVisitStatus';
 import { CompletedVisitStatus } from './visit-status/CompletedVisitStatus';
 import { RegisteredVisitStatus } from './visit-status/RegisteredVisitStatus';
@@ -41,13 +41,14 @@ export const GuestVisitStatus = observer(function GuestVisitStatus({
 				</SubmissionError>
 			) : null}
 			{visit.canCancel ? (
-				<AppButton
+				<Button
 					type="button"
-					variant="secondary"
+					variant="outlined"
 					disabled={visit.isCancelling}
 					onClick={onCancelVisit}
-					label={copy.cancelAction}
-				/>
+				>
+					{copy.cancelAction}
+				</Button>
 			) : null}
 		</>
 	);
