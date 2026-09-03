@@ -1,12 +1,12 @@
 import type { Permission } from './permissions.ts';
 
 /**
- * The admin screens, in the order the navigation lists them. The route in `router.ts` matches the
- * same set — add a view here and the path pattern there has to grow with it.
+ * The admin screens, in navigation order. AdminAuthView validates route parameters against this set.
  */
 export const adminViews = [
 	'current-session',
 	'queue',
+	'broadcast',
 	'question-bank',
 	'guest-database',
 	'session-history',
@@ -28,6 +28,7 @@ export function isAdminView(value: unknown): value is AdminView {
 export const viewPermissions: Record<AdminView, Permission> = {
 	'current-session': 'manage:sessions',
 	queue: 'run:queue',
+	broadcast: 'manage:sessions',
 	'question-bank': 'manage:sessions',
 	'guest-database': 'run:queue',
 	'session-history': 'run:queue',

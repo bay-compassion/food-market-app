@@ -30,7 +30,7 @@ const OverrideCard = styled.section`
 `;
 
 type SessionOverrideCardProps = {
-	title: string;
+	title?: string;
 	description: ReactNode;
 	action: ReactNode;
 	children: ReactNode;
@@ -44,7 +44,7 @@ export function SessionOverrideCard({
 }: SessionOverrideCardProps) {
 	return (
 		<OverrideCard className="admin-section settings-card">
-			<h2>{title}</h2>
+			{title ? <h2>{title}</h2> : null}
 			<p>{description}</p>
 			<div className="override-grid">{children}</div>
 			<div className="standalone-action">{action}</div>

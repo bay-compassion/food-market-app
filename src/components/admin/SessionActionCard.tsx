@@ -23,7 +23,7 @@ const ActionCard = styled.section`
 `;
 
 type SessionActionCardProps = {
-	title: string;
+	title?: string;
 	description: string;
 	children: ReactNode;
 };
@@ -32,7 +32,7 @@ export function SessionActionCard({ title, description, children }: SessionActio
 	return (
 		<ActionCard className="admin-section action-card">
 			<div>
-				<h2>{title}</h2>
+				{title ? <h2>{title}</h2> : null}
 				<p>{description}</p>
 			</div>
 			<div className="action-buttons">{children}</div>

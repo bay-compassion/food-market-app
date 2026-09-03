@@ -680,7 +680,7 @@ describe('App', () => {
 				'Open registration now',
 				'Add guest',
 			],
-			hidden: ['Registration settings', 'Today’s overview', 'Broadcast notification'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Broadcast notification'],
 		},
 		{
 			status: 'registration_open',
@@ -688,26 +688,25 @@ describe('App', () => {
 				'Registration overrides',
 				'Extend registration by (minutes)',
 				'Close registration',
-				'Broadcast notification',
 				'Add guest',
 			],
 			hidden: ['Today’s overview', 'Run lottery draw'],
 		},
 		{
 			status: 'registration_closed',
-			shown: ['Reopen registration', 'Broadcast notification', 'Add guest'],
-			hidden: ['Registration settings', 'Today’s overview', 'Run lottery draw'],
+			shown: ['Reopen registration', 'Add guest'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Run lottery draw'],
 		},
 		{
 			status: 'lottery_pending',
-			shown: ['Run lottery draw', 'Broadcast notification', 'Add guest'],
-			hidden: ['Registration settings', 'Today’s overview', 'Reopen registration'],
+			shown: ['Run lottery draw', 'Add guest'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Reopen registration'],
 		},
 		{
 			// Queue management moved to its own view, so current-session only points at it.
 			status: 'service_started',
-			shown: ['Today’s overview', 'Manage the queue', 'Broadcast notification', 'Add guest'],
-			hidden: ['Registration settings', 'Run lottery draw', 'Call next'],
+			shown: ['Today’s overview', 'Manage the queue', 'Add guest'],
+			hidden: ['Schedule registration', 'Run lottery draw', 'Call next'],
 		},
 	] as const)(
 		'shows only the $status current-session controls',
@@ -738,13 +737,16 @@ describe('App', () => {
 			const { container } = renderDashboard();
 
 			await waitFor(() => expect(container.textContent).toContain(shown[0]!));
+			const content = container.querySelector('.admin-content')!;
+
+			expect(content.textContent).not.toContain('Broadcast notification');
 
 			for (const copy of shown) {
-				expect(container.textContent).toContain(copy);
+				expect(content.textContent).toContain(copy);
 			}
 
 			for (const copy of hidden) {
-				expect(container.textContent).not.toContain(copy);
+				expect(content.textContent).not.toContain(copy);
 			}
 		},
 	);

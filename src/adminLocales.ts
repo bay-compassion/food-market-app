@@ -24,6 +24,7 @@ export interface AdminTranslation {
 	broadcastSend: string;
 	broadcastTitle: string;
 	broadcastTitleLabel: string;
+	broadcastUnavailable: string;
 	cancel: string;
 	capacity: string;
 	cancelled: string;
@@ -101,6 +102,7 @@ export interface AdminTranslation {
 	registered: string;
 	registeredGuests: string;
 	registrationDurationMinutes: string;
+	registrationClosedHelp: string;
 	registrationSettings: string;
 	registrationOverrides: string;
 	reopenRegistration: string;
@@ -209,6 +211,8 @@ export const adminTranslations = {
 		broadcastSend: 'Send broadcast',
 		broadcastTitle: 'Broadcast notification',
 		broadcastTitleLabel: 'Notification title',
+		broadcastUnavailable:
+			'Broadcast notifications are available once registration opens and until the session ends.',
 		cancel: 'Cancel',
 		capacity: 'Queue capacity',
 		cancelled: 'Cancelled',
@@ -289,6 +293,8 @@ export const adminTranslations = {
 		registered: 'Registered',
 		registeredGuests: 'Registered guests',
 		registrationDurationMinutes: 'Registration open for (minutes)',
+		registrationClosedHelp:
+			'This step will advance automatically to Lottery pending in a few seconds.',
 		registrationSettings: 'Registration settings',
 		registrationOverrides: 'Registration overrides',
 		reopenRegistration: 'Reopen registration',

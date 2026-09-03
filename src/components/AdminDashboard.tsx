@@ -1,9 +1,7 @@
-import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
-import { adminFeedbackText } from '../services/admin-feedback';
 import type { ServiceProgress } from '../services/demoScenario';
 import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
 import {
@@ -17,15 +15,16 @@ import type { VisitCommand, VisitStatus } from '../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../services/visitStatusLabels';
 import type { MarketAction } from '../stores/admin.store';
 import { useRootStore } from '../stores/react/store-context';
+import { AdminDashboardLayout } from './admin/AdminDashboardLayout';
 import { DevModeView } from './admin/DevModeView';
 import { GuestDatabaseView } from './admin/GuestDatabaseView';
 import { QuestionBankView } from './admin/QuestionBankView';
 import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
+import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
 import { SessionView } from './admin/SessionView';
 import type { AdminView, ManualGuest, Question, QueueGuest, SessionSettings } from './admin/types';
-import { EyebrowLabel } from './EyebrowLabel';
 
 export type AdminDashboardProps = {
 	getAccessToken: () => Promise<string>;
@@ -42,136 +41,6 @@ const statuses: VisitStatus[] = [
 	'no_show',
 	'cancelled',
 ];
-
-/*
- * Reports are the one admin screen meant for a desk: a wide table is easier to read than a narrow
- * one, and the rest of the app has no reason to widen with it.
- */
-const Dashboard = styled.section<{ $wide: boolean }>`
-	width: min(100% - 32px, ${({ $wide }) => ($wide ? '1600px' : '1180px')});
-	margin: 0 auto;
-	padding: 30px 0 60px;
-
-	.admin-navigation {
-		display: flex;
-		gap: 8px;
-		margin-bottom: 28px;
-		padding-bottom: 4px;
-		overflow-x: auto;
-	}
-
-	.admin-navigation button {
-		flex: 0 0 auto;
-		min-height: 44px;
-		padding: 0 15px;
-		border: 1.5px solid #c7d2cc;
-		border-radius: var(--radius-pill);
-		color: var(--color-brand);
-		background: white;
-		font-weight: 700;
-		text-transform: capitalize;
-	}
-
-	.admin-navigation button.active {
-		color: var(--color-on-brand);
-		background: var(--color-brand);
-		border-color: var(--color-brand);
-	}
-
-	.admin-content {
-		min-width: 0;
-	}
-
-	.admin-heading {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 18px;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: 28px;
-	}
-
-	.admin-heading h1 {
-		color: var(--color-brand);
-		margin-bottom: 8px;
-	}
-
-	.admin-heading p {
-		color: var(--color-text-subtle);
-		line-height: 1.5;
-	}
-
-	.event-state {
-		padding: 9px 13px;
-		border-radius: var(--radius-pill);
-		background: #e5f4ed;
-		color: #145c3c;
-		font-size: 13px;
-		font-weight: 700;
-	}
-
-	.event-state.registration_closed,
-	.event-state.lottery_pending,
-	.event-state.inactive {
-		background: #fff1d8;
-		color: #7a4b00;
-	}
-
-	.event-state.scheduled {
-		background: #e8f0fb;
-		color: #254d7a;
-	}
-
-	.event-state.service_started {
-		background: #e9e7f9;
-		color: #39306b;
-	}
-
-	.event-state.ended {
-		background: #edf0ee;
-		color: var(--color-text-subtle);
-	}
-
-	.admin-no-access {
-		padding: 24px;
-		border: 1.5px solid #c7d2cc;
-		border-radius: var(--radius-lg);
-		color: var(--color-text-subtle);
-		line-height: 1.5;
-		text-align: center;
-	}
-
-	.admin-feedback {
-		margin-bottom: 16px;
-		padding: 12px 14px;
-		border-radius: var(--radius-sm);
-		background: #eef5f3;
-		color: var(--color-brand);
-	}
-
-	@media (min-width: 860px) {
-		display: grid;
-		grid-template-columns: 210px minmax(0, 1fr);
-		gap: 42px;
-		align-items: start;
-
-		.admin-navigation {
-			position: sticky;
-			top: 24px;
-			display: grid;
-			gap: 8px;
-			margin: 0;
-			overflow: visible;
-		}
-
-		.admin-navigation button {
-			width: 100%;
-			min-height: 50px;
-			border-radius: 12px;
-			text-align: start;
-		}
-	}
-`;
 
 /** The admin area: navigation, the session's status, and whichever screen is selected. */
 export const AdminDashboard = observer(function AdminDashboard({
@@ -267,34 +136,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}, [admin]);
 
 	const statusLabels: Record<VisitStatus, string> = adminVisitStatusLabels(locale);
-	const viewLabels: Record<AdminView, string> = {
-		'current-session': t.currentSession,
-		queue: t.queue,
-		'question-bank': t.questionBank,
-		'guest-database': t.guestDatabase,
-		'session-history': t.historySessions,
-		reports: t.reports,
-		'dev-mode': t.devMode,
-	};
-	const navigation = admin.views.map((id) => ({ id, label: viewLabels[id] }));
-	const feedback = adminFeedbackText(admin.feedback, t);
 	const sessionState = currentSessionState(event?.status);
-	const sessionStatusLabel = (() => {
-		switch (sessionState) {
-			case 'scheduled':
-				return t.scheduled;
-			case 'registration_open':
-				return t.open;
-			case 'registration_closed':
-				return t.closed;
-			case 'lottery_pending':
-				return t.lotteryPending;
-			case 'service_started':
-				return t.serviceStarted;
-			default:
-				return t.noActiveSession;
-		}
-	})();
 	/** With no session configured there is nothing to add a guest to. */
 	const sessionAdmissions: GuestAdmission[] = event ? admissionsFor(event.status) : [];
 	const currentSessionGuests = admin.sessionGuests
@@ -414,128 +256,86 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}
 
 	return (
-		<Dashboard className="admin-dashboard" $wide={activeView === 'reports'}>
-			<nav className="admin-navigation" aria-label={t.adminTitle}>
-				{navigation.map((item) => (
-					<button
-						key={item.id}
-						type="button"
-						className={activeView === item.id ? 'active' : undefined}
-						aria-current={activeView === item.id ? 'page' : undefined}
-						onClick={() => navigate(item.id)}
-					>
-						{item.label}
-					</button>
-				))}
-			</nav>
-
-			{/* Signed in, but holding no role yet. Saying so beats an admin area with nothing in it. */}
-			{!navigation.length ? (
-				<p className="admin-no-access" role="status">
-					{t.noAccess}
-				</p>
+		<AdminDashboardLayout activeView={activeView} onNavigate={navigate}>
+			{activeView === 'current-session' ? (
+				<SessionView
+					settings={settings}
+					onSettingsChange={setSettings}
+					extensionMinutes={extensionMinutes}
+					onExtensionMinutesChange={setExtensionMinutes}
+					postponementMinutes={postponementMinutes}
+					onPostponementMinutesChange={setPostponementMinutes}
+					event={event}
+					sessionState={sessionState}
+					statuses={statuses}
+					counts={counts}
+					statusLabels={statusLabels}
+					registeredGuests={registeredSessionGuests}
+					admissions={sessionAdmissions}
+					busy={admin.isBusy}
+					onSaveSettings={() => void saveSettings()}
+					onSaveAndStartRegistration={() => void saveAndStartRegistration()}
+					onPostponeRegistration={() => void postponeRegistration()}
+					onExtendRegistration={() => void extendRegistration()}
+					onSaveCapacityOverride={() => void saveCapacityOverride()}
+					onRun={(action) => void runMarketAction(action as MarketAction)}
+					onAddGuest={(guest) => void addManualGuest(guest)}
+					onNavigateQueue={() => navigate('queue')}
+				/>
+			) : activeView === 'queue' ? (
+				<QueueView
+					guests={currentSessionGuests}
+					counts={counts}
+					statusLabels={statusLabels}
+					serviceStarted={sessionState === 'service_started'}
+					admissions={sessionAdmissions}
+					busy={admin.isBusy}
+					onCallNext={(count) => void admin.callNext(count)}
+					onRun={(guest, command) => void runGuestCommand(guest, command)}
+					onAddGuest={(guest) => void addManualGuest(guest)}
+					onCloseSession={() => void runMarketAction('close_session')}
+					onNavigateCurrentSession={() => navigate('current-session')}
+				/>
+			) : activeView === 'broadcast' ? (
+				<SessionBroadcastForm
+					broadcast={broadcast}
+					onBroadcastChange={setBroadcast}
+					onSend={() => void sendBroadcast()}
+				/>
+			) : activeView === 'question-bank' ? (
+				<QuestionBankView
+					questions={questions}
+					onQuestionsChange={setQuestions}
+					busy={admin.isBusy}
+					editable={event === null || event.status === 'draft'}
+					onSave={() => void saveSettings()}
+				/>
+			) : activeView === 'reports' ? (
+				<ReportsView getAccessToken={getAccessToken} canExport={admin.can('export:guest-data')} />
+			) : activeView === 'guest-database' ? (
+				<GuestDatabaseView
+					searchQuery={searchQuery}
+					onSearchQueryChange={setSearchQuery}
+					guests={admin.guests}
+					statusLabels={statusLabels}
+					admissions={sessionAdmissions}
+					busy={admin.isBusy}
+					onSearch={() => void admin.searchGuests(searchQuery)}
+					onRun={(guest, command) => void runGuestCommand(guest, command)}
+					onAddGuest={(guest) => void addManualGuest(guest)}
+				/>
+			) : activeView === 'dev-mode' ? (
+				<DevModeView
+					busy={admin.isBusy}
+					onLoad={(stage, progress) => void loadScenario(stage, progress)}
+				/>
 			) : (
-				<div className="admin-content">
-					{/* The queue view drops the eyebrow and description: during service this is the only
-					    screen a worker uses, and that chrome pushes the controls off a phone screen. */}
-					<header className={`admin-heading${activeView === 'queue' ? ' compact' : ''}`}>
-						<div>
-							{activeView !== 'queue' ? <EyebrowLabel tone="brand" label={t.adminEyebrow} /> : null}
-							<h1>{navigation.find((item) => item.id === activeView)?.label}</h1>
-							{activeView !== 'queue' ? <p>{t.adminDescription}</p> : null}
-						</div>
-						{activeView === 'current-session' || activeView === 'queue' ? (
-							<span className={`event-state ${sessionState}`}>{sessionStatusLabel}</span>
-						) : null}
-					</header>
-
-					{feedback ? (
-						<p className="admin-feedback" role="status">
-							{feedback}
-						</p>
-					) : null}
-
-					{activeView === 'current-session' ? (
-						<SessionView
-							settings={settings}
-							onSettingsChange={setSettings}
-							extensionMinutes={extensionMinutes}
-							onExtensionMinutesChange={setExtensionMinutes}
-							postponementMinutes={postponementMinutes}
-							onPostponementMinutesChange={setPostponementMinutes}
-							broadcast={broadcast}
-							onBroadcastChange={setBroadcast}
-							event={event}
-							sessionState={sessionState}
-							statuses={statuses}
-							counts={counts}
-							statusLabels={statusLabels}
-							registeredGuests={registeredSessionGuests}
-							admissions={sessionAdmissions}
-							busy={admin.isBusy}
-							onSaveSettings={() => void saveSettings()}
-							onSaveAndStartRegistration={() => void saveAndStartRegistration()}
-							onPostponeRegistration={() => void postponeRegistration()}
-							onExtendRegistration={() => void extendRegistration()}
-							onSaveCapacityOverride={() => void saveCapacityOverride()}
-							onRun={(action) => void runMarketAction(action as MarketAction)}
-							onAddGuest={(guest) => void addManualGuest(guest)}
-							onSendBroadcast={() => void sendBroadcast()}
-							onNavigateQueue={() => navigate('queue')}
-						/>
-					) : activeView === 'queue' ? (
-						<QueueView
-							guests={currentSessionGuests}
-							counts={counts}
-							statusLabels={statusLabels}
-							serviceStarted={sessionState === 'service_started'}
-							admissions={sessionAdmissions}
-							busy={admin.isBusy}
-							onCallNext={(count) => void admin.callNext(count)}
-							onRun={(guest, command) => void runGuestCommand(guest, command)}
-							onAddGuest={(guest) => void addManualGuest(guest)}
-							onCloseSession={() => void runMarketAction('close_session')}
-							onNavigateCurrentSession={() => navigate('current-session')}
-						/>
-					) : activeView === 'question-bank' ? (
-						<QuestionBankView
-							questions={questions}
-							onQuestionsChange={setQuestions}
-							busy={admin.isBusy}
-							editable={event === null || event.status === 'draft'}
-							onSave={() => void saveSettings()}
-						/>
-					) : activeView === 'reports' ? (
-						<ReportsView
-							getAccessToken={getAccessToken}
-							canExport={admin.can('export:guest-data')}
-						/>
-					) : activeView === 'guest-database' ? (
-						<GuestDatabaseView
-							searchQuery={searchQuery}
-							onSearchQueryChange={setSearchQuery}
-							guests={admin.guests}
-							statusLabels={statusLabels}
-							admissions={sessionAdmissions}
-							busy={admin.isBusy}
-							onSearch={() => void admin.searchGuests(searchQuery)}
-							onRun={(guest, command) => void runGuestCommand(guest, command)}
-							onAddGuest={(guest) => void addManualGuest(guest)}
-						/>
-					) : activeView === 'dev-mode' ? (
-						<DevModeView
-							busy={admin.isBusy}
-							onLoad={(stage, progress) => void loadScenario(stage, progress)}
-						/>
-					) : (
-						<SessionHistoryView
-							history={admin.history}
-							busy={admin.isBusy}
-							onAddGuest={(guest, marketEventId) => void addManualGuest(guest, marketEventId)}
-						/>
-					)}
-				</div>
+				<SessionHistoryView
+					history={admin.history}
+					busy={admin.isBusy}
+					onAddGuest={(guest, marketEventId) => void addManualGuest(guest, marketEventId)}
+				/>
 			)}
-		</Dashboard>
+		</AdminDashboardLayout>
 	);
 });

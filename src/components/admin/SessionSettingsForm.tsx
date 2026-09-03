@@ -55,7 +55,6 @@ export function SessionSettingsForm({
 
 	return (
 		<Section className="admin-section settings-card">
-			<h2>{t.registrationSettings}</h2>
 			<p>{t.startSessionHelp}</p>
 			<form onSubmit={handleSubmit}>
 				<label>
