@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=8c6fd77a392f -->
+<!-- diagram-sources: db/schema.mts=e32f929ed0c9 -->
 
 # Database structure
 
@@ -21,7 +21,6 @@ erDiagram
     visits ||--o| push_subscriptions : "notifies"
     guests ||--o| sms_subscriptions : "consents"
     visits ||--o{ notification_deliveries : "queues"
-    guests ||..o| guest_pin_attempts : "matched by normalized_phone (no foreign key)"
 
     market_events {
         uuid id PK
@@ -51,7 +50,6 @@ erDiagram
         text phone
         text normalized_phone
 		text device_token_hash UK "nullable; authenticates self-service sign-ups from one browser"
-		text pin_hash "retired credential; retained pending a later cleanup migration"
         text locale
         timestamptz created_at
     }
@@ -109,13 +107,6 @@ erDiagram
         timestamptz consented_at
         timestamptz created_at
     }
-
-    guest_pin_attempts {
-        text normalized_phone PK
-        integer failure_count
-        timestamptz window_started_at
-        timestamptz locked_until
-    }
 ```
 
 A few things the diagram can't show on its own:
@@ -137,8 +128,7 @@ A few things the diagram can't show on its own:
   food outside the app, and stamping a time would be inventing one.
 - **The device token is the self-service guest credential.** The opaque token exists only in the
   browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
-  an admin have no device credential. The retired `pin_hash` and `guest_pin_attempts` data remain
-  only so removing them can happen in a separately reviewed, destructive migration.
+  an admin have no device credential.
 - **`visits.normalized_phone` preserves the submitted phone number in normalized form.** Renewed
   information can update the long-lived guest profile without erasing the phone signal that was
   present on an earlier visit, so later analysis can reconcile possible duplicate guest records.

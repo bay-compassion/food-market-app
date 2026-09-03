@@ -169,8 +169,7 @@ async function main() {
 				visits,
 				registration_questions,
 				market_events,
-				guests,
-				guest_pin_attempts
+				guests
 			CASCADE
 		`);
 		console.log('Cleared every existing row.');
