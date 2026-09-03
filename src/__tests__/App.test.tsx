@@ -609,7 +609,8 @@ describe('App', () => {
 		const user = userEvent.setup();
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await user.click(container.querySelector('.mode-button')!);
+		await user.click(screen.getByRole('button', { name: translations.en.appBar.openMenu }));
+		await user.click(screen.getByRole('menuitem', { name: translations.en.appBar.staffLogin }));
 
 		await waitFor(() =>
 			expect(container.textContent).toContain('We could not verify your admin session'),

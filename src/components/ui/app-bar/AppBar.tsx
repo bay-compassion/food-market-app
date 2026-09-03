@@ -1,63 +1,120 @@
+import styled from '@emotion/styled';
+import MuiAppBar from '@mui/material/AppBar';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
+import Toolbar from '@mui/material/Toolbar';
 import { observer } from 'mobx-react-lite';
-import type { ChangeEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 
 import { languages } from '../../../locales';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import type { Language } from '../../../stores/translation.store';
+import { AppBarMenu } from './AppBarMenu';
 
-/**
- * The bar across the top of every screen: the mark, the language picker, and the guest/admin
- * toggle. Its styles live in `app-shell.css` rather than here, since the shell they belong to is
- * shared with the layout around it.
- */
+const Brand = styled(Link)`
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	min-width: 0;
+	color: inherit;
+	font-family: var(--font-heading);
+	font-weight: 700;
+	font-size: 14.5px;
+	text-transform: uppercase;
+	text-decoration: none;
+
+	img {
+		flex-shrink: 0;
+		width: 28px;
+		height: 28px;
+		object-fit: contain;
+		border-radius: var(--radius-sm);
+	}
+`;
+
+const LanguagePicker = styled(Select)`
+	flex-shrink: 0;
+	color: var(--color-on-brand);
+	font-size: 15px;
+	font-weight: 600;
+
+	/* Override MUI's native select padding so the chevron follows the writing direction. */
+	&&& .MuiNativeSelect-select {
+		min-height: 46px;
+		padding: 0;
+		padding-inline: 8px 24px;
+		border-radius: var(--radius-sm);
+		background: transparent;
+
+		&:focus-visible {
+			outline: 3px solid var(--color-focus);
+			outline-offset: 2px;
+		}
+	}
+
+	.MuiNativeSelect-icon {
+		right: auto;
+		inset-inline-end: 0;
+		color: inherit;
+	}
+
+	option {
+		color: var(--color-brand);
+		background: var(--color-background);
+	}
+`;
+
+const Actions = styled.div`
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+`;
+
+/** Shared branding, guest language selection, and secondary navigation. */
 export const AppBar = observer(function AppBar() {
 	const t = useTranslation();
 	const { guest, translations } = useRootStore();
-	const navigate = useNavigate();
-	const isAdmin = useLocation().pathname.startsWith('/admin');
 
-	function setLocale(event: ChangeEvent<HTMLSelectElement>) {
+	function setLocale(event: SelectChangeEvent<unknown>) {
 		translations.setLanguage(event.target.value as Language);
 	}
 
 	return (
-		<header className="topbar">
-			<Link className="brand" to="/">
-				<img className="brand-mark" src="/bay-compassion-logo.png" alt="" />
-				<span>{t.marketName}</span>
-			</Link>
-			<div className="header-actions">
-				{guest.isReturningVisitor ? (
-					<label className="language-picker">
-						<span className="sr-only">{t.language}</span>
-						<select value={translations.locale} aria-label={t.language} onChange={setLocale}>
+		<MuiAppBar
+			className="topbar"
+			position="sticky"
+			elevation={0}
+			sx={{ bgcolor: 'var(--color-brand)', color: 'var(--color-on-brand)' }}
+		>
+			<Toolbar
+				disableGutters
+				sx={{ minHeight: { xs: 60, sm: 60 }, px: '20px', gap: 1, justifyContent: 'space-between' }}
+			>
+				<Brand to="/">
+					<img src="/bay-compassion-logo.png" alt="" />
+					<span>{t.marketName}</span>
+				</Brand>
+				<Actions>
+					{guest.isReturningVisitor ? (
+						<LanguagePicker
+							native
+							variant="standard"
+							disableUnderline
+							value={translations.locale}
+							inputProps={{ 'aria-label': t.language }}
+							onChange={setLocale}
+						>
 							{languages.map((language) => (
 								<option key={language.code} value={language.code}>
 									{language.label}
 								</option>
 							))}
-						</select>
-					</label>
-				) : null}
-				<button
-					className="mode-button"
-					type="button"
-					onClick={() => void navigate(isAdmin ? '/' : '/admin')}
-				>
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						aria-hidden="true"
-					>
-						<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0" />
-					</svg>
-					{isAdmin ? t.guest : t.admin}
-				</button>
-			</div>
-		</header>
+						</LanguagePicker>
+					) : null}
+					<AppBarMenu />
+				</Actions>
+			</Toolbar>
+		</MuiAppBar>
 	);
 });
