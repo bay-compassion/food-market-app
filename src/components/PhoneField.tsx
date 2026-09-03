@@ -1,5 +1,6 @@
+import { TextField } from '@mui/material';
+
 import { formatUsPhone } from '../services/phoneFormat';
-import { FormField } from './FormField';
 
 export type PhoneFieldProps = {
 	label: string;
@@ -11,7 +12,7 @@ export type PhoneFieldProps = {
 };
 
 /**
- * A `FormField` specialised for US phone numbers: it formats digits into `(555) 123-4567` as the
+ * A text field specialised for US phone numbers: it formats digits into `(555) 123-4567` as the
  * guest types, rather than leaving them to type the punctuation themselves. The app only serves
  * US guests today, so there's no attempt at other countries' formats.
  */
@@ -24,16 +25,15 @@ export function PhoneField({
 	placeholder = '(555) 123-4567',
 }: PhoneFieldProps) {
 	return (
-		<FormField
+		<TextField
 			label={label}
 			value={value}
-			onChange={(next) => onChange(String(next))}
+			onChange={(event) => onChange(formatUsPhone(event.target.value))}
 			type="tel"
-			inputmode="tel"
+			slotProps={{ htmlInput: { inputMode: 'tel' } }}
 			required={required}
-			autocomplete={autocomplete}
+			autoComplete={autocomplete}
 			placeholder={placeholder}
-			format={formatUsPhone}
 		/>
 	);
 }

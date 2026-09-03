@@ -1,10 +1,10 @@
+import { TextField } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { ageRanges, type AgeRange } from '../../../services/ageRanges';
 import type { SessionQuestion } from '../../../stores/market-session.store';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
-import { FormField, type FormFieldOption } from '../../FormField';
 import { NumberSpinner } from '../../NumberSpinner';
 import { FormSection } from './FormSection';
 
@@ -39,15 +39,6 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 		'60-74': t.ageRange60to74,
 		'75+': t.ageRange75plus,
 	};
-	const ageOptions: FormFieldOption[] = [
-		{ value: '', label: t.agePlaceholder, disabled: true },
-		...ageRanges.map((range) => ({ value: range, label: ageRangeLabels[range] })),
-	];
-
-	const scaleOptions: FormFieldOption[] = [
-		{ value: '', label: t.chooseAnswer, disabled: true },
-		...scaleValues.map((value) => ({ value: String(value), label: String(value) })),
-	];
 
 	/** The three counts differ only in their label, hint, and floor, so they share the rest. */
 	const countProps = {
@@ -60,14 +51,25 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 	return (
 		<>
 			<FormSection legend={t.guestView.forms.lotteryLegend}>
-				<FormField
+				<TextField
 					label={t.age}
-					type="select"
+					select
+					slotProps={{ select: { native: true } }}
 					value={guest.ageRange}
-					onChange={(value) => registration.updateGuest({ ageRange: value as AgeRange | '' })}
+					onChange={(event) =>
+						registration.updateGuest({ ageRange: event.target.value as AgeRange | '' })
+					}
 					required
-					options={ageOptions}
-				/>
+				>
+					<option value="" disabled>
+						{t.agePlaceholder}
+					</option>
+					{ageRanges.map((range) => (
+						<option key={range} value={range}>
+							{ageRangeLabels[range]}
+						</option>
+					))}
+				</TextField>
 				<NumberSpinner
 					{...countProps}
 					label={t.household}
@@ -97,28 +99,38 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 				<FormSection legend={t.guestView.forms.questionsLegend}>
 					{registrationQuestions.map((question) =>
 						question.type === 'scale' ? (
-							<FormField
+							<TextField
 								key={question.id}
 								label={question.prompt}
-								type="select"
+								select
+								slotProps={{ select: { native: true } }}
 								value={registration.registrationAnswers[question.id] ?? ''}
-								// The scale is stored as a number, matching the `v-model.number` this
-								// replaced — the answers go to the API as they are held here.
-								onChange={(value) => registration.setAnswer(question.id, Number(value))}
+								// Scale answers are sent to the API as numbers.
+								onChange={(event) =>
+									registration.setAnswer(question.id, Number(event.target.value))
+								}
 								required={question.required}
-								options={scaleOptions}
-							/>
+							>
+								<option value="" disabled>
+									{t.chooseAnswer}
+								</option>
+								{scaleValues.map((value) => (
+									<option key={value} value={value}>
+										{value}
+									</option>
+								))}
+							</TextField>
 						) : (
-							<FormField
+							<TextField
 								key={question.id}
 								label={question.prompt}
-								type="textarea"
+								multiline
 								rows={3}
 								value={registration.registrationAnswers[question.id] ?? ''}
-								onChange={(value) => registration.setAnswer(question.id, value)}
+								onChange={(event) => registration.setAnswer(question.id, event.target.value)}
 								// Trimmed on the way out rather than on every keystroke: trimming as the
 								// guest types would eat the space between words as soon as it was pressed.
-								onBlur={(value) => registration.setAnswer(question.id, value.trim())}
+								onBlur={(event) => registration.setAnswer(question.id, event.target.value.trim())}
 								required={question.required}
 							/>
 						),

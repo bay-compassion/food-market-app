@@ -4,16 +4,13 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState, type FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { ageRanges, type AgeRange } from '../../services/ageRanges';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import {
 	lotteryWeightFor,
 	lotteryWeightTiers,
 	type LotteryWeightTier,
 } from '../../services/lotteryWeight';
-import { useTranslation } from '../../stores/react/use-translation';
-import { FormField, type FormFieldOption } from '../FormField';
-import { PhoneField } from '../PhoneField';
+import { ManualGuestDetails } from './ManualGuestDetails';
 import type { ManualGuest } from './types';
 
 export type ManualGuestFormProps = {
@@ -60,7 +57,6 @@ export const ManualGuestForm = observer(function ManualGuestForm({
 	onCancel,
 }: ManualGuestFormProps) {
 	const t = adminTranslations.en;
-	const base = useTranslation();
 	const [guest, setGuest] = useState(() => emptyGuest(admissions[0] ?? 'queue'));
 
 	// The session can move on while the form sits open, so never leave an illegal choice selected.
@@ -81,18 +77,6 @@ export const ManualGuestForm = observer(function ManualGuestForm({
 		onSubmit({ ...guest });
 	}
 
-	const ageRangeLabels: Record<AgeRange, string> = {
-		'0-17': base.ageRange0to17,
-		'18-29': base.ageRange18to29,
-		'30-44': base.ageRange30to44,
-		'45-59': base.ageRange45to59,
-		'60-74': base.ageRange60to74,
-		'75+': base.ageRange75plus,
-	};
-	const ageOptions: FormFieldOption[] = [
-		{ value: '', label: base.agePlaceholder, disabled: true },
-		...ageRanges.map((range) => ({ value: range, label: ageRangeLabels[range] })),
-	];
 	const admissionLabels: Record<GuestAdmission, string> = {
 		lottery: t.admitToLottery,
 		queue: t.admitToQueue,
@@ -112,63 +96,7 @@ export const ManualGuestForm = observer(function ManualGuestForm({
 	return (
 		<Form className="manual-form" onSubmit={handleSubmit}>
 			<h3>{t.manualGuestTitle}</h3>
-			<FormField
-				label={base.firstName}
-				value={guest.firstName}
-				onChange={(value) => update({ firstName: String(value) })}
-				required
-			/>
-			<FormField
-				label={base.lastName}
-				value={guest.lastName}
-				onChange={(value) => update({ lastName: String(value) })}
-				required
-			/>
-			<div className="field-row">
-				<FormField
-					label={base.age}
-					type="select"
-					value={guest.ageRange}
-					onChange={(value) => update({ ageRange: value as AgeRange | '' })}
-					required
-					options={ageOptions}
-				/>
-				<FormField
-					label={base.household}
-					type="number"
-					min={1}
-					max={30}
-					value={guest.householdSize}
-					onChange={(value) => update({ householdSize: value })}
-					required
-				/>
-			</div>
-			<div className="field-row">
-				<FormField
-					label={base.childrenCount}
-					type="number"
-					min={0}
-					max={30}
-					value={guest.childrenCount}
-					onChange={(value) => update({ childrenCount: value })}
-					required
-				/>
-				<FormField
-					label={base.seniorsCount}
-					type="number"
-					min={0}
-					max={30}
-					value={guest.seniorsCount}
-					onChange={(value) => update({ seniorsCount: value })}
-					required
-				/>
-			</div>
-			<PhoneField
-				label={base.phone}
-				value={guest.phone}
-				onChange={(value) => update({ phone: value })}
-				required
-			/>
+			<ManualGuestDetails guest={guest} onChange={update} />
 			{admissions.length > 1 ? (
 				<label>
 					<span>{t.admissionLabel}</span>

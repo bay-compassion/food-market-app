@@ -1,3 +1,4 @@
+import FormLabel from '@mui/material/FormLabel';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';
 import { createTheme } from '@mui/material/styles';
 
@@ -62,6 +63,7 @@ export const appTheme = createTheme({
 		MuiButton: {
 			defaultProps: {
 				variant: 'contained',
+				size: 'large',
 			},
 		},
 		MuiCard: {
@@ -113,6 +115,19 @@ export const appTheme = createTheme({
 					fontWeight: 700,
 					lineHeight: 1.2,
 					'&.Mui-focused': { color: 'var(--color-text)' },
+				},
+			},
+		},
+		MuiTextField: {
+			defaultProps: {
+				fullWidth: true,
+				// Keep labels above the control and mark required fields through their copy.
+				// The input still carries `required` for native validation.
+				slots: { inputLabel: FormLabel },
+				slotProps: {
+					inputLabel: { required: false },
+					// An external label needs no duplicate inside the outline's hidden legend.
+					input: { label: '', notched: false },
 				},
 			},
 		},
