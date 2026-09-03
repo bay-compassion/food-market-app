@@ -8,6 +8,9 @@ import {
 	type Permission,
 } from '../../src/services/permissions.js';
 
+// Keep jose's key cache, refresh cooldown, and in-flight fetch deduplication across warm requests.
+let cachedJwks: { issuer: string; resolve: ReturnType<typeof createRemoteJWKSet> } | undefined;
+
 function auth0Settings() {
 	const issuer = (process.env.AUTH0_ISSUER ?? process.env.VITE_AUTH0_ISSUER)?.replace(/\/?$/, '/');
 	const audience = process.env.AUTH0_AUDIENCE ?? process.env.VITE_AUTH0_AUDIENCE;
@@ -28,9 +31,15 @@ export async function verifyAuth0Token(request: Request) {
 	}
 
 	const { issuer, audience } = auth0Settings();
-	const jwks = createRemoteJWKSet(new URL('.well-known/jwks.json', issuer));
 
-	return jwtVerify(match[1]!, jwks, {
+	if (cachedJwks?.issuer !== issuer) {
+		cachedJwks = {
+			issuer,
+			resolve: createRemoteJWKSet(new URL('.well-known/jwks.json', issuer)),
+		};
+	}
+
+	return jwtVerify(match[1]!, cachedJwks.resolve, {
 		issuer,
 		audience,
 		algorithms: ['RS256'],
@@ -45,16 +54,25 @@ export async function verifyAuth0Token(request: Request) {
  * not help. The browser needs to tell those apart — retrying the first is right and retrying the
  * second is a loop.
  */
-export async function requirePermission(request: Request, permission: Permission) {
-	let claims;
+export async function requirePermission(
+	request: Request,
+	permission: Permission,
+	verifiedPermissions?: Permission[],
+) {
+	let permissions = verifiedPermissions;
 
 	try {
-		claims = await verifyAuth0Token(request);
+		// Standalone route handlers still fail closed without the parent middleware.
+		if (!permissions) {
+			const { payload } = await verifyAuth0Token(request);
+
+			permissions = grantedPermissions(payload.permissions);
+		}
 	} catch {
 		return Response.json({ error: 'Authorization required.' }, { status: 401 });
 	}
 
-	if (!hasPermission(grantedPermissions(claims.payload.permissions), permission)) {
+	if (!hasPermission(permissions, permission)) {
 		return Response.json({ error: 'Your account does not have access to this.' }, { status: 403 });
 	}
 

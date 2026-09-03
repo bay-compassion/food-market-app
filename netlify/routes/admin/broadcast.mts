@@ -1,16 +1,18 @@
-import type { Config } from '@netlify/functions';
 import { and, desc, eq, ne, or, isNotNull } from 'drizzle-orm';
 
-import { db } from '../../db/index.mjs';
-import { marketEvents, pushSubscriptions, smsSubscriptions, visits } from '../../db/schema.mjs';
-import { requirePermission } from '../lib/auth.mjs';
-import { deliverQueuedNotifications, queueNotification } from '../services/notifications.mjs';
-import { pushConfiguration } from '../services/pushNotifications.mjs';
-import { smsConfiguration } from '../services/smsNotifications.mjs';
-
-function error(message: string, status = 400) {
-	return Response.json({ error: message }, { status });
-}
+import { db } from '../../../db/index.mjs';
+import { marketEvents, pushSubscriptions, smsSubscriptions, visits } from '../../../db/schema.mjs';
+import { withPermission } from '../../lib/http-auth.mjs';
+import {
+	createRouter,
+	jsonBody,
+	jsonError,
+	methodNotAllowed,
+	routeHandler,
+} from '../../lib/http.mjs';
+import { deliverQueuedNotifications, queueNotification } from '../../services/notifications.mjs';
+import { pushConfiguration } from '../../services/pushNotifications.mjs';
+import { smsConfiguration } from '../../services/smsNotifications.mjs';
 
 function parseBroadcast(value: unknown) {
 	if (!value || typeof value !== 'object') {
@@ -27,31 +29,18 @@ function parseBroadcast(value: unknown) {
 	return { title, body: message };
 }
 
-export default async (request: Request) => {
-	if (request.method !== 'POST') {
-		return error('Method not allowed', 405);
-	}
-	const forbidden = await requirePermission(request, 'manage:sessions');
+export const broadcastRoutes = createRouter();
 
-	if (forbidden) {
-		return forbidden;
-	}
-
+broadcastRoutes.post('/broadcast', withPermission('manage:sessions'), async (context) => {
 	if (!pushConfiguration().configured && !smsConfiguration().configured) {
-		return error('Notifications are not configured.', 503);
+		return jsonError('Notifications are not configured.', 503);
 	}
 
-	let value: unknown;
-
-	try {
-		value = await request.json();
-	} catch {
-		return error('Request body must be valid JSON.');
-	}
+	const value = await jsonBody(context.req.raw);
 	const broadcast = parseBroadcast(value);
 
 	if (!broadcast) {
-		return error('Please provide a title and message.');
+		return jsonError('Please provide a title and message.');
 	}
 
 	const [event] = await db
@@ -67,7 +56,7 @@ export default async (request: Request) => {
 			event.status,
 		)
 	) {
-		return error('Broadcasts require an active session.', 409);
+		return jsonError('Broadcasts require an active session.', 409);
 	}
 
 	const recipients = await db
@@ -103,6 +92,7 @@ export default async (request: Request) => {
 	});
 
 	return Response.json({ queued: recipients.length, sent: result.sent });
-};
+});
+broadcastRoutes.all('/broadcast', methodNotAllowed);
 
-export const config: Config = { path: '/api/broadcast' };
+export default routeHandler(createRouter().route('/api/admin', broadcastRoutes));

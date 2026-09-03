@@ -5,11 +5,11 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
-import handler from '../../functions/reports.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import handler from '../../routes/admin/reports.mjs';
 
 function request(query = '?report=session-summary&from=2026-01-01&to=2026-08-08') {
-	return new Request(`https://example.com/api/reports${query}`);
+	return new Request(`https://example.com/api/admin/reports${query}`);
 }
 
 afterEach(() => {
@@ -20,7 +20,7 @@ afterEach(() => {
 describe('reports handler', () => {
 	it('returns 405 for anything but GET', async () => {
 		const response = await handler(
-			new Request('https://example.com/api/reports', { method: 'POST' }),
+			new Request('https://example.com/api/admin/reports', { method: 'POST' }),
 		);
 
 		expect(response.status).toBe(405);
@@ -33,7 +33,9 @@ describe('reports handler', () => {
 
 		const response = await handler(request());
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.execute).not.toHaveBeenCalled();
 	});
 
@@ -78,6 +80,8 @@ describe('reports handler', () => {
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get('Content-Type')).toBe('text/csv; charset=utf-8');
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
+		expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
 		expect(response.headers.get('Content-Disposition')).toContain(
 			'visits_2026-01-01_2026-08-08.csv',
 		);

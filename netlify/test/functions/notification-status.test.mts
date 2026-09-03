@@ -5,8 +5,8 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/deviceAuth.mjs', () => ({ authorizedGuest: vi.fn() }));
 
-import handler from '../../functions/notification-status.mjs';
 import { authorizedGuest } from '../../lib/deviceAuth.mjs';
+import handler from '../../routes/notifications/notification-status.mjs';
 
 afterEach(() => {
 	resetDbStub();

@@ -133,7 +133,7 @@ describe('MarketSessionStore', () => {
 		).resolves.toBe(true);
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/market',
+			'/api/admin/market',
 			expect.objectContaining({ method: 'PUT' }),
 		);
 		expect(store.currentState).toEqual(overview(scheduledEvent));

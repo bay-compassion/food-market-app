@@ -10,9 +10,11 @@ conversations with an AI coding agent — using this app's own files as examples
 and forms. In this repo that's everything in `src/`. It's built with React (see below).
 
 **The backend** is code that runs on a server, not in anyone's browser. In this repo that's
-`netlify/functions/` — small programs that handle things like "someone submitted a check-in form"
-or "an admin wants to run the lottery." Each file corresponds to one API endpoint (for example,
-`netlify/functions/guests.mts` handles guest registration).
+`netlify/` — code that handles things like "someone submitted a check-in form" or "an admin wants
+to run the lottery." `netlify/functions/api.mts` is the main HTTP entry point. Public registration
+writes use `netlify/functions/registration.mts` so their rate limit does not affect guests polling
+their place in the queue. Both use Hono to route requests to handlers under `netlify/routes/`,
+organized by feature. The scheduled notification job remains a separate function.
 
 **The database** is where the actual data lives long-term — every guest, every market session,
 every visit. It's a separate system entirely (this app uses Netlify DB, backed by Postgres), and
@@ -33,12 +35,13 @@ The database, in turn, is only ever reached through the backend, never directly 
 
 An **API** (application programming interface) is the agreed-upon way two separate programs talk
 to each other — here, how the frontend running in a browser asks the backend to do something. Each
-**endpoint** is one specific thing the backend can be asked to do. In this repo, each file in
-`netlify/functions/` is one endpoint: `netlify/functions/guest-information.mts`, for example, is
-the `/api/guest-information` endpoint and saves a guest's identity without registering a visit.
-`netlify/functions/lottery-registration.mts` owns lottery entry, while `/api/guests` is reserved
-for authenticated administrative listing and commands. When you read that "the frontend calls an
-API," it means the browser sent a request to one of these files and is waiting for a response back.
+**endpoint** is one specific thing the backend can be asked to do. For example,
+`netlify/routes/guests/guest-information.mts` handles `/api/guest-information` and saves a guest's
+identity without registering a visit. The neighboring `lottery-registration.mts` handles lottery
+entry, while `/api/admin/guests` is reserved for authenticated administrative listing and commands.
+Each endpoint has explicit HTTP methods and authorization rules, with a shared HTTP security
+boundary described in [`server-security.md`](server-security.md). When you read that "the frontend
+calls an API," it means the browser sent a request to an endpoint and is waiting for a response back.
 
 ## Authentication vs. authorization
 

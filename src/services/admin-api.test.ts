@@ -68,7 +68,7 @@ describe('AdminApi', () => {
 		await api.listAllGuests('  ada  ');
 
 		// Assert
-		expect(calls[0]!.url).toBe('/api/guests?scope=all&q=ada');
+		expect(calls[0]!.url).toBe('/api/admin/guests?scope=all&q=ada');
 	});
 
 	it('omits an empty search term entirely', async () => {
@@ -79,7 +79,7 @@ describe('AdminApi', () => {
 		await api.listAllGuests('   ');
 
 		// Assert
-		expect(calls[0]!.url).toBe('/api/guests?scope=all');
+		expect(calls[0]!.url).toBe('/api/admin/guests?scope=all');
 	});
 
 	it('translates a lottery tier into the multiplier the API takes', async () => {

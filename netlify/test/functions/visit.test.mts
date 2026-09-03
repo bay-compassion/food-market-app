@@ -4,7 +4,7 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
 
-import handler from '../../functions/visit.mjs';
+import handler from '../../routes/guests/visit.mjs';
 
 const validToken = 'a'.repeat(40);
 

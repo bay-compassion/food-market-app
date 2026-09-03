@@ -11,14 +11,14 @@ vi.mock('../../services/notifications.mjs', () => ({
 	deliverQueuedNotifications: vi.fn(),
 }));
 
-import handler from '../../functions/broadcast.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import handler from '../../routes/admin/broadcast.mjs';
 import { deliverQueuedNotifications, queueNotification } from '../../services/notifications.mjs';
 import { pushConfiguration } from '../../services/pushNotifications.mjs';
 import { smsConfiguration } from '../../services/smsNotifications.mjs';
 
 function request(body?: unknown, rawBody?: string) {
-	return new Request('https://example.com/api/broadcast', {
+	return new Request('https://example.com/api/admin/broadcast', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: rawBody ?? (body !== undefined ? JSON.stringify(body) : undefined),
@@ -36,7 +36,7 @@ afterEach(() => {
 
 describe('broadcast handler', () => {
 	it('returns 405 for non-POST requests', async () => {
-		const response = await handler(new Request('https://example.com/api/broadcast'));
+		const response = await handler(new Request('https://example.com/api/admin/broadcast'));
 
 		expect(response.status).toBe(405);
 		expect(requirePermission).not.toHaveBeenCalled();
@@ -49,7 +49,9 @@ describe('broadcast handler', () => {
 
 		const response = await handler(request({ title: 'Hi', body: 'Hello' }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 	});
 
 	it('returns 503 when neither push nor SMS notifications are configured', async () => {

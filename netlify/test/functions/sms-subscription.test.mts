@@ -10,8 +10,8 @@ vi.mock('../../services/smsNotifications.mjs', () => ({
 	smsConfiguration: vi.fn(),
 }));
 
-import handler from '../../functions/sms-subscription.mjs';
 import { authorizedGuest } from '../../lib/deviceAuth.mjs';
+import handler from '../../routes/notifications/sms-subscription.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import {
 	deliverPendingSmsNotifications,
@@ -25,6 +25,10 @@ function request(method: string, options: { token?: string; body?: unknown } = {
 
 	if (options.token) {
 		headers.set('Authorization', `Bearer ${options.token}`);
+	}
+
+	if (options.body !== undefined) {
+		headers.set('Content-Type', 'application/json');
 	}
 
 	return new Request('https://example.com/api/sms-subscription', {

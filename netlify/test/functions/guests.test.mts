@@ -5,11 +5,11 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
-import handler from '../../functions/guests.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import handler from '../../routes/admin/guests.mjs';
 
 function request(method: string, options: { path?: string; body?: unknown } = {}) {
-	return new Request(`https://example.com/api/guests${options.path ?? ''}`, {
+	return new Request(`https://example.com/api/admin/guests${options.path ?? ''}`, {
 		method,
 		headers: options.body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
 		body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
@@ -37,7 +37,9 @@ describe('guests handler GET (admin: requires Auth0)', () => {
 
 		const response = await handler(request('GET'));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
@@ -60,7 +62,9 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 
 		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.transaction).not.toHaveBeenCalled();
 	});
 
@@ -134,7 +138,9 @@ describe('guests handler POST (admin only)', () => {
 			}),
 		);
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.select).not.toHaveBeenCalled();
 	});
 

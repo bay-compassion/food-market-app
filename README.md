@@ -73,7 +73,7 @@ To work only on the frontend, you can also run:
 npm run dev
 ```
 
-This Vite server does not run the `/api/guests` Netlify Function.
+This Vite server does not run the Netlify API function, including `/api/admin/guests`.
 
 ### Fake data
 
@@ -114,6 +114,9 @@ Review the flagged diagram, then run `npm run check:diagrams -- --update` to rec
 ## Deployment
 
 The app is configured for Netlify in `netlify.toml`. Connect the repository to a Netlify site; Netlify builds the root app and publishes `dist`, while serving the functions in `netlify/functions/`.
+
+See [`docs/server-security.md`](docs/server-security.md) for the HTTP policies, registration rate
+limit, and security-header checks to make on a deploy preview before merging.
 
 Production can also be deployed manually from GitHub without building the app on a GitHub runner:
 

@@ -8,7 +8,7 @@ vi.mock('../../services/pushNotifications.mjs', () => ({
 	pushConfiguration: vi.fn(),
 }));
 
-import handler from '../../functions/push-subscription.mjs';
+import handler from '../../routes/notifications/push-subscription.mjs';
 import {
 	deliverPendingNotifications,
 	pushConfiguration,
@@ -25,6 +25,10 @@ function request(method: string, options: { token?: string; body?: unknown } = {
 
 	if (options.token) {
 		headers.set('Authorization', `Bearer ${options.token}`);
+	}
+
+	if (options.body !== undefined) {
+		headers.set('Content-Type', 'application/json');
 	}
 
 	return new Request('https://example.com/api/push-subscription', {

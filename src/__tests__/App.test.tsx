@@ -624,7 +624,7 @@ describe('App', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve(
-						url.startsWith('/api/guests') || url.includes('view=history')
+						url.startsWith('/api/admin/guests') || url.includes('view=history')
 							? []
 							: { event: null, questions: [], counts: {} },
 					),
@@ -727,7 +727,7 @@ describe('App', () => {
 						ok: true,
 						json: () =>
 							Promise.resolve(
-								url.startsWith('/api/guests') || url.includes('view=history')
+								url.startsWith('/api/admin/guests') || url.includes('view=history')
 									? []
 									: { event: currentEvent, questions: [], counts: {} },
 							),
@@ -810,7 +810,7 @@ describe('App', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve(
-						url.startsWith('/api/guests') || url.includes('view=history')
+						url.startsWith('/api/admin/guests') || url.includes('view=history')
 							? []
 							: { event: null, questions: [], counts: {} },
 					),
@@ -859,7 +859,7 @@ describe('App', () => {
 				ok: true,
 				json: () =>
 					Promise.resolve(
-						url.startsWith('/api/guests') || url.includes('view=history')
+						url.startsWith('/api/admin/guests') || url.includes('view=history')
 							? []
 							: { event: currentEvent, questions: [], counts: {} },
 					),
@@ -878,7 +878,8 @@ describe('App', () => {
 
 		const closeRequest = fetchMock.mock.calls.find(
 			([url, options]) =>
-				url === '/api/market' && options?.body === JSON.stringify({ action: 'close_registration' }),
+				url === '/api/admin/market' &&
+				options?.body === JSON.stringify({ action: 'close_registration' }),
 		);
 
 		expect(closeRequest?.[1]?.method).toBe('POST');
@@ -896,7 +897,7 @@ describe('App', () => {
 			),
 		);
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/market',
+			'/api/admin/market',
 			expect.objectContaining({
 				method: 'POST',
 				body: JSON.stringify({ action: 'reset_session' }),

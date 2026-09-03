@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { jwtVerify } = vi.hoisted(() => ({ jwtVerify: vi.fn() }));
+const { jwtVerify, createRemoteJWKSet } = vi.hoisted(() => ({
+	jwtVerify: vi.fn(),
+	createRemoteJWKSet: vi.fn(() => 'fake-jwks'),
+}));
 
 vi.mock('jose', () => ({
-	createRemoteJWKSet: vi.fn(() => 'fake-jwks'),
+	createRemoteJWKSet,
 	jwtVerify,
 }));
 
@@ -30,6 +33,7 @@ describe('verifyAuth0Token', () => {
 	afterEach(() => {
 		vi.unstubAllEnvs();
 		jwtVerify.mockReset();
+		createRemoteJWKSet.mockClear();
 	});
 
 	it('rejects when the Authorization header is missing', async () => {
@@ -94,6 +98,28 @@ describe('verifyAuth0Token', () => {
 				audience: 'https://api.example.com',
 				algorithms: ['RS256'],
 			}),
+		);
+	});
+
+	it('reuses the key resolver across requests and replaces it when the issuer changes', async () => {
+		stubAuth0Env();
+		vi.stubEnv('AUTH0_ISSUER', 'https://cached.auth0.com');
+		const request = requestWithAuth('Bearer good-token');
+
+		await verifyAuth0Token(request);
+		await verifyAuth0Token(request);
+
+		expect(createRemoteJWKSet).toHaveBeenCalledTimes(1);
+		expect(createRemoteJWKSet).toHaveBeenLastCalledWith(
+			new URL('https://cached.auth0.com/.well-known/jwks.json'),
+		);
+
+		vi.stubEnv('AUTH0_ISSUER', 'https://changed.auth0.com/');
+		await verifyAuth0Token(request);
+
+		expect(createRemoteJWKSet).toHaveBeenCalledTimes(2);
+		expect(createRemoteJWKSet).toHaveBeenLastCalledWith(
+			new URL('https://changed.auth0.com/.well-known/jwks.json'),
 		);
 	});
 });

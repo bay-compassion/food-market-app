@@ -4,7 +4,7 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
 
-import handler from '../../functions/lottery-registration.mjs';
+import handler from '../../routes/guests/lottery-registration.mjs';
 
 function request(method: string, body?: unknown) {
 	return new Request('https://example.com/api/lottery-registration', {

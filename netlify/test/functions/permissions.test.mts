@@ -5,13 +5,14 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
-import broadcastHandler from '../../functions/broadcast.mjs';
-import guestsHandler from '../../functions/guests.mjs';
-import lotteryRegistrationHandler from '../../functions/lottery-registration.mjs';
-import marketHandler from '../../functions/market.mjs';
-import queueHandler from '../../functions/queue.mjs';
-import reportsHandler from '../../functions/reports.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import broadcastHandler from '../../routes/admin/broadcast.mjs';
+import guestsHandler from '../../routes/admin/guests.mjs';
+import marketHandler from '../../routes/admin/market.mjs';
+import queueHandler from '../../routes/admin/queue.mjs';
+import reportsHandler from '../../routes/admin/reports.mjs';
+import lotteryRegistrationHandler from '../../routes/guests/lottery-registration.mjs';
+import publicMarketHandler from '../../routes/market/market.mjs';
 
 /**
  * Which permission each endpoint asks for.
@@ -53,26 +54,34 @@ describe('endpoint permissions', () => {
 		[
 			'reading a report',
 			reportsHandler,
-			json('https://x/api/reports?report=session-summary&from=2026-01-01&to=2026-08-08', 'GET'),
+			json(
+				'https://x/api/admin/reports?report=session-summary&from=2026-01-01&to=2026-08-08',
+				'GET',
+			),
 			'read:reports',
 		],
 		[
 			'exporting every visit',
 			reportsHandler,
-			json('https://x/api/reports?view=export&from=2026-01-01&to=2026-08-08', 'GET'),
+			json('https://x/api/admin/reports?view=export&from=2026-01-01&to=2026-08-08', 'GET'),
 			'export:guest-data',
 		],
-		['listing guests', guestsHandler, json('https://x/api/guests?scope=all', 'GET'), 'run:queue'],
+		[
+			'listing guests',
+			guestsHandler,
+			json('https://x/api/admin/guests?scope=all', 'GET'),
+			'run:queue',
+		],
 		[
 			'running a visit command',
 			guestsHandler,
-			json('https://x/api/guests', 'PATCH', { id: 'visit-1', command: 'serve' }),
+			json('https://x/api/admin/guests', 'PATCH', { id: 'visit-1', command: 'serve' }),
 			'run:queue',
 		],
 		[
 			'adding a guest as a worker',
 			guestsHandler,
-			json('https://x/api/guests', 'POST', {
+			json('https://x/api/admin/guests', 'POST', {
 				firstName: 'Ana',
 				lastName: 'Reyes',
 				ageRange: '30-44',
@@ -90,43 +99,43 @@ describe('endpoint permissions', () => {
 		[
 			'calling the next guests',
 			queueHandler,
-			json('https://x/api/queue', 'POST', { action: 'call_next', count: 3 }),
+			json('https://x/api/admin/queue', 'POST', { action: 'call_next', count: 3 }),
 			'run:queue',
 		],
 		[
 			'reading session history',
 			marketHandler,
-			json('https://x/api/market?view=history', 'GET'),
+			json('https://x/api/admin/market?view=history', 'GET'),
 			'run:queue',
 		],
 		[
 			'closing the day',
 			marketHandler,
-			json('https://x/api/market', 'POST', { action: 'close_session' }),
+			json('https://x/api/admin/market', 'POST', { action: 'close_session' }),
 			'run:queue',
 		],
 		[
 			'saving session settings',
 			marketHandler,
-			json('https://x/api/market', 'PUT', { capacity: 50 }),
+			json('https://x/api/admin/market', 'PUT', { capacity: 50 }),
 			'manage:sessions',
 		],
 		[
 			'running the lottery',
 			marketHandler,
-			json('https://x/api/market', 'POST', { action: 'run_lottery' }),
+			json('https://x/api/admin/market', 'POST', { action: 'run_lottery' }),
 			'manage:sessions',
 		],
 		[
 			'resetting a session',
 			marketHandler,
-			json('https://x/api/market', 'POST', { action: 'reset_session' }),
+			json('https://x/api/admin/market', 'POST', { action: 'reset_session' }),
 			'manage:sessions',
 		],
 		[
 			'broadcasting to every guest',
 			broadcastHandler,
-			json('https://x/api/broadcast', 'POST', { title: 'Hi', body: 'We are open' }),
+			json('https://x/api/admin/broadcast', 'POST', { title: 'Hi', body: 'We are open' }),
 			'manage:sessions',
 		],
 	];
@@ -140,7 +149,7 @@ describe('endpoint permissions', () => {
 	it('leaves the guest-facing overview open, with no permission check at all', async () => {
 		queueResult([]);
 
-		await marketHandler(json('https://x/api/market', 'GET'));
+		await publicMarketHandler(json('https://x/api/market', 'GET'));
 
 		expect(requirePermission).not.toHaveBeenCalled();
 	});
@@ -175,7 +184,7 @@ describe('endpoint permissions', () => {
 		);
 
 		const response = await marketHandler(
-			json('https://x/api/market', 'POST', { action: 'drop_everything' }),
+			json('https://x/api/admin/market', 'POST', { action: 'drop_everything' }),
 		);
 
 		expect(response.status).toBe(401);
@@ -186,7 +195,7 @@ describe('endpoint permissions', () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 
 		const response = await marketHandler(
-			json('https://x/api/market', 'POST', { action: 'drop_everything' }),
+			json('https://x/api/admin/market', 'POST', { action: 'drop_everything' }),
 		);
 
 		expect(response.status).toBe(400);

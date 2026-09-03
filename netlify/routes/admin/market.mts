@@ -1,7 +1,12 @@
-import type { Config } from '@netlify/functions';
-
-import type { Permission } from '../../src/services/permissions.js';
-import { requirePermission } from '../lib/auth.mjs';
+import type { Permission } from '../../../src/services/permissions.js';
+import { withPermission, type AdminEnv } from '../../lib/http-auth.mjs';
+import {
+	createRouter,
+	jsonBody,
+	jsonError,
+	methodNotAllowed,
+	routeHandler,
+} from '../../lib/http.mjs';
 import {
 	closeRegistration,
 	closeSession,
@@ -19,11 +24,7 @@ import {
 	updateRegistration,
 	type ActionResult,
 	type MarketEventRow,
-} from '../services/marketSession.mjs';
-
-function error(message: string, status = 400) {
-	return Response.json({ error: message }, { status });
-}
+} from '../../services/marketSession.mjs';
 
 async function overview() {
 	return Response.json(await marketOverview());
@@ -34,22 +35,16 @@ async function history() {
 }
 
 async function saveSettings(request: Request) {
-	let body: unknown;
-
-	try {
-		body = await request.json();
-	} catch {
-		return error('Request body must be valid JSON.');
-	}
+	const body = await jsonBody(request);
 	const settings = parseSettings(body);
 
 	if (!settings) {
-		return error('Please provide valid lottery settings.');
+		return jsonError('Please provide valid lottery settings.');
 	}
 
 	const result = await saveSettingsService(settings);
 
-	return result.ok ? overview() : error(result.error, result.status);
+	return result.ok ? overview() : jsonError(result.error, result.status);
 }
 
 type MarketAction = {
@@ -90,71 +85,42 @@ const actions: Record<string, MarketAction> = {
 };
 
 async function runAction(request: Request) {
-	let body: unknown;
-
-	try {
-		body = await request.json();
-	} catch {
-		return error('Request body must be valid JSON.');
-	}
+	const body = await jsonBody(request);
 	const name = (body as { action?: unknown } | null)?.action;
 	const action = typeof name === 'string' ? actions[name] : undefined;
 
-	// Gate before saying whether the action exists, so an unauthenticated caller cannot use the
-	// difference between "invalid action" and "forbidden" to map what this endpoint accepts.
-	const forbidden = await requirePermission(request, action?.permission ?? 'manage:sessions');
-
-	if (forbidden) {
-		return forbidden;
-	}
-
 	if (!action) {
-		return error('Invalid market action.');
+		return jsonError('Invalid market action.');
 	}
 
 	const event = await getCurrentEvent();
 
 	if (!event) {
-		return error('No market event has been configured.', 409);
+		return jsonError('No market event has been configured.', 409);
 	}
 
 	const result = await action.run(event, body);
 
-	return result.ok ? overview() : error(result.error, result.status);
+	return result.ok ? overview() : jsonError(result.error, result.status);
 }
 
-export default async (request: Request) => {
-	if (request.method === 'GET') {
-		// The overview drives the guest app's own screens, so it stays open to everyone.
-		if (new URL(request.url).searchParams.get('view') !== 'history') {
-			return overview();
-		}
-		// Past sessions are where a worker records someone served out of band — the same job as
-		// running the queue, just after the fact.
-		const forbidden = await requirePermission(request, 'run:queue');
+export const adminMarketRoutes = createRouter<AdminEnv>();
 
-		if (forbidden) {
-			return forbidden;
-		}
+adminMarketRoutes.get('/market', withPermission('run:queue'), () => history());
+adminMarketRoutes.put('/market', withPermission('manage:sessions'), (context) =>
+	saveSettings(context.req.raw),
+);
+adminMarketRoutes.post(
+	'/market',
+	async (context, next) => {
+		const body = await jsonBody(context.req.raw.clone());
+		const name = (body as { action?: unknown } | null)?.action;
+		const action = typeof name === 'string' ? actions[name] : undefined;
 
-		return history();
-	}
+		return withPermission(action?.permission ?? 'manage:sessions')(context, next);
+	},
+	(context) => runAction(context.req.raw),
+);
+adminMarketRoutes.all('/market', methodNotAllowed);
 
-	if (request.method === 'PUT') {
-		const forbidden = await requirePermission(request, 'manage:sessions');
-
-		if (forbidden) {
-			return forbidden;
-		}
-
-		return saveSettings(request);
-	}
-
-	if (request.method === 'POST') {
-		return runAction(request);
-	}
-
-	return error('Method not allowed', 405);
-};
-
-export const config: Config = { path: '/api/market' };
+export default routeHandler(createRouter().route('/api/admin', adminMarketRoutes));
