@@ -128,13 +128,13 @@ async function captureConsentFlow() {
 	await mockApplicationApi(page);
 	await page.goto(baseUrl);
 
-	const entryPoint = page.getByRole('button', { name: 'Notify Me About Updates' });
+	const entryPoint = page.getByRole('button', { name: 'Text Me About Updates' });
 
 	await entryPoint.waitFor();
 	await screenshot(page, '02-notification-entry-point.png');
 	await entryPoint.click();
 
-	const dialog = page.getByRole('dialog', { name: 'Notification Updates' });
+	const dialog = page.getByRole('dialog', { name: 'Text Message Updates' });
 	const consent = dialog.getByRole('checkbox');
 	const approve = dialog.getByRole('button', { name: 'Enable text updates' });
 
