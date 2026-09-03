@@ -680,7 +680,7 @@ describe('App', () => {
 				'Open registration now',
 				'Add guest',
 			],
-			hidden: ['Registration settings', 'Today’s overview', 'Broadcast notification'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Broadcast notification'],
 		},
 		{
 			status: 'registration_open',
@@ -696,18 +696,18 @@ describe('App', () => {
 		{
 			status: 'registration_closed',
 			shown: ['Reopen registration', 'Broadcast notification', 'Add guest'],
-			hidden: ['Registration settings', 'Today’s overview', 'Run lottery draw'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Run lottery draw'],
 		},
 		{
 			status: 'lottery_pending',
 			shown: ['Run lottery draw', 'Broadcast notification', 'Add guest'],
-			hidden: ['Registration settings', 'Today’s overview', 'Reopen registration'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Reopen registration'],
 		},
 		{
 			// Queue management moved to its own view, so current-session only points at it.
 			status: 'service_started',
 			shown: ['Today’s overview', 'Manage the queue', 'Broadcast notification', 'Add guest'],
-			hidden: ['Registration settings', 'Run lottery draw', 'Call next'],
+			hidden: ['Schedule registration', 'Run lottery draw', 'Call next'],
 		},
 	] as const)(
 		'shows only the $status current-session controls',

@@ -101,6 +101,7 @@ export interface AdminTranslation {
 	registered: string;
 	registeredGuests: string;
 	registrationDurationMinutes: string;
+	registrationClosedHelp: string;
 	registrationSettings: string;
 	registrationOverrides: string;
 	reopenRegistration: string;
@@ -289,6 +290,8 @@ export const adminTranslations = {
 		registered: 'Registered',
 		registeredGuests: 'Registered guests',
 		registrationDurationMinutes: 'Registration open for (minutes)',
+		registrationClosedHelp:
+			'This step will advance automatically to Lottery pending in a few seconds.',
 		registrationSettings: 'Registration settings',
 		registrationOverrides: 'Registration overrides',
 		reopenRegistration: 'Reopen registration',
