@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import type { FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { AppButton } from '../AppButton';
 import type { Question } from './types';
 
 export type QuestionBankViewProps = {
@@ -136,7 +136,9 @@ export function QuestionBankView({
 						</button>
 					</div>
 				))}
-				<AppButton type="submit" disabled={busy || !editable} label={t.saveSettings} />
+				<Button type="submit" disabled={busy || !editable}>
+					{t.saveSettings}
+				</Button>
 			</form>
 		</Section>
 	);

@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import type { FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { AppButton } from '../AppButton';
 import type { SessionSettings } from './types';
 
 export type SessionSettingsFormProps = {
@@ -128,15 +128,12 @@ export function SessionSettingsForm({
 					/>
 				</label>
 				<div className="form-actions">
-					<AppButton type="submit" variant="secondary" disabled={busy} label={t.saveSettings} />
-					<AppButton
-						type="button"
-						disabled={busy}
-						onClick={onSaveAndStart}
-						label={
-							settings.sessionMode === 'scheduled' ? t.scheduleRegistration : t.openRegistration
-						}
-					/>
+					<Button type="submit" variant="outlined" disabled={busy}>
+						{t.saveSettings}
+					</Button>
+					<Button type="button" disabled={busy} onClick={onSaveAndStart}>
+						{settings.sessionMode === 'scheduled' ? t.scheduleRegistration : t.openRegistration}
+					</Button>
 				</div>
 			</form>
 		</Section>

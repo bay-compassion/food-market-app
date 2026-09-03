@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
@@ -6,7 +7,6 @@ import { adminTranslations } from '../../adminLocales';
 import { serviceProgressLevels, type ServiceProgress } from '../../services/demoScenario';
 import { sessionStatuses, type SessionStatus } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
-import { AppButton } from '../AppButton';
 
 export type DevModeViewProps = {
 	busy?: boolean;
@@ -123,24 +123,26 @@ export const DevModeView = observer(function DevModeView({ busy, onLoad }: DevMo
 							{stage === 'service_started' ? (
 								<div className="dev-progress-actions">
 									{serviceProgressLevels.map((progress) => (
-										<AppButton
+										<Button
 											key={progress}
 											type="button"
-											variant="secondary"
+											variant="outlined"
 											disabled={busy}
 											onClick={() => onLoad('service_started', progress)}
-											label={progressLabels[progress]}
-										/>
+										>
+											{progressLabels[progress]}
+										</Button>
 									))}
 								</div>
 							) : (
-								<AppButton
+								<Button
 									type="button"
-									variant="secondary"
+									variant="outlined"
 									disabled={busy}
 									onClick={() => onLoad(stage, undefined)}
-									label={t.devModeLoad}
-								/>
+								>
+									{t.devModeLoad}
+								</Button>
 							)}
 						</article>
 					))}

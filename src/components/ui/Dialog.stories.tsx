@@ -1,8 +1,8 @@
+import { Button } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, within } from 'storybook/test';
 
-import { AppButton } from '../AppButton';
 import { Dialog } from './Dialog';
 
 type DialogArgs = {
@@ -16,13 +16,15 @@ function DialogHost({ title, closeLabel }: DialogArgs) {
 
 	return (
 		<>
-			<AppButton type="button" onClick={() => setOpen(true)} label="Open dialog" />
+			<Button type="button" onClick={() => setOpen(true)}>
+				Open dialog
+			</Button>
 			<Dialog
 				open={open}
 				title={title}
 				closeLabel={closeLabel}
 				onClose={() => setOpen(false)}
-				actions={<AppButton type="button" label="Continue" />}
+				actions={<Button type="button">Continue</Button>}
 			>
 				<p>Dialog content can contain forms, messages, or other focused tasks.</p>
 			</Dialog>

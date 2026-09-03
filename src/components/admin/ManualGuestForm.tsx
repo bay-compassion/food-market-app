@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, type FormEvent } from 'react';
 
@@ -11,7 +12,6 @@ import {
 	type LotteryWeightTier,
 } from '../../services/lotteryWeight';
 import { useTranslation } from '../../stores/react/use-translation';
-import { AppButton } from '../AppButton';
 import { FormField, type FormFieldOption } from '../FormField';
 import { PhoneField } from '../PhoneField';
 import type { ManualGuest } from './types';
@@ -224,7 +224,9 @@ export const ManualGuestForm = observer(function ManualGuestForm({
 				<button type="button" onClick={onCancel}>
 					{t.cancel}
 				</button>
-				<AppButton type="submit" disabled={busy} label={t.saveGuest} />
+				<Button type="submit" disabled={busy}>
+					{t.saveGuest}
+				</Button>
 			</div>
 		</Form>
 	);

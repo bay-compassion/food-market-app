@@ -1,7 +1,7 @@
+import { Button } from '@mui/material';
 import type { FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { AppButton } from '../AppButton';
 
 export type Broadcast = { title: string; body: string };
 
@@ -55,7 +55,9 @@ export function SessionBroadcastForm({
 						onBlur={(event) => onBroadcastChange({ ...broadcast, body: event.target.value.trim() })}
 					/>
 				</label>
-				<AppButton type="submit" disabled={busy} label={t.broadcastSend} />
+				<Button type="submit" disabled={busy}>
+					{t.broadcastSend}
+				</Button>
 			</form>
 		</section>
 	);

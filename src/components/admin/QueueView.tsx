@@ -1,11 +1,11 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
-import { AppButton } from '../AppButton';
 import { AddGuestSection } from './AddGuestSection';
 import { QueueCallNext } from './QueueCallNext';
 import { QueueGuestRow } from './QueueGuestRow';
@@ -105,12 +105,9 @@ export const QueueView = observer(function QueueView({
 			<Empty className="admin-section queue-empty">
 				<h2>{t.queue}</h2>
 				<p>{t.queueNotStarted}</p>
-				<AppButton
-					type="button"
-					variant="secondary"
-					onClick={onNavigateCurrentSession}
-					label={t.goToCurrentSession}
-				/>
+				<Button type="button" variant="outlined" onClick={onNavigateCurrentSession}>
+					{t.goToCurrentSession}
+				</Button>
 			</Empty>
 		);
 	}
@@ -197,7 +194,9 @@ export const QueueView = observer(function QueueView({
 			</section>
 
 			<StandaloneAction className="standalone-action">
-				<AppButton type="button" disabled={busy} onClick={onCloseSession} label={t.closeSession} />
+				<Button type="button" disabled={busy} onClick={onCloseSession}>
+					{t.closeSession}
+				</Button>
 			</StandaloneAction>
 		</>
 	);

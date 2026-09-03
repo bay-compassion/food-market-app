@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Button } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
@@ -11,7 +12,6 @@ import {
 	type ReportId,
 	type ReportRow,
 } from '../../services/reports';
-import { AppButton } from '../AppButton';
 import { ReportFilters } from './ReportFilters';
 import { ReportTable } from './ReportTable';
 
@@ -202,12 +202,9 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 				) : null}
 
 				<div className="report-actions">
-					<AppButton
-						type="button"
-						disabled={isBusy || !rows.length}
-						onClick={downloadReportCsv}
-						label={t.reportDownloadCsv}
-					/>
+					<Button type="button" disabled={isBusy || !rows.length} onClick={downloadReportCsv}>
+						{t.reportDownloadCsv}
+					</Button>
 				</div>
 			</Section>
 
@@ -219,12 +216,9 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 					<p>{t.reportExportVisitsHelp}</p>
 					<p className="privacy-note">{t.reportPrivacyNote}</p>
 					<div className="report-actions">
-						<AppButton
-							type="button"
-							disabled={isBusy}
-							onClick={() => void downloadVisitExport()}
-							label={t.reportDownloadCsv}
-						/>
+						<Button type="button" disabled={isBusy} onClick={() => void downloadVisitExport()}>
+							{t.reportDownloadCsv}
+						</Button>
 					</div>
 				</Section>
 			) : null}
