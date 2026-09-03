@@ -10,8 +10,8 @@ vi.mock('../../services/smsNotifications.mjs', () => ({
 	smsConfiguration: vi.fn(),
 }));
 
-import handler from '../../functions/sms-subscription.mjs';
 import { authorizedGuest } from '../../lib/deviceAuth.mjs';
+import handler from '../../routes/notifications/sms-subscription.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import {
 	deliverPendingSmsNotifications,

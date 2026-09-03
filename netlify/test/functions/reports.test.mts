@@ -5,8 +5,8 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
-import handler from '../../functions/reports.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import handler from '../../routes/reports/reports.mjs';
 
 function request(query = '?report=session-summary&from=2026-01-01&to=2026-08-08') {
 	return new Request(`https://example.com/api/reports${query}`);

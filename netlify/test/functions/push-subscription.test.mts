@@ -8,7 +8,7 @@ vi.mock('../../services/pushNotifications.mjs', () => ({
 	pushConfiguration: vi.fn(),
 }));
 
-import handler from '../../functions/push-subscription.mjs';
+import handler from '../../routes/notifications/push-subscription.mjs';
 import {
 	deliverPendingNotifications,
 	pushConfiguration,

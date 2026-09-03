@@ -1,24 +1,17 @@
-import type { Config } from '@netlify/functions';
+import { csvFilename, toCsv } from '../../../src/services/reportCsv.js';
+import { isReportId, reportRangeBounds } from '../../../src/services/reports.js';
+import { requirePermission } from '../../lib/auth.mjs';
+import { createRouter, jsonError, methodNotAllowed, routeHandler } from '../../lib/http.mjs';
+import { runReport, runVisitExport, visitExportHeaders } from '../../services/reports.mjs';
 
-import { csvFilename, toCsv } from '../../src/services/reportCsv.js';
-import { isReportId, reportRangeBounds } from '../../src/services/reports.js';
-import { requirePermission } from '../lib/auth.mjs';
-import { runReport, runVisitExport, visitExportHeaders } from '../services/reports.mjs';
+export const reportRoutes = createRouter();
 
-function error(message: string, status = 400) {
-	return Response.json({ error: message }, { status });
-}
-
-export default async (request: Request) => {
-	if (request.method !== 'GET') {
-		return error('Method not allowed', 405);
-	}
-
-	const url = new URL(request.url);
+reportRoutes.get('/api/reports', async (context) => {
+	const url = new URL(context.req.url);
 	// The export names guests; the reports only count them, so they are gated apart.
 	const isExport = url.searchParams.get('view') === 'export';
 	const forbidden = await requirePermission(
-		request,
+		context.req.raw,
 		isExport ? 'export:guest-data' : 'read:reports',
 	);
 
@@ -31,7 +24,7 @@ export default async (request: Request) => {
 	const range = reportRangeBounds(from, to);
 
 	if (!range) {
-		return error('Please provide a valid date range.');
+		return jsonError('Please provide a valid date range.');
 	}
 
 	if (isExport) {
@@ -48,10 +41,11 @@ export default async (request: Request) => {
 	const id = url.searchParams.get('report');
 
 	if (!isReportId(id)) {
-		return error('Unknown report.');
+		return jsonError('Unknown report.');
 	}
 
 	return Response.json({ id, rows: await runReport(id, range) });
-};
+});
+reportRoutes.all('/api/reports', methodNotAllowed);
 
-export const config: Config = { path: '/api/reports' };
+export default routeHandler(reportRoutes);

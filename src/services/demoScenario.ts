@@ -5,7 +5,7 @@
  * `service_started` covers the most ground of any status — nobody called yet, all the way through
  * to nearly done — so it takes an extra parameter naming how far along the queue is. Shared between
  * the browser (`DevModeView.vue`, to render the buttons) and the server
- * (`netlify/functions/demo-data.mts`, to validate the request body), the same way `sessionStatuses`
+ * (`netlify/routes/demo/demo-data.mts`, to validate the request body), the same way `sessionStatuses`
  * itself is shared.
  */
 export const serviceProgressLevels = ['just_started', 'halfway', 'nearly_done'] as const;

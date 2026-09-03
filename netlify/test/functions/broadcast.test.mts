@@ -11,8 +11,8 @@ vi.mock('../../services/notifications.mjs', () => ({
 	deliverQueuedNotifications: vi.fn(),
 }));
 
-import handler from '../../functions/broadcast.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import handler from '../../routes/notifications/broadcast.mjs';
 import { deliverQueuedNotifications, queueNotification } from '../../services/notifications.mjs';
 import { pushConfiguration } from '../../services/pushNotifications.mjs';
 import { smsConfiguration } from '../../services/smsNotifications.mjs';

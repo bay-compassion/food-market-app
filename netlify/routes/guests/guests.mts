@@ -1,16 +1,18 @@
-import type { Config } from '@netlify/functions';
 import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
 
-import { db } from '../../db/index.mjs';
-import { guests, marketEvents, visits } from '../../db/schema.mjs';
-import { isVisitCommand } from '../../src/services/visitStateMachine.js';
-import { requirePermission } from '../lib/auth.mjs';
-import { parseSubmission, registerGuest } from '../services/guestRegistration.mjs';
-import { runVisitCommand } from '../services/visitQueue.mjs';
-
-function error(message: string, status = 400) {
-	return Response.json({ error: message }, { status });
-}
+import { db } from '../../../db/index.mjs';
+import { guests, marketEvents, visits } from '../../../db/schema.mjs';
+import { isVisitCommand } from '../../../src/services/visitStateMachine.js';
+import { withPermission } from '../../lib/http-auth.mjs';
+import {
+	createRouter,
+	jsonBody,
+	jsonError,
+	methodNotAllowed,
+	routeHandler,
+} from '../../lib/http.mjs';
+import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
+import { runVisitCommand } from '../../services/visitQueue.mjs';
 
 async function currentEventId() {
 	const [event] = await db
@@ -73,83 +75,50 @@ async function listGuests(request: Request) {
 }
 
 async function createGuest(request: Request) {
-	let body: unknown;
-
-	try {
-		body = await request.json();
-	} catch {
-		return error('Request body must be valid JSON.');
-	}
+	const body = await jsonBody(request);
 
 	const submission = parseSubmission(body);
 
 	if (!submission || submission.source !== 'admin') {
-		return error('Please provide a valid administrative guest registration.');
+		return jsonError('Please provide a valid administrative guest registration.');
 	}
 
 	const result = await registerGuest(submission);
 
 	return result.ok
 		? Response.json(result.body, { status: result.status })
-		: error(result.error, result.status);
+		: jsonError(result.error, result.status);
 }
 
 async function updateGuest(request: Request) {
-	let body: unknown;
-
-	try {
-		body = await request.json();
-	} catch {
-		return error('Request body must be valid JSON.');
-	}
+	const body = await jsonBody(request);
 
 	if (!body || typeof body !== 'object') {
-		return error('Invalid guest update.');
+		return jsonError('Invalid guest update.');
 	}
 
 	const { id, command } = body as Record<string, unknown>;
 
 	if (typeof id !== 'string' || !isVisitCommand(command)) {
-		return error('Invalid guest update.');
+		return jsonError('Invalid guest update.');
 	}
 
 	const result = await runVisitCommand(id, command);
 
-	return result.ok ? Response.json(result.visit) : error(result.error, result.status);
+	return result.ok ? Response.json(result.visit) : jsonError(result.error, result.status);
 }
 
-export default async (request: Request) => {
-	if (request.method === 'GET') {
-		const forbidden = await requirePermission(request, 'run:queue');
+export const guestRoutes = createRouter();
 
-		if (forbidden) {
-			return forbidden;
-		}
+guestRoutes.get('/api/guests', withPermission('run:queue'), (context) =>
+	listGuests(context.req.raw),
+);
+guestRoutes.post('/api/guests', withPermission('run:queue'), (context) =>
+	createGuest(context.req.raw),
+);
+guestRoutes.patch('/api/guests', withPermission('run:queue'), (context) =>
+	updateGuest(context.req.raw),
+);
+guestRoutes.all('/api/guests', methodNotAllowed);
 
-		return listGuests(request);
-	}
-
-	if (request.method === 'POST') {
-		const forbidden = await requirePermission(request, 'run:queue');
-
-		if (forbidden) {
-			return forbidden;
-		}
-
-		return createGuest(request);
-	}
-
-	if (request.method === 'PATCH') {
-		const forbidden = await requirePermission(request, 'run:queue');
-
-		if (forbidden) {
-			return forbidden;
-		}
-
-		return updateGuest(request);
-	}
-
-	return error('Method not allowed', 405);
-};
-
-export const config: Config = { path: '/api/guests' };
+export default routeHandler(guestRoutes);

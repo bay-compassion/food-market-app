@@ -9,8 +9,8 @@ vi.mock('../../services/demoScenario.mjs', () => ({
 	loadScenario: vi.fn(),
 }));
 
-import handler from '../../functions/demo-data.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import handler from '../../routes/demo/demo-data.mjs';
 import { demoDataToolsEnabled, loadScenario } from '../../services/demoScenario.mjs';
 
 function request(method: string, options: { body?: unknown } = {}) {

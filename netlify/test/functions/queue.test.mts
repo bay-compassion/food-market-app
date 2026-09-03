@@ -9,8 +9,8 @@ vi.mock('../../services/pushNotifications.mjs', () => ({
 	deliverPendingNotifications: vi.fn(),
 }));
 
-import handler from '../../functions/queue.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import handler from '../../routes/market/queue.mjs';
 
 function request(method: string, body?: unknown) {
 	return new Request('https://example.com/api/queue', {

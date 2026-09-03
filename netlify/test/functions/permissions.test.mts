@@ -5,13 +5,13 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
-import broadcastHandler from '../../functions/broadcast.mjs';
-import guestsHandler from '../../functions/guests.mjs';
-import lotteryRegistrationHandler from '../../functions/lottery-registration.mjs';
-import marketHandler from '../../functions/market.mjs';
-import queueHandler from '../../functions/queue.mjs';
-import reportsHandler from '../../functions/reports.mjs';
 import { requirePermission } from '../../lib/auth.mjs';
+import guestsHandler from '../../routes/guests/guests.mjs';
+import lotteryRegistrationHandler from '../../routes/guests/lottery-registration.mjs';
+import marketHandler from '../../routes/market/market.mjs';
+import queueHandler from '../../routes/market/queue.mjs';
+import broadcastHandler from '../../routes/notifications/broadcast.mjs';
+import reportsHandler from '../../routes/reports/reports.mjs';
 
 /**
  * Which permission each endpoint asks for.
