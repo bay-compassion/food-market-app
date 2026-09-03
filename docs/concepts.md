@@ -11,9 +11,10 @@ and forms. In this repo that's everything in `src/`. It's built with React (see 
 
 **The backend** is code that runs on a server, not in anyone's browser. In this repo that's
 `netlify/` — code that handles things like "someone submitted a check-in form" or "an admin wants
-to run the lottery." `netlify/functions/api.mts` is the shared HTTP entry point. Hono routes each
-request to a handler under `netlify/routes/`, organized by feature. The scheduled notification
-job remains a separate function.
+to run the lottery." `netlify/functions/api.mts` is the main HTTP entry point. Public registration
+writes use `netlify/functions/registration.mts` so their rate limit does not affect guests polling
+their place in the queue. Both use Hono to route requests to handlers under `netlify/routes/`,
+organized by feature. The scheduled notification job remains a separate function.
 
 **The database** is where the actual data lives long-term — every guest, every market session,
 every visit. It's a separate system entirely (this app uses Netlify DB, backed by Postgres), and
@@ -38,9 +39,9 @@ to each other — here, how the frontend running in a browser asks the backend t
 `netlify/routes/guests/guest-information.mts` handles `/api/guest-information` and saves a guest's
 identity without registering a visit. The neighboring `lottery-registration.mts` handles lottery
 entry, while `/api/admin/guests` is reserved for authenticated administrative listing and commands.
-These endpoints share one deployed Netlify function, but each has explicit HTTP methods and
-authorization rules. When you read that "the frontend calls an API," it means the browser sent a
-request to an endpoint and is waiting for a response back.
+Each endpoint has explicit HTTP methods and authorization rules, with a shared HTTP security
+boundary described in [`server-security.md`](server-security.md). When you read that "the frontend
+calls an API," it means the browser sent a request to an endpoint and is waiting for a response back.
 
 ## Authentication vs. authorization
 

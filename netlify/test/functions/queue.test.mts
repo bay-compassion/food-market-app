@@ -52,7 +52,9 @@ describe('queue handler routing', () => {
 
 		const response = await handler(request('POST', { action: 'call_next', count: 2 }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.transaction).not.toHaveBeenCalled();
 	});
 });

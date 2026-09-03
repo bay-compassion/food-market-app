@@ -8,6 +8,9 @@ import {
 	type Permission,
 } from '../../src/services/permissions.js';
 
+// Keep jose's key cache, refresh cooldown, and in-flight fetch deduplication across warm requests.
+let cachedJwks: { issuer: string; resolve: ReturnType<typeof createRemoteJWKSet> } | undefined;
+
 function auth0Settings() {
 	const issuer = (process.env.AUTH0_ISSUER ?? process.env.VITE_AUTH0_ISSUER)?.replace(/\/?$/, '/');
 	const audience = process.env.AUTH0_AUDIENCE ?? process.env.VITE_AUTH0_AUDIENCE;
@@ -28,9 +31,15 @@ export async function verifyAuth0Token(request: Request) {
 	}
 
 	const { issuer, audience } = auth0Settings();
-	const jwks = createRemoteJWKSet(new URL('.well-known/jwks.json', issuer));
 
-	return jwtVerify(match[1]!, jwks, {
+	if (cachedJwks?.issuer !== issuer) {
+		cachedJwks = {
+			issuer,
+			resolve: createRemoteJWKSet(new URL('.well-known/jwks.json', issuer)),
+		};
+	}
+
+	return jwtVerify(match[1]!, cachedJwks.resolve, {
 		issuer,
 		audience,
 		algorithms: ['RS256'],

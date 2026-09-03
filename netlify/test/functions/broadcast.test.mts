@@ -49,7 +49,9 @@ describe('broadcast handler', () => {
 
 		const response = await handler(request({ title: 'Hi', body: 'Hello' }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 	});
 
 	it('returns 503 when neither push nor SMS notifications are configured', async () => {

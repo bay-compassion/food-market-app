@@ -50,7 +50,9 @@ describe('market handler GET ?view=history (requires Auth0)', () => {
 
 		const response = await handler(request('GET', { path: '?view=history' }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
@@ -73,7 +75,9 @@ describe('market handler PUT (requires Auth0)', () => {
 
 		const response = await handler(request('PUT', { body: { capacity: 10 } }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 	});
 
 	it('validates settings once authorized', async () => {
@@ -94,7 +98,9 @@ describe('market handler POST (requires Auth0)', () => {
 
 		const response = await handler(request('POST', { body: { action: 'run_lottery' } }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.select).not.toHaveBeenCalled();
 	});
 

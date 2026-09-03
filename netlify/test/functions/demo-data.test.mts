@@ -36,7 +36,9 @@ describe('demo-data handler routing', () => {
 
 		const response = await handler(request('GET'));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(demoDataToolsEnabled).not.toHaveBeenCalled();
 	});
 

@@ -37,7 +37,9 @@ describe('guests handler GET (admin: requires Auth0)', () => {
 
 		const response = await handler(request('GET'));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
@@ -60,7 +62,9 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 
 		const response = await handler(request('PATCH', { body: { id: 'visit-1', command: 'serve' } }));
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.transaction).not.toHaveBeenCalled();
 	});
 
@@ -134,7 +138,9 @@ describe('guests handler POST (admin only)', () => {
 			}),
 		);
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.select).not.toHaveBeenCalled();
 	});
 

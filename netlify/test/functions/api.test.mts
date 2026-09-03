@@ -13,8 +13,6 @@ const paths = [
 	'/api/market',
 	'/api/admin/queue',
 	'/api/admin/guests',
-	'/api/lottery-registration',
-	'/api/guest-information',
 	'/api/visit',
 	'/api/push-subscription',
 	'/api/sms-subscription',
@@ -52,7 +50,8 @@ describe('consolidated API routing', () => {
 		const response = await handler(new Request(`https://example.com${path}`, { method: 'HEAD' }));
 
 		expect(response.status).toBe(405);
-		await expect(response.json()).resolves.toEqual({ error: 'Method not allowed' });
+		await expect(response.text()).resolves.toBe('');
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.select).not.toHaveBeenCalled();
 		expect(requirePermission).not.toHaveBeenCalled();
 	});
@@ -68,13 +67,6 @@ describe('consolidated API routing', () => {
 		['/api/market', 'GET', 200, { event: null, questions: [], counts: {} }],
 		['/api/admin/queue', 'POST', 401, { error: 'Authorization required.' }],
 		['/api/admin/guests', 'GET', 401, { error: 'Authorization required.' }],
-		[
-			'/api/lottery-registration',
-			'POST',
-			400,
-			{ error: 'Please provide a valid lottery registration.' },
-		],
-		['/api/guest-information', 'POST', 400, { error: 'Please provide valid guest information.' }],
 		['/api/visit', 'GET', 401, { error: 'Visit access could not be verified.' }],
 		['/api/push-subscription', 'GET', 200, { configured: false, publicKey: null }],
 		['/api/sms-subscription', 'GET', 200, { configured: false }],
@@ -111,15 +103,24 @@ describe('consolidated API routing', () => {
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
-	it('handles malformed JSON through nested routers', async () => {
-		const request = new Request('https://example.com/api/lottery-registration', {
-			method: 'POST',
-			body: '{broken',
-		});
+	it.each(['/api/guest-information', '/api/lottery-registration'])(
+		'does not expose rate-limited public writes through the main API: %s',
+		async (path) => {
+			const response = await handler(
+				new Request(`https://example.com${path}`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: '{}',
+				}),
+			);
 
-		const response = await handler(request);
+			expect(response.status).toBe(404);
+			expect(db.select).not.toHaveBeenCalled();
+			expect(db.insert).not.toHaveBeenCalled();
+		},
+	);
 
-		expect(response.status).toBe(400);
-		await expect(response.json()).resolves.toEqual({ error: 'Request body must be valid JSON.' });
+	it('keeps polling outside the public-write rate limit', () => {
+		expect(config.rateLimit).toBeUndefined();
 	});
 });

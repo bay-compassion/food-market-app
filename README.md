@@ -115,6 +115,9 @@ Review the flagged diagram, then run `npm run check:diagrams -- --update` to rec
 
 The app is configured for Netlify in `netlify.toml`. Connect the repository to a Netlify site; Netlify builds the root app and publishes `dist`, while serving the functions in `netlify/functions/`.
 
+See [`docs/server-security.md`](docs/server-security.md) for the HTTP policies, registration rate
+limit, and security-header checks to make on a deploy preview before merging.
+
 Production can also be deployed manually from GitHub without building the app on a GitHub runner:
 
 1. In Netlify, open **Project configuration → Build & deploy → Continuous deployment → Build

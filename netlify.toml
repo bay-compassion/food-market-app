@@ -8,6 +8,18 @@ NODE_VERSION = "24.15.0"
 [functions]
 directory = "netlify/functions"
 
+# Static responses only; function responses use the Hono boundary in netlify/lib/http.mts.
+[[headers]]
+for = "/*"
+[headers.values]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "DENY"
+Referrer-Policy = "no-referrer"
+Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+Content-Security-Policy = "base-uri 'self'; object-src 'none'; frame-ancestors 'none'"
+# Observe the full policy before enforcement: Auth0, Emotion, fonts, and push must work on phones.
+Content-Security-Policy-Report-Only = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.auth0.com; frame-src https://*.auth0.com; worker-src 'self' blob:; manifest-src 'self'"
+
 [[redirects]]
 from = "/sms-consent"
 to = "/sms-consent/"

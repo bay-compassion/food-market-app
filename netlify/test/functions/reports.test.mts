@@ -33,7 +33,9 @@ describe('reports handler', () => {
 
 		const response = await handler(request());
 
-		expect(response).toBe(unauthorized);
+		expect(response.status).toBe(401);
+		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
 		expect(db.execute).not.toHaveBeenCalled();
 	});
 
@@ -78,6 +80,8 @@ describe('reports handler', () => {
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get('Content-Type')).toBe('text/csv; charset=utf-8');
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
+		expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
 		expect(response.headers.get('Content-Disposition')).toContain(
 			'visits_2026-01-01_2026-08-08.csv',
 		);

@@ -27,6 +27,10 @@ function request(method: string, options: { token?: string; body?: unknown } = {
 		headers.set('Authorization', `Bearer ${options.token}`);
 	}
 
+	if (options.body !== undefined) {
+		headers.set('Content-Type', 'application/json');
+	}
+
 	return new Request('https://example.com/api/sms-subscription', {
 		method,
 		headers,
