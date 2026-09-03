@@ -1,4 +1,5 @@
 import { render, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The real module only configures Auth0 when the VITE_AUTH0_* variables are set, which is true on
@@ -11,6 +12,8 @@ vi.mock('../auth', async (importOriginal) => ({
 
 import { adminTranslations } from '../adminLocales';
 import { AdminDashboard } from '../components/AdminDashboard';
+import type { AdminView } from '../services/admin-views';
+import { SessionStatusEnum } from '../services/sessionStateMachine';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
 
@@ -24,7 +27,21 @@ function tokenWith(permissions: string[]) {
 	return `${segment({ alg: 'none', typ: 'JWT' })}.${segment({ permissions })}.`;
 }
 
-function renderDashboard(permissions: string[]) {
+function renderDashboard(
+	permissions: string[],
+	{ view, status = null }: { view?: AdminView; status?: SessionStatusEnum | null } = {},
+) {
+	const event = status
+		? {
+				id: 'event-1',
+				status,
+				sessionMode: 'ad_hoc',
+				registrationOpensAt: '2026-09-03T17:00:00Z',
+				registrationClosesAt: '2026-09-03T18:00:00Z',
+				capacity: 50,
+			}
+		: null;
+
 	// Answers each endpoint with its own shape, so a screen that opens actually renders.
 	vi.stubGlobal(
 		'fetch',
@@ -34,7 +51,7 @@ function renderDashboard(permissions: string[]) {
 				json: () =>
 					Promise.resolve(
 						url.startsWith('/api/market') && !url.includes('history')
-							? { event: null, questions: [], counts: {} }
+							? { event, questions: [], counts: {} }
 							: url.startsWith('/api/reports')
 								? { rows: [] }
 								: [],
@@ -44,16 +61,18 @@ function renderDashboard(permissions: string[]) {
 	);
 
 	const onNavigate = vi.fn();
+	const store = new RootStore();
 	const result = render(
-		<RootStoreProvider store={new RootStore()}>
+		<RootStoreProvider store={store}>
 			<AdminDashboard
+				view={view}
 				getAccessToken={() => Promise.resolve(tokenWith(permissions))}
 				onNavigate={onNavigate}
 			/>
 		</RootStoreProvider>,
 	);
 
-	return { ...result, onNavigate };
+	return { ...result, onNavigate, store };
 }
 
 function navigationLabels(container: HTMLElement) {
@@ -63,6 +82,7 @@ function navigationLabels(container: HTMLElement) {
 }
 
 afterEach(() => {
+	vi.restoreAllMocks();
 	vi.unstubAllGlobals();
 });
 
@@ -87,6 +107,7 @@ describe('admin navigation by permission', () => {
 			expect(navigationLabels(container)).toEqual([
 				t.currentSession,
 				t.queue,
+				t.broadcastTitle,
 				t.questionBank,
 				t.guestDatabase,
 				t.historySessions,
@@ -125,5 +146,95 @@ describe('admin navigation by permission', () => {
 		const { container } = renderDashboard(['manage:demo-data']);
 
 		await waitFor(() => expect(navigationLabels(container)).toEqual([t.devMode]));
+	});
+});
+
+describe('broadcast notification tab', () => {
+	it('opens its own screen and preserves a draft across tab switches', async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const screen = renderDashboard(['manage:sessions'], {
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+		});
+		const tab = await screen.findByRole('button', { name: t.broadcastTitle });
+
+		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
+
+		// Act
+		await user.click(tab);
+		await user.type(screen.getByLabelText(t.broadcastTitleLabel), 'Doors open');
+		await user.type(screen.getByLabelText(t.broadcastMessageLabel), 'Come on in');
+		await user.click(screen.getByRole('button', { name: t.currentSession }));
+		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
+		await user.click(tab);
+
+		// Assert
+		expect(screen.onNavigate).toHaveBeenLastCalledWith('broadcast');
+		expect(tab.getAttribute('aria-current')).toBe('page');
+		expect((screen.getByLabelText(t.broadcastTitleLabel) as HTMLInputElement).value).toBe(
+			'Doors open',
+		);
+		expect((screen.getByLabelText(t.broadcastMessageLabel) as HTMLTextAreaElement).value).toBe(
+			'Come on in',
+		);
+	});
+
+	it.each([
+		SessionStatusEnum.REGISTRATION_OPEN,
+		SessionStatusEnum.REGISTRATION_CLOSED,
+		SessionStatusEnum.LOTTERY_PENDING,
+		SessionStatusEnum.SERVICE_STARTED,
+	])('supports opening the broadcast route during %s', async (status) => {
+		// Arrange / Act
+		const screen = renderDashboard(['manage:sessions'], { view: 'broadcast', status });
+
+		// Assert
+		expect(await screen.findByLabelText(t.broadcastTitleLabel)).not.toBeNull();
+		expect(screen.onNavigate).not.toHaveBeenCalled();
+	});
+
+	it.each([null, SessionStatusEnum.DRAFT, SessionStatusEnum.SCHEDULED, SessionStatusEnum.ENDED])(
+		'explains why broadcasts are unavailable during %s',
+		async (status) => {
+			// Arrange / Act
+			const screen = renderDashboard(['manage:sessions'], { view: 'broadcast', status });
+
+			// Assert
+			expect(await screen.findByText(t.broadcastUnavailable)).not.toBeNull();
+			expect(screen.queryByRole('button', { name: t.broadcastSend })).toBeNull();
+		},
+	);
+
+	it('confirms before sending and clears the draft only after a successful send', async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const screen = renderDashboard(['manage:sessions'], {
+			view: 'broadcast',
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+		});
+		const send = vi.spyOn(screen.store.admin, 'sendBroadcast').mockResolvedValue(false);
+		const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+		const title = (await screen.findByLabelText(t.broadcastTitleLabel)) as HTMLInputElement;
+		const body = screen.getByLabelText(t.broadcastMessageLabel) as HTMLTextAreaElement;
+
+		await user.type(title, 'Doors open');
+		await user.type(body, 'Come on in');
+		const submit = screen.getByRole('button', { name: t.broadcastSend });
+
+		// Act / Assert: cancellation does not send; failures keep the draft.
+		await user.click(submit);
+		expect(confirm).toHaveBeenCalledWith(t.broadcastConfirm);
+		expect(send).not.toHaveBeenCalled();
+		confirm.mockReturnValue(true);
+		await user.click(submit);
+		expect(send).toHaveBeenCalledWith({ title: 'Doors open', body: 'Come on in' });
+		expect(title.value).toBe('Doors open');
+		expect(body.value).toBe('Come on in');
+
+		// Act / Assert: success clears both fields.
+		send.mockResolvedValue(true);
+		await user.click(submit);
+		await waitFor(() => expect(title.value).toBe(''));
+		expect(body.value).toBe('');
 	});
 });

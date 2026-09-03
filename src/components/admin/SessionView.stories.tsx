@@ -36,11 +36,9 @@ const meta = {
 		busy: false,
 		extensionMinutes: 15,
 		postponementMinutes: 15,
-		broadcast: { title: '', body: '' },
 		onSettingsChange: fn(),
 		onExtensionMinutesChange: fn(),
 		onPostponementMinutesChange: fn(),
-		onBroadcastChange: fn(),
 		onSaveSettings: fn(),
 		onSaveAndStartRegistration: fn(),
 		onPostponeRegistration: fn(),
@@ -48,14 +46,12 @@ const meta = {
 		onSaveCapacityOverride: fn(),
 		onRun: fn(),
 		onAddGuest: fn(),
-		onSendBroadcast: fn(),
 		onNavigateQueue: fn(),
 	},
 	render: function SessionStory(args: SessionViewProps) {
 		const [settings, setSettings] = useState(args.settings);
 		const [extensionMinutes, setExtensionMinutes] = useState(args.extensionMinutes);
 		const [postponementMinutes, setPostponementMinutes] = useState(args.postponementMinutes);
-		const [broadcast, setBroadcast] = useState(args.broadcast);
 
 		return (
 			<SessionView
@@ -66,8 +62,6 @@ const meta = {
 				onExtensionMinutesChange={setExtensionMinutes}
 				postponementMinutes={postponementMinutes}
 				onPostponementMinutesChange={setPostponementMinutes}
-				broadcast={broadcast}
-				onBroadcastChange={setBroadcast}
 			/>
 		);
 	},

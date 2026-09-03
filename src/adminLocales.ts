@@ -24,6 +24,7 @@ export interface AdminTranslation {
 	broadcastSend: string;
 	broadcastTitle: string;
 	broadcastTitleLabel: string;
+	broadcastUnavailable: string;
 	cancel: string;
 	capacity: string;
 	cancelled: string;
@@ -210,6 +211,8 @@ export const adminTranslations = {
 		broadcastSend: 'Send broadcast',
 		broadcastTitle: 'Broadcast notification',
 		broadcastTitleLabel: 'Notification title',
+		broadcastUnavailable:
+			'Broadcast notifications are available once registration opens and until the session ends.',
 		cancel: 'Cancel',
 		capacity: 'Queue capacity',
 		cancelled: 'Cancelled',

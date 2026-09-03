@@ -6,7 +6,6 @@ import { adminTranslations } from '../../adminLocales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { AddGuestSection } from './AddGuestSection';
-import { SessionBroadcastForm, type Broadcast } from './SessionBroadcastForm';
 import { SessionGuestList } from './SessionGuestList';
 import { SessionOverview } from './SessionOverview';
 import { SessionPhaseControls, type SessionPhaseControlsProps } from './SessionPhaseControls';
@@ -19,10 +18,7 @@ export type SessionViewProps = SessionPhaseControlsProps & {
 	statusLabels: Record<VisitStatus, string>;
 	registeredGuests: QueueGuest[];
 	admissions: GuestAdmission[];
-	broadcast: Broadcast;
-	onBroadcastChange: (broadcast: Broadcast) => void;
 	onAddGuest: (guest: ManualGuest) => void;
-	onSendBroadcast: () => void;
 };
 
 const ResetCard = styled.section`
@@ -49,11 +45,8 @@ export const SessionView = observer(function SessionView({
 	registeredGuests,
 	admissions,
 	busy,
-	broadcast,
-	onBroadcastChange,
 	onRun,
 	onAddGuest,
-	onSendBroadcast,
 	...phaseControls
 }: SessionViewProps) {
 	const t = adminTranslations.en;
@@ -61,11 +54,6 @@ export const SessionView = observer(function SessionView({
 	const showsRegisteredGuests =
 		!!event &&
 		['registration_open', 'registration_closed', 'lottery_pending'].includes(sessionState);
-	const showsBroadcast =
-		!!event &&
-		['registration_open', 'registration_closed', 'lottery_pending', 'service_started'].includes(
-			sessionState,
-		);
 
 	return (
 		<>
@@ -90,15 +78,6 @@ export const SessionView = observer(function SessionView({
 
 			{/* A worker can add someone by hand at any stage; only what "adding" means changes. */}
 			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />
-
-			{showsBroadcast ? (
-				<SessionBroadcastForm
-					broadcast={broadcast}
-					onBroadcastChange={onBroadcastChange}
-					busy={busy}
-					onSend={onSendBroadcast}
-				/>
-			) : null}
 
 			{event ? (
 				<ResetCard className="admin-section reset-card">
