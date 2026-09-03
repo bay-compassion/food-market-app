@@ -11,14 +11,6 @@
 	min-height: 100vh;
 	background: var(--color-background);
 }
-.topbar {
-	height: 60px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 20px;
-	background: var(--color-brand);
-}
 @media print {
 	.app-shell--print-qr .topbar {
 		display: none;
@@ -31,60 +23,6 @@
 	font-size: 14px;
 	line-height: 1.4;
 	text-align: center;
-}
-.brand {
-	display: inline-flex;
-	gap: 8px;
-	align-items: center;
-	color: var(--color-on-brand);
-	font-family: var(--font-heading);
-	font-weight: 700;
-	font-size: 14.5px;
-	text-transform: uppercase;
-	text-decoration: none;
-}
-.brand-mark {
-	width: 28px;
-	height: 28px;
-	object-fit: contain;
-	border-radius: var(--radius-sm);
-}
-.header-actions {
-	display: flex;
-	gap: 10px;
-	align-items: center;
-}
-.language-picker select {
-	min-height: 46px;
-	padding: 0 8px;
-	border: 0;
-	border-radius: var(--radius-sm);
-	color: var(--color-on-brand);
-	background: transparent;
-	font-size: 15px;
-	font-weight: 600;
-}
-.language-picker option {
-	color: var(--color-brand);
-	background: var(--color-background);
-}
-.mode-button {
-	display: inline-flex;
-	align-items: center;
-	gap: 7px;
-	min-height: 46px;
-	padding: 0 15px;
-	border: 1.5px solid var(--color-on-brand);
-	border-radius: var(--radius-pill);
-	color: var(--color-on-brand);
-	background: transparent;
-	font-family: var(--font-heading);
-	font-weight: 600;
-	font-size: 13px;
-	text-transform: uppercase;
-}
-.mode-button svg {
-	width: 16px;
 }
 .guest-layout {
 	width: min(100% - 36px, 560px);

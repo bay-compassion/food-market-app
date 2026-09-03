@@ -94,7 +94,16 @@ export interface SignupViewTranslations {
 	successTitle: string;
 }
 
+export interface AppBarTranslations {
+	openMenu: string;
+	accountMenu: string;
+	website: string;
+	staffLogin: string;
+	signOut: string;
+}
+
 export interface Translation {
+	appBar: AppBarTranslations;
 	guestView: GuestViewTranslations;
 	signupView: SignupViewTranslations;
 	admin: string;
@@ -172,6 +181,13 @@ export interface Translation {
 
 export const translations = {
 	en: {
+		appBar: {
+			openMenu: 'Open menu',
+			accountMenu: 'Account menu',
+			website: 'The Bay Compassion website',
+			staffLogin: 'Staff Login',
+			signOut: 'Sign Out',
+		},
 		guestView: {
 			forms: {
 				informationLegend: 'Your information',
@@ -336,6 +352,13 @@ export const translations = {
 		welcome: 'Welcome to the community food market',
 	},
 	es: {
+		appBar: {
+			openMenu: 'Abrir menú',
+			accountMenu: 'Menú de la cuenta',
+			website: 'Sitio web de The Bay Compassion',
+			staffLogin: 'Acceso del personal',
+			signOut: 'Cerrar sesión',
+		},
 		guestView: {
 			forms: {
 				informationLegend: 'Su información',
@@ -502,6 +525,13 @@ export const translations = {
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
 	},
 	fa: {
+		appBar: {
+			openMenu: 'باز کردن منو',
+			accountMenu: 'منوی حساب کاربری',
+			website: 'وب‌سایت The Bay Compassion',
+			staffLogin: 'ورود کارکنان',
+			signOut: 'خروج',
+		},
 		guestView: {
 			forms: {
 				informationLegend: 'اطلاعات شما',
@@ -665,6 +695,13 @@ export const translations = {
 		welcome: 'به بازار غذای جامعه خوش آمدید',
 	},
 	tl: {
+		appBar: {
+			openMenu: 'Buksan ang menu',
+			accountMenu: 'Menu ng account',
+			website: 'Website ng The Bay Compassion',
+			staffLogin: 'Mag-sign in para sa kawani',
+			signOut: 'Mag-sign out',
+		},
 		guestView: {
 			forms: {
 				informationLegend: 'Iyong impormasyon',
@@ -833,6 +870,13 @@ export const translations = {
 		welcome: 'Maligayang pagdating sa pamilihan ng pagkaing pangkomunidad',
 	},
 	vi: {
+		appBar: {
+			openMenu: 'Mở trình đơn',
+			accountMenu: 'Trình đơn tài khoản',
+			website: 'Trang web The Bay Compassion',
+			staffLogin: 'Đăng nhập nhân viên',
+			signOut: 'Đăng xuất',
+		},
 		guestView: {
 			forms: {
 				informationLegend: 'Thông tin của bạn',
@@ -996,6 +1040,13 @@ export const translations = {
 		welcome: 'Chào mừng đến với chợ thực phẩm cộng đồng',
 	},
 	zh: {
+		appBar: {
+			openMenu: '打开菜单',
+			accountMenu: '账户菜单',
+			website: 'The Bay Compassion 网站',
+			staffLogin: '工作人员登录',
+			signOut: '退出登录',
+		},
 		guestView: {
 			forms: {
 				informationLegend: '您的信息',
@@ -1150,6 +1201,13 @@ export const translations = {
 		welcome: '欢迎来到社区食品市场',
 	},
 	ar: {
+		appBar: {
+			openMenu: 'فتح القائمة',
+			accountMenu: 'قائمة الحساب',
+			website: 'موقع The Bay Compassion',
+			staffLogin: 'تسجيل دخول الموظفين',
+			signOut: 'تسجيل الخروج',
+		},
 		guestView: {
 			forms: {
 				informationLegend: 'معلوماتك',
