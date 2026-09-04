@@ -7,6 +7,7 @@ import { adminTranslations } from '../../adminLocales';
 import { serviceProgressLevels, type ServiceProgress } from '../../services/demoScenario';
 import { sessionStatuses, type SessionStatus } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
+import { DemoGuestPicker } from './DemoGuestPicker';
 
 export type DevModeViewProps = {
 	busy?: boolean;
@@ -111,42 +112,45 @@ export const DevModeView = observer(function DevModeView({ busy, onLoad }: DevMo
 					{t.devModeDisabled}
 				</p>
 			) : enabled ? (
-				<div className="dev-scenario-list">
-					{sessionStatuses.map((stage) => (
-						<article key={stage} className="dev-scenario">
-							<div>
-								<strong>{stageTitles[stage]}</strong>
-								<p>{stageDescriptions[stage]}</p>
-							</div>
-							{/* `service_started` covers the most ground of any status, so it gets one button
-							    per progress level instead of a single "load" button. */}
-							{stage === 'service_started' ? (
-								<div className="dev-progress-actions">
-									{serviceProgressLevels.map((progress) => (
-										<Button
-											key={progress}
-											type="button"
-											variant="outlined"
-											disabled={busy}
-											onClick={() => onLoad('service_started', progress)}
-										>
-											{progressLabels[progress]}
-										</Button>
-									))}
+				<>
+					<DemoGuestPicker />
+					<div className="dev-scenario-list">
+						{sessionStatuses.map((stage) => (
+							<article key={stage} className="dev-scenario">
+								<div>
+									<strong>{stageTitles[stage]}</strong>
+									<p>{stageDescriptions[stage]}</p>
 								</div>
-							) : (
-								<Button
-									type="button"
-									variant="outlined"
-									disabled={busy}
-									onClick={() => onLoad(stage, undefined)}
-								>
-									{t.devModeLoad}
-								</Button>
-							)}
-						</article>
-					))}
-				</div>
+								{/* `service_started` covers the most ground of any status, so it gets one button
+							    per progress level instead of a single "load" button. */}
+								{stage === 'service_started' ? (
+									<div className="dev-progress-actions">
+										{serviceProgressLevels.map((progress) => (
+											<Button
+												key={progress}
+												type="button"
+												variant="outlined"
+												disabled={busy}
+												onClick={() => onLoad('service_started', progress)}
+											>
+												{progressLabels[progress]}
+											</Button>
+										))}
+									</div>
+								) : (
+									<Button
+										type="button"
+										variant="outlined"
+										disabled={busy}
+										onClick={() => onLoad(stage, undefined)}
+									>
+										{t.devModeLoad}
+									</Button>
+								)}
+							</article>
+						))}
+					</div>
+				</>
 			) : null}
 		</Section>
 	);

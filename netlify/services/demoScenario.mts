@@ -3,10 +3,10 @@ import { ne } from 'drizzle-orm';
 import { db } from '../../db/index.mjs';
 import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
 import { buildScenario } from '../../scripts/fake-data.mjs';
+import type { DemoRoster } from '../../src/services/demo-preview.js';
 import type { ServiceProgress } from '../../src/services/demoScenario.js';
 import type { SessionStatus } from '../../src/services/sessionStateMachine.js';
-import { issueVisitToken, normalizePhone } from './guestCredentials.mjs';
-import type { ActionResult } from './marketSession.mjs';
+import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
 import { resolveOutstandingVisits } from './visitQueue.mjs';
 
 export type DemoScenarioInput = {
@@ -44,7 +44,7 @@ export function demoDataToolsEnabled() {
  * would — outstanding visits resolved to `no_show`, status set to `ended` — so this never deletes
  * history, just moves on from it.
  */
-export async function loadScenario(input: DemoScenarioInput): Promise<ActionResult> {
+export async function loadScenario(input: DemoScenarioInput): Promise<DemoRoster> {
 	const size = scenarioSizeByStage[input.stage];
 	const data = buildScenario({
 		stage: input.stage,
@@ -54,6 +54,9 @@ export async function loadScenario(input: DemoScenarioInput): Promise<ActionResu
 		seed: Math.floor(Math.random() * 2 ** 31),
 		now: new Date(),
 	});
+
+	const deviceCredentials = new Map(data.guests.map((guest) => [guest.id, issueDeviceToken()]));
+	const visitCredentials = new Map(data.visits.map((visit) => [visit.id, issueVisitToken()]));
 
 	await db.transaction(async (tx) => {
 		const stale = await tx
@@ -77,6 +80,7 @@ export async function loadScenario(input: DemoScenarioInput): Promise<ActionResu
 				data.guests.map((guest) => ({
 					...guest,
 					normalizedPhone: normalizePhone(guest.phone),
+					deviceTokenHash: deviceCredentials.get(guest.id)!.tokenHash,
 				})),
 			);
 		}
@@ -91,11 +95,41 @@ export async function loadScenario(input: DemoScenarioInput): Promise<ActionResu
 			await tx.insert(visits).values(
 				data.visits.map((visit) => ({
 					...visit,
-					accessTokenHash: issueVisitToken().tokenHash,
+					accessTokenHash: visitCredentials.get(visit.id)!.tokenHash,
 				})),
 			);
 		}
 	});
 
-	return { ok: true };
+	return {
+		marketEventId: data.sessions[0]!.id,
+		guests: data.guests.map((guest) => {
+			const visit = data.visits.find((entry) => entry.guestId === guest.id);
+
+			return {
+				id: guest.id,
+				firstName: guest.firstName,
+				lastName: guest.lastName,
+				phone: guest.phone,
+				locale: guest.locale,
+				deviceToken: deviceCredentials.get(guest.id)!.token,
+				household: visit
+					? {
+							ageRange: visit.ageRange ?? '',
+							householdSize: visit.householdSize,
+							childrenCount: 0,
+							seniorsCount: 0,
+						}
+					: null,
+				visit: visit
+					? {
+							id: visit.id,
+							token: visitCredentials.get(visit.id)!.token,
+							status: visit.status,
+							queuePosition: visit.queuePosition,
+						}
+					: null,
+			};
+		}),
+	};
 }

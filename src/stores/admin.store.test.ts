@@ -63,7 +63,10 @@ function storeWith(
 		addGuest: vi.fn().mockResolvedValue(undefined),
 		callNext: vi.fn().mockResolvedValue(['visit-1']),
 		sendBroadcast: vi.fn().mockResolvedValue(3),
-		loadDemoScenario: vi.fn().mockResolvedValue(overviewWith()),
+		loadDemoScenario: vi.fn().mockResolvedValue({
+			...overviewWith(),
+			demoRoster: { marketEventId: 'event-1', guests: [] },
+		}),
 		isDemoDataEnabled: vi.fn().mockResolvedValue(true),
 		...api,
 	};

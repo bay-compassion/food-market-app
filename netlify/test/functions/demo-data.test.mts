@@ -29,18 +29,21 @@ afterEach(() => {
 });
 
 describe('demo-data handler routing', () => {
-	it('returns the requirePermission response when unauthorized, without checking anything else', async () => {
-		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+	it.each(['GET', 'POST'])(
+		'returns the requirePermission response for %s when unauthorized',
+		async (method) => {
+			const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
 
-		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
+			vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
 
-		const response = await handler(request('GET'));
+			const response = await handler(request(method));
 
-		expect(response.status).toBe(401);
-		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
-		expect(response.headers.get('Cache-Control')).toBe('no-store');
-		expect(demoDataToolsEnabled).not.toHaveBeenCalled();
-	});
+			expect(response.status).toBe(401);
+			await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
+			expect(response.headers.get('Cache-Control')).toBe('no-store');
+			expect(demoDataToolsEnabled).not.toHaveBeenCalled();
+		},
+	);
 
 	it('returns 405 for unsupported methods once authorized', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
@@ -96,7 +99,7 @@ describe('POST /api/admin/demo-data', () => {
 	it('loads the scenario and returns the refreshed overview once enabled', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(demoDataToolsEnabled).mockReturnValueOnce(true);
-		vi.mocked(loadScenario).mockResolvedValueOnce({ ok: true });
+		vi.mocked(loadScenario).mockResolvedValueOnce({ marketEventId: 'demo-event', guests: [] });
 		queueResult([]); // marketOverview finds no current event left to show
 
 		const response = await handler(
@@ -108,7 +111,13 @@ describe('POST /api/admin/demo-data', () => {
 			serviceProgress: 'halfway',
 		});
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ event: null, questions: [], counts: {} });
+		expect(response.headers.get('Cache-Control')).toBe('no-store');
+		await expect(response.json()).resolves.toEqual({
+			event: null,
+			questions: [],
+			counts: {},
+			demoRoster: { marketEventId: 'demo-event', guests: [] },
+		});
 		expect(db.select).toHaveBeenCalledOnce();
 	});
 });

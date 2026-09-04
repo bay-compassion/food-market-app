@@ -11,10 +11,6 @@ import {
 import { demoDataToolsEnabled, loadScenario } from '../../services/demoScenario.mjs';
 import { marketOverview } from '../../services/marketSession.mjs';
 
-async function overview() {
-	return Response.json(await marketOverview());
-}
-
 async function runLoad(request: Request) {
 	const body = await jsonBody(request);
 	const stage = (body as { stage?: unknown } | null)?.stage;
@@ -35,9 +31,12 @@ async function runLoad(request: Request) {
 		return jsonError('Not found.', 404);
 	}
 
-	const result = await loadScenario({ stage, serviceProgress });
+	const demoRoster = await loadScenario({ stage, serviceProgress });
 
-	return result.ok ? overview() : jsonError(result.error, result.status);
+	return Response.json(
+		{ ...(await marketOverview()), demoRoster },
+		{ headers: { 'Cache-Control': 'no-store' } },
+	);
 }
 
 export const demoRoutes = createRouter();
