@@ -23,11 +23,13 @@ export class TranslationStore {
 		return ['ar', 'fa'].includes(this.locale) ? 'rtl' : 'ltr';
 	}
 
-	constructor() {
+	constructor(
+		private readonly storage: Pick<Storage, 'getItem' | 'setItem'> = window.localStorage,
+	) {
 		this.locale = this.readSavedLanguage() ?? this.detectLanguage();
 		this.language = this.locale;
 
-		return makeReactive(this);
+		return makeReactive(this, { storage: false });
 	}
 
 	setLanguage(language: Language): void {
@@ -37,13 +39,13 @@ export class TranslationStore {
 
 		this.language = language;
 		this.locale = language;
-		window.localStorage.setItem(StorageKey.LOCALE, language);
+		this.storage.setItem(StorageKey.LOCALE, language);
 	}
 
 	/** Bypasses `StorageService` — the saved value is a bare language code, not JSON, so it can be
 	 *  read directly on a fresh visit, before there is a device to identify a returning one. */
 	private readSavedLanguage(): Language | null {
-		const saved = window.localStorage.getItem(StorageKey.LOCALE);
+		const saved = this.storage.getItem(StorageKey.LOCALE);
 
 		return saved && supportedLanguages.includes(saved as Language) ? (saved as Language) : null;
 	}

@@ -14,32 +14,40 @@ import './styles/base.css';
 import './styles/app-shell.css';
 import './styles/admin.css';
 
-const rootStore = new RootStore();
+async function bootstrap() {
+	const previewName = window.sessionStorage.getItem('bay-compassion.demo-preview') ?? undefined;
+	const browserStorage = previewName
+		? new (await import('./stores/demo-preview-session')).DemoPreviewSession()
+		: undefined;
+	const rootStore = new RootStore({ browserStorage, previewName });
 
-/**
- * `Auth0Provider` is mounted even with no Auth0 configured, so `useAuth0()` is safe to call
- * unconditionally: the SDK supplies a context whose `isAuthenticated` is simply always false, and
- * `isAuth0Configured` is what the screens branch on.
- */
-const tree = (
-	<StrictMode>
-		<AppThemeProvider>
-			<Auth0Provider
-				domain={auth0Settings?.domain ?? ''}
-				clientId={auth0Settings?.clientId ?? ''}
-				authorizationParams={auth0Settings?.authorizationParams}
-			>
-				<RootStoreProvider store={rootStore}>
-					<RouterProvider router={router} />
-				</RootStoreProvider>
-			</Auth0Provider>
-		</AppThemeProvider>
-	</StrictMode>
-);
+	/**
+	 * `Auth0Provider` is mounted even with no Auth0 configured, so `useAuth0()` is safe to call
+	 * unconditionally: the SDK supplies a context whose `isAuthenticated` is simply always false, and
+	 * `isAuth0Configured` is what the screens branch on.
+	 */
+	const tree = (
+		<StrictMode>
+			<AppThemeProvider>
+				<Auth0Provider
+					domain={auth0Settings?.domain ?? ''}
+					clientId={auth0Settings?.clientId ?? ''}
+					authorizationParams={auth0Settings?.authorizationParams}
+				>
+					<RootStoreProvider store={rootStore}>
+						<RouterProvider router={router} />
+					</RootStoreProvider>
+				</Auth0Provider>
+			</AppThemeProvider>
+		</StrictMode>
+	);
 
-rootStore.start();
-createRoot(document.getElementById('app')!).render(tree);
+	rootStore.start();
+	createRoot(document.getElementById('app')!).render(tree);
 
-if (import.meta.hot) {
-	import.meta.hot.dispose(() => rootStore[Symbol.dispose]());
+	if (import.meta.hot) {
+		import.meta.hot.dispose(() => rootStore[Symbol.dispose]());
+	}
 }
+
+void bootstrap();

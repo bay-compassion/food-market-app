@@ -1,6 +1,7 @@
 import type { Locale } from '../locales.ts';
 import type { SessionOverview } from '../stores/market-session.store.ts';
 import type { AgeRange } from './ageRanges.ts';
+import type { DemoRoster } from './demo-preview';
 import type { ServiceProgress } from './demoScenario.ts';
 import type { GuestAdmission, QueuePlacement } from './guestAdmission.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
@@ -167,10 +168,10 @@ export class AdminApi {
 	async loadDemoScenario(
 		stage: SessionStatus,
 		serviceProgress?: ServiceProgress,
-	): Promise<SessionOverview> {
+	): Promise<SessionOverview & { demoRoster: DemoRoster }> {
 		const response = await this.send('POST', '/api/admin/demo-data', { stage, serviceProgress });
 
-		return this.readJson<SessionOverview>(response, 'demo-data');
+		return this.readJson<SessionOverview & { demoRoster: DemoRoster }>(response, 'demo-data');
 	}
 
 	private async get(url: string): Promise<Response> {

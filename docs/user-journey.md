@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=fa580c63bb32, src/components/guest-view/GuestView.tsx=4cdad1d076cd, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=0e473a197e03, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=f6e140bc518b, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=5b786cf6123c, netlify/routes/notifications/sms-subscription.mts=a4b734cae756 -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=4cdad1d076cd, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=a4c800d793d0, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=5b786cf6123c, netlify/routes/notifications/sms-subscription.mts=a4b734cae756 -->
 
 # Guest journey
 
@@ -217,3 +217,12 @@ flowchart TD
   `waiting` or `called` as `no_show`, so nobody is left holding a status that implies service is
   still coming. See [`session-lifecycle.md`](session-lifecycle.md#the-visit-lifecycle) for the full
   set of visit transitions.
+
+## Dev Mode guest previews
+
+Loading a demo scenario returns credentials only for the fake guests it creates. The Dev Mode
+picker opens the selected guest in a separate tab, using the same guest screens and APIs shown
+above. That tab stores identity, language, household defaults, and visit credentials in its own
+session-storage namespace, leaving the normal browser identity unchanged. Refresh preserves the
+preview; exiting clears it. Notification enrollment is disabled in preview tabs. An ended demo
+visit expires normally, showing the regular post-session guest experience.

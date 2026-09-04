@@ -141,7 +141,7 @@ export class GuestStore {
 		return this._smsConfigured && this._deviceToken !== null;
 	}
 
-	forceDisableSms: boolean = false;
+	notificationsDisabled: boolean = false;
 
 	constructor(options: GuestStoreOptions = {}) {
 		this.storage = options.storage === undefined ? new StorageService() : options.storage;
@@ -234,7 +234,13 @@ export class GuestStore {
 			return this._notificationSettingsPromise;
 		}
 
-		if (this._notificationSettingsLoaded || this.forceDisableSms) {
+		if (this.notificationsDisabled) {
+			this._notificationSettingsLoaded = true;
+
+			return Promise.resolve();
+		}
+
+		if (this._notificationSettingsLoaded) {
 			return Promise.resolve();
 		}
 
@@ -257,6 +263,10 @@ export class GuestStore {
 	}
 
 	async enablePushNotifications(visitToken: string): Promise<void> {
+		if (this.notificationsDisabled) {
+			return;
+		}
+
 		if (!this._pushPublicKey) {
 			await this.loadPushConfiguration(visitToken);
 		}

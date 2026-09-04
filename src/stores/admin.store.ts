@@ -15,6 +15,7 @@ import type { Permission } from '../services/permissions.ts';
 import type { SessionCommand } from '../services/sessionStateMachine.ts';
 import type { VisitCommand } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
+import { DemoStore } from './demo.store';
 import type { SessionSettingsInput, MarketSessionStore } from './market-session.store.ts';
 
 /** The session commands the dashboard offers as one-click actions. */
@@ -38,6 +39,7 @@ export type AdminStoreOptions = {
  * a presentation decision, so the component asks and then calls the plain method.
  */
 export class AdminStore {
+	readonly demo = new DemoStore();
 	private _guests: AdminGuest[] = [];
 	private _sessionGuests: AdminGuest[] = [];
 	private _history: HistoricalEvent[] = [];
@@ -269,7 +271,10 @@ export class AdminStore {
 
 	async loadDemoScenario(...parameters: Parameters<AdminApi['loadDemoScenario']>): Promise<void> {
 		await this.run(async () => {
-			this.session.applyServerState(await this.api.loadDemoScenario(...parameters));
+			const response = await this.api.loadDemoScenario(...parameters);
+
+			runInAction(() => this.demo.save(response.demoRoster, response.event?.id ?? null));
+			this.session.applyServerState(response);
 			await this.refreshAll();
 			runInAction(() => (this._feedback = { kind: 'demo-loaded' }));
 		}, undefined);

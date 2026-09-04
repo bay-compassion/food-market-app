@@ -14,7 +14,7 @@ type GuestIdentityCardArgs = {
 	deviceToken: string | null;
 	/** Read by the decorator's stubbed `/api/notification-status`, not by the component. */
 	smsSubscribed: boolean;
-	forceDisableSms: boolean;
+	notificationsDisabled: boolean;
 	notificationStatus: 'success' | 'loading' | 'error';
 };
 
@@ -48,7 +48,8 @@ class MemoryStorage implements Storage {
 
 /** Provides the component with the same seeded store shape it receives in the running app. */
 const withGuestStore: Decorator = (Story, context) => {
-	const { deviceToken, identity, locale, forceDisableSms } = context.args as GuestIdentityCardArgs;
+	const { deviceToken, identity, locale, notificationsDisabled } =
+		context.args as GuestIdentityCardArgs;
 	const storage = new StorageService(new MemoryStorage());
 
 	if (deviceToken) {
@@ -62,7 +63,7 @@ const withGuestStore: Decorator = (Story, context) => {
 	const store = new RootStore({ storage });
 
 	store.translations.setLanguage(locale);
-	store.guest.forceDisableSms = forceDisableSms;
+	store.guest.notificationsDisabled = notificationsDisabled;
 
 	return (
 		<RootStoreProvider store={store}>
@@ -125,7 +126,7 @@ const meta = {
 		locale: 'en',
 		deviceToken: 'story-device-token'.padEnd(32, 'x'),
 		smsSubscribed: false,
-		forceDisableSms: false,
+		notificationsDisabled: false,
 		notificationStatus: 'success',
 		identity: {
 			firstName: 'Ari',
