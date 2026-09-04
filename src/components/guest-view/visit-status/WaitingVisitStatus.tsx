@@ -91,7 +91,10 @@ export function WaitingVisitStatus({ copy, queuePosition, guestsAhead }: Waiting
 				<QueueNext className="queue-next">{copy.waiting.youAreNext}</QueueNext>
 			) : guestsAhead !== null ? (
 				<GuestsAhead className="guests-ahead">
-					<QueuePositionDots aheadCount={guestsAhead} />
+					{/* `guestsAhead` here is always at least 1 (the `=== 0` branch above claims that
+					    case), and `linePosition` counts outward from the cart starting at 1 for the
+					    pip right next to it — one slot further out than the number of guests ahead. */}
+					<QueuePositionDots linePosition={guestsAhead + 1} />
 					<GuestsAheadCount>
 						<strong>{guestsAhead}</strong>
 						<span>{copy.waiting.guestsAheadLabel}</span>
