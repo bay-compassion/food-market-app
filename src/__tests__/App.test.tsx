@@ -369,7 +369,7 @@ describe('App', () => {
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBeNull();
-		expect(container.textContent).not.toContain('You’re in the queue!');
+		expect(container.textContent).not.toContain('You’re on the list!');
 	});
 
 	it('shows identity signup on /signup when the device token is missing', async () => {
@@ -491,7 +491,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.textContent).toContain('Not placed'));
 
-		expect(container.textContent).not.toContain('You’re in the queue!');
+		expect(container.textContent).not.toContain('You’re on the list!');
 	});
 
 	it('lets a cancelled guest register again while the market is open', async () => {
@@ -507,7 +507,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
-		expect(container.textContent).not.toContain('You’re in the queue!');
+		expect(container.textContent).not.toContain('You’re on the list!');
 	});
 
 	it('does not let a visit from another market override the current market', async () => {

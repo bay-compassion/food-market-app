@@ -1,26 +1,19 @@
 import { Card, CardContent } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import { useRootStore } from '../../stores/react/store-context';
-import { useTranslation } from '../../stores/react/use-translation';
+import { CancelVisitAction } from './CancelVisitAction';
 import { GuestVisitStatus } from './GuestVisitStatus';
 
-/** Current-visit card and the side effect used to cancel that visit. */
+/** Current-visit card, plus the standalone cancel action kept outside it. */
 export const GuestVisitState = observer(function GuestVisitState() {
-	const t = useTranslation();
-	const { visit } = useRootStore();
-
-	function cancelVisit() {
-		if (window.confirm(t.guestView.visitStatus.cancelConfirmation)) {
-			void visit.cancel();
-		}
-	}
-
 	return (
-		<Card aria-live="polite">
-			<CardContent>
-				<GuestVisitStatus onCancelVisit={cancelVisit} />
-			</CardContent>
-		</Card>
+		<>
+			<Card aria-live="polite">
+				<CardContent>
+					<GuestVisitStatus />
+				</CardContent>
+			</Card>
+			<CancelVisitAction />
+		</>
 	);
 });

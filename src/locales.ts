@@ -253,7 +253,7 @@ export const translations = {
 					details: 'We’ll let you know after the lottery is drawn. Thank you for being here.',
 				},
 				waiting: {
-					header: 'You’re in the queue!',
+					header: 'You’re on the list!',
 					details: 'We’ll let you know when it’s your turn. Thank you for being here.',
 					queuePositionLabel: 'Your place in line',
 					guestsAheadLabel: 'Guests ahead of you',
@@ -424,7 +424,7 @@ export const translations = {
 					details: 'Le avisaremos después del sorteo. Gracias por estar aquí.',
 				},
 				waiting: {
-					header: '¡Ya está en la fila!',
+					header: '¡Ya está en la lista!',
 					details: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
 					queuePositionLabel: 'Su lugar en la fila',
 					guestsAheadLabel: 'Invitados delante de usted',
@@ -596,7 +596,7 @@ export const translations = {
 					details: 'پس از انجام قرعه‌کشی به شما اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
 				},
 				waiting: {
-					header: 'شما در صف هستید!',
+					header: 'شما در لیست هستید!',
 					details: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
 					queuePositionLabel: 'جایگاه شما در صف',
 					guestsAheadLabel: 'مهمانان جلوتر از شما',
@@ -768,7 +768,7 @@ export const translations = {
 					details: 'Ipaaalam namin sa inyo pagkatapos ng lottery. Salamat sa pagpunta.',
 				},
 				waiting: {
-					header: 'Nasa pila na kayo!',
+					header: 'Nasa listahan na kayo!',
 					details: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
 					queuePositionLabel: 'Ang inyong puwesto sa pila',
 					guestsAheadLabel: 'Mga bisita bago kayo',
@@ -940,7 +940,7 @@ export const translations = {
 					details: 'Chúng tôi sẽ thông báo cho bạn sau khi xổ số. Cảm ơn bạn đã đến.',
 				},
 				waiting: {
-					header: 'Bạn đã vào hàng đợi!',
+					header: 'Bạn đã có tên trong danh sách!',
 					details: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
 					queuePositionLabel: 'Vị trí của bạn trong hàng',
 					guestsAheadLabel: 'Số khách trước bạn',
@@ -1105,7 +1105,7 @@ export const translations = {
 				},
 				registered: { header: '您已参加抽签！', details: '抽签后我们会通知您。感谢您的到来。' },
 				waiting: {
-					header: '您已加入队列！',
+					header: '您已加入名单！',
 					details: '轮到您时我们会通知您。感谢您的到来。',
 					queuePositionLabel: '您的排队位置',
 					guestsAheadLabel: '您前面的访客',
