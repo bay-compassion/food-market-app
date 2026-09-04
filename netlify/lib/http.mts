@@ -3,6 +3,8 @@ import { bodyLimit } from 'hono/body-limit';
 import { HTTPException } from 'hono/http-exception';
 import { secureHeaders } from 'hono/secure-headers';
 
+import { invocationLogger, withLogger, type InvocationContext } from './logging.mjs';
+
 export const maxRequestBodyBytes = 32 * 1024;
 
 export function jsonError(message: string, status = 400) {
@@ -47,7 +49,7 @@ export function methodNotAllowed() {
 	return jsonError('Method not allowed', 405);
 }
 
-export function routeHandler<E extends Env>(app: Hono<E>) {
+export function routeHandler<E extends Env>(app: Hono<E>, functionName = 'api') {
 	// Apply transport policy once, outside the nested feature routers. Netlify supplies HSTS.
 	const boundary = createRouter();
 
@@ -69,5 +71,40 @@ export function routeHandler<E extends Env>(app: Hono<E>) {
 		context.req.method === 'HEAD' ? methodNotAllowed() : app.fetch(context.req.raw),
 	);
 
-	return async (request: Request) => boundary.fetch(request);
+	// Only registered paths are logged; arbitrary URLs can contain personal data or tokens.
+	const paths = new Set(app.routes.map((route) => route.path));
+
+	return async (request: Request, invocation?: InvocationContext) => {
+		const { log, requestId } = invocationLogger(functionName, invocation);
+		const started = performance.now();
+		const path = new URL(request.url).pathname;
+		const fields = { method: request.method, path: paths.has(path) ? path : '[unmatched]' };
+
+		return withLogger(log, async () => {
+			try {
+				const response = await boundary.fetch(request);
+
+				response.headers.set('X-Request-Id', requestId);
+				const level = response.status >= 500 ? 'error' : response.status >= 400 ? 'warn' : 'info';
+
+				log[level]({
+					message: 'http.completed',
+					...fields,
+					status: response.status,
+					durationMs: performance.now() - started,
+				});
+
+				return response;
+			} catch (err) {
+				log.error({
+					message: 'http.failed',
+					...fields,
+					status: 500,
+					durationMs: performance.now() - started,
+					err,
+				});
+				throw err;
+			}
+		});
+	};
 }

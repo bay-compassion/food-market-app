@@ -1,5 +1,6 @@
 import { db } from '../../db/index.mjs';
 import { notificationDeliveries } from '../../db/schema.mjs';
+import { getLogger } from '../lib/logging.mjs';
 import { deliverPendingNotifications, type DeliveryType } from './pushNotifications.mjs';
 import { deliverPendingSmsNotifications } from './smsNotifications.mjs';
 
@@ -89,6 +90,19 @@ export async function deliverQueuedNotifications(options?: {
 		deliverPendingNotifications(options),
 		deliverPendingSmsNotifications(options),
 	]);
+
+	for (const [channel, result] of [
+		['push', push],
+		['sms', sms],
+	] as const) {
+		if (result.sent + result.failed + result.skipped > 0) {
+			getLogger()[result.failed > 0 ? 'warn' : 'info']({
+				message: 'notifications.delivered',
+				channel,
+				...result,
+			});
+		}
+	}
 
 	return {
 		sent: push.sent + sms.sent,
