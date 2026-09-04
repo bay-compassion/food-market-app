@@ -29,7 +29,7 @@ export type GuestStoreOptions = {
  * It provides methods for initializing, registering, signing up, managing notifications, and persisting data across user sessions.
  *
  * @remarks
- * To reduce the friction that might come with passwords and PIN codes, guests are identified rather than authenticated.
+ * Guests are identified by a browser-local device token to keep registration friction low.
  * An *identified* guest is a user whose device has been assigned a *device token*. This can lead to the situation where
  * the same person in the real world may be represented by multiple `guest` records in the database, but that is a compromise
  * that we have accepted.

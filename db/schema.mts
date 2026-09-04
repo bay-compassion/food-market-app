@@ -51,8 +51,6 @@ export const guests = pgTable(
 		normalizedPhone: text('normalized_phone').notNull(),
 		/** Hash of the browser-local credential. Null for admin-created and earlier guests. */
 		deviceTokenHash: text('device_token_hash'),
-		/** Retained for a later cleanup migration; self-service registration no longer uses PINs. */
-		pinHash: text('pin_hash'),
 		locale: text('locale').notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		// `age_range`, `household_size`, `children_count`, and `seniors_count` still exist as physical
@@ -154,11 +152,3 @@ export const smsSubscriptions = pgTable(
 	},
 	(table) => [uniqueIndex('sms_subscriptions_guest_idx').on(table.guestId)],
 );
-
-/** Retained until a separate destructive migration removes the retired PIN credential data. */
-export const guestPinAttempts = pgTable('guest_pin_attempts', {
-	normalizedPhone: text('normalized_phone').primaryKey(),
-	failureCount: integer('failure_count').notNull().default(0),
-	windowStartedAt: timestamp('window_started_at', { withTimezone: true }).notNull().defaultNow(),
-	lockedUntil: timestamp('locked_until', { withTimezone: true }),
-});
