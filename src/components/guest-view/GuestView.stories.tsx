@@ -9,6 +9,7 @@ import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { Card } from '../ui/layout/Card';
+import { CancelVisitAction } from './CancelVisitAction';
 import { GuestLotteryPendingState } from './GuestLotteryPendingState';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
@@ -145,8 +146,9 @@ function VisitStatusRow({
 				style={{ width: 'auto', padding: 0 }}
 			>
 				<Card aria-live="polite">
-					<GuestVisitStatus onCancelVisit={() => undefined} />
+					<GuestVisitStatus />
 				</Card>
+				<CancelVisitAction />
 			</section>
 		</RootStoreProvider>
 	);

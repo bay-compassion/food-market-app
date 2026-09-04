@@ -7,6 +7,7 @@ import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { Card } from '../ui/layout/Card';
+import { CancelVisitAction } from './CancelVisitAction';
 import { GuestVisitStatus } from './GuestVisitStatus';
 
 /**
@@ -94,8 +95,9 @@ function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisit
 	return (
 		<RootStoreProvider store={store}>
 			<Card aria-live="polite">
-				<GuestVisitStatus onCancelVisit={() => void store.visit.cancel()} />
+				<GuestVisitStatus />
 			</Card>
+			<CancelVisitAction />
 		</RootStoreProvider>
 	);
 }

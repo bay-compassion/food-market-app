@@ -1,31 +1,72 @@
 import styled from '@emotion/styled';
-import type { ReactNode } from 'react';
 
 import type { VisitStatusTranslations } from '@/locales.ts';
 
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
+import { QueuePositionDots } from './QueuePositionDots';
 
 const QueueStanding = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
 	margin-bottom: 27px;
-	padding: 18px;
+	padding: 24px 20px;
 	border-radius: var(--radius-md);
 	background: var(--color-surface-soft);
-
-	p {
-		margin-bottom: 0;
-	}
 `;
 
-const QueuePosition = styled.p`
-	display: grid;
+const QueuePosition = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	gap: 4px;
-	margin-bottom: 8px;
+
+	span {
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
 
 	strong {
 		font-family: var(--font-heading);
-		font-size: 44px;
+		font-weight: 700;
+		font-size: 76px;
 		line-height: 1;
 		color: var(--color-brand);
+	}
+`;
+
+const GuestsAhead = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+`;
+
+const GuestsAheadCount = styled.div`
+	display: inline-flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 10px 18px;
+	border: 1.5px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+	border-radius: var(--radius-lg);
+	background: var(--color-background);
+
+	strong {
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: 26px;
+		line-height: 1;
+		color: var(--color-brand);
+	}
+
+	span {
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--color-text-muted);
 	}
 `;
 
@@ -37,15 +78,9 @@ export type WaitingVisitStatusProps = {
 	copy: VisitStatusTranslations;
 	queuePosition: number | null;
 	guestsAhead: number | null;
-	footer?: ReactNode;
 };
 
-export function WaitingVisitStatus({
-	copy,
-	queuePosition,
-	guestsAhead,
-	footer,
-}: WaitingVisitStatusProps) {
+export function WaitingVisitStatus({ copy, queuePosition, guestsAhead }: WaitingVisitStatusProps) {
 	const queueDetails = queuePosition ? (
 		<QueueStanding className="queue-standing">
 			<QueuePosition className="queue-position">
@@ -55,9 +90,13 @@ export function WaitingVisitStatus({
 			{guestsAhead === 0 ? (
 				<QueueNext className="queue-next">{copy.waiting.youAreNext}</QueueNext>
 			) : guestsAhead !== null ? (
-				<p>
-					{copy.waiting.guestsAheadLabel}: <strong>{guestsAhead}</strong>
-				</p>
+				<GuestsAhead className="guests-ahead">
+					<QueuePositionDots aheadCount={guestsAhead} />
+					<GuestsAheadCount>
+						<strong>{guestsAhead}</strong>
+						<span>{copy.waiting.guestsAheadLabel}</span>
+					</GuestsAheadCount>
+				</GuestsAhead>
 			) : null}
 		</QueueStanding>
 	) : null;
@@ -68,7 +107,6 @@ export function WaitingVisitStatus({
 			heading={copy.waiting.header}
 			description={copy.waiting.details}
 			details={queueDetails}
-			footer={footer}
 		/>
 	);
 }

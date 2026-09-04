@@ -6,7 +6,6 @@ export type GuestVisitStatusPanelProps = {
 	heading: string;
 	description?: string;
 	details?: ReactNode;
-	footer?: ReactNode;
 	tone?: 'default' | 'urgent';
 	iconClassName?: string;
 };
@@ -54,7 +53,6 @@ export function GuestVisitStatusPanel({
 	heading,
 	description,
 	details,
-	footer,
 	tone = 'default',
 	iconClassName,
 }: GuestVisitStatusPanelProps) {
@@ -70,7 +68,6 @@ export function GuestVisitStatusPanel({
 			<h2>{heading}</h2>
 			{details}
 			{description ? <p>{description}</p> : null}
-			{footer}
 		</Panel>
 	);
 }
