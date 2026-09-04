@@ -1,0 +1,23 @@
+{
+  "AUTH0_ALLOW_DELETE": false,
+  "AUTH0_EXPORT_IDENTIFIERS": false,
+  "AUTH0_EXPORT_SECRETS": false,
+  "AUTH0_EXCLUDED_CLIENTS": ["Bay Compassion Auth0 Deploy CLI"],
+  "EXCLUDED_PROPS": {
+    "clients": ["client_id", "client_secret", "signing_keys", "created_at", "updated_at"],
+    "resourceServers": ["id"],
+    "connections": ["id"],
+    "databases": ["id"],
+    "clientGrants": ["id"],
+    "roles": ["id"]
+  },
+  "AUTH0_INCLUDED_ONLY": [
+    "clients",
+    "clientGrants",
+    "resourceServers",
+    "connections",
+    "databases",
+    "roles",
+    "tenant"
+  ]
+}

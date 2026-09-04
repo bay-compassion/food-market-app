@@ -186,8 +186,11 @@ and the local `netlify dev` origin to **Allowed Callback URLs**, **Allowed Logou
 For local values not supplied by a linked Netlify site, copy `.env.example` to `.env` and replace
 the placeholders. Do not commit `.env`.
 
-Every Auth0 user who can sign in to this application has admin access. If the tenant also serves
-non-admin users, configure Auth0 API permissions and roles before inviting them to this application.
+Signed-in users need the [API permissions and roles](docs/roles.md) required by each admin
+operation. Signing in alone does not grant access.
+
+Tenant configuration is kept as code. Follow the [Auth0 configuration sync guide](docs/auth0.md)
+to pull dashboard changes, preview updates, and push reviewed configuration.
 
 ## Metabase (optional ad hoc analytics)
 

@@ -8,6 +8,7 @@
     "playwright.config.*",
     "eslint.config.*",
     "scripts/capture-twilio-opt-in.mts",
+    "infrastructure/auth0/auth0.mts",
     "scripts/inspect-twilio-campaign.mts",
     "e2e/**/*.ts"
   ],

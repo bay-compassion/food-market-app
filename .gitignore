@@ -76,6 +76,11 @@ typings/
 .env
 .env.test
 
+# Auth0 Management API credentials and unreviewed tenant exports
+/infrastructure/auth0/.env.*
+!/infrastructure/auth0/.env.example
+/infrastructure/auth0/export/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
