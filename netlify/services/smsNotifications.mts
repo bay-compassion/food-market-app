@@ -4,6 +4,7 @@ import twilio from 'twilio';
 import { db } from '../../db/index.mjs';
 import { guests, notificationDeliveries, smsSubscriptions, visits } from '../../db/schema.mjs';
 import { translations, type Locale } from '../../src/locales.js';
+import { getLogger } from '../lib/logging.mjs';
 import { deliveryCopy, notificationsEnabled, type DeliveryType } from './pushNotifications.mjs';
 
 /**
@@ -121,6 +122,15 @@ export async function deliverPendingSmsNotifications(options?: {
 		} catch (cause: unknown) {
 			const code =
 				typeof cause === 'object' && cause && 'code' in cause ? Number(cause.code) : null;
+
+			getLogger().warn({
+				message: 'notification.delivery_failed',
+				channel: 'sms',
+				deliveryId: row.id,
+				attempt: row.attempts + 1,
+				providerCode: code,
+				err: cause,
+			});
 
 			if (code !== null && permanentFailureCodes.has(code)) {
 				await db.delete(smsSubscriptions).where(eq(smsSubscriptions.guestId, row.guestId));

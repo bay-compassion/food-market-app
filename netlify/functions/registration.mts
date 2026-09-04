@@ -9,7 +9,7 @@ const registration = createRouter();
 registration.route('/', guestInformationRoutes);
 registration.route('/', lotteryRegistrationRoutes);
 
-export default routeHandler(registration);
+export default routeHandler(registration, 'registration');
 
 // Isolate public writes so guests sharing Wi-Fi cannot exhaust this budget by polling their visit.
 export const config: Config = {

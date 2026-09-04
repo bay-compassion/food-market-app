@@ -4,6 +4,7 @@ import webPush from 'web-push';
 import { db } from '../../db/index.mjs';
 import { guests, notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.mjs';
 import { translations, type Locale } from '../../src/locales.js';
+import { getLogger } from '../lib/logging.mjs';
 
 export const notificationTypes = [
 	'registration_confirmed',
@@ -171,6 +172,15 @@ export async function deliverPendingNotifications(options?: {
 				typeof cause === 'object' && cause && 'statusCode' in cause
 					? Number(cause.statusCode)
 					: null;
+
+			getLogger().warn({
+				message: 'notification.delivery_failed',
+				channel: 'push',
+				deliveryId: row.id,
+				attempt: row.attempts + 1,
+				providerStatus: statusCode,
+				err: cause,
+			});
 
 			if (statusCode === 404 || statusCode === 410) {
 				await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, row.endpoint));

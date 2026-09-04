@@ -4,11 +4,14 @@ import { and, eq, inArray, lte } from 'drizzle-orm';
 import { db } from '../../db/index.mjs';
 import { marketEvents, visits } from '../../db/schema.mjs';
 import { registrationGraceDeadline } from '../../src/services/sessionStateMachine.js';
+import { getLogger, loggedJob } from '../lib/logging.mjs';
 import { deliverQueuedNotifications, queueNotification } from '../services/notifications.mjs';
 import { notificationsEnabled } from '../services/pushNotifications.mjs';
 
-export default async () => {
+export default loggedJob('notification-schedule', async () => {
 	if (!notificationsEnabled()) {
+		getLogger().debug({ message: 'notifications.disabled' });
+
 		return;
 	}
 	const now = new Date();
@@ -60,6 +63,6 @@ export default async () => {
 	}
 
 	await deliverQueuedNotifications({ limit: 250 });
-};
+});
 
 export const config: Config = { schedule: '* * * * *' };
