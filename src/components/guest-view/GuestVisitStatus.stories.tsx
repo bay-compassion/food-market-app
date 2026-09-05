@@ -147,7 +147,7 @@ export const WaitingNext: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 1, aheadOfYou: 0 },
 };
 
-/** Called to the counter — the one state that turns the panel into an "it's your turn" message. */
+/** Called to the entrance — the one state that turns the panel into an "it's your turn" message. */
 export const Called: Story = {
 	args: { visitStatus: 'called' },
 };

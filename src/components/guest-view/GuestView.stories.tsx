@@ -10,7 +10,6 @@ import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { Card } from '../ui/layout/Card';
 import { CancelVisitAction } from './CancelVisitAction';
-import { GuestLotteryPendingState } from './GuestLotteryPendingState';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 import { GuestServiceState } from './GuestServiceState';
@@ -50,9 +49,8 @@ function marketCardHeading(locale: Locale, status: MarketCardStatus): string {
 		case 'inactive':
 			return copy.notOpenState.heading;
 		case 'registration_closed':
-			return copy.registrationClosedState.heading;
 		case 'lottery_pending':
-			return copy.lotteryPendingState.heading;
+			return copy.registrationClosedState.heading;
 		case 'service_started':
 			return copy.serviceState.inProgressHeading;
 	}
@@ -72,7 +70,7 @@ function visitCardHeading(locale: Locale, status: VisitStatus): string {
 		case 'not_placed':
 		case 'no_show':
 		case 'cancelled':
-			return copy.labels[status];
+			return copy[status].header;
 	}
 }
 
@@ -80,7 +78,7 @@ function MarketStateRow({ status, locale }: { status: MarketCardStatus; locale: 
 	const content = {
 		inactive: <GuestNotOpenState />,
 		registration_closed: <GuestRegistrationClosedState />,
-		lottery_pending: <GuestLotteryPendingState />,
+		lottery_pending: <GuestRegistrationClosedState />,
 		service_started: <GuestServiceState />,
 	}[status];
 

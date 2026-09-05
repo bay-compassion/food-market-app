@@ -41,6 +41,22 @@ export interface VisitStatusTranslations {
 		header: string;
 		details: string;
 	};
+	served: {
+		header: string;
+		details: string;
+	};
+	not_placed: {
+		header: string;
+		details: string;
+	};
+	no_show: {
+		header: string;
+		details: string;
+	};
+	cancelled: {
+		header: string;
+		details: string;
+	};
 	cancelAction: string;
 	cancelConfirmation: string;
 	updateError: string;
@@ -75,10 +91,6 @@ export interface GuestViewTranslations {
 		selectionDescription: string;
 	};
 	registrationClosedState: {
-		heading: string;
-		description: string;
-	};
-	lotteryPendingState: {
 		heading: string;
 		description: string;
 	};
@@ -231,11 +243,7 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Registration has closed',
 				description:
-					'We’re finishing registrations already in progress. The lottery will be drawn shortly.',
-			},
-			lotteryPendingState: {
-				heading: 'Lottery will be drawn shortly',
-				description: 'Registration has closed. Please check back shortly for your result.',
+					'We’re sorry — you missed today’s sign-up window. Registration opens again next Saturday at 10:30 AM, and everyone who registers has an equal chance in the lottery.',
 			},
 			serviceState: {
 				inProgressHeading: 'Today’s market is underway',
@@ -263,7 +271,27 @@ export const translations = {
 					guestsAheadLabel: 'Guests ahead of you',
 					youAreNext: 'You are next',
 				},
-				called: { header: 'It’s your turn', details: 'Please come to the table now.' },
+				called: { header: 'It’s your turn', details: 'Please come to the entrance now.' },
+				served: {
+					header: 'Thank you for coming',
+					details:
+						'Your visit today is complete. Registration opens again next Saturday at 10:30 AM.',
+				},
+				not_placed: {
+					header: 'Not selected today',
+					details:
+						'We’re sorry — you weren’t selected in today’s lottery. Supplies are limited, so not everyone can be placed. You can enter again next Saturday at 10:30 AM.',
+				},
+				no_show: {
+					header: 'We missed you',
+					details:
+						'We called your number but couldn’t find you. If you’re still here, please speak with a market team member at the entrance.',
+				},
+				cancelled: {
+					header: 'Visit cancelled',
+					details:
+						'You cancelled your place for today. You can register again next Saturday at 10:30 AM.',
+				},
 				cancelAction: 'Cancel this visit',
 				cancelConfirmation: 'Cancel your place in the queue for this visit?',
 				updateError: 'We could not update this visit. Please ask a market team member for help.',
@@ -313,7 +341,7 @@ export const translations = {
 		language: 'Language',
 		languagePrompt: 'Choose your language',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Please come up for service now.',
+		notificationCalledBody: 'Please come to the entrance now.',
 		notificationCalledTitle: 'It’s your turn',
 		notificationNotSelectedBody: 'You were not selected for today’s service.',
 		notificationNotSelectedTitle: 'Lottery result',
@@ -402,11 +430,7 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'El registro ha cerrado',
 				description:
-					'Estamos terminando las inscripciones que ya estaban en curso. El sorteo se realizará en breve.',
-			},
-			lotteryPendingState: {
-				heading: 'El sorteo se realizará pronto',
-				description: 'El registro ha cerrado. Vuelva a consultar pronto para ver el resultado.',
+					'Lo sentimos: no alcanzó a inscribirse dentro del horario de hoy. El registro volverá a abrir el próximo sábado a las 10:30 a. m., y todas las personas que se inscriban tienen las mismas probabilidades en el sorteo.',
 			},
 			serviceState: {
 				inProgressHeading: 'El mercado de hoy está en curso',
@@ -434,7 +458,27 @@ export const translations = {
 					guestsAheadLabel: 'Invitados delante de usted',
 					youAreNext: 'Usted es el siguiente',
 				},
-				called: { header: 'Es su turno', details: 'Por favor, acérquese al mostrador ahora.' },
+				called: { header: 'Es su turno', details: 'Por favor, acérquese a la entrada ahora.' },
+				served: {
+					header: 'Gracias por venir',
+					details:
+						'Su visita de hoy ha terminado. El registro volverá a abrir el próximo sábado a las 10:30 a. m.',
+				},
+				not_placed: {
+					header: 'No fue seleccionado hoy',
+					details:
+						'Lo sentimos: no fue seleccionado en el sorteo de hoy. Los suministros son limitados, así que no todos pueden obtener un lugar. Puede participar de nuevo el próximo sábado a las 10:30 a. m.',
+				},
+				no_show: {
+					header: 'No lo encontramos',
+					details:
+						'Llamamos su número, pero no pudimos encontrarlo. Si todavía está aquí, hable con un miembro del equipo del mercado en la entrada.',
+				},
+				cancelled: {
+					header: 'Visita cancelada',
+					details:
+						'Usted canceló su lugar para hoy. Puede registrarse de nuevo el próximo sábado a las 10:30 a. m.',
+				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
 				updateError: 'No pudimos actualizar esta visita. Pida ayuda al equipo del mercado.',
@@ -484,7 +528,7 @@ export const translations = {
 		language: 'Idioma',
 		languagePrompt: 'Elija su idioma',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Por favor, acérquese ahora para recibir el servicio.',
+		notificationCalledBody: 'Por favor, acérquese a la entrada ahora.',
 		notificationCalledTitle: 'Es su turno',
 		notificationNotSelectedBody: 'No fue seleccionado para el servicio de hoy.',
 		notificationNotSelectedTitle: 'Resultado del sorteo',
@@ -574,11 +618,7 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'ثبت‌نام بسته شده است',
 				description:
-					'در حال تکمیل ثبت‌نام‌هایی هستیم که از قبل شروع شده‌اند. قرعه‌کشی به‌زودی انجام خواهد شد.',
-			},
-			lotteryPendingState: {
-				heading: 'قرعه‌کشی به‌زودی انجام می‌شود',
-				description: 'ثبت‌نام بسته شده است. لطفاً برای دیدن نتیجه به‌زودی دوباره بررسی کنید.',
+					'متأسفیم؛ شما بازه ثبت‌نام امروز را از دست دادید. ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و همه کسانی که ثبت‌نام کنند شانس برابری در قرعه‌کشی دارند.',
 			},
 			serviceState: {
 				inProgressHeading: 'بازار امروز در حال برگزاری است',
@@ -606,7 +646,27 @@ export const translations = {
 					guestsAheadLabel: 'مهمانان جلوتر از شما',
 					youAreNext: 'شما نفر بعدی هستید',
 				},
-				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به میز مراجعه کنید.' },
+				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به ورودی مراجعه کنید.' },
+				served: {
+					header: 'از حضورتان سپاسگزاریم',
+					details:
+						'بازدید امروز شما به پایان رسید. ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود.',
+				},
+				not_placed: {
+					header: 'امروز انتخاب نشدید',
+					details:
+						'متأسفیم؛ شما در قرعه‌کشی امروز انتخاب نشدید. اقلام محدود است و به همه نمی‌رسد. می‌توانید شنبه آینده ساعت ۱۰:۳۰ صبح دوباره شرکت کنید.',
+				},
+				no_show: {
+					header: 'شما را پیدا نکردیم',
+					details:
+						'شماره شما را صدا زدیم اما شما را پیدا نکردیم. اگر هنوز اینجا هستید، لطفاً در ورودی با یکی از اعضای تیم بازار صحبت کنید.',
+				},
+				cancelled: {
+					header: 'بازدید لغو شد',
+					details:
+						'شما جایگاه امروز خود را لغو کردید. می‌توانید شنبه آینده ساعت ۱۰:۳۰ صبح دوباره ثبت‌نام کنید.',
+				},
 				cancelAction: 'لغو این بازدید',
 				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
 				updateError: 'این بازدید به‌روزرسانی نشد. از یکی از اعضای تیم بازار کمک بخواهید.',
@@ -656,7 +716,7 @@ export const translations = {
 		language: 'زبان',
 		languagePrompt: 'زبان خود را انتخاب کنید',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'لطفاً اکنون برای دریافت خدمات مراجعه کنید.',
+		notificationCalledBody: 'لطفاً همین حالا به ورودی مراجعه کنید.',
 		notificationCalledTitle: 'نوبت شماست',
 		notificationNotSelectedBody: 'شما برای خدمات امروز انتخاب نشدید.',
 		notificationNotSelectedTitle: 'نتیجه قرعه‌کشی',
@@ -745,12 +805,7 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Sarado na ang pagpaparehistro',
 				description:
-					'Tinatapos namin ang mga pagpaparehistrong nasimulan na. Bubunutin na ang lottery sa ilang sandali.',
-			},
-			lotteryPendingState: {
-				heading: 'Malapit nang ganapin ang lottery',
-				description:
-					'Sarado na ang pagpaparehistro. Bumalik sa ilang sandali para makita ang iyong resulta.',
+					'Pasensya na po — hindi na kayo umabot sa oras ng pagpaparehistro ngayong araw. Muling magbubukas ang pagpaparehistro sa Sabado nang 10:30 AM, at pantay ang pagkakataon sa lottery ng lahat ng magpaparehistro.',
 			},
 			serviceState: {
 				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
@@ -778,7 +833,30 @@ export const translations = {
 					guestsAheadLabel: 'Mga bisita bago kayo',
 					youAreNext: 'Kayo na ang susunod',
 				},
-				called: { header: 'Kayo na po ang susunod', details: 'Pumunta na po kayo sa mesa ngayon.' },
+				called: {
+					header: 'Kayo na po ang susunod',
+					details: 'Pumunta na po kayo sa pasukan ngayon.',
+				},
+				served: {
+					header: 'Salamat po sa pagpunta',
+					details:
+						'Tapos na po ang inyong pagbisita ngayong araw. Muling magbubukas ang pagpaparehistro sa Sabado nang 10:30 AM.',
+				},
+				not_placed: {
+					header: 'Hindi napili ngayong araw',
+					details:
+						'Pasensya na po — hindi kayo napili sa lottery ngayong araw. Limitado ang mga supply, kaya hindi lahat ay nabibigyan ng puwesto. Maaari kayong sumali ulit sa Sabado nang 10:30 AM.',
+				},
+				no_show: {
+					header: 'Hindi po namin kayo natagpuan',
+					details:
+						'Tinawag po namin ang inyong numero ngunit hindi kayo natagpuan. Kung nandito pa po kayo, makipag-usap sa isang miyembro ng pangkat ng pamilihan sa pasukan.',
+				},
+				cancelled: {
+					header: 'Kinansela ang pagbisita',
+					details:
+						'Kinansela po ninyo ang inyong puwesto ngayong araw. Maaari kayong magparehistro ulit sa Sabado nang 10:30 AM.',
+				},
 				cancelAction: 'Kanselahin ang pagbisitang ito',
 				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 				updateError: 'Hindi namin ma-update ang pagbisitang ito. Humingi ng tulong sa pangkat.',
@@ -829,7 +907,7 @@ export const translations = {
 		language: 'Wika',
 		languagePrompt: 'Piliin ang iyong wika',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Mangyaring lumapit na para sa serbisyo.',
+		notificationCalledBody: 'Pumunta na po kayo sa pasukan ngayon.',
 		notificationCalledTitle: 'Oras mo na',
 		notificationNotSelectedBody: 'Hindi ka napili para sa serbisyo ngayong araw.',
 		notificationNotSelectedTitle: 'Resulta ng lottery',
@@ -918,11 +996,7 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Đăng ký đã đóng',
 				description:
-					'Chúng tôi đang hoàn tất những đăng ký đã được bắt đầu. Xổ số sẽ được tiến hành trong ít phút nữa.',
-			},
-			lotteryPendingState: {
-				heading: 'Sắp tiến hành xổ số',
-				description: 'Đăng ký đã đóng. Vui lòng quay lại sau ít phút để xem kết quả.',
+					'Chúng tôi rất tiếc — bạn đã lỡ khung giờ đăng ký hôm nay. Đăng ký sẽ mở lại vào thứ Bảy tuần sau lúc 10:30 sáng, và mọi người đăng ký đều có cơ hội như nhau trong đợt xổ số.',
 			},
 			serviceState: {
 				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
@@ -950,7 +1024,27 @@ export const translations = {
 					guestsAheadLabel: 'Số khách trước bạn',
 					youAreNext: 'Bạn là người tiếp theo',
 				},
-				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến quầy ngay bây giờ.' },
+				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến lối vào ngay bây giờ.' },
+				served: {
+					header: 'Cảm ơn bạn đã đến',
+					details:
+						'Lượt mua sắm hôm nay của bạn đã hoàn tất. Đăng ký sẽ mở lại vào thứ Bảy tuần sau lúc 10:30 sáng.',
+				},
+				not_placed: {
+					header: 'Hôm nay bạn chưa được chọn',
+					details:
+						'Chúng tôi rất tiếc — bạn không được chọn trong đợt xổ số hôm nay. Nguồn cung có hạn nên không phải ai cũng có suất. Bạn có thể tham gia lại vào thứ Bảy tuần sau lúc 10:30 sáng.',
+				},
+				no_show: {
+					header: 'Chúng tôi không tìm thấy bạn',
+					details:
+						'Chúng tôi đã gọi số của bạn nhưng không tìm thấy bạn. Nếu bạn vẫn còn ở đây, vui lòng trao đổi với nhân viên chợ tại lối vào.',
+				},
+				cancelled: {
+					header: 'Đã hủy lượt',
+					details:
+						'Bạn đã hủy suất của mình cho hôm nay. Bạn có thể đăng ký lại vào thứ Bảy tuần sau lúc 10:30 sáng.',
+				},
 				cancelAction: 'Hủy lượt ghé này',
 				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 				updateError: 'Không thể cập nhật lượt ghé này. Vui lòng nhờ nhân viên chợ hỗ trợ.',
@@ -1001,7 +1095,7 @@ export const translations = {
 		language: 'Ngôn ngữ',
 		languagePrompt: 'Chọn ngôn ngữ của bạn',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Vui lòng đến khu vực phục vụ ngay bây giờ.',
+		notificationCalledBody: 'Vui lòng đến lối vào ngay bây giờ.',
 		notificationCalledTitle: 'Đến lượt bạn',
 		notificationNotSelectedBody: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
 		notificationNotSelectedTitle: 'Kết quả xổ số',
@@ -1087,11 +1181,8 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: '登记已结束',
-				description: '我们正在完成已经开始的登记。抽签即将进行。',
-			},
-			lotteryPendingState: {
-				heading: '即将抽签',
-				description: '登记已结束。请稍后回来查看结果。',
+				description:
+					'很抱歉，您错过了今天的登记时段。登记将于下周六上午 10:30 重新开放，所有登记的人在抽签中机会均等。',
 			},
 			serviceState: {
 				inProgressHeading: '今天的市场正在进行中',
@@ -1115,7 +1206,24 @@ export const translations = {
 					guestsAheadLabel: '您前面的访客',
 					youAreNext: '下一位就是您',
 				},
-				called: { header: '轮到您了', details: '请现在到服务台来。' },
+				called: { header: '轮到您了', details: '请现在到入口来。' },
+				served: {
+					header: '感谢您的到来',
+					details: '您今天的到访已完成。登记将于下周六上午 10:30 重新开放。',
+				},
+				not_placed: {
+					header: '今天未获选',
+					details:
+						'很抱歉，您在今天的抽签中未获选。物资有限，无法安排给每一位。您可以在下周六上午 10:30 再次参加。',
+				},
+				no_show: {
+					header: '没有找到您',
+					details: '我们叫了您的号码，但没有找到您。如果您还在现场，请到入口联系市场工作人员。',
+				},
+				cancelled: {
+					header: '已取消到访',
+					details: '您已取消今天的名额。您可以在下周六上午 10:30 重新登记。',
+				},
 				cancelAction: '取消本次到访',
 				cancelConfirmation: '要取消本次到访的排队位置吗？',
 				updateError: '无法更新本次到访。请向市场工作人员寻求帮助。',
@@ -1164,7 +1272,7 @@ export const translations = {
 		language: '语言',
 		languagePrompt: '选择您的语言',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: '请现在前往服务区。',
+		notificationCalledBody: '请现在到入口来。',
 		notificationCalledTitle: '轮到您了',
 		notificationNotSelectedBody: '您未被选中参加今天的服务。',
 		notificationNotSelectedTitle: '抽签结果',
@@ -1249,11 +1357,8 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'أُغلق التسجيل',
-				description: 'نعمل على إكمال التسجيلات التي بدأت بالفعل. سيُجرى السحب بعد قليل.',
-			},
-			lotteryPendingState: {
-				heading: 'سيُجرى السحب قريبًا',
-				description: 'أُغلق التسجيل. يرجى العودة بعد قليل للاطلاع على نتيجتك.',
+				description:
+					'نأسف — لقد فاتتك فترة التسجيل اليوم. سيُفتح التسجيل مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا، ولكل من يسجّل فرصة متساوية في القرعة.',
 			},
 			serviceState: {
 				inProgressHeading: 'سوق اليوم جارٍ الآن',
@@ -1281,7 +1386,27 @@ export const translations = {
 					guestsAheadLabel: 'الضيوف الذين أمامك',
 					youAreNext: 'أنت التالي',
 				},
-				called: { header: 'حان دورك', details: 'يرجى التوجه إلى الطاولة الآن.' },
+				called: { header: 'حان دورك', details: 'يرجى التوجه إلى المدخل الآن.' },
+				served: {
+					header: 'شكرًا لحضورك',
+					details:
+						'اكتملت زيارتك اليوم. سيُفتح التسجيل مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا.',
+				},
+				not_placed: {
+					header: 'لم يتم اختيارك اليوم',
+					details:
+						'نأسف — لم يتم اختيارك في قرعة اليوم. الإمدادات محدودة، لذا لا يمكن إتاحة مكان للجميع. يمكنك المشاركة مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا.',
+				},
+				no_show: {
+					header: 'لم نتمكن من العثور عليك',
+					details:
+						'ناديْنا على رقمك لكننا لم نجدك. إذا كنت لا تزال هنا، يرجى التحدث مع أحد أعضاء فريق السوق عند المدخل.',
+				},
+				cancelled: {
+					header: 'أُلغيت الزيارة',
+					details:
+						'لقد ألغيت مكانك لهذا اليوم. يمكنك التسجيل مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا.',
+				},
 				cancelAction: 'إلغاء هذه الزيارة',
 				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
 				updateError: 'تعذر تحديث هذه الزيارة. يرجى طلب المساعدة من فريق السوق.',
@@ -1331,7 +1456,7 @@ export const translations = {
 		language: 'اللغة',
 		languagePrompt: 'اختر لغتك',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'يرجى التوجه الآن لتلقي الخدمة.',
+		notificationCalledBody: 'يرجى التوجه إلى المدخل الآن.',
 		notificationCalledTitle: 'حان دورك',
 		notificationNotSelectedBody: 'لم يتم اختيارك لخدمة اليوم.',
 		notificationNotSelectedTitle: 'نتيجة القرعة',

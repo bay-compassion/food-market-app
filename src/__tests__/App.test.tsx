@@ -475,7 +475,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.textContent).toContain('It’s your turn'));
 
-		expect(container.textContent).toContain('Please come to the table now.');
+		expect(container.textContent).toContain('Please come to the entrance now.');
 		expect(container.textContent).not.toContain('Your place in line');
 		// A called guest has nothing left to cancel.
 		expect(container.textContent).not.toContain('Cancel this visit');
@@ -489,8 +489,11 @@ describe('App', () => {
 			aheadOfYou: null,
 		});
 
-		await waitFor(() => expect(container.textContent).toContain('Not placed'));
+		const copy = translations.en.guestView.visitStatus.not_placed;
 
+		await waitFor(() => expect(container.textContent).toContain(copy.header));
+
+		expect(container.textContent).toContain(copy.details);
 		expect(container.textContent).not.toContain('You’re on the list!');
 	});
 
@@ -578,16 +581,13 @@ describe('App', () => {
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});
 
-	it('shows a dedicated lottery-pending message once the registration pool is final', async () => {
+	it('reuses the registration-closed message once the registration pool is final', async () => {
 		const { container } = await renderWithMarketStatus('lottery_pending');
-		const copy = translations.en.guestView.lotteryPendingState;
+		const copy = translations.en.guestView.registrationClosedState;
 
-		await screen.findByRole('heading', { name: 'Lottery will be drawn shortly' });
+		await screen.findByRole('heading', { name: copy.heading });
 
 		expect(container.textContent).toContain(copy.description);
-		expect(container.textContent).not.toContain(
-			translations.en.guestView.registrationClosedState.description,
-		);
 	});
 
 	it('shows the full inactive-market explanation when the session is inactive', async () => {

@@ -6,7 +6,7 @@ export type GuestVisitStatusPanelProps = {
 	heading: string;
 	description?: string;
 	details?: ReactNode;
-	tone?: 'default' | 'urgent';
+	tone?: 'default' | 'action';
 	iconClassName?: string;
 };
 
@@ -34,7 +34,7 @@ const Panel = styled.div`
 	}
 `;
 
-const StatusIcon = styled.div<{ $tone: 'default' | 'urgent' }>`
+const StatusIcon = styled.div<{ $tone: 'default' | 'action' }>`
 	display: grid;
 	width: 58px;
 	height: 58px;
@@ -43,8 +43,9 @@ const StatusIcon = styled.div<{ $tone: 'default' | 'urgent' }>`
 	margin-bottom: 19px;
 	border-radius: var(--radius-md);
 	color: var(--color-on-brand);
-	background: ${({ $tone }) => ($tone === 'urgent' ? 'var(--color-error)' : 'var(--color-brand)')};
-	font-size: ${({ $tone }) => ($tone === 'urgent' ? '34px' : '29px')};
+	background: ${({ $tone }) =>
+		$tone === 'action' ? 'var(--color-success)' : 'var(--color-brand)'};
+	font-size: ${({ $tone }) => ($tone === 'action' ? '34px' : '29px')};
 `;
 
 /** Shared visual frame for a visit state; state-specific components supply its content. */
