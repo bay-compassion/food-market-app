@@ -1,117 +1,77 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
-import type { FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { languages, type Locale } from '../../locales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
-import { useTranslation } from '../../stores/react/use-translation';
-import { AddGuestSection } from './AddGuestSection';
+import { useRootStore } from '../../stores/react/store-context';
+import { useManualGuestForm } from './AddGuestSection';
+import { GuestDatabaseGrid } from './GuestDatabaseGrid';
+import { ManualGuestDialog } from './ManualGuestDialog';
 import type { ManualGuest, QueueGuest } from './types';
-import { VisitCommandButtons } from './VisitCommandButtons';
 
 export type GuestDatabaseViewProps = {
-	guests: QueueGuest[];
 	statusLabels: Record<VisitStatus, string>;
 	admissions: GuestAdmission[];
-	busy?: boolean;
-	searchQuery: string;
-	onSearchQueryChange: (query: string) => void;
-	onSearch: () => void;
 	onRun: (guest: QueueGuest, command: VisitCommand) => void;
 	onAddGuest: (guest: ManualGuest) => void;
 };
 
+/*
+ * The card's own padding would double up with the grid's, so the section only keeps it for the
+ * heading and lets the grid run to the card's edges.
+ */
 const Section = styled.section`
-	.search-form {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 8px;
-	}
+	padding-right: 0;
+	padding-left: 0;
 
-	.search-form button {
-		padding: 0 17px;
-		border: 0;
-		border-radius: 12px;
-		color: white;
-		background: var(--color-brand);
-		font-weight: 700;
+	.section-heading {
+		padding: 0 20px;
 	}
 `;
 
-/** Every guest on record, searchable, with whatever action their current visit allows. */
+/** Every guest on record, sortable and filterable, with whatever action their visit allows. */
 export const GuestDatabaseView = observer(function GuestDatabaseView({
-	guests,
 	statusLabels,
 	admissions,
-	busy,
-	searchQuery,
-	onSearchQueryChange,
-	onSearch,
 	onRun,
 	onAddGuest,
 }: GuestDatabaseViewProps) {
 	const t = adminTranslations.en;
-	const base = useTranslation();
+	const { admin } = useRootStore();
+	// Composed here rather than through `AddGuestSection` so the button sits in the heading beside
+	// the screen's title, where a worker meets it before scrolling the list.
+	const addGuestForm = useManualGuestForm(admissions);
 
-	function guestLanguageLabel(locale: Locale) {
-		return languages.find((language) => language.code === locale)?.label ?? locale;
-	}
-
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		onSearch();
+	function addGuest(guest: ManualGuest) {
+		addGuestForm.close();
+		onAddGuest(guest);
 	}
 
 	return (
-		<>
-			<Section className="admin-section guest-section">
-				<div className="section-heading">
-					<h2>{t.allGuests}</h2>
-				</div>
-				<form className="search-form" onSubmit={handleSubmit}>
-					<input
-						type="search"
-						placeholder={t.searchPlaceholder}
-						aria-label={t.searchPlaceholder}
-						value={searchQuery}
-						onChange={(event) => onSearchQueryChange(event.target.value)}
-					/>
-					<button type="submit">{t.search}</button>
-				</form>
-				{guests.length ? (
-					<div className="guest-list">
-						{guests.map((guest) => (
-							<article key={guest.id} className="guest-row">
-								<div>
-									<strong>
-										{guest.firstName} {guest.lastName}
-									</strong>
-									<span>
-										{guest.phone} · {base.household}: {guest.householdSize}
-									</span>
-									<span>
-										{base.language}: {guestLanguageLabel(guest.locale)}
-									</span>
-								</div>
-								<div className="guest-actions">
-									<span className="guest-status">{statusLabels[guest.status]}</span>
-									<VisitCommandButtons
-										status={guest.status}
-										disabled={busy}
-										onRun={(command) => onRun(guest, command)}
-									/>
-								</div>
-							</article>
-						))}
-					</div>
-				) : (
-					<p className="empty-state">{t.noGuests}</p>
-				)}
-			</Section>
-
-			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />
-		</>
+		<Section className="admin-section guest-section">
+			<div className="section-heading">
+				<h2>{t.allGuests}</h2>
+				{addGuestForm.canAdd ? (
+					<button className="add-guest-button" type="button" onClick={addGuestForm.open}>
+						+ {t.addGuest}
+					</button>
+				) : null}
+			</div>
+			<GuestDatabaseGrid
+				guests={admin.guests}
+				statusLabels={statusLabels}
+				canExport={admin.can('export:guest-data')}
+				busy={admin.isBusy}
+				onRun={onRun}
+			/>
+			<ManualGuestDialog
+				open={addGuestForm.isOpen}
+				admissions={admissions}
+				busy={admin.isBusy}
+				onSubmit={addGuest}
+				onClose={addGuestForm.close}
+			/>
+		</Section>
 	);
 });
