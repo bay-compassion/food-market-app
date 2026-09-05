@@ -33,12 +33,9 @@ type GuestViewArgs = {
 	locale: Locale;
 };
 
-const marketCardStatuses = [
-	'inactive',
-	'registration_closed',
-	'lottery_pending',
-	'service_started',
-] as const;
+// `lottery_pending` is absent on purpose: it shares the `registration_closed` card, so listing it
+// would repeat a column rather than show another state.
+const marketCardStatuses = ['inactive', 'registration_closed', 'service_started'] as const;
 
 type MarketCardStatus = (typeof marketCardStatuses)[number];
 
@@ -49,7 +46,6 @@ function marketCardHeading(locale: Locale, status: MarketCardStatus): string {
 		case 'inactive':
 			return copy.notOpenState.heading;
 		case 'registration_closed':
-		case 'lottery_pending':
 			return copy.registrationClosedState.heading;
 		case 'service_started':
 			return copy.serviceState.inProgressHeading;
@@ -78,7 +74,6 @@ function MarketStateRow({ status, locale }: { status: MarketCardStatus; locale: 
 	const content = {
 		inactive: <GuestNotOpenState />,
 		registration_closed: <GuestRegistrationClosedState />,
-		lottery_pending: <GuestRegistrationClosedState />,
 		service_started: <GuestServiceState />,
 	}[status];
 

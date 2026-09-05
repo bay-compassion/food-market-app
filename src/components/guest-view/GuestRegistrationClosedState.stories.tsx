@@ -6,8 +6,9 @@ import { Card } from '../ui/layout/Card';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 
 /**
- * Shown once registration has closed for the day, before the lottery runs. Wrapped in `Card` for
- * the frame this screen normally sits inside.
+ * Shown once registration has closed for the day, through both `registration_closed` and
+ * `lottery_pending` — a guest only reaches either phase without a visit by missing the window.
+ * Wrapped in `Card` for the frame this screen normally sits inside.
  */
 const meta = {
 	title: 'Guest/Session States/Registration Closed',
