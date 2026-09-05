@@ -12,12 +12,13 @@ import {
 import { makeReactive } from '../services/make-reactive.ts';
 
 const visitTokenStorageKey = 'bay-compassion.visit-token';
-const refreshIntervalMs = 15_000;
+const defaultRefreshIntervalMs = 15_000;
 
 export type VisitStoreOptions = {
 	storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 	lookupCurrentVisit?: typeof fetchCurrentVisit;
 	cancelVisit?: typeof cancelCurrentVisit;
+	refreshIntervalMs?: number;
 };
 
 type VisitStoreRoot = {
@@ -37,6 +38,9 @@ export class VisitStore {
 	private _cancelError = false;
 	private refreshTimer: ReturnType<typeof setTimeout> | undefined;
 	private refreshRequest: Promise<void> | null = null;
+	private _nextRefreshAt: number | null = null;
+	/** How long a full refresh cycle lasts, so a countdown can render its progress through one. */
+	readonly refreshIntervalMs: number;
 	private readonly storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 	private readonly lookupCurrentVisit: typeof fetchCurrentVisit;
 	private readonly cancelRequest: typeof cancelCurrentVisit;
@@ -77,6 +81,16 @@ export class VisitStore {
 	}
 
 	/**
+	 * When the next background refresh is due, as epoch milliseconds, or `null` while none is
+	 * scheduled. Guests reach for the browser's reload button when nothing on screen admits that
+	 * the queue is updating on its own, so the schedule is state the UI can show rather than a
+	 * detail hidden inside a timer handle.
+	 */
+	get nextRefreshAt(): number | null {
+		return this._nextRefreshAt;
+	}
+
+	/**
 	 * A called guest still needs updates — refreshing only while the visit can be cancelled meant the
 	 * screen froze on "Called" and never moved on.
 	 */
@@ -94,6 +108,7 @@ export class VisitStore {
 		options: VisitStoreOptions = {},
 	) {
 		this.storage = options.storage ?? window.localStorage;
+		this.refreshIntervalMs = options.refreshIntervalMs ?? defaultRefreshIntervalMs;
 		this.lookupCurrentVisit = options.lookupCurrentVisit ?? fetchCurrentVisit;
 		this.cancelRequest = options.cancelVisit ?? cancelCurrentVisit;
 		this._visitToken = this.storage.getItem(visitTokenStorageKey);
@@ -125,6 +140,7 @@ export class VisitStore {
 			storage: false,
 			lookupCurrentVisit: false,
 			cancelRequest: false,
+			refreshIntervalMs: false,
 			refreshTimer: false,
 			refreshRequest: false,
 		});
@@ -132,6 +148,8 @@ export class VisitStore {
 
 	[Symbol.dispose](): void {
 		clearTimeout(this.refreshTimer);
+		// A symbol-keyed member is not annotated as an action, so the write needs its own.
+		runInAction(() => (this._nextRefreshAt = null));
 
 		for (const disposer of this.disposers) {
 			disposer();
@@ -144,6 +162,7 @@ export class VisitStore {
 		this.storage.removeItem(visitTokenStorageKey);
 		this._visitToken = null;
 		this._currentVisit = null;
+		this.scheduleRefresh();
 	}
 
 	/** Records a registration just submitted through `GuestCombinedForm`. */
@@ -225,11 +244,18 @@ export class VisitStore {
 		this.scheduleRefresh();
 	}
 
+	/**
+	 * The single place the refresh schedule is written, so `nextRefreshAt` cannot outlive its timer
+	 * and leave a countdown ticking on a visit that has stopped refreshing.
+	 */
 	private scheduleRefresh(): void {
 		clearTimeout(this.refreshTimer);
 
 		if (this.needsPolling) {
-			this.refreshTimer = setTimeout(() => void this.refresh(), refreshIntervalMs);
+			this.refreshTimer = setTimeout(() => void this.refresh(), this.refreshIntervalMs);
+			runInAction(() => (this._nextRefreshAt = Date.now() + this.refreshIntervalMs));
+		} else {
+			runInAction(() => (this._nextRefreshAt = null));
 		}
 	}
 }

@@ -315,6 +315,67 @@ describe('VisitStore', () => {
 		});
 	});
 
+	describe('nextRefreshAt', () => {
+		it('is null until a refresh is scheduled', () => {
+			// Arrange
+			const store = createVisitStore();
+
+			// Act
+			const nextRefreshAt = store.nextRefreshAt;
+
+			// Assert
+			expect(nextRefreshAt).toBeNull();
+		});
+
+		it('reports when the scheduled refresh is due', () => {
+			// Arrange
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date('2026-01-01T10:00:00.000Z'));
+			const store = createVisitStore({ refreshIntervalMs: 20_000 });
+
+			// Act
+			store.submit(registered, 'event-1');
+
+			// Assert
+			expect(store.nextRefreshAt).toBe(Date.now() + 20_000);
+		});
+
+		it('moves to the next cycle once a refresh completes', async () => {
+			// Arrange
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date('2026-01-01T10:00:00.000Z'));
+			const lookupCurrentVisit = vi
+				.fn()
+				.mockResolvedValue({ found: true, visit: currentRegisteredVisit });
+			const store = createVisitStore({ lookupCurrentVisit, refreshIntervalMs: 20_000 });
+
+			store.submit(registered, 'event-1');
+
+			// Act
+			await vi.advanceTimersByTimeAsync(20_000);
+
+			// Assert
+			expect(store.nextRefreshAt).toBe(Date.now() + 20_000);
+		});
+
+		it('clears once the visit stops refreshing', async () => {
+			// Arrange
+			vi.useFakeTimers();
+			const lookupCurrentVisit = vi
+				.fn()
+				.mockResolvedValue({ found: true, visit: { ...currentRegisteredVisit, status: 'served' } });
+			const store = createVisitStore({ lookupCurrentVisit, refreshIntervalMs: 20_000 });
+
+			store.submit(registered, 'event-1');
+
+			// Act
+			await vi.advanceTimersByTimeAsync(20_000);
+
+			// Assert
+			expect(store.nextRefreshAt).toBeNull();
+		});
+	});
+
 	describe('[Symbol.dispose]', () => {
 		it('stops a pending refresh', async () => {
 			// Arrange
@@ -332,6 +393,7 @@ describe('VisitStore', () => {
 
 			// Assert
 			expect(lookupCurrentVisit).not.toHaveBeenCalled();
+			expect(store.nextRefreshAt).toBeNull();
 		});
 	});
 });

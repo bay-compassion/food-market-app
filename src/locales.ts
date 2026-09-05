@@ -98,6 +98,12 @@ export interface GuestViewTranslations {
 		inProgressHeading: string;
 		inProgressDescription: string;
 	};
+	refreshNotice: {
+		countdown: string;
+		updating: string;
+		noNeedToRefresh: string;
+		accessibleDescription: string;
+	};
 	visitStatus: VisitStatusTranslations;
 }
 
@@ -249,6 +255,12 @@ export const translations = {
 				inProgressHeading: 'Today’s market is underway',
 				inProgressDescription:
 					'Registration is closed for today. If you haven’t checked in yet, please speak with a market team member.',
+			},
+			refreshNotice: {
+				countdown: 'Updating in {seconds}s',
+				updating: 'Updating…',
+				noNeedToRefresh: 'No need to refresh — this page updates on its own.',
+				accessibleDescription: 'This page updates automatically. You do not need to refresh it.',
 			},
 			visitStatus: {
 				labels: {
@@ -436,6 +448,13 @@ export const translations = {
 				inProgressHeading: 'El mercado de hoy está en curso',
 				inProgressDescription:
 					'El registro está cerrado por hoy. Si aún no se ha registrado, hable con un miembro del equipo del mercado.',
+			},
+			refreshNotice: {
+				countdown: 'Se actualizará en {seconds} s',
+				updating: 'Actualizando…',
+				noNeedToRefresh: 'No es necesario actualizar: esta página se actualiza sola.',
+				accessibleDescription:
+					'Esta página se actualiza automáticamente. No es necesario que la actualice.',
 			},
 			visitStatus: {
 				labels: {
@@ -625,6 +644,12 @@ export const translations = {
 				inProgressDescription:
 					'ثبت‌نام برای امروز بسته شده است. اگر هنوز ثبت‌نام نکرده‌اید، لطفاً با یکی از اعضای تیم بازار صحبت کنید.',
 			},
+			refreshNotice: {
+				countdown: 'به‌روزرسانی تا {seconds} ثانیه دیگر',
+				updating: 'در حال به‌روزرسانی…',
+				noNeedToRefresh: 'نیازی به تازه‌سازی نیست؛ این صفحه خودش به‌روز می‌شود.',
+				accessibleDescription: 'این صفحه به‌طور خودکار به‌روز می‌شود. لازم نیست آن را تازه‌سازی کنید.',
+			},
 			visitStatus: {
 				labels: {
 					registered: 'ثبت‌شده',
@@ -811,6 +836,13 @@ export const translations = {
 				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
 				inProgressDescription:
 					'Sarado na ang pagpaparehistro para ngayong araw. Kung hindi ka pa nag-check in, makipag-usap sa isang miyembro ng pangkat ng pamilihan.',
+			},
+			refreshNotice: {
+				countdown: 'Mag-a-update sa loob ng {seconds}s',
+				updating: 'Ina-update…',
+				noNeedToRefresh: 'Hindi na kailangang i-refresh — kusang nag-a-update ang pahinang ito.',
+				accessibleDescription:
+					'Awtomatikong nag-a-update ang pahinang ito. Hindi mo na kailangang i-refresh.',
 			},
 			visitStatus: {
 				labels: {
@@ -1003,6 +1035,12 @@ export const translations = {
 				inProgressDescription:
 					'Đăng ký đã đóng cho hôm nay. Nếu bạn chưa đăng ký, vui lòng trao đổi với nhân viên chợ.',
 			},
+			refreshNotice: {
+				countdown: 'Cập nhật sau {seconds} giây',
+				updating: 'Đang cập nhật…',
+				noNeedToRefresh: 'Không cần tải lại — trang này tự cập nhật.',
+				accessibleDescription: 'Trang này tự động cập nhật. Bạn không cần tải lại trang.',
+			},
 			visitStatus: {
 				labels: {
 					registered: 'Đã đăng ký',
@@ -1188,6 +1226,12 @@ export const translations = {
 				inProgressHeading: '今天的市场正在进行中',
 				inProgressDescription: '今天的登记已关闭。如果您还未登记，请联系市场工作人员。',
 			},
+			refreshNotice: {
+				countdown: '{seconds} 秒后更新',
+				updating: '正在更新…',
+				noNeedToRefresh: '无需刷新，本页面会自动更新。',
+				accessibleDescription: '本页面会自动更新，您无需刷新。',
+			},
 			visitStatus: {
 				labels: {
 					registered: '已登记',
@@ -1364,6 +1408,12 @@ export const translations = {
 				inProgressHeading: 'سوق اليوم جارٍ الآن',
 				inProgressDescription:
 					'أُغلق التسجيل لهذا اليوم. إذا لم تكن قد سجّلت الدخول بعد، يرجى التحدث مع أحد أعضاء فريق السوق.',
+			},
+			refreshNotice: {
+				countdown: 'التحديث خلال {seconds} ثانية',
+				updating: 'جارٍ التحديث…',
+				noNeedToRefresh: 'لا حاجة إلى التحديث — تُحدَّث هذه الصفحة تلقائيًا.',
+				accessibleDescription: 'تُحدَّث هذه الصفحة تلقائيًا. لا حاجة إلى إعادة تحميلها.',
 			},
 			visitStatus: {
 				labels: {

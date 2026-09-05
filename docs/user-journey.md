@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=a4c800d793d0, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=51046cf84bee, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=5b786cf6123c, netlify/routes/notifications/sms-subscription.mts=a4b734cae756 -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=a4c800d793d0, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=51046cf84bee, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=5b786cf6123c, netlify/routes/notifications/sms-subscription.mts=a4b734cae756 -->
 
 # Guest journey
 
@@ -171,7 +171,9 @@ flowchart TD
   as the visit may still change — `registered`, `waiting`, `called`, or `no_show` — so the guest
   sees the lottery result, call, or return to the queue even without notifications, and keeps doing
   so if they wander to another route on the same device. Push is a convenience, never the only
-  channel. Separately, the
+  channel. That schedule is shown, not hidden: while a refresh is pending, the visit card carries a
+  countdown to the next update and tells the guest they do not need to reload — a screen that looks
+  frozen is what sends someone to the browser's refresh button in the first place. Separately, the
   application-level `MarketSessionStore` re-checks `/api/market` every five seconds while the page
   is visible. It pauses while the page is hidden or suspended, then refreshes immediately when the
   guest returns. Both the guest and admin screens observe that same state, so a guest sitting on
