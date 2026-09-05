@@ -1,10 +1,11 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState, type CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
 
 import { SessionStatusEnum } from '../services/sessionStateMachine';
 import { useRootStore } from '../stores/react/store-context';
 import { useTranslation } from '../stores/react/use-translation';
+import { useCountdownTimer } from './hooks/use-countdown-timer';
 
 const transitionThresholdMs = 5 * 60_000;
 
@@ -76,19 +77,6 @@ function clockText(remainingMs: number): string {
 		: `${pad(minutes)}:${pad(seconds)}`;
 }
 
-function useCountdownTimer(endTime: Date | string) {
-	const end = new Date(endTime);
-	const [countdown, setCountdown] = useState(() => Date.now());
-
-	useEffect(() => {
-		const timer = setInterval(() => setCountdown(Date.now()), 1_000);
-
-		return () => clearInterval(timer);
-	}, [endTime]);
-
-	return end.valueOf() - countdown;
-}
-
 /** How long is left to register, counting down, warming toward the danger color as it runs out. */
 export const RegistrationCountdown = observer(function RegistrationCountdown() {
 	const { session } = useRootStore();
@@ -104,7 +92,7 @@ export const RegistrationCountdown = observer(function RegistrationCountdown() {
 /** Mount the timer only while registration is open, keeping its hooks unconditional. */
 const ActiveCountdown = observer(function ActiveCountdown({ closesAt }: { closesAt: Date }) {
 	const t = useTranslation();
-	const remainingMs = useCountdownTimer(closesAt);
+	const remainingMs = useCountdownTimer(closesAt.valueOf());
 
 	if (remainingMs <= 0) {
 		return null;

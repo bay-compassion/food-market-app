@@ -6,13 +6,12 @@ import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
-import { Card } from '../ui/layout/Card';
-import { CancelVisitAction } from './CancelVisitAction';
-import { GuestVisitStatus } from './GuestVisitStatus';
+import { GuestVisitState } from './GuestVisitState';
 
 /**
- * What a guest sees once they have a current visit, in every status it can be in. Wrapped in
- * `Card` for the frame this screen normally sits inside.
+ * What a guest sees once they have a current visit, in every status it can be in. Rendered through
+ * `GuestVisitState`, the same composition the guest screen mounts, so the card, the refresh
+ * countdown, and the cancel action stay in the arrangement they actually ship in.
  *
  * `GuestVisitStatus` reads the current visit from the root store rather than taking it as props,
  * so each story seeds a fresh store — via a mocked `/api/visit` — instead of passing visit fields
@@ -94,10 +93,7 @@ function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisit
 
 	return (
 		<RootStoreProvider store={store}>
-			<Card aria-live="polite">
-				<GuestVisitStatus />
-			</Card>
-			<CancelVisitAction />
+			<GuestVisitState />
 		</RootStoreProvider>
 	);
 }
