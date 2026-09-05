@@ -70,6 +70,32 @@ describe('RegistrationStore', () => {
 		});
 	});
 
+	describe('clear', () => {
+		it('empties the prefilled fields and any answers', () => {
+			// Arrange
+			storage.set(StorageKey.GUEST_HOUSEHOLD, { ageRange: '30-44', householdSize: 3 });
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.updateGuest({ firstName: 'Ada' });
+			store.setAnswer('q-1', 'by bus');
+
+			// Act
+			store.clear();
+
+			// Assert
+			expect(store.guest).toEqual({
+				firstName: '',
+				lastName: '',
+				ageRange: '',
+				householdSize: '',
+				childrenCount: '',
+				seniorsCount: '',
+				phone: '',
+			});
+			expect(store.registrationAnswers).toEqual({});
+		});
+	});
+
 	describe('submit', () => {
 		it('registers for the queue and saves the household for next time', async () => {
 			// Arrange

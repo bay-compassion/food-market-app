@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -35,6 +35,7 @@ function guest(overrides: Partial<QueueGuest> & { id: string }): QueueGuest {
 
 function renderQueue(guests: QueueGuest[], serviceStarted = true) {
 	const onCallNext = vi.fn();
+	const onCloseSession = vi.fn();
 	const result = render(
 		<RootStoreProvider store={new RootStore()}>
 			<QueueView
@@ -47,13 +48,13 @@ function renderQueue(guests: QueueGuest[], serviceStarted = true) {
 				onCallNext={onCallNext}
 				onRun={vi.fn()}
 				onAddGuest={vi.fn()}
-				onCloseSession={vi.fn()}
+				onCloseSession={onCloseSession}
 				onNavigateCurrentSession={vi.fn()}
 			/>
 		</RootStoreProvider>,
 	);
 
-	return { ...result, onCallNext };
+	return { ...result, onCallNext, onCloseSession };
 }
 
 describe('QueueView', () => {
@@ -76,10 +77,20 @@ describe('QueueView', () => {
 	it('separates called guests from waiting guests, longest-called first', () => {
 		const { container } = renderQueue([
 			guest({ id: 'a', status: 'waiting', queuePosition: 3 }),
-			guest({ id: 'b', firstName: 'Bo', status: 'called', calledAt: '2026-08-08T18:10:00.000Z' }),
-			guest({ id: 'c', firstName: 'Cass', status: 'called', calledAt: '2026-08-08T18:02:00.000Z' }),
+			guest({
+				id: 'b',
+				firstName: 'Bo',
+				status: 'called',
+				calledAt: '2026-08-08T18:10:00.000Z',
+			}),
+			guest({
+				id: 'c',
+				firstName: 'Cass',
+				status: 'called',
+				calledAt: '2026-08-08T18:02:00.000Z',
+			}),
 		]);
-		const called = Array.from(container.querySelectorAll('.guest-row'))
+		const called = Array.from(container.querySelectorAll('.queue-guest-row'))
 			.slice(0, 2)
 			.map((row) => row.textContent);
 
@@ -92,26 +103,53 @@ describe('QueueView', () => {
 		vi.setSystemTime(new Date('2026-08-08T18:12:00.000Z'));
 
 		const { container } = renderQueue([
-			guest({ id: 'b', status: 'called', calledAt: '2026-08-08T18:00:00.000Z' }),
+			guest({
+				id: 'b',
+				status: 'called',
+				calledAt: '2026-08-08T18:00:00.000Z',
+			}),
 		]);
 
-		expect(container.textContent).toContain('Called 12 min ago');
+		expect(container.querySelector('.waiting-time')!.textContent).toBe('12 min');
 		vi.useRealTimers();
 	});
 
-	it('hides finished guests behind a toggle', async () => {
+	it('lists finished guests with their status, and folds the list away on request', async () => {
 		const user = userEvent.setup();
 		const { container } = renderQueue([
 			guest({ id: 'd', firstName: 'Dee', status: 'served' }),
 			guest({ id: 'e', firstName: 'Eli', status: 'no_show' }),
 		]);
 
-		expect(container.textContent).not.toContain('Dee');
-
-		await user.click(container.querySelector('.resolved-toggle')!);
-
 		expect(container.textContent).toContain('Dee');
-		expect(container.textContent).toContain('Eli');
+		expect(container.textContent).toContain('No show');
+
+		await user.click(screen.getByRole('button', { name: /finished/i, expanded: true }));
+
+		expect(container.textContent).not.toContain('Dee');
+		expect(container.textContent).not.toContain('Eli');
+	});
+
+	it('closes the session from the header menu', async () => {
+		const user = userEvent.setup();
+		const { onCloseSession } = renderQueue([]);
+
+		await user.click(screen.getByRole('button', { name: adminTranslations.en.sessionActions }));
+		await user.click(screen.getByRole('menuitem', { name: adminTranslations.en.closeSession }));
+
+		expect(onCloseSession).toHaveBeenCalledOnce();
+	});
+
+	it('opens the manual guest form from the waiting heading', async () => {
+		const user = userEvent.setup();
+
+		renderQueue([]);
+
+		expect(screen.queryByRole('dialog')).toBeNull();
+
+		await user.click(screen.getByRole('button', { name: /add guest/i }));
+
+		expect(screen.getByRole('dialog').textContent).toContain(adminTranslations.en.manualGuestTitle);
 	});
 
 	it('asks the parent to call the chosen number of guests', async () => {
@@ -132,16 +170,69 @@ describe('QueueView', () => {
 		expect(container.querySelector<HTMLButtonElement>('.call-next button')!.disabled).toBe(true);
 	});
 
-	it('only offers the transitions that are legal from each status', () => {
+	it('only offers the transitions that are legal from each status', async () => {
+		const user = userEvent.setup();
 		const { container } = renderQueue([
-			guest({ id: 'b', status: 'called', calledAt: '2026-08-08T18:00:00.000Z' }),
+			guest({
+				id: 'b',
+				status: 'called',
+				calledAt: '2026-08-08T18:00:00.000Z',
+			}),
 		]);
-		const actions = container.querySelector('.guest-row .visit-commands')!.textContent!;
+		const actions = container.querySelector('.queue-guest-row .visit-commands')!;
 
-		expect(actions).toContain('Mark served');
-		expect(actions).toContain('Mark no show');
-		expect(actions).toContain('Return to queue');
+		// The likely next step is the one visible button; the rest wait behind the menu.
+		expect(actions.querySelector('.primary-command')!.textContent).toBe('Served');
+		await user.click(actions.querySelector('.more-actions')!);
+		const menu = screen.getByRole('menu').textContent!;
+
+		expect(menu).toContain('Mark no show');
+		expect(menu).toContain('Return to queue');
 		// Calling an already-called guest is not a legal transition.
-		expect(actions).not.toContain('Call guest');
+		expect(menu).not.toContain('Call');
+	});
+
+	it('runs a command chosen from the menu', async () => {
+		const user = userEvent.setup();
+		const onRun = vi.fn();
+
+		render(
+			<RootStoreProvider store={new RootStore()}>
+				<QueueView
+					guests={[guest({ id: 'a', queuePosition: 1 })]}
+					counts={{}}
+					statusLabels={statusLabels}
+					serviceStarted
+					admissions={[]}
+					onCallNext={vi.fn()}
+					onRun={onRun}
+					onAddGuest={vi.fn()}
+					onCloseSession={vi.fn()}
+					onNavigateCurrentSession={vi.fn()}
+				/>
+			</RootStoreProvider>,
+		);
+
+		await user.click(screen.getByRole('button', { name: /more actions/i }));
+		await user.click(screen.getByRole('menuitem', { name: 'Mark no show' }));
+
+		expect(onRun.mock.calls).toEqual([[expect.objectContaining({ id: 'a' }), 'mark_no_show']]);
+	});
+
+	it('steps the call count with the stepper buttons, never below one', async () => {
+		const user = userEvent.setup();
+		const { container, onCallNext } = renderQueue([guest({ id: 'a', queuePosition: 1 })]);
+
+		await user.click(screen.getByRole('button', { name: /one more/i }));
+		await user.click(screen.getByRole('button', { name: /one more/i }));
+		await user.click(screen.getByRole('button', { name: /one fewer/i }));
+		fireEvent.submit(container.querySelector('.call-next')!);
+
+		expect(onCallNext.mock.calls).toEqual([[2]]);
+		expect(
+			screen.getByRole<HTMLButtonElement>('button', {
+				name: /one fewer/i,
+			}).disabled,
+		).toBe(false);
 	});
 });

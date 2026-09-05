@@ -44,6 +44,23 @@ export class RegistrationStore {
 		Object.assign(this.guest, patch);
 	}
 
+	/**
+	 * Empties every field. The store is prefilled from whatever this device remembers, which is
+	 * right for a guest registering themselves and wrong for a worker entering someone else.
+	 */
+	clear(): void {
+		this.guest = {
+			firstName: '',
+			lastName: '',
+			ageRange: '',
+			householdSize: '',
+			childrenCount: '',
+			seniorsCount: '',
+			phone: '',
+		};
+		this.registrationAnswers = {};
+	}
+
 	/** The answer to one of the session's configured registration questions. */
 	setAnswer(questionId: string, value: string | number): void {
 		this.registrationAnswers[questionId] = value;

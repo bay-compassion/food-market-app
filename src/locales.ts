@@ -1,13 +1,17 @@
 import { outdent } from 'outdent';
 
+/**
+ * `label` is the language's own name, for a guest choosing it; `englishLabel` is what an
+ * English-reading worker sees on the admin screens.
+ */
 export const languages = [
-	{ code: 'en', label: 'English' },
-	{ code: 'es', label: 'Español' },
-	{ code: 'fa', label: 'فارسی' },
-	{ code: 'tl', label: 'Tagalog' },
-	{ code: 'vi', label: 'Tiếng Việt' },
-	{ code: 'zh', label: '中文' },
-	{ code: 'ar', label: 'العربية' },
+	{ code: 'en', label: 'English', englishLabel: 'English' },
+	{ code: 'es', label: 'Español', englishLabel: 'Spanish' },
+	{ code: 'fa', label: 'فارسی', englishLabel: 'Farsi' },
+	{ code: 'tl', label: 'Tagalog', englishLabel: 'Tagalog' },
+	{ code: 'vi', label: 'Tiếng Việt', englishLabel: 'Vietnamese' },
+	{ code: 'zh', label: '中文', englishLabel: 'Chinese' },
+	{ code: 'ar', label: 'العربية', englishLabel: 'Arabic' },
 ] as const;
 
 export type Locale = (typeof languages)[number]['code'];

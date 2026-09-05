@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { adminTranslations } from '../../adminLocales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import { useRootStore } from '../../stores/react/store-context';
-import { ManualGuestForm } from './ManualGuestForm';
+import { ManualGuestDialog } from './ManualGuestDialog';
 import type { HistoricalEvent, ManualGuest } from './types';
 
 export type SessionHistoryViewProps = {
@@ -118,30 +118,31 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 								</div>
 								<span className="event-state ended">{t.closeSession}</span>
 								{/* Records a guest who was served out of band, after this session had ended. */}
-								{openEventId !== pastEvent.id ? (
-									<button
-										className="add-guest-button"
-										type="button"
-										onClick={() => setOpenEventId(pastEvent.id)}
-									>
-										+ {t.addGuest}
-									</button>
-								) : null}
+								<button
+									className="add-guest-button"
+									type="button"
+									onClick={() => setOpenEventId(pastEvent.id)}
+								>
+									+ {t.addGuest}
+								</button>
 							</article>
-							{openEventId === pastEvent.id ? (
-								<ManualGuestForm
-									admissions={endedAdmissions}
-									busy={busy}
-									onSubmit={(guest) => addGuest(guest, pastEvent.id)}
-									onCancel={() => setOpenEventId(null)}
-								/>
-							) : null}
 						</div>
 					))}
 				</div>
 			) : (
 				<p className="empty-state">{t.noHistory}</p>
 			)}
+			<ManualGuestDialog
+				open={openEventId !== null}
+				admissions={endedAdmissions}
+				busy={busy}
+				onSubmit={(guest) => {
+					if (openEventId !== null) {
+						addGuest(guest, openEventId);
+					}
+				}}
+				onClose={() => setOpenEventId(null)}
+			/>
 		</Section>
 	);
 });

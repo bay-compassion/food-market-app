@@ -6,13 +6,15 @@ import { visitStatuses, type VisitStatus } from '../../services/visitStateMachin
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { QueueGuestRow } from './QueueGuestRow';
 import { guestWithStatus, queueGuest } from './queueGuests.fixture';
+import { QueueGuestTable } from './QueueGuestTable';
 
 /**
  * One guest in the worker's queue.
  *
- * Which command buttons appear is decided entirely by the guest's status — `visitStateMachine.ts`
- * owns that rule, and `VisitCommandButtons` renders whatever it allows. The `EachStatus` story
- * below is the quickest way to see the whole matrix at once.
+ * Which commands a row offers is decided entirely by the guest's status — `visitStateMachine.ts`
+ * owns that rule. `QueueGuestActions` shows the likely next step as the one visible button and
+ * folds the rest, plus a tap-to-dial phone number, into the menu behind the dots. The `EachStatus`
+ * story below is the quickest way to see the whole matrix at once.
  */
 type QueueGuestRowArgs = {
 	locale: Locale;
@@ -25,18 +27,17 @@ type QueueGuestRowArgs = {
  *  rather than drifting while it sits open. */
 const now = Date.now();
 
-function OneRow({ locale, status, showWaitingTime, busy }: QueueGuestRowArgs) {
+function OneRow({ status, showWaitingTime, busy }: QueueGuestRowArgs) {
 	return (
-		<div className="guest-list">
+		<QueueGuestTable label="Queue">
 			<QueueGuestRow
 				guest={guestWithStatus(status)}
 				now={now}
-				statusLabel={adminVisitStatusLabels(locale)[status]}
 				busy={busy}
 				showWaitingTime={showWaitingTime}
 				onRun={fn()}
 			/>
-		</div>
+		</QueueGuestTable>
 	);
 }
 
@@ -72,9 +73,22 @@ export const Registered: Story = {
 	args: { status: 'registered' },
 };
 
-/** Finished — a resolved row offers no further commands. */
+/**
+ * Finished. A served row has no command left, so only the phone number remains behind the dots;
+ * the chip is what the finished list passes in, since that list mixes several statuses.
+ */
 export const Served: Story = {
-	args: { status: 'served' },
+	parameters: { controls: { disable: true } },
+	render: ({ locale }) => (
+		<QueueGuestTable label="Queue">
+			<QueueGuestRow
+				guest={guestWithStatus('served')}
+				now={now}
+				statusLabel={adminVisitStatusLabels(locale).served}
+				onRun={fn()}
+			/>
+		</QueueGuestTable>
+	),
 };
 
 /** Every command button disabled while a request is in flight. */
@@ -88,15 +102,18 @@ export const Busy: Story = {
  */
 export const GuestSpeaksAnotherLanguage: Story = {
 	parameters: { controls: { disable: true } },
-	render: ({ locale }) => (
-		<div className="guest-list">
+	render: () => (
+		<QueueGuestTable label="Queue">
 			<QueueGuestRow
-				guest={queueGuest({ firstName: 'Sohrab', lastName: 'Ahmadi', locale: 'fa' })}
+				guest={queueGuest({
+					firstName: 'Sohrab',
+					lastName: 'Ahmadi',
+					locale: 'fa',
+				})}
 				now={now}
-				statusLabel={adminVisitStatusLabels(locale).waiting}
 				onRun={fn()}
 			/>
-		</div>
+		</QueueGuestTable>
 	),
 };
 
@@ -107,7 +124,7 @@ export const EachStatus: Story = {
 		const statusLabels = adminVisitStatusLabels(locale);
 
 		return (
-			<div className="guest-list">
+			<QueueGuestTable label="Queue">
 				{visitStatuses.map((status) => {
 					const row = guestWithStatus(status);
 
@@ -122,7 +139,7 @@ export const EachStatus: Story = {
 						/>
 					);
 				})}
-			</div>
+			</QueueGuestTable>
 		);
 	},
 };

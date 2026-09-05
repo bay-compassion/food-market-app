@@ -7,6 +7,8 @@ export interface AdminTranslation {
 	addQuestion: string;
 	adminEyebrow: string;
 	admissionLabel: string;
+	/** Heads the admin-only part of the manual guest form: how the guest enters the session. */
+	admissionLegend: string;
 	admitAsServed: string;
 	admitAsServedHelp: string;
 	admitToLottery: string;
@@ -84,10 +86,20 @@ export interface AdminTranslation {
 	waitingQueue: string;
 	calledNow: string;
 	resolvedGuests: string;
-	showResolved: string;
-	hideResolved: string;
+	noResolvedGuests: string;
 	calledMinutesAgo: string;
 	calledJustNow: string;
+	/** The same two, short enough to sit beside a row's action button. */
+	calledMinutesShort: string;
+	calledJustNowShort: string;
+	sessionActions: string;
+	/** Short labels for the one-tap action on a queue row; the full verb lives in the menu. */
+	callShort: string;
+	serveShort: string;
+	moreActions: string;
+	phoneGuest: string;
+	callFewer: string;
+	callMore: string;
 	noWaitingGuests: string;
 	noCalledGuests: string;
 	queueNotStarted: string;
@@ -191,6 +203,7 @@ export const adminTranslations = {
 		addQuestion: 'Add question',
 		adminEyebrow: 'Market team',
 		admissionLabel: 'How should they join?',
+		admissionLegend: 'Admission',
 		admitAsServed: 'Record as already served',
 		admitAsServedHelp:
 			'For someone who was handed food outside the app. They join this session’s record without entering any line.',
@@ -274,10 +287,18 @@ export const adminTranslations = {
 		waitingQueue: 'Waiting',
 		calledNow: 'At the table',
 		resolvedGuests: 'Finished',
-		showResolved: 'Show finished guests',
-		hideResolved: 'Hide finished guests',
+		noResolvedGuests: 'Nobody has finished yet.',
 		calledMinutesAgo: 'Called {minutes} min ago',
 		calledJustNow: 'Called just now',
+		calledMinutesShort: '{minutes} min',
+		calledJustNowShort: 'Just now',
+		sessionActions: 'Session actions',
+		callShort: 'Call',
+		serveShort: 'Served',
+		moreActions: 'More actions',
+		phoneGuest: 'Phone',
+		callFewer: 'Call one fewer',
+		callMore: 'Call one more',
 		noWaitingGuests: 'Nobody is waiting to be called.',
 		noCalledGuests: 'Nobody has been called up yet.',
 		queueNotStarted: 'The queue opens once you run the lottery and service starts.',
