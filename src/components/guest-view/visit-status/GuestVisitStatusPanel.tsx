@@ -1,12 +1,22 @@
 import styled from '@emotion/styled';
 import type { ReactNode } from 'react';
 
+/** How loudly the status mark is painted. `action` is the only one that asks the guest to move. */
+export type GuestVisitStatusTone = 'brand' | 'action' | 'warning' | 'muted';
+
+const toneBackgrounds: Record<GuestVisitStatusTone, string> = {
+	brand: 'var(--color-brand)',
+	action: 'var(--color-success)',
+	warning: 'var(--color-warning)',
+	muted: 'var(--color-text-subtle)',
+};
+
 export type GuestVisitStatusPanelProps = {
 	icon: string;
 	heading: string;
 	description?: string;
 	details?: ReactNode;
-	tone?: 'default' | 'action';
+	tone?: GuestVisitStatusTone;
 	iconClassName?: string;
 };
 
@@ -34,7 +44,7 @@ const Panel = styled.div`
 	}
 `;
 
-const StatusIcon = styled.div<{ $tone: 'default' | 'action' }>`
+const StatusIcon = styled.div<{ $tone: GuestVisitStatusTone }>`
 	display: grid;
 	width: 58px;
 	height: 58px;
@@ -43,8 +53,7 @@ const StatusIcon = styled.div<{ $tone: 'default' | 'action' }>`
 	margin-bottom: 19px;
 	border-radius: var(--radius-md);
 	color: var(--color-on-brand);
-	background: ${({ $tone }) =>
-		$tone === 'action' ? 'var(--color-success)' : 'var(--color-brand)'};
+	background: ${({ $tone }) => toneBackgrounds[$tone]};
 	font-size: ${({ $tone }) => ($tone === 'action' ? '34px' : '29px')};
 `;
 
@@ -54,7 +63,7 @@ export function GuestVisitStatusPanel({
 	heading,
 	description,
 	details,
-	tone = 'default',
+	tone = 'brand',
 	iconClassName,
 }: GuestVisitStatusPanelProps) {
 	return (
