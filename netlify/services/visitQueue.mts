@@ -121,17 +121,22 @@ export async function runVisitCommand(
  */
 export async function callNextVisits(marketEventId: string, count: number) {
 	const called = await db.transaction(async (tx) => {
-		const rows = await tx.execute<{ id: string }>(sql`
-			UPDATE ${visits} SET status = 'called', called_at = now()
-			WHERE id IN (
-				SELECT id FROM ${visits}
-				WHERE market_event_id = ${marketEventId} AND status = 'waiting'
-				ORDER BY queue_position ASC NULLS LAST, created_at ASC
-				LIMIT ${count}
+		const rows = await tx
+			.update(visits)
+			.set({ status: 'called', calledAt: sql`now()` })
+			.where(
+				inArray(
+					visits.id,
+					tx
+						.select({ id: visits.id })
+						.from(visits)
+						.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'waiting')))
+						.orderBy(sql`${visits.queuePosition} ASC NULLS LAST`, asc(visits.createdAt))
+						.limit(count),
+				),
 			)
-			RETURNING id
-		`);
-		const visitIds = [...rows].map((row) => row.id);
+			.returning({ id: visits.id });
+		const visitIds = rows.map((row) => row.id);
 
 		await queueCalledNotifications(tx, visitIds);
 

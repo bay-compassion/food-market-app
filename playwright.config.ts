@@ -1,12 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * End-to-end tests run against `npm run dev` (Vite only, no Netlify Functions, database, or
- * Auth0), so they're limited to guest-facing behavior that works without a backend — see
- * `e2e/README.md`. Run with `npm run test:e2e`, after `npx playwright install chromium` once.
+ * Lightweight browser coverage; API-dependent scenarios supply their own responses.
+ * The isolated full-stack queue rig uses playwright.queue.config.ts — see e2e/README.md.
  */
 export default defineConfig({
 	testDir: './e2e',
+	outputDir: 'test-results/browser',
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,

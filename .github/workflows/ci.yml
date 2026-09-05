@@ -35,3 +35,27 @@ jobs:
 
       - name: Test
         run: npm run test:unit
+
+  queue-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Test the full queue lifecycle
+        run: npm run test:e2e:queue
+      - name: Upload queue diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: queue-e2e
+          path: |
+            test-results/queue/
+            test-results/queue-server.log
+            playwright-report/queue/
+          retention-days: 7

@@ -91,7 +91,6 @@ function useCountdownTimer(endTime: Date | string) {
 
 /** How long is left to register, counting down, warming toward the danger color as it runs out. */
 export const RegistrationCountdown = observer(function RegistrationCountdown() {
-	const t = useTranslation();
 	const { session } = useRootStore();
 	const closesAt = session.marketEvent?.registrationClosesAt;
 
@@ -99,6 +98,12 @@ export const RegistrationCountdown = observer(function RegistrationCountdown() {
 		return null;
 	}
 
+	return <ActiveCountdown closesAt={closesAt} />;
+});
+
+/** Mount the timer only while registration is open, keeping its hooks unconditional. */
+const ActiveCountdown = observer(function ActiveCountdown({ closesAt }: { closesAt: Date }) {
+	const t = useTranslation();
 	const remainingMs = useCountdownTimer(closesAt);
 
 	if (remainingMs <= 0) {
