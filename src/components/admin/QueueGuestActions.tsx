@@ -10,6 +10,12 @@ import { primaryVisitCommands, visitCommandLabels } from './VisitCommandButtons'
 export type QueueGuestActionsProps = {
 	guest: QueueGuest;
 	disabled?: boolean;
+	/**
+	 * Folds every command into the menu. For a screen that is looked things up on rather than run
+	 * from, where no one command is the likely next step and a row of filled buttons would only
+	 * invite a mis-tap.
+	 */
+	menuOnly?: boolean;
 	onRun: (command: VisitCommand) => void;
 };
 
@@ -41,10 +47,10 @@ const Actions = styled.div`
  * else — the rarer transitions and a tap-to-dial phone number — folded into a menu so a row stays
  * two lines tall. The state machine still decides which commands exist.
  */
-export function QueueGuestActions({ guest, disabled, onRun }: QueueGuestActionsProps) {
+export function QueueGuestActions({ guest, disabled, menuOnly, onRun }: QueueGuestActionsProps) {
 	const t = adminTranslations.en;
 	const commands = visitCommandsFrom(guest.status);
-	const primary = commands.find((command) => primaryVisitCommands.includes(command));
+	const primary = menuOnly ? undefined : commands.find((c) => primaryVisitCommands.includes(c));
 	const secondary = commands.filter((command) => command !== primary);
 	const labels = visitCommandLabels();
 	const shortLabels: Partial<Record<VisitCommand, string>> = {

@@ -55,7 +55,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 
 	const [activeView, setActiveView] = useState<AdminView>(view);
 	const [questions, setQuestions] = useState<Question[]>([]);
-	const [searchQuery, setSearchQuery] = useState('');
 	const [settings, setSettings] = useState<SessionSettings>(defaultSessionSettings);
 	const [extensionMinutes, setExtensionMinutes] = useState(30);
 	const [postponementMinutes, setPostponementMinutes] = useState(30);
@@ -314,13 +313,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 				<ReportsView getAccessToken={getAccessToken} canExport={admin.can('export:guest-data')} />
 			) : activeView === 'guest-database' ? (
 				<GuestDatabaseView
-					searchQuery={searchQuery}
-					onSearchQueryChange={setSearchQuery}
-					guests={admin.guests}
 					statusLabels={statusLabels}
 					admissions={sessionAdmissions}
-					busy={admin.isBusy}
-					onSearch={() => void admin.searchGuests(searchQuery)}
 					onRun={(guest, command) => void runGuestCommand(guest, command)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
 				/>

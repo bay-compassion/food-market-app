@@ -154,8 +154,12 @@ export interface AdminTranslation {
 	sessionUpdated: string;
 	startSessionHelp: string;
 	scaleAnswer: string;
-	search: string;
-	searchPlaceholder: string;
+	guestColumn: string;
+	phoneColumn: string;
+	householdColumn: string;
+	languageColumn: string;
+	statusColumn: string;
+	actionsColumn: string;
 	served: string;
 	settingsHelp: string;
 	sessionGuests: string;
@@ -403,8 +407,12 @@ export const adminTranslations = {
 		sessionUpdated: 'Session updated.',
 		startSessionHelp: 'Set up the next session, then open registration when you are ready.',
 		scaleAnswer: '1–10 scale',
-		search: 'Search',
-		searchPlaceholder: 'Search name or phone',
+		guestColumn: 'Guest',
+		phoneColumn: 'Phone',
+		householdColumn: 'Household',
+		languageColumn: 'Language',
+		statusColumn: 'Status',
+		actionsColumn: 'Actions',
 		served: 'Served',
 		settingsHelp: 'Set the window and maximum number of guests who receive a queue spot.',
 		sessionGuests: 'Guests',

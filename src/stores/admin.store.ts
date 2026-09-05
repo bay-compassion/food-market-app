@@ -141,11 +141,6 @@ export class AdminStore {
 		runInAction(() => (this._history = history));
 	}
 
-	/** Reloads a guest list without letting a failure surface as an unhandled rejection. */
-	async searchGuests(search: string): Promise<void> {
-		await this.run(() => this.refreshGuests(search), null);
-	}
-
 	async saveSettings(settings: SessionSettingsInput): Promise<boolean> {
 		return this.run(async () => {
 			if (!(await this.session.saveSettings(settings))) {
