@@ -13,6 +13,24 @@ export type VisitCommandButtonsProps = {
 	onRun: (command: VisitCommand) => void;
 };
 
+/** The command a worker is most likely to want from a given status, drawn as the filled button. */
+export const primaryVisitCommands: VisitCommand[] = ['call', 'serve'];
+
+/** What each command is called on a button or in a menu. */
+export function visitCommandLabels(): Record<VisitCommand, string> {
+	const t = adminTranslations.en;
+
+	return {
+		select: t.waiting,
+		skip: t.notPlaced,
+		call: t.callGuest,
+		serve: t.markServed,
+		mark_no_show: t.markNoShow,
+		return_to_queue: t.returnToQueue,
+		cancel: t.cancelled,
+	};
+}
+
 const Commands = styled.div`
 	display: flex;
 	flex-wrap: wrap;
@@ -42,17 +60,8 @@ const Commands = styled.div`
 
 /** Whichever transitions a visit's current status allows — the state machine decides, not this. */
 export function VisitCommandButtons({ status, disabled, onRun }: VisitCommandButtonsProps) {
-	const t = adminTranslations.en;
 	const commands = visitCommandsFrom(status);
-	const labels: Record<VisitCommand, string> = {
-		select: t.waiting,
-		skip: t.notPlaced,
-		call: t.callGuest,
-		serve: t.markServed,
-		mark_no_show: t.markNoShow,
-		return_to_queue: t.returnToQueue,
-		cancel: t.cancelled,
-	};
+	const labels = visitCommandLabels();
 
 	if (!commands.length) {
 		return null;
@@ -64,7 +73,7 @@ export function VisitCommandButtons({ status, disabled, onRun }: VisitCommandBut
 				<button
 					key={command}
 					type="button"
-					className={command === 'call' || command === 'serve' ? 'primary' : undefined}
+					className={primaryVisitCommands.includes(command) ? 'primary' : undefined}
 					disabled={disabled}
 					onClick={() => onRun(command)}
 				>

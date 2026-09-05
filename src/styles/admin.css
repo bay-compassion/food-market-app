@@ -15,8 +15,7 @@
 	font-size: 23px;
 	text-transform: uppercase;
 }
-.admin-dashboard .section-heading,
-.admin-dashboard .manual-actions {
+.admin-dashboard .section-heading {
 	display: flex;
 	justify-content: space-between;
 	gap: 14px;
@@ -27,6 +26,8 @@
 	line-height: 1.5;
 }
 .admin-dashboard .add-guest-button {
+	min-height: 44px;
+	padding: 0;
 	border: 0;
 	color: var(--color-brand);
 	background: transparent;
@@ -112,22 +113,6 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 12px;
-}
-.admin-dashboard .manual-form {
-	padding: 18px;
-	border-radius: var(--radius-md);
-	background: #f3f6f4;
-}
-.admin-dashboard .manual-form h3 {
-	margin: 0;
-	font-family: var(--font-heading);
-	text-transform: uppercase;
-}
-.admin-dashboard .manual-actions > button:first-child {
-	border: 0;
-	color: var(--color-brand);
-	background: transparent;
-	font-weight: 700;
 }
 
 @media (min-width: 560px) {

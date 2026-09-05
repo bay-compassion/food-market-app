@@ -5,10 +5,11 @@ import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs
 import { isAgeRange, type AgeRange } from '../../src/services/ageRanges.js';
 import {
 	admissionNeedsQueuePosition,
+	admissionTakesLotteryWeight,
 	admissionVisitStatus,
 	canAdmitGuest,
-	isGuestAdmission,
 	type GuestAdmission,
+	isGuestAdmission,
 	type QueuePlacement,
 } from '../../src/services/guestAdmission.js';
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
@@ -309,7 +310,7 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 							normalizedPhone: normalizePhone(submission.phone),
 							// Only a guest actually entering the draw can carry anything but the default odds.
 							lotteryWeight:
-								submission.source === 'admin' && submission.admission === 'lottery'
+								submission.source === 'admin' && admissionTakesLotteryWeight(submission.admission)
 									? submission.lotteryWeight
 									: 1,
 						})

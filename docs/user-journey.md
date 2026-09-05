@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=4cdad1d076cd, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=a4c800d793d0, src/stores/registration.store.ts=bfe40f9a295c, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=244340995e15, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=5b786cf6123c, netlify/routes/notifications/sms-subscription.mts=a4b734cae756 -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=4cdad1d076cd, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=a4c800d793d0, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=65f54dce1f84, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=e0de2f543b86, netlify/services/guestRegistration.mts=51046cf84bee, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=5b786cf6123c, netlify/routes/notifications/sms-subscription.mts=a4b734cae756 -->
 
 # Guest journey
 
@@ -181,9 +181,13 @@ flowchart TD
   many waiting guests are ahead of them, so they can judge whether to stay by the door or sit down.
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status
   word — a guest glancing at their phone from across the room has to catch it.
-- **An admin can add a guest directly, at any stage of the session.** Those visits are created with
-  `source: admin`, and how far the session has progressed decides what the worker may choose —
-  see `admissionsFor` in [`src/services/guestAdmission.ts`](../src/services/guestAdmission.ts):
+- **An admin can add a guest directly, at any stage of the session.** The worker fills in the same
+  identity and household form components a guest uses, inside a dialog, so the two never drift
+  apart; those components write to the shared `RegistrationStore`, which the dialog empties each
+  time it opens so a worker's own remembered details never leak into another guest's record. The
+  resulting visits are created with `source: admin`, and how far the session has progressed
+  decides what the worker may choose — see `admissionsFor` in
+  [`src/services/guestAdmission.ts`](../src/services/guestAdmission.ts):
   - While registration is open or in its grace period, the worker picks between entering the guest
     in the lottery (`registered`, no
     queue position, exactly like a self-registration) and handing them a spot outright (`waiting`,

@@ -56,6 +56,11 @@ export function admissionNeedsQueuePosition(admission: GuestAdmission) {
 	return admission === 'queue';
 }
 
+/** Draw odds only mean anything for a guest actually going into the draw. */
+export function admissionTakesLotteryWeight(admission: GuestAdmission) {
+	return admission === 'lottery';
+}
+
 export function isGuestAdmission(value: unknown): value is GuestAdmission {
 	return guestAdmissions.some((admission) => admission === value);
 }

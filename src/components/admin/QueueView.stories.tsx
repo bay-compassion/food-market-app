@@ -3,7 +3,7 @@ import { fn } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
-import { guestAdmissions, type GuestAdmission } from '../../services/guestAdmission';
+import { admissionsFor, type GuestAdmission } from '../../services/guestAdmission';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { busyQueue, busyQueueCounts, queueGuest } from './queueGuests.fixture';
 import { QueueView } from './QueueView';
@@ -52,7 +52,8 @@ const meta = {
 		locale: 'en',
 		serviceStarted: true,
 		busy: false,
-		admissions: guestAdmissions,
+		// What a session in service actually offers: the draw has run, so only a place in line.
+		admissions: admissionsFor('service_started'),
 		guests: busyQueue,
 		counts: busyQueueCounts,
 	},
@@ -94,14 +95,41 @@ export const Busy: Story = {
 };
 
 /**
- * The resolved section expanded. It is collapsed by default because it only grows over a service
- * and would otherwise push the working part of the screen off a phone.
+ * A list folded away. Every list starts open; a worker who never uses one — the finished list,
+ * say — can collapse it for the rest of the service.
  */
-export const ResolvedGuestsShown: Story = {
+export const SectionCollapsed: Story = {
 	play: async ({ canvas, userEvent }) => {
-		// Matched against the translation rather than a hard-coded string, so rewording the label in
+		// Matched against the translation rather than a hard-coded string, so rewording the heading in
 		// `adminLocales.ts` does not quietly break this story.
-		const label = new RegExp(adminTranslations.en.showResolved, 'i');
+		const label = new RegExp(adminTranslations.en.resolvedGuests, 'i');
+
+		await userEvent.click(await canvas.findByRole('button', { name: label }));
+	},
+};
+
+/** The menu behind a row's dots: the rarer transitions and the guest's phone number. */
+export const RowMenuOpen: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const label = new RegExp(adminTranslations.en.moreActions, 'i');
+
+		await userEvent.click((await canvas.findAllByRole('button', { name: label }))[0]!);
+	},
+};
+
+/** The session menu in the header, where closing the session lives as a destructive action. */
+export const SessionMenuOpen: Story = {
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(
+			await canvas.findByRole('button', { name: adminTranslations.en.sessionActions }),
+		);
+	},
+};
+
+/** Adding a guest by hand: the form opens at the top of the waiting list. */
+export const AddingGuest: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const label = new RegExp(adminTranslations.en.addGuest, 'i');
 
 		await userEvent.click(await canvas.findByRole('button', { name: label }));
 	},

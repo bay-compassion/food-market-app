@@ -1,14 +1,17 @@
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
+import { Button, MenuItem } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
-import { AddGuestSection } from './AddGuestSection';
+import { useManualGuestForm } from './AddGuestSection';
+import { ManualGuestDialog } from './ManualGuestDialog';
+import { OverflowMenu } from './OverflowMenu';
 import { QueueCallNext } from './QueueCallNext';
 import { QueueGuestRow } from './QueueGuestRow';
+import { QueueSection } from './QueueSection';
 import type { ManualGuest, QueueGuest } from './types';
 
 export type QueueViewProps = {
@@ -25,34 +28,21 @@ export type QueueViewProps = {
 	onNavigateCurrentSession: () => void;
 };
 
+type QueueList = 'called' | 'waiting' | 'resolved';
+
 const resolvedStatuses: VisitStatus[] = ['served', 'no_show', 'not_placed', 'cancelled'];
 
-const Summary = styled.p`
-	margin: 0 0 14px;
-	color: var(--color-text-subtle);
-	font-weight: 700;
-	font-size: 14px;
-`;
-
-const Count = styled.span`
+const Header = styled.div`
 	display: grid;
-	place-items: center;
-	min-width: 34px;
-	height: 34px;
-	padding: 0 10px;
-	border-radius: var(--radius-pill);
-	color: var(--color-on-brand);
-	background: var(--color-brand);
-	font-weight: 700;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 4px;
+	align-items: center;
 `;
 
-const ResolvedToggle = styled.button`
-	border: 0;
-	padding: 0;
-	color: var(--color-brand);
-	background: transparent;
-	font-weight: 700;
-	text-decoration: underline;
+const Summary = styled.p`
+	margin: 10px 0 0;
+	color: var(--color-text-subtle);
+	font-size: 13px;
 `;
 
 const Empty = styled.section`
@@ -64,10 +54,6 @@ const Empty = styled.section`
 		color: var(--color-text-subtle);
 		line-height: 1.5;
 	}
-`;
-
-const StandaloneAction = styled.div`
-	margin-top: 26px;
 `;
 
 /**
@@ -90,7 +76,9 @@ export const QueueView = observer(function QueueView({
 }: QueueViewProps) {
 	const t = adminTranslations.en;
 	const [callBatchSize, setCallBatchSize] = useState(1);
-	const [showResolved, setShowResolved] = useState(false);
+	// Every list starts open; a worker folds one away for the rest of the service if they like.
+	const [collapsed, setCollapsed] = useState<Partial<Record<QueueList, boolean>>>({});
+	const addGuestForm = useManualGuestForm(admissions);
 	// Drives the "called N min ago" labels. A minute's resolution needs nothing finer than this.
 	const [now, setNow] = useState(() => Date.now());
 
@@ -129,15 +117,27 @@ export const QueueView = observer(function QueueView({
 		`${counts.served ?? 0} ${t.served}`,
 	].join(' · ');
 
-	function guestRows(rows: QueueGuest[], showWaitingTime = false) {
+	function toggle(list: QueueList) {
+		setCollapsed({ ...collapsed, [list]: !collapsed[list] });
+	}
+
+	function addGuest(guest: ManualGuest) {
+		addGuestForm.close();
+		onAddGuest(guest);
+	}
+
+	function guestRows(
+		rows: QueueGuest[],
+		options: { waitingTime?: boolean; status?: boolean } = {},
+	) {
 		return rows.map((guest) => (
 			<QueueGuestRow
 				key={guest.id}
 				guest={guest}
 				now={now}
-				statusLabel={statusLabels[guest.status]}
+				statusLabel={options.status ? statusLabels[guest.status] : undefined}
 				busy={busy}
-				showWaitingTime={showWaitingTime}
+				showWaitingTime={options.waitingTime}
 				onRun={(command) => onRun(guest, command)}
 			/>
 		));
@@ -145,59 +145,74 @@ export const QueueView = observer(function QueueView({
 
 	return (
 		<>
+			<Header>
+				<QueueCallNext
+					count={callBatchSize}
+					onCountChange={setCallBatchSize}
+					waitingCount={queueWaiting.length}
+					busy={busy}
+					onCall={() => onCallNext(callBatchSize)}
+				/>
+				<OverflowMenu label={t.sessionActions} disabled={busy}>
+					{(closeMenu) => (
+						<MenuItem
+							sx={{ color: 'error.main', fontWeight: 700 }}
+							onClick={() => {
+								closeMenu();
+								onCloseSession();
+							}}
+						>
+							{t.closeSession}
+						</MenuItem>
+					)}
+				</OverflowMenu>
+			</Header>
 			<Summary className="queue-summary">{summary}</Summary>
-			<QueueCallNext
-				count={callBatchSize}
-				onCountChange={setCallBatchSize}
-				waitingCount={queueWaiting.length}
+
+			<QueueSection
+				title={t.calledNow}
+				count={queueCalled.length}
+				emptyText={t.noCalledGuests}
+				open={!collapsed.called}
+				onToggle={() => toggle('called')}
+			>
+				{guestRows(queueCalled, { waitingTime: true })}
+			</QueueSection>
+
+			<QueueSection
+				title={t.waitingQueue}
+				count={queueWaiting.length}
+				emptyText={t.noWaitingGuests}
+				open={!collapsed.waiting}
+				onToggle={() => toggle('waiting')}
+				action={
+					addGuestForm.canAdd ? (
+						<button className="add-guest-button" type="button" onClick={addGuestForm.open}>
+							+ {t.addGuest}
+						</button>
+					) : null
+				}
+			>
+				{guestRows(queueWaiting)}
+			</QueueSection>
+
+			<QueueSection
+				title={t.resolvedGuests}
+				count={queueResolved.length}
+				emptyText={t.noResolvedGuests}
+				open={!collapsed.resolved}
+				onToggle={() => toggle('resolved')}
+			>
+				{guestRows(queueResolved, { status: true })}
+			</QueueSection>
+
+			<ManualGuestDialog
+				open={addGuestForm.isOpen}
+				admissions={admissions}
 				busy={busy}
-				onCall={() => onCallNext(callBatchSize)}
+				onSubmit={addGuest}
+				onClose={addGuestForm.close}
 			/>
-
-			<section className="admin-section">
-				<div className="section-heading">
-					<h2>{t.calledNow}</h2>
-					<Count className="queue-count">{queueCalled.length}</Count>
-				</div>
-				{queueCalled.length ? (
-					<div className="guest-list">{guestRows(queueCalled, true)}</div>
-				) : (
-					<p className="empty-state">{t.noCalledGuests}</p>
-				)}
-			</section>
-
-			<section className="admin-section">
-				<div className="section-heading">
-					<h2>{t.waitingQueue}</h2>
-					<Count className="queue-count">{queueWaiting.length}</Count>
-				</div>
-				{queueWaiting.length ? (
-					<div className="guest-list">{guestRows(queueWaiting)}</div>
-				) : (
-					<p className="empty-state">{t.noWaitingGuests}</p>
-				)}
-			</section>
-
-			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />
-
-			<section className="admin-section">
-				<ResolvedToggle
-					className="resolved-toggle"
-					type="button"
-					onClick={() => setShowResolved(!showResolved)}
-				>
-					{showResolved ? t.hideResolved : t.showResolved} ({queueResolved.length})
-				</ResolvedToggle>
-				{showResolved && queueResolved.length ? (
-					<div className="guest-list">{guestRows(queueResolved)}</div>
-				) : null}
-			</section>
-
-			<StandaloneAction className="standalone-action">
-				<Button type="button" disabled={busy} onClick={onCloseSession}>
-					{t.closeSession}
-				</Button>
-			</StandaloneAction>
 		</>
 	);
 });
