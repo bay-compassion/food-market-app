@@ -14,7 +14,7 @@ export function CalledVisitStatus({ copy }: { copy: VisitStatusTranslations['cal
 		<GuestVisitStatusPanel
 			icon="→"
 			iconClassName="called-mark"
-			tone="urgent"
+			tone="action"
 			heading={copy.header}
 			description={copy.details}
 			details={

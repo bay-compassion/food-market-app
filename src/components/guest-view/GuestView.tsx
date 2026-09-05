@@ -11,7 +11,6 @@ import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import type { Language } from '../../stores/translation.store';
 import { GuestLanguageHero } from './GuestLanguageHero';
-import { GuestLotteryPendingState } from './GuestLotteryPendingState';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 import { GuestServiceState } from './GuestServiceState';
@@ -87,19 +86,14 @@ const MarketStatus = observer(function MarketStatus({ status }: { status: Promis
 			case null:
 			case SessionStatusEnum.REGISTRATION_OPEN:
 				return <RegistrationOpenState />;
+			// Both closed phases reach this branch only when the guest has no visit — someone who
+			// missed the window — so they read the same card.
 			case SessionStatusEnum.REGISTRATION_CLOSED:
-				return (
-					<Card aria-live="polite">
-						<CardContent>
-							<GuestRegistrationClosedState />
-						</CardContent>
-					</Card>
-				);
 			case SessionStatusEnum.LOTTERY_PENDING:
 				return (
 					<Card aria-live="polite">
 						<CardContent>
-							<GuestLotteryPendingState />
+							<GuestRegistrationClosedState />
 						</CardContent>
 					</Card>
 				);

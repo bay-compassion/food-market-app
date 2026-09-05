@@ -35,6 +35,6 @@ export const GuestVisitStatus = observer(function GuestVisitStatus() {
 		case 'not_placed':
 		case 'no_show':
 		case 'cancelled':
-			return <CompletedVisitStatus heading={copy.labels[status]} />;
+			return <CompletedVisitStatus status={status} copy={copy[status]} />;
 	}
 });

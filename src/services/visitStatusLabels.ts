@@ -5,10 +5,11 @@ import type { VisitStatus } from './visitStateMachine';
 /**
  * The localized name for each visit status.
  *
- * Guests and workers read different words for the same status — a guest is told "You're in line",
- * a worker sees "Waiting" — so the two audiences get their own map, drawn from their own
- * dictionary. Keeping both here means a new `VisitStatus` fails to compile until somebody has
- * decided what each audience should be shown, instead of silently rendering a blank label.
+ * Guests and workers read different words for the same status, so the two audiences get their own
+ * map, drawn from their own dictionary. These are short names for listing a status — the guest
+ * screens themselves render a headline and body per status from `visitStatus.<status>` instead.
+ * Keeping both maps here means a new `VisitStatus` fails to compile until somebody has decided what
+ * each audience should be shown, instead of silently rendering a blank label.
  */
 
 /** How the guest-facing screens name a visit status. */
