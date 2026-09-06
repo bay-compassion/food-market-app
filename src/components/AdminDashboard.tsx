@@ -32,16 +32,6 @@ export type AdminDashboardProps = {
 	onNavigate: (view: AdminView) => void;
 };
 
-const statuses: VisitStatus[] = [
-	'waiting',
-	'called',
-	'served',
-	'registered',
-	'not_placed',
-	'no_show',
-	'cancelled',
-];
-
 /** The admin area: navigation, the session's status, and whichever screen is selected. */
 export const AdminDashboard = observer(function AdminDashboard({
 	getAccessToken,
@@ -266,7 +256,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 					onPostponementMinutesChange={setPostponementMinutes}
 					event={event}
 					sessionState={sessionState}
-					statuses={statuses}
 					counts={counts}
 					statusLabels={statusLabels}
 					registeredGuests={registeredSessionGuests}

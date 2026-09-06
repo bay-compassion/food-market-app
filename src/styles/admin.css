@@ -37,6 +37,7 @@
 .admin-dashboard .settings-card,
 .admin-dashboard .action-card,
 .admin-dashboard .guest-section,
+.admin-dashboard .progress-card,
 .admin-dashboard .reset-card {
 	padding: 20px;
 	border: 1.5px solid #c7d2cc;
