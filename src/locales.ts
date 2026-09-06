@@ -130,7 +130,6 @@ export interface Translation {
 	signupView: SignupViewTranslations;
 	admin: string;
 	adminDescription: string;
-	adminEyebrow: string;
 	adminTitle: string;
 	age: string;
 	agePlaceholder: string;
@@ -191,8 +190,6 @@ export interface Translation {
 	qrCodeTitle: string;
 	registrationClosesIn: string;
 	registrationClosesInMinutes: string;
-	signedInAs: string;
-	signOut: string;
 	submissionError: string;
 	submit: string;
 	submitting: string;
@@ -311,7 +308,6 @@ export const translations = {
 		},
 		admin: 'Admin',
 		adminDescription: 'Queue management tools are coming soon.',
-		adminEyebrow: '',
 		adminTitle: 'A simpler way to welcome every neighbor.',
 		age: 'Age',
 		agePlaceholder: 'Select your age range',
@@ -386,8 +382,6 @@ export const translations = {
 		qrCodeTitle: 'Scan to check in',
 		registrationClosesIn: 'Registration closes in',
 		registrationClosesInMinutes: 'Registration closes in {minutes} min',
-		signedInAs: 'Signed in as',
-		signOut: 'Sign out',
 		submissionError: 'We could not save your check-in. Please try again.',
 		submit: 'Join the queue',
 		submitting: 'Joining the queue…',
@@ -505,7 +499,6 @@ export const translations = {
 		},
 		admin: 'Administración',
 		adminDescription: 'Las herramientas para gestionar la fila estarán disponibles pronto.',
-		adminEyebrow: 'Equipo del mercado',
 		adminTitle: 'Una forma más sencilla de recibir a cada vecino.',
 		age: 'Edad',
 		agePlaceholder: 'Seleccione su rango de edad',
@@ -582,8 +575,6 @@ export const translations = {
 		qrCodeTitle: 'Escanee para registrarse',
 		registrationClosesIn: 'El registro cierra en',
 		registrationClosesInMinutes: 'El registro cierra en {minutes} min',
-		signedInAs: 'Sesión iniciada como',
-		signOut: 'Cerrar sesión',
 		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
 		submit: 'Unirse a la fila',
 		submitting: 'Uniéndose a la fila…',
@@ -699,7 +690,6 @@ export const translations = {
 		},
 		admin: 'مدیریت',
 		adminDescription: 'ابزارهای مدیریت صف به‌زودی در دسترس خواهند بود.',
-		adminEyebrow: 'تیم بازار',
 		adminTitle: 'راهی ساده‌تر برای خوشامدگویی به هر همسایه.',
 		age: 'سن',
 		agePlaceholder: 'محدوده سنی خود را انتخاب کنید',
@@ -774,8 +764,6 @@ export const translations = {
 		qrCodeTitle: 'برای ثبت‌نام اسکن کنید',
 		registrationClosesIn: 'زمان باقی‌مانده برای ثبت‌نام',
 		registrationClosesInMinutes: 'ثبت‌نام تا {minutes} دقیقه دیگر بسته می‌شود',
-		signedInAs: 'واردشده به‌عنوان',
-		signOut: 'خروج',
 		submissionError: 'ثبت‌نام شما ذخیره نشد. لطفاً دوباره تلاش کنید.',
 		submit: 'پیوستن به صف',
 		submitting: 'در حال پیوستن به صف…',
@@ -896,7 +884,6 @@ export const translations = {
 		},
 		admin: 'Admin',
 		adminDescription: 'Darating na ang mga kasangkapan sa pamamahala ng pila.',
-		adminEyebrow: 'Pangkat ng pamilihan',
 		adminTitle: 'Isang mas madaling paraan upang salubungin ang bawat kapitbahay.',
 		age: 'Edad',
 		agePlaceholder: 'Piliin ang iyong saklaw ng edad',
@@ -974,8 +961,6 @@ export const translations = {
 		qrCodeTitle: 'I-scan para mag-check in',
 		registrationClosesIn: 'Magsasara ang pagpaparehistro sa loob ng',
 		registrationClosesInMinutes: 'Magsasara ang pagpaparehistro sa loob ng {minutes} min',
-		signedInAs: 'Naka-sign in bilang',
-		signOut: 'Mag-sign out',
 		submissionError: 'Hindi namin na-save ang inyong check-in. Pakisubukang muli.',
 		submit: 'Sumali sa pila',
 		submitting: 'Sumasali sa pila…',
@@ -1090,7 +1075,6 @@ export const translations = {
 		},
 		admin: 'Quản trị',
 		adminDescription: 'Công cụ quản lý hàng đợi sẽ sớm có.',
-		adminEyebrow: 'Đội ngũ chợ',
 		adminTitle: 'Một cách đơn giản hơn để chào đón mọi người hàng xóm.',
 		age: 'Tuổi',
 		agePlaceholder: 'Chọn độ tuổi của bạn',
@@ -1166,8 +1150,6 @@ export const translations = {
 		qrCodeTitle: 'Quét để đăng ký',
 		registrationClosesIn: 'Đăng ký sẽ đóng sau',
 		registrationClosesInMinutes: 'Đăng ký sẽ đóng sau {minutes} phút',
-		signedInAs: 'Đã đăng nhập với tên',
-		signOut: 'Đăng xuất',
 		submissionError: 'Chúng tôi không thể lưu đăng ký của bạn. Vui lòng thử lại.',
 		submit: 'Vào hàng đợi',
 		submitting: 'Đang vào hàng đợi…',
@@ -1275,7 +1257,6 @@ export const translations = {
 		},
 		admin: '管理',
 		adminDescription: '排队管理工具即将推出。',
-		adminEyebrow: '市场团队',
 		adminTitle: '用更简单的方式欢迎每一位邻居。',
 		age: '年龄',
 		agePlaceholder: '选择您的年龄段',
@@ -1347,8 +1328,6 @@ export const translations = {
 		qrCodeTitle: '扫码登记',
 		registrationClosesIn: '距登记关闭还剩',
 		registrationClosesInMinutes: '登记将在 {minutes} 分钟后关闭',
-		signedInAs: '登录身份',
-		signOut: '退出登录',
 		submissionError: '无法保存您的登记信息。请重试。',
 		submit: '加入队列',
 		submitting: '正在加入队列…',
@@ -1464,7 +1443,6 @@ export const translations = {
 		},
 		admin: 'الإدارة',
 		adminDescription: 'أدوات إدارة قائمة الانتظار ستتوفر قريبًا.',
-		adminEyebrow: 'فريق السوق',
 		adminTitle: 'طريقة أبسط للترحيب بكل جار.',
 		age: 'العمر',
 		agePlaceholder: 'اختر الفئة العمرية',
@@ -1539,8 +1517,6 @@ export const translations = {
 		qrCodeTitle: 'امسح للتسجيل',
 		registrationClosesIn: 'يُغلق التسجيل خلال',
 		registrationClosesInMinutes: 'يُغلق التسجيل خلال {minutes} دقيقة',
-		signedInAs: 'تم تسجيل الدخول باسم',
-		signOut: 'تسجيل الخروج',
 		submissionError: 'تعذر حفظ تسجيلك. يرجى المحاولة مرة أخرى.',
 		submit: 'انضم إلى قائمة الانتظار',
 		submitting: 'جارٍ الانضمام إلى قائمة الانتظار…',

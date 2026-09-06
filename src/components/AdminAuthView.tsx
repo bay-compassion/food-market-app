@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 import { useNavigate, useParams } from 'react-router';
 
-import { authReturnUrl, isAuth0Configured } from '../auth';
+import { isAuth0Configured } from '../auth';
 import { useTranslation } from '../stores/react/use-translation';
 import { isAdminView, type AdminView } from './admin/types';
 import { AdminDashboard } from './AdminDashboard';
@@ -24,32 +24,6 @@ const AuthMessage = styled.section`
 	}
 `;
 
-const Account = styled.div`
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 12px;
-	width: min(100% - 32px, 1180px);
-	margin: 20px auto 0;
-	font-size: 13px;
-	color: var(--color-text-subtle);
-
-	span {
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	button {
-		flex: 0 0 auto;
-		padding: 9px 13px;
-		border: 1.5px solid var(--color-brand);
-		border-radius: var(--radius-pill);
-		color: var(--color-brand);
-		background: transparent;
-		font-weight: 700;
-	}
-`;
-
 /**
  * The `/admin` route's gate: Auth0's state decides whether the dashboard renders at all.
  *
@@ -62,10 +36,6 @@ export const AdminAuthView = observer(function AdminAuthView() {
 	const navigate = useNavigate();
 	const params = useParams();
 	const view: AdminView = isAdminView(params.view) ? params.view : 'current-session';
-
-	function signOut() {
-		void auth.logout({ logoutParams: { returnTo: authReturnUrl } });
-	}
 
 	if (!isAuth0Configured) {
 		return (
@@ -93,20 +63,10 @@ export const AdminAuthView = observer(function AdminAuthView() {
 	}
 
 	return (
-		<>
-			<Account className="admin-account">
-				<span>
-					{t.signedInAs} {auth.user?.email ?? auth.user?.name}
-				</span>
-				<button type="button" onClick={signOut}>
-					{t.signOut}
-				</button>
-			</Account>
-			<AdminDashboard
-				view={view}
-				getAccessToken={auth.getAccessTokenSilently}
-				onNavigate={(next) => void navigate(`/admin/${next}`)}
-			/>
-		</>
+		<AdminDashboard
+			view={view}
+			getAccessToken={auth.getAccessTokenSilently}
+			onNavigate={(next) => void navigate(`/admin/${next}`)}
+		/>
 	);
 });

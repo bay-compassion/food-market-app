@@ -1,11 +1,11 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 import { adminFeedbackText } from '../../services/admin-feedback';
 import { currentSessionState } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
-import { EyebrowLabel } from '../EyebrowLabel';
+import { AdminDashboardTabs } from './AdminDashboardTabs';
 import type { AdminView } from './types';
 
 /*
@@ -15,45 +15,14 @@ import type { AdminView } from './types';
 const Dashboard = styled.section<{ $wide: boolean }>`
 	width: min(100% - 32px, ${({ $wide }) => ($wide ? '1600px' : '1180px')});
 	margin: 0 auto;
-	padding: 30px 0 60px;
-
-	.admin-navigation {
-		display: flex;
-		gap: 8px;
-		margin-bottom: 28px;
-		padding-bottom: 4px;
-		overflow-x: auto;
-	}
-
-	.admin-navigation button {
-		flex: 0 0 auto;
-		min-height: 44px;
-		padding: 0 15px;
-		border: 1.5px solid #c7d2cc;
-		border-radius: var(--radius-pill);
-		color: var(--color-brand);
-		background: white;
-		font-weight: 700;
-		text-transform: capitalize;
-	}
-
-	.admin-navigation button.active {
-		color: var(--color-on-brand);
-		background: var(--color-brand);
-		border-color: var(--color-brand);
-	}
+	padding: 16px 0 60px;
 
 	.admin-content {
 		min-width: 0;
 	}
 
 	.admin-heading {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 18px;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: 28px;
+		margin-bottom: 24px;
 	}
 
 	.admin-heading h1 {
@@ -66,35 +35,46 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 		line-height: 1.5;
 	}
 
+	/*
+	 * The session's status leads the heading rather than trailing it: on the two screens that show
+	 * it, it is the thing a worker opens the dashboard to check, so it is read before the title
+	 * rather than found beside it. Solid rather than tinted for the same reason.
+	 */
 	.event-state {
-		padding: 9px 13px;
+		display: inline-flex;
+		gap: 9px;
+		align-items: center;
+		margin-bottom: 12px;
+		padding: 8px 15px;
 		border-radius: var(--radius-pill);
-		background: #e5f4ed;
-		color: #145c3c;
-		font-size: 13px;
+		background: #146c34;
+		color: white;
+		font-size: 15px;
 		font-weight: 700;
+		line-height: 1.2;
+	}
+
+	/* The status light, which carries the state at a glance before the words are read. */
+	.event-state::before {
+		content: '';
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: currentColor;
 	}
 
 	.event-state.registration_closed,
 	.event-state.lottery_pending,
 	.event-state.inactive {
-		background: #fff1d8;
-		color: #7a4b00;
+		background: #7a4e00;
 	}
 
 	.event-state.scheduled {
-		background: #e8f0fb;
-		color: #254d7a;
+		background: #254d7a;
 	}
 
 	.event-state.service_started {
-		background: #e9e7f9;
-		color: #39306b;
-	}
-
-	.event-state.ended {
-		background: #edf0ee;
-		color: var(--color-text-subtle);
+		background: #39306b;
 	}
 
 	.admin-no-access {
@@ -119,22 +99,6 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 		grid-template-columns: 210px minmax(0, 1fr);
 		gap: 42px;
 		align-items: start;
-
-		.admin-navigation {
-			position: sticky;
-			top: 24px;
-			display: grid;
-			gap: 8px;
-			margin: 0;
-			overflow: visible;
-		}
-
-		.admin-navigation button {
-			width: 100%;
-			min-height: 50px;
-			border-radius: 12px;
-			text-align: start;
-		}
 	}
 `;
 
@@ -161,6 +125,11 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 		'dev-mode': t.devMode,
 	};
 	const navigation = admin.views.map((id) => ({ id, label: viewLabels[id] }));
+	const idPrefix = useId();
+	const idFor = (view: AdminView) => ({
+		tab: `${idPrefix}-${view}-tab`,
+		panel: `${idPrefix}-${view}-panel`,
+	});
 	const feedback = adminFeedbackText(admin.feedback, t);
 	const sessionState = currentSessionState(session.currentState?.event?.status);
 	const sessionStatusLabel = {
@@ -174,35 +143,31 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 
 	return (
 		<Dashboard className="admin-dashboard" $wide={activeView === 'reports'}>
-			<nav className="admin-navigation" aria-label={t.adminTitle}>
-				{navigation.map((item) => (
-					<button
-						key={item.id}
-						type="button"
-						className={activeView === item.id ? 'active' : undefined}
-						aria-current={activeView === item.id ? 'page' : undefined}
-						onClick={() => onNavigate(item.id)}
-					>
-						{item.label}
-					</button>
-				))}
-			</nav>
+			<AdminDashboardTabs
+				items={navigation}
+				value={activeView}
+				idFor={idFor}
+				onChange={onNavigate}
+				label={t.adminTitle}
+			/>
 			{!navigation.length ? (
 				<p className="admin-no-access" role="status">
 					{t.noAccess}
 				</p>
 			) : (
-				<div className="admin-content">
+				<div
+					className="admin-content"
+					role="tabpanel"
+					id={idFor(activeView).panel}
+					aria-labelledby={idFor(activeView).tab}
+				>
 					{/* Keep queue controls above the fold on a phone. */}
-					<header className={`admin-heading${activeView === 'queue' ? ' compact' : ''}`}>
-						<div>
-							{activeView !== 'queue' ? <EyebrowLabel tone="brand" label={t.adminEyebrow} /> : null}
-							<h1>{viewLabels[activeView]}</h1>
-							{activeView !== 'queue' ? <p>{t.adminDescription}</p> : null}
-						</div>
+					<header className="admin-heading">
 						{activeView === 'current-session' || activeView === 'queue' ? (
 							<span className={`event-state ${sessionState}`}>{sessionStatusLabel}</span>
 						) : null}
+						<h1>{viewLabels[activeView]}</h1>
+						{activeView !== 'queue' ? <p>{t.adminDescription}</p> : null}
 					</header>
 					{feedback ? (
 						<p className="admin-feedback" role="status">
