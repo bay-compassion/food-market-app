@@ -2,6 +2,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import ListSubheader from '@mui/material/ListSubheader';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { observer } from 'mobx-react-lite';
@@ -58,7 +59,13 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				anchorOrigin={{ vertical: 'bottom', horizontal }}
 				transformOrigin={{ vertical: 'top', horizontal }}
 				slotProps={{
-					list: { id: `${id}-menu`, 'aria-labelledby': `${id}-button` },
+					list: {
+						id: `${id}-menu`,
+						'aria-labelledby': `${id}-button`,
+						// The account line is presentational markup, so the menu points at it to have it
+						// announced on open rather than leaving it as text a screen reader walks past.
+						'aria-describedby': isAuthenticated ? `${id}-account` : undefined,
+					},
 					paper: { dir: translations.dir, sx: { minWidth: 220 } },
 				}}
 			>
@@ -78,7 +85,33 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				<MenuItem component={Link} to="/admin" onClick={close}>
 					{t.staffLogin}
 				</MenuItem>
-				{isAuthenticated && <MenuItem onClick={signOut}>{t.signOut}</MenuItem>}
+				{isAuthenticated && [
+					<Divider key="account-divider" />,
+					/*
+					 * Who is signed in, stated once here rather than on the admin page it used to head.
+					 * A subheader rather than a disabled item, so it is not offered as a menu choice that
+					 * happens to be unavailable — and presentational, because `role="menu"` may only own
+					 * menu items and separators.
+					 */
+					<ListSubheader
+						key="account"
+						id={`${id}-account`}
+						role="presentation"
+						disableSticky
+						sx={{
+							paddingBlock: '4px',
+							lineHeight: 1.4,
+							fontSize: 13,
+							overflow: 'hidden',
+							textOverflow: 'ellipsis',
+						}}
+					>
+						{user?.email ?? user?.name}
+					</ListSubheader>,
+					<MenuItem key="sign-out" onClick={signOut}>
+						{t.signOut}
+					</MenuItem>,
+				]}
 			</Menu>
 		</>
 	);

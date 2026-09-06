@@ -158,7 +158,7 @@ describe('broadcast notification tab', () => {
 		const screen = renderDashboard(['manage:sessions'], {
 			status: SessionStatusEnum.REGISTRATION_OPEN,
 		});
-		const tab = await screen.findByRole('button', { name: t.broadcastTitle });
+		const tab = await screen.findByRole('tab', { name: t.broadcastTitle });
 
 		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
 
@@ -166,13 +166,13 @@ describe('broadcast notification tab', () => {
 		await user.click(tab);
 		await user.type(screen.getByLabelText(t.broadcastTitleLabel), 'Doors open');
 		await user.type(screen.getByLabelText(t.broadcastMessageLabel), 'Come on in');
-		await user.click(screen.getByRole('button', { name: t.currentSession }));
+		await user.click(screen.getByRole('tab', { name: t.currentSession }));
 		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
 		await user.click(tab);
 
 		// Assert
 		expect(screen.onNavigate).toHaveBeenLastCalledWith('broadcast');
-		expect(tab.getAttribute('aria-current')).toBe('page');
+		expect(tab.getAttribute('aria-selected')).toBe('true');
 		expect((screen.getByLabelText(t.broadcastTitleLabel) as HTMLInputElement).value).toBe(
 			'Doors open',
 		);

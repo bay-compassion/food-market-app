@@ -1,6 +1,6 @@
 import { Auth0Context, initialContext } from '@auth0/auth0-react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, within } from 'storybook/test';
+import { expect, fn, waitFor, within } from 'storybook/test';
 
 import { authReturnUrl } from '../../../auth';
 import { translations, type Locale } from '../../../locales';
@@ -20,7 +20,11 @@ const meta = {
 					isLoading: false,
 					isAuthenticated: Boolean(context.parameters.signedIn),
 					user: context.parameters.signedIn
-						? { name: 'Staff Member', picture: context.parameters.picture as string | undefined }
+						? {
+								name: 'Staff Member',
+								email: 'staff@thebaycompassion.org',
+								picture: context.parameters.picture as string | undefined,
+							}
 						: undefined,
 					logout,
 				}}
@@ -66,11 +70,12 @@ export const SignedIn: Story = {
 		logout.mockClear();
 
 		await userEvent.click(canvas.getByRole('button', { name: t.accountMenu }));
-		await userEvent.click(
-			within(await within(document.body).findByRole('menu')).getByRole('menuitem', {
-				name: t.signOut,
-			}),
-		);
+		const menu = within(await within(document.body).findByRole('menu'));
+
+		// The signed-in account is named here rather than on the admin page it used to head.
+		// Waited for because the menu is still fading in when it first enters the document.
+		await waitFor(() => expect(menu.getByText('staff@thebaycompassion.org')).toBeVisible());
+		await userEvent.click(menu.getByRole('menuitem', { name: t.signOut }));
 
 		await expect(logout).toHaveBeenCalledWith({ logoutParams: { returnTo: authReturnUrl } });
 	},

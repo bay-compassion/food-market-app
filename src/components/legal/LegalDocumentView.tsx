@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { marked } from 'marked';
-import { useMemo, type MouseEvent } from 'react';
+import { useLayoutEffect, useMemo, type MouseEvent } from 'react';
 
 export type LegalDocumentViewProps = {
 	backLabel: string;
@@ -121,6 +121,13 @@ export function LegalDocumentView({
 	onBack,
 }: LegalDocumentViewProps) {
 	const html = useMemo(() => marked.parse(markdown, { async: false, breaks: true }), [markdown]);
+
+	// A guest reaches these from the footer, so the page mounts with the previous screen's scroll
+	// position still applied — a document opened part-way down reads as though it were truncated.
+	// Before paint rather than after, so the document is never shown at the offset it inherited.
+	useLayoutEffect(() => {
+		window.scrollTo({ top: 0, behavior: 'instant' });
+	}, []);
 
 	function handleBack(event: MouseEvent<HTMLAnchorElement>) {
 		if (!onBack || !isPlainClick(event)) {

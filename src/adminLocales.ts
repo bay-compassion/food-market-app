@@ -5,7 +5,6 @@ export interface AdminTranslation {
 	adHocSessionHelp: string;
 	addGuest: string;
 	addQuestion: string;
-	adminEyebrow: string;
 	admissionLabel: string;
 	/** Heads the admin-only part of the manual guest form: how the guest enters the session. */
 	admissionLegend: string;
@@ -205,7 +204,6 @@ export const adminTranslations = {
 		adHocSessionHelp: 'Open registration immediately and choose when it closes.',
 		addGuest: 'Add guest',
 		addQuestion: 'Add question',
-		adminEyebrow: 'Market team',
 		admissionLabel: 'How should they join?',
 		admissionLegend: 'Admission',
 		admitAsServed: 'Record as already served',
