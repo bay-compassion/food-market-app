@@ -28,7 +28,6 @@ const meta = {
 		event: null,
 		sessionState: 'inactive',
 		settings: defaultSessionSettings(new Date('2026-09-03T16:00:00Z')),
-		statuses: ['waiting', 'called', 'served', 'registered', 'not_placed'],
 		counts: {},
 		statusLabels: adminVisitStatusLabels('en'),
 		registeredGuests: [queueGuest({ status: 'registered', queuePosition: null })],

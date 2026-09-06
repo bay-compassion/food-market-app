@@ -71,6 +71,8 @@ export interface AdminTranslation {
 	noHistory: string;
 	noShow: string;
 	notPlaced: string;
+	/** Names the total the progress bar measures against, as "of 120 guests placed today". */
+	placedToday: string;
 	open: string;
 	openRegistration: string;
 	openRegistrationNow: string;
@@ -275,6 +277,7 @@ export const adminTranslations = {
 		noHistory: 'No past sessions yet.',
 		noShow: 'No show',
 		notPlaced: 'Not placed',
+		placedToday: 'of {count} guests placed today',
 		open: 'Registration open',
 		openRegistration: 'Open registration',
 		openRegistrationNow: 'Open registration now',

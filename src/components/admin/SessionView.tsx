@@ -13,7 +13,6 @@ import { SessionStepper } from './SessionStepper';
 import type { ManualGuest, QueueGuest } from './types';
 
 export type SessionViewProps = SessionPhaseControlsProps & {
-	statuses: VisitStatus[];
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;
 	registeredGuests: QueueGuest[];
@@ -39,7 +38,6 @@ const ResetCard = styled.section`
 export const SessionView = observer(function SessionView({
 	event,
 	sessionState,
-	statuses,
 	counts,
 	statusLabels,
 	registeredGuests,
@@ -58,7 +56,7 @@ export const SessionView = observer(function SessionView({
 	return (
 		<>
 			{sessionState === 'service_started' ? (
-				<SessionOverview statuses={statuses} counts={counts} statusLabels={statusLabels} />
+				<SessionOverview counts={counts} statusLabels={statusLabels} />
 			) : null}
 
 			<SessionStepper
