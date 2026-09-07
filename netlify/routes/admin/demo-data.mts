@@ -1,5 +1,7 @@
-import { isServiceProgress } from '../../../src/services/demoScenario.js';
-import { isSessionStatus } from '../../../src/services/sessionStateMachine.js';
+import { z } from 'zod';
+
+import { serviceProgressLevels } from '../../../src/services/demoScenario.js';
+import { sessionStatuses } from '../../../src/services/sessionStateMachine.js';
 import { withPermission } from '../../lib/http-auth.mjs';
 import {
 	createRouter,
@@ -11,17 +13,20 @@ import {
 import { demoDataToolsEnabled, loadScenario } from '../../services/demoScenario.mjs';
 import { marketOverview } from '../../services/marketSession.mjs';
 
+const scenarioSchema = z.object({
+	stage: z.enum(sessionStatuses),
+	serviceProgress: z.enum(serviceProgressLevels).optional(),
+});
+
 async function runLoad(request: Request) {
-	const body = await jsonBody(request);
-	const stage = (body as { stage?: unknown } | null)?.stage;
-	const serviceProgress = (body as { serviceProgress?: unknown } | null)?.serviceProgress;
+	const scenario = scenarioSchema.safeParse(await jsonBody(request));
 
-	if (!isSessionStatus(stage)) {
-		return jsonError('Please provide a valid lifecycle stage.');
-	}
-
-	if (serviceProgress !== undefined && !isServiceProgress(serviceProgress)) {
-		return jsonError('Please provide a valid service progress level.');
+	if (!scenario.success) {
+		return jsonError(
+			scenario.error.issues.every((issue) => issue.path[0] === 'serviceProgress')
+				? 'Please provide a valid service progress level.'
+				: 'Please provide a valid lifecycle stage.',
+		);
 	}
 
 	// Not available on this deploy at all — answer the same as a deploy that never registered this
@@ -31,7 +36,7 @@ async function runLoad(request: Request) {
 		return jsonError('Not found.', 404);
 	}
 
-	const demoRoster = await loadScenario({ stage, serviceProgress });
+	const demoRoster = await loadScenario(scenario.data);
 
 	return Response.json(
 		{ ...(await marketOverview()), demoRoster },

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { withPermission } from '../../lib/http-auth.mjs';
 import {
 	createRouter,
@@ -11,19 +13,23 @@ import { callNextVisits } from '../../services/visitQueue.mjs';
 
 const maximumBatchSize = 50;
 
+const callNextSchema = z.object({
+	action: z.literal('call_next'),
+	// A worker who does not say how many wants the next guest.
+	count: z.preprocess((count) => count ?? 1, z.coerce.number().int().min(1).max(maximumBatchSize)),
+});
+
 export const queueRoutes = createRouter();
 
 queueRoutes.post('/queue', withPermission('run:queue'), async (context) => {
-	const body = await jsonBody(context.req.raw);
-	const { action, count } = (body ?? {}) as Record<string, unknown>;
+	const request = callNextSchema.safeParse(await jsonBody(context.req.raw));
 
-	if (action !== 'call_next') {
-		return jsonError('Invalid queue action.');
-	}
-	const batchSize = Number(count ?? 1);
-
-	if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > maximumBatchSize) {
-		return jsonError(`Please call between 1 and ${maximumBatchSize} guests at a time.`);
+	if (!request.success) {
+		return jsonError(
+			request.error.issues.every((issue) => issue.path[0] === 'count')
+				? `Please call between 1 and ${maximumBatchSize} guests at a time.`
+				: 'Invalid queue action.',
+		);
 	}
 
 	const event = await getCurrentEvent();
@@ -36,7 +42,7 @@ queueRoutes.post('/queue', withPermission('run:queue'), async (context) => {
 		return jsonError('Guests can only be called after service starts.', 409);
 	}
 
-	return Response.json({ called: await callNextVisits(event.id, batchSize) });
+	return Response.json({ called: await callNextVisits(event.id, request.data.count) });
 });
 queueRoutes.all('/queue', methodNotAllowed);
 

@@ -92,6 +92,22 @@ describe('parseSettings', () => {
 		).toBeNull();
 	});
 
+	it('keeps each question’s required flag, defaulting it to false', () => {
+		const result = parseSettings(
+			validBody({
+				questions: [
+					{ prompt: 'Required question', type: 'text', required: true },
+					{ prompt: 'Optional question', type: 'scale' },
+				],
+			}),
+		);
+
+		expect(result?.questions).toEqual([
+			{ prompt: 'Required question', type: 'text', required: true },
+			{ prompt: 'Optional question', type: 'scale', required: false },
+		]);
+	});
+
 	it('defaults an unrecognized question type to text', () => {
 		const result = parseSettings(validBody({ questions: [{ prompt: 'Q', type: 'weird' }] }));
 

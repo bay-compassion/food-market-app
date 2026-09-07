@@ -1,5 +1,6 @@
 import { and, eq, ne } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
+import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { pushSubscriptions } from '../../../db/schema.mjs';
@@ -19,32 +20,13 @@ import {
 	type NotificationType,
 } from '../../services/pushNotifications.mjs';
 
-function parseSubscription(value: unknown) {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-	const body = value as Record<string, unknown>;
-	const keys = body.keys;
-
-	if (!keys || typeof keys !== 'object') {
-		return null;
-	}
-	const endpoint = typeof body.endpoint === 'string' ? body.endpoint : '';
-	const p256dh =
-		typeof (keys as Record<string, unknown>).p256dh === 'string'
-			? String((keys as Record<string, unknown>).p256dh)
-			: '';
-	const auth =
-		typeof (keys as Record<string, unknown>).auth === 'string'
-			? String((keys as Record<string, unknown>).auth)
-			: '';
-
-	if (!endpoint.startsWith('https://') || endpoint.length > 2000 || !p256dh || !auth) {
-		return null;
-	}
-
-	return { endpoint, p256dh, auth };
-}
+/** The browser's own `PushSubscription`, flattened into the columns the table stores. */
+const subscriptionSchema = z
+	.object({
+		endpoint: z.string().startsWith('https://').max(2000),
+		keys: z.object({ p256dh: z.string().min(1), auth: z.string().min(1) }),
+	})
+	.transform(({ endpoint, keys }) => ({ endpoint, p256dh: keys.p256dh, auth: keys.auth }));
 
 const withPushConfigured = createMiddleware(async (_context, next) => {
 	if (!pushConfiguration().configured) {
@@ -75,13 +57,12 @@ pushSubscriptionRoutes.post(
 	withVisit,
 	async (context) => {
 		const visit = context.get('visit');
-		const body = await jsonBody(context.req.raw);
+		const parsed = subscriptionSchema.safeParse(await jsonBody(context.req.raw));
 
-		const subscription = parseSubscription(body);
-
-		if (!subscription) {
+		if (!parsed.success) {
 			return jsonError('Please provide a valid push subscription.');
 		}
+		const subscription = parsed.data;
 		const [existingSubscription] = await db
 			.select({ visitId: pushSubscriptions.visitId })
 			.from(pushSubscriptions)

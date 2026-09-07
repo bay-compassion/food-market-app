@@ -1,8 +1,9 @@
 import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { guests, marketEvents, visits } from '../../../db/schema.mjs';
-import { isVisitCommand } from '../../../src/services/visitStateMachine.js';
+import { visitCommands } from '../../../src/services/visitStateMachine.js';
 import { withPermission } from '../../lib/http-auth.mjs';
 import {
 	createRouter,
@@ -13,6 +14,8 @@ import {
 } from '../../lib/http.mjs';
 import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
+
+const visitUpdateSchema = z.object({ id: z.string(), command: z.enum(visitCommands) });
 
 async function currentEventId() {
 	const [event] = await db
@@ -91,19 +94,13 @@ async function createGuest(request: Request) {
 }
 
 async function updateGuest(request: Request) {
-	const body = await jsonBody(request);
+	const update = visitUpdateSchema.safeParse(await jsonBody(request));
 
-	if (!body || typeof body !== 'object') {
+	if (!update.success) {
 		return jsonError('Invalid guest update.');
 	}
 
-	const { id, command } = body as Record<string, unknown>;
-
-	if (typeof id !== 'string' || !isVisitCommand(command)) {
-		return jsonError('Invalid guest update.');
-	}
-
-	const result = await runVisitCommand(id, command);
+	const result = await runVisitCommand(update.data.id, update.data.command);
 
 	return result.ok ? Response.json(result.visit) : jsonError(result.error, result.status);
 }

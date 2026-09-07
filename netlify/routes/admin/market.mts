@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type { Permission } from '../../../src/services/permissions.js';
 import { withPermission, type AdminEnv } from '../../lib/http-auth.mjs';
 import {
@@ -84,10 +86,18 @@ const actions: Record<string, MarketAction> = {
 	run_lottery: { permission: 'manage:sessions', run: (event) => runLottery(event) },
 };
 
+const actionRequestSchema = z.object({ action: z.string() });
+
+/** Which session command a request is asking for, if it names one this deploy knows. */
+function requestedAction(body: unknown) {
+	const request = actionRequestSchema.safeParse(body);
+
+	return request.success ? actions[request.data.action] : undefined;
+}
+
 async function runAction(request: Request) {
 	const body = await jsonBody(request);
-	const name = (body as { action?: unknown } | null)?.action;
-	const action = typeof name === 'string' ? actions[name] : undefined;
+	const action = requestedAction(body);
 
 	if (!action) {
 		return jsonError('Invalid market action.');
@@ -113,9 +123,7 @@ adminMarketRoutes.put('/market', withPermission('manage:sessions'), (context) =>
 adminMarketRoutes.post(
 	'/market',
 	async (context, next) => {
-		const body = await jsonBody(context.req.raw.clone());
-		const name = (body as { action?: unknown } | null)?.action;
-		const action = typeof name === 'string' ? actions[name] : undefined;
+		const action = requestedAction(await jsonBody(context.req.raw.clone()));
 
 		return withPermission(action?.permission ?? 'manage:sessions')(context, next);
 	},
