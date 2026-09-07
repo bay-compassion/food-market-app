@@ -72,6 +72,9 @@ describe('POST /api/admin/demo-data', () => {
 		const response = await handler(request('POST', { body: { stage: 'not-a-stage' } }));
 
 		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toEqual({
+			error: 'Please provide a valid lifecycle stage.',
+		});
 		expect(loadScenario).not.toHaveBeenCalled();
 	});
 
@@ -83,6 +86,9 @@ describe('POST /api/admin/demo-data', () => {
 		);
 
 		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toEqual({
+			error: 'Please provide a valid service progress level.',
+		});
 		expect(loadScenario).not.toHaveBeenCalled();
 	});
 

@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { guests } from '../../db/schema.mjs';
@@ -8,13 +9,46 @@ export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export const guestLocales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
 
-export type GuestInformationSubmission = {
-	firstName: string;
-	lastName: string;
-	phone: string;
-	locale: (typeof guestLocales)[number];
-	deviceToken: string | null;
-};
+/** A guest's own name, as they typed it. */
+export const guestNameSchema = z.string().trim().min(1).max(100);
+
+/** Accepted as typed, but only if it still dials once punctuation is stripped. */
+export const phoneSchema = z
+	.string()
+	.trim()
+	.min(1)
+	.max(40)
+	.refine((phone) => {
+		const digits = normalizePhone(phone);
+
+		return digits.length >= 8 && digits.length <= 16;
+	}, 'A phone number must have between 8 and 16 digits.');
+
+/**
+ * The credential this browser saved on a previous visit. Absent on a first visit, but anything
+ * present has to be a plausible token rather than silently treated as a new device.
+ */
+export const deviceTokenSchema = z
+	.string()
+	.trim()
+	.min(32)
+	.max(200)
+	.nullish()
+	.transform((token) => token ?? null);
+
+/** The identity fields every guest-facing submission carries. */
+export const guestIdentitySchema = z.object({
+	firstName: guestNameSchema,
+	lastName: guestNameSchema,
+	phone: phoneSchema,
+	locale: z.enum(guestLocales),
+});
+
+export const guestInformationSchema = guestIdentitySchema.extend({
+	deviceToken: deviceTokenSchema,
+});
+
+export type GuestInformationSubmission = z.infer<typeof guestInformationSchema>;
 
 export type SaveGuestInformationResult =
 	| { ok: true; status: 200 | 201; body: { guestId: string; deviceToken?: string } }
@@ -22,43 +56,7 @@ export type SaveGuestInformationResult =
 
 /** Parses identity fields without accepting any visit or household information. */
 export function parseGuestInformation(value: unknown): GuestInformationSubmission | null {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-
-	const body = value as Record<string, unknown>;
-	const firstName = typeof body.firstName === 'string' ? body.firstName.trim() : '';
-	const lastName = typeof body.lastName === 'string' ? body.lastName.trim() : '';
-	const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-	const locale = body.locale;
-	const rawDeviceToken = body.deviceToken;
-	const deviceToken = typeof rawDeviceToken === 'string' ? rawDeviceToken.trim() : null;
-	const normalizedPhone = normalizePhone(phone);
-
-	if (
-		!phone ||
-		phone.length > 40 ||
-		normalizedPhone.length < 8 ||
-		normalizedPhone.length > 16 ||
-		!guestLocales.some((item) => item === locale) ||
-		(rawDeviceToken !== undefined &&
-			rawDeviceToken !== null &&
-			(!deviceToken || deviceToken.length < 32 || deviceToken.length > 200)) ||
-		!firstName ||
-		!lastName ||
-		firstName.length > 100 ||
-		lastName.length > 100
-	) {
-		return null;
-	}
-
-	return {
-		firstName,
-		lastName,
-		phone,
-		locale: locale as GuestInformationSubmission['locale'],
-		deviceToken,
-	};
+	return guestInformationSchema.safeParse(value).data ?? null;
 }
 
 /** Resolves the browser's device credential to the guest it identifies, if any. */

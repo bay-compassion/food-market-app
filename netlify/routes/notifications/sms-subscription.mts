@@ -1,5 +1,6 @@
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
+import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { marketEvents, smsSubscriptions, visits } from '../../../db/schema.mjs';
@@ -18,6 +19,9 @@ import {
 	deliverPendingSmsNotifications,
 	smsConfiguration,
 } from '../../services/smsNotifications.mjs';
+
+/** Texting a guest is opt-in, so nothing but an explicit yes counts as consent. */
+const consentSchema = z.object({ consent: z.literal(true) });
 
 async function currentMarketVisitForGuest(guestId: string) {
 	const [event] = await db
@@ -68,13 +72,9 @@ smsSubscriptionRoutes.post(
 	withDeviceGuest,
 	async (context) => {
 		const guest = context.get('guest');
-		const body = await jsonBody(context.req.raw);
+		const consent = consentSchema.safeParse(await jsonBody(context.req.raw));
 
-		const consent = Boolean(
-			body && typeof body === 'object' && (body as { consent?: unknown }).consent === true,
-		);
-
-		if (!consent) {
+		if (!consent.success) {
 			return jsonError('Please confirm you consent to receive text messages.');
 		}
 

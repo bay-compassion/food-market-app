@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
@@ -9,7 +10,6 @@ import {
 	postponedWindow,
 	registrationGraceDeadline,
 	sessionCommandTarget,
-	type SessionMode,
 	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
 import { queueNotification } from './notifications.mjs';
@@ -17,14 +17,6 @@ import { notificationsEnabled } from './pushNotifications.mjs';
 import { resolveOutstandingVisits } from './visitQueue.mjs';
 
 export type MarketEventRow = typeof marketEvents.$inferSelect;
-export type QuestionInput = { prompt: string; type: 'text' | 'scale'; required: boolean };
-export type ParsedSettings = {
-	registrationOpensAt: Date;
-	registrationClosesAt: Date;
-	capacity: number;
-	questions: QuestionInput[];
-	sessionMode: SessionMode;
-};
 
 export type ActionResult = { ok: true } | { ok: false; status: number; error: string };
 
@@ -113,6 +105,7 @@ export async function marketOverview() {
 		.from(registrationQuestions)
 		.where(eq(registrationQuestions.marketEventId, event.id))
 		.orderBy(asc(registrationQuestions.position));
+
 	const rows = await db
 		.select({ status: visits.status, count: sql<number>`count(*)::int` })
 		.from(visits)
@@ -148,6 +141,7 @@ export async function marketHistory() {
 			),
 		)
 		.groupBy(visits.marketEventId);
+
 	const guestCounts = new Map(rows.map((row) => [row.marketEventId, row.count]));
 
 	return events.map((event) => ({
@@ -156,45 +150,39 @@ export async function marketHistory() {
 	}));
 }
 
+/** ISO strings as the admin console sends them; a `Date` passes straight through for server callers. */
+const timestampSchema = z.union([z.string(), z.date()]).pipe(z.coerce.date());
+
+/** Matches the `market_events_capacity_check` constraint in the database. */
+const capacitySchema = z.coerce.number().int().min(1).max(10_000);
+
+const questionSchema = z.object({
+	prompt: z.string().trim().min(1).max(300),
+	// A type the console does not recognise still has to render as something a guest can answer.
+	type: z.enum(['text', 'scale']).catch('text'),
+	required: z.boolean().catch(false),
+});
+
+export type QuestionInput = z.infer<typeof questionSchema>;
+
+const settingsSchema = z
+	.object({
+		registrationOpensAt: timestampSchema,
+		registrationClosesAt: timestampSchema,
+		capacity: capacitySchema,
+		// A session is scheduled unless it explicitly says otherwise.
+		sessionMode: z.enum(['ad_hoc', 'scheduled']).catch('scheduled'),
+		questions: z.array(questionSchema),
+	})
+	.refine((settings) => settings.registrationClosesAt > settings.registrationOpensAt, {
+		path: ['registrationClosesAt'],
+		error: 'Registration must close after it opens.',
+	});
+
+export type ParsedSettings = z.infer<typeof settingsSchema>;
+
 export function parseSettings(value: unknown): ParsedSettings | null {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-	const body = value as Record<string, unknown>;
-	const registrationOpensAt = new Date(String(body.registrationOpensAt));
-	const registrationClosesAt = new Date(String(body.registrationClosesAt));
-	const capacity = Number(body.capacity);
-	const sessionMode: SessionMode = body.sessionMode === 'ad_hoc' ? 'ad_hoc' : 'scheduled';
-	const rawQuestions = body.questions;
-
-	if (
-		Number.isNaN(registrationOpensAt.valueOf()) ||
-		Number.isNaN(registrationClosesAt.valueOf()) ||
-		registrationClosesAt <= registrationOpensAt ||
-		!Number.isInteger(capacity) ||
-		capacity < 1 ||
-		capacity > 10_000 ||
-		!Array.isArray(rawQuestions)
-	) {
-		return null;
-	}
-	const questions: QuestionInput[] = [];
-
-	for (const item of rawQuestions) {
-		if (!item || typeof item !== 'object') {
-			return null;
-		}
-		const question = item as Record<string, unknown>;
-		const prompt = typeof question.prompt === 'string' ? question.prompt.trim() : '';
-		const type = question.type === 'scale' ? 'scale' : 'text';
-
-		if (!prompt || prompt.length > 300) {
-			return null;
-		}
-		questions.push({ prompt, type, required: question.required === true });
-	}
-
-	return { registrationOpensAt, registrationClosesAt, capacity, questions, sessionMode };
+	return settingsSchema.safeParse(value).data ?? null;
 }
 
 export async function saveSettings(settings: ParsedSettings): Promise<ActionResult> {
@@ -295,25 +283,18 @@ export function weightedShuffle<T extends { lotteryWeight: number }>(items: T[])
 		.map(({ item }) => item);
 }
 
+/** What a worker can still change once registration is open: how long, and for how many. */
+const registrationOverrideSchema = z.object({
+	registrationClosesAt: timestampSchema,
+	capacity: capacitySchema,
+});
+
 export function parseRegistrationOverride(value: unknown) {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-	const body = value as Record<string, unknown>;
-	const registrationClosesAt = new Date(String(body.registrationClosesAt));
-	const capacity = Number(body.capacity);
-
-	if (
-		Number.isNaN(registrationClosesAt.valueOf()) ||
-		!Number.isInteger(capacity) ||
-		capacity < 1 ||
-		capacity > 10_000
-	) {
-		return null;
-	}
-
-	return { registrationClosesAt, capacity };
+	return registrationOverrideSchema.safeParse(value).data ?? null;
 }
+
+/** A scheduled session can slip by up to a day; anything longer should be rescheduled instead. */
+const postponementSchema = z.object({ minutes: z.coerce.number().int().min(1).max(1440) });
 
 async function transitionEvent(event: MarketEventRow, from: SessionStatus, to: SessionStatus) {
 	if (event.status !== from) {
@@ -404,13 +385,11 @@ export async function postponeRegistration(
 	event: MarketEventRow,
 	body: unknown,
 ): Promise<ActionResult> {
-	const minutes = Number((body as Record<string, unknown> | null)?.minutes);
+	const postponement = postponementSchema.safeParse(body);
 
 	if (
 		!canRunSessionCommand(event.status, 'postpone_registration', event.sessionMode) ||
-		!Number.isInteger(minutes) ||
-		minutes < 1 ||
-		minutes > 1440
+		!postponement.success
 	) {
 		return {
 			ok: false,
@@ -420,7 +399,7 @@ export async function postponeRegistration(
 	}
 	const [updated] = await db
 		.update(marketEvents)
-		.set(postponedWindow(event, minutes))
+		.set(postponedWindow(event, postponement.data.minutes))
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
 		.returning({ id: marketEvents.id });
 

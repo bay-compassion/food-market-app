@@ -1,4 +1,5 @@
 import { and, desc, eq, ne, or, isNotNull } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { marketEvents, pushSubscriptions, smsSubscriptions, visits } from '../../../db/schema.mjs';
@@ -14,20 +15,10 @@ import { deliverQueuedNotifications, queueNotification } from '../../services/no
 import { pushConfiguration } from '../../services/pushNotifications.mjs';
 import { smsConfiguration } from '../../services/smsNotifications.mjs';
 
-function parseBroadcast(value: unknown) {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-	const body = value as Record<string, unknown>;
-	const title = typeof body.title === 'string' ? body.title.trim() : '';
-	const message = typeof body.body === 'string' ? body.body.trim() : '';
-
-	if (!title || title.length > 100 || !message || message.length > 500) {
-		return null;
-	}
-
-	return { title, body: message };
-}
+const broadcastSchema = z.object({
+	title: z.string().trim().min(1).max(100),
+	body: z.string().trim().min(1).max(500),
+});
 
 export const broadcastRoutes = createRouter();
 
@@ -36,10 +27,9 @@ broadcastRoutes.post('/broadcast', withPermission('manage:sessions'), async (con
 		return jsonError('Notifications are not configured.', 503);
 	}
 
-	const value = await jsonBody(context.req.raw);
-	const broadcast = parseBroadcast(value);
+	const broadcast = broadcastSchema.safeParse(await jsonBody(context.req.raw));
 
-	if (!broadcast) {
+	if (!broadcast.success) {
 		return jsonError('Please provide a title and message.');
 	}
 
@@ -83,7 +73,7 @@ broadcastRoutes.post('/broadcast', withPermission('manage:sessions'), async (con
 		recipients.map(({ visitId }) => visitId),
 		'broadcast',
 		dedupeKey,
-		broadcast,
+		broadcast.data,
 	);
 	const result = await deliverQueuedNotifications({
 		types: ['broadcast'],

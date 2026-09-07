@@ -118,6 +118,9 @@ describe('queue handler call_next', () => {
 		const response = await handler(request('POST', { action: 'call_next', count }));
 
 		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toEqual({
+			error: 'Please call between 1 and 50 guests at a time.',
+		});
 		expect(db.transaction).not.toHaveBeenCalled();
 	});
 
@@ -127,6 +130,7 @@ describe('queue handler call_next', () => {
 		const response = await handler(request('POST', { action: 'call_everyone' }));
 
 		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toEqual({ error: 'Invalid queue action.' });
 	});
 
 	it('rejects a body that is not JSON', async () => {

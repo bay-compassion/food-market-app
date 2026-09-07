@@ -1,5 +1,6 @@
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
+import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { marketEvents, visits } from '../../../db/schema.mjs';
@@ -11,6 +12,9 @@ import {
 	routeHandler,
 } from '../../lib/http.mjs';
 import { hashVisitToken } from '../../services/guestCredentials.mjs';
+
+/** Cancelling is the only change a guest can make to their own visit. */
+const visitActionSchema = z.object({ action: z.literal('cancel') });
 
 function accessToken(request: Request) {
 	const authorization = request.headers.get('authorization');
@@ -99,9 +103,9 @@ visitRoutes.patch('/api/visit', async (context) => {
 	if (visit.sessionStatus === 'ended') {
 		return jsonError('This visit can no longer be cancelled.', 409);
 	}
-	const body = await jsonBody(context.req.raw);
+	const action = visitActionSchema.safeParse(await jsonBody(context.req.raw));
 
-	if ((body as { action?: unknown } | null)?.action !== 'cancel') {
+	if (!action.success) {
 		return jsonError('Invalid visit action.');
 	}
 	const [cancelled] = await db

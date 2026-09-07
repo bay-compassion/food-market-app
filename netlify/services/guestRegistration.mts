@@ -1,45 +1,82 @@
 import { and, eq } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
-import { isAgeRange, type AgeRange } from '../../src/services/ageRanges.js';
+import { ageRanges } from '../../src/services/ageRanges.js';
 import {
 	admissionNeedsQueuePosition,
 	admissionTakesLotteryWeight,
 	admissionVisitStatus,
 	canAdmitGuest,
-	type GuestAdmission,
-	isGuestAdmission,
-	type QueuePlacement,
+	guestAdmissions,
 } from '../../src/services/guestAdmission.js';
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
 import { acceptsSelfRegistration } from '../../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import {
+	deviceTokenSchema,
 	findGuestByDeviceToken,
-	guestLocales,
+	guestIdentitySchema,
 	persistGuestInformation,
 } from './guest-information.mjs';
 import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
 import { nextQueuePosition } from './visitQueue.mjs';
 
-export type GuestSubmission = {
-	firstName: string;
-	lastName: string;
-	ageRange: AgeRange;
-	householdSize: number;
-	childrenCount: number;
-	seniorsCount: number;
-	phone: string;
-	locale: (typeof guestLocales)[number];
-	marketEventId: string | null;
-	answers: Record<string, string | number>;
-	source: 'self' | 'admin';
-	deviceToken: string | null;
-	queuePlacement: QueuePlacement;
-	admission: GuestAdmission;
-	lotteryWeight: number;
-};
+/** How many people a visit can cover, matching the household columns' database constraints. */
+const shopperCountSchema = z.coerce.number().int().min(0).max(30);
+
+const submissionFields = guestIdentitySchema.extend({
+	ageRange: z.enum(ageRanges),
+	householdSize: z.coerce.number().int().min(1).max(30),
+	childrenCount: shopperCountSchema,
+	seniorsCount: shopperCountSchema,
+	marketEventId: z
+		.string()
+		.nullish()
+		.transform((eventId) => eventId ?? null),
+	answers: z
+		.record(z.string(), z.union([z.string(), z.number()]))
+		.nullish()
+		.transform((answers) => answers ?? {}),
+	queuePlacement: z.enum(['end', 'next']).catch('end'),
+	// `queue` keeps the original walk-in behaviour for any caller that predates the admission field.
+	admission: z.enum(guestAdmissions).catch('queue'),
+	// Anything a caller omits or fudges lands on the default odds rather than failing the insert.
+	lotteryWeight: z.unknown().optional().transform(normalizeLotteryWeight),
+});
+
+/** A worker adding a guest from the admin console, which has no device credential to offer. */
+const adminSubmissionSchema = submissionFields.extend({
+	source: z.literal('admin'),
+	deviceToken: z
+		.unknown()
+		.optional()
+		.transform(() => null),
+});
+
+/** A guest registering on their own phone, which may carry the credential we issued that browser. */
+const selfSubmissionSchema = submissionFields.extend({
+	source: z
+		.unknown()
+		.optional()
+		.transform(() => 'self' as const),
+	deviceToken: deviceTokenSchema,
+});
+
+/**
+ * Admin first: a submission only counts as one when it says so, and everything else — including a
+ * caller that omits `source` entirely — is a guest registering for themselves.
+ */
+export const guestSubmissionSchema = z
+	.union([adminSubmissionSchema, selfSubmissionSchema])
+	.refine(
+		({ childrenCount, seniorsCount, householdSize }) =>
+			childrenCount + seniorsCount <= householdSize,
+		{ path: ['householdSize'], error: 'A household cannot be smaller than the people in it.' },
+	);
+
+export type GuestSubmission = z.infer<typeof guestSubmissionSchema>;
 
 export type RegisterGuestResult =
 	| {
@@ -55,87 +92,8 @@ export type RegisterGuestResult =
 	  }
 	| { ok: false; status: number; error: string };
 
-function isAnswers(value: unknown): value is Record<string, string | number> {
-	return (
-		!!value &&
-		typeof value === 'object' &&
-		Object.values(value).every((answer) => typeof answer === 'string' || typeof answer === 'number')
-	);
-}
-
 export function parseSubmission(value: unknown): GuestSubmission | null {
-	if (!value || typeof value !== 'object') {
-		return null;
-	}
-
-	const body = value as Record<string, unknown>;
-	const firstName = typeof body.firstName === 'string' ? body.firstName.trim() : '';
-	const lastName = typeof body.lastName === 'string' ? body.lastName.trim() : '';
-	const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-	const ageRange = (typeof body.ageRange === 'string' ? body.ageRange : '') as AgeRange;
-	const householdSize = Number(body.householdSize);
-	const childrenCount = Number(body.childrenCount);
-	const seniorsCount = Number(body.seniorsCount);
-	const locale = body.locale;
-	const source = body.source === 'admin' ? 'admin' : 'self';
-	const rawDeviceToken = body.deviceToken;
-	const deviceToken = typeof rawDeviceToken === 'string' ? rawDeviceToken.trim() : null;
-	const queuePlacement: QueuePlacement = body.queuePlacement === 'next' ? 'next' : 'end';
-	// `queue` keeps the original walk-in behaviour for any caller that predates the admission field.
-	const admission: GuestAdmission = isGuestAdmission(body.admission) ? body.admission : 'queue';
-	// Anything a caller omits or fudges lands on the default odds rather than failing the insert.
-	const lotteryWeight = normalizeLotteryWeight(body.lotteryWeight);
-	const marketEventId = typeof body.marketEventId === 'string' ? body.marketEventId : null;
-	const answers = body.answers ?? {};
-	const normalizedPhone = normalizePhone(phone);
-
-	if (
-		!phone ||
-		phone.length > 40 ||
-		normalizedPhone.length < 8 ||
-		normalizedPhone.length > 16 ||
-		!guestLocales.some((item) => item === locale) ||
-		!isAnswers(answers) ||
-		(source === 'self' &&
-			rawDeviceToken !== undefined &&
-			rawDeviceToken !== null &&
-			(!deviceToken || deviceToken.length < 32 || deviceToken.length > 200)) ||
-		!firstName ||
-		!lastName ||
-		firstName.length > 100 ||
-		lastName.length > 100 ||
-		!isAgeRange(ageRange) ||
-		!Number.isInteger(householdSize) ||
-		householdSize < 1 ||
-		householdSize > 30 ||
-		!Number.isInteger(childrenCount) ||
-		childrenCount < 0 ||
-		childrenCount > 30 ||
-		!Number.isInteger(seniorsCount) ||
-		seniorsCount < 0 ||
-		seniorsCount > 30 ||
-		childrenCount + seniorsCount > householdSize
-	) {
-		return null;
-	}
-
-	return {
-		firstName,
-		lastName,
-		ageRange,
-		householdSize,
-		childrenCount,
-		seniorsCount,
-		phone,
-		locale: locale as GuestSubmission['locale'],
-		marketEventId,
-		answers,
-		source,
-		deviceToken: source === 'self' ? deviceToken : null,
-		queuePlacement,
-		admission,
-		lotteryWeight,
-	};
+	return guestSubmissionSchema.safeParse(value).data ?? null;
 }
 
 /**
