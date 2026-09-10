@@ -52,7 +52,7 @@ describe('deliverPendingSmsNotifications', () => {
 	it('does nothing and never touches the database when unconfigured', async () => {
 		const result = await deliverPendingSmsNotifications();
 
-		expect(result).toEqual({ sent: 0, failed: 0, skipped: 0 });
+		expect(result).toEqual({ sent: 0, failed: 0, skipped: 0, processed: 0 });
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
@@ -69,21 +69,49 @@ describe('deliverPendingSmsNotifications', () => {
 				body: null,
 				locale: 'en',
 				phone: '+15551234567',
+				fake: false,
 				subscribed: 'sms-sub-1',
 			},
 		]);
+		queueResult(undefined); // claim delivery
 		messagesCreate.mockResolvedValueOnce({});
 		queueResult(undefined); // update -> sent
 
 		const result = await deliverPendingSmsNotifications();
 
-		expect(result).toEqual({ sent: 1, failed: 0, skipped: 0 });
+		expect(result).toEqual({ sent: 1, failed: 0, skipped: 0, processed: 1 });
 		expect(messagesCreate).toHaveBeenCalledWith(
 			expect.objectContaining({
 				messagingServiceSid: 'messaging-service-sid',
 				to: '+15551234567',
 			}),
 		);
+	});
+
+	it('skips a fake guest without calling Twilio', async () => {
+		stubTwilioEnv();
+		queueResult([
+			{
+				id: 'delivery-1',
+				visitId: 'visit-1',
+				guestId: 'guest-1',
+				attempts: 0,
+				type: 'called',
+				title: null,
+				body: null,
+				locale: 'en',
+				phone: '+15551234567',
+				fake: true,
+				subscribed: 'sms-sub-1',
+			},
+		]);
+		queueResult(undefined); // claim delivery
+		queueResult(undefined); // update -> skipped
+
+		const result = await deliverPendingSmsNotifications();
+
+		expect(result).toEqual({ sent: 0, failed: 0, skipped: 1, processed: 1 });
+		expect(messagesCreate).not.toHaveBeenCalled();
 	});
 
 	it('skips a delivery with no active SMS subscription', async () => {
@@ -99,14 +127,16 @@ describe('deliverPendingSmsNotifications', () => {
 				body: null,
 				locale: 'en',
 				phone: '+15551234567',
+				fake: false,
 				subscribed: null,
 			},
 		]);
+		queueResult(undefined); // claim delivery
 		queueResult(undefined); // update -> skipped
 
 		const result = await deliverPendingSmsNotifications();
 
-		expect(result).toEqual({ sent: 0, failed: 0, skipped: 1 });
+		expect(result).toEqual({ sent: 0, failed: 0, skipped: 1, processed: 1 });
 		expect(messagesCreate).not.toHaveBeenCalled();
 	});
 
@@ -123,9 +153,11 @@ describe('deliverPendingSmsNotifications', () => {
 				body: null,
 				locale: 'en',
 				phone: '+15551234567',
+				fake: false,
 				subscribed: 'sms-sub-1',
 			},
 		]);
+		queueResult(undefined); // claim delivery
 		messagesCreate.mockRejectedValueOnce(
 			Object.assign(new Error('Unsubscribed recipient'), { code: 21610 }),
 		);
@@ -134,7 +166,7 @@ describe('deliverPendingSmsNotifications', () => {
 
 		const result = await deliverPendingSmsNotifications();
 
-		expect(result).toEqual({ sent: 0, failed: 1, skipped: 0 });
+		expect(result).toEqual({ sent: 0, failed: 1, skipped: 0, processed: 1 });
 		expect(db.delete).toHaveBeenCalledTimes(1);
 	});
 
@@ -151,15 +183,17 @@ describe('deliverPendingSmsNotifications', () => {
 				body: null,
 				locale: 'en',
 				phone: '+15551234567',
+				fake: false,
 				subscribed: 'sms-sub-1',
 			},
 		]);
+		queueResult(undefined); // claim delivery
 		messagesCreate.mockRejectedValueOnce(new Error('Network error'));
 		queueResult(undefined); // update -> pending
 
 		const result = await deliverPendingSmsNotifications();
 
-		expect(result).toEqual({ sent: 0, failed: 1, skipped: 0 });
+		expect(result).toEqual({ sent: 0, failed: 1, skipped: 0, processed: 1 });
 		expect(db.delete).not.toHaveBeenCalled();
 	});
 });

@@ -22,6 +22,13 @@ function build(overrides: Partial<FakeDataOptions> = {}) {
 }
 
 describe('buildFakeData', () => {
+	it('marks every generated guest as fake', () => {
+		const { guests } = build();
+
+		expect(guests.length).toBeGreaterThan(0);
+		expect(guests.every((guest) => guest.fake)).toBe(true);
+	});
+
 	it('replays the same history for the same seed', () => {
 		const first = build();
 		const second = build();

@@ -147,12 +147,24 @@ subject must be a `mailto:` address or an HTTPS URL. Keep the private key secret
 key pair across deploys so existing browser subscriptions continue to work.
 
 Set `NOTIFICATIONS_ENABLED=false` in the Netlify environment to hide notification opt-in, stop
-queueing and delivering notifications, and make the scheduled function return without accessing
-the database. Notifications remain enabled by default when the variable is unset.
+queueing and delivering notifications. Notifications remain enabled by default when the variable
+is unset.
 
-The `notification-schedule` function runs once per minute on published deploys to close due
-registration windows and deliver queued notifications. Scheduled functions do not run
-automatically under `netlify dev`; invoke that function manually when testing locally.
+Install Netlify's Async Workloads extension for the team before deploying notification delivery.
+Scheduling a registration window creates one delayed workload event for its close time; editing or
+postponing the window creates a replacement, and the old event safely does nothing. A market
+transition creates one dispatch event whose checkpointed batches submit the durable delivery rows
+to push and SMS providers. No application Scheduled Function polls for notification work.
+
+To test the live Twilio transport without creating a guest or changing a market session, submit a
+smoke-test message to one or two explicitly named phones:
+
+```bash
+npm run sms:smoke -- --to=+15551234567 --send
+```
+
+The command reads `.env`, bypasses the database and workload queue, masks recipients in its output,
+and refuses to run without `--send`. It uses live Twilio credentials and may incur messaging charges.
 
 ## Auth0 administration access
 

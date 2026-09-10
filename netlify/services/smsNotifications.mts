@@ -1,11 +1,15 @@
-import { and, asc, eq, inArray } from 'drizzle-orm';
-import twilio from 'twilio';
+import { and, asc, eq, inArray, isNull, lt, or } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { guests, notificationDeliveries, smsSubscriptions, visits } from '../../db/schema.mjs';
 import { translations, type Locale } from '../../src/locales.js';
 import { getLogger } from '../lib/logging.mjs';
+import type {
+	NotificationDeliveryOptions,
+	NotificationDeliveryResult,
+} from './notificationDelivery.mjs';
 import { deliveryCopy, notificationsEnabled, type DeliveryType } from './pushNotifications.mjs';
+import { TwilioSmsTransport } from './sms-transport.mjs';
 
 /**
  * Twilio error codes that mean this number can never receive another message from us: an invalid
@@ -14,43 +18,35 @@ import { deliveryCopy, notificationsEnabled, type DeliveryType } from './pushNot
  */
 const permanentFailureCodes = new Set([21211, 21610, 21614]);
 
-function settings() {
-	if (!notificationsEnabled()) {
-		return null;
-	}
-	const accountSid = process.env.TWILIO_ACCOUNT_SID;
-	const authToken = process.env.TWILIO_AUTH_TOKEN;
-	const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-
-	return accountSid && authToken && messagingServiceSid
-		? { accountSid, authToken, messagingServiceSid }
-		: null;
-}
-
 export function smsConfiguration() {
-	return { configured: Boolean(settings()) };
+	return { configured: notificationsEnabled() && TwilioSmsTransport.configured() };
 }
 
-export async function deliverPendingSmsNotifications(options?: {
-	visitIds?: string[];
-	types?: DeliveryType[];
-	dedupeKeys?: string[];
-	limit?: number;
-}) {
-	const configuration = settings();
+export async function deliverPendingSmsNotifications(
+	options?: NotificationDeliveryOptions,
+): Promise<NotificationDeliveryResult> {
+	const transport = notificationsEnabled() ? TwilioSmsTransport.fromEnvironment() : null;
 
-	if (!configuration) {
-		return { sent: 0, failed: 0, skipped: 0 };
+	if (!transport) {
+		return { sent: 0, failed: 0, skipped: 0, processed: 0 };
 	}
-	const client = twilio(configuration.accountSid, configuration.authToken);
 
 	const conditions = [
 		eq(notificationDeliveries.status, 'pending'),
 		eq(notificationDeliveries.channel, 'sms'),
+		or(
+			isNull(notificationDeliveries.claimedAt),
+			eq(notificationDeliveries.claimedBy, options?.claimId ?? ''),
+			lt(notificationDeliveries.claimedAt, new Date(Date.now() - 5 * 60_000)),
+		)!,
 	];
 
 	if (options?.visitIds?.length) {
 		conditions.push(inArray(notificationDeliveries.visitId, options.visitIds));
+	}
+
+	if (options?.marketEventId) {
+		conditions.push(eq(visits.marketEventId, options.marketEventId));
 	}
 
 	if (options?.types?.length) {
@@ -60,36 +56,61 @@ export async function deliverPendingSmsNotifications(options?: {
 	if (options?.dedupeKeys?.length) {
 		conditions.push(inArray(notificationDeliveries.dedupeKey, options.dedupeKeys));
 	}
-	const rows = await db
-		.select({
-			id: notificationDeliveries.id,
-			visitId: notificationDeliveries.visitId,
-			guestId: guests.id,
-			attempts: notificationDeliveries.attempts,
-			type: notificationDeliveries.type,
-			title: notificationDeliveries.title,
-			body: notificationDeliveries.body,
-			locale: guests.locale,
-			phone: guests.normalizedPhone,
-			subscribed: smsSubscriptions.id,
-		})
-		.from(notificationDeliveries)
-		.innerJoin(visits, eq(visits.id, notificationDeliveries.visitId))
-		.innerJoin(guests, eq(guests.id, visits.guestId))
-		.leftJoin(smsSubscriptions, eq(smsSubscriptions.guestId, guests.id))
-		.where(and(...conditions))
-		.orderBy(asc(notificationDeliveries.createdAt))
-		.limit(options?.limit ?? 250);
+	const rows = await db.transaction(async (tx) => {
+		const claimed = await tx
+			.select({
+				id: notificationDeliveries.id,
+				visitId: notificationDeliveries.visitId,
+				guestId: guests.id,
+				attempts: notificationDeliveries.attempts,
+				type: notificationDeliveries.type,
+				title: notificationDeliveries.title,
+				body: notificationDeliveries.body,
+				locale: guests.locale,
+				phone: guests.normalizedPhone,
+				fake: guests.fake,
+				subscribed: smsSubscriptions.id,
+			})
+			.from(notificationDeliveries)
+			.innerJoin(visits, eq(visits.id, notificationDeliveries.visitId))
+			.innerJoin(guests, eq(guests.id, visits.guestId))
+			.leftJoin(smsSubscriptions, eq(smsSubscriptions.guestId, guests.id))
+			.where(and(...conditions))
+			.orderBy(asc(notificationDeliveries.createdAt))
+			.limit(options?.limit ?? 250)
+			.for('update', { of: notificationDeliveries, skipLocked: true });
+
+		if (claimed.length) {
+			await tx
+				.update(notificationDeliveries)
+				.set({ claimedAt: new Date(), claimedBy: options?.claimId ?? null })
+				.where(
+					inArray(
+						notificationDeliveries.id,
+						claimed.map(({ id }) => id),
+					),
+				);
+		}
+
+		return claimed;
+	});
 
 	let sent = 0;
 	let failed = 0;
 	let skipped = 0;
 
 	for (const row of rows) {
-		if (!row.subscribed || !row.phone) {
+		if (row.fake || !row.subscribed || !row.phone) {
 			await db
 				.update(notificationDeliveries)
-				.set({ status: 'skipped', lastError: 'No active SMS subscription.' })
+				.set({
+					status: 'skipped',
+					claimedAt: null,
+					claimedBy: null,
+					lastError: row.fake
+						? 'Fake guest; SMS delivery suppressed.'
+						: 'No active SMS subscription.',
+				})
 				.where(eq(notificationDeliveries.id, row.id));
 			skipped += 1;
 			continue;
@@ -102,21 +123,32 @@ export async function deliverPendingSmsNotifications(options?: {
 		if (!copy.title || !copy.body) {
 			await db
 				.update(notificationDeliveries)
-				.set({ status: 'failed', lastError: 'Notification content is missing.' })
+				.set({
+					status: 'failed',
+					claimedAt: null,
+					claimedBy: null,
+					lastError: 'Notification content is missing.',
+				})
 				.where(eq(notificationDeliveries.id, row.id));
 			failed += 1;
 			continue;
 		}
 
 		try {
-			await client.messages.create({
-				messagingServiceSid: configuration.messagingServiceSid,
+			await transport.send({
 				to: row.phone,
 				body: `${copy.title}\n\n${copy.body}`,
 			});
 			await db
 				.update(notificationDeliveries)
-				.set({ status: 'sent', attempts: row.attempts + 1, sentAt: new Date(), lastError: null })
+				.set({
+					status: 'sent',
+					attempts: row.attempts + 1,
+					claimedAt: null,
+					claimedBy: null,
+					sentAt: new Date(),
+					lastError: null,
+				})
 				.where(eq(notificationDeliveries.id, row.id));
 			sent += 1;
 		} catch (cause: unknown) {
@@ -145,6 +177,8 @@ export async function deliverPendingSmsNotifications(options?: {
 							? 'failed'
 							: 'pending',
 					attempts,
+					claimedAt: null,
+					claimedBy: null,
 					lastError: cause instanceof Error ? cause.message.slice(0, 1000) : 'SMS delivery failed.',
 				})
 				.where(eq(notificationDeliveries.id, row.id));
@@ -152,5 +186,5 @@ export async function deliverPendingSmsNotifications(options?: {
 		}
 	}
 
-	return { sent, failed, skipped };
+	return { sent, failed, skipped, processed: rows.length };
 }

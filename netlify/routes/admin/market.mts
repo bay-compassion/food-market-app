@@ -27,6 +27,8 @@ import {
 	type ActionResult,
 	type MarketEventRow,
 } from '../../services/marketSession.mjs';
+import { requestNotificationDispatch } from '../../services/notificationDispatch.mjs';
+import type { NotificationType } from '../../services/pushNotifications.mjs';
 
 async function overview() {
 	return Response.json(await marketOverview());
@@ -52,6 +54,7 @@ async function saveSettings(request: Request) {
 type MarketAction = {
 	permission: Permission;
 	run: (event: MarketEventRow, body: unknown) => Promise<ActionResult>;
+	notificationTypes?: NotificationType[];
 };
 
 /**
@@ -81,9 +84,14 @@ const actions: Record<string, MarketAction> = {
 	close_registration: {
 		permission: 'manage:sessions',
 		run: (event) => closeRegistration(event),
+		notificationTypes: ['registration_closed'],
 	},
 	close_session: { permission: 'run:queue', run: (event) => closeSession(event) },
-	run_lottery: { permission: 'manage:sessions', run: (event) => runLottery(event) },
+	run_lottery: {
+		permission: 'manage:sessions',
+		run: (event) => runLottery(event),
+		notificationTypes: ['lottery_selected', 'lottery_not_selected'],
+	},
 };
 
 const actionRequestSchema = z.object({ action: z.string() });
@@ -110,6 +118,13 @@ async function runAction(request: Request) {
 	}
 
 	const result = await action.run(event, body);
+
+	if (result.ok && action.notificationTypes) {
+		await requestNotificationDispatch({
+			marketEventId: event.id,
+			types: action.notificationTypes,
+		});
+	}
 
 	return result.ok ? overview() : jsonError(result.error, result.status);
 }

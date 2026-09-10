@@ -105,17 +105,29 @@ describe('deliverQueuedNotifications', () => {
 			sent: 2,
 			failed: 1,
 			skipped: 0,
+			processed: 3,
 		});
 		vi.mocked(deliverPendingSmsNotifications).mockResolvedValueOnce({
 			sent: 1,
 			failed: 0,
 			skipped: 3,
+			processed: 4,
 		});
 
 		const result = await deliverQueuedNotifications({ limit: 250 });
 
-		expect(result).toEqual({ sent: 3, failed: 1, skipped: 3 });
-		expect(deliverPendingNotifications).toHaveBeenCalledWith({ limit: 250 });
-		expect(deliverPendingSmsNotifications).toHaveBeenCalledWith({ limit: 250 });
+		expect(result).toEqual({
+			sent: 3,
+			failed: 1,
+			skipped: 3,
+			processed: 7,
+			hasMore: false,
+		});
+		expect(deliverPendingNotifications).toHaveBeenCalledWith(
+			expect.objectContaining({ claimId: expect.any(String), limit: 250 }),
+		);
+		expect(deliverPendingSmsNotifications).toHaveBeenCalledWith(
+			expect.objectContaining({ claimId: expect.any(String), limit: 250 }),
+		);
 	});
 });

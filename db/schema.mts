@@ -49,6 +49,8 @@ export const guests = pgTable(
 		age: integer('age'),
 		phone: text('phone').notNull(),
 		normalizedPhone: text('normalized_phone').notNull(),
+		/** Synthetic guest records must never reach external notification providers. */
+		fake: boolean('fake').notNull().default(false),
 		/** Hash of the browser-local credential. Null for admin-created and earlier guests. */
 		deviceTokenHash: text('device_token_hash'),
 		locale: text('locale').notNull(),
@@ -127,6 +129,8 @@ export const notificationDeliveries = pgTable(
 		status: text('status').notNull().default('pending'),
 		attempts: integer('attempts').notNull().default(0),
 		lastError: text('last_error'),
+		claimedAt: timestamp('claimed_at', { withTimezone: true }),
+		claimedBy: text('claimed_by'),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		sentAt: timestamp('sent_at', { withTimezone: true }),
 	},
@@ -137,6 +141,12 @@ export const notificationDeliveries = pgTable(
 			table.channel,
 		),
 		index('notification_deliveries_status_idx').on(table.status, table.createdAt),
+		index('notification_deliveries_claim_idx').on(
+			table.status,
+			table.channel,
+			table.claimedAt,
+			table.createdAt,
+		),
 	],
 );
 
