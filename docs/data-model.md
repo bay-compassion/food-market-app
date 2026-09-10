@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=e32f929ed0c9 -->
+<!-- diagram-sources: db/schema.mts=10c19030f06f -->
 
 # Database structure
 
@@ -49,6 +49,7 @@ erDiagram
         integer age "nullable; superseded by age_range, dropped in a later migration"
         text phone
         text normalized_phone
+		boolean fake "suppresses external SMS for synthetic guests"
 		text device_token_hash UK "nullable; authenticates self-service sign-ups from one browser"
         text locale
         timestamptz created_at
@@ -94,9 +95,11 @@ erDiagram
         text channel "push | sms"
         text title
         text body
-        text status "pending | sent | failed"
+        text status "pending | sent | failed | skipped"
         integer attempts
         text last_error
+		timestamptz claimed_at "nullable; five-minute worker lease"
+		text claimed_by "nullable; workload event holding the lease"
         timestamptz created_at
         timestamptz sent_at
     }
@@ -129,6 +132,10 @@ A few things the diagram can't show on its own:
 - **The device token is the self-service guest credential.** The opaque token exists only in the
   browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
   an admin have no device credential.
+- **`guests.fake` records synthetic-data provenance.** The fake-data seed and Dev Mode scenario
+  loader set it explicitly; ordinary registrations default to `false`. SMS deliveries for a fake
+  guest are recorded as skipped before the Twilio transport is called. Phone-number patterns are
+  not used for ongoing delivery decisions.
 - **`visits.normalized_phone` preserves the submitted phone number in normalized form.** Renewed
   information can update the long-lived guest profile without erasing the phone signal that was
   present on an earlier visit, so later analysis can reconcile possible duplicate guest records.

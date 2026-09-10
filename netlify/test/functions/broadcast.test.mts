@@ -131,6 +131,8 @@ describe('broadcast handler', () => {
 			sent: 2,
 			failed: 0,
 			skipped: 0,
+			processed: 2,
+			hasMore: false,
 		});
 
 		const response = await handler(request({ title: 'Hi', body: 'Hello' }));

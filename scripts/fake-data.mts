@@ -35,6 +35,7 @@ export type PlannedGuest = {
 	lastName: string;
 	age: number;
 	phone: string;
+	fake: true;
 	locale: Locale;
 	createdAt: Date;
 };
@@ -228,7 +229,8 @@ function buildGuests(options: { guests: number; now: Date }, random: Random) {
 	return Array.from({ length: options.guests }, (_unused, index) => {
 		const locale = pickShare(random, localeShares);
 		const names = namesByLocale[locale];
-		// A 555 number is never a real one, and the shared prefix makes seeded guests easy to spot.
+		// The shared 555 area code makes generated guests easy to spot in addition to their explicit
+		// `fake` marker. Provider suppression relies on the marker, not on interpreting the number.
 		const exchange = 100 + Math.floor(index / 100);
 		const line = `${index % 100}`.padStart(2, '0');
 		const phone = `(555) ${exchange}-${line}${integerBetween(random, 10, 99)}`;
@@ -239,6 +241,7 @@ function buildGuests(options: { guests: number; now: Date }, random: Random) {
 			lastName: pick(random, names.last),
 			age: integerBetween(random, 19, 84),
 			phone,
+			fake: true,
 			locale,
 			createdAt: options.now,
 		} satisfies PlannedGuest;

@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=54d3cac97d4f, netlify/services/marketSession.mts=29f901d95c1d, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.mts=74f42aff84bf -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=54d3cac97d4f, netlify/services/marketSession.mts=7c06be9b47ac, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.mts=74f42aff84bf -->
 
 # Session lifecycle
 
@@ -19,7 +19,9 @@ these states.
 
 Transitions labelled with a command name are admin actions. Those marked _(automatic)_ happen on
 their own when wall-clock time passes the registration or grace-period deadline —
-`automaticSessionStatus` is applied whenever the current session is read.
+`automaticSessionStatus` is applied whenever the current session is read. Scheduling or changing a
+registration window also creates a delayed Async Workload event that performs the close-time read,
+so the transition does not depend on a visitor loading the app at that moment.
 
 ```mermaid
 stateDiagram-v2

@@ -12,6 +12,8 @@ import {
 	sessionCommandTarget,
 	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
+import { scheduleRegistrationClose } from './marketLifecycleEvents.mjs';
+import { requestNotificationDispatch } from './notificationDispatch.mjs';
 import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
 import { resolveOutstandingVisits } from './visitQueue.mjs';
@@ -53,7 +55,7 @@ export async function getCurrentEvent() {
 		// transaction closure. Capturing it as a const keeps the narrowing without changing behaviour.
 		const current = event;
 		const graceEndsAt = current.registrationGraceEndsAt ?? registrationGraceDeadline(current);
-		const updated = await db.transaction(async (tx) => {
+		const transition = await db.transaction(async (tx) => {
 			const [changed] = await tx
 				.update(marketEvents)
 				.set({
@@ -65,12 +67,14 @@ export async function getCurrentEvent() {
 				.where(and(eq(marketEvents.id, current.id), eq(marketEvents.status, current.status)))
 				.returning();
 
-			if (
+			const notificationQueued = Boolean(
 				changed &&
 				(current.status === 'scheduled' || current.status === 'registration_open') &&
 				(automaticStatus === 'registration_closed' || automaticStatus === 'lottery_pending') &&
-				notificationsEnabled()
-			) {
+				notificationsEnabled(),
+			);
+
+			if (notificationQueued) {
 				const registrations = await tx
 					.select({ visitId: visits.id })
 					.from(visits)
@@ -84,10 +88,17 @@ export async function getCurrentEvent() {
 				);
 			}
 
-			return changed;
+			return { changed, notificationQueued };
 		});
 
-		event = updated ?? (await getLatestActiveEvent()) ?? current;
+		if (transition.notificationQueued) {
+			await requestNotificationDispatch({
+				marketEventId: current.id,
+				types: ['registration_closed'],
+			});
+		}
+
+		event = transition.changed ?? (await getLatestActiveEvent()) ?? current;
 	}
 
 	return event;
@@ -346,7 +357,7 @@ export async function updateRegistration(
 		.update(marketEvents)
 		.set(override)
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_open')))
-		.returning({ id: marketEvents.id });
+		.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt });
 
 	if (!updated) {
 		return {
@@ -355,6 +366,8 @@ export async function updateRegistration(
 			error: 'Registration overrides are only available while registration is open.',
 		};
 	}
+
+	await scheduleRegistrationClose(updated);
 
 	return { ok: true };
 }
@@ -377,6 +390,8 @@ export async function scheduleRegistration(event: MarketEventRow): Promise<Actio
 			error: 'That session transition is not allowed from the current state.',
 		};
 	}
+
+	await scheduleRegistrationClose(event);
 
 	return { ok: true };
 }
@@ -401,7 +416,7 @@ export async function postponeRegistration(
 		.update(marketEvents)
 		.set(postponedWindow(event, postponement.data.minutes))
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
-		.returning({ id: marketEvents.id });
+		.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt });
 
 	if (!updated) {
 		return {
@@ -410,6 +425,8 @@ export async function postponeRegistration(
 			error: 'That session transition is not allowed from the current state.',
 		};
 	}
+
+	await scheduleRegistrationClose(updated);
 
 	return { ok: true };
 }
@@ -435,7 +452,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 		.update(marketEvents)
 		.set({ status: target, registrationGraceEndsAt: null, ...window })
 		.where(and(eq(marketEvents.id, event.id), inArray(marketEvents.status, ['draft', 'scheduled'])))
-		.returning({ id: marketEvents.id });
+		.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt });
 
 	if (!updated) {
 		return {
@@ -444,6 +461,8 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 			error: 'That session transition is not allowed from the current state.',
 		};
 	}
+
+	await scheduleRegistrationClose(updated);
 
 	return { ok: true };
 }
@@ -468,7 +487,7 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 				event.registrationClosesAt > minimumClose ? event.registrationClosesAt : minimumClose,
 		})
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_closed')))
-		.returning({ id: marketEvents.id });
+		.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt });
 
 	if (!updated) {
 		return {
@@ -477,6 +496,8 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 			error: 'That session transition is not allowed from the current state.',
 		};
 	}
+
+	await scheduleRegistrationClose(updated);
 
 	return { ok: true };
 }

@@ -47,6 +47,7 @@ describe('loadScenario', () => {
 		const insertedGuests = guestValues.mock.calls[0]![0] as Array<{
 			id: string;
 			deviceTokenHash: string;
+			fake: boolean;
 		}>;
 		const insertedVisits = visitValues.mock.calls[0]![0] as Array<{
 			id: string;
@@ -54,6 +55,7 @@ describe('loadScenario', () => {
 		}>;
 
 		expect(result.guests).toHaveLength(34);
+		expect(insertedGuests.every((guest) => guest.fake)).toBe(true);
 
 		for (const guest of result.guests) {
 			expect(insertedGuests.find((entry) => entry.id === guest.id)?.deviceTokenHash).toBe(

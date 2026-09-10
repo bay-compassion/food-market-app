@@ -4,6 +4,10 @@ import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
+vi.mock('../../services/notificationDispatch.mjs', () => ({
+	requestNotificationDispatch: vi.fn(),
+}));
+vi.mock('../../services/marketLifecycleEvents.mjs', () => ({ scheduleRegistrationClose: vi.fn() }));
 
 import { requirePermission } from '../../lib/auth.mjs';
 import handler from '../../routes/admin/market.mjs';

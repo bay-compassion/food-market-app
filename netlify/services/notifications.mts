@@ -1,6 +1,7 @@
 import { db } from '../../db/index.mjs';
 import { notificationDeliveries } from '../../db/schema.mjs';
 import { getLogger } from '../lib/logging.mjs';
+import type { NotificationDeliveryOptions } from './notificationDelivery.mjs';
 import { deliverPendingNotifications, type DeliveryType } from './pushNotifications.mjs';
 import { deliverPendingSmsNotifications } from './smsNotifications.mjs';
 
@@ -75,21 +76,27 @@ export async function requeueNotification(
 				notificationDeliveries.dedupeKey,
 				notificationDeliveries.channel,
 			],
-			set: { status: 'pending', attempts: 0, lastError: null, sentAt: null },
+			set: {
+				status: 'pending',
+				attempts: 0,
+				claimedAt: null,
+				claimedBy: null,
+				lastError: null,
+				sentAt: null,
+			},
 		});
 }
 
 /** Delivers every pending notification across every channel, summing each channel's outcome. */
-export async function deliverQueuedNotifications(options?: {
-	visitIds?: string[];
-	types?: DeliveryType[];
-	dedupeKeys?: string[];
-	limit?: number;
-}) {
+export async function deliverQueuedNotifications(options?: NotificationDeliveryOptions) {
+	const deliveryOptions = { ...options, claimId: options?.claimId ?? crypto.randomUUID() };
 	const [push, sms] = await Promise.all([
-		deliverPendingNotifications(options),
-		deliverPendingSmsNotifications(options),
+		deliverPendingNotifications(deliveryOptions),
+		deliverPendingSmsNotifications(deliveryOptions),
 	]);
+
+	const pushProcessed = push.processed ?? push.sent + push.failed + push.skipped;
+	const smsProcessed = sms.processed ?? sms.sent + sms.failed + sms.skipped;
 
 	for (const [channel, result] of [
 		['push', push],
@@ -108,5 +115,9 @@ export async function deliverQueuedNotifications(options?: {
 		sent: push.sent + sms.sent,
 		failed: push.failed + sms.failed,
 		skipped: push.skipped + sms.skipped,
+		processed: pushProcessed + smsProcessed,
+		hasMore:
+			pushProcessed === (deliveryOptions.limit ?? 250) ||
+			smsProcessed === (deliveryOptions.limit ?? 250),
 	};
 }

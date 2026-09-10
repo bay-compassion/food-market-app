@@ -4,6 +4,8 @@ import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
 vi.mock('./pushNotifications.mjs', () => ({ notificationsEnabled: vi.fn(() => true) }));
+vi.mock('./notificationDispatch.mjs', () => ({ requestNotificationDispatch: vi.fn() }));
+vi.mock('./marketLifecycleEvents.mjs', () => ({ scheduleRegistrationClose: vi.fn() }));
 
 import {
 	closeRegistration,
