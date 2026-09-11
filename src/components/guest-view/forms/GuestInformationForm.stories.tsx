@@ -45,6 +45,27 @@ export const Default: Story = {
 	},
 };
 
+/**
+ * Names with a space in them — two given names, a compound surname — survive being typed.
+ *
+ * The fields used to trim on every keystroke, which swallowed the space as soon as it was pressed
+ * and made a two-word name impossible to enter. Surrounding whitespace is still tidied, but only
+ * once the guest leaves the field.
+ */
+export const MultiWordNames: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const firstName = canvas.getByLabelText(translations.en.firstName);
+		const lastName = canvas.getByLabelText(translations.en.lastName);
+
+		await userEvent.type(firstName, 'Mary Jane');
+		await userEvent.type(lastName, ' de la Cruz ');
+		await userEvent.tab();
+
+		await expect(firstName).toHaveValue('Mary Jane');
+		await expect(lastName).toHaveValue('de la Cruz');
+	},
+};
+
 /** The phone field formats digits as they are typed, rather than asking for the punctuation. */
 export const PhoneFormatting: Story = {
 	play: async ({ canvas, userEvent }) => {
