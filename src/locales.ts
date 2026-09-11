@@ -180,6 +180,8 @@ export interface Translation {
 	smsEnable: string;
 	smsEnabled: string;
 	smsError: string;
+	smsNotificationRegisteredBody: string;
+	smsNotificationSelectedPosition: string;
 	seniorsCount: string;
 	phone: string;
 	privacy: string;
@@ -371,6 +373,8 @@ export const translations = {
 		smsEnable: 'Enable text updates',
 		smsEnabled: 'Text message updates are enabled for this and future visits.',
 		smsError: 'We could not enable text updates. Please try again.',
+		smsNotificationRegisteredBody: 'Your entry into the lottery has been confirmed.',
+		smsNotificationSelectedPosition: 'Your position is {position}.',
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you.',
@@ -564,6 +568,8 @@ export const translations = {
 		smsEnabled:
 			'Las actualizaciones por mensaje de texto están activadas para esta visita y futuras visitas.',
 		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
+		smsNotificationRegisteredBody: 'Se ha confirmado su inscripción en el sorteo.',
+		smsNotificationSelectedPosition: 'Su lugar en la fila es {position}.',
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle.',
@@ -753,6 +759,8 @@ export const translations = {
 		smsEnable: 'فعال‌کردن به‌روزرسانی‌های پیامکی',
 		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه و مراجعه‌های آینده فعال شدند.',
 		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
+		smsNotificationRegisteredBody: 'ورود شما به قرعه‌کشی تأیید شد.',
+		smsNotificationSelectedPosition: 'جایگاه شما در صف {position} است.',
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی به شما استفاده می‌شود.',
@@ -950,6 +958,8 @@ export const translations = {
 		smsEnabled:
 			'Naka-enable ang mga text message update para sa pagbisitang ito at mga susunod na pagbisita.',
 		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
+		smsNotificationRegisteredBody: 'Nakumpirma na ang iyong pagsali sa lottery.',
+		smsNotificationSelectedPosition: 'Ang iyong puwesto sa pila ay {position}.',
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayong mapagsilbihan.',
@@ -1139,6 +1149,8 @@ export const translations = {
 		smsEnable: 'Bật cập nhật qua tin nhắn',
 		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé này và các lượt ghé sau.',
 		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
+		smsNotificationRegisteredBody: 'Việc tham gia xổ số của bạn đã được xác nhận.',
+		smsNotificationSelectedPosition: 'Vị trí của bạn trong hàng là {position}.',
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn.',
@@ -1318,6 +1330,8 @@ export const translations = {
 		smsEnable: '启用短信更新',
 		smsEnabled: '已为本次及今后的到访启用短信更新。',
 		smsError: '我们无法启用短信更新。请重试。',
+		smsNotificationRegisteredBody: '您已确认参加抽签。',
+		smsNotificationSelectedPosition: '您的排队位置是 {position}。',
 		seniorsCount: '您为多少老年人（55岁以上）采购',
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们为您提供服务。',
@@ -1506,6 +1520,8 @@ export const translations = {
 		smsEnable: 'تفعيل التحديثات النصية',
 		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة والزيارات القادمة.',
 		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
+		smsNotificationRegisteredBody: 'تم تأكيد دخولك في القرعة.',
+		smsNotificationSelectedPosition: 'مكانك في الصف هو {position}.',
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك.',
