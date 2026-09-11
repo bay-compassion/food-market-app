@@ -25,6 +25,7 @@ const unvisited: UnvisitedGuest = {
 function guest(overrides: Partial<QueueGuest> = {}): QueueGuest {
 	return {
 		id: 'guest-1',
+		guestId: 'guest-record-1',
 		firstName: 'Maria',
 		lastName: 'Santos',
 		phone: '(555) 123-4567',

@@ -20,6 +20,12 @@ export const permissions = [
 	/** Download the visit export, which carries guest names and phone numbers. */
 	'export:guest-data',
 	/**
+	 * Put any guest's record on a phone with a QR code — including one already on another phone,
+	 * which that phone loses once the code is scanned. A manager's override, for a guest with a new
+	 * or wiped phone; a worker can only do this for a guest they have just added.
+	 */
+	'manage:guest-access',
+	/**
 	 * Replace the current session with fake data staged at a chosen lifecycle point, for demos and
 	 * screenshots. Meant for its own role, granted to nobody by default — see `docs/roles.md`. Even
 	 * granted, it does nothing unless the deploy also sets `ENABLE_DEMO_DATA_TOOLS`.

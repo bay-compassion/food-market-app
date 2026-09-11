@@ -93,7 +93,7 @@ test('a guest saved with details only has no visit, appears in the database, and
 		await expect(admin.getByRole('textbox', { name: guestCopy.household })).toHaveCount(0);
 		await admin.getByRole('button', { name: adminCopy.saveGuest, exact: true }).click();
 		await expect(admin.getByText('Gil QueueTest was added.', { exact: true })).toBeVisible();
-		await expect(admin.getByRole('gridcell', { name: 'Gil QueueTest' })).toBeVisible();
+		await expect(admin.getByRole('gridcell', { name: 'Gil QueueTest', exact: true })).toBeVisible();
 		expect(await database.guests()).toEqual([
 			{ first_name: 'Gil', has_device: false, outstanding_claims: 0 },
 		]);
@@ -120,5 +120,70 @@ test('a guest saved with details only has no visit, appears in the database, and
 			{ first_name: 'Gil', has_device: true, outstanding_claims: 0 },
 		]);
 		expect(await database.visits()).toEqual([]);
+	});
+});
+
+test('a manager moves a registered guest to a new phone from the Actions menu, and the old phone loses the visit', async ({
+	admin,
+	database,
+	guestBrowser,
+}) => {
+	const oldPhone = await guestBrowser('Hal');
+
+	await test.step('The guest registers on their own phone', async () => {
+		await oldPhone.register('2025550197');
+		expect(await database.guests()).toEqual([
+			{ first_name: 'Hal', has_device: true, outstanding_claims: 0 },
+		]);
+	});
+	let claimPath = '';
+
+	await test.step('A manager overrides from the guest database; the dialog warns first', async () => {
+		await admin.goto('/admin/guest-database');
+		const claimResponse = admin.waitForResponse(
+			(response) => new URL(response.url()).pathname === '/api/admin/guest-claims',
+		);
+
+		await admin
+			.getByRole('button', { name: `${adminCopy.moreActions}: Hal QueueTest`, exact: true })
+			.click();
+		// The confirmation naming the phone on file is accepted by the admin fixture.
+		await admin.getByRole('menuitem', { name: adminCopy.guestClaimShow }).click();
+		const response = await claimResponse;
+
+		expect(response.status()).toBe(201);
+		const code = (await response.json()) as { token: string; replacesDevice: boolean };
+
+		expect(code.replacesDevice).toBe(true);
+		claimPath = `/claim#${code.token}`;
+		await expect(admin.getByRole('alert')).toHaveText(
+			adminCopy.guestClaimReplacesDevice.replace('{name}', 'Hal QueueTest'),
+		);
+		// Nothing changes for the old phone until the code is scanned.
+		expect(await database.guests()).toEqual([
+			{ first_name: 'Hal', has_device: true, outstanding_claims: 1 },
+		]);
+	});
+	await test.step('The new phone scans it and takes over the visit', async () => {
+		const newPhone = await guestBrowser('Hal');
+
+		await newPhone.page.goto(claimPath);
+		await newPhone.page.getByRole('button', { name: claimCopy.submit, exact: true }).click();
+		await expect(
+			newPhone.page.getByRole('heading', {
+				name: guestCopy.guestView.visitStatus.registered.header,
+			}),
+		).toBeVisible();
+		await expect(newPhone.page.getByText('Hal Q', { exact: true })).toBeVisible();
+	});
+	await test.step('The old phone no longer sees the visit', async () => {
+		await oldPhone.page.bringToFront();
+		await oldPhone.page.reload();
+		await expect(
+			oldPhone.page.getByRole('heading', {
+				name: guestCopy.guestView.visitStatus.registered.header,
+			}),
+		).toHaveCount(0);
+		await expect(oldPhone.page.getByRole('textbox', { name: guestCopy.household })).toBeVisible();
 	});
 });

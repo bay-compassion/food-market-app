@@ -5,7 +5,6 @@ import { useEffect, useRef } from 'react';
 
 import { adminFeedbackText } from '../../services/admin-feedback';
 import { useRootStore } from '../../stores/react/store-context';
-import { GuestClaimDialog } from './GuestClaimDialog';
 
 // The surface itself is the shared `.admin-feedback` rule in `AdminDashboardLayout`.
 const Banner = styled.div`
@@ -28,10 +27,11 @@ export const AdminFeedbackBanner = observer(function AdminFeedbackBanner() {
 	const { translations, admin } = useRootStore();
 	const t = translations.adminTranslation;
 	const text = adminFeedbackText(admin.feedback, t);
-	const claimableGuestId =
+	const claimable =
 		admin.feedback?.kind === 'guest-added' && admin.feedback.offersPhoneClaim
-			? admin.feedback.guestId
+			? { guestId: admin.feedback.guestId, name: admin.feedback.name }
 			: null;
+	const claimableGuestId = claimable?.guestId ?? null;
 	const bannerRef = useRef<HTMLDivElement>(null);
 
 	// The add button often sits at the foot of a long screen on a phone, while this banner sits at
@@ -49,13 +49,14 @@ export const AdminFeedbackBanner = observer(function AdminFeedbackBanner() {
 	return (
 		<Banner ref={bannerRef} className="admin-feedback">
 			<p role="status">{text}</p>
-			{claimableGuestId ? (
-				<>
-					<Button size="small" variant="outlined" onClick={() => void admin.showGuestClaim()}>
-						{t.guestClaimShow}
-					</Button>
-					<GuestClaimDialog />
-				</>
+			{claimable ? (
+				<Button
+					size="small"
+					variant="outlined"
+					onClick={() => void admin.showGuestClaim(claimable)}
+				>
+					{t.guestClaimShow}
+				</Button>
 			) : null}
 		</Banner>
 	);

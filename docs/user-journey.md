@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=f57e39ae4a18, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=522a47ed4667, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=14609658e048, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=e621e9c7f7f7, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=f57e39ae4a18, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=522a47ed4667, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=14609658e048, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=33611e17590c, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
 
 # Guest journey
 
@@ -100,7 +100,7 @@ flowchart TD
     signupSubmit --> saveSignupIdentity[Save entered name and phone,<br/>and any issued device token]
     saveSignupIdentity --> signupSuccess([Show "Your information is saved"<br/>on /signup])
 
-    workerAdded([A worker adds the guest by hand,<br/>then shows a QR code]) --> claimRoute["Guest scans it:<br/>/claim#code"]
+    workerAdded([A worker adds the guest by hand,<br/>or a manager picks any guest's<br/>Actions menu and confirms who they are]) --> claimRoute["Guest scans the QR code:<br/>/claim#code"]
     claimRoute --> stripCode[Read the code, then remove it<br/>from the address bar]
     stripCode --> hasCode{Code in the link?}
     hasCode -- no --> missingCode([Ask a staff member<br/>to show the QR code again])
@@ -110,7 +110,7 @@ flowchart TD
     replaceWarning --> claimTap[Guest taps "Set up this phone"]
     claimTap --> claimSubmit["POST /api/guest-claim<br/>(single use, valid 15 minutes)"]
     claimSubmit -- refused --> claimFailed[Expired or already used:<br/>ask a staff member for a new code]
-    claimSubmit -- accepted --> adoptIdentity[Save the issued device token,<br/>the returned name and phone,<br/>and a fresh visit token if the guest<br/>has a visit in today's session]
+    claimSubmit -- accepted --> adoptIdentity[Save the issued device token,<br/>the returned name and phone,<br/>and a fresh visit token if the guest<br/>has a visit in today's session;<br/>a manager's override signs<br/>the old phone out]
     adoptIdentity --> open
 
     combinedForm --> questions[Answer this session's<br/>registration questions]
@@ -168,9 +168,14 @@ flowchart TD
   is the one place a guest profile is read back from the server, which is acceptable because the
   code that authorizes it was handed to that guest in person. `GuestClaimStore` saves both
   credentials through `GuestStore.adopt` and `VisitStore.submit`; `adopt` clears the previous
-  guest's notification state at once and reloads consent for the guest now on the phone. A code can only be issued or redeemed while the guest has no
-  device credential, so a worker cannot hand a guest who registered on their own phone to someone
-  else's.
+  guest's notification state at once and reloads consent for the guest now on the phone. A worker
+  can only issue a code for a guest no phone holds who was added in the last fifteen minutes. A
+  manager (`manage:guest-access`) can issue one for any guest from the guest's Actions menu —
+  including one already on another phone, after confirming the phone number on file. Scanning that
+  override signs the old phone out: its device credential stops matching, the visit is re-keyed, and
+  any push subscription on the visit is dropped. Every code records which device credential it may
+  replace, so it fails if the guest changed phones after it was issued. See
+  [`roles.md`](roles.md#putting-a-guest-on-a-phone) for the security reasoning.
 - **`/signup` is its own route (`SignupView.tsx`) for creating a guest identity without a visit.**
   Saving information (name and phone, via `/api/guest-information`) is decoupled from lottery
   registration.

@@ -8,6 +8,7 @@ import type { GuestAdmission } from '../../services/guestAdmission';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { AdminFeedbackBanner } from './AdminFeedbackBanner';
+import { GuestClaimDialog } from './GuestClaimDialog';
 
 /**
  * The line under an admin screen's heading that reports the worker's last action. After a manual
@@ -45,6 +46,7 @@ function adminResponse(url: string, init?: RequestInit): Response {
 			{
 				token: 'claim-token-shown-as-a-qr-code-1234567890abcdef',
 				expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
+				replacesDevice: false,
 			},
 			{ status: 201 },
 		);
@@ -82,9 +84,17 @@ const withAddedGuest: Decorator = (Story, context) => {
 	);
 };
 
-/** The banner reads everything from the store; `admission` is read by `withAddedGuest`. */
+/**
+ * The banner reads everything from the store; `admission` is read by `withAddedGuest`. The dialog
+ * sits beside it, as `AdminDashboardLayout` mounts it.
+ */
 function Fixture(_: AdminFeedbackBannerArgs) {
-	return <AdminFeedbackBanner />;
+	return (
+		<>
+			<AdminFeedbackBanner />
+			<GuestClaimDialog />
+		</>
+	);
 }
 
 const meta = {

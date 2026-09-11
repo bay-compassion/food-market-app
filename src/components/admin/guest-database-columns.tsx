@@ -19,7 +19,8 @@ export type GuestDatabaseColumnOptions = {
  * rather than a free-text box a worker has to spell exactly. The actions column opts out of
  * sorting and filtering — it holds controls, not data — and reuses the queue's own row actions in
  * their menu-only form: this screen is looked things up on rather than run from, so no command
- * earns a button of its own. A guest with no visit has nothing to run, so their cell stays empty.
+ * earns a button of its own. A guest with no visit has no command to run, but still gets the menu:
+ * dialling them, and — for a manager — the QR code that puts them on a phone.
  */
 export function guestDatabaseColumns({
 	rows,
@@ -65,15 +66,15 @@ export function guestDatabaseColumns({
 			width: 84,
 			align: 'center',
 			headerAlign: 'center',
-			renderCell: ({ row: { guest } }) =>
-				guest.status === null ? null : (
-					<QueueGuestActions
-						guest={guest}
-						disabled={busy}
-						menuOnly
-						onRun={(command) => onRun(guest, command)}
-					/>
-				),
+			renderCell: ({ row: { guest } }) => (
+				<QueueGuestActions
+					guest={guest}
+					disabled={busy}
+					menuOnly
+					// A guest with no visit is offered no command, so this only ever runs against a visit.
+					onRun={(command) => guest.status !== null && onRun(guest, command)}
+				/>
+			),
 		},
 	];
 }

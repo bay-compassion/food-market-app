@@ -20,6 +20,15 @@ const Body = styled.div`
 		line-height: 1.5;
 	}
 
+	.guest-claim-replaces {
+		padding: 12px 14px;
+		border-radius: var(--radius-sm);
+		color: var(--color-text);
+		background: var(--color-surface-soft);
+		font-weight: 600;
+		text-align: start;
+	}
+
 	.guest-claim-code {
 		width: min(100%, 300px);
 		padding: 16px;
@@ -36,8 +45,9 @@ const Body = styled.div`
 `;
 
 /**
- * The QR code a guest scans to take the record a worker just created onto their own phone. It is
- * a single-use credential, so it is shown only while the worker holds the dialog open.
+ * The QR code a guest scans to take their record onto their own phone. It is a single-use
+ * credential, so it is shown only while the worker holds the dialog open — and when it will take
+ * the record away from a phone the guest already uses, the dialog says so above the code.
  */
 export const GuestClaimDialog = observer(function GuestClaimDialog() {
 	const { translations, admin } = useRootStore();
@@ -67,6 +77,11 @@ export const GuestClaimDialog = observer(function GuestClaimDialog() {
 			}
 		>
 			<Body>
+				{claim.replacesDevice ? (
+					<p className="guest-claim-replaces" role="alert">
+						{t.guestClaimReplacesDevice.replace('{name}', claim.guestName)}
+					</p>
+				) : null}
 				<div
 					className="guest-claim-code"
 					role="img"

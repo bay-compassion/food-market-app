@@ -11,6 +11,7 @@ import type { QueueGuest } from './types';
 
 const baseGuest: QueueGuest = {
 	id: 'guest-1',
+	guestId: 'guest-record-1',
 	firstName: 'Maria',
 	lastName: 'Santos',
 	phone: '(555) 123-4567',

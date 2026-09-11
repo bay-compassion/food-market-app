@@ -19,7 +19,11 @@ export type VisitAccessEnv = {
 };
 
 export type AdminEnv = {
-	Variables: { permissions: Permission[] };
+	Variables: {
+		permissions: Permission[];
+		/** The Auth0 subject of the signed-in worker, for audit records. Absent on a standalone route. */
+		actor?: string;
+	};
 };
 
 /** Authenticate every request in the admin subtree before dispatching a route. */
@@ -28,6 +32,7 @@ export const withAuth0 = createMiddleware<AdminEnv>(async (context, next) => {
 		const { payload } = await verifyAuth0Token(context.req.raw);
 
 		context.set('permissions', grantedPermissions(payload.permissions));
+		context.set('actor', payload.sub);
 	} catch {
 		return jsonError('Authorization required.', 401);
 	}

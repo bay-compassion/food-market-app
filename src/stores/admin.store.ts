@@ -255,21 +255,24 @@ export class AdminStore {
 	}
 
 	/**
-	 * Creates a code for the guest the last manual add created, for the worker to show as a QR code.
-	 * The "guest added" feedback stays put, so a worker who closes the dialog before the guest has
-	 * scanned can open a fresh code — which replaces the old one — without adding the guest again.
+	 * Creates a code that puts `guest`'s record on a phone, for the worker to show as a QR code.
+	 *
+	 * Two screens ask: the "guest added" feedback, for a walk-in just added — which stays put, so a
+	 * worker who closes the dialog early can open a fresh code without adding the guest again — and a
+	 * guest's Actions menu, for a manager. The server decides whether this worker may; a refusal
+	 * is reported as such rather than as a failure.
 	 */
-	async showGuestClaim(): Promise<void> {
-		const added = this._feedback;
-
-		if (added?.kind !== 'guest-added' || !added.offersPhoneClaim) {
-			return;
-		}
-
+	async showGuestClaim(guest: { guestId: string; name: string }): Promise<void> {
 		try {
-			const code = await this.api.createGuestClaim(added.guestId);
+			const code = await this.api.createGuestClaim(guest.guestId);
 
-			runInAction(() => (this._guestClaim = { guestName: added.name, ...code }));
+			runInAction(() => {
+				if (code) {
+					this._guestClaim = { guestName: guest.name, ...code };
+				} else {
+					this._feedback = { kind: 'guest-claim-refused' };
+				}
+			});
 		} catch {
 			runInAction(() => (this._feedback = { kind: 'error' }));
 		}

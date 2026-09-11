@@ -1,14 +1,17 @@
 import styled from '@emotion/styled';
 import { MenuItem } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
 import { visitCommandsFrom, type VisitCommand } from '../../services/visitStateMachine';
+import { useRootStore } from '../../stores/react/store-context';
 import { OverflowMenu } from './OverflowMenu';
-import type { QueueGuest } from './types';
+import type { DatabaseGuest } from './types';
 import { primaryVisitCommands, visitCommandLabels } from './VisitCommandButtons';
 
 export type QueueGuestActionsProps = {
-	guest: QueueGuest;
+	/** A visit, or — in the guest database — a guest with none, who has no commands to run. */
+	guest: DatabaseGuest;
 	disabled?: boolean;
 	/**
 	 * Folds every command into the menu. For a screen that is looked things up on rather than run
@@ -46,10 +49,20 @@ const Actions = styled.div`
  * What a worker can do with one guest: the likely next step as a single tap, and everything
  * else — the rarer transitions and a tap-to-dial phone number — folded into a menu so a row stays
  * two lines tall. The state machine still decides which commands exist.
+ *
+ * A manager (`manage:guest-access`) also gets the QR code that puts this guest on a phone — any
+ * guest, at any time, including one already on another phone. It asks first: the code hands over
+ * the guest's record and place in line, so the manager has to know who they are handing it to.
  */
-export function QueueGuestActions({ guest, disabled, menuOnly, onRun }: QueueGuestActionsProps) {
+export const QueueGuestActions = observer(function QueueGuestActions({
+	guest,
+	disabled,
+	menuOnly,
+	onRun,
+}: QueueGuestActionsProps) {
 	const t = adminTranslations.en;
-	const commands = visitCommandsFrom(guest.status);
+	const { admin } = useRootStore();
+	const commands = guest.status === null ? [] : visitCommandsFrom(guest.status);
 	const primary = menuOnly ? undefined : commands.find((c) => primaryVisitCommands.includes(c));
 	const secondary = commands.filter((command) => command !== primary);
 	const labels = visitCommandLabels();
@@ -58,6 +71,16 @@ export function QueueGuestActions({ guest, disabled, menuOnly, onRun }: QueueGue
 		serve: t.serveShort,
 	};
 	const guestName = `${guest.firstName} ${guest.lastName}`;
+
+	function showPhoneCode() {
+		const confirmation = t.guestClaimConfirm
+			.replaceAll('{name}', guestName)
+			.replace('{phone}', guest.phone);
+
+		if (window.confirm(confirmation)) {
+			void admin.showGuestClaim({ guestId: guest.guestId, name: guestName });
+		}
+	}
 
 	return (
 		<Actions className="visit-commands">
@@ -93,9 +116,19 @@ export function QueueGuestActions({ guest, disabled, menuOnly, onRun }: QueueGue
 						>
 							{t.phoneGuest} {guest.phone}
 						</MenuItem>
+						{admin.can('manage:guest-access') ? (
+							<MenuItem
+								onClick={() => {
+									closeMenu();
+									showPhoneCode();
+								}}
+							>
+								{t.guestClaimShow}
+							</MenuItem>
+						) : null}
 					</>
 				)}
 			</OverflowMenu>
 		</Actions>
 	);
-}
+});

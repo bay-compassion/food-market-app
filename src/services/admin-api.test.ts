@@ -114,6 +114,31 @@ describe('AdminApi', () => {
 		expect(added).toEqual({ id: 'visit-1', guestId: 'guest-1' });
 	});
 
+	it.each([403, 409])(
+		'reads a %i for a phone claim code as a refusal, not a failure',
+		async (status) => {
+			// Arrange
+			const { api } = apiWith(() => Response.json({ error: 'nope' }, { status }));
+
+			// Act
+			const created = await api.createGuestClaim('guest-1');
+
+			// Assert
+			expect(created).toBeNull();
+		},
+	);
+
+	it('still throws when a phone claim code request fails outright', async () => {
+		// Arrange
+		const { api } = apiWith(() => Response.json({ error: 'boom' }, { status: 500 }));
+
+		// Act
+		const request = api.createGuestClaim('guest-1');
+
+		// Assert
+		await expect(request).rejects.toThrow('guest-claim');
+	});
+
 	it('asks for a phone claim code for one guest', async () => {
 		// Arrange
 		const code = { token: 'claim-token', expiresAt: '2026-09-12T17:15:00.000Z' };
