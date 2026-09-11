@@ -154,6 +154,7 @@ export interface AppBarTranslations {
 	openMenu: string;
 	accountMenu: string;
 	website: string;
+	qrCode: string;
 	staffLogin: string;
 	signOut: string;
 }
@@ -237,6 +238,7 @@ export const translations = {
 			openMenu: 'Open menu',
 			accountMenu: 'Account menu',
 			website: 'The Bay Compassion website',
+			qrCode: 'QR Code',
 			staffLogin: 'Staff Login',
 			signOut: 'Sign Out',
 		},
@@ -463,6 +465,7 @@ export const translations = {
 			openMenu: 'Abrir menú',
 			accountMenu: 'Menú de la cuenta',
 			website: 'Sitio web de The Bay Compassion',
+			qrCode: 'Código QR',
 			staffLogin: 'Acceso del personal',
 			signOut: 'Cerrar sesión',
 		},
@@ -692,6 +695,7 @@ export const translations = {
 			openMenu: 'باز کردن منو',
 			accountMenu: 'منوی حساب کاربری',
 			website: 'وب‌سایت The Bay Compassion',
+			qrCode: 'کد QR',
 			staffLogin: 'ورود کارکنان',
 			signOut: 'خروج',
 		},
@@ -916,6 +920,7 @@ export const translations = {
 			openMenu: 'Buksan ang menu',
 			accountMenu: 'Menu ng account',
 			website: 'Website ng The Bay Compassion',
+			qrCode: 'Kodigo QR',
 			staffLogin: 'Mag-sign in para sa kawani',
 			signOut: 'Mag-sign out',
 		},
@@ -1149,6 +1154,7 @@ export const translations = {
 			openMenu: 'Mở trình đơn',
 			accountMenu: 'Trình đơn tài khoản',
 			website: 'Trang web The Bay Compassion',
+			qrCode: 'Mã QR',
 			staffLogin: 'Đăng nhập nhân viên',
 			signOut: 'Đăng xuất',
 		},
@@ -1373,6 +1379,7 @@ export const translations = {
 			openMenu: '打开菜单',
 			accountMenu: '账户菜单',
 			website: 'The Bay Compassion 网站',
+			qrCode: '二维码',
 			staffLogin: '工作人员登录',
 			signOut: '退出登录',
 		},
@@ -1582,6 +1589,7 @@ export const translations = {
 			openMenu: 'فتح القائمة',
 			accountMenu: 'قائمة الحساب',
 			website: 'موقع The Bay Compassion',
+			qrCode: 'رمز QR',
 			staffLogin: 'تسجيل دخول الموظفين',
 			signOut: 'تسجيل الخروج',
 		},

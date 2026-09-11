@@ -82,6 +82,9 @@ export const AppBarMenu = observer(function AppBarMenu() {
 					<OpenExternalIcon fontSize="small" sx={{ marginInlineStart: 'auto' }} />
 				</MenuItem>
 				<Divider />
+				<MenuItem component={Link} to="/qr-code" onClick={close}>
+					{t.qrCode}
+				</MenuItem>
 				<MenuItem component={Link} to="/admin" onClick={close}>
 					{t.staffLogin}
 				</MenuItem>
