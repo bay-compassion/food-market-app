@@ -56,10 +56,19 @@ export interface AdminTranslation {
 	/** Feedback after a manual add; `{name}` is the guest's full name. */
 	guestAdded: string;
 	guestClaimClose: string;
+	/**
+	 * Asked before a manager shows a code from a guest's Actions menu. `{name}` is the guest's full
+	 * name and `{phone}` the number on file, for checking who is at the desk.
+	 */
+	guestClaimConfirm: string;
 	guestClaimDone: string;
 	guestClaimImageAlt: string;
 	/** `{name}` is the guest's full name and `{time}` the moment the code stops working. */
 	guestClaimInstructions: string;
+	/** Why a worker was refused a code: the guest was not just added, or is already on a phone. */
+	guestClaimRefused: string;
+	/** Shown with a code that will take the record away from the guest's current phone. */
+	guestClaimReplacesDevice: string;
 	guestClaimShow: string;
 	guestClaimTitle: string;
 	historySessions: string;
@@ -274,10 +283,15 @@ export const adminTranslations = {
 		guestDatabase: 'Guest database',
 		guestAdded: '{name} was added.',
 		guestClaimClose: 'Close QR code',
+		guestClaimConfirm:
+			"Show a QR code that puts {name}'s record on a phone?\n\nFirst check you're speaking to {name}: ask them to confirm the phone number on file, {phone}.\n\nIf they already use the app on another phone, that phone is signed out once this code is scanned.",
 		guestClaimDone: 'Done',
 		guestClaimImageAlt: 'QR code that sets up this guest on their phone',
 		guestClaimInstructions:
 			"Ask {name} to scan this with their phone's camera so their phone can show their status and updates. The code works once, until {time}.",
+		guestClaimRefused: 'Only a manager can set up a phone for this guest now.',
+		guestClaimReplacesDevice:
+			'{name} already uses the app on another phone. Once this is scanned, that phone is signed out and this one takes over their record.',
 		guestClaimShow: 'Show QR code for their phone',
 		guestClaimTitle: 'Set up their phone',
 		historySessions: 'Session history',

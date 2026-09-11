@@ -63,9 +63,10 @@ export const guests = pgTable(
 );
 
 /**
- * A single-use code a worker shows as a QR code so a guest they added by hand can adopt that record
- * on their own phone. Only the token's hash is stored, a guest has at most one outstanding code, and
- * the row is deleted the moment it is redeemed.
+ * A single-use code a worker shows as a QR code so a guest can adopt their record on their own
+ * phone — a guest just added by hand, or, with a manager's override, any guest at all. Only the
+ * token's hash is stored, a guest has at most one outstanding code, and the row is deleted the
+ * moment it is redeemed.
  */
 export const guestClaims = pgTable(
 	'guest_claims',
@@ -75,6 +76,12 @@ export const guestClaims = pgTable(
 			.notNull()
 			.references(() => guests.id, { onDelete: 'cascade' }),
 		tokenHash: text('token_hash').notNull(),
+		/**
+		 * The device credential this code may replace — null when the guest has none. Redeeming only
+		 * succeeds while the guest still holds exactly this one, so a code cannot overwrite a phone that
+		 * adopted the record after it was issued. Non-null only for a manager's override.
+		 */
+		replacesDeviceTokenHash: text('replaces_device_token_hash'),
 		expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},

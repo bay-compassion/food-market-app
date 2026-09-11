@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=961dcebdd04a -->
+<!-- diagram-sources: db/schema.mts=b016cd051283 -->
 
 # Database structure
 
@@ -125,6 +125,7 @@ erDiagram
         uuid id PK
         uuid guest_id FK "unique; cascade delete"
         text token_hash UK "single-use code a worker shows as a QR code"
+        text replaces_device_token_hash "nullable; the device credential it may replace"
         timestamptz expires_at "fifteen minutes after it was issued"
         timestamptz created_at
     }
@@ -151,8 +152,11 @@ A few things the diagram can't show on its own:
   browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
   an admin have no device credential until the guest scans a worker's QR code.
 - **`guest_claims` holds at most one outstanding QR code per guest, and only while it is
-  outstanding.** A worker can issue one only for a guest whose `device_token_hash` is still null,
-  and issuing another replaces the first. Redeeming it sets the guest's device credential, gives
+  outstanding.** A worker can issue one only for a guest whose `device_token_hash` is still null
+  and who was added moments ago; a manager can issue one for any guest. Each code records the
+  device credential it may replace in `replaces_device_token_hash` — null unless it is a manager's
+  override — and redeeming it only succeeds while the guest still holds exactly that. Issuing
+  another replaces the first. Redeeming it sets the guest's device credential, gives
   their visit in the current session a fresh `access_token_hash`, and deletes the row, all in one
   transaction. An expired, unredeemed row is harmless — it holds only a hash — and goes when the
   guest does.

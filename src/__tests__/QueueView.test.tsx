@@ -21,6 +21,7 @@ const statusLabels = {
 
 function guest(overrides: Partial<QueueGuest> & { id: string }): QueueGuest {
 	return {
+		guestId: `record-${overrides.id}`,
 		firstName: 'Ari',
 		lastName: 'Guest',
 		phone: '555-0100',

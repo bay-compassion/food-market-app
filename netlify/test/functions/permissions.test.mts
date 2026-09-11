@@ -7,6 +7,7 @@ vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
 import { requirePermission } from '../../lib/auth.mjs';
 import broadcastHandler from '../../routes/admin/broadcast.mjs';
+import guestClaimsHandler from '../../routes/admin/guest-claims.mjs';
 import guestsHandler from '../../routes/admin/guests.mjs';
 import marketHandler from '../../routes/admin/market.mjs';
 import queueHandler from '../../routes/admin/queue.mjs';
@@ -97,6 +98,14 @@ describe('endpoint permissions', () => {
 			'run:queue',
 		],
 		[
+			'creating a phone code at all',
+			guestClaimsHandler,
+			json('https://x/api/admin/guest-claims', 'POST', {
+				guestId: '6f1c1c2e-8a4b-4f3e-9d0a-1b2c3d4e5f60',
+			}),
+			'run:queue',
+		],
+		[
 			'calling the next guests',
 			queueHandler,
 			json('https://x/api/admin/queue', 'POST', { action: 'call_next', count: 3 }),
@@ -145,6 +154,25 @@ describe('endpoint permissions', () => {
 			expect(await permissionAskedFor(handler, request)).toBe(expected);
 		});
 	}
+
+	it('checks manage:guest-access, and only that, before overriding a worker’s limits', async () => {
+		// A worker gets through the first gate, then the override gate refuses.
+		vi.mocked(requirePermission)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(Response.json({ error: 'nope' }, { status: 403 }));
+		queueResult([{ deviceTokenHash: 'their-phone', createdAt: new Date() }]);
+
+		const response = await guestClaimsHandler(
+			json('https://x/api/admin/guest-claims', 'POST', {
+				guestId: '6f1c1c2e-8a4b-4f3e-9d0a-1b2c3d4e5f60',
+			}),
+		);
+
+		expect(vi.mocked(requirePermission).mock.calls.at(-1)?.[1]).toBe('manage:guest-access');
+		// Without it, a guest already on a phone stays where they are.
+		expect(response.status).toBe(409);
+		expect(db.insert).not.toHaveBeenCalled();
+	});
 
 	it('leaves the guest-facing overview open, with no permission check at all', async () => {
 		queueResult([]);

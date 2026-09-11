@@ -63,8 +63,8 @@ export const SearchNarrowsTheGrid: Story = {
 
 /**
  * Guests who have never had a visit — saved between sessions by a worker, or through `/signup` —
- * are listed too. Their status (a column hidden by default) reads "No visit", and there is
- * no queue action to run against them.
+ * are listed too. Their status (a column hidden by default) reads "No visit", and their Actions
+ * menu has no queue command in it — only dialling them, and for a manager the QR code.
  */
 export const WithGuestsWhoHaveNoVisit: Story = {
 	args: {
@@ -89,7 +89,12 @@ export const WithGuestsWhoHaveNoVisit: Story = {
 		const canvas = within(canvasElement);
 		const row = (await canvas.findByText('Ana Reyes')).closest('[role="row"]')!;
 
-		await expect(within(row as HTMLElement).queryByRole('button')).not.toBeInTheDocument();
+		await userEvent.click(within(row as HTMLElement).getByRole('button'));
+		// The menu renders in a portal; with no visit and no manager permission, only the dial remains.
+		const items = await within(document.body).findAllByRole('menuitem');
+
+		await expect(items).toHaveLength(1);
+		await expect(items[0]).toHaveTextContent(adminTranslations.en.phoneGuest);
 	},
 };
 

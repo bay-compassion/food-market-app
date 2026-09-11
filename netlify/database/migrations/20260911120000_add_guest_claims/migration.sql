@@ -2,6 +2,7 @@ CREATE TABLE "guest_claims" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"guest_id" uuid NOT NULL,
 	"token_hash" text NOT NULL,
+	"replaces_device_token_hash" text,
 	"expires_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "guest_claims_guest_id_guests_id_fk"

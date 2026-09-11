@@ -6,6 +6,7 @@ import { currentSessionState } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { AdminDashboardTabs } from './AdminDashboardTabs';
 import { AdminFeedbackBanner } from './AdminFeedbackBanner';
+import { GuestClaimDialog } from './GuestClaimDialog';
 import type { AdminView } from './types';
 
 /*
@@ -170,6 +171,8 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 					</header>
 					<AdminFeedbackBanner />
 					{children}
+					{/* Opened from the feedback line after an add, or from any guest's Actions menu. */}
+					<GuestClaimDialog />
 				</div>
 			)}
 		</Dashboard>

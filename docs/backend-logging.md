@@ -30,6 +30,8 @@ for correlation; unexpected thrown errors remain under Netlify's response handli
 | `notification.delivery_failed` | `channel`, `deliveryId`, `attempt`, `providerCode` (SMS) or `providerStatus` (push), `err` | warn                               |
 | `sms.delivery.attempted`       | obfuscated `recipient`                                                                     | info                               |
 | `sms.delivery.content`         | obfuscated `recipient`, full `content`                                                     | debug                              |
+| `guest_claim.issued`           | `guestId`, `actor` (Auth0 subject), `authority` (`worker` or `manager`), `replacesDevice`  | info                               |
+| `guest_claim.redeemed`         | `guestId`, `replacedDevice`                                                                | info                               |
 
 HTTP duration measures handler execution through response creation, not client download time.
 There is one HTTP completion or failure record per handled request, including authentication,

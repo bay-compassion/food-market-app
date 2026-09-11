@@ -16,6 +16,10 @@ resourceServers:
         description: The reports screen — aggregates, no names
       - value: export:guest-data
         description: The visit export, with names and phone numbers
+      - value: manage:guest-access
+        description: >-
+          Put any guest on a phone with a QR code, replacing a phone they already
+          use
       - value: manage:demo-data
         description: Add demo datasets
     signing_alg: RS256
@@ -180,6 +184,8 @@ roles:
     description: Admin for Bay Compassion
     permissions:
       - permission_name: export:guest-data
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:guest-access
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:sessions
         resource_server_identifier: https://thebaycompassion.org

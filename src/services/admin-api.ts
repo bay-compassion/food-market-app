@@ -10,7 +10,10 @@ import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
 
 /** One visit as the queue screens render it. */
 export type QueueGuest = {
+	/** The visit. */
 	id: string;
+	/** The guest the visit belongs to. */
+	guestId: string;
 	firstName: string;
 	lastName: string;
 	phone: string;
@@ -70,8 +73,11 @@ export type UnvisitedGuest = Omit<
 /** One row of the guest database: a visit, or a guest who has none yet. */
 export type DatabaseGuest = QueueGuest | UnvisitedGuest;
 
-/** A code a worker shows as a QR code. `expiresAt` is an ISO timestamp. */
-export type GuestClaimCode = { token: string; expiresAt: string };
+/**
+ * A code a worker shows as a QR code. `expiresAt` is an ISO timestamp; `replacesDevice` says the
+ * guest is already on another phone, which loses the record once this code is scanned.
+ */
+export type GuestClaimCode = { token: string; expiresAt: string; replacesDevice: boolean };
 
 /** The market event as the admin screens render it. */
 export type AdminMarketEvent = {
@@ -164,12 +170,19 @@ export class AdminApi {
 		return { id, guestId };
 	}
 
-	/** A single-use code that lets a guest added by hand take their record onto their own phone. */
-	async createGuestClaim(guestId: string): Promise<GuestClaimCode> {
-		return this.readJson<GuestClaimCode>(
-			await this.send('POST', '/api/admin/guest-claims', { guestId }),
-			'guest-claim',
-		);
+	/**
+	 * A single-use code that lets a guest take their record onto their own phone. Resolves to `null`
+	 * when this worker may not do that for this guest — only a manager may for one who was not just
+	 * added, or who is already on a phone.
+	 */
+	async createGuestClaim(guestId: string): Promise<GuestClaimCode | null> {
+		const response = await this.send('POST', '/api/admin/guest-claims', { guestId });
+
+		if (response.status === 403 || response.status === 409) {
+			return null;
+		}
+
+		return this.readJson<GuestClaimCode>(response, 'guest-claim');
 	}
 
 	/** Calls the next `count` waiting guests forward. Resolves to the visit ids actually called. */

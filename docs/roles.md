@@ -9,7 +9,7 @@ explanation and nothing else.
 | Role     | Who it is for                                      | Holds                |
 | -------- | -------------------------------------------------- | -------------------- |
 | `worker` | Volunteers running the market                      | `run:queue`          |
-| `admin`  | Whoever is responsible for the market and its data | all four permissions |
+| `admin`  | Whoever is responsible for the market and its data | all five permissions |
 
 Two roles rather than three because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
@@ -17,15 +17,16 @@ or download the whole guest database in one click.
 
 ## The permissions
 
-| Permission          | Allows                                                                                                   |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| `run:queue`         | Call guests, change a visit's status, add a guest by hand, close the day's session, read session history |
-| `manage:sessions`   | Session settings, the question bank, the registration lifecycle, the lottery, broadcasts                 |
-| `read:reports`      | The reports screen — counts and rates, never a guest's name                                              |
-| `export:guest-data` | The visit export, which carries guest names and phone numbers                                            |
-| `manage:demo-data`  | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
+| Permission            | Allows                                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------------------------- |
+| `run:queue`           | Call guests, change a visit's status, add a guest by hand, close the day's session, read session history |
+| `manage:sessions`     | Session settings, the question bank, the registration lifecycle, the lottery, broadcasts                 |
+| `read:reports`        | The reports screen — counts and rates, never a guest's name                                              |
+| `export:guest-data`   | The visit export, which carries guest names and phone numbers                                            |
+| `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
+| `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
 
-The first four sit behind two roles on purpose. Splitting out a third role later — a board member
+The first five sit behind two roles on purpose. Splitting out a third role later — a board member
 or grant writer who should read reports but never see a name, holding `read:reports` alone — is
 then a change in the Auth0 dashboard, with no code to write or deploy. `manage:demo-data` is that
 kind of split from day one: it belongs on neither `worker` nor `admin`, only on a role of its own
@@ -45,6 +46,7 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET`, `POST`, `PATCH /api/admin/guests` | `run:queue`                                             |
 | `POST /api/admin/queue`                  | `run:queue`                                             |
 | `POST /api/admin/broadcast`              | `manage:sessions`                                       |
+| `POST /api/admin/guest-claims`           | `run:queue`; `manage:guest-access` lifts its limits     |
 | `GET /api/admin/reports`                 | `read:reports`                                          |
 | `GET /api/admin/reports?view=export`     | `export:guest-data`                                     |
 | `GET`, `POST /api/admin/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
@@ -65,7 +67,7 @@ a token with no permissions, and the moment the server starts checking, they are
 admin area. The reverse order is safe: turning RBAC on with no enforcement deployed just adds a
 claim nothing reads yet, so you can confirm tokens look right and merge afterwards.
 
-1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the five
+1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the six
    permissions above.
 2. **Same API → Settings → RBAC Settings.** Turn on _Enable RBAC_ **and** _Add Permissions in the
    Access Token_. The second one is what puts the `permissions` claim in the token; without it
@@ -99,6 +101,37 @@ With no Auth0 configured — the usual Vite-only development setup — the brows
 permission so the admin screens remain available. Vite does not run the Netlify API; when the
 backend is running, admin requests still require a valid Auth0 token and fail closed without
 Auth0 configuration.
+
+## Putting a guest on a phone
+
+`POST /api/admin/guest-claims` issues a single-use code, valid for fifteen minutes, that a guest scans
+to take their record onto their own phone. What the caller may ask for depends on what they hold:
+
+- **`run:queue` alone (a worker)** — only for a guest no phone holds, and only one added in the last
+  fifteen minutes. That is the walk-in standing at the table; it is not a record from last week
+  looked up by id.
+- **`manage:guest-access` as well (a manager)** — any guest at any time, from the guest's Actions
+  menu. That includes a guest already on another phone: the override, for someone whose phone was
+  replaced or wiped.
+
+An override is an account handover, so treat it like one:
+
+- **Scanning it takes the guest's record and current place in line away from their old phone.** The
+  old device credential stops working, the visit is re-keyed, and any push subscription on that
+  visit is dropped. Nothing changes before the code is scanned, so issuing one and walking away is
+  harmless — but whoever scans first wins.
+- **Check who is at the desk.** The Actions menu asks the manager to confirm the phone number on
+  file before showing the code. Someone posing as a guest could otherwise take that guest's spot in
+  line.
+- **Texts do not follow the phone.** SMS goes to the number on file, so an override neither moves
+  a guest's texts nor fixes a wrong number.
+- **Every code issued and redeemed is logged** — `guest_claim.issued` with the issuer's Auth0
+  subject, and `guest_claim.redeemed` — see [`backend-logging.md`](backend-logging.md). Netlify
+  keeps function logs only briefly; set up a log drain if these need to outlast that.
+
+`manage:guest-access` is on `admin` in `infrastructure/auth0/tenant/tenant.yaml`. Push that to
+Auth0 before merging the code that checks it; until then an admin's override is refused with a 403
+and nothing else changes.
 
 ## What this does not do
 
