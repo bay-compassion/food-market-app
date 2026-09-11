@@ -519,3 +519,39 @@ describe('GuestStore.adopt', () => {
 		});
 	});
 });
+
+describe('GuestStore.adopt on a shared phone', () => {
+	it('never shows the previous guest’s SMS consent, even if the reload fails', async () => {
+		// Arrange
+		const request = vi.fn((url: string) =>
+			Promise.resolve(
+				url === '/api/notification-status'
+					? Response.json({ pushSubscribed: false, smsConsented: true })
+					: Response.json({ configured: true }),
+			),
+		);
+		const storage = new StorageService();
+
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'someone-elses-device-token');
+		const store = new GuestStore({ request: request as unknown as typeof fetch, storage });
+
+		await store.loadNotificationSettings();
+		request.mockImplementation(() => Promise.reject(new Error('offline')));
+
+		// Act
+		store.adopt('claimed-device-token', {
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			phone: '510-555-0123',
+		});
+
+		// Assert
+		expect(store.smsConsented).toBe(false);
+		await vi.waitFor(() =>
+			expect(request).toHaveBeenCalledWith('/api/notification-status', {
+				headers: { Authorization: 'Bearer claimed-device-token' },
+			}),
+		);
+		expect(store.smsConsented).toBe(false);
+	});
+});

@@ -64,8 +64,6 @@ export class GuestClaimStore {
 
 				this._state = 'idle';
 			});
-			// Consent belongs to the guest now on this phone, not to whoever was here before.
-			void this.guest.refreshNotificationSettings().catch(() => undefined);
 
 			return true;
 		} catch {
