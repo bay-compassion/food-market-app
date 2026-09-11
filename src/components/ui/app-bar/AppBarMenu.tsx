@@ -85,8 +85,9 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				<MenuItem component={Link} to="/qr-code" onClick={close}>
 					{t.qrCode}
 				</MenuItem>
+				{/* The same destination either way; what changes is whether it still asks for a sign-in. */}
 				<MenuItem component={Link} to="/admin" onClick={close}>
-					{t.staffLogin}
+					{isAuthenticated ? t.adminPanel : t.staffLogin}
 				</MenuItem>
 				{isAuthenticated && [
 					<Divider key="account-divider" />,
