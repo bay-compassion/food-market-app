@@ -1,5 +1,7 @@
 import twilio from 'twilio';
 
+import { logSmsDelivery } from '../lib/logging.mjs';
+
 export type SmsMessage = {
 	to: string;
 	body: string;
@@ -32,6 +34,7 @@ export class TwilioSmsTransport implements SmsTransport {
 	}
 
 	async send(message: SmsMessage) {
+		logSmsDelivery(message.to, message.body);
 		const result = await this.client.messages.create({
 			messagingServiceSid: this.messagingServiceSid,
 			to: message.to,
