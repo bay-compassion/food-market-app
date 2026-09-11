@@ -310,6 +310,7 @@ export function deduplicateLotteryRegistrations<
 		// Older rows can predate the visit-level phone snapshot. Do not collapse unknown identities.
 		if (!registration.normalizedPhone || !seenPhones.has(registration.normalizedPhone)) {
 			entrants.push(registration);
+
 			if (registration.normalizedPhone) {
 				seenPhones.add(registration.normalizedPhone);
 			}
