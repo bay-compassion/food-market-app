@@ -46,6 +46,12 @@ export type ManualGuest = {
 	lotteryWeightTier: LotteryWeightTier;
 };
 
+/** The records a manual add created: the visit, and the guest it belongs to. */
+export type AddedGuest = { id: string; guestId: string };
+
+/** A code a worker shows as a QR code. `expiresAt` is an ISO timestamp. */
+export type GuestClaimCode = { token: string; expiresAt: string };
+
 /** The market event as the admin screens render it. */
 export type AdminMarketEvent = {
 	id: string;
@@ -122,18 +128,26 @@ export class AdminApi {
 	async addGuest(
 		guest: ManualGuest,
 		context: { marketEventId: string | null; locale: Locale },
-	): Promise<void> {
-		this.assertOk(
-			await this.send('POST', '/api/admin/guests', {
-				...guest,
-				// The form speaks in named tiers; the API takes the multiplier behind one.
-				lotteryWeight: lotteryWeightFor(guest.lotteryWeightTier),
-				locale: context.locale,
-				marketEventId: context.marketEventId,
-				answers: {},
-				source: 'admin',
-			}),
-			'guest',
+	): Promise<AddedGuest> {
+		const response = await this.send('POST', '/api/admin/guests', {
+			...guest,
+			// The form speaks in named tiers; the API takes the multiplier behind one.
+			lotteryWeight: lotteryWeightFor(guest.lotteryWeightTier),
+			locale: context.locale,
+			marketEventId: context.marketEventId,
+			answers: {},
+			source: 'admin',
+		});
+		const { id, guestId } = await this.readJson<AddedGuest>(response, 'guest');
+
+		return { id, guestId };
+	}
+
+	/** A single-use code that lets a guest added by hand take their record onto their own phone. */
+	async createGuestClaim(guestId: string): Promise<GuestClaimCode> {
+		return this.readJson<GuestClaimCode>(
+			await this.send('POST', '/api/admin/guest-claims', { guestId }),
+			'guest-claim',
 		);
 	}
 

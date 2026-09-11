@@ -84,7 +84,9 @@ describe('AdminApi', () => {
 
 	it('translates a lottery tier into the multiplier the API takes', async () => {
 		// Arrange
-		const { api, calls } = apiWith(() => new Response(null, { status: 200 }));
+		const { api, calls } = apiWith(() =>
+			Response.json({ id: 'visit-1', guestId: 'guest-1', status: 'waiting' }, { status: 201 }),
+		);
 
 		// Act
 		await api.addGuest(
@@ -97,6 +99,33 @@ describe('AdminApi', () => {
 
 		expect(body.lotteryWeight).toBeGreaterThan(1);
 		expect(body).toMatchObject({ marketEventId: 'event-1', locale: 'es', source: 'admin' });
+	});
+
+	it('resolves a manual add to the visit and guest it created', async () => {
+		// Arrange
+		const { api } = apiWith(() =>
+			Response.json({ id: 'visit-1', guestId: 'guest-1', status: 'waiting' }, { status: 201 }),
+		);
+
+		// Act
+		const added = await api.addGuest(manualGuest, { marketEventId: 'event-1', locale: 'en' });
+
+		// Assert
+		expect(added).toEqual({ id: 'visit-1', guestId: 'guest-1' });
+	});
+
+	it('asks for a phone claim code for one guest', async () => {
+		// Arrange
+		const code = { token: 'claim-token', expiresAt: '2026-09-12T17:15:00.000Z' };
+		const { api, calls } = apiWith(() => Response.json(code, { status: 201 }));
+
+		// Act
+		const created = await api.createGuestClaim('guest-1');
+
+		// Assert
+		expect(calls[0]).toMatchObject({ url: '/api/admin/guest-claims', method: 'POST' });
+		expect(JSON.parse(calls[0]!.body)).toEqual({ guestId: 'guest-1' });
+		expect(created).toEqual(code);
 	});
 
 	it('resolves to the ids the queue actually called', async () => {

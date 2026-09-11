@@ -487,3 +487,35 @@ describe('GuestStore', () => {
 		expect(store.smsConsented).toBe(false);
 	});
 });
+
+describe('GuestStore.adopt', () => {
+	it('replaces the saved credential and identity with the claimed guest', () => {
+		// Arrange
+		const storage = new StorageService();
+
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'someone-elses-device-token');
+		storage.set(StorageKey.GUEST_IDENTITY, {
+			firstName: 'Bea',
+			lastName: 'Before',
+			phone: '510-555-0999',
+		});
+		const store = new GuestStore({ storage });
+
+		// Act
+		store.adopt('claimed-device-token', {
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			phone: '510-555-0123',
+		});
+
+		// Assert
+		expect(store.deviceId).toBe('claimed-device-token');
+		expect(store.displayedName).toBe('Ada L');
+		expect(storage.get(StorageKey.GUEST_DEVICE_TOKEN)).toBe('claimed-device-token');
+		expect(storage.get(StorageKey.GUEST_IDENTITY)).toEqual({
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			phone: '510-555-0123',
+		});
+	});
+});

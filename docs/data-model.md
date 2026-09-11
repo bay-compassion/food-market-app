@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=7985960bdea1 -->
+<!-- diagram-sources: db/schema.mts=961dcebdd04a -->
 
 # Database structure
 
@@ -21,6 +21,7 @@ erDiagram
     visits ||--o| push_subscriptions : "notifies"
     guests ||--o| sms_subscriptions : "consents"
     guests ||--o| sms_opt_outs : "records STOP"
+    guests ||--o| guest_claims : "awaits a phone"
     visits ||--o{ notification_deliveries : "queues"
 
     market_events {
@@ -119,6 +120,14 @@ erDiagram
         timestamptz opted_out_at
         timestamptz created_at
     }
+
+    guest_claims {
+        uuid id PK
+        uuid guest_id FK "unique; cascade delete"
+        text token_hash UK "single-use code a worker shows as a QR code"
+        timestamptz expires_at "fifteen minutes after it was issued"
+        timestamptz created_at
+    }
 ```
 
 A few things the diagram can't show on its own:
@@ -140,7 +149,13 @@ A few things the diagram can't show on its own:
   food outside the app, and stamping a time would be inventing one.
 - **The device token is the self-service guest credential.** The opaque token exists only in the
   browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
-  an admin have no device credential.
+  an admin have no device credential until the guest scans a worker's QR code.
+- **`guest_claims` holds at most one outstanding QR code per guest, and only while it is
+  outstanding.** A worker can issue one only for a guest whose `device_token_hash` is still null,
+  and issuing another replaces the first. Redeeming it sets the guest's device credential, gives
+  their visit in the current session a fresh `access_token_hash`, and deletes the row, all in one
+  transaction. An expired, unredeemed row is harmless — it holds only a hash — and goes when the
+  guest does.
 - **`guests.fake` records synthetic-data provenance.** The fake-data seed and Dev Mode scenario
   loader set it explicitly; ordinary registrations default to `false`. SMS deliveries for a fake
   guest are recorded as skipped before the Twilio transport is called. Phone-number patterns are
@@ -153,8 +168,8 @@ A few things the diagram can't show on its own:
   website re-consent clears both through Twilio's Consent Management API before restoring the
   `sms_subscriptions` row; an inbound START removes the opt-out row directly.
 - **Only `market_events → registration_questions`, `visits → push_subscriptions`,
-  `visits → notification_deliveries`, `guests → sms_subscriptions`, and `guests → sms_opt_outs`
-  cascade on delete.**
+  `visits → notification_deliveries`, `guests → sms_subscriptions`, `guests → sms_opt_outs`, and
+  `guests → guest_claims` cascade on delete.**
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.
 

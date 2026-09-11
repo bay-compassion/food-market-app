@@ -62,6 +62,28 @@ export const guests = pgTable(
 	(table) => [uniqueIndex('guests_device_token_hash_idx').on(table.deviceTokenHash)],
 );
 
+/**
+ * A single-use code a worker shows as a QR code so a guest they added by hand can adopt that record
+ * on their own phone. Only the token's hash is stored, a guest has at most one outstanding code, and
+ * the row is deleted the moment it is redeemed.
+ */
+export const guestClaims = pgTable(
+	'guest_claims',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		guestId: uuid('guest_id')
+			.notNull()
+			.references(() => guests.id, { onDelete: 'cascade' }),
+		tokenHash: text('token_hash').notNull(),
+		expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex('guest_claims_guest_idx').on(table.guestId),
+		uniqueIndex('guest_claims_token_hash_idx').on(table.tokenHash),
+	],
+);
+
 export const visits = pgTable('visits', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	marketEventId: uuid('market_event_id')

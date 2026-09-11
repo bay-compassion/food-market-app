@@ -4,12 +4,14 @@ import type { Locale } from '../locales.ts';
 import {
 	AdminApi,
 	type AdminGuest,
+	type GuestClaimCode,
 	type HistoricalEvent,
 	type ManualGuest,
 	type QueueGuest,
 } from '../services/admin-api.ts';
 import type { AdminFeedback } from '../services/admin-feedback.ts';
 import { viewsFor, type AdminView } from '../services/admin-views.ts';
+import { admissionOffersPhoneClaim } from '../services/guestAdmission.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
 import type { SessionCommand } from '../services/sessionStateMachine.ts';
@@ -20,6 +22,9 @@ import type { SessionSettingsInput, MarketSessionStore } from './market-session.
 
 /** The session commands the dashboard offers as one-click actions. */
 export type MarketAction = Exclude<SessionCommand, 'postpone_registration' | 'update_registration'>;
+
+/** A phone claim code on screen, with the name of the guest it is for. */
+export type GuestClaim = GuestClaimCode & { guestName: string };
 
 export type AdminStoreOptions = {
 	api?: AdminApi;
@@ -46,6 +51,7 @@ export class AdminStore {
 	private _permissions: Permission[] = [];
 	private _isBusy = false;
 	private _feedback: AdminFeedback | null = null;
+	private _guestClaim: GuestClaim | null = null;
 	private readonly api: AdminApi;
 	private readonly readPermissions: () => Promise<Permission[]>;
 
@@ -71,6 +77,11 @@ export class AdminStore {
 
 	get feedback(): AdminFeedback | null {
 		return this._feedback;
+	}
+
+	/** The code on screen for a guest to scan with their phone, if the worker has opened one. */
+	get guestClaim(): GuestClaim | null {
+		return this._guestClaim;
 	}
 
 	/** The screens this worker can open, in navigation order. */
@@ -220,16 +231,51 @@ export class AdminStore {
 
 	async addGuest(guest: ManualGuest, context: { marketEventId?: string | null; locale: Locale }) {
 		await this.run(async () => {
-			await this.api.addGuest(guest, {
+			const { guestId } = await this.api.addGuest(guest, {
 				marketEventId:
 					context.marketEventId === undefined
 						? (this.session.currentState?.event?.id ?? null)
 						: context.marketEventId,
 				locale: context.locale,
 			});
+
 			await this.session.getStatus();
 			await this.refreshAll();
+			runInAction(
+				() =>
+					(this._feedback = {
+						kind: 'guest-added',
+						guestId,
+						name: `${guest.firstName} ${guest.lastName}`.trim(),
+						offersPhoneClaim: admissionOffersPhoneClaim(guest.admission),
+					}),
+			);
 		}, undefined);
+	}
+
+	/**
+	 * Creates a code for the guest the last manual add created, for the worker to show as a QR code.
+	 * The "guest added" feedback stays put, so a worker who closes the dialog before the guest has
+	 * scanned can open a fresh code — which replaces the old one — without adding the guest again.
+	 */
+	async showGuestClaim(): Promise<void> {
+		const added = this._feedback;
+
+		if (added?.kind !== 'guest-added' || !added.offersPhoneClaim) {
+			return;
+		}
+
+		try {
+			const code = await this.api.createGuestClaim(added.guestId);
+
+			runInAction(() => (this._guestClaim = { guestName: added.name, ...code }));
+		} catch {
+			runInAction(() => (this._feedback = { kind: 'error' }));
+		}
+	}
+
+	dismissGuestClaim(): void {
+		this._guestClaim = null;
 	}
 
 	async callNext(count: number): Promise<void> {

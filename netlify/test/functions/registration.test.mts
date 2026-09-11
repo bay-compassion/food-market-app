@@ -7,7 +7,12 @@ vi.mock('../../../db/index.mjs', () => ({ db }));
 import handler, { config } from '../../functions/registration.mjs';
 import { maxRequestBodyBytes } from '../../lib/http.mjs';
 
-const paths = ['/api/guest-information', '/api/lottery-registration'];
+const paths = ['/api/guest-information', '/api/lottery-registration', '/api/guest-claim'];
+const invalidBodyErrors: Record<string, string> = {
+	'/api/guest-information': 'Please provide valid guest information.',
+	'/api/lottery-registration': 'Please provide a valid lottery registration.',
+	'/api/guest-claim': 'Please provide a valid code.',
+};
 
 afterEach(() => {
 	resetDbStub();
@@ -33,12 +38,7 @@ describe('public registration boundary', () => {
 		const response = await handler(request);
 
 		expect(response.status).toBe(400);
-		await expect(response.json()).resolves.toEqual({
-			error:
-				path === '/api/guest-information'
-					? 'Please provide valid guest information.'
-					: 'Please provide a valid lottery registration.',
-		});
+		await expect(response.json()).resolves.toEqual({ error: invalidBodyErrors[path] });
 	});
 
 	it.each(paths)(

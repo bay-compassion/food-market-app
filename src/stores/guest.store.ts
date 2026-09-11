@@ -35,7 +35,9 @@ export type GuestStoreOptions = {
  * that we have accepted.
  *
  * Moreover, to prevent unauthorized leakage of user data, user information is never retrieved from the server.
- * Instead, the guest's identity is stored locally in storage.
+ * Instead, the guest's identity is stored locally in storage. The single exception is `adopt`: a guest a
+ * worker added by hand scans a single-use QR code, and the claim that code redeems returns the identity
+ * the worker entered.
  */
 export class GuestStore {
 	private _deviceToken: string | null;
@@ -203,6 +205,16 @@ export class GuestStore {
 		});
 
 		this.saveIdentity(result, input);
+	}
+
+	/**
+	 * Makes this browser the device for a record a worker created, replacing whatever identity it
+	 * held before. The identity comes from the server here — the one exception to this store never
+	 * reading a guest profile back — because the single-use code that returned it was handed to this
+	 * guest in person.
+	 */
+	adopt(deviceToken: string, identity: GuestIdentity): void {
+		this.saveIdentity({ deviceToken }, identity);
 	}
 
 	/** Called once a guest has picked a language, so future visits skip the language hero in

@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router';
 import { App } from './App';
 import { GuestView } from './components/guest-view/GuestView';
 import { QrCodeView } from './components/QrCodeView';
+import { ClaimView } from './components/routes/ClaimView';
 import { SignupView } from './components/routes/SignupView';
 
 /**
@@ -19,6 +20,8 @@ export const router = createBrowserRouter([
 		children: [
 			{ path: '/', element: <GuestView /> },
 			{ path: '/signup', element: <SignupView /> },
+			// A guest reaches this from a worker's QR code while standing at the table.
+			{ path: '/claim', element: <ClaimView /> },
 			{ path: '/qr-code', element: <QrCodeView /> },
 			{
 				path: '/privacy',

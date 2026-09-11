@@ -61,6 +61,14 @@ export function admissionTakesLotteryWeight(admission: GuestAdmission) {
 	return admission === 'lottery';
 }
 
+/**
+ * Whether the worker is offered a QR code that puts the new record on the guest's phone. A `served`
+ * record is written after the fact, when the guest is no longer at the table to scan it.
+ */
+export function admissionOffersPhoneClaim(admission: GuestAdmission) {
+	return admission !== 'served';
+}
+
 export function isGuestAdmission(value: unknown): value is GuestAdmission {
 	return guestAdmissions.some((admission) => admission === value);
 }

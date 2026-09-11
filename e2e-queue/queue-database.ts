@@ -11,6 +11,14 @@ export interface QueueVisit {
 	served_at: string | null;
 }
 
+export interface QueueGuest {
+	first_name: string;
+	/** Whether a phone holds this guest's device credential. */
+	has_device: boolean;
+	/** QR codes issued for this guest and not yet redeemed. */
+	outstanding_claims: number;
+}
+
 /** Fixture IPC shares the harness's database queue with real Netlify handler invocations. */
 export class QueueDatabase {
 	private readonly socketPath = readRigState().socketPath;
@@ -23,7 +31,11 @@ export class QueueDatabase {
 		return (await this.command('visits')) as QueueVisit[];
 	}
 
-	private command(command: 'reset' | 'visits'): Promise<unknown> {
+	async guests(): Promise<QueueGuest[]> {
+		return (await this.command('guests')) as QueueGuest[];
+	}
+
+	private command(command: 'reset' | 'visits' | 'guests'): Promise<unknown> {
 		return new Promise((resolve, reject) => {
 			const socket = createConnection(this.socketPath);
 			let data = '';

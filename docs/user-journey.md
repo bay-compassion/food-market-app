@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=3aa30f50626e, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=677aa8645707, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=565bdcb9de99 -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=f4fae5ea4cd6, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=f57e39ae4a18, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=677aa8645707, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=14609658e048, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=a489d4d4933d, netlify/services/guest-claim.mts=e621e9c7f7f7, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
 
 # Guest journey
 
@@ -8,7 +8,9 @@ in `GuestView`, backed by the root's shared `TranslationStore`; the registration
 screen, and countdown are in
 [`src/components/guest-view/GuestView.tsx`](../src/components/guest-view/GuestView.tsx) (route `/`),
 with the identity-only sign-up screen in its own
-[`src/components/routes/SignupView.tsx`](../src/components/routes/SignupView.tsx) (route `/signup`).
+[`src/components/routes/SignupView.tsx`](../src/components/routes/SignupView.tsx) (route `/signup`),
+and the screen a worker's QR code opens in
+[`src/components/routes/ClaimView.tsx`](../src/components/routes/ClaimView.tsx) (route `/claim`).
 Both read the current market session from the shared
 [`src/stores/root.store.ts`](../src/stores/root.store.ts) — every store it composes
 (`src/stores/*.store.ts`) lives for the app's lifetime, not any one component's mount. The root's
@@ -98,6 +100,19 @@ flowchart TD
     signupSubmit --> saveSignupIdentity[Save entered name and phone,<br/>and any issued device token]
     saveSignupIdentity --> signupSuccess([Show "Your information is saved"<br/>on /signup])
 
+    workerAdded([A worker adds the guest by hand,<br/>then shows a QR code]) --> claimRoute["Guest scans it:<br/>/claim#code"]
+    claimRoute --> stripCode[Read the code, then remove it<br/>from the address bar]
+    stripCode --> hasCode{Code in the link?}
+    hasCode -- no --> missingCode([Ask a staff member<br/>to show the QR code again])
+    hasCode -- yes --> phoneHasData{Phone already holds an<br/>identity or a visit?}
+    phoneHasData -- yes --> replaceWarning[Warn that it will be replaced<br/>and cannot be recovered]
+    phoneHasData -- no --> claimTap
+    replaceWarning --> claimTap[Guest taps "Set up this phone"]
+    claimTap --> claimSubmit["POST /api/guest-claim<br/>(single use, valid 15 minutes)"]
+    claimSubmit -- refused --> claimFailed[Expired or already used:<br/>ask a staff member for a new code]
+    claimSubmit -- accepted --> adoptIdentity[Save the issued device token,<br/>the returned name and phone,<br/>and a fresh visit token if the guest<br/>has a visit in today's session]
+    adoptIdentity --> open
+
     combinedForm --> questions[Answer this session's<br/>registration questions]
     lotteryOnlyForm --> questions
     questions --> identity{Saved device token?}
@@ -135,8 +150,27 @@ flowchart TD
   an older record or a record from another device. A recognized token reuses the guest row and
   refreshes all profile fields. After a successful registration, the store also saves the entered
   name and phone number under `bay-compassion.guest-identity`. The identity indicator reads only
-  that browser-local copy; it never retrieves a guest profile from the server. A legacy token with
-  no local profile therefore shows no indicator until the guest registers again.
+  that browser-local copy; it never retrieves a guest profile from the server — with the one
+  exception of a worker's QR code, below. A legacy token with no local profile therefore shows no
+  indicator until the guest registers again.
+- **A worker's QR code puts a guest they added by hand onto the guest's own phone.** An admin-added
+  guest has no device credential, and their visit's token was never handed out, so nothing on a
+  phone can follow them. After a manual add, the admin feedback line offers "Show QR code for their
+  phone" (except for an after-the-fact `served` record), which asks `/api/admin/guest-claims` for a
+  single-use code valid for fifteen minutes and shows it as a QR code linking to `/claim#<code>`.
+  The code rides in the URL fragment, so it never reaches a server log or link preview, and
+  `ClaimView` removes it from the address bar as soon as it has read it. Nothing happens until the
+  guest taps "Set up this phone": the code is single-use, and a phone that already holds an identity
+  or a visit — possibly someone else's — is warned first, because claiming replaces both and the
+  server keeps only hashes, so what was there cannot be recovered. `/api/guest-claim` (rate-limited
+  alongside the other public writes) issues the phone a device token, gives the guest's visit in
+  the current session a fresh visit token, and returns the name and phone the worker entered. This
+  is the one place a guest profile is read back from the server, which is acceptable because the
+  code that authorizes it was handed to that guest in person. `GuestClaimStore` saves both
+  credentials through `GuestStore.adopt` and `VisitStore.submit`, then reloads notification consent
+  for the guest now on the phone. A code can only be issued or redeemed while the guest has no
+  device credential, so a worker cannot hand a guest who registered on their own phone to someone
+  else's.
 - **`/signup` is its own route (`SignupView.tsx`) for creating a guest identity without a visit.**
   Saving information (name and phone, via `/api/guest-information`) is decoupled from lottery
   registration.
@@ -200,8 +234,8 @@ flowchart TD
   identity and household form components a guest uses, inside a dialog, so the two never drift
   apart; those components write to the shared `RegistrationStore`, which the dialog empties each
   time it opens so a worker's own remembered details never leak into another guest's record. The
-  resulting visits are created with `source: admin`, and how far the session has progressed
-  decides what the worker may choose — see `admissionsFor` in
+  resulting visits are created with `source: admin` — and can be handed to the guest's phone with a
+  QR code, as above — and how far the session has progressed decides what the worker may choose — see `admissionsFor` in
   [`src/services/guestAdmission.ts`](../src/services/guestAdmission.ts):
   - While registration is open or in its grace period, the worker picks between entering the guest
     in the lottery (`registered`, no

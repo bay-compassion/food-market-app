@@ -2,10 +2,10 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 import { useId, type ReactNode } from 'react';
 
-import { adminFeedbackText } from '../../services/admin-feedback';
 import { currentSessionState } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { AdminDashboardTabs } from './AdminDashboardTabs';
+import { AdminFeedbackBanner } from './AdminFeedbackBanner';
 import type { AdminView } from './types';
 
 /*
@@ -130,7 +130,6 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 		tab: `${idPrefix}-${view}-tab`,
 		panel: `${idPrefix}-${view}-panel`,
 	});
-	const feedback = adminFeedbackText(admin.feedback, t);
 	const sessionState = currentSessionState(session.currentState?.event?.status);
 	const sessionStatusLabel = {
 		scheduled: t.scheduled,
@@ -169,11 +168,7 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 						<h1>{viewLabels[activeView]}</h1>
 						{activeView !== 'queue' ? <p>{t.adminDescription}</p> : null}
 					</header>
-					{feedback ? (
-						<p className="admin-feedback" role="status">
-							{feedback}
-						</p>
-					) : null}
+					<AdminFeedbackBanner />
 					{children}
 				</div>
 			)}

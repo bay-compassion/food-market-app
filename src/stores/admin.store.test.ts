@@ -60,7 +60,10 @@ function storeWith(
 		listSessionGuests: vi.fn().mockResolvedValue([]),
 		listHistory: vi.fn().mockResolvedValue([]),
 		runGuestCommand: vi.fn().mockResolvedValue(undefined),
-		addGuest: vi.fn().mockResolvedValue(undefined),
+		addGuest: vi.fn().mockResolvedValue({ id: 'visit-1', guestId: 'guest-1' }),
+		createGuestClaim: vi
+			.fn()
+			.mockResolvedValue({ token: 'claim-token', expiresAt: '2026-09-12T17:15:00.000Z' }),
 		callNext: vi.fn().mockResolvedValue(['visit-1']),
 		sendBroadcast: vi.fn().mockResolvedValue(3),
 		loadDemoScenario: vi.fn().mockResolvedValue({
@@ -242,6 +245,110 @@ describe('AdminStore', () => {
 			marketEventId: 'past-event',
 			locale: 'en',
 		});
+	});
+
+	it('names the guest it added and offers to put them on their phone', async () => {
+		// Arrange
+		const { store } = storeWith();
+
+		// Act
+		await store.addGuest({ firstName: 'Ada', lastName: 'Lovelace', admission: 'queue' } as never, {
+			locale: 'en',
+		});
+
+		// Assert
+		expect(store.feedback).toEqual({
+			kind: 'guest-added',
+			guestId: 'guest-1',
+			name: 'Ada Lovelace',
+			offersPhoneClaim: true,
+		});
+	});
+
+	it('offers no phone for a guest recorded as served after the fact', async () => {
+		// Arrange
+		const { store } = storeWith();
+
+		// Act
+		await store.addGuest({ firstName: 'Ada', lastName: 'Lovelace', admission: 'served' } as never, {
+			marketEventId: 'past-event',
+			locale: 'en',
+		});
+
+		// Assert
+		expect(store.feedback).toMatchObject({ kind: 'guest-added', offersPhoneClaim: false });
+	});
+
+	it('opens a claim code for the guest just added, keeping the feedback to reopen it', async () => {
+		// Arrange
+		const { store, api } = storeWith();
+
+		await store.addGuest(
+			{ firstName: 'Ada', lastName: 'Lovelace', admission: 'lottery' } as never,
+			{ locale: 'en' },
+		);
+
+		// Act
+		await store.showGuestClaim();
+
+		// Assert
+		expect(api.createGuestClaim).toHaveBeenCalledWith('guest-1');
+		expect(store.guestClaim).toEqual({
+			guestName: 'Ada Lovelace',
+			token: 'claim-token',
+			expiresAt: '2026-09-12T17:15:00.000Z',
+		});
+		expect(store.feedback).toMatchObject({ kind: 'guest-added' });
+	});
+
+	it('asks for no claim code when the last add offered none', async () => {
+		// Arrange
+		const { store, api } = storeWith();
+
+		await store.addGuest({ firstName: 'Ada', lastName: 'Lovelace', admission: 'served' } as never, {
+			locale: 'en',
+		});
+
+		// Act
+		await store.showGuestClaim();
+
+		// Assert
+		expect(api.createGuestClaim).not.toHaveBeenCalled();
+		expect(store.guestClaim).toBeNull();
+	});
+
+	it('reports a claim code the server refused', async () => {
+		// Arrange
+		const { store } = storeWith({
+			createGuestClaim: vi.fn().mockRejectedValue(new Error('guest-claim')),
+		});
+
+		await store.addGuest({ firstName: 'Ada', lastName: 'Lovelace', admission: 'queue' } as never, {
+			locale: 'en',
+		});
+
+		// Act
+		await store.showGuestClaim();
+
+		// Assert
+		expect(store.guestClaim).toBeNull();
+		expect(store.feedback).toEqual({ kind: 'error' });
+	});
+
+	it('closes the claim code', async () => {
+		// Arrange
+		const { store } = storeWith();
+
+		await store.addGuest({ firstName: 'Ada', lastName: 'Lovelace', admission: 'queue' } as never, {
+			locale: 'en',
+		});
+		await store.showGuestClaim();
+
+		// Act
+		store.dismissGuestClaim();
+
+		// Assert
+		expect(store.guestClaim).toBeNull();
 	});
 
 	it('says so when there was nobody left to call', async () => {

@@ -1,9 +1,9 @@
-import { and, desc, eq, ne } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
 import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
-import { marketEvents, smsOptOuts, smsSubscriptions, visits } from '../../../db/schema.mjs';
+import { smsOptOuts, smsSubscriptions } from '../../../db/schema.mjs';
 import type { VisitStatus } from '../../../src/services/visitStateMachine.js';
 import { type DeviceGuestEnv, withDeviceGuest } from '../../lib/http-auth.mjs';
 import {
@@ -14,6 +14,7 @@ import {
 	routeHandler,
 } from '../../lib/http.mjs';
 import { getLogger } from '../../lib/logging.mjs';
+import { currentMarketVisitForGuest } from '../../services/current-visit.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import type { NotificationType } from '../../services/pushNotifications.mjs';
 import {
@@ -24,28 +25,6 @@ import { TwilioConsentManager } from '../../services/twilio-consent.mjs';
 
 /** Texting a guest is opt-in, so nothing but an explicit yes counts as consent. */
 const consentSchema = z.object({ consent: z.literal(true) });
-
-async function currentMarketVisitForGuest(guestId: string) {
-	const [event] = await db
-		.select({ id: marketEvents.id })
-		.from(marketEvents)
-		.where(ne(marketEvents.status, 'ended'))
-		.orderBy(desc(marketEvents.createdAt))
-		.limit(1);
-
-	if (!event) {
-		return null;
-	}
-
-	const [visit] = await db
-		.select({ id: visits.id, status: visits.status })
-		.from(visits)
-		.where(and(eq(visits.guestId, guestId), eq(visits.marketEventId, event.id)))
-		.orderBy(desc(visits.createdAt))
-		.limit(1);
-
-	return visit ?? null;
-}
 
 const withSmsConfigured = createMiddleware(async (_context, next) => {
 	if (!smsConfiguration().configured) {
