@@ -3,7 +3,7 @@ import { createMiddleware } from 'hono/factory';
 import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
-import { marketEvents, smsSubscriptions, visits } from '../../../db/schema.mjs';
+import { marketEvents, smsOptOuts, smsSubscriptions, visits } from '../../../db/schema.mjs';
 import type { VisitStatus } from '../../../src/services/visitStateMachine.js';
 import { type DeviceGuestEnv, withDeviceGuest } from '../../lib/http-auth.mjs';
 import {
@@ -13,12 +13,14 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { getLogger } from '../../lib/logging.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import type { NotificationType } from '../../services/pushNotifications.mjs';
 import {
 	deliverPendingSmsNotifications,
 	smsConfiguration,
 } from '../../services/smsNotifications.mjs';
+import { TwilioConsentManager } from '../../services/twilio-consent.mjs';
 
 /** Texting a guest is opt-in, so nothing but an explicit yes counts as consent. */
 const consentSchema = z.object({ consent: z.literal(true) });
@@ -83,14 +85,47 @@ smsSubscriptionRoutes.post(
 			.from(smsSubscriptions)
 			.where(eq(smsSubscriptions.guestId, guest.id))
 			.limit(1);
+		const [optOut] = await db
+			.select({ senderPhone: smsOptOuts.senderPhone })
+			.from(smsOptOuts)
+			.where(eq(smsOptOuts.guestId, guest.id))
+			.limit(1);
+		const consentedAt = new Date();
 
-		await db
-			.insert(smsSubscriptions)
-			.values({ guestId: guest.id })
-			.onConflictDoUpdate({
-				target: smsSubscriptions.guestId,
-				set: { consentedAt: new Date() },
-			});
+		if (optOut) {
+			const consentManager = TwilioConsentManager.fromEnvironment();
+
+			if (!consentManager) {
+				return jsonError('SMS notifications are not configured.', 503);
+			}
+
+			try {
+				await consentManager.restoreWebsiteConsent(
+					guest.normalizedPhone,
+					optOut.senderPhone,
+					consentedAt,
+				);
+			} catch {
+				getLogger().warn({
+					message: 'sms.consent_restore_failed',
+				});
+
+				return jsonError('Unable to restore SMS consent. Please try again.', 502);
+			}
+		}
+
+		await db.transaction(async (tx) => {
+			if (optOut) {
+				await tx.delete(smsOptOuts).where(eq(smsOptOuts.guestId, guest.id));
+			}
+			await tx
+				.insert(smsSubscriptions)
+				.values({ guestId: guest.id, consentedAt })
+				.onConflictDoUpdate({
+					target: smsSubscriptions.guestId,
+					set: { consentedAt },
+				});
+		});
 
 		if (existingSubscription) {
 			return Response.json({ subscribed: true });

@@ -22,9 +22,12 @@ describe('device authentication', () => {
 	});
 
 	it('returns the guest identified by the hashed device credential', async () => {
-		queueResult([{ id: 'guest-1' }]);
+		queueResult([{ id: 'guest-1', normalizedPhone: '+15551234567' }]);
 
-		await expect(authorizedGuest(request('d'.repeat(43)))).resolves.toEqual({ id: 'guest-1' });
+		await expect(authorizedGuest(request('d'.repeat(43)))).resolves.toEqual({
+			id: 'guest-1',
+			normalizedPhone: '+15551234567',
+		});
 		expect(db.select).toHaveBeenCalledOnce();
 	});
 
