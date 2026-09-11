@@ -69,14 +69,28 @@ export interface GuestViewTranslations {
 		questionsLegend: string;
 	};
 	identityIndicator: {
+		cancelForgetInformation: string;
+		closeDeviceIdDialog: string;
+		closeForgetDialog: string;
 		closeNotificationsDialog: string;
+		copyDeviceId: string;
+		copyDeviceIdError: string;
+		deviceIdCopied: string;
+		deviceIdDialogTitle: string;
+		forgetDialogDescription: string;
+		forgetDialogTitle: string;
+		forgetInformation: string;
 		heading: string;
 		notificationsAction: string;
 		notificationsDialogTitle: string;
 		notificationsEnabled: string;
 		notificationsError: string;
 		notificationsLoading: string;
+		openIdentityMenu: string;
+		optOut: string;
+		optOutError: string;
 		saveInformationAction: string;
+		showDeviceId: string;
 		unidentifiedHeading: string;
 		unidentifiedMessage: string;
 	};
@@ -221,7 +235,18 @@ export const translations = {
 				questionsLegend: 'Questions',
 			},
 			identityIndicator: {
+				cancelForgetInformation: 'Cancel',
+				closeDeviceIdDialog: 'Close device ID',
+				closeForgetDialog: 'Close forget information confirmation',
 				closeNotificationsDialog: 'Close text message updates',
+				copyDeviceId: 'Copy',
+				copyDeviceIdError: 'We could not copy the device ID. Please try again.',
+				deviceIdCopied: 'Copied',
+				deviceIdDialogTitle: 'Device ID',
+				forgetDialogDescription:
+					'This removes your saved name, phone number, and device ID from this device. This cannot be undone.',
+				forgetDialogTitle: 'Forget your information?',
+				forgetInformation: 'Forget Information',
 				heading: 'Recognized on this device',
 				notificationsAction: 'Text Me About Updates',
 				notificationsDialogTitle: 'Text Message Updates',
@@ -229,7 +254,11 @@ export const translations = {
 				notificationsError:
 					'We could not retrieve your notification status. Please try again later.',
 				notificationsLoading: 'Checking notification status…',
+				openIdentityMenu: 'Open identity menu',
+				optOut: 'Opt Out',
+				optOutError: 'We could not opt you out of text updates. Please try again.',
 				saveInformationAction: 'Save my information',
+				showDeviceId: 'Show Device ID',
 				unidentifiedHeading: 'Save your information for next time',
 				unidentifiedMessage:
 					'Save your name and phone number so you do not need to enter them again on your next visit. This does not enter you in the lottery.',
@@ -419,7 +448,18 @@ export const translations = {
 				questionsLegend: 'Preguntas',
 			},
 			identityIndicator: {
+				cancelForgetInformation: 'Cancelar',
+				closeDeviceIdDialog: 'Cerrar ID del dispositivo',
+				closeForgetDialog: 'Cerrar confirmación para olvidar información',
 				closeNotificationsDialog: 'Cerrar actualizaciones por SMS',
+				copyDeviceId: 'Copiar',
+				copyDeviceIdError: 'No pudimos copiar el ID del dispositivo. Inténtelo de nuevo.',
+				deviceIdCopied: 'Copiado',
+				deviceIdDialogTitle: 'ID del dispositivo',
+				forgetDialogDescription:
+					'Esto elimina de este dispositivo su nombre, número de teléfono e ID del dispositivo guardados. Esta acción no se puede deshacer.',
+				forgetDialogTitle: '¿Olvidar su información?',
+				forgetInformation: 'Olvidar información',
 				heading: 'Reconocido en este dispositivo',
 				notificationsAction: 'Enviarme novedades por SMS',
 				notificationsDialogTitle: 'Actualizaciones por SMS',
@@ -427,7 +467,11 @@ export const translations = {
 				notificationsError:
 					'No pudimos consultar el estado de sus notificaciones. Inténtelo de nuevo más tarde.',
 				notificationsLoading: 'Consultando el estado de las notificaciones…',
+				openIdentityMenu: 'Abrir menú de identidad',
+				optOut: 'Cancelar suscripción',
+				optOutError: 'No pudimos cancelar sus actualizaciones por SMS. Inténtelo de nuevo.',
 				saveInformationAction: 'Guardar mi información',
+				showDeviceId: 'Mostrar ID del dispositivo',
 				unidentifiedHeading: 'Guarde su información para la próxima vez',
 				unidentifiedMessage:
 					'Guarde su nombre y número de teléfono para no tener que ingresarlos de nuevo en su próxima visita. Esto no le inscribe en el sorteo.',
@@ -620,14 +664,29 @@ export const translations = {
 				questionsLegend: 'پرسش‌ها',
 			},
 			identityIndicator: {
+				cancelForgetInformation: 'لغو',
+				closeDeviceIdDialog: 'بستن شناسه دستگاه',
+				closeForgetDialog: 'بستن تأیید فراموش کردن اطلاعات',
 				closeNotificationsDialog: 'بستن به‌روزرسانی‌های پیامکی',
+				copyDeviceId: 'کپی',
+				copyDeviceIdError: 'شناسه دستگاه کپی نشد. لطفاً دوباره تلاش کنید.',
+				deviceIdCopied: 'کپی شد',
+				deviceIdDialogTitle: 'شناسه دستگاه',
+				forgetDialogDescription:
+					'این کار نام، شماره تلفن و شناسه دستگاه ذخیره‌شده شما را از این دستگاه حذف می‌کند و قابل بازگشت نیست.',
+				forgetDialogTitle: 'اطلاعات شما فراموش شود؟',
+				forgetInformation: 'فراموش کردن اطلاعات',
 				heading: 'شناسایی‌شده در این دستگاه',
 				notificationsAction: 'به‌روزرسانی‌ها را برایم پیامک کنید',
 				notificationsDialogTitle: 'به‌روزرسانی‌های پیامکی',
 				notificationsEnabled: 'اعلان‌ها فعال هستند',
 				notificationsError: 'وضعیت اعلان‌های شما دریافت نشد. لطفاً بعداً دوباره تلاش کنید.',
 				notificationsLoading: 'در حال بررسی وضعیت اعلان‌ها…',
+				openIdentityMenu: 'باز کردن منوی هویت',
+				optOut: 'لغو اشتراک',
+				optOutError: 'لغو به‌روزرسانی‌های پیامکی انجام نشد. لطفاً دوباره تلاش کنید.',
 				saveInformationAction: 'ذخیره اطلاعات من',
+				showDeviceId: 'نمایش شناسه دستگاه',
 				unidentifiedHeading: 'اطلاعات خود را برای دفعه بعد ذخیره کنید',
 				unidentifiedMessage:
 					'نام و شماره تلفن خود را ذخیره کنید تا در مراجعه بعدی نیازی به وارد کردن دوباره آن‌ها نداشته باشید. این کار شما را وارد قرعه‌کشی نمی‌کند.',
@@ -817,7 +876,18 @@ export const translations = {
 				questionsLegend: 'Mga tanong',
 			},
 			identityIndicator: {
+				cancelForgetInformation: 'Kanselahin',
+				closeDeviceIdDialog: 'Isara ang device ID',
+				closeForgetDialog: 'Isara ang pagkumpirma sa paglimot ng impormasyon',
 				closeNotificationsDialog: 'Isara ang mga update sa text',
+				copyDeviceId: 'Kopyahin',
+				copyDeviceIdError: 'Hindi namin makopya ang device ID. Pakisubukang muli.',
+				deviceIdCopied: 'Nakopya',
+				deviceIdDialogTitle: 'ID ng Device',
+				forgetDialogDescription:
+					'Aalisin nito sa device na ito ang iyong naka-save na pangalan, numero ng telepono, at device ID. Hindi ito maaaring ibalik.',
+				forgetDialogTitle: 'Kalimutan ang iyong impormasyon?',
+				forgetInformation: 'Kalimutan ang Impormasyon',
 				heading: 'Nakilala sa device na ito',
 				notificationsAction: 'I-text sa Akin ang mga Update',
 				notificationsDialogTitle: 'Mga Update sa Text',
@@ -825,7 +895,11 @@ export const translations = {
 				notificationsError:
 					'Hindi namin makuha ang status ng iyong mga abiso. Pakisubukang muli mamaya.',
 				notificationsLoading: 'Sinusuri ang status ng mga abiso…',
+				openIdentityMenu: 'Buksan ang menu ng pagkakakilanlan',
+				optOut: 'Mag-opt Out',
+				optOutError: 'Hindi ka namin maalis sa mga text update. Pakisubukang muli.',
 				saveInformationAction: 'I-save ang aking impormasyon',
+				showDeviceId: 'Ipakita ang Device ID',
 				unidentifiedHeading: 'I-save ang iyong impormasyon para sa susunod',
 				unidentifiedMessage:
 					'I-save ang iyong pangalan at numero ng telepono para hindi mo na kailangang ilagay muli ang mga ito sa susunod mong pagbisita. Hindi ka nito isinasali sa lottery.',
@@ -1022,14 +1096,29 @@ export const translations = {
 				questionsLegend: 'Câu hỏi',
 			},
 			identityIndicator: {
+				cancelForgetInformation: 'Hủy',
+				closeDeviceIdDialog: 'Đóng mã thiết bị',
+				closeForgetDialog: 'Đóng xác nhận quên thông tin',
 				closeNotificationsDialog: 'Đóng cập nhật qua SMS',
+				copyDeviceId: 'Sao chép',
+				copyDeviceIdError: 'Không thể sao chép mã thiết bị. Vui lòng thử lại.',
+				deviceIdCopied: 'Đã sao chép',
+				deviceIdDialogTitle: 'Mã thiết bị',
+				forgetDialogDescription:
+					'Thao tác này sẽ xóa tên, số điện thoại và mã thiết bị đã lưu khỏi thiết bị này. Không thể hoàn tác.',
+				forgetDialogTitle: 'Quên thông tin của bạn?',
+				forgetInformation: 'Quên thông tin',
 				heading: 'Đã nhận dạng trên thiết bị này',
 				notificationsAction: 'Gửi cập nhật cho tôi qua SMS',
 				notificationsDialogTitle: 'Cập nhật qua SMS',
 				notificationsEnabled: 'Đã bật thông báo',
 				notificationsError: 'Không thể tải trạng thái thông báo của bạn. Vui lòng thử lại sau.',
 				notificationsLoading: 'Đang kiểm tra trạng thái thông báo…',
+				openIdentityMenu: 'Mở menu nhận dạng',
+				optOut: 'Hủy đăng ký',
+				optOutError: 'Không thể hủy cập nhật qua SMS. Vui lòng thử lại.',
 				saveInformationAction: 'Lưu thông tin của tôi',
+				showDeviceId: 'Hiển thị mã thiết bị',
 				unidentifiedHeading: 'Lưu thông tin cho lần sau',
 				unidentifiedMessage:
 					'Lưu tên và số điện thoại để bạn không phải nhập lại trong lần ghé tiếp theo. Việc này không đưa bạn vào danh sách xổ số.',
@@ -1219,14 +1308,28 @@ export const translations = {
 				questionsLegend: '问题',
 			},
 			identityIndicator: {
+				cancelForgetInformation: '取消',
+				closeDeviceIdDialog: '关闭设备 ID',
+				closeForgetDialog: '关闭忘记信息确认对话框',
 				closeNotificationsDialog: '关闭短信更新',
+				copyDeviceId: '复制',
+				copyDeviceIdError: '无法复制设备 ID。请重试。',
+				deviceIdCopied: '已复制',
+				deviceIdDialogTitle: '设备 ID',
+				forgetDialogDescription: '这会从此设备中删除已保存的姓名、电话号码和设备 ID，且无法撤销。',
+				forgetDialogTitle: '忘记您的信息？',
+				forgetInformation: '忘记信息',
 				heading: '已在此设备上识别',
 				notificationsAction: '通过短信通知我最新消息',
 				notificationsDialogTitle: '短信更新',
 				notificationsEnabled: '通知已启用',
 				notificationsError: '无法获取您的通知状态。请稍后重试。',
 				notificationsLoading: '正在检查通知状态…',
+				openIdentityMenu: '打开身份菜单',
+				optOut: '取消订阅',
+				optOutError: '无法取消短信更新。请重试。',
 				saveInformationAction: '保存我的信息',
+				showDeviceId: '显示设备 ID',
 				unidentifiedHeading: '保存信息，方便下次使用',
 				unidentifiedMessage:
 					'保存您的姓名和电话号码，下次到访时就无需再次输入。这不会让您进入抽签。',
@@ -1404,14 +1507,29 @@ export const translations = {
 				questionsLegend: 'أسئلة',
 			},
 			identityIndicator: {
+				cancelForgetInformation: 'إلغاء',
+				closeDeviceIdDialog: 'إغلاق معرّف الجهاز',
+				closeForgetDialog: 'إغلاق تأكيد نسيان المعلومات',
 				closeNotificationsDialog: 'إغلاق تحديثات الرسائل النصية',
+				copyDeviceId: 'نسخ',
+				copyDeviceIdError: 'تعذر نسخ معرّف الجهاز. يرجى المحاولة مرة أخرى.',
+				deviceIdCopied: 'تم النسخ',
+				deviceIdDialogTitle: 'معرّف الجهاز',
+				forgetDialogDescription:
+					'سيؤدي هذا إلى حذف اسمك ورقم هاتفك ومعرّف الجهاز المحفوظة من هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.',
+				forgetDialogTitle: 'هل تريد نسيان معلوماتك؟',
+				forgetInformation: 'نسيان المعلومات',
 				heading: 'تم التعرّف عليك على هذا الجهاز',
 				notificationsAction: 'أرسل لي التحديثات برسائل نصية',
 				notificationsDialogTitle: 'تحديثات الرسائل النصية',
 				notificationsEnabled: 'تم تفعيل الإشعارات',
 				notificationsError: 'تعذر استرداد حالة إشعاراتك. يرجى المحاولة مرة أخرى لاحقًا.',
 				notificationsLoading: 'جارٍ التحقق من حالة الإشعارات…',
+				openIdentityMenu: 'فتح قائمة الهوية',
+				optOut: 'إلغاء الاشتراك',
+				optOutError: 'تعذر إلغاء اشتراكك في التحديثات النصية. يرجى المحاولة مرة أخرى.',
 				saveInformationAction: 'حفظ معلوماتي',
+				showDeviceId: 'عرض معرّف الجهاز',
 				unidentifiedHeading: 'احفظ معلوماتك للمرة القادمة',
 				unidentifiedMessage:
 					'احفظ اسمك ورقم هاتفك حتى لا تضطر إلى إدخالهما مرة أخرى في زيارتك القادمة. هذا لا يدخلك في القرعة.',

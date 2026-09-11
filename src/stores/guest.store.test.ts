@@ -169,6 +169,23 @@ describe('GuestStore', () => {
 		expect(register).not.toHaveBeenCalled();
 	});
 
+	it('exposes the saved device ID', () => {
+		// Arrange
+		const storage = {
+			get: vi.fn((key: StorageKey) =>
+				key === StorageKey.GUEST_DEVICE_TOKEN ? 'saved-device-token' : null,
+			),
+			set: vi.fn(),
+			remove: vi.fn(),
+		};
+
+		// Act
+		const store = new GuestStore({ storage });
+
+		// Assert
+		expect(store.deviceId).toBe('saved-device-token');
+	});
+
 	it('marks the guest as a returning visitor once they pick a language', () => {
 		// Arrange
 		const storage: Pick<StorageService, 'get' | 'set' | 'remove'> = {
@@ -430,5 +447,43 @@ describe('GuestStore', () => {
 		});
 		expect(store.smsConsented).toBe(true);
 		expect(store.smsState).toBe('enabled');
+	});
+
+	it('opts an identified guest out of SMS updates', async () => {
+		// Arrange
+		const token = 'saved-device-token'.padEnd(32, 'x');
+		const request = vi.fn().mockImplementation((url: string, options?: RequestInit) => {
+			if (url === '/api/sms-subscription' && options?.method === 'DELETE') {
+				return Promise.resolve({ ok: true });
+			}
+
+			return Promise.resolve({
+				ok: true,
+				json: () =>
+					Promise.resolve(
+						url === '/api/notification-status'
+							? { pushSubscribed: false, smsConsented: true }
+							: { configured: true },
+					),
+			});
+		});
+		const storage = {
+			get: vi.fn((key: StorageKey) => (key === StorageKey.GUEST_DEVICE_TOKEN ? token : null)),
+			set: vi.fn(),
+			remove: vi.fn(),
+		};
+		const store = new GuestStore({ request, storage });
+
+		await store.loadNotificationSettings();
+
+		// Act
+		await store.disableSmsNotifications();
+
+		// Assert
+		expect(request).toHaveBeenCalledWith('/api/sms-subscription', {
+			method: 'DELETE',
+			headers: { Authorization: `Bearer ${token}` },
+		});
+		expect(store.smsConsented).toBe(false);
 	});
 });

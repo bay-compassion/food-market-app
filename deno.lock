@@ -16,8 +16,12 @@
         "npm:@emotion/react@^11.14.0",
         "npm:@emotion/styled@^11.14.1",
         "npm:@mui/material@^9.4.0",
+        "npm:@mui/x-data-grid@^9.13.0",
         "npm:@nestjs/cli@^11.0.21",
+        "npm:@netlify/async-workloads@^0.0.106",
         "npm:@netlify/database@^1.1.0",
+        "npm:@netlify/dev-utils@^4.4.7",
+        "npm:@netlify/dev@^4.18.13",
         "npm:@netlify/functions@^5.3.0",
         "npm:@netlify/vite-plugin@^2.12.9",
         "npm:@playwright/test@^1.62.1",
@@ -37,6 +41,8 @@
         "npm:@vitejs/plugin-react@^6.1.1",
         "npm:@vitest/browser-playwright@^4.1.10",
         "npm:@vitest/browser@^4.1.10",
+        "npm:auth0-deploy-cli@8.44.0",
+        "npm:commander@15.0.0",
         "npm:del-cli@7",
         "npm:drizzle-kit@^1.0.0-beta.22",
         "npm:drizzle-orm@^1.0.0-beta.22",
@@ -46,6 +52,7 @@
         "npm:marked@^18.0.9",
         "npm:mobx-react-lite@^4.1.1",
         "npm:mobx@^6.16.1",
+        "npm:netlify-cli@^27.5.2",
         "npm:npm-run-all2@^9.0.2",
         "npm:outdent@0.8",
         "npm:oxfmt@0.54",
@@ -63,7 +70,9 @@
         "npm:typescript@6.0",
         "npm:vite@^8.0.16",
         "npm:vitest@^4.1.9",
-        "npm:web-push@^3.6.7"
+        "npm:web-push@^3.6.7",
+        "npm:winston@^3.19.0",
+        "npm:zod@^4.5.4"
       ]
     }
   }
