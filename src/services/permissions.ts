@@ -22,7 +22,8 @@ export const permissions = [
 	/**
 	 * Put any guest's record on a phone with a QR code — including one already on another phone,
 	 * which that phone loses once the code is scanned. A manager's override, for a guest with a new
-	 * or wiped phone; a worker can only do this for a guest they have just added.
+	 * or wiped phone; a worker can only do this for a guest they have just added. It extends
+	 * `run:queue` rather than standing alone — without that, the endpoint refuses at its first gate.
 	 */
 	'manage:guest-access',
 	/**

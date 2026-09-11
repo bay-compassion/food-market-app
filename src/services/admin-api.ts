@@ -10,9 +10,12 @@ import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
 
 /** One visit as the queue screens render it. */
 export type QueueGuest = {
-	/** The visit. */
+	/** The visit. What a visit command acts on (`runGuestCommand`). */
 	id: string;
-	/** The guest the visit belongs to. */
+	/**
+	 * The guest the visit belongs to. What a phone claim acts on (`createGuestClaim`) — never pass
+	 * one of these ids where the other is expected: one moves a visit, the other hands over a guest.
+	 */
 	guestId: string;
 	firstName: string;
 	lastName: string;
