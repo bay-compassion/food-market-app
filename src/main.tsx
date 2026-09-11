@@ -3,7 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 
-import { auth0Settings } from './auth';
+import { auth0Settings, returnToPath } from './auth';
 import { AppThemeProvider } from './components/AppThemeProvider';
 import { router } from './router';
 import { RootStoreProvider } from './stores/react/store-context';
@@ -33,6 +33,13 @@ async function bootstrap() {
 					domain={auth0Settings?.domain ?? ''}
 					clientId={auth0Settings?.clientId ?? ''}
 					authorizationParams={auth0Settings?.authorizationParams}
+					// The SDK's default callback rewrites the URL with `history.replaceState`, which the
+					// router never hears about, so the address bar and the screen would disagree. Routing
+					// the return through the router itself is what actually puts a worker on the screen
+					// they signed in for.
+					onRedirectCallback={(appState) =>
+						void router.navigate(returnToPath(appState), { replace: true })
+					}
 				>
 					<RootStoreProvider store={rootStore}>
 						<RouterProvider router={router} />
