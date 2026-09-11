@@ -51,6 +51,10 @@ export const Guest: Story = {
 			'href',
 			'https://thebaycompassion.org',
 		);
+		await expect(menu.getByRole('menuitem', { name: t.qrCode })).toHaveAttribute(
+			'href',
+			'/qr-code',
+		);
 		await expect(menu.getByRole('menuitem', { name: t.staffLogin })).toHaveAttribute(
 			'href',
 			'/admin',
