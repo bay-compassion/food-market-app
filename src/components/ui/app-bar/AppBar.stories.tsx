@@ -59,6 +59,7 @@ export const Guest: Story = {
 			'href',
 			'/admin',
 		);
+		await expect(menu.queryByRole('menuitem', { name: t.adminPanel })).not.toBeInTheDocument();
 		await expect(menu.queryByRole('menuitem', { name: t.signOut })).not.toBeInTheDocument();
 		await userEvent.keyboard('{Escape}');
 		await expect(trigger).toHaveFocus();
@@ -79,6 +80,13 @@ export const SignedIn: Story = {
 		// The signed-in account is named here rather than on the admin page it used to head.
 		// Waited for because the menu is still fading in when it first enters the document.
 		await waitFor(() => expect(menu.getByText('staff@thebaycompassion.org')).toBeVisible());
+
+		// The dashboard link no longer offers a sign-in to someone already signed in.
+		await expect(menu.getByRole('menuitem', { name: t.adminPanel })).toHaveAttribute(
+			'href',
+			'/admin',
+		);
+		await expect(menu.queryByRole('menuitem', { name: t.staffLogin })).not.toBeInTheDocument();
 		await userEvent.click(menu.getByRole('menuitem', { name: t.signOut }));
 
 		await expect(logout).toHaveBeenCalledWith({ logoutParams: { returnTo: authReturnUrl } });

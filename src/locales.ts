@@ -156,6 +156,7 @@ export interface AppBarTranslations {
 	website: string;
 	qrCode: string;
 	staffLogin: string;
+	adminPanel: string;
 	signOut: string;
 }
 
@@ -240,6 +241,7 @@ export const translations = {
 			website: 'The Bay Compassion website',
 			qrCode: 'QR Code',
 			staffLogin: 'Staff Login',
+			adminPanel: 'Admin Panel',
 			signOut: 'Sign Out',
 		},
 		guestView: {
@@ -467,6 +469,7 @@ export const translations = {
 			website: 'Sitio web de The Bay Compassion',
 			qrCode: 'Código QR',
 			staffLogin: 'Acceso del personal',
+			adminPanel: 'Panel de administración',
 			signOut: 'Cerrar sesión',
 		},
 		guestView: {
@@ -697,6 +700,7 @@ export const translations = {
 			website: 'وب‌سایت The Bay Compassion',
 			qrCode: 'کد QR',
 			staffLogin: 'ورود کارکنان',
+			adminPanel: 'پنل مدیریت',
 			signOut: 'خروج',
 		},
 		guestView: {
@@ -922,6 +926,7 @@ export const translations = {
 			website: 'Website ng The Bay Compassion',
 			qrCode: 'Kodigo QR',
 			staffLogin: 'Mag-sign in para sa kawani',
+			adminPanel: 'Panel ng admin',
 			signOut: 'Mag-sign out',
 		},
 		guestView: {
@@ -1156,6 +1161,7 @@ export const translations = {
 			website: 'Trang web The Bay Compassion',
 			qrCode: 'Mã QR',
 			staffLogin: 'Đăng nhập nhân viên',
+			adminPanel: 'Bảng quản trị',
 			signOut: 'Đăng xuất',
 		},
 		guestView: {
@@ -1381,6 +1387,7 @@ export const translations = {
 			website: 'The Bay Compassion 网站',
 			qrCode: '二维码',
 			staffLogin: '工作人员登录',
+			adminPanel: '管理面板',
 			signOut: '退出登录',
 		},
 		guestView: {
@@ -1591,6 +1598,7 @@ export const translations = {
 			website: 'موقع The Bay Compassion',
 			qrCode: 'رمز QR',
 			staffLogin: 'تسجيل دخول الموظفين',
+			adminPanel: 'لوحة الإدارة',
 			signOut: 'تسجيل الخروج',
 		},
 		guestView: {
