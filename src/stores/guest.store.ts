@@ -215,6 +215,12 @@ export class GuestStore {
 	 */
 	adopt(deviceToken: string, identity: GuestIdentity): void {
 		this.saveIdentity({ deviceToken }, identity);
+		// Consent belongs to a guest, so nothing the previous guest on this phone chose may show under
+		// this one's name — not even while the reload below is in flight, or if it fails.
+		this._smsState = 'idle';
+		this._smsOptOutSender = null;
+		this._pushState = 'idle';
+		void this.refreshNotificationSettings().catch(() => undefined);
 	}
 
 	/** Called once a guest has picked a language, so future visits skip the language hero in
