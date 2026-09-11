@@ -10,6 +10,7 @@ vi.mock('./marketLifecycleEvents.mjs', () => ({ scheduleRegistrationClose: vi.fn
 import {
 	closeRegistration,
 	closeSession,
+	deduplicateLotteryRegistrations,
 	getCurrentEvent,
 	openRegistration,
 	parseSettings,
@@ -28,6 +29,39 @@ import { notificationsEnabled } from './pushNotifications.mjs';
 afterEach(() => {
 	resetDbStub();
 	vi.mocked(notificationsEnabled).mockReturnValue(true);
+});
+
+describe('deduplicateLotteryRegistrations', () => {
+	it('keeps the earliest registration for a shared normalized phone', () => {
+		// Arrange
+		const registrations = [
+			{ id: 'earliest', normalizedPhone: '+15105550123' },
+			{ id: 'other-household', normalizedPhone: '+15105550999' },
+			{ id: 'later', normalizedPhone: '+15105550123' },
+		];
+
+		// Act
+		const result = deduplicateLotteryRegistrations(registrations);
+
+		// Assert
+		expect(result.entrants.map(({ id }) => id)).toEqual(['earliest', 'other-household']);
+		expect(result.duplicates.map(({ id }) => id)).toEqual(['later']);
+	});
+
+	it('does not consolidate legacy registrations without a phone snapshot', () => {
+		// Arrange
+		const registrations = [
+			{ id: 'legacy-1', normalizedPhone: null },
+			{ id: 'legacy-2', normalizedPhone: null },
+		];
+
+		// Act
+		const result = deduplicateLotteryRegistrations(registrations);
+
+		// Assert
+		expect(result.entrants).toEqual(registrations);
+		expect(result.duplicates).toEqual([]);
+	});
 });
 
 function baseEvent(overrides: Partial<MarketEventRow> = {}): MarketEventRow {
