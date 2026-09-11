@@ -223,6 +223,17 @@ describe('SMS logging', () => {
 		logger.close();
 	});
 
+	it('uses stdout in the deployed Lambda runtime when the build-only Netlify flag is absent', () => {
+		vi.stubEnv('NETLIFY', '');
+		vi.stubEnv('AWS_LAMBDA_FUNCTION_NAME', 'notification-dispatch');
+		vi.stubEnv('SMS_LOG_FILE', '/var/task/logs/sms.log');
+		const logger = createSmsLogger();
+
+		expect(logger.transports).toHaveLength(1);
+		expect(logger.transports[0]).toBeInstanceOf(winston.transports.Console);
+		logger.close();
+	});
+
 	it('writes an obfuscated delivery event without message content at info level', () => {
 		vi.stubEnv('LOG_LEVEL', 'info');
 		const records: Record<string, unknown>[] = [];
