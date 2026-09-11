@@ -57,15 +57,35 @@ export function admissionNeedsQueuePosition(admission: GuestAdmission) {
 }
 
 /** Draw odds only mean anything for a guest actually going into the draw. */
-export function admissionTakesLotteryWeight(admission: GuestAdmission) {
+export function admissionTakesLotteryWeight(admission: ManualAdmission) {
 	return admission === 'lottery';
+}
+
+/**
+ * What a worker can do when adding a guest by hand: admit them to the session in one of the
+ * `GuestAdmission` ways, or — at any time, with or without a session — save only their details,
+ * which creates the guest with no visit at all.
+ */
+export type ManualAdmission = GuestAdmission | 'profile';
+
+/**
+ * The choices the manual guest form offers. Saving details only is always available and always
+ * last, so a session's own admissions stay the default; with no session it is the only choice.
+ */
+export function manualAdmissionsFor(status: SessionStatus | null): ManualAdmission[] {
+	return status ? [...admissionsFor(status), 'profile'] : ['profile'];
+}
+
+/** Whether the add creates a visit, rather than only the guest's details. */
+export function admissionCreatesVisit(admission: ManualAdmission): admission is GuestAdmission {
+	return admission !== 'profile';
 }
 
 /**
  * Whether the worker is offered a QR code that puts the new record on the guest's phone. A `served`
  * record is written after the fact, when the guest is no longer at the table to scan it.
  */
-export function admissionOffersPhoneClaim(admission: GuestAdmission) {
+export function admissionOffersPhoneClaim(admission: ManualAdmission) {
 	return admission !== 'served';
 }
 

@@ -3,7 +3,7 @@ import type { SessionOverview } from '../stores/market-session.store.ts';
 import type { AgeRange } from './ageRanges.ts';
 import type { DemoRoster } from './demo-preview';
 import type { ServiceProgress } from './demoScenario.ts';
-import type { GuestAdmission, QueuePlacement } from './guestAdmission.ts';
+import type { ManualAdmission, QueuePlacement } from './guestAdmission.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
 import type { SessionMode, SessionStatus } from './sessionStateMachine.ts';
 import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
@@ -42,12 +42,33 @@ export type ManualGuest = {
 	seniorsCount: string | number;
 	phone: string;
 	queuePlacement: QueuePlacement;
-	admission: GuestAdmission;
+	admission: ManualAdmission;
 	lotteryWeightTier: LotteryWeightTier;
 };
 
-/** The records a manual add created: the visit, and the guest it belongs to. */
-export type AddedGuest = { id: string; guestId: string };
+/** The records a manual add created: the visit (none when only details were saved), and the guest. */
+export type AddedGuest = { id: string | null; guestId: string };
+
+/**
+ * A guest on record who has never had a visit — someone who only saved their details through
+ * `/signup`, or whom a worker added without admitting them to a session. With no visit, every
+ * visit field is `null`, and `guestId` is the only identifier.
+ */
+export type UnvisitedGuest = Omit<
+	AdminGuest,
+	'id' | 'status' | 'householdSize' | 'queuePosition' | 'calledAt' | 'marketEventId'
+> & {
+	id: null;
+	guestId: string;
+	status: null;
+	householdSize: null;
+	queuePosition: null;
+	calledAt: null;
+	marketEventId: null;
+};
+
+/** One row of the guest database: a visit, or a guest who has none yet. */
+export type DatabaseGuest = QueueGuest | UnvisitedGuest;
 
 /** A code a worker shows as a QR code. `expiresAt` is an ISO timestamp. */
 export type GuestClaimCode = { token: string; expiresAt: string };
@@ -87,15 +108,15 @@ export class AdminApi {
 		this.request = options.request ?? ((input, init) => fetch(input, init));
 	}
 
-	/** Every guest on record, optionally narrowed by a free-text search. */
-	async listAllGuests(search = ''): Promise<AdminGuest[]> {
+	/** Every visit on record, plus every guest with none, optionally narrowed by a free-text search. */
+	async listAllGuests(search = ''): Promise<DatabaseGuest[]> {
 		const params = new URLSearchParams({ scope: 'all' });
 
 		if (search.trim()) {
 			params.set('q', search.trim());
 		}
 
-		return this.readJson<AdminGuest[]>(await this.get(`/api/admin/guests?${params}`), 'guests');
+		return this.readJson<DatabaseGuest[]>(await this.get(`/api/admin/guests?${params}`), 'guests');
 	}
 
 	/** The guests attached to one session. */

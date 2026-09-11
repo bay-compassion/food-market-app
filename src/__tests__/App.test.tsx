@@ -661,8 +661,8 @@ describe('App', () => {
 
 		await navigateTo('Guest database');
 		expect(container.textContent).toContain('All guests');
-		// This fixture has no session configured, so there is nothing to add a guest to.
-		expect(container.textContent).not.toContain('Add guest');
+		// This fixture has no session configured, and a guest can still be added — details only.
+		expect(container.textContent).toContain('Add guest');
 		expect(getAccessToken).toHaveBeenCalled();
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/market',

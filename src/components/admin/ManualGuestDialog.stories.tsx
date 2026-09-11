@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 
-import { admissionsFor } from '../../services/guestAdmission';
+import { admissionsFor, manualAdmissionsFor } from '../../services/guestAdmission';
 import { ManualGuestDialog } from './ManualGuestDialog';
 
 /**
@@ -18,7 +18,7 @@ const meta = {
 	parameters: { shell: 'admin' },
 	args: {
 		open: true,
-		admissions: admissionsFor('registration_open'),
+		admissions: manualAdmissionsFor('registration_open'),
 		busy: false,
 		onSubmit: fn(),
 		onClose: fn(),
@@ -34,12 +34,17 @@ export const BeforeTheLottery: Story = {};
 
 /** Once service is under way there is one way in, so the question is only where in the line. */
 export const DuringService: Story = {
-	args: { admissions: admissionsFor('service_started') },
+	args: { admissions: manualAdmissionsFor('service_started') },
 };
 
 /** After a session has ended, only an after-the-fact record of someone served is possible. */
 export const AfterTheSession: Story = {
 	args: { admissions: admissionsFor('ended') },
+};
+
+/** Between sessions: only the guest's details can be saved, so no household is asked for. */
+export const BetweenSessions: Story = {
+	args: { admissions: manualAdmissionsFor(null) },
 };
 
 /** Every control disabled while the save is in flight. */

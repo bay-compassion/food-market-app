@@ -1,6 +1,7 @@
 import type { GridColDef } from '@mui/x-data-grid';
 
 import { adminTranslations } from '../../adminLocales';
+import type { QueueGuest } from '../../services/admin-api';
 import type { GuestDatabaseRow, GuestDatabaseRows } from '../../services/guest-database-rows';
 import type { VisitCommand } from '../../services/visitStateMachine';
 import { QueueGuestActions } from './QueueGuestActions';
@@ -8,7 +9,7 @@ import { QueueGuestActions } from './QueueGuestActions';
 export type GuestDatabaseColumnOptions = {
 	rows: GuestDatabaseRows;
 	busy?: boolean;
-	onRun: (row: GuestDatabaseRow, command: VisitCommand) => void;
+	onRun: (guest: QueueGuest, command: VisitCommand) => void;
 };
 
 /**
@@ -18,7 +19,7 @@ export type GuestDatabaseColumnOptions = {
  * rather than a free-text box a worker has to spell exactly. The actions column opts out of
  * sorting and filtering — it holds controls, not data — and reuses the queue's own row actions in
  * their menu-only form: this screen is looked things up on rather than run from, so no command
- * earns a button of its own.
+ * earns a button of its own. A guest with no visit has nothing to run, so their cell stays empty.
  */
 export function guestDatabaseColumns({
 	rows,
@@ -64,14 +65,15 @@ export function guestDatabaseColumns({
 			width: 84,
 			align: 'center',
 			headerAlign: 'center',
-			renderCell: ({ row }) => (
-				<QueueGuestActions
-					guest={row.guest}
-					disabled={busy}
-					menuOnly
-					onRun={(command) => onRun(row, command)}
-				/>
-			),
+			renderCell: ({ row: { guest } }) =>
+				guest.status === null ? null : (
+					<QueueGuestActions
+						guest={guest}
+						disabled={busy}
+						menuOnly
+						onRun={(command) => onRun(guest, command)}
+					/>
+				),
 		},
 	];
 }

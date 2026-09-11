@@ -4,6 +4,7 @@ import type { Locale } from '../locales.ts';
 import {
 	AdminApi,
 	type AdminGuest,
+	type DatabaseGuest,
 	type GuestClaimCode,
 	type HistoricalEvent,
 	type ManualGuest,
@@ -45,7 +46,7 @@ export type AdminStoreOptions = {
  */
 export class AdminStore {
 	readonly demo = new DemoStore();
-	private _guests: AdminGuest[] = [];
+	private _guests: DatabaseGuest[] = [];
 	private _sessionGuests: AdminGuest[] = [];
 	private _history: HistoricalEvent[] = [];
 	private _permissions: Permission[] = [];
@@ -55,7 +56,7 @@ export class AdminStore {
 	private readonly api: AdminApi;
 	private readonly readPermissions: () => Promise<Permission[]>;
 
-	get guests(): AdminGuest[] {
+	get guests(): DatabaseGuest[] {
 		return this._guests;
 	}
 

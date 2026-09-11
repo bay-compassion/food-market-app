@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import type { GuestAdmission } from '../../services/guestAdmission';
+import type { ManualAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
 import { useManualGuestForm } from './AddGuestSection';
 import { ManualGuestDialog } from './ManualGuestDialog';
@@ -19,7 +19,7 @@ export type QueueViewProps = {
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;
 	serviceStarted: boolean;
-	admissions: GuestAdmission[];
+	admissions: ManualAdmission[];
 	busy?: boolean;
 	onCallNext: (count: number) => void;
 	onRun: (guest: QueueGuest, command: VisitCommand) => void;

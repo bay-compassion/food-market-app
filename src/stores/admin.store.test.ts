@@ -265,6 +265,28 @@ describe('AdminStore', () => {
 		});
 	});
 
+	it('offers the phone a QR code for a guest saved with details only', async () => {
+		// Arrange
+		const { store, api } = storeWith({
+			addGuest: vi.fn().mockResolvedValue({ id: null, guestId: 'guest-9' }),
+		});
+
+		// Act
+		await store.addGuest(
+			{ firstName: 'Ada', lastName: 'Lovelace', admission: 'profile' } as never,
+			{ locale: 'en' },
+		);
+
+		// Assert
+		expect(api.addGuest).toHaveBeenCalledOnce();
+		expect(store.feedback).toEqual({
+			kind: 'guest-added',
+			guestId: 'guest-9',
+			name: 'Ada Lovelace',
+			offersPhoneClaim: true,
+		});
+	});
+
 	it('offers no phone for a guest recorded as served after the fact', async () => {
 		// Arrange
 		const { store } = storeWith();

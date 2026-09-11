@@ -1,16 +1,17 @@
 import { languages, type Locale } from '../locales.ts';
-import type { QueueGuest } from './admin-api.ts';
+import type { DatabaseGuest } from './admin-api.ts';
 import { visitStatuses, type VisitStatus } from './visitStateMachine.ts';
 
 /** One guest as the guest database grid renders, sorts, and filters them. */
 export type GuestDatabaseRow = {
 	id: string;
-	guest: QueueGuest;
+	guest: DatabaseGuest;
 	name: string;
 	phone: string;
-	householdSize: number;
+	/** `null` for a guest with no visit, whose household is only ever recorded on one. */
+	householdSize: number | null;
 	language: string;
-	status: VisitStatus;
+	status: VisitStatus | null;
 	statusLabel: string;
 };
 
@@ -28,28 +29,32 @@ export function languageLabel(locale: Locale): string {
  *
  * The filter options come from the domain rather than from the rows on screen, so the status
  * dropdown offers every status a visit can hold — including the ones nobody is in today.
+ *
+ * A guest who has never had a visit still gets a row, keyed by their guest id and labelled with
+ * `noVisitLabel`, so a worker can find someone they added between sessions.
  */
 export class GuestDatabaseRows {
 	constructor(
-		private readonly guests: QueueGuest[],
+		private readonly guests: DatabaseGuest[],
 		private readonly statusLabels: Record<VisitStatus, string>,
+		private readonly noVisitLabel: string,
 	) {}
 
 	get rows(): GuestDatabaseRow[] {
 		return this.guests.map((guest) => ({
-			id: guest.id,
+			id: guest.status === null ? guest.guestId : guest.id,
 			guest,
 			name: `${guest.firstName} ${guest.lastName}`.trim(),
 			phone: guest.phone,
 			householdSize: guest.householdSize,
 			language: languageLabel(guest.locale),
 			status: guest.status,
-			statusLabel: this.statusLabels[guest.status],
+			statusLabel: guest.status === null ? this.noVisitLabel : this.statusLabels[guest.status],
 		}));
 	}
 
 	get statusOptions(): string[] {
-		return visitStatuses.map((status) => this.statusLabels[status]);
+		return [...visitStatuses.map((status) => this.statusLabels[status]), this.noVisitLabel];
 	}
 
 	get languageOptions(): string[] {

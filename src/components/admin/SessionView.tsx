@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
-import type { GuestAdmission } from '../../services/guestAdmission';
+import type { ManualAdmission } from '../../services/guestAdmission';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { AddGuestSection } from './AddGuestSection';
 import { SessionGuestList } from './SessionGuestList';
@@ -16,7 +16,7 @@ export type SessionViewProps = SessionPhaseControlsProps & {
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;
 	registeredGuests: QueueGuest[];
-	admissions: GuestAdmission[];
+	admissions: ManualAdmission[];
 	onAddGuest: (guest: ManualGuest) => void;
 };
 

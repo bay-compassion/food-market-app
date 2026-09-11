@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=f57e39ae4a18, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=677aa8645707, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=14609658e048, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=e621e9c7f7f7, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=f57e39ae4a18, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=522a47ed4667, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=14609658e048, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=e621e9c7f7f7, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
 
 # Guest journey
 
@@ -250,6 +250,12 @@ flowchart TD
     service, a walk-in can only go straight into the line.
   - Once the session has ended, the only thing left to record is `served` — someone who was handed
     food outside the app. That visit never joins a queue.
+  - At any time — during a session, or between sessions when there is none and it is the only
+    choice — the worker can **just save their details** (`manualAdmissionsFor`). That creates the
+    guest with no visit and no device credential, skips the household fields (they belong to a
+    visit), and still offers the QR code, so the guest's phone can take the record over and register
+    itself next time. The guest database lists guests with no visit — these, and anyone who only
+    used `/signup` — with the status "No visit" and no queue actions.
 - **Notifications are best-effort.** SMS requires an explicit consent step (separate from just
   having a phone number on file) and Twilio to be configured. Consent belongs to the guest, so it
   applies to future visits until the guest revokes it. `GuestStore` sends the browser-local device
