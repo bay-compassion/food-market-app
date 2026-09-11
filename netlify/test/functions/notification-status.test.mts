@@ -34,6 +34,7 @@ describe('notification-status handler', () => {
 		});
 		queueResult([{ id: 'push-1' }]);
 		queueResult([{ id: 'sms-1' }]);
+		queueResult([]);
 
 		const response = await handler(request());
 
@@ -41,6 +42,7 @@ describe('notification-status handler', () => {
 		await expect(response.json()).resolves.toEqual({
 			pushSubscribed: true,
 			smsConsented: true,
+			smsOptOutSender: null,
 		});
 	});
 
@@ -51,12 +53,32 @@ describe('notification-status handler', () => {
 		});
 		queueResult([]);
 		queueResult([]);
+		queueResult([]);
 
 		const response = await handler(request());
 
 		await expect(response.json()).resolves.toEqual({
 			pushSubscribed: false,
 			smsConsented: false,
+			smsOptOutSender: null,
+		});
+	});
+
+	it('returns the sender that received an active STOP if the guest previously opted out', async () => {
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({
+			id: 'guest-1',
+			normalizedPhone: '+15551234567',
+		});
+		queueResult([]);
+		queueResult([]);
+		queueResult([{ senderPhone: '+19254718587' }]);
+
+		const response = await handler(request());
+
+		await expect(response.json()).resolves.toEqual({
+			pushSubscribed: false,
+			smsConsented: false,
+			smsOptOutSender: '+19254718587',
 		});
 	});
 

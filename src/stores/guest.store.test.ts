@@ -85,6 +85,31 @@ describe('GuestStore', () => {
 			expect(store.smsState).toBe('enabled');
 			expect(store.smsConsented).toBe(true);
 		});
+
+		it('loads the sender for a previously opted-out guest', async () => {
+			const request = vi.fn().mockImplementation((url: string) =>
+				Promise.resolve({
+					ok: true,
+					json: () =>
+						Promise.resolve(
+							url === '/api/notification-status'
+								? {
+										pushSubscribed: false,
+										smsConsented: false,
+										smsOptOutSender: '+19254718587',
+									}
+								: { configured: true },
+						),
+				}),
+			);
+			const store = new GuestStore({ storage, request });
+
+			await store.initialize();
+
+			expect(store.smsOptOutSender).toBe('+19254718587');
+			expect(store.smsConsented).toBe(false);
+			expect(store.canEnableSms).toBe(false);
+		});
 	});
 
 	it('uses a saved device credential without replacing it', async () => {

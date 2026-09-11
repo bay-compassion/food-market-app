@@ -80,6 +80,15 @@ export interface GuestViewTranslations {
 		unidentifiedHeading: string;
 		unidentifiedMessage: string;
 	};
+	notificationOptIn: {
+		consentLabel: string;
+		enable: string;
+		enabled: string;
+		error: string;
+		optedOut: string;
+		sendStart: string;
+		checkStart: string;
+	};
 	scheduleInformation: {
 		heading: string;
 		body: string;
@@ -176,10 +185,6 @@ export interface Translation {
 	notificationsError: string;
 	notificationsIosInstall: string;
 	notificationsUnsupported: string;
-	smsConsentLabel: string;
-	smsEnable: string;
-	smsEnabled: string;
-	smsError: string;
 	smsNotificationRegisteredBody: string;
 	smsNotificationSelectedPosition: string;
 	seniorsCount: string;
@@ -228,6 +233,17 @@ export const translations = {
 				unidentifiedHeading: 'Save your information for next time',
 				unidentifiedMessage:
 					'Save your name and phone number so you do not need to enter them again on your next visit. This does not enter you in the lottery.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'I agree to receive text messages from The Bay Compassion about my queue and visit status. Message frequency varies, typically no more than a few messages per market day. Message and data rates may apply. Reply STOP to unsubscribe or HELP for assistance. Consent is not required to receive food market service.',
+				enable: 'Enable text updates',
+				enabled: 'Text message updates are enabled for this and future visits.',
+				error: 'We could not enable text updates. Please try again.',
+				optedOut:
+					'You previously stopped text messages. To receive updates again, send START to our number.',
+				sendStart: 'Open a text with START',
+				checkStart: 'I sent START — check again',
 			},
 			scheduleInformation: {
 				heading: 'Registration opens every Saturday at 10:30 AM',
@@ -368,11 +384,6 @@ export const translations = {
 		notificationsIosInstall:
 			'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
 		notificationsUnsupported: 'Push notifications are not available on this device.',
-		smsConsentLabel:
-			'I agree to receive text messages from The Bay Compassion about my queue and visit status. Message frequency varies, typically no more than a few messages per market day. Message and data rates may apply. Reply STOP to unsubscribe or HELP for assistance. Consent is not required to receive food market service.',
-		smsEnable: 'Enable text updates',
-		smsEnabled: 'Text message updates are enabled for this and future visits.',
-		smsError: 'We could not enable text updates. Please try again.',
 		smsNotificationRegisteredBody: 'Your entry into the lottery has been confirmed.',
 		smsNotificationSelectedPosition: 'Your position is {position}.',
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
@@ -420,6 +431,18 @@ export const translations = {
 				unidentifiedHeading: 'Guarde su información para la próxima vez',
 				unidentifiedMessage:
 					'Guarde su nombre y número de teléfono para no tener que ingresarlos de nuevo en su próxima visita. Esto no le inscribe en el sorteo.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'Acepto recibir mensajes de texto de The Bay Compassion sobre mi lugar en la fila y el estado de mi visita. La frecuencia varía; normalmente no recibiré más de unos pocos mensajes por día de mercado. Pueden aplicarse tarifas de mensajes y datos. Responda STOP para cancelar o HELP para recibir ayuda. El consentimiento no es necesario para recibir servicio en el mercado de alimentos.',
+				enable: 'Activar actualizaciones por mensaje de texto',
+				enabled:
+					'Las actualizaciones por mensaje de texto están activadas para esta visita y futuras visitas.',
+				error: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
+				optedOut:
+					'Anteriormente pidió dejar de recibir mensajes de texto. Para volver a recibir actualizaciones, envíe START a nuestro número.',
+				sendStart: 'Abrir un mensaje con START',
+				checkStart: 'Ya envié START — comprobar de nuevo',
 			},
 			scheduleInformation: {
 				heading: 'El registro abre todos los sábados a las 10:30 a. m.',
@@ -562,12 +585,6 @@ export const translations = {
 		notificationsIosInstall:
 			'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
 		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
-		smsConsentLabel:
-			'Acepto recibir mensajes de texto de The Bay Compassion sobre mi lugar en la fila y el estado de mi visita. La frecuencia varía; normalmente no recibiré más de unos pocos mensajes por día de mercado. Pueden aplicarse tarifas de mensajes y datos. Responda STOP para cancelar o HELP para recibir ayuda. El consentimiento no es necesario para recibir servicio en el mercado de alimentos.',
-		smsEnable: 'Activar actualizaciones por mensaje de texto',
-		smsEnabled:
-			'Las actualizaciones por mensaje de texto están activadas para esta visita y futuras visitas.',
-		smsError: 'No pudimos activar las actualizaciones por mensaje de texto. Inténtelo de nuevo.',
 		smsNotificationRegisteredBody: 'Se ha confirmado su inscripción en el sorteo.',
 		smsNotificationSelectedPosition: 'Su lugar en la fila es {position}.',
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
@@ -614,6 +631,17 @@ export const translations = {
 				unidentifiedHeading: 'اطلاعات خود را برای دفعه بعد ذخیره کنید',
 				unidentifiedMessage:
 					'نام و شماره تلفن خود را ذخیره کنید تا در مراجعه بعدی نیازی به وارد کردن دوباره آن‌ها نداشته باشید. این کار شما را وارد قرعه‌کشی نمی‌کند.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'موافقم پیامک‌هایی از The Bay Compassion درباره جایگاهم در صف و وضعیت این مراجعه دریافت کنم. تعداد پیام‌ها متغیر است و معمولاً از چند پیام در هر روز بازار بیشتر نمی‌شود. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک STOP و برای راهنمایی HELP را پاسخ دهید. رضایت به دریافت پیامک برای دریافت خدمات بازار مواد غذایی الزامی نیست.',
+				enable: 'فعال‌کردن به‌روزرسانی‌های پیامکی',
+				enabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه و مراجعه‌های آینده فعال شدند.',
+				error: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
+				optedOut:
+					'شما قبلاً پیامک‌ها را متوقف کرده‌اید. برای دریافت دوباره به‌روزرسانی‌ها، START را به شماره ما بفرستید.',
+				sendStart: 'باز کردن پیامک با START',
+				checkStart: 'START را فرستادم — دوباره بررسی کنید',
 			},
 			scheduleInformation: {
 				heading: 'ثبت‌نام هر شنبه ساعت ۱۰:۳۰ صبح باز می‌شود',
@@ -754,11 +782,6 @@ export const translations = {
 		notificationsIosInstall:
 			'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
 		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
-		smsConsentLabel:
-			'موافقم پیامک‌هایی از The Bay Compassion درباره جایگاهم در صف و وضعیت این مراجعه دریافت کنم. تعداد پیام‌ها متغیر است و معمولاً از چند پیام در هر روز بازار بیشتر نمی‌شود. ممکن است هزینه پیامک و داده اعمال شود. برای لغو اشتراک STOP و برای راهنمایی HELP را پاسخ دهید. رضایت به دریافت پیامک برای دریافت خدمات بازار مواد غذایی الزامی نیست.',
-		smsEnable: 'فعال‌کردن به‌روزرسانی‌های پیامکی',
-		smsEnabled: 'به‌روزرسانی‌های پیامکی برای این مراجعه و مراجعه‌های آینده فعال شدند.',
-		smsError: 'نتوانستیم به‌روزرسانی‌های پیامکی را فعال کنیم. لطفاً دوباره تلاش کنید.',
 		smsNotificationRegisteredBody: 'ورود شما به قرعه‌کشی تأیید شد.',
 		smsNotificationSelectedPosition: 'جایگاه شما در صف {position} است.',
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
@@ -806,6 +829,18 @@ export const translations = {
 				unidentifiedHeading: 'I-save ang iyong impormasyon para sa susunod',
 				unidentifiedMessage:
 					'I-save ang iyong pangalan at numero ng telepono para hindi mo na kailangang ilagay muli ang mga ito sa susunod mong pagbisita. Hindi ka nito isinasali sa lottery.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'Sumasang-ayon akong tumanggap ng mga text message mula sa The Bay Compassion tungkol sa puwesto ko sa pila at katayuan ng pagbisitang ito. Nag-iiba ang dalas at karaniwang hindi hihigit sa ilang mensahe bawat araw ng pamilihan. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-unsubscribe o HELP para sa tulong. Hindi kailangang pumayag upang makatanggap ng serbisyo sa pamilihan ng pagkain.',
+				enable: 'I-enable ang mga text update',
+				enabled:
+					'Naka-enable ang mga text message update para sa pagbisitang ito at mga susunod na pagbisita.',
+				error: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
+				optedOut:
+					'Itinigil mo dati ang mga text message. Para makatanggap muli ng mga update, ipadala ang START sa aming numero.',
+				sendStart: 'Magbukas ng text na may START',
+				checkStart: 'Naipadala ko na ang START — tingnan muli',
 			},
 			scheduleInformation: {
 				heading: 'Nagbubukas ang pagpaparehistro tuwing Sabado nang 10:30 AM',
@@ -952,12 +987,6 @@ export const translations = {
 		notificationsIosInstall:
 			'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
 		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
-		smsConsentLabel:
-			'Sumasang-ayon akong tumanggap ng mga text message mula sa The Bay Compassion tungkol sa puwesto ko sa pila at katayuan ng pagbisitang ito. Nag-iiba ang dalas at karaniwang hindi hihigit sa ilang mensahe bawat araw ng pamilihan. Maaaring may mga bayad sa mensahe at data. Mag-reply ng STOP para mag-unsubscribe o HELP para sa tulong. Hindi kailangang pumayag upang makatanggap ng serbisyo sa pamilihan ng pagkain.',
-		smsEnable: 'I-enable ang mga text update',
-		smsEnabled:
-			'Naka-enable ang mga text message update para sa pagbisitang ito at mga susunod na pagbisita.',
-		smsError: 'Hindi namin ma-enable ang mga text update. Pakisubukang muli.',
 		smsNotificationRegisteredBody: 'Nakumpirma na ang iyong pagsali sa lottery.',
 		smsNotificationSelectedPosition: 'Ang iyong puwesto sa pila ay {position}.',
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
@@ -1004,6 +1033,17 @@ export const translations = {
 				unidentifiedHeading: 'Lưu thông tin cho lần sau',
 				unidentifiedMessage:
 					'Lưu tên và số điện thoại để bạn không phải nhập lại trong lần ghé tiếp theo. Việc này không đưa bạn vào danh sách xổ số.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'Tôi đồng ý nhận tin nhắn từ The Bay Compassion về vị trí trong hàng đợi và trạng thái lượt ghé của tôi. Tần suất thay đổi, thường không quá vài tin nhắn trong mỗi ngày diễn ra chợ. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy đăng ký hoặc HELP để được hỗ trợ. Không bắt buộc đồng ý để nhận dịch vụ tại chợ thực phẩm.',
+				enable: 'Bật cập nhật qua tin nhắn',
+				enabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé này và các lượt ghé sau.',
+				error: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
+				optedOut:
+					'Trước đây bạn đã dừng tin nhắn văn bản. Để nhận lại thông tin cập nhật, hãy gửi START đến số của chúng tôi.',
+				sendStart: 'Mở tin nhắn có sẵn START',
+				checkStart: 'Tôi đã gửi START — kiểm tra lại',
 			},
 			scheduleInformation: {
 				heading: 'Đăng ký mở vào mỗi thứ Bảy lúc 10:30 sáng',
@@ -1144,11 +1184,6 @@ export const translations = {
 		notificationsIosInstall:
 			'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
 		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
-		smsConsentLabel:
-			'Tôi đồng ý nhận tin nhắn từ The Bay Compassion về vị trí trong hàng đợi và trạng thái lượt ghé của tôi. Tần suất thay đổi, thường không quá vài tin nhắn trong mỗi ngày diễn ra chợ. Có thể áp dụng phí tin nhắn và dữ liệu. Trả lời STOP để hủy đăng ký hoặc HELP để được hỗ trợ. Không bắt buộc đồng ý để nhận dịch vụ tại chợ thực phẩm.',
-		smsEnable: 'Bật cập nhật qua tin nhắn',
-		smsEnabled: 'Thông báo qua tin nhắn văn bản đã được bật cho lượt ghé này và các lượt ghé sau.',
-		smsError: 'Chúng tôi không thể bật thông báo qua tin nhắn văn bản. Vui lòng thử lại.',
 		smsNotificationRegisteredBody: 'Việc tham gia xổ số của bạn đã được xác nhận.',
 		smsNotificationSelectedPosition: 'Vị trí của bạn trong hàng là {position}.',
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
@@ -1195,6 +1230,16 @@ export const translations = {
 				unidentifiedHeading: '保存信息，方便下次使用',
 				unidentifiedMessage:
 					'保存您的姓名和电话号码，下次到访时就无需再次输入。这不会让您进入抽签。',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'我同意接收 The Bay Compassion 发送的有关排队位置和到访状态的短信。短信频率不定，通常每个市场开放日不超过数条。可能会产生短信和数据费用。回复 STOP 可取消订阅，回复 HELP 可获取帮助。是否同意接收短信不影响获得食品市场服务。',
+				enable: '启用短信更新',
+				enabled: '已为本次及今后的到访启用短信更新。',
+				error: '我们无法启用短信更新。请重试。',
+				optedOut: '您之前已停止接收短信。要重新接收更新，请向我们的号码发送 START。',
+				sendStart: '打开预填 START 的短信',
+				checkStart: '我已发送 START — 再次检查',
 			},
 			scheduleInformation: {
 				heading: '登记每周六上午 10:30 开放',
@@ -1325,11 +1370,6 @@ export const translations = {
 		notificationsError: '无法启用通知。请重试。',
 		notificationsIosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
 		notificationsUnsupported: '此设备不支持推送通知。',
-		smsConsentLabel:
-			'我同意接收 The Bay Compassion 发送的有关排队位置和到访状态的短信。短信频率不定，通常每个市场开放日不超过数条。可能会产生短信和数据费用。回复 STOP 可取消订阅，回复 HELP 可获取帮助。是否同意接收短信不影响获得食品市场服务。',
-		smsEnable: '启用短信更新',
-		smsEnabled: '已为本次及今后的到访启用短信更新。',
-		smsError: '我们无法启用短信更新。请重试。',
 		smsNotificationRegisteredBody: '您已确认参加抽签。',
 		smsNotificationSelectedPosition: '您的排队位置是 {position}。',
 		seniorsCount: '您为多少老年人（55岁以上）采购',
@@ -1375,6 +1415,16 @@ export const translations = {
 				unidentifiedHeading: 'احفظ معلوماتك للمرة القادمة',
 				unidentifiedMessage:
 					'احفظ اسمك ورقم هاتفك حتى لا تضطر إلى إدخالهما مرة أخرى في زيارتك القادمة. هذا لا يدخلك في القرعة.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'أوافق على تلقي رسائل نصية من The Bay Compassion بشأن مكاني في قائمة الانتظار وحالة زيارتي. يختلف عدد الرسائل، وعادةً لا يتجاوز بضع رسائل في كل يوم سوق. قد تُطبق رسوم الرسائل والبيانات. أرسل STOP لإلغاء الاشتراك أو HELP للمساعدة. الموافقة ليست شرطًا لتلقي خدمة سوق المواد الغذائية.',
+				enable: 'تفعيل التحديثات النصية',
+				enabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة والزيارات القادمة.',
+				error: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
+				optedOut: 'لقد أوقفت الرسائل النصية سابقًا. لتلقي التحديثات مرة أخرى، أرسل START إلى رقمنا.',
+				sendStart: 'فتح رسالة نصية تحتوي على START',
+				checkStart: 'أرسلت START — تحقق مرة أخرى',
 			},
 			scheduleInformation: {
 				heading: 'يُفتح التسجيل كل يوم سبت الساعة 10:30 صباحًا',
@@ -1515,11 +1565,6 @@ export const translations = {
 		notificationsIosInstall:
 			'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
 		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
-		smsConsentLabel:
-			'أوافق على تلقي رسائل نصية من The Bay Compassion بشأن مكاني في قائمة الانتظار وحالة زيارتي. يختلف عدد الرسائل، وعادةً لا يتجاوز بضع رسائل في كل يوم سوق. قد تُطبق رسوم الرسائل والبيانات. أرسل STOP لإلغاء الاشتراك أو HELP للمساعدة. الموافقة ليست شرطًا لتلقي خدمة سوق المواد الغذائية.',
-		smsEnable: 'تفعيل التحديثات النصية',
-		smsEnabled: 'تم تفعيل تحديثات الرسائل النصية لهذه الزيارة والزيارات القادمة.',
-		smsError: 'تعذر تفعيل تحديثات الرسائل النصية. يرجى المحاولة مرة أخرى.',
 		smsNotificationRegisteredBody: 'تم تأكيد دخولك في القرعة.',
 		smsNotificationSelectedPosition: 'مكانك في الصف هو {position}.',
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
