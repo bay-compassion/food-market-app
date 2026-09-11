@@ -15,6 +15,11 @@ export type SessionHistoryViewProps = {
 };
 
 /** A finished session only accepts an after-the-fact record of someone already served. */
+/*
+ * Deliberately not `manualAdmissionsFor`: every add here attaches a record to one finished session,
+ * so saving a guest's details alone — which belongs to no session — is offered on the live screens
+ * and the guest database instead.
+ */
 const endedAdmissions: GuestAdmission[] = ['served'];
 
 const Section = styled.section`
