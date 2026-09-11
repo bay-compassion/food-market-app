@@ -172,10 +172,10 @@ Opt-Out on the Messaging Service and configure its incoming-message integration 
 Twilio's request signature, removes every matching guest's SMS subscription for `STOP`, restores it
 for `START`, and ignores other incoming messages. Twilio remains responsible for sending the
 configured opt-out and opt-in confirmation replies. The webhook also records the Twilio number
-that received each active `STOP`. If that guest later consents again in the website, the app uses
-Twilio's Consent Management API to clear both the Messaging Service and sender-level blocks before
-restoring local delivery. Confirm that Twilio has enabled Consent Management API access for the
-account; without it, re-consent fails closed and the guest remains unsubscribed.
+that received each active `STOP`. The guest interface detects that record and offers a prefilled
+`sms:` link so the guest can send `START` to the same number, which lets Twilio lift its blocks and
+lets the webhook restore local delivery. The server-side website re-consent fallback uses Twilio's
+Consent Management API and fails closed when that API is unavailable.
 
 ## Auth0 administration access
 

@@ -167,7 +167,7 @@ const NotificationStatus = observer(function NotificationStatus({
 	const { guest } = useRootStore();
 	const copy = t.guestView.identityIndicator;
 
-	if (!guest.smsConfigured && !guest.smsConsented) {
+	if (!guest.smsConfigured && !guest.smsConsented && !guest.smsOptOutSender) {
 		return null;
 	}
 

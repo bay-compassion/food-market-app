@@ -51,6 +51,7 @@ export class GuestStore {
 
 	private _smsConfigured = false;
 	private _smsState: 'idle' | 'enabling' | 'enabled' | 'error' = 'idle';
+	private _smsOptOutSender: string | null = null;
 
 	private readonly request: typeof fetch;
 	private readonly storage: Pick<StorageService, 'get' | 'set' | 'remove'> | null;
@@ -137,8 +138,12 @@ export class GuestStore {
 		return this._smsState;
 	}
 
+	get smsOptOutSender(): string | null {
+		return this._smsOptOutSender;
+	}
+
 	get canEnableSms(): boolean {
-		return this._smsConfigured && this._deviceToken !== null;
+		return this._smsConfigured && this._deviceToken !== null && this._smsOptOutSender === null;
 	}
 
 	notificationsDisabled: boolean = false;
@@ -311,6 +316,13 @@ export class GuestStore {
 		}
 	}
 
+	async refreshNotificationSettings(): Promise<void> {
+		this._notificationSettingsLoaded = false;
+		this._notificationSettingsPromise = null;
+
+		await this.loadNotificationSettings();
+	}
+
 	private get browserSupportsPush(): boolean {
 		return (
 			typeof navigator !== 'undefined' &&
@@ -408,7 +420,10 @@ export class GuestStore {
 			throw new Error('subscription');
 		}
 
-		runInAction(() => (this._smsState = 'enabled'));
+		runInAction(() => {
+			this._smsState = 'enabled';
+			this._smsOptOutSender = null;
+		});
 	}
 
 	private async loadSmsConfiguration(): Promise<void> {
@@ -442,11 +457,18 @@ export class GuestStore {
 		const status = (await response.json()) as {
 			pushSubscribed: boolean;
 			smsConsented: boolean;
+			smsOptOutSender?: unknown;
 		};
 
 		// Push must still exist in this browser, so its local service-worker subscription remains
 		// authoritative. SMS consent is durable guest-level state.
-		runInAction(() => (this._smsState = status.smsConsented ? 'enabled' : 'idle'));
+		runInAction(() => {
+			this._smsState = status.smsConsented ? 'enabled' : 'idle';
+			this._smsOptOutSender =
+				!status.smsConsented && typeof status.smsOptOutSender === 'string'
+					? status.smsOptOutSender
+					: null;
+		});
 	}
 
 	private readIdentity(): GuestIdentity | null {

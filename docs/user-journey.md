@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=a4c800d793d0, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=677aa8645707, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=565bdcb9de99 -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=b6e1a1195660, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=677aa8645707, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=565bdcb9de99 -->
 
 # Guest journey
 
@@ -48,14 +48,19 @@ flowchart TD
     deviceAuth --> notificationRequest{Status retrieval}
     notificationRequest -- pending --> notificationLoading[Show loading indicator]
     notificationRequest -- failed --> notificationError[Show notification status error]
-    notificationRequest -- succeeded --> notificationState{SMS consent granted?}
+    notificationRequest -- succeeded --> notificationState{SMS consent state?}
     notificationState -- yes --> notificationEnabled[Show "Notifications Enabled"]
+    notificationState -- prior STOP --> startRequired[Explain that START is required;<br/>show the Twilio sender]
     notificationState -- no --> notifyButton[Show "Notify Me About Updates"]
+    startRequired -. opens .-> smsComposer[Open a prefilled SMS<br/>containing START]
+    smsComposer -. returns .-> startRequired
+    startRequired -. check again .-> deviceAuth
     notifyButton -. opens .-> offer{Consent dialog:<br/>approve the full SMS terms?}
     offer -- yes --> subscribed[Save consent for the guest;<br/>server finds their current-market visit<br/>for any catch-up text]
     offer -- no --> notifyButton
     subscribed --> notificationEnabled
     notificationEnabled --> activeSession{Market session active?}
+    startRequired --> activeSession
     notifyButton --> activeSession
     notificationError --> activeSession
 
@@ -211,9 +216,9 @@ flowchart TD
   same credential authorizes `/api/sms-subscription`; no visit token participates in consent. On a
   new opt-in, the server looks up the guest's visit in the newest non-ended market event and sends
   the appropriate catch-up text if that visit has a live status. If the guest previously sent
-  `STOP`, website re-consent first clears Twilio's Messaging Service and sender-level blocks through
-  the Consent Management API; local delivery stays disabled if that synchronization fails. The
-  identity indicator shows a
+  `STOP`, the notification status includes the Twilio sender that received it. The consent dialog
+  explains that the guest must send `START`, opens a prefilled text to that sender, and lets the
+  guest check again after returning to the app. The identity indicator shows a
   loading indicator while retrieving notification state, a local error if retrieval fails, and a
   single SMS opt-in button before consent that becomes a compact enabled status afterward. A guest
   without a device credential instead sees a preregistration message and button in the indicator,

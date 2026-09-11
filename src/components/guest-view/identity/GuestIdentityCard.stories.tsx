@@ -98,7 +98,11 @@ const withNotificationEndpoints: Decorator = (Story, context) => {
 			}
 
 			return Promise.resolve(
-				Response.json({ pushSubscribed: false, smsConsented: args.smsSubscribed }),
+				Response.json({
+					pushSubscribed: false,
+					smsConsented: args.smsSubscribed,
+					smsOptOutSender: null,
+				}),
 			);
 		}
 
@@ -181,6 +185,7 @@ export const NotificationConsentFlow: Story = {
 	tags: ['!dev'],
 	play: async ({ canvas, userEvent }) => {
 		const copy = translations.en.guestView.identityIndicator;
+		const optInCopy = translations.en.guestView.notificationOptIn;
 		const notificationsButton = await canvas.findByRole('button', {
 			name: copy.notificationsAction,
 		});
@@ -197,16 +202,16 @@ export const NotificationConsentFlow: Story = {
 				const text = element?.textContent ?? '';
 
 				return (
-					text.includes(translations.en.smsConsentLabel) &&
+					text.includes(optInCopy.consentLabel) &&
 					!Array.from(element?.children ?? []).some((child) =>
-						(child.textContent ?? '').includes(translations.en.smsConsentLabel),
+						(child.textContent ?? '').includes(optInCopy.consentLabel),
 					)
 				);
 			}),
 		).toBeInTheDocument();
 
 		const consent = body.getByRole('checkbox');
-		const approve = body.getByRole('button', { name: translations.en.smsEnable });
+		const approve = body.getByRole('button', { name: optInCopy.enable });
 
 		await expect(approve).toBeDisabled();
 		await userEvent.click(consent);

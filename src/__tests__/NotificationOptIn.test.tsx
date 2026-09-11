@@ -138,6 +138,54 @@ describe('NotificationOptIn', () => {
 		expect(container.querySelector('input[type="checkbox"]')).toBeNull();
 	});
 
+	it('instructs a previously opted-out guest to send START with a prefilled text', async () => {
+		const user = userEvent.setup();
+		let statusRequests = 0;
+		const fetchMock = vi.fn().mockImplementation((url: string) => {
+			if (url === '/api/notification-status') {
+				statusRequests += 1;
+
+				return Promise.resolve({
+					ok: true,
+					json: () =>
+						Promise.resolve(
+							statusRequests === 1
+								? {
+										pushSubscribed: false,
+										smsConsented: false,
+										smsOptOutSender: '+19254718587',
+									}
+								: {
+										pushSubscribed: false,
+										smsConsented: true,
+										smsOptOutSender: null,
+									},
+						),
+				});
+			}
+
+			return Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve({ configured: url === '/api/sms-subscription' }),
+			});
+		});
+
+		vi.stubGlobal('fetch', fetchMock);
+		renderOptIn();
+
+		const startLink = await screen.findByRole('link', { name: 'Open a text with START' });
+
+		expect(startLink.getAttribute('href')).toBe('sms:+19254718587?body=START');
+		expect(screen.getByText('(925) 471-8587')).toBeTruthy();
+		expect(screen.queryByRole('checkbox')).toBeNull();
+
+		await user.click(screen.getByRole('button', { name: 'I sent START — check again' }));
+
+		expect(
+			await screen.findByText('Text message updates are enabled for this and future visits.'),
+		).toBeTruthy();
+	});
+
 	it('shows an error when enabling SMS fails', async () => {
 		const user = userEvent.setup();
 

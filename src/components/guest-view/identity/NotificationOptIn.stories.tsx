@@ -22,7 +22,9 @@ window.localStorage.setItem(
 
 const originalFetch = window.fetch.bind(window);
 
-const withNotificationEndpoints: Decorator = (Story) => {
+const withNotificationEndpoints: Decorator = (Story, context) => {
+	const smsOptOutSender = context.parameters.smsOptOutSender as string | undefined;
+
 	window.fetch = (input, init) => {
 		const url = String(input instanceof Request ? input.url : input);
 
@@ -35,7 +37,13 @@ const withNotificationEndpoints: Decorator = (Story) => {
 		}
 
 		if (url === '/api/notification-status') {
-			return Promise.resolve(Response.json({ pushSubscribed: false, smsConsented: false }));
+			return Promise.resolve(
+				Response.json({
+					pushSubscribed: false,
+					smsConsented: false,
+					smsOptOutSender: smsOptOutSender ?? null,
+				}),
+			);
 		}
 
 		return originalFetch(input, init);
@@ -66,7 +74,9 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
 	play: async ({ canvas }) => {
-		await expect(await canvas.findByText(translations.en.smsConsentLabel)).toBeInTheDocument();
+		const copy = translations.en.guestView.notificationOptIn;
+
+		await expect(await canvas.findByText(copy.consentLabel)).toBeInTheDocument();
 		const legalLinks = canvas.getByText(translations.en.privacyPolicy).parentElement;
 
 		await expect(legalLinks).toHaveClass('notification-legal-links');
@@ -74,9 +84,19 @@ export const Default: Story = {
 		await expect(legalLinks).toContainElement(
 			canvas.getByRole('link', { name: translations.en.termsAndConditions }),
 		);
-		await expect(
-			canvas.getByRole('button', { name: translations.en.smsEnable }),
-		).toBeInTheDocument();
+		await expect(canvas.getByRole('button', { name: copy.enable })).toBeInTheDocument();
+	},
+};
+
+/** Recovery after the guest has replied STOP to the Twilio sender. */
+export const PreviouslyOptedOut: Story = {
+	parameters: { smsOptOutSender: '+19254718587' },
+	play: async ({ canvas }) => {
+		const copy = translations.en.guestView.notificationOptIn;
+		const startLink = await canvas.findByRole('link', { name: copy.sendStart });
+
+		await expect(startLink).toHaveAttribute('href', 'sms:+19254718587?body=START');
+		await expect(canvas.getByText('(925) 471-8587')).toBeInTheDocument();
 	},
 };
 
@@ -84,6 +104,8 @@ export const Default: Story = {
 export const RightToLeft: Story = {
 	globals: { locale: 'ar' },
 	play: async ({ canvas }) => {
-		await expect(await canvas.findByText(translations.ar.smsConsentLabel)).toBeInTheDocument();
+		await expect(
+			await canvas.findByText(translations.ar.guestView.notificationOptIn.consentLabel),
+		).toBeInTheDocument();
 	},
 };
