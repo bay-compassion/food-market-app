@@ -78,6 +78,29 @@ export async function submitGuestSignup(payload: GuestSignupPayload): Promise<Gu
 	return (await response.json()) as GuestSignupResult;
 }
 
+/** What a phone receives for scanning a worker's QR code. */
+export type GuestClaimResult = {
+	deviceToken: string;
+	identity: { firstName: string; lastName: string; phone: string };
+	/** The guest's visit in today's session, when they have one. */
+	visit: { id: string; marketEventId: string; status: VisitStatus; visitToken: string } | null;
+};
+
+/** Redeems a worker's single-use code. Throws if it is unknown, expired, or already used. */
+export async function redeemGuestClaim(token: string): Promise<GuestClaimResult> {
+	const response = await fetch('/api/guest-claim', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ token }),
+	});
+
+	if (!response.ok) {
+		throw new Error('Guest claim failed');
+	}
+
+	return (await response.json()) as GuestClaimResult;
+}
+
 export type CurrentVisitLookup =
 	| { found: true; visit: CurrentVisit }
 	// The stored token no longer resolves to a visit — expired, ended, or otherwise unavailable.

@@ -7,6 +7,7 @@ TRUNCATE TABLE
 	public.notification_deliveries,
 	public.push_subscriptions,
 	public.sms_subscriptions,
+	public.guest_claims,
 	public.visits,
 	public.registration_questions,
 	public.market_events,

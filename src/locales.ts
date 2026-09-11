@@ -139,6 +139,17 @@ export interface SignupViewTranslations {
 	successTitle: string;
 }
 
+export interface ClaimViewTranslations {
+	title: string;
+	description: string;
+	replaceHeading: string;
+	replaceWarning: string;
+	submit: string;
+	submitting: string;
+	failed: string;
+	missingCode: string;
+}
+
 export interface AppBarTranslations {
 	openMenu: string;
 	accountMenu: string;
@@ -151,6 +162,7 @@ export interface Translation {
 	appBar: AppBarTranslations;
 	guestView: GuestViewTranslations;
 	signupView: SignupViewTranslations;
+	claimView: ClaimViewTranslations;
 	admin: string;
 	adminDescription: string;
 	adminTitle: string;
@@ -385,6 +397,19 @@ export const translations = {
 				'You will not need to enter it again on your next visit. You have not entered the lottery or saved a place in line.',
 			successTitle: 'Your information is saved',
 		},
+		claimView: {
+			title: 'Set up this phone',
+			description:
+				'A staff member added you. Set up this phone to see your status and get updates here.',
+			replaceHeading: 'Saved information will be replaced',
+			replaceWarning:
+				'This phone already has saved information or a visit. Setting it up for you replaces it, and it can’t be recovered.',
+			submit: 'Set up this phone',
+			submitting: 'Setting up…',
+			failed: 'This code has expired or was already used. Ask a staff member for a new one.',
+			missingCode:
+				'This link is missing its code. Ask a staff member to show you the QR code again.',
+		},
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
 		formTitle: 'Tell us about you',
@@ -600,6 +625,19 @@ export const translations = {
 				'No tendrá que ingresarla de nuevo en su próxima visita. No se ha inscrito en el sorteo ni ha reservado un lugar en la fila.',
 			successTitle: 'Su información está guardada',
 		},
+		claimView: {
+			title: 'Configure este teléfono',
+			description:
+				'Un miembro del personal lo registró. Configure este teléfono para ver su estado y recibir actualizaciones aquí.',
+			replaceHeading: 'Se reemplazará la información guardada',
+			replaceWarning:
+				'Este teléfono ya tiene información guardada o una visita. Al configurarlo para usted, se reemplazará y no se podrá recuperar.',
+			submit: 'Configurar este teléfono',
+			submitting: 'Configurando…',
+			failed: 'Este código venció o ya se usó. Pida uno nuevo a un miembro del personal.',
+			missingCode:
+				'A este enlace le falta el código. Pida a un miembro del personal que le muestre el código QR de nuevo.',
+		},
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
@@ -812,6 +850,18 @@ export const translations = {
 			successDescription:
 				'در مراجعه بعدی نیازی به وارد کردن دوباره آن‌ها ندارید. شما وارد قرعه‌کشی نشده‌اید و جایی در صف رزرو نکرده‌اید.',
 			successTitle: 'اطلاعات شما ذخیره شد',
+		},
+		claimView: {
+			title: 'راه‌اندازی این تلفن',
+			description:
+				'یکی از کارکنان شما را ثبت کرده است. این تلفن را راه‌اندازی کنید تا وضعیت خود را ببینید و به‌روزرسانی‌ها را همین‌جا دریافت کنید.',
+			replaceHeading: 'اطلاعات ذخیره‌شده جایگزین می‌شود',
+			replaceWarning:
+				'این تلفن از قبل اطلاعات ذخیره‌شده یا یک مراجعه دارد. با راه‌اندازی آن برای شما، این اطلاعات جایگزین می‌شود و قابل بازیابی نیست.',
+			submit: 'راه‌اندازی این تلفن',
+			submitting: 'در حال راه‌اندازی…',
+			failed: 'این کد منقضی شده یا قبلاً استفاده شده است. از یکی از کارکنان کد جدیدی بخواهید.',
+			missingCode: 'این پیوند کد ندارد. از یکی از کارکنان بخواهید دوباره کد QR را به شما نشان دهد.',
 		},
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
@@ -1031,6 +1081,19 @@ export const translations = {
 				'Hindi mo na ito kailangang ilagay muli sa susunod mong pagbisita. Hindi ka pa kasali sa lottery at wala kang nakareserbang puwesto sa pila.',
 			successTitle: 'Naka-save na ang iyong impormasyon',
 		},
+		claimView: {
+			title: 'I-set up ang teleponong ito',
+			description:
+				'Idinagdag ka ng isang staff. I-set up ang teleponong ito para makita ang iyong status at makatanggap ng mga update dito.',
+			replaceHeading: 'Papalitan ang naka-save na impormasyon',
+			replaceWarning:
+				'May naka-save nang impormasyon o pagbisita ang teleponong ito. Kapag in-set up ito para sa iyo, papalitan ito at hindi na maibabalik.',
+			submit: 'I-set up ang teleponong ito',
+			submitting: 'Sine-set up…',
+			failed: 'Nag-expire na o nagamit na ang code na ito. Humingi ng bago sa isang staff.',
+			missingCode:
+				'Walang code ang link na ito. Hilingin sa isang staff na ipakita muli ang QR code.',
+		},
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
@@ -1244,6 +1307,18 @@ export const translations = {
 				'Bạn sẽ không phải nhập lại trong lần ghé tiếp theo. Bạn chưa tham gia xổ số hoặc giữ chỗ trong hàng đợi.',
 			successTitle: 'Thông tin của bạn đã được lưu',
 		},
+		claimView: {
+			title: 'Thiết lập điện thoại này',
+			description:
+				'Một nhân viên đã thêm bạn. Hãy thiết lập điện thoại này để xem trạng thái và nhận thông báo cập nhật tại đây.',
+			replaceHeading: 'Thông tin đã lưu sẽ bị thay thế',
+			replaceWarning:
+				'Điện thoại này đã có thông tin đã lưu hoặc một lượt ghé thăm. Thiết lập cho bạn sẽ thay thế thông tin đó và không thể khôi phục.',
+			submit: 'Thiết lập điện thoại này',
+			submitting: 'Đang thiết lập…',
+			failed: 'Mã này đã hết hạn hoặc đã được sử dụng. Hãy xin nhân viên một mã mới.',
+			missingCode: 'Liên kết này thiếu mã. Hãy nhờ nhân viên cho bạn xem lại mã QR.',
+		},
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
@@ -1445,6 +1520,16 @@ export const translations = {
 			submitting: '正在保存…',
 			successDescription: '下次到访时无需再次输入。您尚未进入抽签，也未在队列中预留位置。',
 			successTitle: '您的信息已保存',
+		},
+		claimView: {
+			title: '设置这部手机',
+			description: '工作人员已为您登记。设置这部手机后，您可以在这里查看您的状态并接收最新通知。',
+			replaceHeading: '已保存的信息将被替换',
+			replaceWarning: '这部手机上已有保存的信息或到访记录。为您设置后将替换这些内容，且无法恢复。',
+			submit: '设置这部手机',
+			submitting: '正在设置…',
+			failed: '此二维码已过期或已被使用。请向工作人员索取新的二维码。',
+			missingCode: '此链接缺少代码。请让工作人员再次向您出示二维码。',
 		},
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
@@ -1654,6 +1739,18 @@ export const translations = {
 			successDescription:
 				'لن تضطر إلى إدخالها مرة أخرى في زيارتك القادمة. لم تدخل القرعة ولم يُحجز لك مكان في قائمة الانتظار.',
 			successTitle: 'تم حفظ معلوماتك',
+		},
+		claimView: {
+			title: 'إعداد هذا الهاتف',
+			description:
+				'قام أحد الموظفين بتسجيلك. قم بإعداد هذا الهاتف لمعرفة حالتك وتلقي التحديثات هنا.',
+			replaceHeading: 'سيتم استبدال المعلومات المحفوظة',
+			replaceWarning:
+				'يحتوي هذا الهاتف بالفعل على معلومات محفوظة أو زيارة. سيؤدي إعداده لك إلى استبدالها، ولا يمكن استعادتها.',
+			submit: 'إعداد هذا الهاتف',
+			submitting: 'جارٍ الإعداد…',
+			failed: 'انتهت صلاحية هذا الرمز أو تم استخدامه بالفعل. اطلب رمزًا جديدًا من أحد الموظفين.',
+			missingCode: 'هذا الرابط لا يحتوي على رمز. اطلب من أحد الموظفين أن يعرض عليك رمز QR مرة أخرى.',
 		},
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',

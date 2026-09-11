@@ -2,6 +2,7 @@ import { AdminApi } from '../services/admin-api.ts';
 import type { Permission } from '../services/permissions.ts';
 import { StorageService } from '../services/storage.service.ts';
 import { AdminStore, type AdminStoreOptions } from './admin.store.ts';
+import { GuestClaimStore, type GuestClaimStoreOptions } from './guest-claim.store.ts';
 import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore } from './market-session.store.ts';
 import { RegistrationStore } from './registration.store.ts';
@@ -13,6 +14,7 @@ export type RootStoreOptions = {
 	browserStorage?: Storage;
 	previewName?: string;
 	admin?: AdminStoreOptions;
+	claim?: GuestClaimStoreOptions;
 	visit?: VisitStoreOptions;
 };
 
@@ -24,6 +26,7 @@ export class RootStore {
 	readonly storage: StorageService;
 
 	readonly admin: AdminStore;
+	readonly claim: GuestClaimStore;
 	readonly guest: GuestStore;
 	readonly registration: RegistrationStore;
 	readonly session: MarketSessionStore;
@@ -42,6 +45,7 @@ export class RootStore {
 		this.registration = new RegistrationStore(this.guest, { storage: this.storage });
 		this.session = new MarketSessionStore({ requestHeaders: () => this.requestHeaders() });
 		this.visit = new VisitStore(this, { storage: options.browserStorage, ...options.visit });
+		this.claim = new GuestClaimStore(this.guest, this.visit, options.claim);
 		this.admin = new AdminStore(this.session, {
 			api: new AdminApi({ requestHeaders: () => this.requestHeaders() }),
 			readPermissions: () => this.readPermissions?.() ?? Promise.resolve([]),

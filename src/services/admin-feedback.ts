@@ -14,7 +14,9 @@ export type AdminFeedback =
 	| { kind: 'no-waiting-guests' }
 	| { kind: 'broadcast-queued'; recipients: number }
 	| { kind: 'broadcast-no-recipients' }
-	| { kind: 'demo-loaded' };
+	| { kind: 'demo-loaded' }
+	/** `offersPhoneClaim` is whether the worker may hand this record to the guest's phone. */
+	| { kind: 'guest-added'; guestId: string; name: string; offersPhoneClaim: boolean };
 
 /** What the dashboard shows for an outcome. */
 export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTranslation): string {
@@ -39,5 +41,7 @@ export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTransl
 			return t.broadcastNoRecipients;
 		case 'demo-loaded':
 			return t.devModeLoaded;
+		case 'guest-added':
+			return t.guestAdded.replace('{name}', feedback.name);
 	}
 }

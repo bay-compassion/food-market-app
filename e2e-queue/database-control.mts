@@ -67,6 +67,17 @@ export class DatabaseControl {
 			).rows;
 		}
 
+		if (command === 'guests') {
+			return (
+				await this.database.query(
+					`SELECT g.first_name, g.device_token_hash IS NOT NULL AS has_device,
+						(SELECT count(*)::int FROM guest_claims c WHERE c.guest_id = g.id) AS outstanding_claims
+					 FROM guests g
+					 ORDER BY g.first_name`,
+				)
+			).rows;
+		}
+
 		if (command !== 'reset') {
 			throw new Error('Unknown fixture command.');
 		}

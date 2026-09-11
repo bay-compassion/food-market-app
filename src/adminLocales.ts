@@ -51,6 +51,15 @@ export interface AdminTranslation {
 	extendRegistrationMinutes: string;
 	guestList: string;
 	guestDatabase: string;
+	/** Feedback after a manual add; `{name}` is the guest's full name. */
+	guestAdded: string;
+	guestClaimClose: string;
+	guestClaimDone: string;
+	guestClaimImageAlt: string;
+	/** `{name}` is the guest's full name and `{time}` the moment the code stops working. */
+	guestClaimInstructions: string;
+	guestClaimShow: string;
+	guestClaimTitle: string;
 	historySessions: string;
 	householdCount: string;
 	lotteryActions: string;
@@ -256,6 +265,14 @@ export const adminTranslations = {
 		extendRegistrationMinutes: 'Extend registration by (minutes)',
 		guestList: 'Guest list',
 		guestDatabase: 'Guest database',
+		guestAdded: '{name} was added.',
+		guestClaimClose: 'Close QR code',
+		guestClaimDone: 'Done',
+		guestClaimImageAlt: 'QR code that sets up this guest on their phone',
+		guestClaimInstructions:
+			"Ask {name} to scan this with their phone's camera so they can follow their place in line. The code works once, until {time}.",
+		guestClaimShow: 'Show QR code for their phone',
+		guestClaimTitle: 'Set up their phone',
 		historySessions: 'Session history',
 		householdCount: 'Household',
 		lotteryActions: 'Lottery actions',
