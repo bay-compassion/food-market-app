@@ -6,7 +6,7 @@ import type { Locale } from '../../locales';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { GuestDatabaseGrid } from './GuestDatabaseGrid';
 import { busyQueue } from './queueGuests.fixture';
-import type { QueueGuest } from './types';
+import type { DatabaseGuest } from './types';
 
 /**
  * Every guest on record.
@@ -19,7 +19,7 @@ type GuestDatabaseGridArgs = {
 	locale: Locale;
 	busy: boolean;
 	canExport: boolean;
-	guests: QueueGuest[];
+	guests: DatabaseGuest[];
 };
 
 function Grid({ locale, busy, canExport, guests }: GuestDatabaseGridArgs) {
@@ -58,6 +58,38 @@ export const SearchNarrowsTheGrid: Story = {
 		// The toolbar's search debounces, so the grid narrows a moment after the last keystroke.
 		await waitFor(() => expect(canvas.queryByText('Maria Santos')).not.toBeInTheDocument());
 		await expect(canvas.getByText('Linh Nguyen')).toBeInTheDocument();
+	},
+};
+
+/**
+ * Guests who have never had a visit — saved between sessions by a worker, or through `/signup` —
+ * are listed too. Their status (a column hidden by default) reads "No visit", and there is
+ * no queue action to run against them.
+ */
+export const WithGuestsWhoHaveNoVisit: Story = {
+	args: {
+		guests: [
+			...busyQueue,
+			{
+				id: null,
+				guestId: 'guest-without-visit',
+				firstName: 'Ana',
+				lastName: 'Reyes',
+				phone: '(555) 987-6543',
+				locale: 'tl',
+				householdSize: null,
+				queuePosition: null,
+				calledAt: null,
+				status: null,
+				marketEventId: null,
+			},
+		],
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const row = (await canvas.findByText('Ana Reyes')).closest('[role="row"]')!;
+
+		await expect(within(row as HTMLElement).queryByRole('button')).not.toBeInTheDocument();
 	},
 };
 

@@ -72,3 +72,53 @@ test('a guest added by hand takes their record onto their own phone with a singl
 		await expect(stranger.page).toHaveURL(/\/claim$/);
 	});
 });
+
+test('a guest saved with details only has no visit, appears in the database, and registers from their phone', async ({
+	admin,
+	database,
+	guestBrowser,
+}) => {
+	let claimPath = '';
+
+	await test.step('Admin saves only the guest’s details from the guest database', async () => {
+		await admin.goto('/admin/guest-database');
+		await admin.getByRole('button', { name: `+ ${adminCopy.addGuest}`, exact: true }).click();
+		await admin.getByRole('textbox', { name: guestCopy.firstName }).fill('Gil');
+		await admin.getByRole('textbox', { name: guestCopy.lastName }).fill('QueueTest');
+		await admin.getByRole('textbox', { name: guestCopy.phone }).fill('2025550198');
+		await admin
+			.getByRole('combobox', { name: adminCopy.admissionLabel })
+			.selectOption({ label: adminCopy.admitProfileOnly });
+		// Household details belong to a visit, so they are not asked for.
+		await expect(admin.getByRole('textbox', { name: guestCopy.household })).toHaveCount(0);
+		await admin.getByRole('button', { name: adminCopy.saveGuest, exact: true }).click();
+		await expect(admin.getByText('Gil QueueTest was added.', { exact: true })).toBeVisible();
+		await expect(admin.getByRole('gridcell', { name: 'Gil QueueTest' })).toBeVisible();
+		expect(await database.guests()).toEqual([
+			{ first_name: 'Gil', has_device: false, outstanding_claims: 0 },
+		]);
+		expect(await database.visits()).toEqual([]);
+	});
+	await test.step('Admin shows the QR code; the guest’s phone takes the record', async () => {
+		const claimResponse = admin.waitForResponse(
+			(response) => new URL(response.url()).pathname === '/api/admin/guest-claims',
+		);
+
+		await admin.getByRole('button', { name: adminCopy.guestClaimShow, exact: true }).click();
+		claimPath = `/claim#${((await (await claimResponse).json()) as { token: string }).token}`;
+
+		const guest = await guestBrowser('Gil');
+
+		await guest.page.goto(claimPath);
+		await guest.page.getByRole('button', { name: claimCopy.submit, exact: true }).click();
+		await expect(guest.page).toHaveURL(/\/$/);
+		await expect(guest.page.getByText('Gil Q', { exact: true })).toBeVisible();
+		// Registration is open and the phone knows who they are, so only the visit fields are asked.
+		await expect(guest.page.getByRole('textbox', { name: guestCopy.household })).toBeVisible();
+		await expect(guest.page.getByRole('textbox', { name: guestCopy.firstName })).toHaveCount(0);
+		expect(await database.guests()).toEqual([
+			{ first_name: 'Gil', has_device: true, outstanding_claims: 0 },
+		]);
+		expect(await database.visits()).toEqual([]);
+	});
+});

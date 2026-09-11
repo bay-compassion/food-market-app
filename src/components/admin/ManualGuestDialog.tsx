@@ -4,7 +4,11 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useId, useState, type FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { admissionTakesLotteryWeight, type GuestAdmission } from '../../services/guestAdmission';
+import {
+	admissionCreatesVisit,
+	admissionTakesLotteryWeight,
+	type ManualAdmission,
+} from '../../services/guestAdmission';
 import {
 	lotteryWeightFor,
 	lotteryWeightTiers,
@@ -20,7 +24,7 @@ import type { ManualGuest } from './types';
 export type ManualGuestDialogProps = {
 	open: boolean;
 	/** The ways this session can accept a guest right now, most expected first. */
-	admissions: GuestAdmission[];
+	admissions: ManualAdmission[];
 	busy?: boolean;
 	onSubmit: (guest: ManualGuest) => void;
 	onClose: () => void;
@@ -41,9 +45,9 @@ const Form = styled.form`
 	}
 `;
 
-function defaultChoice(admissions: GuestAdmission[]): AdmissionChoice {
+function defaultChoice(admissions: ManualAdmission[]): AdmissionChoice {
 	return {
-		admission: admissions[0] ?? 'queue',
+		admission: admissions[0] ?? 'profile',
 		lotteryWeightTier: 'standard',
 		queuePlacement: 'end',
 	};
@@ -77,7 +81,7 @@ const ManualGuestFields = observer(function ManualGuestFields({
 		setChoice((current) =>
 			admissions.includes(current.admission)
 				? current
-				: { ...current, admission: admissions[0] ?? 'queue' },
+				: { ...current, admission: admissions[0] ?? 'profile' },
 		);
 	}, [admissions]);
 
@@ -97,15 +101,17 @@ const ManualGuestFields = observer(function ManualGuestFields({
 		});
 	}
 
-	const admissionLabels: Record<GuestAdmission, string> = {
+	const admissionLabels: Record<ManualAdmission, string> = {
 		lottery: t.admitToLottery,
 		queue: t.admitToQueue,
 		served: t.admitAsServed,
+		profile: t.admitProfileOnly,
 	};
-	const admissionHelp: Record<GuestAdmission, string> = {
+	const admissionHelp: Record<ManualAdmission, string> = {
 		lottery: t.admitToLotteryHelp,
 		queue: t.admitToQueueHelp,
 		served: t.admitAsServedHelp,
+		profile: t.admitProfileOnlyHelp,
 	};
 	const weightLabels: Record<LotteryWeightTier, string> = {
 		standard: t.weightStandard,
@@ -116,7 +122,10 @@ const ManualGuestFields = observer(function ManualGuestFields({
 	return (
 		<Form id={formId} className="manual-guest-form" onSubmit={handleSubmit}>
 			<GuestInformationForm />
-			<GuestLotteryForm registrationQuestions={[]} />
+			{/* Household details belong to a visit, so saving details alone does not ask for them. */}
+			{admissionCreatesVisit(choice.admission) ? (
+				<GuestLotteryForm registrationQuestions={[]} />
+			) : null}
 			<FormSection legend={t.admissionLegend}>
 				{admissions.length > 1 ? (
 					<TextField
@@ -124,7 +133,7 @@ const ManualGuestFields = observer(function ManualGuestFields({
 						select
 						slotProps={{ select: { native: true } }}
 						value={choice.admission}
-						onChange={(event) => update({ admission: event.target.value as GuestAdmission })}
+						onChange={(event) => update({ admission: event.target.value as ManualAdmission })}
 					>
 						{admissions.map((admission) => (
 							<option key={admission} value={admission}>
@@ -179,7 +188,8 @@ const ManualGuestFields = observer(function ManualGuestFields({
  * The identity and household fields are the same components a guest fills in for themselves, so
  * the two never drift apart; only the admission block is the worker's alone. What the resulting
  * visit looks like depends entirely on `admissions`, which the container derives from how far the
- * session has progressed — see `admissionsFor` in `services/guestAdmission.ts`.
+ * session has progressed — see `manualAdmissionsFor` in `services/guestAdmission.ts`. Saving details
+ * only is always among them, so a guest can be added between sessions too; that creates no visit.
  */
 export const ManualGuestDialog = observer(function ManualGuestDialog({
 	open,

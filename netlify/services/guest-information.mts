@@ -117,6 +117,35 @@ export async function persistGuestInformation(
 	return created!;
 }
 
+/**
+ * A worker saving someone's details without admitting them to any session — possible at any time,
+ * including between sessions. Gated behind `run:queue` by the admin route that parses it.
+ */
+export const adminProfileSchema = guestIdentitySchema.extend({
+	source: z.literal('admin'),
+	admission: z.literal('profile'),
+});
+
+export type AdminProfileSubmission = z.infer<typeof adminProfileSchema>;
+
+/**
+ * Creates a guest with no visit and no device credential. A phone takes the record over later by
+ * redeeming a worker's QR code — see `guest-claim.mts`.
+ */
+export async function createGuestProfile(
+	submission: AdminProfileSubmission,
+): Promise<{ id: null; guestId: string }> {
+	const guest = await db.transaction((tx) =>
+		persistGuestInformation(tx, {
+			existingGuest: null,
+			information: submission,
+			deviceTokenHash: null,
+		}),
+	);
+
+	return { id: null, guestId: guest.id };
+}
+
 /** Saves identity only; this operation never creates or updates a visit. */
 export async function saveGuestInformation(
 	submission: GuestInformationSubmission,

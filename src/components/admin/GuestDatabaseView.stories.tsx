@@ -3,7 +3,7 @@ import { expect, fn, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
-import { admissionsFor, type GuestAdmission } from '../../services/guestAdmission';
+import { manualAdmissionsFor, type ManualAdmission } from '../../services/guestAdmission';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { GuestDatabaseView } from './GuestDatabaseView';
 
@@ -18,7 +18,7 @@ import { GuestDatabaseView } from './GuestDatabaseView';
  */
 type GuestDatabaseViewArgs = {
 	locale: Locale;
-	admissions: GuestAdmission[];
+	admissions: ManualAdmission[];
 };
 
 function View({ locale, admissions }: GuestDatabaseViewArgs) {
@@ -36,7 +36,7 @@ const meta = {
 	title: 'Admin/GuestDatabaseView',
 	component: View,
 	parameters: { shell: 'admin' },
-	args: { locale: 'en', admissions: admissionsFor('service_started') },
+	args: { locale: 'en', admissions: manualAdmissionsFor('service_started') },
 } satisfies Meta<typeof View>;
 
 export default meta;
@@ -58,17 +58,17 @@ export const WithAddGuest: Story = {
 };
 
 /**
- * No session is configured, so there is nothing to add a guest to and the button is not offered.
- * The database itself stays readable.
+ * No session is configured. A guest can still be added — their details alone, with no visit — so
+ * the button stays, and the database itself stays readable.
  */
-export const NothingToAddTo: Story = {
-	args: { admissions: [] },
+export const BetweenSessions: Story = {
+	args: { admissions: manualAdmissionsFor(null) },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
 		await expect(
-			canvas.queryByRole('button', { name: new RegExp(adminTranslations.en.addGuest) }),
-		).not.toBeInTheDocument();
+			canvas.getByRole('button', { name: new RegExp(adminTranslations.en.addGuest) }),
+		).toBeInTheDocument();
 		await expect(canvas.getByText(adminTranslations.en.noGuests)).toBeInTheDocument();
 	},
 };

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
 import type { ServiceProgress } from '../services/demoScenario';
-import { admissionsFor, type GuestAdmission } from '../services/guestAdmission';
+import { manualAdmissionsFor } from '../services/guestAdmission';
 import {
 	defaultSessionSettings,
 	registrationClosesAtFrom,
@@ -126,8 +126,12 @@ export const AdminDashboard = observer(function AdminDashboard({
 
 	const statusLabels: Record<VisitStatus, string> = adminVisitStatusLabels(locale);
 	const sessionState = currentSessionState(event?.status);
-	/** With no session configured there is nothing to add a guest to. */
-	const sessionAdmissions: GuestAdmission[] = event ? admissionsFor(event.status) : [];
+	/**
+	 * With no session configured a guest can still be added, with their details alone. Until the
+	 * session has loaded, though, nothing is offered: "not known yet" is not "no session", and a form
+	 * opened in that moment would start on details only and stay there once the session arrived.
+	 */
+	const sessionAdmissions = currentState ? manualAdmissionsFor(event?.status ?? null) : [];
 	const currentSessionGuests = admin.sessionGuests
 		.filter((guest) => guest.marketEventId === event?.id)
 		.sort(

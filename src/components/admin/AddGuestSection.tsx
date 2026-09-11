@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import type { GuestAdmission } from '../../services/guestAdmission';
+import type { ManualAdmission } from '../../services/guestAdmission';
 import { ManualGuestDialog } from './ManualGuestDialog';
 import type { ManualGuest } from './types';
 
 export type AddGuestSectionProps = {
-	admissions: GuestAdmission[];
+	admissions: ManualAdmission[];
 	busy?: boolean;
 	onAddGuest: (guest: ManualGuest) => void;
 };
@@ -15,7 +15,7 @@ export type AddGuestSectionProps = {
  * Whether the manual guest dialog is open, and whether it may be. A session that cannot accept
  * anyone right now offers no dialog, and closes one that was already open.
  */
-export function useManualGuestForm(admissions: GuestAdmission[]) {
+export function useManualGuestForm(admissions: ManualAdmission[]) {
 	const [isOpen, setIsOpen] = useState(false);
 	const canAdd = admissions.length > 0;
 

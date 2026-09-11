@@ -167,4 +167,54 @@ describe('guests handler POST (admin only)', () => {
 		expect(response.status).toBe(400);
 		expect(db.select).not.toHaveBeenCalled();
 	});
+	it('saves details only, with no session and no household, and creates no visit', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([{ id: 'guest-1' }]);
+
+		// Act
+		const response = await handler(
+			request('POST', {
+				body: {
+					firstName: 'Ari',
+					lastName: 'Guest',
+					ageRange: '',
+					householdSize: '',
+					childrenCount: '',
+					seniorsCount: '',
+					phone: '555-123-4567',
+					locale: 'en',
+					source: 'admin',
+					admission: 'profile',
+					marketEventId: null,
+				},
+			}),
+		);
+
+		// Assert
+		expect(response.status).toBe(201);
+		await expect(response.json()).resolves.toEqual({ id: null, guestId: 'guest-1' });
+		expect(db.insert).toHaveBeenCalledOnce();
+		expect(db.select).not.toHaveBeenCalled();
+		const stored = (db.insert.mock.results[0]!.value as { values: ReturnType<typeof vi.fn> }).values
+			.mock.calls[0]![0];
+
+		expect(stored).toMatchObject({ firstName: 'Ari', deviceTokenHash: null });
+	});
+
+	it('still requires a name and phone to save details only', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+
+		// Act
+		const response = await handler(
+			request('POST', {
+				body: { firstName: 'Ari', locale: 'en', source: 'admin', admission: 'profile' },
+			}),
+		);
+
+		// Assert
+		expect(response.status).toBe(400);
+		expect(db.insert).not.toHaveBeenCalled();
+	});
 });

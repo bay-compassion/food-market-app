@@ -5,13 +5,14 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useMemo } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { GuestDatabaseRows, type GuestDatabaseRow } from '../../services/guest-database-rows';
+import { GuestDatabaseRows } from '../../services/guest-database-rows';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
 import { guestDatabaseColumns } from './guest-database-columns';
-import type { QueueGuest } from './types';
+import type { DatabaseGuest, QueueGuest } from './types';
 
 export type GuestDatabaseGridProps = {
-	guests: QueueGuest[];
+	/** Every visit on record, and every guest who has none. */
+	guests: DatabaseGuest[];
 	statusLabels: Record<VisitStatus, string>;
 	/** Whether this worker may take guest names and phone numbers off the screen. */
 	canExport: boolean;
@@ -94,13 +95,16 @@ export function GuestDatabaseGrid({
 	// joins them on a phone, where three columns is the most that fits. The Columns button brings
 	// any of them back. Read once, as the grid's initial state, so a worker's own choice then sticks.
 	const narrow = useMediaQuery(useTheme().breakpoints.down('sm'));
-	const rows = useMemo(() => new GuestDatabaseRows(guests, statusLabels), [guests, statusLabels]);
+	const rows = useMemo(
+		() => new GuestDatabaseRows(guests, statusLabels, t.noVisit),
+		[guests, statusLabels, t.noVisit],
+	);
 	const columns = useMemo(
 		() =>
 			guestDatabaseColumns({
 				rows,
 				busy,
-				onRun: (row: GuestDatabaseRow, command) => onRun(row.guest, command),
+				onRun,
 			}),
 		[rows, busy, onRun],
 	);

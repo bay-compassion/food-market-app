@@ -4,13 +4,13 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { adminTranslations } from '../adminLocales';
 import { AddGuestSection } from '../components/admin/AddGuestSection';
-import type { GuestAdmission } from '../services/guestAdmission';
+import type { ManualAdmission } from '../services/guestAdmission';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
 
 const t = adminTranslations.en;
 
-function renderSection(admissions: GuestAdmission[]) {
+function renderSection(admissions: ManualAdmission[]) {
 	const onAddGuest = vi.fn();
 	const result = render(
 		<RootStoreProvider store={new RootStore()}>
@@ -21,7 +21,7 @@ function renderSection(admissions: GuestAdmission[]) {
 	return { ...result, onAddGuest };
 }
 
-async function openForm(admissions: GuestAdmission[]) {
+async function openForm(admissions: ManualAdmission[]) {
 	const user = userEvent.setup();
 	const rendered = renderSection(admissions);
 
@@ -82,6 +82,30 @@ describe('AddGuestSection', () => {
 		// Only the age range select remains.
 		expect(selects()).toHaveLength(1);
 		expect(dialog().textContent).toContain(t.admitAsServedHelp);
+	});
+
+	it('saves details only between sessions, asking nothing a visit would need', async () => {
+		const { onAddGuest } = await openForm(['profile']);
+
+		// No admission choice, no household, no age range: only the identity fields remain.
+		expect(selects()).toHaveLength(0);
+		expect(dialog().textContent).toContain(t.admitProfileOnlyHelp);
+		fireEvent.submit(form());
+		expect(onAddGuest.mock.calls[0]?.[0]).toMatchObject({ admission: 'profile' });
+	});
+
+	it('offers saving details only after the session’s own admissions', async () => {
+		const { user } = await openForm(['lottery', 'queue', 'profile']);
+
+		expect(optionTexts(selects()[1]!)).toEqual([
+			t.admitToLottery,
+			t.admitToQueue,
+			t.admitProfileOnly,
+		]);
+		await user.selectOptions(selects()[1]!, 'profile');
+		// The household fields belong to a visit, so they go with it.
+		expect(selects()).toHaveLength(1);
+		expect(dialog().textContent).toContain(t.admitProfileOnlyHelp);
 	});
 
 	it('offers the draw odds only to a guest actually entering the draw', async () => {

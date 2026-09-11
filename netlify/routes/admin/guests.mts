@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, ne, or } from 'drizzle-orm';
+import { and, desc, eq, ilike, ne, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
@@ -12,6 +12,7 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { adminProfileSchema, createGuestProfile } from '../../services/guest-information.mjs';
 import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
 
@@ -70,15 +71,31 @@ async function listGuests(request: Request) {
 				createdAt: visits.createdAt,
 			})
 			.from(guests)
-			.innerJoin(visits, eq(visits.guestId, guests.id))
+			// A left join so the whole-database view also lists guests with no visit — every visit
+			// column comes back null for them. A session filter still excludes them, as before.
+			.leftJoin(visits, eq(visits.guestId, guests.id))
 			.where(where)
-			.orderBy(desc(visits.createdAt))
+			.orderBy(desc(sql`coalesce(${visits.createdAt}, ${guests.createdAt})`))
 			.limit(eventId ? 10_000 : 100),
 	);
 }
 
 async function createGuest(request: Request) {
 	const body = await jsonBody(request);
+
+	// Decided before the visit schema sees it, which would otherwise read `profile` as `queue`.
+	if (
+		typeof body === 'object' &&
+		body !== null &&
+		'admission' in body &&
+		body.admission === 'profile'
+	) {
+		const profile = adminProfileSchema.safeParse(body);
+
+		return profile.success
+			? Response.json(await createGuestProfile(profile.data), { status: 201 })
+			: jsonError('Please provide a valid name and phone number.');
+	}
 
 	const submission = parseSubmission(body);
 

@@ -10,6 +10,8 @@ export interface AdminTranslation {
 	admissionLegend: string;
 	admitAsServed: string;
 	admitAsServedHelp: string;
+	admitProfileOnly: string;
+	admitProfileOnlyHelp: string;
 	admitToLottery: string;
 	admitToLotteryHelp: string;
 	admitToQueue: string;
@@ -79,6 +81,8 @@ export interface AdminTranslation {
 	noRegisteredGuests: string;
 	noHistory: string;
 	noShow: string;
+	/** The guest database status of a guest who has never had a visit. */
+	noVisit: string;
 	notPlaced: string;
 	/** Names the total the progress bar measures against, as "of 120 guests placed today". */
 	placedToday: string;
@@ -220,6 +224,9 @@ export const adminTranslations = {
 		admitAsServed: 'Record as already served',
 		admitAsServedHelp:
 			'For someone who was handed food outside the app. They join this session’s record without entering any line.',
+		admitProfileOnly: 'Just save their details',
+		admitProfileOnlyHelp:
+			'Adds the guest without entering them in any session. They can register themselves next time — show them the QR code so their phone remembers them.',
 		admitToLottery: 'Enter the draw',
 		admitToLotteryHelp:
 			'The guest takes their chances in the lottery, the same as anyone who signed up on their own phone.',
@@ -270,7 +277,7 @@ export const adminTranslations = {
 		guestClaimDone: 'Done',
 		guestClaimImageAlt: 'QR code that sets up this guest on their phone',
 		guestClaimInstructions:
-			"Ask {name} to scan this with their phone's camera so they can follow their place in line. The code works once, until {time}.",
+			"Ask {name} to scan this with their phone's camera so their phone can show their status and updates. The code works once, until {time}.",
 		guestClaimShow: 'Show QR code for their phone',
 		guestClaimTitle: 'Set up their phone',
 		historySessions: 'Session history',
@@ -293,6 +300,7 @@ export const adminTranslations = {
 		noRegisteredGuests: 'No guests have registered for this session yet.',
 		noHistory: 'No past sessions yet.',
 		noShow: 'No show',
+		noVisit: 'No visit',
 		notPlaced: 'Not placed',
 		placedToday: 'of {count} guests placed today',
 		open: 'Registration open',

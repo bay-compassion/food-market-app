@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
-import type { GuestAdmission } from '../../services/guestAdmission';
+import type { ManualAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { useManualGuestForm } from './AddGuestSection';
@@ -12,7 +12,7 @@ import type { ManualGuest, QueueGuest } from './types';
 
 export type GuestDatabaseViewProps = {
 	statusLabels: Record<VisitStatus, string>;
-	admissions: GuestAdmission[];
+	admissions: ManualAdmission[];
 	onRun: (guest: QueueGuest, command: VisitCommand) => void;
 	onAddGuest: (guest: ManualGuest) => void;
 };
