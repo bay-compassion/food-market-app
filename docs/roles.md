@@ -46,7 +46,7 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET`, `POST`, `PATCH /api/admin/guests` | `run:queue`                                             |
 | `POST /api/admin/queue`                  | `run:queue`                                             |
 | `POST /api/admin/broadcast`              | `manage:sessions`                                       |
-| `POST /api/admin/guest-claims`           | `run:queue`; `manage:guest-access` lifts its limits     |
+| `POST /api/admin/guest-claims`           | `run:queue`; plus `manage:guest-access` to override     |
 | `GET /api/admin/reports`                 | `read:reports`                                          |
 | `GET /api/admin/reports?view=export`     | `export:guest-data`                                     |
 | `GET`, `POST /api/admin/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
@@ -129,7 +129,9 @@ An override is an account handover, so treat it like one:
   subject, and `guest_claim.redeemed` — see [`backend-logging.md`](backend-logging.md). Netlify
   keeps function logs only briefly; set up a log drain if these need to outlast that.
 
-`manage:guest-access` is on `admin` in `infrastructure/auth0/tenant/tenant.yaml`. Push that to
+`manage:guest-access` extends `run:queue` rather than standing alone: a role holding it without
+`run:queue` is refused at the first gate, because the override is only reachable from screens that
+list guests. It is on `admin` in `infrastructure/auth0/tenant/tenant.yaml`. Push that to
 Auth0 before merging the code that checks it; until then an admin's override is refused with a 403
 and nothing else changes.
 
