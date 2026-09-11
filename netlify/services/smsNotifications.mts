@@ -17,6 +17,30 @@ import { TwilioSmsTransport } from './sms-transport.mjs';
  * https://www.twilio.com/docs/api/errors
  */
 const permanentFailureCodes = new Set([21211, 21610, 21614]);
+const smsPrefix = 'The Bay Compassion: ';
+const smsUnsubscribe = 'Reply STOP to unsubscribe';
+
+export function smsMessage(
+	locale: Locale,
+	type: DeliveryType,
+	queuePosition: number | null,
+	custom?: { title: string | null; body: string | null },
+) {
+	const copy = deliveryCopy(locale, type, custom);
+	const body =
+		type === 'registration_confirmed'
+			? translations[locale].smsNotificationRegisteredBody
+			: copy.body;
+	const position =
+		type === 'lottery_selected' && queuePosition !== null
+			? `\n${translations[locale].smsNotificationSelectedPosition.replace(
+					'{position}',
+					String(queuePosition),
+				)}`
+			: '';
+
+	return `${smsPrefix}${copy.title}\n\n${body}${position}\n\n${smsUnsubscribe}`;
+}
 
 export function smsConfiguration() {
 	return { configured: notificationsEnabled() && TwilioSmsTransport.configured() };
@@ -68,6 +92,7 @@ export async function deliverPendingSmsNotifications(
 				body: notificationDeliveries.body,
 				locale: guests.locale,
 				phone: guests.normalizedPhone,
+				queuePosition: visits.queuePosition,
 				fake: guests.fake,
 				subscribed: smsSubscriptions.id,
 			})
@@ -120,7 +145,7 @@ export async function deliverPendingSmsNotifications(
 		const type = row.type as DeliveryType;
 		const copy = deliveryCopy(locale, type, { title: row.title, body: row.body });
 
-		if (!copy.title || !copy.body) {
+		if (!copy.title || !copy.body || (type === 'lottery_selected' && row.queuePosition === null)) {
 			await db
 				.update(notificationDeliveries)
 				.set({
@@ -137,7 +162,10 @@ export async function deliverPendingSmsNotifications(
 		try {
 			await transport.send({
 				to: row.phone,
-				body: `${copy.title}\n\n${copy.body}`,
+				body: smsMessage(locale, type, row.queuePosition, {
+					title: row.title,
+					body: row.body,
+				}),
 			});
 			await db
 				.update(notificationDeliveries)

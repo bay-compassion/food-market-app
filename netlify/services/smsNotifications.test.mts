@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { languages, translations } from '../../src/locales.js';
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 const messagesCreate = vi.fn();
@@ -9,7 +10,11 @@ vi.mock('twilio', () => ({
 	default: vi.fn(() => ({ messages: { create: messagesCreate } })),
 }));
 
-import { deliverPendingSmsNotifications, smsConfiguration } from './smsNotifications.mjs';
+import {
+	deliverPendingSmsNotifications,
+	smsConfiguration,
+	smsMessage,
+} from './smsNotifications.mjs';
 
 const twilioEnv = {
 	TWILIO_ACCOUNT_SID: 'account-sid',
@@ -27,6 +32,33 @@ afterEach(() => {
 	resetDbStub();
 	messagesCreate.mockReset();
 	vi.unstubAllEnvs();
+});
+
+describe('smsMessage', () => {
+	it('wraps every localized notification in the required English compliance copy', () => {
+		for (const { code } of languages) {
+			const message = smsMessage(code, 'called', null);
+
+			expect(message).toMatch(/^The Bay Compassion: /);
+			expect(message).toContain(translations[code].notificationCalledBody);
+			expect(message).toMatch(/Reply STOP to unsubscribe$/);
+		}
+	});
+
+	it('confirms entry into the lottery', () => {
+		expect(smsMessage('en', 'registration_confirmed', null)).toContain(
+			'Your entry into the lottery has been confirmed.',
+		);
+	});
+
+	it('includes the guest queue position in a localized lottery-selection message', () => {
+		expect(smsMessage('es', 'lottery_selected', 12)).toBe(
+			'The Bay Compassion: Fue seleccionado\n\n' +
+				'Fue seleccionado. Espere hasta que le llamemos.\n' +
+				'Su lugar en la fila es 12.\n\n' +
+				'Reply STOP to unsubscribe',
+		);
+	});
 });
 
 describe('sms notification configuration', () => {
@@ -69,6 +101,7 @@ describe('deliverPendingSmsNotifications', () => {
 				body: null,
 				locale: 'en',
 				phone: '+15551234567',
+				queuePosition: 1,
 				fake: false,
 				subscribed: 'sms-sub-1',
 			},
@@ -84,6 +117,7 @@ describe('deliverPendingSmsNotifications', () => {
 			expect.objectContaining({
 				messagingServiceSid: 'messaging-service-sid',
 				to: '+15551234567',
+				body: 'The Bay Compassion: It’s your turn\n\nPlease come to the entrance now.\n\nReply STOP to unsubscribe',
 			}),
 		);
 	});
