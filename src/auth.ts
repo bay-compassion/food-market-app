@@ -1,3 +1,4 @@
+import type { AppState } from '@auth0/auth0-react';
 import { decodeJwt } from 'jose';
 
 import { grantedPermissions, permissions, type Permission } from './services/permissions';
@@ -23,6 +24,25 @@ export const auth0Settings = settings
 	: null;
 
 export const isAuth0Configured = auth0Settings !== null;
+
+/**
+ * Where a completed sign-in should land, from the `appState` the redirect carried.
+ *
+ * Auth0 always returns to `redirect_uri`, which is the app's root — the one callback URL the
+ * tenant is configured with. The screen that started the sign-in records where it actually wanted
+ * to be, and this reads it back.
+ *
+ * Only a path within this app is honoured. `appState` survives the round trip in session storage,
+ * so treating whatever comes back as a destination would be an open redirect; a value that is not
+ * an in-app absolute path (including a protocol-relative `//host`) falls back to the guest view.
+ */
+export function returnToPath(appState?: AppState): string {
+	const returnTo: unknown = appState?.returnTo;
+
+	return typeof returnTo === 'string' && returnTo.startsWith('/') && !returnTo.startsWith('//')
+		? returnTo
+		: '/';
+}
 
 /**
  * The permissions in an access token, read **without verifying the signature**.
