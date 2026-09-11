@@ -166,6 +166,13 @@ npm run sms:smoke -- --to=+15551234567 --send
 The command reads `.env`, bypasses the database and workload queue, masks recipients in its output,
 and refuses to run without `--send`. It uses live Twilio credentials and may incur messaging charges.
 
+To keep application consent synchronized with replies sent to the Twilio number, enable Advanced
+Opt-Out on the Messaging Service and configure its incoming-message integration to send an HTTP
+`POST` webhook to `https://<production-domain>/api/twilio/incoming-message`. The endpoint validates
+Twilio's request signature, removes every matching guest's SMS subscription for `STOP`, restores it
+for `START`, and ignores other incoming messages. Twilio remains responsible for sending the
+configured opt-out and opt-in confirmation replies.
+
 ## Auth0 administration access
 
 The guest check-in is public. Auth0 protects the `/admin` route, guest records, and every
