@@ -48,4 +48,26 @@ describe('TwilioSmsTransport', () => {
 		expect(logSmsDelivery).toHaveBeenCalledWith('+15005550006', 'Test message');
 		expect(result).toEqual({ providerMessageId: 'SM123' });
 	});
+
+	it('still submits a message when delivery logging fails', async () => {
+		for (const [key, value] of Object.entries(twilioEnv)) {
+			vi.stubEnv(key, value);
+		}
+		logSmsDelivery.mockImplementationOnce(() => {
+			throw new Error('read-only log destination');
+		});
+		messagesCreate.mockResolvedValueOnce({ sid: 'SM123' });
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+		const transport = TwilioSmsTransport.fromEnvironment();
+
+		const result = await transport!.send({
+			to: '+15005550006',
+			body: 'Test message',
+		});
+
+		expect(messagesCreate).toHaveBeenCalledOnce();
+		expect(warn).toHaveBeenCalledWith('SMS delivery logging failed.');
+		expect(result).toEqual({ providerMessageId: 'SM123' });
+		warn.mockRestore();
+	});
 });

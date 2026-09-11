@@ -75,9 +75,12 @@ export function createLogger(destination?: Writable) {
 export function createSmsLogger(destination?: Writable) {
 	const { level, silent } = loggingSettings();
 	const filename = process.env.SMS_LOG_FILE ?? 'logs/sms.log';
+	const serverlessRuntime = Boolean(
+		process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT,
+	);
 	const transport = destination
 		? new winston.transports.Stream({ stream: destination })
-		: process.env.NETLIFY
+		: serverlessRuntime
 			? new winston.transports.Console()
 			: new winston.transports.File({ filename });
 

@@ -34,7 +34,12 @@ export class TwilioSmsTransport implements SmsTransport {
 	}
 
 	async send(message: SmsMessage) {
-		logSmsDelivery(message.to, message.body);
+		try {
+			logSmsDelivery(message.to, message.body);
+		} catch {
+			// Observability must never prevent a provider delivery attempt.
+			console.warn('SMS delivery logging failed.');
+		}
 		const result = await this.client.messages.create({
 			messagingServiceSid: this.messagingServiceSid,
 			to: message.to,
