@@ -162,3 +162,21 @@ export const smsSubscriptions = pgTable(
 	},
 	(table) => [uniqueIndex('sms_subscriptions_guest_idx').on(table.guestId)],
 );
+
+/**
+ * The Twilio sender that received a STOP from a guest. Twilio blocks both the Messaging Service
+ * and that sender, so a later website re-consent must clear both records through the Consent API.
+ */
+export const smsOptOuts = pgTable(
+	'sms_opt_outs',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		guestId: uuid('guest_id')
+			.notNull()
+			.references(() => guests.id, { onDelete: 'cascade' }),
+		senderPhone: text('sender_phone').notNull(),
+		optedOutAt: timestamp('opted_out_at', { withTimezone: true }).notNull().defaultNow(),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [uniqueIndex('sms_opt_outs_guest_idx').on(table.guestId)],
+);

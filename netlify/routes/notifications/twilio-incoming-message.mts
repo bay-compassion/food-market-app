@@ -2,7 +2,7 @@ import { eq, inArray } from 'drizzle-orm';
 import twilio from 'twilio';
 
 import { db } from '../../../db/index.mjs';
-import { guests, smsSubscriptions } from '../../../db/schema.mjs';
+import { guests, smsOptOuts, smsSubscriptions } from '../../../db/schema.mjs';
 import { createRouter, jsonError, methodNotAllowed, routeHandler } from '../../lib/http.mjs';
 import { getLogger } from '../../lib/logging.mjs';
 
@@ -54,9 +54,10 @@ twilioIncomingMessageRoutes.post('/api/twilio/incoming-message', async (context)
 	}
 
 	const from = parameters.From;
+	const to = parameters.To;
 	const optOutType = parameters.OptOutType;
 
-	if (!from || (optOutType !== 'STOP' && optOutType !== 'START')) {
+	if (!from || !to || (optOutType !== 'STOP' && optOutType !== 'START')) {
 		return emptyMessagingResponse();
 	}
 
@@ -74,17 +75,31 @@ twilioIncomingMessageRoutes.post('/api/twilio/incoming-message', async (context)
 	const guestIds = matchingGuests.map(({ id }) => id);
 
 	if (optOutType === 'STOP') {
-		await db.delete(smsSubscriptions).where(inArray(smsSubscriptions.guestId, guestIds));
+		const optedOutAt = new Date();
+
+		await db.transaction(async (tx) => {
+			await tx
+				.insert(smsOptOuts)
+				.values(guestIds.map((guestId) => ({ guestId, senderPhone: to, optedOutAt })))
+				.onConflictDoUpdate({
+					target: smsOptOuts.guestId,
+					set: { senderPhone: to, optedOutAt },
+				});
+			await tx.delete(smsSubscriptions).where(inArray(smsSubscriptions.guestId, guestIds));
+		});
 	} else {
 		const consentedAt = new Date();
 
-		await db
-			.insert(smsSubscriptions)
-			.values(guestIds.map((guestId) => ({ guestId, consentedAt })))
-			.onConflictDoUpdate({
-				target: smsSubscriptions.guestId,
-				set: { consentedAt },
-			});
+		await db.transaction(async (tx) => {
+			await tx.delete(smsOptOuts).where(inArray(smsOptOuts.guestId, guestIds));
+			await tx
+				.insert(smsSubscriptions)
+				.values(guestIds.map((guestId) => ({ guestId, consentedAt })))
+				.onConflictDoUpdate({
+					target: smsSubscriptions.guestId,
+					set: { consentedAt },
+				});
+		});
 	}
 
 	getLogger().info({

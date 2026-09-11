@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=10c19030f06f -->
+<!-- diagram-sources: db/schema.mts=7985960bdea1 -->
 
 # Database structure
 
@@ -20,6 +20,7 @@ erDiagram
     guests ||--o{ visits : "attends"
     visits ||--o| push_subscriptions : "notifies"
     guests ||--o| sms_subscriptions : "consents"
+    guests ||--o| sms_opt_outs : "records STOP"
     visits ||--o{ notification_deliveries : "queues"
 
     market_events {
@@ -110,6 +111,14 @@ erDiagram
         timestamptz consented_at
         timestamptz created_at
     }
+
+    sms_opt_outs {
+        uuid id PK
+        uuid guest_id FK "unique; cascade delete"
+        text sender_phone "Twilio number that received STOP"
+        timestamptz opted_out_at
+        timestamptz created_at
+    }
 ```
 
 A few things the diagram can't show on its own:
@@ -139,8 +148,13 @@ A few things the diagram can't show on its own:
 - **`visits.normalized_phone` preserves the submitted phone number in normalized form.** Renewed
   information can update the long-lived guest profile without erasing the phone signal that was
   present on an earlier visit, so later analysis can reconcile possible duplicate guest records.
+- **`sms_opt_outs` retains only active STOP state.** It remembers which Twilio sender received the
+  keyword because Twilio blocks both that Messaging Service and the individual sender. A later
+  website re-consent clears both through Twilio's Consent Management API before restoring the
+  `sms_subscriptions` row; an inbound START removes the opt-out row directly.
 - **Only `market_events → registration_questions`, `visits → push_subscriptions`,
-  `visits → notification_deliveries`, and `guests → sms_subscriptions` cascade on delete.**
+  `visits → notification_deliveries`, `guests → sms_subscriptions`, and `guests → sms_opt_outs`
+  cascade on delete.**
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.
 

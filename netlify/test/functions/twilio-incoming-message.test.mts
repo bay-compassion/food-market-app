@@ -47,12 +47,26 @@ describe('Twilio incoming-message webhook', () => {
 	it('removes every matching guest subscription after STOP', async () => {
 		queueResult([{ id: 'guest-1' }, { id: 'guest-2' }]);
 		queueResult(undefined);
+		queueResult(undefined);
 
 		const response = await handler(request());
 
 		expect(response.status).toBe(200);
 		expect(db.delete).toHaveBeenCalledTimes(1);
-		expect(db.insert).not.toHaveBeenCalled();
+		expect(db.insert).toHaveBeenCalledTimes(1);
+		expect(db.transaction).toHaveBeenCalledTimes(1);
+		expect(db.insert.mock.results[0]?.value.values).toHaveBeenCalledWith([
+			{
+				guestId: 'guest-1',
+				senderPhone: baseParameters.To,
+				optedOutAt: expect.any(Date),
+			},
+			{
+				guestId: 'guest-2',
+				senderPhone: baseParameters.To,
+				optedOutAt: expect.any(Date),
+			},
+		]);
 		await expect(response.text()).resolves.toContain('<Response/>');
 	});
 
@@ -61,12 +75,14 @@ describe('Twilio incoming-message webhook', () => {
 
 		queueResult([{ id: 'guest-1' }, { id: 'guest-2' }]);
 		queueResult(undefined);
+		queueResult(undefined);
 
 		const response = await handler(request(parameters));
 
 		expect(response.status).toBe(200);
 		expect(db.insert).toHaveBeenCalledTimes(1);
-		expect(db.delete).not.toHaveBeenCalled();
+		expect(db.delete).toHaveBeenCalledTimes(1);
+		expect(db.transaction).toHaveBeenCalledTimes(1);
 	});
 
 	it('accepts other incoming messages without changing consent', async () => {

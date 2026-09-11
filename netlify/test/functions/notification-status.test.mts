@@ -28,7 +28,10 @@ describe('notification-status handler', () => {
 	});
 
 	it('returns subscription status across the recognized guest’s visits', async () => {
-		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({
+			id: 'guest-1',
+			normalizedPhone: '+15551234567',
+		});
 		queueResult([{ id: 'push-1' }]);
 		queueResult([{ id: 'sms-1' }]);
 
@@ -42,7 +45,10 @@ describe('notification-status handler', () => {
 	});
 
 	it('returns false for channels the guest has not enabled', async () => {
-		vi.mocked(authorizedGuest).mockResolvedValueOnce({ id: 'guest-1' });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce({
+			id: 'guest-1',
+			normalizedPhone: '+15551234567',
+		});
 		queueResult([]);
 		queueResult([]);
 
