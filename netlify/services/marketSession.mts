@@ -294,6 +294,34 @@ export function weightedShuffle<T extends { lotteryWeight: number }>(items: T[])
 		.map(({ item }) => item);
 }
 
+/**
+ * Keeps the earliest registration for each phone in the draw. Registration rows are deliberately
+ * retained: separate devices may belong to different family members and remain useful for later
+ * reconciliation, but a shared phone represents one household-level lottery entry for an event.
+ */
+export function deduplicateLotteryRegistrations<
+	T extends { id: string; normalizedPhone?: string | null },
+>(registrations: T[]) {
+	const entrants: T[] = [];
+	const duplicates: T[] = [];
+	const seenPhones = new Set<string>();
+
+	for (const registration of registrations) {
+		// Older rows can predate the visit-level phone snapshot. Do not collapse unknown identities.
+		if (!registration.normalizedPhone || !seenPhones.has(registration.normalizedPhone)) {
+			entrants.push(registration);
+
+			if (registration.normalizedPhone) {
+				seenPhones.add(registration.normalizedPhone);
+			}
+		} else {
+			duplicates.push(registration);
+		}
+	}
+
+	return { entrants, duplicates };
+}
+
 /** What a worker can still change once registration is open: how long, and for how many. */
 const registrationOverrideSchema = z.object({
 	registrationClosesAt: timestampSchema,
@@ -625,10 +653,16 @@ export async function runLottery(
 			}
 
 			const registrations = await tx
-				.select({ id: visits.id, lotteryWeight: visits.lotteryWeight })
+				.select({
+					id: visits.id,
+					lotteryWeight: visits.lotteryWeight,
+					normalizedPhone: visits.normalizedPhone,
+				})
 				.from(visits)
-				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
-			const shuffled = shuffleFn(registrations);
+				.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')))
+				.orderBy(visits.createdAt, visits.id);
+			const { entrants, duplicates } = deduplicateLotteryRegistrations(registrations);
+			const shuffled = shuffleFn(entrants);
 			// A worker can place a guest straight into the line before the draw. Those guests are
 			// already `waiting`, so they use capacity and the winners queue behind them.
 			const [placed] = await tx
@@ -644,6 +678,7 @@ export async function runLottery(
 			const selectedRegistrations = shuffled.slice(0, remainingCapacity);
 			const selected = selectedRegistrations.map(({ id }) => id);
 			const notPlaced = shuffled.slice(remainingCapacity).map(({ id }) => id);
+			const duplicateIds = duplicates.map(({ id }) => id);
 
 			const [started] = await tx
 				.update(marketEvents)
@@ -679,6 +714,14 @@ export async function runLottery(
 				if (notificationsEnabled()) {
 					await queueNotification(tx, notPlaced, 'lottery_not_selected', 'lottery_not_selected');
 				}
+			}
+
+			if (duplicateIds.length) {
+				// They did not receive a lottery chance, so do not enqueue the ordinary loss notification.
+				await tx
+					.update(visits)
+					.set({ status: 'not_placed' })
+					.where(inArray(visits.id, duplicateIds));
 			}
 
 			return true;
