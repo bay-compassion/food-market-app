@@ -24,5 +24,6 @@ export const config: Config = {
 		'/api/push-subscription',
 		'/api/sms-subscription',
 		'/api/notification-status',
+		'/api/twilio/incoming-message',
 	],
 };
