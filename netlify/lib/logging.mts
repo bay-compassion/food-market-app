@@ -8,6 +8,15 @@ import winston, { type Logger } from 'winston';
 const levels = new Set(Object.keys(winston.config.npm.levels));
 const context = new AsyncLocalStorage<Logger>();
 
+function loggingSettings() {
+	const requestedLevel = process.env.LOG_LEVEL?.trim().toLowerCase() ?? 'info';
+
+	return {
+		level: levels.has(requestedLevel) ? requestedLevel : 'info',
+		silent: requestedLevel === 'silent',
+	};
+}
+
 /** Database and provider errors can contain credentials or guest data in their messages. */
 function serializeError(error: unknown) {
 	if (!(error instanceof Error)) {
@@ -47,11 +56,11 @@ const sanitize = winston.format((info) => {
 });
 
 export function createLogger(destination?: Writable) {
-	const level = process.env.LOG_LEVEL?.trim().toLowerCase() ?? 'info';
+	const { level, silent } = loggingSettings();
 
 	return winston.createLogger({
-		level: levels.has(level) ? level : 'info',
-		silent: level === 'silent',
+		level,
+		silent,
 		defaultMeta: { service: 'bay-compassion-backend' },
 		format: winston.format.combine(sanitize(), winston.format.timestamp(), winston.format.json()),
 		// Write directly to the platform's console; no file or background network transport.
@@ -61,6 +70,41 @@ export function createLogger(destination?: Writable) {
 				: new winston.transports.Console(),
 		],
 	});
+}
+
+export function createSmsLogger(destination?: Writable) {
+	const { level, silent } = loggingSettings();
+	const filename = process.env.SMS_LOG_FILE ?? 'logs/sms.log';
+	const transport = destination
+		? new winston.transports.Stream({ stream: destination })
+		: process.env.NETLIFY
+			? new winston.transports.Console()
+			: new winston.transports.File({ filename });
+
+	return winston.createLogger({
+		level,
+		silent,
+		defaultMeta: { service: 'bay-compassion-backend', channel: 'sms' },
+		format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+		transports: [transport],
+	});
+}
+
+let smsLogger: Logger | undefined;
+
+export function getSmsLogger() {
+	return (smsLogger ??= createSmsLogger());
+}
+
+export function obfuscatePhoneNumber(phone: string) {
+	return `••••${phone.slice(-4)}`;
+}
+
+export function logSmsDelivery(phone: string, content: string, log = getSmsLogger()) {
+	const recipient = obfuscatePhoneNumber(phone);
+
+	log.info({ message: 'sms.delivery.attempted', recipient });
+	log.debug({ message: 'sms.delivery.content', recipient, content });
 }
 
 const logger = createLogger();

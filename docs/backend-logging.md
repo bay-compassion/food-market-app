@@ -1,11 +1,18 @@
 # Backend logging
 
 The Netlify functions emit one JSON object per line to stdout using Winston. Logs are available in
-Netlify's function logs; no external collector or credentials are required. Output goes directly to the console without a file or background network transport.
+Netlify's function logs; no external collector or credentials are required. SMS delivery events use
+a second Winston logger. It writes JSON lines to a dedicated file locally and to stdout on Netlify,
+where they can be found by filtering for `sms.delivery`.
 
 Set `LOG_LEVEL` in the server environment to `error`, `warn`, `info`, `http`, `verbose`, `debug`, `silly`, or
 `silent`. The default is `info`; invalid values fall back to `info`. The setting is read when the
 logger is initialized, so changing it requires a fresh function instance.
+
+Set `SMS_LOG_FILE` to choose the local SMS log path; it defaults to `logs/sms.log`. Netlify ignores
+this setting and sends the same structured records to its function log because function-local files
+are ephemeral and cannot be retrieved after an execution environment is recycled. For longer
+production retention than Netlify provides, use an external logging service or Log Drain.
 
 Every record includes `timestamp` (UTC ISO timestamp), `level`, and `service`. Within an invocation it
 also includes `function` and `requestId`. The ID comes from Netlify's invocation context, or a fresh
@@ -21,6 +28,8 @@ for correlation; unexpected thrown errors remain under Netlify's response handli
 | `notifications.disabled`       | —                                                                                          | debug                              |
 | `notifications.delivered`      | `channel`, `sent`, `failed`, `skipped`                                                     | warn if any failed; otherwise info |
 | `notification.delivery_failed` | `channel`, `deliveryId`, `attempt`, `providerCode` (SMS) or `providerStatus` (push), `err` | warn                               |
+| `sms.delivery.attempted`       | obfuscated `recipient`                                                                     | info                               |
+| `sms.delivery.content`         | obfuscated `recipient`, full `content`                                                     | debug                              |
 
 HTTP duration measures handler execution through response creation, not client download time.
 There is one HTTP completion or failure record per handled request, including authentication,
@@ -46,8 +55,10 @@ getLogger().info({
 });
 ```
 
-Do not log request/response objects, headers, bodies, query strings, guest identities, phone numbers,
-credentials, subscription endpoints, or notification content. HTTP paths are restricted to known
+Do not log request/response objects, headers, bodies, query strings, guest identities, raw phone
+numbers, credentials, or subscription endpoints. Notification content is written only to the
+dedicated SMS file at `debug`; because that content may be sensitive, enable debug logging only for
+short diagnostic windows and secure or delete the resulting file afterward. HTTP paths are restricted to known
 registered paths; all others are recorded as `[unmatched]`. If parameterized routes are introduced,
 log their route templates rather than concrete identifiers.
 

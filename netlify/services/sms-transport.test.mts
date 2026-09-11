@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const messagesCreate = vi.fn();
+const { logSmsDelivery } = vi.hoisted(() => ({ logSmsDelivery: vi.fn() }));
 
 vi.mock('twilio', () => ({
 	default: vi.fn(() => ({ messages: { create: messagesCreate } })),
 }));
+vi.mock('../lib/logging.mjs', () => ({ logSmsDelivery }));
 
 import { TwilioSmsTransport } from './sms-transport.mjs';
 
@@ -16,6 +18,7 @@ const twilioEnv = {
 
 afterEach(() => {
 	messagesCreate.mockReset();
+	logSmsDelivery.mockReset();
 	vi.unstubAllEnvs();
 });
 
@@ -42,6 +45,7 @@ describe('TwilioSmsTransport', () => {
 			to: '+15005550006',
 			body: 'Test message',
 		});
+		expect(logSmsDelivery).toHaveBeenCalledWith('+15005550006', 'Test message');
 		expect(result).toEqual({ providerMessageId: 'SM123' });
 	});
 });

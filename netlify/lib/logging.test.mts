@@ -1,9 +1,18 @@
 import { Writable } from 'node:stream';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import winston from 'winston';
 
 import { createRouter, routeHandler, maxRequestBodyBytes } from './http.mjs';
-import { createLogger, getLogger, loggedJob, withLogger } from './logging.mjs';
+import {
+	createLogger,
+	createSmsLogger,
+	getLogger,
+	loggedJob,
+	logSmsDelivery,
+	obfuscatePhoneNumber,
+	withLogger,
+} from './logging.mjs';
 
 function capture() {
 	const records: Record<string, unknown>[] = [];
@@ -200,5 +209,71 @@ describe('structured logging', () => {
 			function: 'scheduled',
 		});
 		expect(JSON.stringify(records)).not.toContain('secret');
+	});
+});
+
+describe('SMS logging', () => {
+	it('uses stdout instead of an ephemeral file on Netlify', () => {
+		vi.stubEnv('NETLIFY', 'true');
+		vi.stubEnv('SMS_LOG_FILE', '/tmp/should-not-be-used.log');
+		const logger = createSmsLogger();
+
+		expect(logger.transports).toHaveLength(1);
+		expect(logger.transports[0]).toBeInstanceOf(winston.transports.Console);
+		logger.close();
+	});
+
+	it('writes an obfuscated delivery event without message content at info level', () => {
+		vi.stubEnv('LOG_LEVEL', 'info');
+		const records: Record<string, unknown>[] = [];
+		const logger = createSmsLogger(
+			new Writable({
+				write(chunk: Buffer, _encoding, callback) {
+					records.push(JSON.parse(chunk.toString()));
+					callback();
+				},
+			}),
+		);
+
+		logSmsDelivery('+15005550006', 'Private message content', logger);
+
+		expect(records).toEqual([
+			expect.objectContaining({
+				message: 'sms.delivery.attempted',
+				level: 'info',
+				channel: 'sms',
+				recipient: '••••0006',
+			}),
+		]);
+		expect(JSON.stringify(records)).not.toContain('+15005550006');
+		expect(JSON.stringify(records)).not.toContain('Private message content');
+	});
+
+	it('adds the full message content at debug level while keeping the phone obfuscated', () => {
+		vi.stubEnv('LOG_LEVEL', 'debug');
+		const records: Record<string, unknown>[] = [];
+		const logger = createSmsLogger(
+			new Writable({
+				write(chunk: Buffer, _encoding, callback) {
+					records.push(JSON.parse(chunk.toString()));
+					callback();
+				},
+			}),
+		);
+
+		logSmsDelivery('+15005550006', 'Private message content', logger);
+
+		expect(records).toHaveLength(2);
+		expect(records[1]).toMatchObject({
+			message: 'sms.delivery.content',
+			level: 'debug',
+			recipient: '••••0006',
+			content: 'Private message content',
+		});
+		expect(JSON.stringify(records)).not.toContain('+15005550006');
+	});
+
+	it('reveals only the last four digits of a phone number', () => {
+		expect(obfuscatePhoneNumber('+15005550006')).toBe('••••0006');
 	});
 });
