@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { Dialog } from '../../ui/Dialog';
+import { GuestIdentityMenu } from './GuestIdentityMenu';
 import { NotificationOptIn } from './NotificationOptIn';
 
 const IdentityCard = styled(Card)`
@@ -269,6 +270,7 @@ const IdentifiedGuestIdentity = observer(function IdentifiedGuestIdentity() {
 							<bdi dir="ltr">{identity.phone}</bdi>
 						</div>
 					</div>
+					<GuestIdentityMenu />
 				</div>
 
 				<NotificationStatusErrorBoundary fallback={copy.notificationsError}>

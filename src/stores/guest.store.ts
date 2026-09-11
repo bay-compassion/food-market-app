@@ -65,6 +65,11 @@ export class GuestStore {
 		return this._deviceToken !== null;
 	}
 
+	/** The opaque identifier saved by this browser for guest-authenticated requests. */
+	get deviceId(): string | null {
+		return this._deviceToken;
+	}
+
 	/**
 	 * Returns the guest's identity.
 	 *
@@ -314,6 +319,23 @@ export class GuestStore {
 		} catch {
 			runInAction(() => (this._smsState = 'error'));
 		}
+	}
+
+	async disableSmsNotifications(): Promise<void> {
+		if (!this._deviceToken || !this.smsConsented) {
+			return;
+		}
+
+		const response = await this.request('/api/sms-subscription', {
+			method: 'DELETE',
+			headers: { Authorization: `Bearer ${this._deviceToken}` },
+		});
+
+		if (!response.ok) {
+			throw new Error('subscription');
+		}
+
+		runInAction(() => (this._smsState = 'idle'));
 	}
 
 	async refreshNotificationSettings(): Promise<void> {

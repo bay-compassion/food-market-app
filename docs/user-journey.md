@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=b6e1a1195660, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=677aa8645707, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=565bdcb9de99 -->
+<!-- diagram-sources: src/App.tsx=da2aef7d459f, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=3aa30f50626e, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d1e1e59fcde7, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=6fa6de60c900, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=677aa8645707, netlify/services/guestRegistration.mts=96f5f91a2b1a, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ec69983f00e6, netlify/routes/notifications/sms-subscription.mts=565bdcb9de99 -->
 
 # Guest journey
 
@@ -44,6 +44,14 @@ flowchart TD
     hasIdentity -- no device token --> activeSession
     hasIdentity -- token only --> activeSession
     hasIdentity -- yes --> identityShown[Show locally saved<br/>name and phone]
+    identityShown -. menu .-> identityActions{Identity actions}
+    identityActions -. "Opt Out" .-> revokeSms[DELETE SMS subscription]
+    revokeSms --> notificationState
+    identityActions -. "Forget Information" .-> confirmForget{Confirm forgetting<br/>saved information?}
+    confirmForget -- no --> identityShown
+    confirmForget -- yes --> forgetIdentity[Remove local profile<br/>and device token]
+    forgetIdentity --> hasIdentity
+    identityActions -. "Show Device ID" .-> showDeviceId[Show device ID dialog<br/>with copy action]
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
     deviceAuth --> notificationRequest{Status retrieval}
     notificationRequest -- pending --> notificationLoading[Show loading indicator]
@@ -220,10 +228,12 @@ flowchart TD
   explains that the guest must send `START`, opens a prefilled text to that sender, and lets the
   guest check again after returning to the app. The identity indicator shows a
   loading indicator while retrieving notification state, a local error if retrieval fails, and a
-  single SMS opt-in button before consent that becomes a compact enabled status afterward. A guest
-  without a device credential instead sees a preregistration message and button in the indicator,
-  explicitly clarifying that preregistration does not enter the lottery. Push notification plumbing
-  remains in place, but push controls are not currently shown to guests.
+  single SMS opt-in button before consent that becomes a compact enabled status afterward. The
+  identity card's menu lets the guest revoke SMS consent, forget the locally stored identity and
+  device credential, or view and copy that credential as their device ID. A guest without a device
+  credential instead sees a preregistration message and button in the indicator, explicitly
+  clarifying that preregistration does not enter the lottery. Push notification plumbing remains in
+  place, but push controls are not currently shown to guests.
   Admin broadcasts still reach eligible visits over any subscribed channel whose visit isn't cancelled.
 - **Cancelling is only possible before service.** The cancel button appears only while the visit is
   `registered` or `waiting`, and not at all once the session has ended.
