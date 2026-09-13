@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { ManualAdmission } from '../../services/guestAdmission';
+import { QueueRoster } from '../../services/queue-roster';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
 import { useManualGuestForm } from './AddGuestSection';
 import { ManualGuestDialog } from './ManualGuestDialog';
@@ -29,8 +30,6 @@ export type QueueViewProps = {
 };
 
 type QueueList = 'called' | 'waiting' | 'resolved';
-
-const resolvedStatuses: VisitStatus[] = ['served', 'no_show', 'not_placed', 'cancelled'];
 
 const Header = styled.div`
 	display: grid;
@@ -100,17 +99,7 @@ export const QueueView = observer(function QueueView({
 		);
 	}
 
-	const queueCalled = guests
-		.filter((guest) => guest.status === 'called')
-		.sort((first, second) => (first.calledAt ?? '').localeCompare(second.calledAt ?? ''));
-	const queueWaiting = guests
-		.filter((guest) => guest.status === 'waiting')
-		.sort(
-			(first, second) =>
-				(first.queuePosition ?? Number.MAX_SAFE_INTEGER) -
-				(second.queuePosition ?? Number.MAX_SAFE_INTEGER),
-		);
-	const queueResolved = guests.filter((guest) => resolvedStatuses.includes(guest.status));
+	const roster = new QueueRoster(guests);
 	const summary = [
 		`${counts.waiting ?? 0} ${t.waitingQueue}`,
 		`${counts.called ?? 0} ${t.calledNow}`,
@@ -146,42 +135,63 @@ export const QueueView = observer(function QueueView({
 	return (
 		<>
 			<Header>
-				<QueueCallNext
-					count={callBatchSize}
-					onCountChange={setCallBatchSize}
-					waitingCount={queueWaiting.length}
-					busy={busy}
-					onCall={() => onCallNext(callBatchSize)}
-				/>
-				<OverflowMenu label={t.sessionActions} disabled={busy}>
-					{(closeMenu) => (
-						<MenuItem
-							sx={{ color: 'error.main', fontWeight: 700 }}
-							onClick={() => {
-								closeMenu();
-								onCloseSession();
-							}}
-						>
-							{t.closeSession}
-						</MenuItem>
-					)}
-				</OverflowMenu>
+				{roster.isComplete ? (
+					/*
+					 * Nobody is left to call, so the control that would call them gives its place to the
+					 * one step that remains. It keeps the destructive treatment it has in the menu, and
+					 * still goes through the same confirmation.
+					 */
+					<Button
+						className="close-session"
+						type="button"
+						variant="contained"
+						color="error"
+						fullWidth
+						disabled={busy}
+						onClick={onCloseSession}
+					>
+						{t.closeSession}
+					</Button>
+				) : (
+					<>
+						<QueueCallNext
+							count={callBatchSize}
+							onCountChange={setCallBatchSize}
+							waitingCount={roster.waiting.length}
+							busy={busy}
+							onCall={() => onCallNext(callBatchSize)}
+						/>
+						<OverflowMenu label={t.sessionActions} disabled={busy}>
+							{(closeMenu) => (
+								<MenuItem
+									sx={{ color: 'error.main', fontWeight: 700 }}
+									onClick={() => {
+										closeMenu();
+										onCloseSession();
+									}}
+								>
+									{t.closeSession}
+								</MenuItem>
+							)}
+						</OverflowMenu>
+					</>
+				)}
 			</Header>
 			<Summary className="queue-summary">{summary}</Summary>
 
 			<QueueSection
 				title={t.calledNow}
-				count={queueCalled.length}
+				count={roster.called.length}
 				emptyText={t.noCalledGuests}
 				open={!collapsed.called}
 				onToggle={() => toggle('called')}
 			>
-				{guestRows(queueCalled, { waitingTime: true })}
+				{guestRows(roster.called, { waitingTime: true })}
 			</QueueSection>
 
 			<QueueSection
 				title={t.waitingQueue}
-				count={queueWaiting.length}
+				count={roster.waiting.length}
 				emptyText={t.noWaitingGuests}
 				open={!collapsed.waiting}
 				onToggle={() => toggle('waiting')}
@@ -193,17 +203,17 @@ export const QueueView = observer(function QueueView({
 					) : null
 				}
 			>
-				{guestRows(queueWaiting)}
+				{guestRows(roster.waiting)}
 			</QueueSection>
 
 			<QueueSection
 				title={t.resolvedGuests}
-				count={queueResolved.length}
+				count={roster.finished.length}
 				emptyText={t.noResolvedGuests}
 				open={!collapsed.resolved}
 				onToggle={() => toggle('resolved')}
 			>
-				{guestRows(queueResolved, { status: true })}
+				{guestRows(roster.finished, { status: true })}
 			</QueueSection>
 
 			<ManualGuestDialog

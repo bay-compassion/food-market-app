@@ -5,7 +5,13 @@ import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
 import { admissionsFor, type GuestAdmission } from '../../services/guestAdmission';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
-import { busyQueue, busyQueueCounts, queueGuest } from './queueGuests.fixture';
+import {
+	busyQueue,
+	busyQueueCounts,
+	finishedQueue,
+	finishedQueueCounts,
+	queueGuest,
+} from './queueGuests.fixture';
 import { QueueView } from './QueueView';
 import type { QueueGuest } from './types';
 
@@ -72,6 +78,15 @@ export const DuringService: Story = {};
  */
 export const BeforeServiceStarts: Story = {
 	args: { serviceStarted: false },
+};
+
+/**
+ * The end of the service: every guest has finished, so the call control gives its place to a
+ * destructive close-session button — there is nobody left to call, and closing is the one step
+ * left. Worth checking at the mobile viewport, where this is the first thing under the heading.
+ */
+export const EveryoneFinished: Story = {
+	args: { guests: finishedQueue, counts: finishedQueueCounts },
 };
 
 /** An empty queue: both the called and waiting sections fall back to their empty states. */

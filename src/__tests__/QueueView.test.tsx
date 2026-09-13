@@ -141,6 +141,41 @@ describe('QueueView', () => {
 		expect(onCloseSession).toHaveBeenCalledOnce();
 	});
 
+	it('replaces the call control with a destructive close once everyone has finished', async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const { container, onCloseSession } = renderQueue([
+			guest({ id: 'a', status: 'served' }),
+			guest({ id: 'b', status: 'no_show' }),
+		]);
+
+		const close = screen.getByRole('button', { name: adminTranslations.en.closeSession });
+
+		// Act
+		await user.click(close);
+
+		// Assert: nobody is left to call, so the control that would call them gave up its place,
+		// along with the menu whose only item this button now is.
+		expect(container.querySelector('.call-next')).toBeNull();
+		expect(screen.queryByRole('button', { name: adminTranslations.en.sessionActions })).toBeNull();
+		// Destructive: filled in the error colour, not the ordinary brand button.
+		expect(close.className).toContain('MuiButton-contained');
+		expect(close.className).toContain('MuiButton-colorError');
+		expect(onCloseSession).toHaveBeenCalledOnce();
+	});
+
+	it('keeps the call control while any guest is still unfinished', () => {
+		// Arrange, Act
+		const { container } = renderQueue([
+			guest({ id: 'a', status: 'served' }),
+			guest({ id: 'b', status: 'called' }),
+		]);
+
+		// Assert
+		expect(container.querySelector('.call-next')).not.toBeNull();
+		expect(container.querySelector('.close-session')).toBeNull();
+	});
+
 	it('opens the manual guest form from the waiting heading', async () => {
 		const user = userEvent.setup();
 
