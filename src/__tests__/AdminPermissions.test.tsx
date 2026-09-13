@@ -12,10 +12,12 @@ vi.mock('../auth', async (importOriginal) => ({
 
 import { adminTranslations } from '../adminLocales';
 import { AdminDashboard } from '../components/AdminDashboard';
+import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import type { AdminView } from '../services/admin-views';
 import { SessionStatusEnum } from '../services/sessionStateMachine';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
+import { answerConfirmation } from './render-with-app';
 
 const t = adminTranslations.en;
 
@@ -69,6 +71,7 @@ function renderDashboard(
 				getAccessToken={() => Promise.resolve(tokenWith(permissions))}
 				onNavigate={onNavigate}
 			/>
+			<ConfirmationDrawer />
 		</RootStoreProvider>,
 	);
 
@@ -215,7 +218,6 @@ describe('broadcast notification tab', () => {
 			status: SessionStatusEnum.REGISTRATION_OPEN,
 		});
 		const send = vi.spyOn(screen.store.admin, 'sendBroadcast').mockResolvedValue(false);
-		const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
 		const title = (await screen.findByLabelText(t.broadcastTitleLabel)) as HTMLInputElement;
 		const body = screen.getByLabelText(t.broadcastMessageLabel) as HTMLTextAreaElement;
 
@@ -225,10 +227,11 @@ describe('broadcast notification tab', () => {
 
 		// Act / Assert: cancellation does not send; failures keep the draft.
 		await user.click(submit);
-		expect(confirm).toHaveBeenCalledWith(t.broadcastConfirm);
+		expect((await screen.findByRole('alertdialog')).textContent).toContain(t.broadcastConfirm);
+		await answerConfirmation(user, t.cancel);
 		expect(send).not.toHaveBeenCalled();
-		confirm.mockReturnValue(true);
 		await user.click(submit);
+		await answerConfirmation(user, t.broadcastSend);
 		expect(send).toHaveBeenCalledWith({ title: 'Doors open', body: 'Come on in' });
 		expect(title.value).toBe('Doors open');
 		expect(body.value).toBe('Come on in');
@@ -236,6 +239,7 @@ describe('broadcast notification tab', () => {
 		// Act / Assert: success clears both fields.
 		send.mockResolvedValue(true);
 		await user.click(submit);
+		await answerConfirmation(user, t.broadcastSend);
 		await waitFor(() => expect(title.value).toBe(''));
 		expect(body.value).toBe('');
 	});

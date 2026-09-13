@@ -59,6 +59,10 @@ export interface VisitStatusTranslations {
 	};
 	cancelAction: string;
 	cancelConfirmation: string;
+	/** Confirms the cancellation in the sheet `cancelConfirmation` heads. */
+	cancelConfirm: string;
+	/** Backs out of that sheet, leaving the visit as it was. */
+	cancelDismiss: string;
 	updateError: string;
 }
 
@@ -366,6 +370,8 @@ export const translations = {
 				},
 				cancelAction: 'Cancel this visit',
 				cancelConfirmation: 'Cancel your place in the queue for this visit?',
+				cancelConfirm: 'Yes, cancel my visit',
+				cancelDismiss: 'Keep my place',
 				updateError: 'We could not update this visit. Please ask a market team member for help.',
 			},
 		},
@@ -596,6 +602,8 @@ export const translations = {
 				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
+				cancelConfirm: 'Sí, cancelar mi visita',
+				cancelDismiss: 'Conservar mi lugar',
 				updateError: 'No pudimos actualizar esta visita. Pida ayuda al equipo del mercado.',
 			},
 		},
@@ -824,6 +832,8 @@ export const translations = {
 				},
 				cancelAction: 'لغو این بازدید',
 				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
+				cancelConfirm: 'بله، بازدید من لغو شود',
+				cancelDismiss: 'جای من محفوظ بماند',
 				updateError: 'این بازدید به‌روزرسانی نشد. از یکی از اعضای تیم بازار کمک بخواهید.',
 			},
 		},
@@ -1056,6 +1066,8 @@ export const translations = {
 				},
 				cancelAction: 'Kanselahin ang pagbisitang ito',
 				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
+				cancelConfirm: 'Oo, kanselahin ang pagbisita ko',
+				cancelDismiss: 'Panatilihin ang puwesto ko',
 				updateError: 'Hindi namin ma-update ang pagbisitang ito. Humingi ng tulong sa pangkat.',
 			},
 		},
@@ -1284,6 +1296,8 @@ export const translations = {
 				},
 				cancelAction: 'Hủy lượt ghé này',
 				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
+				cancelConfirm: 'Có, hủy lượt ghé của tôi',
+				cancelDismiss: 'Giữ vị trí của tôi',
 				updateError: 'Không thể cập nhật lượt ghé này. Vui lòng nhờ nhân viên chợ hỗ trợ.',
 			},
 		},
@@ -1501,6 +1515,8 @@ export const translations = {
 				},
 				cancelAction: '取消本次到访',
 				cancelConfirmation: '要取消本次到访的排队位置吗？',
+				cancelConfirm: '是，取消我的到访',
+				cancelDismiss: '保留我的位置',
 				updateError: '无法更新本次到访。请向市场工作人员寻求帮助。',
 			},
 		},
@@ -1721,6 +1737,8 @@ export const translations = {
 				},
 				cancelAction: 'إلغاء هذه الزيارة',
 				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
+				cancelConfirm: 'نعم، إلغاء زيارتي',
+				cancelDismiss: 'الاحتفاظ بمكاني',
 				updateError: 'تعذر تحديث هذه الزيارة. يرجى طلب المساعدة من فريق السوق.',
 			},
 		},

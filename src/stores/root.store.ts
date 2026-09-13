@@ -2,6 +2,7 @@ import { AdminApi } from '../services/admin-api.ts';
 import type { Permission } from '../services/permissions.ts';
 import { StorageService } from '../services/storage.service.ts';
 import { AdminStore, type AdminStoreOptions } from './admin.store.ts';
+import { ConfirmationStore } from './confirmation.store.ts';
 import { GuestClaimStore, type GuestClaimStoreOptions } from './guest-claim.store.ts';
 import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore } from './market-session.store.ts';
@@ -27,6 +28,7 @@ export class RootStore {
 
 	readonly admin: AdminStore;
 	readonly claim: GuestClaimStore;
+	readonly confirmation: ConfirmationStore;
 	readonly guest: GuestStore;
 	readonly registration: RegistrationStore;
 	readonly session: MarketSessionStore;
@@ -39,6 +41,7 @@ export class RootStore {
 	constructor(options: RootStoreOptions = {}) {
 		this.previewName = options.previewName;
 		this.translations = new TranslationStore(options.browserStorage);
+		this.confirmation = new ConfirmationStore();
 		this.storage = options.storage ?? new StorageService(options.browserStorage);
 		this.guest = new GuestStore({ storage: this.storage });
 		this.guest.notificationsDisabled = !!options.previewName;

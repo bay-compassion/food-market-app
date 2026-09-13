@@ -18,6 +18,7 @@ import { useRootStore } from '../stores/react/store-context';
 import { AdminDashboardLayout } from './admin/AdminDashboardLayout';
 import { DevModeView } from './admin/DevModeView';
 import { GuestDatabaseView } from './admin/GuestDatabaseView';
+import { MarketActionPrompts } from './admin/market-action-prompts';
 import { QuestionBankView } from './admin/QuestionBankView';
 import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
@@ -39,7 +40,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 	onNavigate,
 }: AdminDashboardProps) {
 	const rootStore = useRootStore();
-	const { translations, admin, session } = rootStore;
+	const { translations, admin, session, confirmation } = rootStore;
 	const t = translations.adminTranslation;
 	const locale = translations.locale;
 
@@ -143,6 +144,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 		(guest) => guest.status === 'registered',
 	);
 	const outstandingCount = (counts.waiting ?? 0) + (counts.called ?? 0);
+	const prompts = new MarketActionPrompts(t, outstandingCount);
 
 	function saveSettings() {
 		return admin.saveSettings({
@@ -154,27 +156,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 		});
 	}
 
-	/** The prompt shown before an action that a worker cannot undo from the same screen. */
-	function confirmationFor(action: MarketAction) {
-		const confirmations: Record<MarketAction, string> = {
-			schedule_registration: t.confirmScheduleRegistration,
-			open_registration: t.confirmOpenRegistration,
-			close_registration: t.confirmCloseRegistration,
-			reopen_registration: t.confirmReopenRegistration,
-			run_lottery: t.confirmRunLottery,
-			// Closing marks anyone still waiting or called as a no-show, so name the count first.
-			close_session:
-				outstandingCount > 0
-					? `${outstandingCount} ${t.confirmCloseSessionOutstanding}`
-					: t.confirmCloseSession,
-			reset_session: t.confirmResetSession,
-		};
-
-		return confirmations[action];
-	}
-
 	async function runMarketAction(action: MarketAction) {
-		if (window.confirm(confirmationFor(action))) {
+		if (await confirmation.ask(prompts.for(action))) {
 			await admin.runMarketAction(action);
 		}
 	}
@@ -183,7 +166,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 		const action: MarketAction =
 			settings.sessionMode === 'scheduled' ? 'schedule_registration' : 'open_registration';
 
-		if (!window.confirm(confirmationFor(action))) {
+		if (!(await confirmation.ask(prompts.for(action)))) {
 			return;
 		}
 
@@ -193,7 +176,13 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}
 
 	async function postponeRegistration() {
-		if (!window.confirm(t.confirmPostponeRegistration)) {
+		const confirmed = await confirmation.ask({
+			question: t.confirmPostponeRegistration,
+			confirmLabel: t.confirmContinue,
+			dismissLabel: t.cancel,
+		});
+
+		if (!confirmed) {
 			return;
 		}
 
@@ -233,7 +222,13 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}
 
 	async function sendBroadcast() {
-		if (!window.confirm(t.broadcastConfirm)) {
+		const confirmed = await confirmation.ask({
+			question: t.broadcastConfirm,
+			confirmLabel: t.broadcastSend,
+			dismissLabel: t.cancel,
+		});
+
+		if (!confirmed) {
 			return;
 		}
 
@@ -243,7 +238,15 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}
 
 	async function loadScenario(stage: SessionStatus, serviceProgress?: ServiceProgress) {
-		if (window.confirm(t.devModeConfirm)) {
+		const confirmed = await confirmation.ask({
+			question: t.devModeConfirm,
+			details: [t.devModeConfirmDetails],
+			confirmLabel: t.devModeLoad,
+			dismissLabel: t.cancel,
+			destructive: true,
+		});
+
+		if (confirmed) {
 			await admin.loadDemoScenario(stage, serviceProgress);
 		}
 	}

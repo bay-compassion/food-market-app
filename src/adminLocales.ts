@@ -38,10 +38,14 @@ export interface AdminTranslation {
 	closesAt: string;
 	confirmCloseRegistration: string;
 	confirmCloseSession: string;
+	/** The confirming button on a prompt whose question already says what will happen. */
+	confirmContinue: string;
 	confirmOpenRegistration: string;
 	confirmPostponeRegistration: string;
 	confirmReopenRegistration: string;
 	confirmResetSession: string;
+	/** What resetting leaves behind, spelled out under the question. */
+	confirmResetSessionDetails: string;
 	confirmRunLottery: string;
 	confirmScheduleRegistration: string;
 	currentSession: string;
@@ -56,11 +60,15 @@ export interface AdminTranslation {
 	/** Feedback after a manual add; `{name}` is the guest's full name. */
 	guestAdded: string;
 	guestClaimClose: string;
-	/**
-	 * Asked before a manager shows a code from a guest's Actions menu. `{name}` is the guest's full
-	 * name and `{phone}` the number on file, for checking who is at the desk.
-	 */
+	/** Asked before a manager shows a code from a guest's Actions menu. `{name}` is their name. */
 	guestClaimConfirm: string;
+	/**
+	 * The check that question exists for, shown under it: `{name}` is the guest's full name and
+	 * `{phone}` the number on file, for confirming who is actually at the desk.
+	 */
+	guestClaimConfirmIdentity: string;
+	/** Also under it: what showing the code costs a guest already using another phone. */
+	guestClaimConfirmReplacesPhone: string;
 	guestClaimDone: string;
 	guestClaimImageAlt: string;
 	/** `{name}` is the guest's full name and `{time}` the moment the code stops working. */
@@ -131,6 +139,10 @@ export interface AdminTranslation {
 	queuePlacement: string;
 	placeNext: string;
 	placeEnd: string;
+	/**
+	 * Added under `confirmCloseSession` when guests are still waiting; `{count}` is how many
+	 * closing would mark as a no show.
+	 */
 	confirmCloseSessionOutstanding: string;
 	questionBank: string;
 	questions: string;
@@ -195,6 +207,8 @@ export interface AdminTranslation {
 	devModeIntro: string;
 	devModeDisabled: string;
 	devModeConfirm: string;
+	/** What loading demo data costs, spelled out under the question. */
+	devModeConfirmDetails: string;
 	devModeLoad: string;
 	devModeLoaded: string;
 	devStageDraftTitle: string;
@@ -264,12 +278,14 @@ export const adminTranslations = {
 		closed: 'Registration closed',
 		closesAt: 'Registration closes',
 		confirmCloseRegistration: 'Close registration now?',
+		confirmContinue: 'Continue',
 		confirmCloseSession: 'Close this session and end service?',
 		confirmOpenRegistration: 'Open registration for this session?',
 		confirmPostponeRegistration: 'Postpone this scheduled registration?',
 		confirmReopenRegistration: 'Reopen registration for this session?',
-		confirmResetSession:
-			'Reset this session? It will leave Current Session and remain available in session history.',
+		confirmResetSession: 'Reset this session?',
+		confirmResetSessionDetails:
+			'It will leave Current Session and remain available in session history.',
 		confirmRunLottery: 'Run the lottery and start service?',
 		confirmScheduleRegistration: 'Schedule registration for this time?',
 		currentSession: 'Current session',
@@ -283,8 +299,11 @@ export const adminTranslations = {
 		guestDatabase: 'Guest database',
 		guestAdded: '{name} was added.',
 		guestClaimClose: 'Close QR code',
-		guestClaimConfirm:
-			"Show a QR code that puts {name}'s record on a phone?\n\nFirst check you're speaking to {name}: ask them to confirm the phone number on file, {phone}.\n\nIf they already use the app on another phone, that phone is signed out once this code is scanned.",
+		guestClaimConfirm: "Show a QR code that puts {name}'s record on a phone?",
+		guestClaimConfirmIdentity:
+			"First check you're speaking to {name}: ask them to confirm the phone number on file, {phone}.",
+		guestClaimConfirmReplacesPhone:
+			'If they already use the app on another phone, that phone is signed out once this code is scanned.',
 		guestClaimDone: 'Done',
 		guestClaimImageAlt: 'QR code that sets up this guest on their phone',
 		guestClaimInstructions:
@@ -352,7 +371,7 @@ export const adminTranslations = {
 		placeNext: 'Next up',
 		placeEnd: 'End of the queue',
 		confirmCloseSessionOutstanding:
-			'guests have not been served yet. Closing marks them as a no show. Close the session?',
+			'{count} guests have not been served yet. Closing marks them as a no show.',
 		questionBank: 'Question bank',
 		questions: 'Registration questions',
 		registered: 'Registered',
@@ -464,7 +483,8 @@ export const adminTranslations = {
 		devModeIntro:
 			'Load fake guests and visits so the app looks like a real session at a chosen moment — for demos and screenshots. This replaces whatever session is currently live.',
 		devModeDisabled: 'Demo data tools are not turned on for this deploy.',
-		devModeConfirm: 'This replaces the current session with fake demo data. Continue?',
+		devModeConfirm: 'Load demo data?',
+		devModeConfirmDetails: 'This replaces the current session with fake demo data.',
 		devModeLoad: 'Load',
 		devModeLoaded: 'Demo data loaded.',
 		devStageDraftTitle: 'Draft',
