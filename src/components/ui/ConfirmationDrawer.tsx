@@ -107,13 +107,21 @@ export const ConfirmationDrawer = observer(function ConfirmationDrawer() {
 		>
 			{request ? (
 				<>
-					<Question id={questionId} className="confirmation-question">
+					{/*
+					 * `dir="auto"` on the copy, not the panel's direction: the sheet serves both
+					 * localized guest copy and the admin screens' English, and the shell is already
+					 * RTL for a worker whose saved language is. Letting each run of text pick its own
+					 * direction is what keeps an English question from rendering as "?the question".
+					 */}
+					<Question id={questionId} className="confirmation-question" dir="auto">
 						{request.question}
 					</Question>
 					{request.details?.length ? (
 						<Details id={detailsId} className="confirmation-details">
 							{request.details.map((paragraph) => (
-								<p key={paragraph}>{paragraph}</p>
+								<p key={paragraph} dir="auto">
+									{paragraph}
+								</p>
 							))}
 						</Details>
 					) : null}

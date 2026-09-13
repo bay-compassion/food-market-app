@@ -1,11 +1,12 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
+import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { GuestVisitState } from './GuestVisitState';
 
 /**
@@ -94,6 +95,12 @@ function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisit
 	return (
 		<RootStoreProvider store={store}>
 			<GuestVisitState />
+			{/*
+			 * The preview's own sheet hangs off the decorator's store, not this seeded one, so the
+			 * cancel action would await an answer from a sheet that never opens. A nested provider
+			 * has to carry its own.
+			 */}
+			<ConfirmationDrawer />
 		</RootStoreProvider>
 	);
 }
@@ -182,4 +189,19 @@ export const CancelFailed: Story = {
 export const RightToLeft: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
 	globals: { locale: 'ar' },
+	/**
+	 * Opens the cancel confirmation and leaves the visit alone. This covers the sheet reaching the
+	 * seeded store at all — one mounted outside this story's provider would leave `ask()` waiting
+	 * forever, with nothing on screen to say so — and that the question arrives in Arabic.
+	 */
+	play: async ({ canvas, userEvent }) => {
+		const copy = translations.ar.guestView.visitStatus;
+
+		await userEvent.click(await canvas.findByRole('button', { name: copy.cancelAction }));
+
+		const sheet = within(await within(document.body).findByRole('alertdialog'));
+
+		await expect(sheet.getByRole('heading', { name: copy.cancelConfirmation })).toBeInTheDocument();
+		await userEvent.click(sheet.getByRole('button', { name: copy.cancelDismiss }));
+	},
 };
