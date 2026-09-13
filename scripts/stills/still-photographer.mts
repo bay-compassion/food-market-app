@@ -4,11 +4,17 @@ import path from 'node:path';
 import type { Browser, Page } from 'playwright';
 
 import { launchChromium } from './chromium.mjs';
-import type { StillFrame } from './still-catalog.mjs';
+import type { StillFrame, StillStep } from './still-catalog.mjs';
 import { storyUrl, type StorybookStory } from './storybook-index.mjs';
 
-export type Still = {
+/** One still to take: the beat it illustrates, the story that holds it, and how much screen to give it. */
+export type StillSubject = {
+	step: StillStep;
 	story: StorybookStory;
+	frame: StillFrame;
+};
+
+export type Still = StillSubject & {
 	/** Path of the PNG, relative to the output directory. */
 	file: string;
 	width: number;
@@ -108,8 +114,9 @@ export class StillPhotographer {
 		);
 	}
 
-	async capture(story: StorybookStory, frame: StillFrame): Promise<Still> {
+	async capture(subject: StillSubject): Promise<Still> {
 		const { page } = this;
+		const { story, frame } = subject;
 
 		await page.setViewportSize({ width: frame.width, height: Math.max(frame.minHeight, 844) });
 		// `domcontentloaded` rather than `load`: the story is on screen long before every subresource
@@ -160,7 +167,7 @@ export class StillPhotographer {
 		const viewport = page.viewportSize() ?? { width: frame.width, height: frame.minHeight };
 
 		return {
-			story,
+			...subject,
 			file,
 			width: viewport.width,
 			height: viewport.height,

@@ -1,9 +1,9 @@
 import type { PrintLayout } from './print-layout.mjs';
-import type { StillGroup } from './still-catalog.mjs';
+import type { StillArc } from './still-catalog.mjs';
 import type { Still } from './still-photographer.mjs';
 
 export type SheetSection = {
-	group: StillGroup;
+	arc: StillArc;
 	stills: Still[];
 };
 
@@ -80,8 +80,8 @@ export class ContactSheet {
 				const sheets = this.pagesOf(section).length;
 
 				return `<li><span class="index">${index + 1}</span>
-					<span class="name">${escapeHtml(section.group.title)}
-						<em>${escapeHtml(section.group.summary)}</em></span>
+					<span class="name">${escapeHtml(section.arc.title)}
+						<em>${escapeHtml(section.arc.summary)}</em></span>
 					<span class="count">${section.stills.length} stills · ${sheets} sheet${sheets === 1 ? '' : 's'}</span>
 				</li>`;
 			})
@@ -89,8 +89,8 @@ export class ContactSheet {
 
 		return `<article class="page cover">
 			<h1>${escapeHtml(meta.title)}</h1>
-			<p class="lede">Every state the app can be in, grouped by where it falls in a market day.
-				Numbers are <b>group.still</b> — quote them when you mark a sheet up.</p>
+			<p class="lede">The large movements of a market day, one arc per run of sheets.
+				Numbers are <b>arc.still</b> — quote them when you mark a sheet up.</p>
 			<ol class="contents">${contents}</ol>
 			<dl class="colophon">
 				<dt>Captured</dt><dd>${escapeHtml(meta.generatedAt.toISOString().slice(0, 16).replace('T', ' '))} UTC</dd>
@@ -102,16 +102,16 @@ export class ContactSheet {
 		</article>`;
 	}
 
-	private sectionPages(section: SheetSection, groupNumber: number): string {
+	private sectionPages(section: SheetSection, arcNumber: number): string {
 		const pages = this.pagesOf(section);
 
 		return pages
 			.map((indices, pageIndex) => {
-				const cells = indices.map((index) => this.cell(section, index, groupNumber)).join('\n');
+				const cells = indices.map((index) => this.cell(section, index, arcNumber)).join('\n');
 
 				return `<article class="page">
 					<header class="running">
-						<span class="group"><b>${groupNumber}</b> ${escapeHtml(section.group.title)}</span>
+						<span class="arc"><b>${arcNumber}</b> ${escapeHtml(section.arc.title)}</span>
 						<span class="sheet">Sheet ${pageIndex + 1} of ${pages.length}</span>
 					</header>
 					<div class="grid">${cells}</div>
@@ -120,7 +120,7 @@ export class ContactSheet {
 			.join('\n');
 	}
 
-	private cell(section: SheetSection, index: number, groupNumber: number): string {
+	private cell(section: SheetSection, index: number, arcNumber: number): string {
 		const still = section.stills[index];
 
 		if (!still) {
@@ -140,8 +140,10 @@ export class ContactSheet {
 					style="width:${inches(placed.widthIn)};height:${inches(placed.heightIn)}">
 			</div>
 			<figcaption>
-				<b>${groupNumber}.${index + 1}</b> ${escapeHtml(still.story.name)}
-				<em>${escapeHtml(componentOf(still.story.title))}${notes ? ` · ${escapeHtml(notes)}` : ''}</em>
+				<b>${arcNumber}.${index + 1}</b> ${escapeHtml(still.step.caption)}
+				<em>${escapeHtml(componentOf(still.story.title))} · ${escapeHtml(still.story.name)}${
+					notes ? ` · ${escapeHtml(notes)}` : ''
+				}</em>
 			</figcaption>
 		</figure>`;
 	}
@@ -168,8 +170,8 @@ export class ContactSheet {
 				justify-content: space-between; gap: 0.2in;
 				border-bottom: 0.5pt solid #c8c8c8; margin-bottom: ${inches(layout.gapIn * 0.5)};
 			}
-			.running .group { font-size: 10.5pt; letter-spacing: 0.01em; }
-			.running .group b { font-weight: 700; margin-right: 0.06in; }
+			.running .arc { font-size: 10.5pt; letter-spacing: 0.01em; }
+			.running .arc b { font-weight: 700; margin-right: 0.06in; }
 			.running .sheet { font-size: 7.5pt; color: #6b6b6b; white-space: nowrap; padding-top: 0.03in; }
 			.grid {
 				display: flex; flex-wrap: wrap; align-content: flex-start;

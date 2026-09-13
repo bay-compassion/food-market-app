@@ -26,7 +26,7 @@ export type PrintLayoutOptions = {
 	rows: number;
 	/** Gutter between cells, which is also the hand-annotation space between stills. */
 	gapIn: number;
-	/** Room under each still for its number, name, and component. */
+	/** Room under each still for its number, what the beat is, and which component it is. */
 	captionHeightIn: number;
 	/** Room at the top of every page for the running group heading. */
 	headerHeightIn: number;
@@ -56,7 +56,7 @@ export const defaultPrintLayoutOptions: PrintLayoutOptions = {
 	columns: 3,
 	rows: 2,
 	gapIn: 0.22,
-	captionHeightIn: 0.34,
+	captionHeightIn: 0.46,
 	headerHeightIn: 0.42,
 };
 
