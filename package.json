@@ -24,6 +24,7 @@
     "auth0:plan": "node infrastructure/auth0/auth0.mts plan",
     "auth0:import": "node infrastructure/auth0/auth0.mts import",
     "capture:twilio": "tsx scripts/capture-twilio-opt-in.mts",
+    "capture:stills": "tsx scripts/stills/capture-stills.mts",
     "sms:smoke": "node --env-file-if-exists=.env --import tsx scripts/smoke-test-sms.mts",
     "seed": "tsx scripts/seed-fake-data.mts",
     "check:translations": "node scripts/check-translations.js",

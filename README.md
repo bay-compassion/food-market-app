@@ -90,6 +90,21 @@ The history includes the awkward cases worth testing against: oversubscribed ses
 worker added by hand, no-shows, cancellations, and visits served without a recorded time. The
 script refuses to touch a database that is not on localhost unless you pass `--force`.
 
+### Printable app stills
+
+Design conversations go better around a table than around a screen. `npm run capture:stills`
+photographs every state in Storybook and lays them out as sheets of paper — grouped by where they
+fall in a market day, numbered so you can point at one, and sized so a sheet is always one sheet:
+
+```bash
+npx playwright install chromium             # once
+npm run capture:stills                      # → stills/stills.pdf
+npm run capture:stills -- --group visit --columns 2 --rows 1
+```
+
+See [`docs/stills.md`](docs/stills.md) for the groups, the page-size options, and what to do when a
+new story turns up in no group.
+
 ## Checks
 
 Run these commands from the repository root before opening a pull request:
@@ -235,6 +250,7 @@ importantly, how to connect it without handing it the app's own database credent
 
 - `src/` — React frontend
 - `public/` — static frontend assets
+- `scripts/stills/` — the printable stills capture; see [`docs/stills.md`](docs/stills.md)
 - `netlify/functions/` — API endpoints, including guest check-in
 - `netlify/database/migrations/` — Netlify DB migrations; read [`docs/migrations.md`](docs/migrations.md)
   before changing anything here
