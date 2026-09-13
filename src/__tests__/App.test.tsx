@@ -29,6 +29,7 @@ vi.mock('@auth0/auth0-react', () => ({
 
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
+import { adminTranslations } from '../adminLocales';
 import { App } from '../App';
 import { authReturnUrl } from '../auth';
 import { AdminAuthView } from '../components/AdminAuthView';
@@ -37,9 +38,11 @@ import { GuestView } from '../components/guest-view/GuestView';
 import { PrivacyPage } from '../components/legal/PrivacyPage';
 import { TermsPage } from '../components/legal/TermsPage';
 import { SignupView } from '../components/routes/SignupView';
+import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import { translations } from '../locales';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
+import { answerConfirmation } from './render-with-app';
 
 /**
  * An unsigned access token carrying permissions, which is all the admin screens read it for.
@@ -52,6 +55,7 @@ function accessTokenWith(permissions: string[]) {
 	return `${segment({ alg: 'none', typ: 'JWT' })}.${segment({ permissions })}.`;
 }
 
+const t = adminTranslations.en;
 const adminToken = accessTokenWith([
 	'run:queue',
 	'manage:sessions',
@@ -90,9 +94,11 @@ async function renderApp(initialPath = '/') {
 }
 
 function renderDashboard(getAccessToken = vi.fn().mockResolvedValue(adminToken)) {
+	const store = new RootStore();
 	const result = render(
-		<RootStoreProvider store={new RootStore()}>
+		<RootStoreProvider store={store}>
 			<AdminDashboard getAccessToken={getAccessToken} onNavigate={vi.fn()} />
+			<ConfirmationDrawer />
 		</RootStoreProvider>,
 	);
 
@@ -865,16 +871,19 @@ describe('App', () => {
 					),
 			}),
 		);
-		const confirmMock = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
 		vi.stubGlobal('fetch', fetchMock);
+
 		const { container } = renderDashboard();
 
 		await waitFor(() => expect(container.textContent).toContain('Close registration'));
 
 		await user.click(screen.getByRole('button', { name: 'Close registration' }));
 
-		await waitFor(() => expect(confirmMock).toHaveBeenCalledWith('Close registration now?'));
+		expect((await screen.findByRole('alertdialog')).textContent).toContain(
+			'Close registration now?',
+		);
+		await answerConfirmation(user, t.confirmContinue);
 
 		const closeRequest = fetchMock.mock.calls.find(
 			([url, options]) =>
@@ -887,15 +896,17 @@ describe('App', () => {
 			`Bearer ${adminToken}`,
 		);
 
-		confirmMock.mockClear();
 		fetchMock.mockClear();
 		await user.click(screen.getByRole('button', { name: 'Reset session' }));
 
-		await waitFor(() =>
-			expect(confirmMock).toHaveBeenCalledWith(
-				'Reset this session? It will leave Current Session and remain available in session history.',
-			),
+		const resetSheet = await screen.findByRole('alertdialog');
+
+		expect(resetSheet.textContent).toContain('Reset this session?');
+		expect(resetSheet.textContent).toContain(
+			'It will leave Current Session and remain available in session history.',
 		);
+		await answerConfirmation(user, t.confirmContinue);
+
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/admin/market',
 			expect.objectContaining({
@@ -903,7 +914,5 @@ describe('App', () => {
 				body: JSON.stringify({ action: 'reset_session' }),
 			}),
 		);
-
-		confirmMock.mockRestore();
 	});
 });

@@ -61,7 +61,7 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 	onRun,
 }: QueueGuestActionsProps) {
 	const t = adminTranslations.en;
-	const { admin } = useRootStore();
+	const { admin, confirmation } = useRootStore();
 	const commands = guest.status === null ? [] : visitCommandsFrom(guest.status);
 	const primary = menuOnly ? undefined : commands.find((c) => primaryVisitCommands.includes(c));
 	const secondary = commands.filter((command) => command !== primary);
@@ -72,13 +72,19 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 	};
 	const guestName = `${guest.firstName} ${guest.lastName}`;
 
-	function showPhoneCode() {
-		const confirmation = t.guestClaimConfirm
-			.replaceAll('{name}', guestName)
-			.replace('{phone}', guest.phone);
+	async function showPhoneCode() {
+		const confirmed = await confirmation.ask({
+			question: t.guestClaimConfirm.replace('{name}', guestName),
+			details: [
+				t.guestClaimConfirmIdentity.replace('{name}', guestName).replace('{phone}', guest.phone),
+				t.guestClaimConfirmReplacesPhone,
+			],
+			confirmLabel: t.guestClaimShow,
+			dismissLabel: t.cancel,
+		});
 
-		if (window.confirm(confirmation)) {
-			void admin.showGuestClaim({ guestId: guest.guestId, name: guestName });
+		if (confirmed) {
+			await admin.showGuestClaim({ guestId: guest.guestId, name: guestName });
 		}
 	}
 
@@ -120,7 +126,7 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 							<MenuItem
 								onClick={() => {
 									closeMenu();
-									showPhoneCode();
+									void showPhoneCode();
 								}}
 							>
 								{t.guestClaimShow}

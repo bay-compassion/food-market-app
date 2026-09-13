@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GuestView } from '../components/guest-view/GuestView';
 import { RootStore } from '../stores/root.store';
-import { renderWithApp } from './render-with-app';
+import { answerConfirmation, renderWithApp } from './render-with-app';
 
 const marketOverview = {
 	event: {
@@ -348,11 +348,11 @@ describe('GuestView', () => {
 		});
 
 		vi.stubGlobal('fetch', fetchMock);
-		vi.spyOn(window, 'confirm').mockReturnValue(true);
 		await renderLoadedGuestView();
 
 		// Act
 		await user.click(await screen.findByRole('button', { name: 'Cancel this visit' }));
+		await answerConfirmation(user, 'Yes, cancel my visit');
 
 		// Assert
 		await waitFor(() =>
@@ -375,11 +375,11 @@ describe('GuestView', () => {
 		});
 
 		vi.stubGlobal('fetch', fetchMock);
-		vi.spyOn(window, 'confirm').mockReturnValue(false);
 		await renderLoadedGuestView();
 
 		// Act
 		await user.click(await screen.findByRole('button', { name: 'Cancel this visit' }));
+		await answerConfirmation(user, 'Keep my place');
 
 		// Assert
 		const cancelCall = fetchMock.mock.calls.find(

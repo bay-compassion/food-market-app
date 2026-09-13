@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -6,8 +6,8 @@ import { adminTranslations } from '../adminLocales';
 import { QueueGuestActions } from '../components/admin/QueueGuestActions';
 import type { AdminApi, QueueGuest } from '../services/admin-api';
 import type { Permission } from '../services/permissions';
-import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
+import { answerConfirmation, renderWithApp } from './render-with-app';
 
 const t = adminTranslations.en;
 
@@ -39,11 +39,7 @@ async function renderActions(permissions: Permission[]) {
 
 	vi.spyOn(store.session, 'getStatus').mockResolvedValue();
 	await store.admin.load();
-	render(
-		<RootStoreProvider store={store}>
-			<QueueGuestActions guest={guest} menuOnly onRun={vi.fn()} />
-		</RootStoreProvider>,
-	);
+	renderWithApp(<QueueGuestActions guest={guest} menuOnly onRun={vi.fn()} />, { store });
 	await userEvent.click(screen.getByRole('button', { name: `${t.moreActions}: Hal Reyes` }));
 
 	return { store, createGuestClaim };
@@ -64,27 +60,29 @@ describe('QueueGuestActions phone code', () => {
 
 	it('asks a manager to confirm who they are speaking to, naming the phone on file', async () => {
 		// Arrange
-		const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
 		const { createGuestClaim } = await renderActions(['run:queue', 'manage:guest-access']);
 
 		// Act
 		await userEvent.click(screen.getByRole('menuitem', { name: t.guestClaimShow }));
 
 		// Assert
-		expect(confirm).toHaveBeenCalledOnce();
-		expect(confirm.mock.calls[0]?.[0]).toContain('(510) 555-0142');
-		expect(confirm.mock.calls[0]?.[0]).toContain('Hal Reyes');
+		const sheet = await screen.findByRole('alertdialog');
+
+		expect(sheet.textContent).toContain('(510) 555-0142');
+		expect(sheet.textContent).toContain('Hal Reyes');
+
 		// Declining issues nothing: no code exists until the manager has checked.
+		await answerConfirmation(userEvent, t.cancel);
 		expect(createGuestClaim).not.toHaveBeenCalled();
 	});
 
 	it('issues the code for this guest once the manager confirms', async () => {
 		// Arrange
-		vi.spyOn(window, 'confirm').mockReturnValue(true);
 		const { store, createGuestClaim } = await renderActions(['run:queue', 'manage:guest-access']);
 
 		// Act
 		await userEvent.click(screen.getByRole('menuitem', { name: t.guestClaimShow }));
+		await answerConfirmation(userEvent, t.guestClaimShow);
 
 		// Assert
 		expect(createGuestClaim).toHaveBeenCalledWith('guest-1');

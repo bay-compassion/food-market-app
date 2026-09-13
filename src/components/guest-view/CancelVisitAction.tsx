@@ -23,16 +23,23 @@ const SubmissionError = styled.p`
  */
 export const CancelVisitAction = observer(function CancelVisitAction() {
 	const t = useTranslation();
-	const { visit } = useRootStore();
+	const { visit, confirmation } = useRootStore();
 	const copy = t.guestView.visitStatus;
 
 	if (!visit.canCancel) {
 		return null;
 	}
 
-	function handleCancel() {
-		if (window.confirm(copy.cancelConfirmation)) {
-			void visit.cancel();
+	async function cancelVisit() {
+		const confirmed = await confirmation.ask({
+			question: copy.cancelConfirmation,
+			confirmLabel: copy.cancelConfirm,
+			dismissLabel: copy.cancelDismiss,
+			destructive: true,
+		});
+
+		if (confirmed) {
+			await visit.cancel();
 		}
 	}
 
@@ -49,7 +56,7 @@ export const CancelVisitAction = observer(function CancelVisitAction() {
 				color="error"
 				fullWidth
 				disabled={visit.isCancelling}
-				onClick={handleCancel}
+				onClick={() => void cancelVisit()}
 			>
 				{copy.cancelAction}
 			</Button>
