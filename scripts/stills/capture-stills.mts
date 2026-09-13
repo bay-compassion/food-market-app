@@ -44,7 +44,7 @@ const { values } = parseArgs({
 		rows: { type: 'string', default: String(defaultPrintLayoutOptions.rows) },
 		margin: { type: 'string', default: String(defaultPrintLayoutOptions.marginIn) },
 		gap: { type: 'string', default: String(defaultPrintLayoutOptions.gapIn) },
-		group: { type: 'string', multiple: true, default: [] },
+		arc: { type: 'string', multiple: true, default: [] },
 		locale: { type: 'string' },
 		'storybook-url': { type: 'string' },
 		port: { type: 'string', default: '6100' },
@@ -67,7 +67,7 @@ if (values.help) {
 			'  --rows <n>             Stills down a sheet (default: 2)',
 			'  --margin <in>          Trim margin in inches (default: 0.4)',
 			'  --gap <in>             Gutter between stills in inches (default: 0.22)',
-			'  --group <id>           Capture only these groups; repeatable',
+			'  --arc <id>             Capture only these arcs; repeatable',
 			`  --locale <code>        Force one language (${languages.map((l) => l.code).join(', ')})`,
 			'  --storybook-url <url>  Use a Storybook already running instead of starting one',
 			'  --port <n>             Port to start Storybook on (default: 6100)',
@@ -75,7 +75,7 @@ if (values.help) {
 			'  --scale <n>            Device pixel ratio of the captures (default: 2)',
 			'  --no-pdf               Write the HTML sheets but skip the PDF',
 			'',
-			`Groups: ${new StillCatalog().groupIds.join(', ')}`,
+			`Arcs: ${new StillCatalog().arcIds.join(', ')}`,
 		].join('\n'),
 	);
 	process.exit(0);
@@ -145,14 +145,23 @@ await using storybook = values['storybook-url']
 	: await StorybookServer.start(Math.round(number('port', values.port)));
 
 const stories = await fetchStories(storybook.baseUrl);
-const sections = catalog.sections(stories, values.group);
+const sections = catalog.sections(values.arc);
+const missing = catalog.missing(stories);
 
 if (sections.length === 0) {
+	throw new Error(`No arc matched --arc. Known arcs: ${catalog.arcIds.join(', ')}.`);
+}
+
+// A missing story would drop a beat out of the middle of a printed arc, so it stops the run rather
+// than being noted at the end: the arcs name their stories outright, and a rename has to be followed.
+if (missing.length > 0) {
 	throw new Error(
-		`No stories matched. Known groups: ${catalog.groupIds.join(', ')}; Storybook offered ` +
-			`${stories.length} stories.`,
+		`Storybook has no story with these ids, named by scripts/stills/still-catalog.mts:\n  ` +
+			`${missing.join('\n  ')}\nA story was renamed or removed; update the arc it belongs to.`,
 	);
 }
+
+const byId = new Map(stories.map((story) => [story.id, story]));
 
 await using photographer = await StillPhotographer.open({
 	baseUrl: storybook.baseUrl,
@@ -166,20 +175,27 @@ await using photographer = await StillPhotographer.open({
 
 const captured: SheetSection[] = [];
 
-for (const section of sections) {
+for (const { arc, steps } of sections) {
 	const stills: Still[] = [];
 
-	process.stdout.write(`${section.group.title} (${section.stories.length}) `);
+	process.stdout.write(`${arc.title} (${steps.length}) `);
 
-	for (const story of section.stories) {
-		const still = await photographer.capture(story, catalog.frameFor(story));
+	for (const step of steps) {
+		const story = byId.get(step.id);
+
+		// `missing` has already ruled this out; the lookup is here only to satisfy the type.
+		if (!story) {
+			continue;
+		}
+
+		const still = await photographer.capture({ step, story, frame: catalog.frameFor(arc, step) });
 
 		stills.push(still);
 		process.stdout.write(still.failed ? '!' : still.truncated ? '~' : '.');
 	}
 
 	process.stdout.write('\n');
-	captured.push({ group: section.group, stills });
+	captured.push({ arc, stills });
 }
 
 const sheet = new ContactSheet(layout, captured, {
@@ -196,7 +212,6 @@ if (values.pdf) {
 	await renderPdf(htmlPath, path.join(outputDirectory, 'stills.pdf'), layout);
 }
 
-const unmatched = catalog.unmatched(stories);
 const problems = captured.flatMap((section) =>
 	section.stills.filter((still) => still.failed || still.truncated),
 );
@@ -209,17 +224,6 @@ console.log(
 
 for (const still of problems) {
 	console.log(
-		`  ${still.failed ? 'failed ' : 'cut off'}  ${still.story.title} › ${still.story.name}`,
+		`  ${still.failed ? 'failed ' : 'cut off'}  ${still.step.caption} (${still.story.id})`,
 	);
-}
-
-if (unmatched.length > 0) {
-	console.log(
-		`\n${unmatched.length} stories are in no group and were left out — add their title to ` +
-			'`stillGroups` in scripts/stills/still-catalog.mts:',
-	);
-
-	for (const title of new Set(unmatched.map((story) => story.title))) {
-		console.log(`  ${title}`);
-	}
 }

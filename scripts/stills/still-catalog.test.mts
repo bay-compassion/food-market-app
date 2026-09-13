@@ -1,117 +1,108 @@
 import { describe, expect, it } from 'vitest';
 
-import { stillFrames, StillCatalog, stillGroups, type StillGroup } from './still-catalog.mjs';
+import { stillArcs, StillCatalog, stillFrames, type StillArc } from './still-catalog.mjs';
 import type { StorybookStory } from './storybook-index.mjs';
 
-function story(title: string, name = 'Default'): StorybookStory {
-	return { id: `${title}--${name}`.toLowerCase(), title, name, tags: [] };
+function story(id: string): StorybookStory {
+	return { id, title: 'Guest/Whatever', name: 'Whatever', tags: [] };
 }
 
-const groups: StillGroup[] = [
-	{ id: 'guest', title: 'Guest', summary: '', frame: 'phone', titles: ['Guest'] },
+const arcs: StillArc[] = [
 	{
-		id: 'visit',
-		title: 'Visit',
+		id: 'guest-day',
+		title: 'A guest’s day',
 		summary: '',
 		frame: 'phone',
-		titles: ['Guest/Session States/GuestVisitStatus'],
+		steps: [
+			{ id: 'first', caption: 'Between markets' },
+			{ id: 'second', caption: 'Recognized on this device', frame: 'component' },
+		],
 	},
 	{
-		id: 'admin',
-		title: 'Admin',
+		id: 'market-day',
+		title: 'The market’s state',
 		summary: '',
 		frame: 'desktop',
-		titles: ['Admin', { prefix: 'Admin/QueueGuestRow', frame: 'panel' }],
+		steps: [{ id: 'third', caption: 'Registration open' }],
 	},
 ];
 
 describe('StillCatalog', () => {
-	it('claims a story for the most specific group that matches it', () => {
+	it('keeps the arcs and their steps in the order they are declared', () => {
 		// Arrange
-		const catalog = new StillCatalog(groups);
+		const catalog = new StillCatalog(arcs);
 
 		// Act
-		const specific = catalog.groupFor(story('Guest/Session States/GuestVisitStatus'));
-		const general = catalog.groupFor(story('Guest/Forms/Lottery Form'));
+		const sections = catalog.sections();
 
 		// Assert
-		expect(specific?.id).toBe('visit');
-		expect(general?.id).toBe('guest');
+		expect(sections.map((section) => section.arc.id)).toEqual(['guest-day', 'market-day']);
+		expect(sections[0]?.steps.map((step) => step.id)).toEqual(['first', 'second']);
 	});
 
-	it('does not let a title prefix match a partial path segment', () => {
+	it('keeps only the requested arcs when some are named', () => {
 		// Arrange
-		const catalog = new StillCatalog(groups);
+		const catalog = new StillCatalog(arcs);
 
 		// Act
-		const group = catalog.groupFor(story('Guestbook/Something'));
+		const sections = catalog.sections(['market-day']);
 
 		// Assert
-		expect(group).toBeUndefined();
+		expect(sections.map((section) => section.arc.id)).toEqual(['market-day']);
 	});
 
-	it('orders sections by the catalog and stories by the index', () => {
+	it('shoots a step at the frame it names, falling back to its arc’s', () => {
 		// Arrange
-		const catalog = new StillCatalog(groups);
-		const stories = [
-			story('Admin/QueueView', 'During Service'),
-			story('Guest/Forms/Lottery Form', 'Default'),
-			story('Guest/Forms/Lottery Form', 'Right To Left'),
-		];
+		const catalog = new StillCatalog(arcs);
+		const arc = arcs[0]!;
 
 		// Act
-		const sections = catalog.sections(stories);
+		const inherited = catalog.frameFor(arc, arc.steps[0]!);
+		const overridden = catalog.frameFor(arc, arc.steps[1]!);
 
 		// Assert
-		expect(sections.map((section) => section.group.id)).toEqual(['guest', 'admin']);
-		expect(sections[0]?.stories.map((entry) => entry.name)).toEqual(['Default', 'Right To Left']);
+		expect(inherited).toBe(stillFrames.phone);
+		expect(overridden).toBe(stillFrames.component);
 	});
 
-	it('keeps only the requested groups when asked for some', () => {
+	it('names the step ids Storybook no longer has', () => {
 		// Arrange
-		const catalog = new StillCatalog(groups);
-		const stories = [story('Admin/QueueView'), story('Guest/Forms/Lottery Form')];
+		const catalog = new StillCatalog(arcs);
 
 		// Act
-		const sections = catalog.sections(stories, ['admin']);
+		const missing = catalog.missing([story('first'), story('third')]);
 
 		// Assert
-		expect(sections.map((section) => section.group.id)).toEqual(['admin']);
+		expect(missing).toEqual(['second']);
 	});
 
-	it('reports stories no group claims so the catalog can be caught up', () => {
+	it('does not treat a story no arc names as a problem', () => {
 		// Arrange
-		const catalog = new StillCatalog(groups);
-		const stories = [story('Guest/Forms/Lottery Form'), story('Reports/Weekly')];
+		const catalog = new StillCatalog(arcs);
 
 		// Act
-		const unmatched = catalog.unmatched(stories);
+		const missing = catalog.missing([
+			story('first'),
+			story('second'),
+			story('third'),
+			story('spare'),
+		]);
 
 		// Assert
-		expect(unmatched.map((entry) => entry.title)).toEqual(['Reports/Weekly']);
+		expect(missing).toEqual([]);
 	});
 
-	it('shoots a story at the frame its own title names', () => {
+	it('ships arcs whose ids are unique and whose steps are never repeated', () => {
 		// Arrange
-		const catalog = new StillCatalog(groups);
+		const ids = stillArcs.map((arc) => arc.id);
+		const stepIds = stillArcs.flatMap((arc) => arc.steps.map((step) => step.id));
 
 		// Act
-		const row = catalog.frameFor(story('Admin/QueueGuestRow', 'Waiting'));
-		const screen = catalog.frameFor(story('Admin/QueueView', 'During Service'));
+		const uniqueIds = new Set(ids);
+		const uniqueStepIds = new Set(stepIds);
 
 		// Assert
-		expect(row).toBe(stillFrames.panel);
-		expect(screen).toBe(stillFrames.desktop);
-	});
-
-	it('ships a catalog whose group ids are unique', () => {
-		// Arrange
-		const ids = stillGroups.map((group) => group.id);
-
-		// Act
-		const unique = new Set(ids);
-
-		// Assert
-		expect(unique.size).toBe(ids.length);
+		expect(uniqueIds.size).toBe(ids.length);
+		expect(uniqueStepIds.size).toBe(stepIds.length);
 	});
 });

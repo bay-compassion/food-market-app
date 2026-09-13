@@ -93,17 +93,19 @@ script refuses to touch a database that is not on localhost unless you pass `--f
 ### Printable app stills
 
 Design conversations go better around a table than around a screen. `npm run capture:stills`
-photographs every state in Storybook and lays them out as sheets of paper — grouped by where they
-fall in a market day, numbered so you can point at one, and sized so a sheet is always one sheet:
+photographs the app's major arcs — a guest's day, where it goes otherwise, and the market's state
+through the day — and lays them out as sheets of paper, numbered so you can point at one and sized
+so a sheet is always one sheet:
 
 ```bash
 npx playwright install chromium             # once
 npm run capture:stills                      # → stills/stills.pdf
-npm run capture:stills -- --group visit --columns 2 --rows 1
+npm run capture:stills -- --arc guest-day --columns 2 --rows 1
 ```
 
-See [`docs/stills.md`](docs/stills.md) for the groups, the page-size options, and what to do when a
-new story turns up in no group.
+The sheets are an edit, not an inventory: about twenty hand-picked stories out of Storybook's two
+hundred. See [`docs/stills.md`](docs/stills.md) for the arcs, how to add a beat to one, and the
+page-size options.
 
 ## Checks
 
