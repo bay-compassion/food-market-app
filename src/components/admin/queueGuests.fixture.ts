@@ -109,3 +109,20 @@ export const busyQueueCounts: Partial<Record<VisitStatus, number>> = {
 	served: 1,
 	no_show: 1,
 };
+
+/** The end of a service: the same people, all of them finished one way or another. */
+export const finishedQueue: QueueGuest[] = busyQueue.map((guest, index) =>
+	queueGuest({
+		...guest,
+		// Most were served; the last is the one who never came back to the entrance.
+		status: index === busyQueue.length - 1 ? 'no_show' : 'served',
+		queuePosition: null,
+		calledAt: null,
+	}),
+);
+
+/** The status tallies that go with `finishedQueue`. */
+export const finishedQueueCounts: Partial<Record<VisitStatus, number>> = {
+	served: finishedQueue.length - 1,
+	no_show: 1,
+};

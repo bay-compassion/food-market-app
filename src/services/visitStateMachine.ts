@@ -39,6 +39,24 @@ export const visitStatuses: VisitStatus[] = [
 /** Statuses that still need a worker's attention while service is running. */
 export const outstandingVisitStatuses: VisitStatus[] = ['waiting', 'called'];
 
+/**
+ * Statuses a visit has run its course in: the worker owes that guest nothing further today.
+ *
+ * Not the same as unreachable — `return_to_queue` still brings a `no_show` back into the line —
+ * but a roster of only these has nobody left to call, which is what turns the queue screen's
+ * primary control into closing the session.
+ *
+ * Together with `outstandingVisitStatuses` and the pre-draw `registered`, this partitions
+ * `visitStatuses`, which `visitStateMachine.test.ts` holds to: a status added later has to be
+ * placed in one of the three rather than quietly falling between them.
+ */
+export const finishedVisitStatuses: VisitStatus[] = [
+	'served',
+	'not_placed',
+	'no_show',
+	'cancelled',
+];
+
 const commandSources: Record<VisitCommand, VisitStatus[]> = {
 	select: ['registered'],
 	skip: ['registered'],

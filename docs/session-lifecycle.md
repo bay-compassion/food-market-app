@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=54d3cac97d4f, netlify/services/marketSession.mts=7c06be9b47ac, src/services/visitStateMachine.ts=e7f9c6c319b9, netlify/services/visitQueue.mts=74f42aff84bf -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=54d3cac97d4f, netlify/services/marketSession.mts=7c06be9b47ac, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=74f42aff84bf -->
 
 # Session lifecycle
 
@@ -115,6 +115,13 @@ stateDiagram-v2
     not_placed --> [*]
     cancelled --> [*]
 ```
+
+Those statuses group three ways, and the module exports two of the groups because screens key off
+them: `registered` is before the draw, `outstandingVisitStatuses` (`waiting`, `called`) still needs
+a worker, and `finishedVisitStatuses` (`served`, `not_placed`, `no_show`, `cancelled`) does not.
+`no_show` sits in the last group even though `return_to_queue` leads back out of it: nothing is owed
+to that guest unless a worker chooses to put them back. The grouping is what closing a session
+resolves over, and what tells the queue screen there is nobody left to call.
 
 Who owns each transition matters:
 

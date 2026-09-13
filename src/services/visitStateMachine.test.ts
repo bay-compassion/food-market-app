@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	canRunVisitCommand,
+	finishedVisitStatuses,
 	isVisitCommand,
 	isVisitStatus,
 	outstandingVisitStatuses,
 	visitCommandsFrom,
 	visitCommandTarget,
+	visitStatuses,
 } from './visitStateMachine';
 
 describe('visitStateMachine', () => {
@@ -65,6 +67,18 @@ describe('visitStateMachine', () => {
 
 	it('treats only waiting and called as outstanding at session close', () => {
 		expect(outstandingVisitStatuses).toEqual(['waiting', 'called']);
+	});
+
+	it('splits every status into pre-draw, outstanding, or finished', () => {
+		// Arrange
+		const grouped = ['registered', ...outstandingVisitStatuses, ...finishedVisitStatuses];
+
+		// Act
+		const sorted = [...grouped].sort();
+
+		// Assert: a status added later has to be placed, not left to fall between the groups.
+		expect(sorted).toEqual([...visitStatuses].sort());
+		expect(new Set(grouped).size).toBe(visitStatuses.length);
 	});
 
 	it('validates statuses and commands from untrusted input', () => {
