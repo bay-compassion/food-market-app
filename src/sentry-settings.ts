@@ -26,6 +26,8 @@ export type SentrySettings = Required<
 > & {
 	/** Whether the app bar offers the user feedback form. */
 	feedbackEnabled: boolean;
+	/** Whether events name the guest on this device. See `sentry-user.ts`. */
+	userInfoEnabled: boolean;
 };
 
 /** What `Sentry.init` needs, or `null` when the environment has no DSN configured. */
@@ -53,5 +55,8 @@ export function sentrySettings(env: ImportMetaEnv): SentrySettings | null {
 		// Feedback is for beta testing, so it is opt-in: a build that says nothing about it, which is
 		// what a stable release should be, never shows the form.
 		feedbackEnabled: enabled && env.VITE_SENTRY_FEEDBACK_ENABLED === 'true',
+		// Identifying guests is for beta testing with internal users only, and opt-in for the same
+		// reason: a build that says nothing about it reports nobody by name.
+		userInfoEnabled: enabled && env.VITE_SENTRY_USER_INFO_ENABLED === 'true',
 	};
 }

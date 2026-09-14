@@ -16,6 +16,7 @@ function env(overrides: Partial<ImportMetaEnv> = {}): ImportMetaEnv {
 		VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE: undefined,
 		VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE: undefined,
 		VITE_SENTRY_TRACES_SAMPLE_RATE: undefined,
+		VITE_SENTRY_USER_INFO_ENABLED: undefined,
 		MODE: 'test',
 		...overrides,
 	};
@@ -60,7 +61,9 @@ describe('sentrySettings', () => {
 
 	it('samples every trace and every errored session by default', () => {
 		// Arrange
-		const environment = env({ VITE_SENTRY_DSN: 'https://key@o0.ingest.us.sentry.io/1' });
+		const environment = env({
+			VITE_SENTRY_DSN: 'https://key@o0.ingest.us.sentry.io/1',
+		});
 
 		// Act
 		const settings = sentrySettings(environment);
@@ -74,6 +77,7 @@ describe('sentrySettings', () => {
 			replaysSessionSampleRate: 0,
 			replaysOnErrorSampleRate: 1,
 			feedbackEnabled: false,
+			userInfoEnabled: false,
 		});
 	});
 
@@ -97,6 +101,29 @@ describe('sentrySettings', () => {
 
 			// Assert
 			expect(settings?.feedbackEnabled).toBe(expected);
+		},
+	);
+
+	it.each([
+		['true', undefined, true],
+		['true', 'false', false],
+		['1', undefined, false],
+		[undefined, undefined, false],
+	])(
+		'identifies guests when VITE_SENTRY_USER_INFO_ENABLED is %s and VITE_SENTRY_ENABLED is %s: %s',
+		(userInfo, sentry, expected) => {
+			// Arrange
+			const environment = env({
+				VITE_SENTRY_DSN: 'https://key@o0.ingest.us.sentry.io/1',
+				VITE_SENTRY_ENABLED: sentry,
+				VITE_SENTRY_USER_INFO_ENABLED: userInfo,
+			});
+
+			// Act
+			const settings = sentrySettings(environment);
+
+			// Assert
+			expect(settings?.userInfoEnabled).toBe(expected);
 		},
 	);
 

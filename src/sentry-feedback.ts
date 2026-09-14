@@ -26,8 +26,9 @@ function feedbackIntegration() {
 				autoInject: false,
 				showBranding: false,
 				colorScheme: 'light',
-				// Nobody is identified with `Sentry.setUser`, so nothing is prefilled. A name is offered
-				// so a beta tester can be followed up with, but never required; email is not asked for.
+				// A name is offered so a beta tester can be followed up with, but never required; email is
+				// not asked for. The name is prefilled only in a build that runs `SentryUserReporter`,
+				// from the `username` it sets.
 				showName: true,
 				isNameRequired: false,
 				showEmail: false,
