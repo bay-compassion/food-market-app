@@ -154,6 +154,22 @@ export interface ClaimViewTranslations {
 	missingCode: string;
 }
 
+/** The Sentry feedback form's copy, keyed by the label names `feedbackIntegration` accepts. */
+export interface FeedbackFormTranslations {
+	formTitle: string;
+	nameLabel: string;
+	namePlaceholder: string;
+	messageLabel: string;
+	messagePlaceholder: string;
+	submitButtonLabel: string;
+	cancelButtonLabel: string;
+	successMessageText: string;
+	isRequiredLabel: string;
+	errorEmptyMessageText: string;
+	errorTimeoutText: string;
+	errorGenericText: string;
+}
+
 export interface AppBarTranslations {
 	openMenu: string;
 	accountMenu: string;
@@ -162,6 +178,8 @@ export interface AppBarTranslations {
 	staffLogin: string;
 	adminPanel: string;
 	signOut: string;
+	sendFeedback: string;
+	feedbackForm: FeedbackFormTranslations;
 }
 
 export interface Translation {
@@ -247,6 +265,22 @@ export const translations = {
 			staffLogin: 'Staff Login',
 			adminPanel: 'Admin Panel',
 			signOut: 'Sign Out',
+			sendFeedback: 'Send feedback',
+			feedbackForm: {
+				formTitle: 'Send feedback',
+				nameLabel: 'Name (optional)',
+				namePlaceholder: 'Your name',
+				messageLabel: 'Your feedback',
+				messagePlaceholder:
+					'Tell us what went wrong or what could be better. Please leave out personal details.',
+				submitButtonLabel: 'Send',
+				cancelButtonLabel: 'Cancel',
+				successMessageText: 'Thank you for your feedback!',
+				isRequiredLabel: '(required)',
+				errorEmptyMessageText: 'Please write a message before sending.',
+				errorTimeoutText: 'Sending took too long. Please try again.',
+				errorGenericText: 'Your feedback could not be sent. Please try again.',
+			},
 		},
 		guestView: {
 			forms: {
@@ -477,6 +511,22 @@ export const translations = {
 			staffLogin: 'Acceso del personal',
 			adminPanel: 'Panel de administración',
 			signOut: 'Cerrar sesión',
+			sendFeedback: 'Enviar comentarios',
+			feedbackForm: {
+				formTitle: 'Enviar comentarios',
+				nameLabel: 'Nombre (opcional)',
+				namePlaceholder: 'Su nombre',
+				messageLabel: 'Sus comentarios',
+				messagePlaceholder:
+					'Cuéntenos qué salió mal o qué podríamos mejorar. Por favor, no incluya datos personales.',
+				submitButtonLabel: 'Enviar',
+				cancelButtonLabel: 'Cancelar',
+				successMessageText: '¡Gracias por sus comentarios!',
+				isRequiredLabel: '(obligatorio)',
+				errorEmptyMessageText: 'Escriba un mensaje antes de enviar.',
+				errorTimeoutText: 'El envío tardó demasiado. Inténtelo de nuevo.',
+				errorGenericText: 'No se pudieron enviar sus comentarios. Inténtelo de nuevo.',
+			},
 		},
 		guestView: {
 			forms: {
@@ -710,6 +760,22 @@ export const translations = {
 			staffLogin: 'ورود کارکنان',
 			adminPanel: 'پنل مدیریت',
 			signOut: 'خروج',
+			sendFeedback: 'ارسال بازخورد',
+			feedbackForm: {
+				formTitle: 'ارسال بازخورد',
+				nameLabel: 'نام (اختیاری)',
+				namePlaceholder: 'نام شما',
+				messageLabel: 'بازخورد شما',
+				messagePlaceholder:
+					'به ما بگویید چه مشکلی پیش آمد یا چه چیزی می‌تواند بهتر شود. لطفاً اطلاعات شخصی وارد نکنید.',
+				submitButtonLabel: 'ارسال',
+				cancelButtonLabel: 'لغو',
+				successMessageText: 'از بازخورد شما سپاسگزاریم!',
+				isRequiredLabel: '(الزامی)',
+				errorEmptyMessageText: 'لطفاً پیش از ارسال، پیامی بنویسید.',
+				errorTimeoutText: 'ارسال بیش از حد طول کشید. لطفاً دوباره تلاش کنید.',
+				errorGenericText: 'بازخورد شما ارسال نشد. لطفاً دوباره تلاش کنید.',
+			},
 		},
 		guestView: {
 			forms: {
@@ -938,6 +1004,22 @@ export const translations = {
 			staffLogin: 'Mag-sign in para sa kawani',
 			adminPanel: 'Panel ng admin',
 			signOut: 'Mag-sign out',
+			sendFeedback: 'Magpadala ng puna',
+			feedbackForm: {
+				formTitle: 'Magpadala ng puna',
+				nameLabel: 'Pangalan (opsyonal)',
+				namePlaceholder: 'Iyong pangalan',
+				messageLabel: 'Ang iyong puna',
+				messagePlaceholder:
+					'Sabihin sa amin ang nangyaring problema o ang maaaring pagbutihin. Huwag maglagay ng personal na impormasyon.',
+				submitButtonLabel: 'Ipadala',
+				cancelButtonLabel: 'Kanselahin',
+				successMessageText: 'Salamat sa iyong puna!',
+				isRequiredLabel: '(kinakailangan)',
+				errorEmptyMessageText: 'Mangyaring magsulat ng mensahe bago magpadala.',
+				errorTimeoutText: 'Tumagal nang sobra ang pagpapadala. Pakisubukang muli.',
+				errorGenericText: 'Hindi naipadala ang iyong puna. Pakisubukang muli.',
+			},
 		},
 		guestView: {
 			forms: {
@@ -1175,6 +1257,22 @@ export const translations = {
 			staffLogin: 'Đăng nhập nhân viên',
 			adminPanel: 'Bảng quản trị',
 			signOut: 'Đăng xuất',
+			sendFeedback: 'Gửi góp ý',
+			feedbackForm: {
+				formTitle: 'Gửi góp ý',
+				nameLabel: 'Tên (không bắt buộc)',
+				namePlaceholder: 'Tên của bạn',
+				messageLabel: 'Góp ý của bạn',
+				messagePlaceholder:
+					'Hãy cho chúng tôi biết điều gì không ổn hoặc điều gì có thể tốt hơn. Vui lòng không ghi thông tin cá nhân.',
+				submitButtonLabel: 'Gửi',
+				cancelButtonLabel: 'Hủy',
+				successMessageText: 'Cảm ơn bạn đã góp ý!',
+				isRequiredLabel: '(bắt buộc)',
+				errorEmptyMessageText: 'Vui lòng viết nội dung trước khi gửi.',
+				errorTimeoutText: 'Quá thời gian gửi. Vui lòng thử lại.',
+				errorGenericText: 'Không gửi được góp ý của bạn. Vui lòng thử lại.',
+			},
 		},
 		guestView: {
 			forms: {
@@ -1403,6 +1501,21 @@ export const translations = {
 			staffLogin: '工作人员登录',
 			adminPanel: '管理面板',
 			signOut: '退出登录',
+			sendFeedback: '发送反馈',
+			feedbackForm: {
+				formTitle: '发送反馈',
+				nameLabel: '姓名（选填）',
+				namePlaceholder: '您的姓名',
+				messageLabel: '您的反馈',
+				messagePlaceholder: '请告诉我们遇到了什么问题，或有哪些地方可以改进。请勿填写个人信息。',
+				submitButtonLabel: '发送',
+				cancelButtonLabel: '取消',
+				successMessageText: '感谢您的反馈！',
+				isRequiredLabel: '（必填）',
+				errorEmptyMessageText: '请先填写内容再发送。',
+				errorTimeoutText: '发送超时，请重试。',
+				errorGenericText: '反馈发送失败，请重试。',
+			},
 		},
 		guestView: {
 			forms: {
@@ -1616,6 +1729,22 @@ export const translations = {
 			staffLogin: 'تسجيل دخول الموظفين',
 			adminPanel: 'لوحة الإدارة',
 			signOut: 'تسجيل الخروج',
+			sendFeedback: 'إرسال ملاحظات',
+			feedbackForm: {
+				formTitle: 'إرسال ملاحظات',
+				nameLabel: 'الاسم (اختياري)',
+				namePlaceholder: 'اسمك',
+				messageLabel: 'ملاحظاتك',
+				messagePlaceholder:
+					'أخبرنا بما حدث من خطأ أو بما يمكن تحسينه. يُرجى عدم كتابة أي معلومات شخصية.',
+				submitButtonLabel: 'إرسال',
+				cancelButtonLabel: 'إلغاء',
+				successMessageText: 'شكرًا لك على ملاحظاتك!',
+				isRequiredLabel: '(مطلوب)',
+				errorEmptyMessageText: 'يُرجى كتابة رسالة قبل الإرسال.',
+				errorTimeoutText: 'استغرق الإرسال وقتًا طويلًا. يُرجى المحاولة مرة أخرى.',
+				errorGenericText: 'تعذّر إرسال ملاحظاتك. يُرجى المحاولة مرة أخرى.',
+			},
 		},
 		guestView: {
 			forms: {

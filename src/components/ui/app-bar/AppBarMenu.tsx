@@ -10,6 +10,7 @@ import { useId, useState } from 'react';
 import { Link } from 'react-router';
 
 import { authReturnUrl } from '../../../auth';
+import { isFeedbackEnabled, openFeedbackForm } from '../../../sentry-feedback-trigger';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { MoreVertIcon } from '../icons/MoreVertIcon';
@@ -27,6 +28,15 @@ export const AppBarMenu = observer(function AppBarMenu() {
 
 	function close() {
 		setAnchorEl(null);
+	}
+
+	function sendFeedback() {
+		close();
+		void openFeedbackForm({
+			text: t.feedbackForm,
+			locale: translations.locale,
+			dir: translations.dir,
+		});
 	}
 
 	function signOut() {
@@ -89,6 +99,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				<MenuItem component={Link} to="/admin" onClick={close}>
 					{isAuthenticated ? t.adminPanel : t.staffLogin}
 				</MenuItem>
+				{isFeedbackEnabled && <MenuItem onClick={sendFeedback}>{t.sendFeedback}</MenuItem>}
 				{isAuthenticated && [
 					<Divider key="account-divider" />,
 					/*

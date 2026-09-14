@@ -1,10 +1,24 @@
 import { describe, expect, it } from 'vitest';
 
-import { sampleRate, sentrySettings } from './sentry';
+import { sampleRate, sentrySettings } from './sentry-settings';
 
-/** `import.meta.env` as the app sees it, with only the keys a test cares about set. */
+/**
+ * `import.meta.env` as the app sees it, with only the keys a test cares about set. Every Sentry key
+ * is cleared first, because Vitest loads a developer's local `.env` into `import.meta.env` too.
+ */
 function env(overrides: Partial<ImportMetaEnv> = {}): ImportMetaEnv {
-	return { ...import.meta.env, VITE_SENTRY_DSN: undefined, MODE: 'test', ...overrides };
+	return {
+		...import.meta.env,
+		VITE_SENTRY_DSN: undefined,
+		VITE_SENTRY_ENABLED: undefined,
+		VITE_SENTRY_ENVIRONMENT: undefined,
+		VITE_SENTRY_FEEDBACK_ENABLED: undefined,
+		VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE: undefined,
+		VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE: undefined,
+		VITE_SENTRY_TRACES_SAMPLE_RATE: undefined,
+		MODE: 'test',
+		...overrides,
+	};
 }
 
 describe('sampleRate', () => {
@@ -54,11 +68,37 @@ describe('sentrySettings', () => {
 		// Assert
 		expect(settings).toEqual({
 			dsn: 'https://key@o0.ingest.us.sentry.io/1',
+			enabled: true,
 			environment: 'test',
 			tracesSampleRate: 1,
+			replaysSessionSampleRate: 0,
 			replaysOnErrorSampleRate: 1,
+			feedbackEnabled: false,
 		});
 	});
+
+	it.each([
+		['true', undefined, true],
+		['true', 'false', false],
+		['1', undefined, false],
+		[undefined, undefined, false],
+	])(
+		'offers feedback when VITE_SENTRY_FEEDBACK_ENABLED is %s and VITE_SENTRY_ENABLED is %s: %s',
+		(feedback, sentry, expected) => {
+			// Arrange
+			const environment = env({
+				VITE_SENTRY_DSN: 'https://key@o0.ingest.us.sentry.io/1',
+				VITE_SENTRY_ENABLED: sentry,
+				VITE_SENTRY_FEEDBACK_ENABLED: feedback,
+			});
+
+			// Act
+			const settings = sentrySettings(environment);
+
+			// Assert
+			expect(settings?.feedbackEnabled).toBe(expected);
+		},
+	);
 
 	it('takes sample rates and an environment name from the environment', () => {
 		// Arrange

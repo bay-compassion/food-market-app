@@ -16,6 +16,7 @@ suite all have none, so they never spend quota and never talk to Sentry.
 | Browser errors  | `src/sentry.ts`, via React's root error hooks  | errors           |
 | Browser tracing | `src/sentry.ts`, route-aware page and nav load | spans            |
 | Session replay  | `src/sentry-replay.ts`, on error only          | replays          |
+| User feedback   | `src/sentry-feedback.ts`, opt-in for beta      | errors, replays  |
 | Server errors   | `routeHandler`, and both async workloads       | errors           |
 | Server tracing  | `netlify/lib/sentry.mts`, one span per request | spans            |
 | Database spans  | `tracedQuery` at each query site               | spans            |
@@ -55,8 +56,6 @@ already applies, because an arbitrary URL can carry a token or a guest identifie
 - **Continuous session replay.** `replaysSessionSampleRate` is `0`, not a low rate. Fifty replays a
   month is not enough to sample ordinary sessions with, and a replay is only worth keeping when
   something went wrong in it.
-- **The user feedback widget**, which would add weight to the guest bundle and ask a person
-  standing in a food line to file a bug report.
 - **Seer and the AI debugging features**, which are a paid add-on.
 - **Anything that identifies a guest.** `sendDefaultPii` is `false` on both sides, so no IP
   addresses, cookies, headers, or request bodies are attached. Nobody is identified with
@@ -65,6 +64,32 @@ already applies, because an arbitrary URL can carry a token or a guest identifie
   format, so the redaction that keeps phone numbers and tokens out of stdout keeps them out of
   Sentry too — with the SMS logger, which records message bodies verbatim at debug level,
   excluded from Sentry entirely.
+
+## User feedback
+
+For beta testing, the app bar menu can offer a **Send feedback** item that opens Sentry's feedback
+form. It is off unless a build sets `VITE_SENTRY_FEEDBACK_ENABLED=true`, so a stable release is the
+build that says nothing about it. On Netlify, set the variable only for the contexts running the
+beta — branch deploys, or production while the beta lasts — and remove it to turn the form off.
+
+It is built to answer the reasons it was once left out entirely:
+
+- **No weight on the guest path.** The form is its own chunk and is not fetched until somebody
+  taps the menu item. It uses `feedbackIntegration` rather than `feedbackAsyncIntegration`, which
+  would load the form from Sentry's CDN at that moment and fail behind an ad-blocker.
+- **No floating button.** `autoInject` is off, so nothing sits over a phone screen's primary
+  actions; the menu item is the only way in.
+- **Nobody identified without choosing to be.** The name field is optional and labelled so, and
+  nothing prefills it, since nobody is identified with `Sentry.setUser`. The email field is hidden
+  and screenshots are off — screen capture is unavailable on mobile browsers anyway, and on a
+  desktop it would photograph whatever guest details were on screen. The message is free text a
+  guest writes, though, so it can contain anything; its placeholder asks people to leave personal
+  details out.
+
+Each submission is a feedback event tagged with the guest's `locale`. Sentry attaches the buffered
+session replay when there is one, which draws on the same 50-replay allowance as replay on error.
+The form's text follows the language selected in the app, from `appBar.feedbackForm` in
+`src/locales.ts`, and its writing direction follows it too.
 
 ## Uptime monitoring
 
@@ -81,7 +106,10 @@ Set these on the Netlify site. Only the DSNs are required; the rest have working
 | `VITE_SENTRY_DSN`                                   | browser    | unset — Sentry stays off     |
 | `VITE_SENTRY_ENVIRONMENT`                           | browser    | Vite's mode                  |
 | `VITE_SENTRY_TRACES_SAMPLE_RATE`                    | browser    | `1`                          |
+| `VITE_SENTRY_ENABLED`                               | browser    | on — set `false` to disable  |
 | `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE`           | browser    | `1` — set `0` to drop replay |
+| `VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE`            | browser    | `0`                          |
+| `VITE_SENTRY_FEEDBACK_ENABLED`                      | browser    | off — set `true` for beta    |
 | `SENTRY_DSN`                                        | functions  | unset — Sentry stays off     |
 | `SENTRY_ENVIRONMENT`                                | functions  | Netlify's `CONTEXT`          |
 | `SENTRY_RELEASE`                                    | functions  | Netlify's `COMMIT_REF`       |
