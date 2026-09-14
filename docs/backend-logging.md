@@ -40,6 +40,14 @@ cannot be logged here. Empty notification batches produce no delivery summary. T
 still emits a completion record when notifications are disabled. Delivery failures count unsuccessful
 attempts, including deliveries that remain pending for retry.
 
+## Sentry
+
+When `SENTRY_DSN` is set, `warn` and `error` records are also forwarded to Sentry's log product by
+a Winston transport, on top of everything Netlify's function log already holds. The transport is
+registered after the `sanitize` format, so it sees the same redacted records stdout does, and the
+SMS logger is excluded from it because it records message bodies verbatim at debug level.
+See [`observability.md`](observability.md).
+
 ## Adding service events
 
 Import `getLogger` from `netlify/lib/logging.mjs` and log a stable `message` event name with operational

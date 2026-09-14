@@ -6,6 +6,7 @@ import { RouterProvider } from 'react-router';
 import { auth0Settings, returnToPath } from './auth';
 import { AppThemeProvider } from './components/AppThemeProvider';
 import { router } from './router';
+import { reactErrorHandler } from './sentry';
 import { RootStoreProvider } from './stores/react/store-context';
 import { RootStore } from './stores/root.store';
 
@@ -50,7 +51,12 @@ async function bootstrap() {
 	);
 
 	rootStore.start();
-	createRoot(document.getElementById('app')!).render(tree);
+	// React 19 swallows render errors once a boundary handles them; these hand both the caught and
+	// the uncaught ones to Sentry without the app owning a boundary of its own.
+	createRoot(document.getElementById('app')!, {
+		onCaughtError: reactErrorHandler(),
+		onUncaughtError: reactErrorHandler(),
+	}).render(tree);
 
 	if (import.meta.hot) {
 		import.meta.hot.dispose(() => rootStore[Symbol.dispose]());
