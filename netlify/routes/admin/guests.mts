@@ -12,6 +12,7 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { tracedQuery } from '../../lib/sentry.mjs';
 import { adminProfileSchema, createGuestProfile } from '../../services/guest-information.mjs';
 import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
@@ -19,12 +20,14 @@ import { runVisitCommand } from '../../services/visitQueue.mjs';
 const visitUpdateSchema = z.object({ id: z.string(), command: z.enum(visitCommands) });
 
 async function currentEventId() {
-	const [event] = await db
-		.select({ id: marketEvents.id })
-		.from(marketEvents)
-		.where(ne(marketEvents.status, 'ended'))
-		.orderBy(desc(marketEvents.createdAt))
-		.limit(1);
+	const [event] = await tracedQuery('admin_guests.read_event', () =>
+		db
+			.select({ id: marketEvents.id })
+			.from(marketEvents)
+			.where(ne(marketEvents.status, 'ended'))
+			.orderBy(desc(marketEvents.createdAt))
+			.limit(1),
+	);
 
 	return event?.id ?? null;
 }
@@ -48,35 +51,37 @@ async function listGuests(request: Request) {
 		eventFilter && searchFilter ? and(eventFilter, searchFilter) : (eventFilter ?? searchFilter);
 
 	return Response.json(
-		await db
-			.select({
-				id: visits.id,
-				guestId: guests.id,
-				marketEventId: visits.marketEventId,
-				firstName: guests.firstName,
-				lastName: guests.lastName,
-				ageRange: visits.ageRange,
-				householdSize: visits.householdSize,
-				childrenCount: visits.childrenCount,
-				seniorsCount: visits.seniorsCount,
-				phone: guests.phone,
-				locale: guests.locale,
-				status: visits.status,
-				queuePosition: visits.queuePosition,
-				calledAt: visits.calledAt,
-				answers: visits.answers,
-				source: visits.source,
-				visitDate: visits.visitDate,
-				isFirstVisit: visits.isFirstVisit,
-				createdAt: visits.createdAt,
-			})
-			.from(guests)
-			// A left join so the whole-database view also lists guests with no visit — every visit
-			// column comes back null for them. A session filter still excludes them, as before.
-			.leftJoin(visits, eq(visits.guestId, guests.id))
-			.where(where)
-			.orderBy(desc(sql`coalesce(${visits.createdAt}, ${guests.createdAt})`))
-			.limit(eventId ? 10_000 : 100),
+		await tracedQuery('admin_guests.list', () =>
+			db
+				.select({
+					id: visits.id,
+					guestId: guests.id,
+					marketEventId: visits.marketEventId,
+					firstName: guests.firstName,
+					lastName: guests.lastName,
+					ageRange: visits.ageRange,
+					householdSize: visits.householdSize,
+					childrenCount: visits.childrenCount,
+					seniorsCount: visits.seniorsCount,
+					phone: guests.phone,
+					locale: guests.locale,
+					status: visits.status,
+					queuePosition: visits.queuePosition,
+					calledAt: visits.calledAt,
+					answers: visits.answers,
+					source: visits.source,
+					visitDate: visits.visitDate,
+					isFirstVisit: visits.isFirstVisit,
+					createdAt: visits.createdAt,
+				})
+				.from(guests)
+				// A left join so the whole-database view also lists guests with no visit — every visit
+				// column comes back null for them. A session filter still excludes them, as before.
+				.leftJoin(visits, eq(visits.guestId, guests.id))
+				.where(where)
+				.orderBy(desc(sql`coalesce(${visits.createdAt}, ${guests.createdAt})`))
+				.limit(eventId ? 10_000 : 100),
+		),
 	);
 }
 

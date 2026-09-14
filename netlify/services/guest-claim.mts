@@ -4,6 +4,7 @@ import { db } from '../../db/index.mjs';
 import { guestClaims, guests, pushSubscriptions, visits } from '../../db/schema.mjs';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import { getLogger } from '../lib/logging.mjs';
+import { tracedQuery } from '../lib/sentry.mjs';
 import { currentMarketVisitForGuest } from './current-visit.mjs';
 import {
 	hashClaimToken,
@@ -50,11 +51,13 @@ export async function issueGuestClaim(
 	issuer: { authority: ClaimAuthority; actor?: string },
 	now = new Date(),
 ): Promise<IssueGuestClaimResult> {
-	const [guest] = await db
-		.select({ deviceTokenHash: guests.deviceTokenHash, createdAt: guests.createdAt })
-		.from(guests)
-		.where(eq(guests.id, guestId))
-		.limit(1);
+	const [guest] = await tracedQuery('guest_claim.read_guest', () =>
+		db
+			.select({ deviceTokenHash: guests.deviceTokenHash, createdAt: guests.createdAt })
+			.from(guests)
+			.where(eq(guests.id, guestId))
+			.limit(1),
+	);
 
 	if (!guest) {
 		return { ok: false, status: 404, error: 'That guest could not be found.' };
@@ -83,10 +86,12 @@ export async function issueGuestClaim(
 		createdAt: now,
 	};
 
-	await db
-		.insert(guestClaims)
-		.values({ guestId, ...code })
-		.onConflictDoUpdate({ target: guestClaims.guestId, set: code });
+	await tracedQuery('guest_claim.issue', () =>
+		db
+			.insert(guestClaims)
+			.values({ guestId, ...code })
+			.onConflictDoUpdate({ target: guestClaims.guestId, set: code }),
+	);
 
 	const replacesDevice = guest.deviceTokenHash !== null;
 
@@ -116,71 +121,75 @@ export async function redeemGuestClaim(
 	token: string,
 	now = new Date(),
 ): Promise<RedeemedGuestClaim | null> {
-	return db.transaction(async (tx) => {
-		const [claim] = await tx
-			.select({
-				id: guestClaims.id,
-				guestId: guestClaims.guestId,
-				replacesDeviceTokenHash: guestClaims.replacesDeviceTokenHash,
-			})
-			.from(guestClaims)
-			.where(and(eq(guestClaims.tokenHash, hashClaimToken(token)), gt(guestClaims.expiresAt, now)))
-			.limit(1)
-			.for('update');
+	return tracedQuery('guest_claim.redeem', () =>
+		db.transaction(async (tx) => {
+			const [claim] = await tx
+				.select({
+					id: guestClaims.id,
+					guestId: guestClaims.guestId,
+					replacesDeviceTokenHash: guestClaims.replacesDeviceTokenHash,
+				})
+				.from(guestClaims)
+				.where(
+					and(eq(guestClaims.tokenHash, hashClaimToken(token)), gt(guestClaims.expiresAt, now)),
+				)
+				.limit(1)
+				.for('update');
 
-		if (!claim) {
-			return null;
-		}
+			if (!claim) {
+				return null;
+			}
 
-		await tx.delete(guestClaims).where(eq(guestClaims.id, claim.id));
+			await tx.delete(guestClaims).where(eq(guestClaims.id, claim.id));
 
-		const device = issueDeviceToken();
-		const [identity] = await tx
-			.update(guests)
-			.set({ deviceTokenHash: device.tokenHash })
-			.where(
-				and(
-					eq(guests.id, claim.guestId),
-					// Only while the guest still holds exactly what the code was issued against.
-					claim.replacesDeviceTokenHash === null
-						? isNull(guests.deviceTokenHash)
-						: eq(guests.deviceTokenHash, claim.replacesDeviceTokenHash),
-				),
-			)
-			.returning({
-				firstName: guests.firstName,
-				lastName: guests.lastName,
-				phone: guests.phone,
+			const device = issueDeviceToken();
+			const [identity] = await tx
+				.update(guests)
+				.set({ deviceTokenHash: device.tokenHash })
+				.where(
+					and(
+						eq(guests.id, claim.guestId),
+						// Only while the guest still holds exactly what the code was issued against.
+						claim.replacesDeviceTokenHash === null
+							? isNull(guests.deviceTokenHash)
+							: eq(guests.deviceTokenHash, claim.replacesDeviceTokenHash),
+					),
+				)
+				.returning({
+					firstName: guests.firstName,
+					lastName: guests.lastName,
+					phone: guests.phone,
+				});
+
+			if (!identity) {
+				return null;
+			}
+
+			getLogger().info({
+				message: 'guest_claim.redeemed',
+				guestId: claim.guestId,
+				replacedDevice: claim.replacesDeviceTokenHash !== null,
 			});
 
-		if (!identity) {
-			return null;
-		}
+			const visit = await currentMarketVisitForGuest(claim.guestId, tx);
 
-		getLogger().info({
-			message: 'guest_claim.redeemed',
-			guestId: claim.guestId,
-			replacedDevice: claim.replacesDeviceTokenHash !== null,
-		});
+			if (!visit) {
+				return { deviceToken: device.token, identity, visit: null };
+			}
 
-		const visit = await currentMarketVisitForGuest(claim.guestId, tx);
+			const visitCredential = issueVisitToken();
 
-		if (!visit) {
-			return { deviceToken: device.token, identity, visit: null };
-		}
+			await tx
+				.update(visits)
+				.set({ accessTokenHash: visitCredential.tokenHash })
+				.where(eq(visits.id, visit.id));
+			await tx.delete(pushSubscriptions).where(eq(pushSubscriptions.visitId, visit.id));
 
-		const visitCredential = issueVisitToken();
-
-		await tx
-			.update(visits)
-			.set({ accessTokenHash: visitCredential.tokenHash })
-			.where(eq(visits.id, visit.id));
-		await tx.delete(pushSubscriptions).where(eq(pushSubscriptions.visitId, visit.id));
-
-		return {
-			deviceToken: device.token,
-			identity,
-			visit: { ...visit, visitToken: visitCredential.token },
-		};
-	});
+			return {
+				deviceToken: device.token,
+				identity,
+				visit: { ...visit, visitToken: visitCredential.token },
+			};
+		}),
+	);
 }

@@ -2,6 +2,7 @@ import { and, desc, eq, ne } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, visits } from '../../db/schema.mjs';
+import { tracedQuery } from '../lib/sentry.mjs';
 import type { Transaction } from './guest-information.mjs';
 
 /**
@@ -12,23 +13,25 @@ export async function currentMarketVisitForGuest(
 	guestId: string,
 	executor: Transaction | typeof db = db,
 ) {
-	const [event] = await executor
-		.select({ id: marketEvents.id })
-		.from(marketEvents)
-		.where(ne(marketEvents.status, 'ended'))
-		.orderBy(desc(marketEvents.createdAt))
-		.limit(1);
+	return tracedQuery('visit.current_for_guest', async () => {
+		const [event] = await executor
+			.select({ id: marketEvents.id })
+			.from(marketEvents)
+			.where(ne(marketEvents.status, 'ended'))
+			.orderBy(desc(marketEvents.createdAt))
+			.limit(1);
 
-	if (!event) {
-		return null;
-	}
+		if (!event) {
+			return null;
+		}
 
-	const [visit] = await executor
-		.select({ id: visits.id, marketEventId: visits.marketEventId, status: visits.status })
-		.from(visits)
-		.where(and(eq(visits.guestId, guestId), eq(visits.marketEventId, event.id)))
-		.orderBy(desc(visits.createdAt))
-		.limit(1);
+		const [visit] = await executor
+			.select({ id: visits.id, marketEventId: visits.marketEventId, status: visits.status })
+			.from(visits)
+			.where(and(eq(visits.guestId, guestId), eq(visits.marketEventId, event.id)))
+			.orderBy(desc(visits.createdAt))
+			.limit(1);
 
-	return visit ?? null;
+		return visit ?? null;
+	});
 }

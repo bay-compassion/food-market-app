@@ -14,6 +14,7 @@ import {
 	routeHandler,
 } from '../../lib/http.mjs';
 import { getLogger } from '../../lib/logging.mjs';
+import { tracedQuery } from '../../lib/sentry.mjs';
 import { currentMarketVisitForGuest } from '../../services/current-visit.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import type { NotificationType } from '../../services/pushNotifications.mjs';
@@ -42,7 +43,9 @@ smsSubscriptionRoutes.delete(
 	withSmsConfigured,
 	withDeviceGuest,
 	async (context) => {
-		await db.delete(smsSubscriptions).where(eq(smsSubscriptions.guestId, context.get('guest').id));
+		await tracedQuery('sms_subscription.delete', () =>
+			db.delete(smsSubscriptions).where(eq(smsSubscriptions.guestId, context.get('guest').id)),
+		);
 
 		return new Response(null, { status: 204 });
 	},
@@ -59,16 +62,20 @@ smsSubscriptionRoutes.post(
 			return jsonError('Please confirm you consent to receive text messages.');
 		}
 
-		const [existingSubscription] = await db
-			.select({ guestId: smsSubscriptions.guestId })
-			.from(smsSubscriptions)
-			.where(eq(smsSubscriptions.guestId, guest.id))
-			.limit(1);
-		const [optOut] = await db
-			.select({ senderPhone: smsOptOuts.senderPhone })
-			.from(smsOptOuts)
-			.where(eq(smsOptOuts.guestId, guest.id))
-			.limit(1);
+		const [existingSubscription] = await tracedQuery('sms_subscription.read', () =>
+			db
+				.select({ guestId: smsSubscriptions.guestId })
+				.from(smsSubscriptions)
+				.where(eq(smsSubscriptions.guestId, guest.id))
+				.limit(1),
+		);
+		const [optOut] = await tracedQuery('sms_subscription.read_opt_out', () =>
+			db
+				.select({ senderPhone: smsOptOuts.senderPhone })
+				.from(smsOptOuts)
+				.where(eq(smsOptOuts.guestId, guest.id))
+				.limit(1),
+		);
 		const consentedAt = new Date();
 
 		if (optOut) {
@@ -93,18 +100,20 @@ smsSubscriptionRoutes.post(
 			}
 		}
 
-		await db.transaction(async (tx) => {
-			if (optOut) {
-				await tx.delete(smsOptOuts).where(eq(smsOptOuts.guestId, guest.id));
-			}
-			await tx
-				.insert(smsSubscriptions)
-				.values({ guestId: guest.id, consentedAt })
-				.onConflictDoUpdate({
-					target: smsSubscriptions.guestId,
-					set: { consentedAt },
-				});
-		});
+		await tracedQuery('sms_subscription.save', () =>
+			db.transaction(async (tx) => {
+				if (optOut) {
+					await tx.delete(smsOptOuts).where(eq(smsOptOuts.guestId, guest.id));
+				}
+				await tx
+					.insert(smsSubscriptions)
+					.values({ guestId: guest.id, consentedAt })
+					.onConflictDoUpdate({
+						target: smsSubscriptions.guestId,
+						set: { consentedAt },
+					});
+			}),
+		);
 
 		if (existingSubscription) {
 			return Response.json({ subscribed: true });

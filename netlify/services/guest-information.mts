@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { guests } from '../../db/schema.mjs';
+import { tracedQuery } from '../lib/sentry.mjs';
 import { hashDeviceToken, issueDeviceToken, normalizePhone } from './guestCredentials.mjs';
 
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -65,11 +66,13 @@ export async function findGuestByDeviceToken(deviceToken: string | null) {
 		return null;
 	}
 
-	const [guest] = await db
-		.select()
-		.from(guests)
-		.where(eq(guests.deviceTokenHash, hashDeviceToken(deviceToken)))
-		.limit(1);
+	const [guest] = await tracedQuery('guest.by_device_token', () =>
+		db
+			.select()
+			.from(guests)
+			.where(eq(guests.deviceTokenHash, hashDeviceToken(deviceToken)))
+			.limit(1),
+	);
 
 	return guest ?? null;
 }
@@ -135,12 +138,14 @@ export type AdminProfileSubmission = z.infer<typeof adminProfileSchema>;
 export async function createGuestProfile(
 	submission: AdminProfileSubmission,
 ): Promise<{ id: null; guestId: string }> {
-	const guest = await db.transaction((tx) =>
-		persistGuestInformation(tx, {
-			existingGuest: null,
-			information: submission,
-			deviceTokenHash: null,
-		}),
+	const guest = await tracedQuery('guest.create_profile', () =>
+		db.transaction((tx) =>
+			persistGuestInformation(tx, {
+				existingGuest: null,
+				information: submission,
+				deviceTokenHash: null,
+			}),
+		),
 	);
 
 	return { id: null, guestId: guest.id };
@@ -152,15 +157,17 @@ export async function saveGuestInformation(
 ): Promise<SaveGuestInformationResult> {
 	const existingGuest = await findGuestByDeviceToken(submission.deviceToken);
 	const deviceCredential = existingGuest ? null : issueDeviceToken();
-	const result = await db.transaction(async (tx) => {
-		const guest = await persistGuestInformation(tx, {
-			existingGuest,
-			information: submission,
-			deviceTokenHash: deviceCredential?.tokenHash ?? null,
-		});
+	const result = await tracedQuery('guest.save_information', () =>
+		db.transaction(async (tx) => {
+			const guest = await persistGuestInformation(tx, {
+				existingGuest,
+				information: submission,
+				deviceTokenHash: deviceCredential?.tokenHash ?? null,
+			});
 
-		return { guestId: guest.id, deviceToken: deviceCredential?.token };
-	});
+			return { guestId: guest.id, deviceToken: deviceCredential?.token };
+		}),
+	);
 
 	return { ok: true, status: existingGuest ? 200 : 201, body: result };
 }

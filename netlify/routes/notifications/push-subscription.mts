@@ -13,6 +13,7 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { tracedQuery } from '../../lib/sentry.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import {
 	deliverPendingNotifications,
@@ -44,9 +45,9 @@ pushSubscriptionRoutes.delete(
 	withPushConfigured,
 	withVisit,
 	async (context) => {
-		await db
-			.delete(pushSubscriptions)
-			.where(eq(pushSubscriptions.visitId, context.get('visit').id));
+		await tracedQuery('push_subscription.delete', () =>
+			db.delete(pushSubscriptions).where(eq(pushSubscriptions.visitId, context.get('visit').id)),
+		);
 
 		return new Response(null, { status: 204 });
 	},
@@ -63,34 +64,38 @@ pushSubscriptionRoutes.post(
 			return jsonError('Please provide a valid push subscription.');
 		}
 		const subscription = parsed.data;
-		const [existingSubscription] = await db
-			.select({ visitId: pushSubscriptions.visitId })
-			.from(pushSubscriptions)
-			.where(eq(pushSubscriptions.endpoint, subscription.endpoint))
-			.limit(1);
+		const [existingSubscription] = await tracedQuery('push_subscription.read', () =>
+			db
+				.select({ visitId: pushSubscriptions.visitId })
+				.from(pushSubscriptions)
+				.where(eq(pushSubscriptions.endpoint, subscription.endpoint))
+				.limit(1),
+		);
 
-		await db.transaction(async (tx) => {
-			await tx
-				.delete(pushSubscriptions)
-				.where(
-					and(
-						eq(pushSubscriptions.visitId, visit.id),
-						ne(pushSubscriptions.endpoint, subscription.endpoint),
-					),
-				);
-			await tx
-				.insert(pushSubscriptions)
-				.values({ visitId: visit.id, ...subscription })
-				.onConflictDoUpdate({
-					target: pushSubscriptions.endpoint,
-					set: {
-						visitId: visit.id,
-						p256dh: subscription.p256dh,
-						auth: subscription.auth,
-						updatedAt: new Date(),
-					},
-				});
-		});
+		await tracedQuery('push_subscription.save', () =>
+			db.transaction(async (tx) => {
+				await tx
+					.delete(pushSubscriptions)
+					.where(
+						and(
+							eq(pushSubscriptions.visitId, visit.id),
+							ne(pushSubscriptions.endpoint, subscription.endpoint),
+						),
+					);
+				await tx
+					.insert(pushSubscriptions)
+					.values({ visitId: visit.id, ...subscription })
+					.onConflictDoUpdate({
+						target: pushSubscriptions.endpoint,
+						set: {
+							visitId: visit.id,
+							p256dh: subscription.p256dh,
+							auth: subscription.auth,
+							updatedAt: new Date(),
+						},
+					});
+			}),
+		);
 		// Statuses with no entry here are terminal (served, no_show, cancelled) — subscribing at that
 		// point should not replay a notification about a visit that is already over.
 		const catchUpNotifications: Partial<Record<VisitStatus, NotificationType>> = {

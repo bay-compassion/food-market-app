@@ -5,6 +5,7 @@ import { db } from '../../../db/index.mjs';
 import { guests, smsOptOuts, smsSubscriptions } from '../../../db/schema.mjs';
 import { createRouter, jsonError, methodNotAllowed, routeHandler } from '../../lib/http.mjs';
 import { getLogger } from '../../lib/logging.mjs';
+import { tracedQuery } from '../../lib/sentry.mjs';
 
 const formContentType = 'application/x-www-form-urlencoded';
 
@@ -61,10 +62,9 @@ twilioIncomingMessageRoutes.post('/api/twilio/incoming-message', async (context)
 		return emptyMessagingResponse();
 	}
 
-	const matchingGuests = await db
-		.select({ id: guests.id })
-		.from(guests)
-		.where(eq(guests.normalizedPhone, from));
+	const matchingGuests = await tracedQuery('sms_inbound.match_guests', () =>
+		db.select({ id: guests.id }).from(guests).where(eq(guests.normalizedPhone, from)),
+	);
 
 	if (matchingGuests.length === 0) {
 		getLogger().info({ message: 'sms.consent_webhook_unmatched', optOutType });
@@ -77,29 +77,33 @@ twilioIncomingMessageRoutes.post('/api/twilio/incoming-message', async (context)
 	if (optOutType === 'STOP') {
 		const optedOutAt = new Date();
 
-		await db.transaction(async (tx) => {
-			await tx
-				.insert(smsOptOuts)
-				.values(guestIds.map((guestId) => ({ guestId, senderPhone: to, optedOutAt })))
-				.onConflictDoUpdate({
-					target: smsOptOuts.guestId,
-					set: { senderPhone: to, optedOutAt },
-				});
-			await tx.delete(smsSubscriptions).where(inArray(smsSubscriptions.guestId, guestIds));
-		});
+		await tracedQuery('sms_inbound.record_opt_out', () =>
+			db.transaction(async (tx) => {
+				await tx
+					.insert(smsOptOuts)
+					.values(guestIds.map((guestId) => ({ guestId, senderPhone: to, optedOutAt })))
+					.onConflictDoUpdate({
+						target: smsOptOuts.guestId,
+						set: { senderPhone: to, optedOutAt },
+					});
+				await tx.delete(smsSubscriptions).where(inArray(smsSubscriptions.guestId, guestIds));
+			}),
+		);
 	} else {
 		const consentedAt = new Date();
 
-		await db.transaction(async (tx) => {
-			await tx.delete(smsOptOuts).where(inArray(smsOptOuts.guestId, guestIds));
-			await tx
-				.insert(smsSubscriptions)
-				.values(guestIds.map((guestId) => ({ guestId, consentedAt })))
-				.onConflictDoUpdate({
-					target: smsSubscriptions.guestId,
-					set: { consentedAt },
-				});
-		});
+		await tracedQuery('sms_inbound.clear_opt_out', () =>
+			db.transaction(async (tx) => {
+				await tx.delete(smsOptOuts).where(inArray(smsOptOuts.guestId, guestIds));
+				await tx
+					.insert(smsSubscriptions)
+					.values(guestIds.map((guestId) => ({ guestId, consentedAt })))
+					.onConflictDoUpdate({
+						target: smsSubscriptions.guestId,
+						set: { consentedAt },
+					});
+			}),
+		);
 	}
 
 	getLogger().info({
