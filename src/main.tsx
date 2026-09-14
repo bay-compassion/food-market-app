@@ -7,6 +7,7 @@ import { auth0Settings, returnToPath } from './auth';
 import { AppThemeProvider } from './components/AppThemeProvider';
 import { router } from './router';
 import { reactErrorHandler } from './sentry';
+import { isUserInfoEnabled, SentryUserReporter } from './sentry-user';
 import { RootStoreProvider } from './stores/react/store-context';
 import { RootStore } from './stores/root.store';
 
@@ -21,6 +22,7 @@ async function bootstrap() {
 		? new (await import('./stores/demo-preview-session')).DemoPreviewSession()
 		: undefined;
 	const rootStore = new RootStore({ browserStorage, previewName });
+	const sentryUser = isUserInfoEnabled ? new SentryUserReporter(rootStore.guest) : null;
 
 	/**
 	 * `Auth0Provider` is mounted even with no Auth0 configured, so `useAuth0()` is safe to call
@@ -39,7 +41,9 @@ async function bootstrap() {
 					// the return through the router itself is what actually puts a worker on the screen
 					// they signed in for.
 					onRedirectCallback={(appState) =>
-						void router.navigate(returnToPath(appState), { replace: true })
+						void router.navigate(returnToPath(appState), {
+							replace: true,
+						})
 					}
 				>
 					<RootStoreProvider store={rootStore}>
@@ -59,7 +63,10 @@ async function bootstrap() {
 	}).render(tree);
 
 	if (import.meta.hot) {
-		import.meta.hot.dispose(() => rootStore[Symbol.dispose]());
+		import.meta.hot.dispose(() => {
+			sentryUser?.[Symbol.dispose]();
+			rootStore[Symbol.dispose]();
+		});
 	}
 }
 

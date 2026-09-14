@@ -44,8 +44,10 @@ function initializeSentry() {
 		replaysOnErrorSampleRate: settings.replaysOnErrorSampleRate,
 		// Guests hand this app their name, phone number, and household details. Nothing that
 		// identifies one of them belongs in an error report: no IP address, no cookies, no request
-		// bodies, and no replay that has not had its text masked.
-		dataCollection: {},
+		// bodies, and no replay that has not had its text masked. `userInfo` is spelled out because an
+		// omitted field takes the SDK's default, which infers the IP address. It has no effect on the
+		// user `SentryUserReporter` sets explicitly in a beta build.
+		dataCollection: { userInfo: false },
 	});
 
 	if (settings.replaysOnErrorSampleRate > 0) {

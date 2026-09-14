@@ -57,13 +57,14 @@ already applies, because an arbitrary URL can carry a token or a guest identifie
   month is not enough to sample ordinary sessions with, and a replay is only worth keeping when
   something went wrong in it.
 - **Seer and the AI debugging features**, which are a paid add-on.
-- **Anything that identifies a guest.** `sendDefaultPii` is `false` on both sides, so no IP
-  addresses, cookies, headers, or request bodies are attached. Nobody is identified with
-  `Sentry.setUser`. Replays mask all text, all inputs, and all media, and record no request or
-  response bodies. The server's Sentry transport sits downstream of the logger's `sanitize`
-  format, so the redaction that keeps phone numbers and tokens out of stdout keeps them out of
-  Sentry too — with the SMS logger, which records message bodies verbatim at debug level,
-  excluded from Sentry entirely.
+- **Anything that identifies a guest.** `sendDefaultPii` is `false` on the server and
+  `dataCollection.userInfo` is `false` in the browser, so no IP addresses, cookies, headers, or
+  request bodies are attached. Nobody is identified with `Sentry.setUser` unless a beta build opts
+  in — see [Identifying beta testers](#identifying-beta-testers). Replays mask all text, all inputs,
+  and all media, and record no request or response bodies. The server's Sentry transport sits
+  downstream of the logger's `sanitize` format, so the redaction that keeps phone numbers and tokens
+  out of stdout keeps them out of Sentry too — with the SMS logger, which records message bodies
+  verbatim at debug level, excluded from Sentry entirely.
 
 ## User feedback
 
@@ -80,16 +81,39 @@ It is built to answer the reasons it was once left out entirely:
 - **No floating button.** `autoInject` is off, so nothing sits over a phone screen's primary
   actions; the menu item is the only way in.
 - **Nobody identified without choosing to be.** The name field is optional and labelled so, and
-  nothing prefills it, since nobody is identified with `Sentry.setUser`. The email field is hidden
-  and screenshots are off — screen capture is unavailable on mobile browsers anyway, and on a
-  desktop it would photograph whatever guest details were on screen. The message is free text a
-  guest writes, though, so it can contain anything; its placeholder asks people to leave personal
-  details out.
+  nothing prefills it except in a build that also identifies beta testers, where it starts out
+  holding the name that build already reports. The email field is hidden and screenshots are off —
+  screen capture is unavailable on mobile browsers anyway, and on a desktop it would photograph
+  whatever guest details were on screen. The message is free text a guest writes, though, so it can
+  contain anything; its placeholder asks people to leave personal details out.
 
 Each submission is a feedback event tagged with the guest's `locale`. Sentry attaches the buffered
 session replay when there is one, which draws on the same 50-replay allowance as replay on error.
 The form's text follows the language selected in the app, from `appBar.feedbackForm` in
 `src/locales.ts`, and its writing direction follows it too.
+
+## Identifying beta testers
+
+While the beta runs with internal testers, a build can name the guest on each device in every
+event, so somebody who ran into a problem can be found and asked about it. It is off unless a build
+sets `VITE_SENTRY_USER_INFO_ENABLED=true`, and it identifies **every** guest using that build, not
+only testers — set it on branch deploys or a beta-only site, never on the site a real market uses,
+and remove it when the beta ends.
+
+`SentryUserReporter` in `src/sentry-user.ts` follows the guest store, so the user changes when a
+guest registers or forgets the device mid-session. Each event carries:
+
+- **`user.id`** — the SHA-256 hex digest of the device token, not the token. The token is the
+  credential the server authenticates a guest with, so it never leaves the browser. The digest is
+  the value of `guests.device_token_hash`, which is how a Sentry user is matched to a guest record.
+  The **Device ID** shown in the identity card's menu is the raw token, so hash it before searching
+  Sentry for one (`printf %s "$TOKEN" | shasum -a 256`).
+- **`user.username`** — the same first name and last initial the identity card shows. No phone
+  number, and nothing for a device that has not registered.
+
+The replay masking is unchanged: the identity card's name and phone stay masked in a recording.
+IP addresses stay off as well, since `dataCollection.userInfo` only controls what the SDK infers on
+its own and has no effect on a user set explicitly.
 
 ## Uptime monitoring
 
@@ -110,6 +134,7 @@ Set these on the Netlify site. Only the DSNs are required; the rest have working
 | `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE`           | browser    | `1` — set `0` to drop replay |
 | `VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE`            | browser    | `0`                          |
 | `VITE_SENTRY_FEEDBACK_ENABLED`                      | browser    | off — set `true` for beta    |
+| `VITE_SENTRY_USER_INFO_ENABLED`                     | browser    | off — beta deploys only      |
 | `SENTRY_DSN`                                        | functions  | unset — Sentry stays off     |
 | `SENTRY_ENVIRONMENT`                                | functions  | Netlify's `CONTEXT`          |
 | `SENTRY_RELEASE`                                    | functions  | Netlify's `COMMIT_REF`       |
