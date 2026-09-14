@@ -8,60 +8,20 @@ import {
 	useNavigationType,
 } from 'react-router';
 
+import { sentrySettings } from './sentry-settings.ts';
+
 /**
- * Browser-side Sentry, scoped to what the free Developer plan covers: errors, tracing, and
- * error-triggered session replay. See `docs/observability.md` for the quotas each one draws on
- * and for the products deliberately left out.
+ * Browser-side Sentry, scoped to what the free Developer plan covers: errors, tracing,
+ * error-triggered session replay, and opt-in user feedback. See `docs/observability.md` for the
+ * quotas each one draws on and for the products deliberately left out.
  *
  * Sentry is inert with no `VITE_SENTRY_DSN` set, which is the case for local development, the
  * unit tests, Storybook, and the end-to-end suite — none of them should be spending quota.
  */
 
-/** A sample rate from the environment, ignoring anything that is not a rate between 0 and 1. */
-export function sampleRate(value: string | undefined, fallback: number): number {
-	const parsed = Number(value);
+const settings = sentrySettings(import.meta.env);
 
-	return value !== undefined && value !== '' && parsed >= 0 && parsed <= 1 ? parsed : fallback;
-}
-
-export type SentrySettings = Required<
-	Pick<
-		Sentry.BrowserOptions,
-		| 'enabled'
-		| 'dsn'
-		| 'environment'
-		| 'tracesSampleRate'
-		| 'replaysSessionSampleRate'
-		| 'replaysOnErrorSampleRate'
-	>
->;
-
-/** What `Sentry.init` needs, or `null` when the environment has no DSN configured. */
-export function sentrySettings(env: ImportMetaEnv): SentrySettings | null {
-	const dsn = env.VITE_SENTRY_DSN;
-
-	if (!dsn) {
-		return null;
-	}
-
-	return {
-		dsn,
-		enabled: env.VITE_SENTRY_ENABLED !== 'false',
-		environment: env.VITE_SENTRY_ENVIRONMENT ?? env.MODE,
-
-		// A market serves a few hundred guests an hour at most, so a full trace sample still sits
-		// far inside the free span allowance. Dial it down here if that stops being true.
-		tracesSampleRate: sampleRate(env.VITE_SENTRY_TRACES_SAMPLE_RATE, 1),
-		// The free plan includes 50 replays a month, so only sessions that actually hit an error
-		// are worth one. Continuous session sampling is off entirely, not merely sampled low.
-		replaysSessionSampleRate: sampleRate(env.VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE, 0),
-		replaysOnErrorSampleRate: sampleRate(env.VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE, 1),
-	};
-}
-
-function initializeSentry(env: ImportMetaEnv = import.meta.env) {
-	const settings = sentrySettings(env);
-
+function initializeSentry() {
 	if (!settings) {
 		return;
 	}
