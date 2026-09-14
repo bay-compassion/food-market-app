@@ -90,9 +90,15 @@ Set these on the Netlify site. Only the DSNs are required; the rest have working
 
 `VITE_` variables are read at build time, so changing one needs a redeploy, not just a restart.
 
+This project's Sentry organization is `bay-compassion` and its browser project is
+`food-market-frontend` — those are the two slugs `SENTRY_ORG` and `SENTRY_PROJECT` want. The DSNs
+themselves live only in the Netlify environment. A browser DSN is public by design, since it ships
+inside the bundle every guest downloads, but keeping it out of the repository means pointing at a
+different project is a settings change rather than a commit. Do not put one in a local `.env`
+either: that spends the error allowance on development.
+
 The browser and the functions can share one Sentry project or use two. One project is simpler and
-puts a guest's error next to the request that failed behind it; the DSNs differ either way, since
-the browser DSN is public and the server's is not.
+puts a guest's error next to the request that failed behind it; the two DSNs differ either way.
 
 Sample rates are read as numbers between 0 and 1; anything else falls back to the default. If the
 error allowance is what runs out, the fix is an inbound filter or a spike protection setting in
@@ -104,7 +110,17 @@ Without `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT`, the build skips
 entirely and emits no source maps, so a local build is unchanged. With all three set, the build
 emits maps, uploads them, and deletes them from `dist` — `dist` never ships a readable copy of the
 source. Create the token in Sentry under **Settings → Auth Tokens** with the `project:releases`
-scope.
+scope; the other two are the slugs above.
+
+### Not the setup wizard
+
+Sentry's onboarding offers `npx @sentry/wizard -i reactRouter`. Do not run it here. That installs
+`@sentry/react-router`, the SDK for React Router's **framework mode**, and scaffolds the
+`entry.client.tsx`, `entry.server.tsx`, and `react-router.config.ts` an SSR app has. This is a Vite
+SPA using `createBrowserRouter`, so the wizard would add a second, conflicting SDK and write entry
+points into a build that has none. Sentry's own framework guide sends data-mode routers back to the
+React guide, which prescribes what `src/sentry.ts` already does:
+`reactRouterBrowserTracingIntegration` plus `wrapCreateBrowserRouter`.
 
 ## Cost on the guest path
 
