@@ -102,7 +102,7 @@ export const AppBar = observer(function AppBar() {
 							variant="standard"
 							disableUnderline
 							value={translations.locale}
-							inputProps={{ 'aria-label': t.language }}
+							inputProps={{ 'aria-label': t.language, 'data-sentry-unmask': true }}
 							onChange={setLocale}
 						>
 							{languages.map((language) => (

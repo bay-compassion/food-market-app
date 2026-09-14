@@ -24,12 +24,17 @@ export function sampleRate(value: string | undefined, fallback: number): number 
 	return value !== undefined && value !== '' && parsed >= 0 && parsed <= 1 ? parsed : fallback;
 }
 
-export type SentrySettings = {
-	dsn: string;
-	environment: string;
-	tracesSampleRate: number;
-	replaysOnErrorSampleRate: number;
-};
+export type SentrySettings = Required<
+	Pick<
+		Sentry.BrowserOptions,
+		| 'enabled'
+		| 'dsn'
+		| 'environment'
+		| 'tracesSampleRate'
+		| 'replaysSessionSampleRate'
+		| 'replaysOnErrorSampleRate'
+	>
+>;
 
 /** What `Sentry.init` needs, or `null` when the environment has no DSN configured. */
 export function sentrySettings(env: ImportMetaEnv): SentrySettings | null {
@@ -41,17 +46,20 @@ export function sentrySettings(env: ImportMetaEnv): SentrySettings | null {
 
 	return {
 		dsn,
+		enabled: env.VITE_SENTRY_ENABLED !== 'false',
 		environment: env.VITE_SENTRY_ENVIRONMENT ?? env.MODE,
+
 		// A market serves a few hundred guests an hour at most, so a full trace sample still sits
 		// far inside the free span allowance. Dial it down here if that stops being true.
 		tracesSampleRate: sampleRate(env.VITE_SENTRY_TRACES_SAMPLE_RATE, 1),
 		// The free plan includes 50 replays a month, so only sessions that actually hit an error
 		// are worth one. Continuous session sampling is off entirely, not merely sampled low.
+		replaysSessionSampleRate: sampleRate(env.VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE, 0),
 		replaysOnErrorSampleRate: sampleRate(env.VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE, 1),
 	};
 }
 
-function initSentry(env: ImportMetaEnv = import.meta.env) {
+function initializeSentry(env: ImportMetaEnv = import.meta.env) {
 	const settings = sentrySettings(env);
 
 	if (!settings) {
@@ -60,6 +68,7 @@ function initSentry(env: ImportMetaEnv = import.meta.env) {
 
 	Sentry.init({
 		dsn: settings.dsn,
+		enabled: settings.enabled,
 		environment: settings.environment,
 		integrations: [
 			Sentry.reactRouterBrowserTracingIntegration({
@@ -71,12 +80,12 @@ function initSentry(env: ImportMetaEnv = import.meta.env) {
 			}),
 		],
 		tracesSampleRate: settings.tracesSampleRate,
-		replaysSessionSampleRate: 0,
+		replaysSessionSampleRate: settings.replaysSessionSampleRate,
 		replaysOnErrorSampleRate: settings.replaysOnErrorSampleRate,
 		// Guests hand this app their name, phone number, and household details. Nothing that
 		// identifies one of them belongs in an error report: no IP address, no cookies, no request
 		// bodies, and no replay that has not had its text masked.
-		sendDefaultPii: false,
+		dataCollection: {},
 	});
 
 	if (settings.replaysOnErrorSampleRate > 0) {
@@ -102,7 +111,7 @@ async function loadReplay() {
 // while `router.tsx` is still being evaluated. Initializing here, as a side effect of the module
 // that hands out the wrapped factory, makes that ordering a property of the import graph rather
 // than something the entry point has to remember to do in the right order.
-initSentry();
+initializeSentry();
 
 /**
  * `createBrowserRouter`, instrumented so a transaction is named after the route pattern it

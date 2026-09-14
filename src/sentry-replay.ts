@@ -11,8 +11,10 @@ import * as Sentry from '@sentry/react';
 export function addReplay(): void {
 	Sentry.getClient()?.addIntegration(
 		Sentry.replayIntegration({
-			maskAllText: true,
+			maskAllText: false,
 			maskAllInputs: true,
+			mask: ['[data-sentry-mask]'],
+			unmask: ['[data-sentry-unmask]'],
 			blockAllMedia: true,
 			// Request and response bodies stay out of the recording. URLs alone carry no guest data,
 			// because the API keeps identifiers in the body and in tokens, never in the path.

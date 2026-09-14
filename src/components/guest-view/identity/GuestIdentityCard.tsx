@@ -263,10 +263,10 @@ const IdentifiedGuestIdentity = observer(function IdentifiedGuestIdentity() {
 					</svg>
 					<div className="identity-container">
 						<div className="identity-heading">{copy.heading}</div>
-						<div className="identity-name">
+						<div className="identity-name" data-sentry-mask>
 							<bdi dir="auto">{guest.displayedName}</bdi>
 						</div>
-						<div className="identity-phone">
+						<div className="identity-phone" data-sentry-mask>
 							<bdi dir="ltr">{identity.phone}</bdi>
 						</div>
 					</div>
