@@ -11,6 +11,7 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { tracedQuery } from '../../lib/sentry.mjs';
 import { hashVisitToken } from '../../services/guestCredentials.mjs';
 
 /** Cancelling is the only change a guest can make to their own visit. */
@@ -28,19 +29,21 @@ async function authorizedVisit(request: Request) {
 	if (!token || token.length < 32 || token.length > 200) {
 		return null;
 	}
-	const [visit] = await db
-		.select({
-			id: visits.id,
-			status: visits.status,
-			marketEventId: visits.marketEventId,
-			queuePosition: visits.queuePosition,
-			calledAt: visits.calledAt,
-			sessionStatus: marketEvents.status,
-		})
-		.from(visits)
-		.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
-		.where(eq(visits.accessTokenHash, hashVisitToken(token)))
-		.limit(1);
+	const [visit] = await tracedQuery('visit.read_for_guest', () =>
+		db
+			.select({
+				id: visits.id,
+				status: visits.status,
+				marketEventId: visits.marketEventId,
+				queuePosition: visits.queuePosition,
+				calledAt: visits.calledAt,
+				sessionStatus: marketEvents.status,
+			})
+			.from(visits)
+			.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
+			.where(eq(visits.accessTokenHash, hashVisitToken(token)))
+			.limit(1),
+	);
 
 	return visit ?? null;
 }
@@ -54,19 +57,25 @@ async function guestsAhead(visit: {
 	marketEventId: string;
 	queuePosition: number | null;
 }) {
-	if (visit.status !== 'waiting' || visit.queuePosition === null) {
+	// Destructured so the null check narrows a const: a property read loses its narrowing inside
+	// the query closure below.
+	const { queuePosition } = visit;
+
+	if (visit.status !== 'waiting' || queuePosition === null) {
 		return null;
 	}
-	const [ahead] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(visits)
-		.where(
-			and(
-				eq(visits.marketEventId, visit.marketEventId),
-				eq(visits.status, 'waiting'),
-				lt(visits.queuePosition, visit.queuePosition),
+	const [ahead] = await tracedQuery('visit.count_ahead', () =>
+		db
+			.select({ count: sql<number>`count(*)::int` })
+			.from(visits)
+			.where(
+				and(
+					eq(visits.marketEventId, visit.marketEventId),
+					eq(visits.status, 'waiting'),
+					lt(visits.queuePosition, queuePosition),
+				),
 			),
-		);
+	);
 
 	return ahead?.count ?? 0;
 }
@@ -108,11 +117,13 @@ visitRoutes.patch('/api/visit', async (context) => {
 	if (!action.success) {
 		return jsonError('Invalid visit action.');
 	}
-	const [cancelled] = await db
-		.update(visits)
-		.set({ status: 'cancelled' })
-		.where(and(eq(visits.id, visit.id), inArray(visits.status, ['registered', 'waiting'])))
-		.returning({ id: visits.id, status: visits.status });
+	const [cancelled] = await tracedQuery('visit.cancel', () =>
+		db
+			.update(visits)
+			.set({ status: 'cancelled' })
+			.where(and(eq(visits.id, visit.id), inArray(visits.status, ['registered', 'waiting'])))
+			.returning({ id: visits.id, status: visits.status }),
+	);
 
 	return cancelled
 		? Response.json(cancelled)

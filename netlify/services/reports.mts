@@ -3,6 +3,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import { db } from '../../db/index.mjs';
 import { languages } from '../../src/locales.js';
 import type { ReportId, ReportRow } from '../../src/services/reports.js';
+import { tracedQuery } from '../lib/sentry.mjs';
 
 /**
  * The SQL behind each predefined report.
@@ -190,7 +191,9 @@ const reportQueries: Record<ReportId, (range: ReportRange) => SQL> = {
  * inferred; without that, reading the result wrongly compiles and only fails once it runs.
  */
 export async function runReport(id: ReportId, range: ReportRange): Promise<ReportRow[]> {
-	const { rows }: { rows: ReportRow[] } = await db.execute<ReportRow>(reportQueries[id](range));
+	const { rows }: { rows: ReportRow[] } = await tracedQuery('report.run', () =>
+		db.execute<ReportRow>(reportQueries[id](range)),
+	);
 
 	return rows;
 }
@@ -225,7 +228,10 @@ export const visitExportHeaders = [
  * own deliberate action rather than bundling it with a report download.
  */
 export async function runVisitExport({ start, end }: ReportRange) {
-	const { rows }: { rows: Record<string, unknown>[] } = await db.execute(sql`
+	const { rows }: { rows: Record<string, unknown>[] } = await tracedQuery(
+		'report.visit_export',
+		() =>
+			db.execute(sql`
 		SELECT
 			e.registration_opens_at AS "session_opens_at",
 			e.capacity AS "session_capacity",
@@ -251,7 +257,8 @@ export async function runVisitExport({ start, end }: ReportRange) {
 		JOIN guests g ON g.id = v.guest_id
 		WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
 		ORDER BY e.registration_opens_at DESC, v.queue_position ASC NULLS LAST, v.created_at ASC
-	`);
+	`),
+	);
 
 	return rows.map((row) => visitExportHeaders.map((header) => row[header] as string | null));
 }

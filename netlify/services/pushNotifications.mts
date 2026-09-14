@@ -5,6 +5,7 @@ import { db } from '../../db/index.mjs';
 import { guests, notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.mjs';
 import { translations, type Locale } from '../../src/locales.js';
 import { getLogger } from '../lib/logging.mjs';
+import { tracedQuery } from '../lib/sentry.mjs';
 import type {
 	NotificationDeliveryOptions,
 	NotificationDeliveryResult,
@@ -115,44 +116,49 @@ export async function deliverPendingNotifications(
 	if (options?.dedupeKeys?.length) {
 		conditions.push(inArray(notificationDeliveries.dedupeKey, options.dedupeKeys));
 	}
-	const rows = await db.transaction(async (tx) => {
-		const claimed = await tx
-			.select({
-				id: notificationDeliveries.id,
-				attempts: notificationDeliveries.attempts,
-				type: notificationDeliveries.type,
-				dedupeKey: notificationDeliveries.dedupeKey,
-				title: notificationDeliveries.title,
-				body: notificationDeliveries.body,
-				locale: guests.locale,
-				endpoint: pushSubscriptions.endpoint,
-				p256dh: pushSubscriptions.p256dh,
-				auth: pushSubscriptions.auth,
-			})
-			.from(notificationDeliveries)
-			.innerJoin(visits, eq(visits.id, notificationDeliveries.visitId))
-			.innerJoin(guests, eq(guests.id, visits.guestId))
-			.leftJoin(pushSubscriptions, eq(pushSubscriptions.visitId, visits.id))
-			.where(and(...conditions))
-			.orderBy(asc(notificationDeliveries.createdAt))
-			.limit(options?.limit ?? 250)
-			.for('update', { of: notificationDeliveries, skipLocked: true });
+	const rows = await tracedQuery('notification.claim_push_batch', () =>
+		db.transaction(async (tx) => {
+			const claimed = await tx
+				.select({
+					id: notificationDeliveries.id,
+					attempts: notificationDeliveries.attempts,
+					type: notificationDeliveries.type,
+					dedupeKey: notificationDeliveries.dedupeKey,
+					title: notificationDeliveries.title,
+					body: notificationDeliveries.body,
+					locale: guests.locale,
+					endpoint: pushSubscriptions.endpoint,
+					p256dh: pushSubscriptions.p256dh,
+					auth: pushSubscriptions.auth,
+				})
+				.from(notificationDeliveries)
+				.innerJoin(visits, eq(visits.id, notificationDeliveries.visitId))
+				.innerJoin(guests, eq(guests.id, visits.guestId))
+				.leftJoin(pushSubscriptions, eq(pushSubscriptions.visitId, visits.id))
+				.where(and(...conditions))
+				.orderBy(asc(notificationDeliveries.createdAt))
+				.limit(options?.limit ?? 250)
+				.for('update', { of: notificationDeliveries, skipLocked: true });
 
-		if (claimed.length) {
-			await tx
-				.update(notificationDeliveries)
-				.set({ claimedAt: new Date(), claimedBy: options?.claimId ?? null })
-				.where(
-					inArray(
-						notificationDeliveries.id,
-						claimed.map(({ id }) => id),
-					),
-				);
-		}
+			if (claimed.length) {
+				await tx
+					.update(notificationDeliveries)
+					.set({ claimedAt: new Date(), claimedBy: options?.claimId ?? null })
+					.where(
+						inArray(
+							notificationDeliveries.id,
+							claimed.map(({ id }) => id),
+						),
+					);
+			}
 
-		return claimed;
-	});
+			return claimed;
+		}),
+	);
 
+	// The per-row status writes in the loop below are deliberately not spanned: one span per
+	// recipient would spend the free span allowance on a batch's worth of near-identical rows
+	// without saying anything the batch span does not.
 	let sent = 0;
 	let failed = 0;
 	let skipped = 0;

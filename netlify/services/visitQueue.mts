@@ -9,6 +9,7 @@ import {
 	visitCommandTarget,
 	type VisitCommand,
 } from '../../src/services/visitStateMachine.js';
+import { tracedQuery } from '../lib/sentry.mjs';
 import { deliverQueuedNotifications, requeueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
 
@@ -66,11 +67,9 @@ export async function runVisitCommand(
 	visitId: string,
 	command: VisitCommand,
 ): Promise<VisitCommandResult> {
-	const [current] = await db
-		.select({ status: visits.status })
-		.from(visits)
-		.where(eq(visits.id, visitId))
-		.limit(1);
+	const [current] = await tracedQuery('visit.read_status', () =>
+		db.select({ status: visits.status }).from(visits).where(eq(visits.id, visitId)).limit(1),
+	);
 
 	if (!current) {
 		return { ok: false, status: 404, error: 'Visit not found.' };
@@ -86,19 +85,21 @@ export async function runVisitCommand(
 
 	const changes = visitCommandChanges(command);
 
-	const updated = await db.transaction(async (tx) => {
-		const [visit] = await tx
-			.update(visits)
-			.set(changes)
-			.where(and(eq(visits.id, visitId), eq(visits.status, current.status)))
-			.returning({ id: visits.id, status: visits.status });
+	const updated = await tracedQuery('visit.apply_command', () =>
+		db.transaction(async (tx) => {
+			const [visit] = await tx
+				.update(visits)
+				.set(changes)
+				.where(and(eq(visits.id, visitId), eq(visits.status, current.status)))
+				.returning({ id: visits.id, status: visits.status });
 
-		if (visit && command === 'call') {
-			await queueCalledNotifications(tx, [visit.id]);
-		}
+			if (visit && command === 'call') {
+				await queueCalledNotifications(tx, [visit.id]);
+			}
 
-		return visit ?? null;
-	});
+			return visit ?? null;
+		}),
+	);
 
 	if (!updated) {
 		return {
@@ -120,28 +121,30 @@ export async function runVisitCommand(
  * statement so two workers calling at the same moment cannot claim the same guests.
  */
 export async function callNextVisits(marketEventId: string, count: number) {
-	const called = await db.transaction(async (tx) => {
-		const rows = await tx
-			.update(visits)
-			.set({ status: 'called', calledAt: sql`now()` })
-			.where(
-				inArray(
-					visits.id,
-					tx
-						.select({ id: visits.id })
-						.from(visits)
-						.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'waiting')))
-						.orderBy(sql`${visits.queuePosition} ASC NULLS LAST`, asc(visits.createdAt))
-						.limit(count),
-				),
-			)
-			.returning({ id: visits.id });
-		const visitIds = rows.map((row) => row.id);
+	const called = await tracedQuery('visit.call_next', () =>
+		db.transaction(async (tx) => {
+			const rows = await tx
+				.update(visits)
+				.set({ status: 'called', calledAt: sql`now()` })
+				.where(
+					inArray(
+						visits.id,
+						tx
+							.select({ id: visits.id })
+							.from(visits)
+							.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'waiting')))
+							.orderBy(sql`${visits.queuePosition} ASC NULLS LAST`, asc(visits.createdAt))
+							.limit(count),
+					),
+				)
+				.returning({ id: visits.id });
+			const visitIds = rows.map((row) => row.id);
 
-		await queueCalledNotifications(tx, visitIds);
+			await queueCalledNotifications(tx, visitIds);
 
-		return visitIds;
-	});
+			return visitIds;
+		}),
+	);
 
 	await deliverCalledNotifications(called);
 
@@ -153,18 +156,20 @@ export async function callNextVisits(marketEventId: string, count: number) {
  * ending a session never strands a guest in a status that implies service is still coming.
  */
 export async function resolveOutstandingVisits(tx: Transaction, marketEventId: string) {
-	const resolved = await tx
-		.update(visits)
-		.set({ status: 'no_show' })
-		.where(
-			and(
-				eq(visits.marketEventId, marketEventId),
-				inArray(visits.status, outstandingVisitStatuses),
-			),
-		)
-		.returning({ id: visits.id });
+	return tracedQuery('visit.resolve_outstanding', async () => {
+		const resolved = await tx
+			.update(visits)
+			.set({ status: 'no_show' })
+			.where(
+				and(
+					eq(visits.marketEventId, marketEventId),
+					inArray(visits.status, outstandingVisitStatuses),
+				),
+			)
+			.returning({ id: visits.id });
 
-	return resolved.length;
+		return resolved.length;
+	});
 }
 
 /**
@@ -179,43 +184,45 @@ export async function nextQueuePosition(
 	marketEventId: string,
 	placement: QueuePlacement,
 ) {
-	const [highest] = await tx
-		.select({ position: sql<number | null>`max(${visits.queuePosition})` })
-		.from(visits)
-		.where(eq(visits.marketEventId, marketEventId));
-	const endPosition = (highest?.position ?? 0) + 1;
+	return tracedQuery('visit.next_queue_position', async () => {
+		const [highest] = await tx
+			.select({ position: sql<number | null>`max(${visits.queuePosition})` })
+			.from(visits)
+			.where(eq(visits.marketEventId, marketEventId));
+		const endPosition = (highest?.position ?? 0) + 1;
 
-	if (placement === 'end') {
-		return endPosition;
-	}
+		if (placement === 'end') {
+			return endPosition;
+		}
 
-	const [front] = await tx
-		.select({ position: visits.queuePosition })
-		.from(visits)
-		.where(
-			and(
-				eq(visits.marketEventId, marketEventId),
-				eq(visits.status, 'waiting'),
-				isNotNull(visits.queuePosition),
-			),
-		)
-		.orderBy(asc(visits.queuePosition))
-		.limit(1);
+		const [front] = await tx
+			.select({ position: visits.queuePosition })
+			.from(visits)
+			.where(
+				and(
+					eq(visits.marketEventId, marketEventId),
+					eq(visits.status, 'waiting'),
+					isNotNull(visits.queuePosition),
+				),
+			)
+			.orderBy(asc(visits.queuePosition))
+			.limit(1);
 
-	if (front?.position === null || front?.position === undefined) {
-		return endPosition;
-	}
+		if (front?.position === null || front?.position === undefined) {
+			return endPosition;
+		}
 
-	await tx
-		.update(visits)
-		.set({ queuePosition: sql`${visits.queuePosition} + 1` })
-		.where(
-			and(
-				eq(visits.marketEventId, marketEventId),
-				eq(visits.status, 'waiting'),
-				sql`${visits.queuePosition} >= ${front.position}`,
-			),
-		);
+		await tx
+			.update(visits)
+			.set({ queuePosition: sql`${visits.queuePosition} + 1` })
+			.where(
+				and(
+					eq(visits.marketEventId, marketEventId),
+					eq(visits.status, 'waiting'),
+					sql`${visits.queuePosition} >= ${front.position}`,
+				),
+			);
 
-	return front.position;
+		return front.position;
+	});
 }

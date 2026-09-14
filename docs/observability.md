@@ -18,6 +18,7 @@ suite all have none, so they never spend quota and never talk to Sentry.
 | Session replay  | `src/sentry-replay.ts`, on error only          | replays          |
 | Server errors   | `routeHandler`, and both async workloads       | errors           |
 | Server tracing  | `netlify/lib/sentry.mts`, one span per request | spans            |
+| Database spans  | `tracedQuery` at each query site               | spans            |
 | Server logs     | Winston transport in `netlify/lib/logging.mts` | logs             |
 | Source maps     | `@sentry/vite-plugin` in `vite.config.ts`      | nothing billable |
 
@@ -25,6 +26,17 @@ A guest's page load and the API request it makes are the **same trace**: the bro
 `sentry-trace` header, and `tracedRequest` continues it on the server instead of starting a new
 one. That is the reason to keep tracing on at all — it is what turns "registration felt slow" into
 a specific slow query.
+
+Database work shows up as child spans of whichever request or job is in progress. The Postgres
+auto-instrumentation cannot do this: it patches modules through Sentry's ESM loader hooks, and
+Netlify bundles each function into a single file with nothing left to patch — the same reason
+Sentry's Hono integration is not used here. So each query site calls `tracedQuery` with a name a
+reader would recognize (`visit.call_next`, `registration.persist`) rather than the SQL behind it,
+which also keeps query text out of Sentry. Two things are deliberately left unspanned: the
+per-recipient status writes inside a notification batch, where one span per recipient would spend
+the span allowance without saying more than the batch span does, and `persistGuestInformation` and
+the other helpers that run inside a caller's transaction, which are already covered by the span
+around it.
 
 The background functions are wrapped too. A Netlify async workload retries four times and then
 gives up, and the notification it was delivering never goes out — with nobody watching, that is

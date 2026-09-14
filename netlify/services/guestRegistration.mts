@@ -14,6 +14,7 @@ import {
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
 import { acceptsSelfRegistration } from '../../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
+import { tracedQuery } from '../lib/sentry.mjs';
 import {
 	deviceTokenSchema,
 	findGuestByDeviceToken,
@@ -107,11 +108,13 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 	}
 
 	if (submission.source === 'admin') {
-		const [event] = await db
-			.select({ status: marketEvents.status })
-			.from(marketEvents)
-			.where(eq(marketEvents.id, submission.marketEventId!))
-			.limit(1);
+		const [event] = await tracedQuery('registration.read_event_status', () =>
+			db
+				.select({ status: marketEvents.status })
+				.from(marketEvents)
+				.where(eq(marketEvents.id, submission.marketEventId!))
+				.limit(1),
+		);
 
 		if (!event) {
 			return { ok: false, status: 409, error: 'No market event has been configured.' };
@@ -133,11 +136,13 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
-		const [event] = await db
-			.select()
-			.from(marketEvents)
-			.where(eq(marketEvents.id, submission.marketEventId))
-			.limit(1);
+		// TypeScript drops the non-null narrowing on a property read inside a closure, so the id is
+		// captured here for the queries below to close over — the same reason `getCurrentEvent`
+		// captures its event.
+		const marketEventId = submission.marketEventId;
+		const [event] = await tracedQuery('registration.read_event', () =>
+			db.select().from(marketEvents).where(eq(marketEvents.id, marketEventId)).limit(1),
+		);
 
 		if (!event) {
 			return { ok: false, status: 409, error: 'Registration is not open.' };
@@ -151,14 +156,16 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
-		const questions = await db
-			.select({
-				id: registrationQuestions.id,
-				type: registrationQuestions.type,
-				required: registrationQuestions.required,
-			})
-			.from(registrationQuestions)
-			.where(eq(registrationQuestions.marketEventId, submission.marketEventId));
+		const questions = await tracedQuery('registration.read_questions', () =>
+			db
+				.select({
+					id: registrationQuestions.id,
+					type: registrationQuestions.type,
+					required: registrationQuestions.required,
+				})
+				.from(registrationQuestions)
+				.where(eq(registrationQuestions.marketEventId, marketEventId)),
+		);
 
 		for (const question of questions) {
 			const answer = submission.answers[question.id];
@@ -186,16 +193,18 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 	let existingVisit: { id: string; status: VisitStatus } | null = null;
 
 	if (existingGuest) {
-		const [visit] = await db
-			.select({ id: visits.id, status: visits.status })
-			.from(visits)
-			.where(
-				and(
-					eq(visits.guestId, existingGuest.id),
-					eq(visits.marketEventId, submission.marketEventId!),
-				),
-			)
-			.limit(1);
+		const [visit] = await tracedQuery('registration.read_existing_visit', () =>
+			db
+				.select({ id: visits.id, status: visits.status })
+				.from(visits)
+				.where(
+					and(
+						eq(visits.guestId, existingGuest.id),
+						eq(visits.marketEventId, submission.marketEventId!),
+					),
+				)
+				.limit(1),
+		);
 
 		existingVisit = visit ?? null;
 	}
@@ -204,91 +213,93 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 	const deviceCredential =
 		submission.source === 'self' && !existingGuest ? issueDeviceToken() : null;
 	const visitCredential = issueVisitToken();
-	const registration = await db
-		.transaction(async (tx) => {
-			const [event] = await tx
-				.select()
-				.from(marketEvents)
-				.where(eq(marketEvents.id, submission.marketEventId!))
-				.limit(1)
-				.for('update');
+	const registration = await tracedQuery('registration.persist', () =>
+		db
+			.transaction(async (tx) => {
+				const [event] = await tx
+					.select()
+					.from(marketEvents)
+					.where(eq(marketEvents.id, submission.marketEventId!))
+					.limit(1)
+					.for('update');
 
-			if (
-				!event ||
-				(submission.source === 'self' && !acceptsSelfRegistration(event, new Date())) ||
-				(submission.source === 'admin' && !canAdmitGuest(event.status, submission.admission))
-			) {
-				throw new Error('INVALID_REGISTRATION_STATE');
-			}
+				if (
+					!event ||
+					(submission.source === 'self' && !acceptsSelfRegistration(event, new Date())) ||
+					(submission.source === 'admin' && !canAdmitGuest(event.status, submission.admission))
+				) {
+					throw new Error('INVALID_REGISTRATION_STATE');
+				}
 
-			const guest = await persistGuestInformation(tx, {
-				existingGuest,
-				information: submission,
-				deviceTokenHash: deviceCredential?.tokenHash ?? null,
-			});
-			// Only a guest going straight into the line needs a position now. Everyone else is either
-			// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
-			const queuePosition =
-				submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
-					? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
-					: null;
-			const [visit] = existingVisit
-				? await tx
-						.update(visits)
-						.set({
-							accessTokenHash: visitCredential.tokenHash,
-							answers: submission.answers,
-							ageRange: submission.ageRange,
-							householdSize: submission.householdSize,
-							childrenCount: submission.childrenCount,
-							seniorsCount: submission.seniorsCount,
-							normalizedPhone: normalizePhone(submission.phone),
-							status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
-						})
-						.where(eq(visits.id, existingVisit.id))
-						.returning({ id: visits.id, status: visits.status })
-				: await tx
-						.insert(visits)
-						.values({
-							guestId: guest.id,
-							marketEventId: submission.marketEventId!,
-							status:
-								submission.source === 'admin'
-									? admissionVisitStatus(submission.admission)
-									: 'registered',
-							queuePosition,
-							answers: submission.answers,
-							source: submission.source,
-							accessTokenHash: visitCredential.tokenHash,
-							isFirstVisit,
-							ageRange: submission.ageRange,
-							householdSize: submission.householdSize,
-							childrenCount: submission.childrenCount,
-							seniorsCount: submission.seniorsCount,
-							normalizedPhone: normalizePhone(submission.phone),
-							// Only a guest actually entering the draw can carry anything but the default odds.
-							lotteryWeight:
-								submission.source === 'admin' && admissionTakesLotteryWeight(submission.admission)
-									? submission.lotteryWeight
-									: 1,
-						})
-						.returning({ id: visits.id, status: visits.status });
+				const guest = await persistGuestInformation(tx, {
+					existingGuest,
+					information: submission,
+					deviceTokenHash: deviceCredential?.tokenHash ?? null,
+				});
+				// Only a guest going straight into the line needs a position now. Everyone else is either
+				// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
+				const queuePosition =
+					submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
+						? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
+						: null;
+				const [visit] = existingVisit
+					? await tx
+							.update(visits)
+							.set({
+								accessTokenHash: visitCredential.tokenHash,
+								answers: submission.answers,
+								ageRange: submission.ageRange,
+								householdSize: submission.householdSize,
+								childrenCount: submission.childrenCount,
+								seniorsCount: submission.seniorsCount,
+								normalizedPhone: normalizePhone(submission.phone),
+								status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
+							})
+							.where(eq(visits.id, existingVisit.id))
+							.returning({ id: visits.id, status: visits.status })
+					: await tx
+							.insert(visits)
+							.values({
+								guestId: guest.id,
+								marketEventId: submission.marketEventId!,
+								status:
+									submission.source === 'admin'
+										? admissionVisitStatus(submission.admission)
+										: 'registered',
+								queuePosition,
+								answers: submission.answers,
+								source: submission.source,
+								accessTokenHash: visitCredential.tokenHash,
+								isFirstVisit,
+								ageRange: submission.ageRange,
+								householdSize: submission.householdSize,
+								childrenCount: submission.childrenCount,
+								seniorsCount: submission.seniorsCount,
+								normalizedPhone: normalizePhone(submission.phone),
+								// Only a guest actually entering the draw can carry anything but the default odds.
+								lotteryWeight:
+									submission.source === 'admin' && admissionTakesLotteryWeight(submission.admission)
+										? submission.lotteryWeight
+										: 1,
+							})
+							.returning({ id: visits.id, status: visits.status });
 
-			return {
-				id: visit!.id,
-				guestId: guest.id,
-				status: visit!.status,
-				visitToken: submission.source === 'self' ? visitCredential.token : undefined,
-				deviceToken: deviceCredential?.token,
-			};
-		})
-		.catch((cause: unknown) => {
-			if (cause instanceof Error && cause.message === 'INVALID_REGISTRATION_STATE') {
-				return null;
-			}
+				return {
+					id: visit!.id,
+					guestId: guest.id,
+					status: visit!.status,
+					visitToken: submission.source === 'self' ? visitCredential.token : undefined,
+					deviceToken: deviceCredential?.token,
+				};
+			})
+			.catch((cause: unknown) => {
+				if (cause instanceof Error && cause.message === 'INVALID_REGISTRATION_STATE') {
+					return null;
+				}
 
-			throw cause;
-		});
+				throw cause;
+			}),
+	);
 
 	if (!registration) {
 		return {

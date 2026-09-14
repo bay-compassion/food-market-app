@@ -11,6 +11,7 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { tracedQuery } from '../../lib/sentry.mjs';
 import { deliverQueuedNotifications, queueNotification } from '../../services/notifications.mjs';
 import { pushConfiguration } from '../../services/pushNotifications.mjs';
 import { smsConfiguration } from '../../services/smsNotifications.mjs';
@@ -33,12 +34,14 @@ broadcastRoutes.post('/broadcast', withPermission('manage:sessions'), async (con
 		return jsonError('Please provide a title and message.');
 	}
 
-	const [event] = await db
-		.select({ id: marketEvents.id, status: marketEvents.status })
-		.from(marketEvents)
-		.where(ne(marketEvents.status, 'ended'))
-		.orderBy(desc(marketEvents.createdAt))
-		.limit(1);
+	const [event] = await tracedQuery('broadcast.read_event', () =>
+		db
+			.select({ id: marketEvents.id, status: marketEvents.status })
+			.from(marketEvents)
+			.where(ne(marketEvents.status, 'ended'))
+			.orderBy(desc(marketEvents.createdAt))
+			.limit(1),
+	);
 
 	if (
 		!event ||
@@ -49,18 +52,20 @@ broadcastRoutes.post('/broadcast', withPermission('manage:sessions'), async (con
 		return jsonError('Broadcasts require an active session.', 409);
 	}
 
-	const recipients = await db
-		.select({ visitId: visits.id })
-		.from(visits)
-		.leftJoin(pushSubscriptions, eq(pushSubscriptions.visitId, visits.id))
-		.leftJoin(smsSubscriptions, eq(smsSubscriptions.guestId, visits.guestId))
-		.where(
-			and(
-				eq(visits.marketEventId, event.id),
-				ne(visits.status, 'cancelled'),
-				or(isNotNull(pushSubscriptions.id), isNotNull(smsSubscriptions.id)),
+	const recipients = await tracedQuery('broadcast.read_recipients', () =>
+		db
+			.select({ visitId: visits.id })
+			.from(visits)
+			.leftJoin(pushSubscriptions, eq(pushSubscriptions.visitId, visits.id))
+			.leftJoin(smsSubscriptions, eq(smsSubscriptions.guestId, visits.guestId))
+			.where(
+				and(
+					eq(visits.marketEventId, event.id),
+					ne(visits.status, 'cancelled'),
+					or(isNotNull(pushSubscriptions.id), isNotNull(smsSubscriptions.id)),
+				),
 			),
-		);
+	);
 
 	if (!recipients.length) {
 		return Response.json({ queued: 0, sent: 0 });

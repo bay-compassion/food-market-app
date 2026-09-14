@@ -143,6 +143,20 @@ export async function tracedRequest(
 }
 
 /**
+ * Runs a database operation as a span inside whatever request or job is already in progress.
+ *
+ * The Postgres auto-instrumentation never fires here: it patches modules through Sentry's ESM
+ * loader hooks, and Netlify bundles each function into a single file with nothing left to patch.
+ * These spans are the replacement, so `name` describes the operation a reader would recognize
+ * (`visit.call_next`) rather than the SQL behind it — which also keeps query text out of Sentry.
+ */
+export function tracedQuery<T>(name: string, query: () => Promise<T>): Promise<T> {
+	return settings
+		? Sentry.startSpan({ name, op: 'db', attributes: { 'db.system.name': 'postgresql' } }, query)
+		: query();
+}
+
+/**
  * Runs a background job as one Sentry transaction. Async workloads arrive without a trace header,
  * so this starts a trace of its own rather than continuing one.
  */
