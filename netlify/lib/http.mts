@@ -4,6 +4,7 @@ import { HTTPException } from 'hono/http-exception';
 import { secureHeaders } from 'hono/secure-headers';
 
 import { invocationLogger, withLogger, type InvocationContext } from './logging.mjs';
+import { flushSentry, tracedRequest } from './sentry.mjs';
 
 export const maxRequestBodyBytes = 32 * 1024;
 
@@ -82,19 +83,21 @@ export function routeHandler<E extends Env>(app: Hono<E>, functionName = 'api') 
 
 		return withLogger(log, async () => {
 			try {
-				const response = await boundary.fetch(request);
+				return await tracedRequest(request, `${fields.method} ${fields.path}`, async () => {
+					const response = await boundary.fetch(request);
 
-				response.headers.set('X-Request-Id', requestId);
-				const level = response.status >= 500 ? 'error' : response.status >= 400 ? 'warn' : 'info';
+					response.headers.set('X-Request-Id', requestId);
+					const level = response.status >= 500 ? 'error' : response.status >= 400 ? 'warn' : 'info';
 
-				log[level]({
-					message: 'http.completed',
-					...fields,
-					status: response.status,
-					durationMs: performance.now() - started,
+					log[level]({
+						message: 'http.completed',
+						...fields,
+						status: response.status,
+						durationMs: performance.now() - started,
+					});
+
+					return response;
 				});
-
-				return response;
 			} catch (err) {
 				log.error({
 					message: 'http.failed',
@@ -104,6 +107,10 @@ export function routeHandler<E extends Env>(app: Hono<E>, functionName = 'api') 
 					err,
 				});
 				throw err;
+			} finally {
+				// The runtime freezes as soon as this response is written, so anything Sentry has
+				// queued during the invocation has to leave now or not at all.
+				await flushSentry();
 			}
 		});
 	};

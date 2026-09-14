@@ -52,9 +52,11 @@ to function responses, which is why the Hono boundary also sets headers.
 
 A small **enforced** CSP blocks embedding, plugins, and off-origin base URLs. The full CSP is
 **report-only** until it has been exercised against the deployed app. It currently allows the
-Auth0 tenant domains, Google Fonts, Emotion's inline styles, HTTPS profile images, and the Auth0
-worker. If using an Auth0 custom domain, replace the Auth0 wildcard with that exact origin in
-`connect-src` and `frame-src`. Prefer the exact configured tenant origin before full enforcement.
+Auth0 tenant domains, Google Fonts, Emotion's inline styles, HTTPS profile images, the Auth0
+worker, and Sentry's ingest hosts. If using an Auth0 custom domain, replace the Auth0 wildcard
+with that exact origin in `connect-src` and `frame-src`. The same applies to Sentry: once a
+project exists, the three `*.ingest.*.sentry.io` wildcards can be narrowed to the one origin the
+DSN actually points at. Prefer the exact configured origins before full enforcement.
 
 The report-only policy does not yet block scripts or collect remote violation reports; review its
 messages in the browser console. Do not interpret its presence as completed XSS protection.

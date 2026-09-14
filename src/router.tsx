@@ -1,10 +1,9 @@
-import { createBrowserRouter } from 'react-router';
-
 import { App } from './App';
 import { GuestView } from './components/guest-view/GuestView';
 import { QrCodeView } from './components/QrCodeView';
 import { ClaimView } from './components/routes/ClaimView';
 import { SignupView } from './components/routes/SignupView';
+import { createInstrumentedBrowserRouter } from './sentry';
 
 /**
  * Everything a guest does lives in the initial chunk; everything else is loaded on demand.
@@ -14,7 +13,7 @@ import { SignupView } from './components/routes/SignupView';
  * poster are all screens a worker opens on a desk, and none of them should be in the download
  * that stands between a guest and the queue.
  */
-export const router = createBrowserRouter([
+export const router = createInstrumentedBrowserRouter([
 	{
 		element: <App />,
 		children: [

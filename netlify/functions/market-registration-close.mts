@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents } from '../../db/schema.mjs';
+import { reportedWorkload } from '../lib/sentry.mjs';
 import {
 	registrationCloseEventName,
 	type RegistrationCloseEvent,
@@ -38,7 +39,9 @@ export async function closeRegistrationOnSchedule({
 }
 
 const handler: ReturnType<typeof asyncWorkloadFn<RegistrationCloseEvent>> =
-	asyncWorkloadFn<RegistrationCloseEvent>(closeRegistrationOnSchedule);
+	asyncWorkloadFn<RegistrationCloseEvent>(
+		reportedWorkload('market-registration-close', closeRegistrationOnSchedule),
+	);
 
 export default handler;
 

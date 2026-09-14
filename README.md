@@ -133,6 +133,14 @@ Database migrations under `netlify/database/migrations/` apply automatically the
 runs, including production builds — there is no separate manual step. Read
 [`docs/migrations.md`](docs/migrations.md) before adding or changing a migration.
 
+### Error monitoring
+
+Sentry reports errors from the browser and the functions, traces a guest's page load through to
+the API request behind it, and records a masked replay of sessions that hit an error. It is off
+until `VITE_SENTRY_DSN` and `SENTRY_DSN` are set on the Netlify site. Everything is scoped to what
+the free Developer plan covers — see [`docs/observability.md`](docs/observability.md) for the
+quotas, what is deliberately left out, and the privacy rules that apply to guest data.
+
 ### Push notifications
 
 Push notifications use standards-based Web Push with VAPID authentication. Generate the site's

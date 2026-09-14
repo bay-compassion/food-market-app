@@ -5,6 +5,8 @@ import type { Writable } from 'node:stream';
 import type { Context } from '@netlify/functions';
 import winston, { type Logger } from 'winston';
 
+import { flushSentry, sentryWinstonTransport, tracedJob } from './sentry.mjs';
+
 const levels = new Set(Object.keys(winston.config.npm.levels));
 const context = new AsyncLocalStorage<Logger>();
 
@@ -57,18 +59,21 @@ const sanitize = winston.format((info) => {
 
 export function createLogger(destination?: Writable) {
 	const { level, silent } = loggingSettings();
+	// Netlify's function log is the system of record, written straight to the platform's console.
+	// Sentry is a second destination for the warnings and errors worth alerting on, and only for
+	// the real logger — a test that supplies its own stream is not an invocation worth reporting.
+	// It is registered after `sanitize`, so it sees the same redacted records stdout does.
+	const sentry = destination ? undefined : sentryWinstonTransport();
+	const transport = destination
+		? new winston.transports.Stream({ stream: destination })
+		: new winston.transports.Console();
 
 	return winston.createLogger({
 		level,
 		silent,
 		defaultMeta: { service: 'bay-compassion-backend' },
 		format: winston.format.combine(sanitize(), winston.format.timestamp(), winston.format.json()),
-		// Write directly to the platform's console; no file or background network transport.
-		transports: [
-			destination
-				? new winston.transports.Stream({ stream: destination })
-				: new winston.transports.Console(),
-		],
+		transports: sentry ? [transport, sentry] : [transport],
 	});
 }
 
@@ -84,6 +89,8 @@ export function createSmsLogger(destination?: Writable) {
 			? new winston.transports.Console()
 			: new winston.transports.File({ filename });
 
+	// No Sentry transport here on purpose: this logger has no `sanitize` format, and records the
+	// message body verbatim at debug level.
 	return winston.createLogger({
 		level,
 		silent,
@@ -135,11 +142,13 @@ export function loggedJob(name: string, job: () => Promise<void>) {
 
 		return withLogger(log, async () => {
 			try {
-				await job();
+				await tracedJob(name, job);
 				log.info({ message: 'job.completed', durationMs: performance.now() - started });
 			} catch (err) {
 				log.error({ message: 'job.failed', durationMs: performance.now() - started, err });
 				throw err;
+			} finally {
+				await flushSentry();
 			}
 		});
 	};

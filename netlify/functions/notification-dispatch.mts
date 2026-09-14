@@ -4,6 +4,7 @@ import {
 	type AsyncWorkloadEvent,
 } from '@netlify/async-workloads';
 
+import { reportedWorkload } from '../lib/sentry.mjs';
 import {
 	notificationDispatchEventName,
 	type NotificationDispatchEvent,
@@ -33,7 +34,9 @@ export async function dispatchNotifications({
 }
 
 const handler: ReturnType<typeof asyncWorkloadFn<NotificationDispatchEvent>> =
-	asyncWorkloadFn<NotificationDispatchEvent>(dispatchNotifications);
+	asyncWorkloadFn<NotificationDispatchEvent>(
+		reportedWorkload('notification-dispatch', dispatchNotifications),
+	);
 
 export default handler;
 
