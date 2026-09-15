@@ -18,8 +18,8 @@ resourceServers:
         description: The visit export, with names and phone numbers
       - value: manage:guest-access
         description: >-
-          Put any guest on a phone with a QR code, replacing a phone they already
-          use
+          Put any guest on a phone with a QR code, replacing a phone they
+          already use
       - value: manage:demo-data
         description: Add demo datasets
     signing_alg: RS256
@@ -164,11 +164,15 @@ tenant:
   friendly_name: The Bay Compassion
   oidc_logout:
     rp_logout_end_session_endpoint_discovery: true
-  picture_url: ''
+  picture_url: https://app.thebaycompassion.org/bay-compassion-logo.png
   resource_parameter_profile: compatibility
   sandbox_version: '22'
   support_email: contact@thebaycompassion.org
   support_url: ''
+  universal_login:
+    colors:
+      page_background: '#023940'
+      primary: '#023940'
 clientGrants:
   - client_id: Bay Compassion (Test Application)
     audience: https://thebaycompassion.org
