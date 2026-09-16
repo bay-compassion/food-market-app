@@ -26,13 +26,8 @@ import {
 	postponeRegistration,
 	reopenRegistration,
 	resetSession,
-	scheduleRegistration,
 	updateRegistration,
 } from '../../services/sessionCommands.mjs';
-import {
-	parseSettings,
-	saveSettings as saveSettingsService,
-} from '../../services/sessionSettings.mjs';
 
 async function overview() {
 	return Response.json(await marketOverview());
@@ -40,19 +35,6 @@ async function overview() {
 
 async function history() {
 	return Response.json(await marketHistory());
-}
-
-async function saveSettings(request: Request) {
-	const body = await jsonBody(request);
-	const settings = parseSettings(body);
-
-	if (!settings) {
-		return jsonError('Please provide valid lottery settings.');
-	}
-
-	const result = await saveSettingsService(settings);
-
-	return result.ok ? overview() : jsonError(result.error, result.status);
 }
 
 type MarketAction = {
@@ -71,10 +53,6 @@ const actions: Record<string, MarketAction> = {
 	update_registration: {
 		permission: 'manage:sessions',
 		run: (event, body) => updateRegistration(event, body),
-	},
-	schedule_registration: {
-		permission: 'manage:sessions',
-		run: (event) => scheduleRegistration(event),
 	},
 	postpone_registration: {
 		permission: 'manage:sessions',
@@ -136,9 +114,6 @@ async function runAction(request: Request) {
 export const adminMarketRoutes = createRouter<AdminEnv>();
 
 adminMarketRoutes.get('/market', withPermission('run:queue'), () => history());
-adminMarketRoutes.put('/market', withPermission('manage:sessions'), (context) =>
-	saveSettings(context.req.raw),
-);
 adminMarketRoutes.post(
 	'/market',
 	async (context, next) => {

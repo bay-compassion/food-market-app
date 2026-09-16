@@ -37,7 +37,7 @@ export async function runLottery(
 	event: MarketEventRow,
 	shuffleFn: <T extends { lotteryWeight: number }>(items: T[]) => T[] = weightedShuffle,
 ): Promise<ActionResult> {
-	if (!canRunSessionCommand(event.status, 'run_lottery', event.sessionMode)) {
+	if (!canRunSessionCommand(event.status, 'run_lottery')) {
 		return {
 			ok: false,
 			status: 409,

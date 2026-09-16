@@ -16,7 +16,6 @@ import {
 	postponeRegistration,
 	reopenRegistration,
 	resetSession,
-	scheduleRegistration,
 	updateRegistration,
 } from './sessionCommands.mjs';
 
@@ -26,9 +25,13 @@ afterEach(() => {
 });
 
 describe('remaining session actions: one legal and one illegal transition each', () => {
-	it('resetSession: draft can reset to ended; an already-ended session cannot', async () => {
-		queueResult([{ id: 'event-1' }]);
-		await expect(resetSession(baseEvent({ status: 'draft' }))).resolves.toEqual({ ok: true });
+	it('resetSession: an open session can reset to ended; an already-ended session cannot', async () => {
+		queueResult([baseEvent({ status: 'registration_open' })]); // endSession locks the session
+		queueResult(undefined); // ending it
+		queueResult([]); // nobody left in line
+		await expect(resetSession(baseEvent({ status: 'registration_open' }))).resolves.toEqual({
+			ok: true,
+		});
 
 		await expect(resetSession(baseEvent({ status: 'ended' }))).resolves.toMatchObject({
 			ok: false,
@@ -47,38 +50,26 @@ describe('remaining session actions: one legal and one illegal transition each',
 		await expect(updateRegistration(event, override)).resolves.toEqual({ ok: true });
 
 		await expect(
-			updateRegistration(baseEvent({ status: 'draft' }), override),
+			updateRegistration(baseEvent({ status: 'scheduled' }), override),
 		).resolves.toMatchObject({ ok: false, status: 400 });
 	});
 
-	it('scheduleRegistration: a future draft can be scheduled; an open session cannot', async () => {
-		const event = baseEvent({
-			status: 'draft',
-			registrationOpensAt: new Date(Date.now() + 3_600_000),
-		});
-
-		queueResult([{ id: 'event-1' }]);
-		await expect(scheduleRegistration(event)).resolves.toEqual({ ok: true });
-
-		await expect(
-			scheduleRegistration(baseEvent({ status: 'registration_open' })),
-		).resolves.toMatchObject({ ok: false, status: 409 });
-	});
-
-	it('postponeRegistration: a scheduled session can be postponed; a draft cannot', async () => {
+	it('postponeRegistration: a scheduled session can be postponed; an open one cannot', async () => {
 		queueResult([{ id: 'event-1' }]);
 		await expect(
 			postponeRegistration(baseEvent({ status: 'scheduled' }), { minutes: 30 }),
 		).resolves.toEqual({ ok: true });
 
 		await expect(
-			postponeRegistration(baseEvent({ status: 'draft' }), { minutes: 30 }),
+			postponeRegistration(baseEvent({ status: 'registration_open' }), { minutes: 30 }),
 		).resolves.toMatchObject({ ok: false, status: 409 });
 	});
 
-	it('openRegistration: a draft can open registration; an ended session cannot', async () => {
+	it('openRegistration: a scheduled session can open registration; an ended session cannot', async () => {
 		queueResult([{ id: 'event-1' }]);
-		await expect(openRegistration(baseEvent({ status: 'draft' }))).resolves.toEqual({ ok: true });
+		await expect(openRegistration(baseEvent({ status: 'scheduled' }))).resolves.toEqual({
+			ok: true,
+		});
 
 		await expect(openRegistration(baseEvent({ status: 'ended' }))).resolves.toMatchObject({
 			ok: false,
@@ -86,56 +77,70 @@ describe('remaining session actions: one legal and one illegal transition each',
 		});
 	});
 
-	it('reopenRegistration: a closed session can reopen; a draft cannot', async () => {
+	it('reopenRegistration: a closed session can reopen; a scheduled one cannot', async () => {
 		queueResult([{ id: 'event-1' }]);
 		await expect(reopenRegistration(baseEvent({ status: 'registration_closed' }))).resolves.toEqual(
 			{ ok: true },
 		);
 
-		await expect(reopenRegistration(baseEvent({ status: 'draft' }))).resolves.toMatchObject({
+		await expect(reopenRegistration(baseEvent({ status: 'scheduled' }))).resolves.toMatchObject({
 			ok: false,
 			status: 409,
 		});
 	});
 
-	it('closeRegistration: an open session can close registration; a draft cannot', async () => {
+	it('closeRegistration: an open session can close registration; a scheduled one cannot', async () => {
 		queueResult([{ id: 'event-1' }]); // tx.update ... returning
 		queueResult([]); // no registered visits to notify
 		await expect(closeRegistration(baseEvent({ status: 'registration_open' }))).resolves.toEqual({
 			ok: true,
 		});
 
-		await expect(closeRegistration(baseEvent({ status: 'draft' }))).resolves.toMatchObject({
+		await expect(closeRegistration(baseEvent({ status: 'scheduled' }))).resolves.toMatchObject({
 			ok: false,
 			status: 409,
 		});
 	});
 
-	it('closeSession: a started session can close; a draft session cannot', async () => {
-		queueResult([{ id: 'event-1' }]);
-		queueResult([]); // resolveOutstandingVisits — nobody left waiting or called
+	it('closeSession: a started session can close; a scheduled session cannot', async () => {
+		queueResult([baseEvent({ status: 'service_started' })]); // endSession locks the session
+		queueResult(undefined); // ending it
+		queueResult([]); // resolveOutstandingVisits — nobody left in line
+		queueResult([]); // no recurrence pattern, so no next session
 		await expect(closeSession(baseEvent({ status: 'service_started' }))).resolves.toEqual({
 			ok: true,
 		});
 
-		await expect(closeSession(baseEvent({ status: 'draft' }))).resolves.toMatchObject({
+		await expect(closeSession(baseEvent({ status: 'scheduled' }))).resolves.toMatchObject({
 			ok: false,
 			status: 409,
 		});
 	});
 
-	it('closeSession: resolves guests still waiting or called so nobody is stranded', async () => {
-		queueResult([{ id: 'event-1' }]);
+	it('closeSession: cancels guests still in line so nobody is stranded or marked a no-show', async () => {
+		queueResult([baseEvent({ status: 'service_started' })]);
+		queueResult(undefined);
 		queueResult([{ id: 'visit-1' }, { id: 'visit-2' }]);
+		queueResult([]); // no recurrence pattern
 
 		await expect(closeSession(baseEvent({ status: 'service_started' }))).resolves.toEqual({
 			ok: true,
 		});
 
-		const noShowUpdate = db.update.mock.results
+		const statuses = db.update.mock.results
 			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
-			.find(({ set }) => set.mock.calls.some(([changes]) => changes?.status === 'no_show'));
+			.flatMap(({ set }) => set.mock.calls.map(([changes]) => changes?.status));
 
-		expect(noShowUpdate).toBeDefined();
+		expect(statuses).toEqual(['ended', 'cancelled']);
+	});
+
+	it('closeSession: refuses a session another request already ended', async () => {
+		queueResult([baseEvent({ status: 'ended' })]); // the lock sees it already ended
+
+		await expect(closeSession(baseEvent({ status: 'service_started' }))).resolves.toMatchObject({
+			ok: false,
+			status: 409,
+		});
+		expect(db.update).not.toHaveBeenCalled();
 	});
 });

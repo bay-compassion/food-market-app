@@ -5,7 +5,7 @@ import type { DemoRoster } from './demo-preview';
 import type { ServiceProgress } from './demoScenario.ts';
 import type { ManualAdmission, QueuePlacement } from './guestAdmission.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
-import type { SessionMode, SessionStatus } from './sessionStateMachine.ts';
+import type { SessionStatus } from './sessionStateMachine.ts';
 import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
 
 /** One visit as the queue screens render it. */
@@ -88,7 +88,6 @@ export type AdminMarketEvent = {
 	registrationOpensAt: string;
 	registrationClosesAt: string;
 	capacity: number;
-	sessionMode: SessionMode;
 	status: SessionStatus;
 };
 

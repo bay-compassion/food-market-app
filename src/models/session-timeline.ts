@@ -1,9 +1,8 @@
-import type { SessionMode, SessionStatus } from '../services/sessionStateMachine.ts';
+import type { SessionStatus } from '../services/sessionStateMachine.ts';
 
 /** The timing a session row carries. The optional fields default to "not set". */
 export type SessionTiming = {
 	status: SessionStatus;
-	sessionMode?: SessionMode;
 	registrationOpensAt: Date;
 	registrationClosesAt: Date;
 	registrationGraceEndsAt?: Date | null;
@@ -102,16 +101,13 @@ export class SessionTimeline {
 
 	/** The registration window when registration opens at `now`, keeping its length. */
 	openingWindow(now: Date): { registrationOpensAt: Date; registrationClosesAt: Date } {
-		const { sessionMode, registrationOpensAt, registrationClosesAt } = this.session;
+		const { registrationOpensAt, registrationClosesAt } = this.session;
 
 		return {
 			registrationOpensAt: now,
-			registrationClosesAt:
-				sessionMode === 'ad_hoc'
-					? registrationClosesAt
-					: new Date(
-							now.valueOf() + (registrationClosesAt.valueOf() - registrationOpensAt.valueOf()),
-						),
+			registrationClosesAt: new Date(
+				now.valueOf() + (registrationClosesAt.valueOf() - registrationOpensAt.valueOf()),
+			),
 		};
 	}
 

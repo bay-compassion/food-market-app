@@ -37,7 +37,6 @@ function renderDashboard(
 		? {
 				id: 'event-1',
 				status,
-				sessionMode: 'ad_hoc',
 				registrationOpensAt: '2026-09-03T17:00:00Z',
 				registrationClosesAt: '2026-09-03T18:00:00Z',
 				capacity: 50,
@@ -198,7 +197,7 @@ describe('broadcast notification tab', () => {
 		expect(screen.onNavigate).not.toHaveBeenCalled();
 	});
 
-	it.each([null, SessionStatusEnum.DRAFT, SessionStatusEnum.SCHEDULED, SessionStatusEnum.ENDED])(
+	it.each([null, SessionStatusEnum.SCHEDULED, SessionStatusEnum.ENDED])(
 		'explains why broadcasts are unavailable during %s',
 		async (status) => {
 			// Arrange / Act

@@ -7,26 +7,93 @@ import {
 	jsonb,
 	pgTable,
 	text,
+	time,
 	timestamp,
 	uniqueIndex,
 	uuid,
 } from 'drizzle-orm/pg-core';
 
 import type { AgeRange } from '../src/services/ageRanges.js';
-import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine.js';
+import type { SessionStatus } from '../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../src/services/visitStateMachine.js';
 
-export const marketEvents = pgTable('market_events', {
+/** Where a market happens. Its time zone is what every local date and time there is read in. */
+export const marketLocations = pgTable('market_locations', {
 	id: uuid('id').defaultRandom().primaryKey(),
-	registrationOpensAt: timestamp('registration_opens_at', { withTimezone: true }).notNull(),
-	registrationClosesAt: timestamp('registration_closes_at', { withTimezone: true }).notNull(),
-	/** The brief late-arrival window after the guest UI closes registration. */
-	registrationGraceEndsAt: timestamp('registration_grace_ends_at', { withTimezone: true }),
-	capacity: integer('capacity').notNull(),
-	sessionMode: text('session_mode').$type<SessionMode>().notNull().default('scheduled'),
-	status: text('status').$type<SessionStatus>().notNull().default('draft'),
+	name: text('name').notNull(),
+	/** An IANA time zone name, such as `America/Los_Angeles`. */
+	timeZone: text('time_zone').notNull(),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * A weekly schedule. It occurs on the weekday of `startsOn`, and only its next occurrence is ever
+ * a session — see `RecurrencePattern` in `src/models/recurrence-pattern.ts`.
+ */
+export const recurrencePatterns = pgTable(
+	'recurrence_patterns',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		locationId: uuid('location_id')
+			.notNull()
+			.references(() => marketLocations.id),
+		startsOn: date('starts_on').notNull(),
+		/** Local wall-clock time at the location, with no time zone. */
+		registrationOpensAt: time('registration_opens_at').notNull(),
+		registrationDurationMinutes: integer('registration_duration_minutes').notNull().default(60),
+		capacity: integer('capacity').notNull(),
+		/** Minutes after the grace deadline the lottery draws on its own; null draws by hand. */
+		lotteryDelayMinutes: integer('lottery_delay_minutes'),
+		/** Minutes after registration opens the session ends on its own; null never does. */
+		autoCloseAfterMinutes: integer('auto_close_after_minutes').default(720),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	// One pattern per location for now; dropping this index is the change for several.
+	(table) => [uniqueIndex('recurrence_patterns_location_idx').on(table.locationId)],
+);
+
+export const recurrencePatternQuestions = pgTable('recurrence_pattern_questions', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	recurrencePatternId: uuid('recurrence_pattern_id')
+		.notNull()
+		.references(() => recurrencePatterns.id, { onDelete: 'cascade' }),
+	prompt: text('prompt').notNull(),
+	type: text('type').notNull().default('text'),
+	required: boolean('required').notNull().default(false),
+	position: integer('position').notNull().default(0),
+});
+
+export const marketEvents = pgTable(
+	'market_events',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		locationId: uuid('location_id')
+			.notNull()
+			.references(() => marketLocations.id),
+		/** The pattern that created this session; null for a one-off. */
+		recurrencePatternId: uuid('recurrence_pattern_id').references(() => recurrencePatterns.id, {
+			onDelete: 'set null',
+		}),
+		registrationOpensAt: timestamp('registration_opens_at', { withTimezone: true }).notNull(),
+		registrationClosesAt: timestamp('registration_closes_at', { withTimezone: true }).notNull(),
+		/** The brief late-arrival window after the guest UI closes registration. */
+		registrationGraceEndsAt: timestamp('registration_grace_ends_at', { withTimezone: true }),
+		capacity: integer('capacity').notNull(),
+		/** Minutes after the grace deadline the lottery draws on its own; null draws by hand. */
+		lotteryDelayMinutes: integer('lottery_delay_minutes'),
+		/** Minutes after registration opens the session ends on its own; null never does. */
+		autoCloseAfterMinutes: integer('auto_close_after_minutes'),
+		status: text('status').$type<SessionStatus>().notNull().default('scheduled'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		// At most one unfinished session per location — what "the current session" relies on.
+		uniqueIndex('market_events_one_unfinished_per_location_idx')
+			.on(table.locationId)
+			.where(sql`status <> 'ended'`),
+	],
+);
 
 export const registrationQuestions = pgTable('registration_questions', {
 	id: uuid('id').defaultRandom().primaryKey(),

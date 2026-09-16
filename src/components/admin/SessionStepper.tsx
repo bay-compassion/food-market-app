@@ -3,11 +3,11 @@ import { Step, StepContent, StepLabel, Stepper } from '@mui/material';
 import type { ReactNode } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import type { CurrentSessionState, SessionMode } from '../../services/sessionStateMachine';
+import type { CurrentSessionState } from '../../services/sessionStateMachine';
 
 const t = adminTranslations.en;
 const phaseLabels = {
-	inactive: t.registrationSettings,
+	inactive: t.noSession,
 	scheduled: t.scheduled,
 	registration_open: t.open,
 	registration_closed: t.closed,
@@ -36,12 +36,11 @@ const PhaseStepper = styled(Stepper)`
 
 type SessionStepperProps = {
 	sessionState: CurrentSessionState;
-	sessionMode: SessionMode;
 	children: ReactNode;
 };
 
 /** Progress follows the server's phase; only the current phase exposes controls. */
-export function SessionStepper({ sessionState, sessionMode, children }: SessionStepperProps) {
+export function SessionStepper({ sessionState, children }: SessionStepperProps) {
 	const activeStep = phases.indexOf(sessionState);
 
 	return (
@@ -54,7 +53,7 @@ export function SessionStepper({ sessionState, sessionMode, children }: SessionS
 			{phases.map((phase, index) => (
 				<Step
 					key={phase}
-					completed={index < activeStep && (phase !== 'scheduled' || sessionMode === 'scheduled')}
+					completed={index < activeStep}
 					aria-current={phase === sessionState ? 'step' : undefined}
 				>
 					<StepLabel>{phaseLabels[phase]}</StepLabel>

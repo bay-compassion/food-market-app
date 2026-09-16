@@ -124,12 +124,6 @@ describe('endpoint permissions', () => {
 			'run:queue',
 		],
 		[
-			'saving session settings',
-			marketHandler,
-			json('https://x/api/admin/market', 'PUT', { capacity: 50 }),
-			'manage:sessions',
-		],
-		[
 			'running the lottery',
 			marketHandler,
 			json('https://x/api/admin/market', 'POST', { action: 'run_lottery' }),

@@ -20,7 +20,6 @@ const scheduledEvent: SessionEvent = {
 	registrationOpensAt: '2026-08-25T18:00:00.000Z',
 	registrationClosesAt: '2026-08-25T19:00:00.000Z',
 	capacity: 50,
-	sessionMode: 'scheduled',
 	status: SessionStatusEnum.SCHEDULED,
 };
 
@@ -114,29 +113,6 @@ describe('MarketSessionStore', () => {
 
 		expect(store.error?.message).toBe('That transition is no longer available.');
 		expect(store.isSending).toBe(false);
-	});
-
-	it('saves settings through the same state-owning endpoint', async () => {
-		const fetchMock = vi
-			.spyOn(globalThis, 'fetch')
-			.mockResolvedValue(Response.json(overview(scheduledEvent)));
-		const store = new MarketSessionStore();
-
-		await expect(
-			store.saveSettings({
-				registrationOpensAt: scheduledEvent.registrationOpensAt,
-				registrationClosesAt: scheduledEvent.registrationClosesAt,
-				capacity: scheduledEvent.capacity,
-				sessionMode: scheduledEvent.sessionMode,
-				questions: [],
-			}),
-		).resolves.toBe(true);
-
-		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/admin/market',
-			expect.objectContaining({ method: 'PUT' }),
-		);
-		expect(store.currentState).toEqual(overview(scheduledEvent));
 	});
 
 	it('polls immediately, avoids duplicate timers, and stops cleanly', async () => {

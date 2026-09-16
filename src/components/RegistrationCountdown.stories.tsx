@@ -58,7 +58,6 @@ function RemainingTime({
 		event: {
 			id: 'countdown-story',
 			status: SessionStatusEnum.REGISTRATION_OPEN,
-			sessionMode: 'ad_hoc',
 			capacity: 100,
 			registrationOpensAt: new Date(now - 60_000).toISOString(),
 			registrationClosesAt: closesAt.toISOString(),

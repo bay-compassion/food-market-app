@@ -1,8 +1,6 @@
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
 
 export interface AdminTranslation {
-	adHocSession: string;
-	adHocSessionHelp: string;
 	addGuest: string;
 	addQuestion: string;
 	admissionLabel: string;
@@ -35,7 +33,6 @@ export interface AdminTranslation {
 	closeSession: string;
 	closeRegistration: string;
 	closed: string;
-	closesAt: string;
 	confirmCloseRegistration: string;
 	confirmCloseSession: string;
 	/** The confirming button on a prompt whose question already says what will happen. */
@@ -47,7 +44,6 @@ export interface AdminTranslation {
 	/** What resetting leaves behind, spelled out under the question. */
 	confirmResetSessionDetails: string;
 	confirmRunLottery: string;
-	confirmScheduleRegistration: string;
 	currentSession: string;
 	drawComplete: string;
 	drawn: string;
@@ -97,6 +93,8 @@ export interface AdminTranslation {
 	noGuests: string;
 	noRegisteredGuests: string;
 	noHistory: string;
+	noSession: string;
+	noSessionHelp: string;
 	noShow: string;
 	/** The guest database status of a guest who has never had a visit. */
 	noVisit: string;
@@ -104,9 +102,7 @@ export interface AdminTranslation {
 	/** Names the total the progress bar measures against, as "of 120 guests placed today". */
 	placedToday: string;
 	open: string;
-	openRegistration: string;
 	openRegistrationNow: string;
-	opensAt: string;
 	overview: string;
 	overridesHelp: string;
 	questionPlaceholder: string;
@@ -148,9 +144,7 @@ export interface AdminTranslation {
 	questions: string;
 	registered: string;
 	registeredGuests: string;
-	registrationDurationMinutes: string;
 	registrationClosedHelp: string;
-	registrationSettings: string;
 	registrationOverrides: string;
 	reopenRegistration: string;
 	noAccess: string;
@@ -180,14 +174,10 @@ export interface AdminTranslation {
 	saveGuest: string;
 	saveSettings: string;
 	saved: string;
-	scheduleRegistration: string;
 	scheduled: string;
 	scheduledFor: string;
-	scheduledSession: string;
-	scheduledSessionHelp: string;
 	serviceStarted: string;
 	sessionUpdated: string;
-	startSessionHelp: string;
 	scaleAnswer: string;
 	guestColumn: string;
 	phoneColumn: string;
@@ -198,7 +188,6 @@ export interface AdminTranslation {
 	served: string;
 	settingsHelp: string;
 	sessionGuests: string;
-	sessionType: string;
 	textAnswer: string;
 	updateCapacity: string;
 	waiting: string;
@@ -211,8 +200,6 @@ export interface AdminTranslation {
 	devModeConfirmDetails: string;
 	devModeLoad: string;
 	devModeLoaded: string;
-	devStageDraftTitle: string;
-	devStageDraftDescription: string;
 	devStageScheduledTitle: string;
 	devStageScheduledDescription: string;
 	devStageRegistrationOpenTitle: string;
@@ -238,8 +225,6 @@ export interface AdminTranslation {
  */
 export const adminTranslations = {
 	en: {
-		adHocSession: 'Start when ready',
-		adHocSessionHelp: 'Open registration immediately and choose when it closes.',
 		addGuest: 'Add guest',
 		addQuestion: 'Add question',
 		admissionLabel: 'How should they join?',
@@ -276,7 +261,6 @@ export const adminTranslations = {
 		closeSession: 'Close session',
 		closeRegistration: 'Close registration',
 		closed: 'Registration closed',
-		closesAt: 'Registration closes',
 		confirmCloseRegistration: 'Close registration now?',
 		confirmContinue: 'Continue',
 		confirmCloseSession: 'Close this session and end service?',
@@ -287,7 +271,6 @@ export const adminTranslations = {
 		confirmResetSessionDetails:
 			'It will leave Current Session and remain available in session history.',
 		confirmRunLottery: 'Run the lottery and start service?',
-		confirmScheduleRegistration: 'Schedule registration for this time?',
 		currentSession: 'Current session',
 		drawComplete: 'Lottery draw complete.',
 		drawn: 'Lottery drawn',
@@ -332,14 +315,14 @@ export const adminTranslations = {
 		noGuests: 'No guests found.',
 		noRegisteredGuests: 'No guests have registered for this session yet.',
 		noHistory: 'No past sessions yet.',
+		noSession: 'No session',
+		noSessionHelp: 'There is no session right now. Sessions are created on the Schedule tab.',
 		noShow: 'No show',
 		noVisit: 'No visit',
 		notPlaced: 'Not placed',
 		placedToday: 'of {count} guests placed today',
 		open: 'Registration open',
-		openRegistration: 'Open registration',
 		openRegistrationNow: 'Open registration now',
-		opensAt: 'Registration opens',
 		overview: 'Today’s overview',
 		overridesHelp: 'Extend the registration window or change queue capacity.',
 		questionPlaceholder: 'Enter a question for guests',
@@ -376,10 +359,8 @@ export const adminTranslations = {
 		questions: 'Registration questions',
 		registered: 'Registered',
 		registeredGuests: 'Registered guests',
-		registrationDurationMinutes: 'Registration open for (minutes)',
 		registrationClosedHelp:
 			'This step will advance automatically to Lottery pending in a few seconds.',
-		registrationSettings: 'Registration settings',
 		registrationOverrides: 'Registration overrides',
 		reopenRegistration: 'Reopen registration',
 		noAccess:
@@ -457,14 +438,10 @@ export const adminTranslations = {
 		saveGuest: 'Save guest',
 		saveSettings: 'Save settings',
 		saved: 'Settings saved.',
-		scheduleRegistration: 'Schedule registration',
 		scheduled: 'Registration scheduled',
 		scheduledFor: 'Registration will open',
-		scheduledSession: 'Schedule for later',
-		scheduledSessionHelp: 'Choose when registration opens and how long it remains open.',
 		serviceStarted: 'Service started',
 		sessionUpdated: 'Session updated.',
-		startSessionHelp: 'Set up the next session, then open registration when you are ready.',
 		scaleAnswer: '1–10 scale',
 		guestColumn: 'Guest',
 		phoneColumn: 'Phone',
@@ -475,7 +452,6 @@ export const adminTranslations = {
 		served: 'Served',
 		settingsHelp: 'Set the window and maximum number of guests who receive a queue spot.',
 		sessionGuests: 'Guests',
-		sessionType: 'How should registration start?',
 		textAnswer: 'Written answer',
 		updateCapacity: 'Update capacity',
 		waiting: 'Waiting',
@@ -487,8 +463,6 @@ export const adminTranslations = {
 		devModeConfirmDetails: 'This replaces the current session with fake demo data.',
 		devModeLoad: 'Load',
 		devModeLoaded: 'Demo data loaded.',
-		devStageDraftTitle: 'Draft',
-		devStageDraftDescription: 'Settings saved, but nothing is public yet.',
 		devStageScheduledTitle: 'Scheduled',
 		devStageScheduledDescription: 'A registration window is set to open on its own.',
 		devStageRegistrationOpenTitle: 'Registration open',

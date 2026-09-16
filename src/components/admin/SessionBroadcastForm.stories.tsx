@@ -30,7 +30,6 @@ const meta = {
 						: {
 								id: 'broadcast-story',
 								status: SessionStatusEnum.REGISTRATION_OPEN,
-								sessionMode: 'ad_hoc',
 								registrationOpensAt: '2026-09-03T17:00:00Z',
 								registrationClosesAt: '2026-09-03T18:00:00Z',
 								capacity: 50,

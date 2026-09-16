@@ -25,7 +25,6 @@ function activeEvent(status = 'service_started') {
 	return {
 		id: 'event-1',
 		status,
-		sessionMode: 'scheduled',
 		registrationOpensAt: new Date('2026-08-08T16:00:00.000Z'),
 		registrationClosesAt: new Date('2026-08-08T17:00:00.000Z'),
 		capacity: 50,

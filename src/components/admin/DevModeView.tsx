@@ -80,7 +80,6 @@ export const DevModeView = observer(function DevModeView({ busy, onLoad }: DevMo
 	}, [admin]);
 
 	const stageTitles: Record<SessionStatus, string> = {
-		draft: t.devStageDraftTitle,
 		scheduled: t.devStageScheduledTitle,
 		registration_open: t.devStageRegistrationOpenTitle,
 		registration_closed: t.devStageRegistrationClosedTitle,
@@ -89,7 +88,6 @@ export const DevModeView = observer(function DevModeView({ busy, onLoad }: DevMo
 		ended: t.devStageEndedTitle,
 	};
 	const stageDescriptions: Record<SessionStatus, string> = {
-		draft: t.devStageDraftDescription,
 		scheduled: t.devStageScheduledDescription,
 		registration_open: t.devStageRegistrationOpenDescription,
 		registration_closed: t.devStageRegistrationClosedDescription,

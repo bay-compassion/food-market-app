@@ -160,6 +160,7 @@ async function main() {
 	const { guests, marketEvents, registrationQuestions, visits } = await import('../db/schema.mjs');
 	const { issueVisitToken, normalizePhone } =
 		await import('../netlify/services/guestCredentials.mjs');
+	const { currentLocation } = await import('../netlify/services/marketLocation.mjs');
 
 	if (values.reset) {
 		await db.execute(sql`
@@ -184,6 +185,8 @@ async function main() {
 		now: new Date(),
 	});
 
+	const locationId = (await currentLocation(db)).id;
+
 	for (const rows of chunk(data.guests, 500)) {
 		await db.insert(guests).values(
 			rows.map((guest) => ({
@@ -194,7 +197,7 @@ async function main() {
 	}
 
 	for (const rows of chunk(data.sessions, 500)) {
-		await db.insert(marketEvents).values(rows);
+		await db.insert(marketEvents).values(rows.map((session) => ({ ...session, locationId })));
 	}
 
 	for (const rows of chunk(data.questions, 500)) {

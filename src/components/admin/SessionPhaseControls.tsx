@@ -5,26 +5,22 @@ import type { FormEvent } from 'react';
 import { adminTranslations } from '../../adminLocales';
 import type { CurrentSessionState, SessionCommand } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
+import { CapacityOverrideForm } from './CapacityOverrideForm';
 import { SessionActionCard } from './SessionActionCard';
 import { SessionOverrideCard } from './SessionOverrideCard';
-import { SessionSettingsForm } from './SessionSettingsForm';
-import type { AdminMarketEvent, SessionSettings } from './types';
+import type { AdminMarketEvent } from './types';
 
 export type SessionPhaseControlsProps = {
 	event: AdminMarketEvent | null;
 	sessionState: CurrentSessionState;
 	busy?: boolean;
-	settings: SessionSettings;
-	onSettingsChange: (settings: SessionSettings) => void;
 	extensionMinutes: number;
 	onExtensionMinutesChange: (minutes: number) => void;
 	postponementMinutes: number;
 	onPostponementMinutesChange: (minutes: number) => void;
-	onSaveSettings: () => void;
-	onSaveAndStartRegistration: () => void;
 	onPostponeRegistration: () => void;
 	onExtendRegistration: () => void;
-	onSaveCapacityOverride: () => void;
+	onSaveCapacityOverride: (capacity: number) => void;
 	onRun: (action: SessionCommand) => void;
 	onNavigateQueue: () => void;
 };
@@ -33,14 +29,10 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 	event,
 	sessionState,
 	busy,
-	settings,
-	onSettingsChange,
 	extensionMinutes,
 	onExtensionMinutesChange,
 	postponementMinutes,
 	onPostponementMinutesChange,
-	onSaveSettings,
-	onSaveAndStartRegistration,
 	onPostponeRegistration,
 	onExtendRegistration,
 	onSaveCapacityOverride,
@@ -67,13 +59,7 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 	return (
 		<>
 			{sessionState === 'inactive' ? (
-				<SessionSettingsForm
-					settings={settings}
-					onSettingsChange={onSettingsChange}
-					busy={busy}
-					onSave={onSaveSettings}
-					onSaveAndStart={onSaveAndStartRegistration}
-				/>
+				<SessionActionCard description={t.noSessionHelp}>{null}</SessionActionCard>
 			) : sessionState === 'scheduled' ? (
 				<SessionOverrideCard
 					description={
@@ -142,24 +128,12 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 							{t.extendRegistration}
 						</Button>
 					</form>
-					<form onSubmit={submitting(onSaveCapacityOverride)}>
-						<label>
-							<span>{t.capacity}</span>
-							<input
-								type="number"
-								min="1"
-								max="10000"
-								required
-								value={settings.capacity}
-								onChange={(changeEvent) =>
-									onSettingsChange({ ...settings, capacity: Number(changeEvent.target.value) })
-								}
-							/>
-						</label>
-						<Button type="submit" variant="outlined" disabled={busy}>
-							{t.updateCapacity}
-						</Button>
-					</form>
+					<CapacityOverrideForm
+						key={event!.id}
+						capacity={event!.capacity}
+						busy={busy}
+						onSave={onSaveCapacityOverride}
+					/>
 				</SessionOverrideCard>
 			) : sessionState === 'registration_closed' ? (
 				<SessionActionCard description={t.registrationClosedHelp}>

@@ -22,7 +22,6 @@ function sessionOverview(eventId: string): SessionOverview {
 			registrationOpensAt: '2026-01-01T10:00:00.000Z',
 			registrationClosesAt: '2026-01-01T11:00:00.000Z',
 			capacity: 50,
-			sessionMode: 'scheduled',
 			status: SessionStatusEnum.SERVICE_STARTED,
 		},
 		questions: [],

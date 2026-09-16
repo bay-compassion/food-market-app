@@ -43,7 +43,6 @@ function marketResponse(status: SessionStatusEnum | null) {
 						registrationOpensAt: '2026-09-06T16:00:00.000Z',
 						registrationClosesAt: '2026-09-06T17:00:00.000Z',
 						capacity: 120,
-						sessionMode: 'lottery',
 						status,
 					},
 		questions: [],

@@ -21,7 +21,6 @@ export class MarketActionPrompts {
 
 	for(action: MarketAction): ConfirmationRequest {
 		const questions: Record<MarketAction, string> = {
-			schedule_registration: this.t.confirmScheduleRegistration,
 			open_registration: this.t.confirmOpenRegistration,
 			close_registration: this.t.confirmCloseRegistration,
 			reopen_registration: this.t.confirmReopenRegistration,

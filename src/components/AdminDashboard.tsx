@@ -1,15 +1,9 @@
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
 import type { ServiceProgress } from '../services/demoScenario';
 import { manualAdmissionsFor } from '../services/guestAdmission';
-import {
-	defaultSessionSettings,
-	registrationClosesAtFrom,
-	registrationOpensAtFrom,
-	settingsFromEvent,
-} from '../services/session-settings';
 import { currentSessionState, type SessionStatus } from '../services/sessionStateMachine';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../services/visitStatusLabels';
@@ -25,7 +19,7 @@ import { ReportsView } from './admin/ReportsView';
 import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
 import { SessionView } from './admin/SessionView';
-import type { AdminView, ManualGuest, Question, QueueGuest, SessionSettings } from './admin/types';
+import type { AdminView, ManualGuest, QueueGuest } from './admin/types';
 
 export type AdminDashboardProps = {
 	getAccessToken: () => Promise<string>;
@@ -45,8 +39,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 	const locale = translations.locale;
 
 	const [activeView, setActiveView] = useState<AdminView>(view);
-	const [questions, setQuestions] = useState<Question[]>([]);
-	const [settings, setSettings] = useState<SessionSettings>(defaultSessionSettings);
 	const [extensionMinutes, setExtensionMinutes] = useState(30);
 	const [postponementMinutes, setPostponementMinutes] = useState(30);
 	const [broadcast, setBroadcast] = useState({ title: '', body: '' });
@@ -73,41 +65,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 	const event = session.currentState?.event ?? null;
 	const counts = session.currentState?.counts ?? {};
 	const currentState = session.currentState;
-
-	/**
-	 * Mirrors the server's session into the form the worker edits, but only when the server's own
-	 * copy has actually changed. Polling delivers an identical overview every few seconds, and
-	 * reapplying it would discard edits made between two polls.
-	 */
-	const appliedSettingsSignature = useRef('');
-
-	useEffect(() => {
-		if (!currentState) {
-			return;
-		}
-
-		const signature = JSON.stringify({
-			event: currentState.event,
-			questions: currentState.questions,
-		});
-
-		if (signature === appliedSettingsSignature.current) {
-			return;
-		}
-
-		appliedSettingsSignature.current = signature;
-		setQuestions(
-			currentState.questions.map(({ id, prompt, type, required }) => ({
-				id,
-				prompt,
-				type,
-				required,
-			})),
-		);
-		setSettings(
-			currentState.event ? settingsFromEvent(currentState.event) : defaultSessionSettings(),
-		);
-	}, [currentState]);
 
 	useEffect(() => {
 		void (async () => {
@@ -146,31 +103,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 	const outstandingCount = (counts.waiting ?? 0) + (counts.called ?? 0);
 	const prompts = new MarketActionPrompts(t, outstandingCount);
 
-	function saveSettings() {
-		return admin.saveSettings({
-			registrationOpensAt: registrationOpensAtFrom(settings),
-			registrationClosesAt: registrationClosesAtFrom(settings),
-			capacity: settings.capacity,
-			sessionMode: settings.sessionMode,
-			questions,
-		});
-	}
-
 	async function runMarketAction(action: MarketAction) {
 		if (await confirmation.ask(prompts.for(action))) {
-			await admin.runMarketAction(action);
-		}
-	}
-
-	async function saveAndStartRegistration() {
-		const action: MarketAction =
-			settings.sessionMode === 'scheduled' ? 'schedule_registration' : 'open_registration';
-
-		if (!(await confirmation.ask(prompts.for(action)))) {
-			return;
-		}
-
-		if (await saveSettings()) {
 			await admin.runMarketAction(action);
 		}
 	}
@@ -205,12 +139,12 @@ export const AdminDashboard = observer(function AdminDashboard({
 		}
 	}
 
-	async function saveCapacityOverride() {
+	async function saveCapacityOverride(capacity: number) {
 		if (!event) {
 			return;
 		}
 
-		await admin.updateRegistrationOverrides(event.registrationClosesAt, settings.capacity);
+		await admin.updateRegistrationOverrides(event.registrationClosesAt, capacity);
 	}
 
 	function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
@@ -255,8 +189,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 		<AdminDashboardLayout activeView={activeView} onNavigate={navigate}>
 			{activeView === 'current-session' ? (
 				<SessionView
-					settings={settings}
-					onSettingsChange={setSettings}
 					extensionMinutes={extensionMinutes}
 					onExtensionMinutesChange={setExtensionMinutes}
 					postponementMinutes={postponementMinutes}
@@ -268,11 +200,9 @@ export const AdminDashboard = observer(function AdminDashboard({
 					registeredGuests={registeredSessionGuests}
 					admissions={sessionAdmissions}
 					busy={admin.isBusy}
-					onSaveSettings={() => void saveSettings()}
-					onSaveAndStartRegistration={() => void saveAndStartRegistration()}
 					onPostponeRegistration={() => void postponeRegistration()}
 					onExtendRegistration={() => void extendRegistration()}
-					onSaveCapacityOverride={() => void saveCapacityOverride()}
+					onSaveCapacityOverride={(capacity) => void saveCapacityOverride(capacity)}
 					onRun={(action) => void runMarketAction(action as MarketAction)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
 					onNavigateQueue={() => navigate('queue')}
@@ -298,12 +228,13 @@ export const AdminDashboard = observer(function AdminDashboard({
 					onSend={() => void sendBroadcast()}
 				/>
 			) : activeView === 'question-bank' ? (
+				// Read-only until the question bank edits the recurrence pattern's questions.
 				<QuestionBankView
-					questions={questions}
-					onQuestionsChange={setQuestions}
+					questions={currentState?.questions ?? []}
+					onQuestionsChange={() => {}}
 					busy={admin.isBusy}
-					editable={event === null || event.status === 'draft'}
-					onSave={() => void saveSettings()}
+					editable={false}
+					onSave={() => {}}
 				/>
 			) : activeView === 'reports' ? (
 				<ReportsView getAccessToken={getAccessToken} canExport={admin.can('export:guest-data')} />

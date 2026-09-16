@@ -8,12 +8,16 @@ import {
 	outstandingVisitStatuses,
 	visitCommandTarget,
 	type VisitCommand,
+	type VisitStatus,
 } from '../../src/services/visitStateMachine.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import { deliverQueuedNotifications, requeueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/** Visits a session's ending resolves: anyone the market still owes a draw or a turn. */
+const stillInLineStatuses: VisitStatus[] = ['registered', ...outstandingVisitStatuses];
 
 export type VisitCommandResult =
 	| { ok: true; visit: { id: string; status: string } }
@@ -152,19 +156,18 @@ export async function callNextVisits(marketEventId: string, count: number) {
 }
 
 /**
- * Marks everyone still waiting or called as a no-show. Runs inside `closeSession`'s transaction so
- * ending a session never strands a guest in a status that implies service is still coming.
+ * Cancels every visit still in line — registered, waiting, or called — when a session ends. Runs
+ * inside `endSession`'s transaction so ending a session never strands a guest in a status that
+ * implies service is still coming. It is `cancelled` rather than `no_show` because the market ended
+ * the visit, not the guest: a no-show is only ever recorded by a worker.
  */
 export async function resolveOutstandingVisits(tx: Transaction, marketEventId: string) {
 	return tracedQuery('visit.resolve_outstanding', async () => {
 		const resolved = await tx
 			.update(visits)
-			.set({ status: 'no_show' })
+			.set({ status: 'cancelled' })
 			.where(
-				and(
-					eq(visits.marketEventId, marketEventId),
-					inArray(visits.status, outstandingVisitStatuses),
-				),
+				and(eq(visits.marketEventId, marketEventId), inArray(visits.status, stillInLineStatuses)),
 			)
 			.returning({ id: visits.id });
 

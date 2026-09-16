@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
+import { baseEvent } from '../test/marketEventFixture.mjs';
 import { hashDeviceToken, hashVisitToken } from './guestCredentials.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
@@ -28,12 +29,33 @@ describe('demoDataToolsEnabled', () => {
 	});
 });
 
+const location = { id: 'location-1', name: 'The Bay Church', timeZone: 'America/Los_Angeles' };
+
 describe('loadScenario', () => {
+	it('deletes a pending session nobody has joined instead of ending it', async () => {
+		const pending = baseEvent({ id: 'pending-event', status: 'scheduled' });
+
+		queueResult([pending]); // the select for a non-ended session
+		queueResult([{ id: 'pending-event' }]); // delete ... returning
+		queueResult([location]); // the location the demo session belongs to
+		queueResult(undefined); // insert marketEvents
+		queueResult(undefined); // insert registrationQuestions
+
+		await loadScenario({ stage: 'scheduled' });
+
+		expect(db.delete).toHaveBeenCalledOnce();
+		expect(db.update).not.toHaveBeenCalled();
+	});
+
 	it('archives a stale session and inserts the new one, with guests and visits', async () => {
-		queueResult([{ id: 'stale-event' }]); // the select for a non-ended session
+		const stale = baseEvent({ id: 'stale-event', status: 'service_started' });
+
+		queueResult([stale]); // the select for a non-ended session
+		queueResult([stale]); // endSession locks the stale session
+		queueResult(undefined); // ending it
 		queueResult([{ id: 'visit-1' }]); // resolveOutstandingVisits' update...returning
-		queueResult(undefined); // archiving the stale session
 		queueResult(undefined); // insert guests
+		queueResult([location]); // the location the demo session belongs to
 		queueResult(undefined); // insert marketEvents
 		queueResult(undefined); // insert registrationQuestions
 		queueResult(undefined); // insert visits
@@ -75,10 +97,11 @@ describe('loadScenario', () => {
 
 	it('skips archiving and the guest/visit inserts when there is nothing to insert', async () => {
 		queueResult([]); // no stale session
+		queueResult([location]); // the location the demo session belongs to
 		queueResult(undefined); // insert marketEvents
 		queueResult(undefined); // insert registrationQuestions
 
-		const result = await loadScenario({ stage: 'draft' });
+		const result = await loadScenario({ stage: 'scheduled' });
 
 		expect(result).toEqual({ marketEventId: expect.any(String), guests: [] });
 		expect(db.update).not.toHaveBeenCalled();

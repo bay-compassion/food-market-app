@@ -23,7 +23,6 @@ export const guestAdmissions: GuestAdmission[] = ['lottery', 'queue', 'served'];
  * option once it has run, and a finished session only accepts after-the-fact records.
  */
 const admissionsByStatus: Record<SessionStatus, GuestAdmission[]> = {
-	draft: ['lottery', 'queue'],
 	scheduled: ['lottery', 'queue'],
 	registration_open: ['lottery', 'queue'],
 	registration_closed: ['lottery', 'queue'],
