@@ -3,12 +3,9 @@ import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
+import { SessionTimeline } from '../../src/models/session-timeline.js';
 import {
-	automaticSessionStatus,
 	canRunSessionCommand,
-	openingWindow,
-	postponedWindow,
-	registrationGraceDeadline,
 	sessionCommandTarget,
 	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
@@ -51,13 +48,13 @@ export async function getCurrentEvent() {
 	}
 
 	const now = new Date();
-	const automaticStatus = automaticSessionStatus(event, now);
+	const automaticStatus = new SessionTimeline(event).statusAt(now);
 
 	if (automaticStatus !== event.status) {
 		// `event` is a `let` reassigned below, so TypeScript drops its non-null narrowing inside the
 		// transaction closure. Capturing it as a const keeps the narrowing without changing behaviour.
 		const current = event;
-		const graceEndsAt = current.registrationGraceEndsAt ?? registrationGraceDeadline(current);
+		const graceEndsAt = new SessionTimeline(current).graceDeadline;
 		const transition = await tracedQuery('market_session.apply_automatic_status', () =>
 			db.transaction(async (tx) => {
 				const [changed] = await tx
@@ -436,7 +433,7 @@ export async function postponeRegistration(
 	const [updated] = await tracedQuery('market_session.postpone_registration', () =>
 		db
 			.update(marketEvents)
-			.set(postponedWindow(event, postponement.data.minutes))
+			.set(new SessionTimeline(event).postponedWindow(postponement.data.minutes))
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
 			.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt }),
 	);
@@ -465,7 +462,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 		};
 	}
 	const now = new Date();
-	const window = openingWindow(event, now);
+	const window = new SessionTimeline(event).openingWindow(now);
 	const { registrationClosesAt } = window;
 
 	if (registrationClosesAt <= now) {
@@ -583,9 +580,7 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 	}
 	const closed = await tracedQuery('market_session.close_registration', () =>
 		db.transaction(async (tx) => {
-			const registrationGraceEndsAt = registrationGraceDeadline({
-				registrationClosesAt: new Date(),
-			});
+			const registrationGraceEndsAt = SessionTimeline.graceDeadlineAfter(new Date());
 			const [updated] = await tx
 				.update(marketEvents)
 				.set({ status: target, registrationGraceEndsAt })

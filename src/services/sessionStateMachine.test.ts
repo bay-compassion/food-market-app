@@ -1,22 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	acceptsSelfRegistration,
-	automaticSessionStatus,
 	canRunSessionCommand,
 	currentSessionState,
-	openingWindow,
-	postponedWindow,
 	sessionCommandTarget,
-	type SessionStatus,
 } from './sessionStateMachine';
-
-const scheduledSession = {
-	status: 'scheduled' as SessionStatus,
-	sessionMode: 'scheduled' as const,
-	registrationOpensAt: new Date('2026-07-18T16:00:00.000Z'),
-	registrationClosesAt: new Date('2026-07-18T17:00:00.000Z'),
-};
 
 describe('sessionStateMachine', () => {
 	it.each([
@@ -36,48 +24,6 @@ describe('sessionStateMachine', () => {
 		expect(canRunSessionCommand('registration_open', 'open_registration', 'ad_hoc')).toBe(false);
 		expect(canRunSessionCommand('draft', 'schedule_registration', 'ad_hoc')).toBe(false);
 		expect(canRunSessionCommand('ended', 'reset_session', 'scheduled')).toBe(false);
-	});
-
-	it('derives automatic scheduled opening and closing states', () => {
-		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T15:59:00.000Z'))).toBe(
-			'scheduled',
-		);
-		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T16:30:00.000Z'))).toBe(
-			'registration_open',
-		);
-		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T17:00:15.000Z'))).toBe(
-			'registration_closed',
-		);
-		expect(automaticSessionStatus(scheduledSession, new Date('2026-07-18T17:01:00.000Z'))).toBe(
-			'lottery_pending',
-		);
-	});
-
-	it('accepts self-registration only while open or during the post-close grace period', () => {
-		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T15:59:00.000Z'))).toBe(
-			false,
-		);
-		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T16:30:00.000Z'))).toBe(
-			true,
-		);
-		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T17:00:15.000Z'))).toBe(
-			true,
-		);
-		expect(acceptsSelfRegistration(scheduledSession, new Date('2026-07-18T17:01:00.000Z'))).toBe(
-			false,
-		);
-	});
-
-	it('preserves duration when opening early and shifts both times when postponed', () => {
-		const opened = openingWindow(scheduledSession, new Date('2026-07-18T15:00:00.000Z'));
-
-		expect(opened.registrationOpensAt.toISOString()).toBe('2026-07-18T15:00:00.000Z');
-		expect(opened.registrationClosesAt.toISOString()).toBe('2026-07-18T16:00:00.000Z');
-
-		const postponed = postponedWindow(scheduledSession, 30);
-
-		expect(postponed.registrationOpensAt.toISOString()).toBe('2026-07-18T16:30:00.000Z');
-		expect(postponed.registrationClosesAt.toISOString()).toBe('2026-07-18T17:30:00.000Z');
 	});
 
 	it('maps drafts and ended sessions to the inactive interface', () => {

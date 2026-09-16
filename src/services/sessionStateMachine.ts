@@ -53,20 +53,6 @@ export type SessionCommand =
 	| 'close_session'
 	| 'reset_session';
 
-type SessionTiming = {
-	status: SessionStatus;
-	sessionMode: SessionMode;
-	registrationOpensAt: Date;
-	registrationClosesAt: Date;
-	registrationGraceEndsAt?: Date | null;
-};
-
-export const registrationGracePeriodMs = 30_000;
-
-export function registrationGraceDeadline(session: Pick<SessionTiming, 'registrationClosesAt'>) {
-	return new Date(session.registrationClosesAt.valueOf() + registrationGracePeriodMs);
-}
-
 const commandSources: Record<SessionCommand, SessionStatus[]> = {
 	schedule_registration: ['draft'],
 	open_registration: ['draft', 'scheduled'],
@@ -123,54 +109,4 @@ export function canRunSessionCommand(
 
 export function sessionCommandTarget(command: SessionCommand) {
 	return commandTargets[command] ?? null;
-}
-
-export function automaticSessionStatus(session: SessionTiming, now: Date): SessionStatus {
-	const graceEndsAt = session.registrationGraceEndsAt ?? registrationGraceDeadline(session);
-
-	if (session.status === 'scheduled' && session.registrationOpensAt <= now) {
-		if (session.registrationClosesAt > now) {
-			return 'registration_open';
-		}
-
-		return graceEndsAt <= now ? 'lottery_pending' : 'registration_closed';
-	}
-
-	if (session.status === 'registration_open' && session.registrationClosesAt <= now) {
-		return graceEndsAt <= now ? 'lottery_pending' : 'registration_closed';
-	}
-
-	if (session.status === 'registration_closed' && graceEndsAt <= now) {
-		return 'lottery_pending';
-	}
-
-	return session.status;
-}
-
-/** Whether a self-service request may still commit, including the brief post-close grace period. */
-export function acceptsSelfRegistration(session: SessionTiming, now: Date) {
-	const status = automaticSessionStatus(session, now);
-
-	return status === 'registration_open' || status === 'registration_closed';
-}
-
-export function openingWindow(session: SessionTiming, now: Date) {
-	const registrationClosesAt =
-		session.sessionMode === 'scheduled'
-			? new Date(
-					now.valueOf() +
-						(session.registrationClosesAt.valueOf() - session.registrationOpensAt.valueOf()),
-				)
-			: session.registrationClosesAt;
-
-	return { registrationOpensAt: now, registrationClosesAt };
-}
-
-export function postponedWindow(session: SessionTiming, minutes: number) {
-	const delay = minutes * 60_000;
-
-	return {
-		registrationOpensAt: new Date(session.registrationOpensAt.valueOf() + delay),
-		registrationClosesAt: new Date(session.registrationClosesAt.valueOf() + delay),
-	};
 }
