@@ -24,9 +24,9 @@ Concretely, tests in this repo protect things you'd have no easy way to verify b
   an authenticated admin can change a guest's status. If an agent's change accidentally removed a
   login check, or added one where it shouldn't be, a test would fail immediately instead of that
   gap shipping to production unnoticed.
-- **Business rules that are easy to get subtly wrong.** `src/services/sessionStateMachine.test.ts`
-  and `netlify/services/marketSession.test.ts` check the rules for when a market session can move
-  between states (draft, open, closed, etc.) — rules that are simple to state but easy to break
+- **Business rules that are easy to get subtly wrong.** `src/services/sessionStateMachine.test.ts`,
+  `src/models/session-timeline.test.ts`, and `netlify/services/sessionCommands.test.mts` check the
+  rules for when a market session can move between states (scheduled, open, closed, etc.) — rules that are simple to state but easy to break
   with a one-line change that looks harmless.
 - **Known limitations, on purpose.** A few tests exist specifically to record a known gap rather
   than fix it — for example, one in `netlify/functions/push-subscription.test.ts` documents that

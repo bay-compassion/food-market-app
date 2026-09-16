@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=e94fb2583ddc, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=d9d4994c916c, src/stores/market-session.store.ts=20c20d2ed624, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=217306754150, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
+<!-- diagram-sources: src/App.tsx=e94fb2583ddc, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=d9d4994c916c, src/stores/market-session.store.ts=d1c3eccf4742, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=217306754150, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
 
 # Guest journey
 
@@ -287,9 +287,10 @@ flowchart TD
   confirmation sheet `App` mounts for every screen (`ConfirmationDrawer`, driven by the root's
   `ConfirmationStore`) — the same sheet every admin confirmation uses. Nothing is sent to
   `/api/visit` until the guest confirms in it.
-- **A closing session resolves anyone left over.** Ending a session marks every visit still
-  `waiting` or `called` as `no_show`, so nobody is left holding a status that implies service is
-  still coming. See [`session-lifecycle.md`](session-lifecycle.md#the-visit-lifecycle) for the full
+- **An ending session resolves anyone left over.** However a session ends — closed, auto-closed,
+  or reset — every visit still `registered`, `waiting`, or `called` becomes `cancelled`, so nobody is
+  left holding a status that implies service is still coming, and nobody is marked a no-show for a
+  session the market ended. See [`session-lifecycle.md`](session-lifecycle.md#the-visit-lifecycle) for the full
   set of visit transitions.
 
 ## Dev Mode guest previews

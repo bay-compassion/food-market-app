@@ -77,6 +77,7 @@ export async function runSessionTimer(event: AsyncWorkloadEvent<TimerEvent>, now
 			await getCurrentEvent();
 
 			return;
+
 		case 'lottery_draw': {
 			const current = await getCurrentEvent();
 
@@ -95,6 +96,7 @@ export async function runSessionTimer(event: AsyncWorkloadEvent<TimerEvent>, now
 
 			return;
 		}
+
 		case 'auto_close': {
 			const { nextSession } = await db.transaction((tx) =>
 				endSession(tx, session, 'auto_close', now),

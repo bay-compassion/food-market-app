@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=82e4467b7a02, netlify/services/marketSession.mts=3240db4e439a, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=ebbc9d7ae6b3 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=5fddc71a0e8b, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=5031da498902 -->
 
 # Session lifecycle
 
@@ -17,21 +17,27 @@ Companion diagrams: [`data-model.md`](data-model.md) for the database tables, an
 [`user-journey.md`](user-journey.md) for what a guest experiences while a session moves through
 these states.
 
+Sessions are not created by hand one at a time. A market location has a weekly **recurrence
+pattern** ([`src/models/recurrence-pattern.ts`](../src/models/recurrence-pattern.ts)), and the
+moment a session ends the pattern creates the next one — the earliest occurrence whose registration
+opens after that moment. Staff can also add a **one-off** session outside the pattern. Only one
+unfinished session exists per location at a time; a partial unique index on `market_events`
+enforces it.
+
 Transitions labelled with a command name are admin actions. Those marked _(automatic)_ happen on
-their own when wall-clock time passes the registration or grace-period deadline —
-`SessionTimeline.statusAt` (`src/models/session-timeline.ts`) is applied whenever the current session is read. Scheduling or changing a
-registration window also creates a delayed Async Workload event that performs the close-time read,
-so the transition does not depend on a visitor loading the app at that moment.
+their own when wall-clock time passes a deadline — `SessionTimeline.statusAt`
+([`src/models/session-timeline.ts`](../src/models/session-timeline.ts)) is applied whenever the
+current session is read. So that nothing depends on a visitor loading the app at the right moment,
+each deadline also has a delayed Async Workload timer (`netlify/functions/market-session-timer.mts`)
+for registration close, the lottery draw, and auto-close. A timer carries the time it was due when
+sent; if the session's time has moved since, the timer does nothing.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> draft : settings saved
-
-    draft --> scheduled : schedule_registration
-    draft --> registration_open : open_registration
+    [*] --> scheduled : created from the pattern<br/>when the last session ended,<br/>or added as a one-off
 
     scheduled --> scheduled : postpone_registration
-    scheduled --> registration_open : open_registration<br/>or open time passes (automatic)
+    scheduled --> registration_open : open_registration (Start Now)<br/>or open time passes (automatic)
     scheduled --> registration_closed : close time passes (automatic)
     scheduled --> lottery_pending : close time and grace period<br/>already passed (automatic)
 
@@ -40,28 +46,41 @@ stateDiagram-v2
 
     registration_closed --> registration_open : reopen_registration
     registration_closed --> lottery_pending : grace period ends (automatic)
-    lottery_pending --> service_started : run_lottery
+
+    lottery_pending --> lottery_pending : postpone_lottery
+    lottery_pending --> service_started : run_lottery (Run Immediately)<br/>or draw time passes (automatic)
 
     service_started --> ended : close_session
     ended --> [*]
 
     note right of ended
-        reset_session moves a session
-        to ended from any other state.
+        reset_session ends any session that has opened,
+        and auto-close ends any unfinished session.
+        close_session and auto-close create the next
+        session from the pattern; reset does not.
     end note
 ```
 
-Two commands change a session without changing its state: `postpone_registration` shifts a
-scheduled window later, and `update_registration` extends the close time or capacity of an open one.
-`schedule_registration` is only available to sessions in `scheduled` mode with an open time still in
-the future; `ad_hoc` sessions are opened by hand straight from `draft`.
+Three commands change a session without changing its state: `postpone_registration` shifts a
+scheduled window later, `update_registration` extends the close time or capacity of an open one (but
+never past its auto-close time), and `postpone_lottery` pushes an automatic draw back by 1–10
+minutes.
+
+Two optional offsets on a session drive its automatic steps:
+
+- **Lottery delay** — with a delay, the lottery draws on its own that many minutes after the grace
+  deadline. Without one (the default) staff draw it by hand. The draw only ever runs from its timer
+  or a staff action, never as a side effect of reading the session, because it is irreversible and
+  notifies every registered guest.
+- **Auto-close** — the session ends on its own that many minutes after registration opens (12 hours
+  by default). It counts from the actual opening, so Start Now moves it. An overdue auto-close is
+  also applied when the session is read, so a lost timer heals.
 
 ## What each state means
 
-- **`draft`** — the session exists but nothing is public. This is the only state in which session
-  settings (times, capacity, registration questions) can still be edited.
-- **`scheduled`** — a future registration window is set and will open on its own when the time
-  arrives.
+- **`scheduled`** — the next session: a future registration window is set and will open on its own
+  when the time arrives. Guests see when it opens. It has not opened, so it cannot be reset — a
+  one-off session is deleted instead.
 - **`registration_open`** — guests can register. Each registration creates a `visits` row with
   status `registered`.
 - **`registration_closed`** — the form is closed, but an in-flight self-service request may still
@@ -72,13 +91,16 @@ the future; `ad_hoc` sessions are opened by hand straight from `draft`.
 - **`service_started`** — the lottery has run. Up to `capacity` visits become `waiting` with a
   `queue_position`; the rest become `not_placed`. Workers run the queue from here — see
   [the visit lifecycle](#the-visit-lifecycle) below.
-- **`ended`** — the session is finished (or was reset) and is no longer the current session. Ended
-  sessions appear in the admin history view. Closing a session also resolves every visit still
-  `waiting` or `called` to `no_show`, in the same transaction as the transition, so ending a session
-  never leaves a guest in a status that implies service is still coming.
+- **`ended`** — the session is finished (closed, auto-closed, or reset) and is no longer the current
+  session. Ended sessions appear in the admin history view. However it ended, every visit still
+  `registered`, `waiting`, or `called` is resolved to `cancelled` in the same transaction
+  (`endSession` in `netlify/services/sessionEnding.mts`), so ending a session never leaves a guest in
+  a status that implies service is still coming. It is `cancelled` rather than `no_show` because the
+  market ended the visit; a no-show is only ever recorded by a worker.
 
-The frontend collapses `draft` and `ended` into a single `inactive` state (`currentSessionState`),
-because from a guest's point of view there is simply no session to join.
+The frontend treats no session and an `ended` one as a single `inactive` state
+(`currentSessionState`), because from a guest's point of view there is simply no session to join.
+After a reset there is genuinely no session until staff create the next one from the pattern.
 
 ## The visit lifecycle
 
@@ -99,15 +121,16 @@ stateDiagram-v2
 
     registered --> waiting : select (lottery win)
     registered --> not_placed : skip (lottery loss)
-    registered --> cancelled : cancel (by the guest)
+    registered --> cancelled : cancel (by the guest),<br/>or the session ends
 
     waiting --> called : call
     waiting --> no_show : mark_no_show
-    waiting --> cancelled : cancel (by the guest)
+    waiting --> cancelled : cancel (by the guest),<br/>or the session ends
 
     called --> served : serve
     called --> no_show : mark_no_show
     called --> waiting : return_to_queue
+    called --> cancelled : the session ends
 
     no_show --> waiting : return_to_queue
 
@@ -134,6 +157,9 @@ Who owns each transition matters:
   draw a plain even shuffle unless a worker deliberately raised someone's odds.
 - **The guest** owns `cancel`, from their own status screen, and only while `registered` or
   `waiting`.
+- **The session ending** cancels every visit still `registered`, `waiting`, or `called`. It is the
+  only way a `called` visit becomes `cancelled`, and it is applied by the server, never offered as a
+  command.
 - **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the only four
   the admin UI ever offers, and it offers only the ones legal from a visit's current status.
 
