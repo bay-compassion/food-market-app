@@ -400,7 +400,7 @@ export const translations = {
 				cancelled: {
 					header: 'Visit cancelled',
 					details:
-						'You cancelled your place for today. You can register again next Saturday at 10:30 AM.',
+						'Your place for today was cancelled. You can register again the next time registration opens.',
 				},
 				cancelAction: 'Cancel this visit',
 				cancelConfirmation: 'Cancel your place in the queue for this visit?',
@@ -648,7 +648,7 @@ export const translations = {
 				cancelled: {
 					header: 'Visita cancelada',
 					details:
-						'Usted canceló su lugar para hoy. Puede registrarse de nuevo el próximo sábado a las 10:30 a. m.',
+						'Su lugar para hoy fue cancelado. Puede registrarse de nuevo la próxima vez que se abra el registro.',
 				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
@@ -894,7 +894,7 @@ export const translations = {
 				cancelled: {
 					header: 'بازدید لغو شد',
 					details:
-						'شما جایگاه امروز خود را لغو کردید. می‌توانید شنبه آینده ساعت ۱۰:۳۰ صبح دوباره ثبت‌نام کنید.',
+						'جایگاه امروز شما لغو شد. دفعهٔ بعد که ثبت‌نام باز شود، می‌توانید دوباره ثبت‌نام کنید.',
 				},
 				cancelAction: 'لغو این بازدید',
 				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
@@ -1144,7 +1144,7 @@ export const translations = {
 				cancelled: {
 					header: 'Kinansela ang pagbisita',
 					details:
-						'Kinansela po ninyo ang inyong puwesto ngayong araw. Maaari kayong magparehistro ulit sa Sabado nang 10:30 AM.',
+						'Kinansela po ang inyong puwesto ngayong araw. Maaari kayong magparehistro ulit sa susunod na pagbubukas ng rehistrasyon.',
 				},
 				cancelAction: 'Kanselahin ang pagbisitang ito',
 				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
@@ -1390,7 +1390,7 @@ export const translations = {
 				cancelled: {
 					header: 'Đã hủy lượt',
 					details:
-						'Bạn đã hủy suất của mình cho hôm nay. Bạn có thể đăng ký lại vào thứ Bảy tuần sau lúc 10:30 sáng.',
+						'Suất của bạn cho hôm nay đã bị hủy. Bạn có thể đăng ký lại vào lần mở đăng ký tiếp theo.',
 				},
 				cancelAction: 'Hủy lượt ghé này',
 				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
@@ -1624,7 +1624,7 @@ export const translations = {
 				},
 				cancelled: {
 					header: '已取消到访',
-					details: '您已取消今天的名额。您可以在下周六上午 10:30 重新登记。',
+					details: '您今天的名额已被取消。您可以在下次开放登记时重新登记。',
 				},
 				cancelAction: '取消本次到访',
 				cancelConfirmation: '要取消本次到访的排队位置吗？',
@@ -1862,7 +1862,7 @@ export const translations = {
 				cancelled: {
 					header: 'أُلغيت الزيارة',
 					details:
-						'لقد ألغيت مكانك لهذا اليوم. يمكنك التسجيل مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا.',
+						'أُلغي مكانك لهذا اليوم. يمكنك التسجيل مرة أخرى عندما يُفتح التسجيل في المرة القادمة.',
 				},
 				cancelAction: 'إلغاء هذه الزيارة',
 				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
