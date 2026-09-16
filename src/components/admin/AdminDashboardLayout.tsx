@@ -117,6 +117,7 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 	const t = translations.adminTranslation;
 	const viewLabels: Record<AdminView, string> = {
 		'current-session': t.currentSession,
+		schedule: t.schedule,
 		queue: t.queue,
 		broadcast: t.broadcastTitle,
 		'question-bank': t.questionBank,

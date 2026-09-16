@@ -20,6 +20,7 @@ import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
 import { SessionView } from './admin/SessionView';
 import type { AdminView, ManualGuest, QueueGuest } from './admin/types';
+import { ScheduleView } from './schedule/ScheduleView';
 
 export type AdminDashboardProps = {
 	getAccessToken: () => Promise<string>;
@@ -206,7 +207,10 @@ export const AdminDashboard = observer(function AdminDashboard({
 					onRun={(action) => void runMarketAction(action as MarketAction)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
 					onNavigateQueue={() => navigate('queue')}
+					onNavigateSchedule={() => navigate('schedule')}
 				/>
+			) : activeView === 'schedule' ? (
+				<ScheduleView onNavigateSession={() => navigate('current-session')} />
 			) : activeView === 'queue' ? (
 				<QueueView
 					guests={currentSessionGuests}

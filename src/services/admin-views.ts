@@ -5,6 +5,7 @@ import type { Permission } from './permissions.ts';
  */
 export const adminViews = [
 	'current-session',
+	'schedule',
 	'queue',
 	'broadcast',
 	'question-bank',
@@ -27,6 +28,7 @@ export function isAdminView(value: unknown): value is AdminView {
  */
 export const viewPermissions: Record<AdminView, Permission> = {
 	'current-session': 'manage:sessions',
+	schedule: 'manage:sessions',
 	queue: 'run:queue',
 	broadcast: 'manage:sessions',
 	'question-bank': 'manage:sessions',

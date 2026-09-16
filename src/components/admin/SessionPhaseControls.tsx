@@ -23,6 +23,7 @@ export type SessionPhaseControlsProps = {
 	onSaveCapacityOverride: (capacity: number) => void;
 	onRun: (action: SessionCommand) => void;
 	onNavigateQueue: () => void;
+	onNavigateSchedule: () => void;
 };
 
 export const SessionPhaseControls = observer(function SessionPhaseControls({
@@ -38,6 +39,7 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 	onSaveCapacityOverride,
 	onRun,
 	onNavigateQueue,
+	onNavigateSchedule,
 }: SessionPhaseControlsProps) {
 	const t = adminTranslations.en;
 	const { translations } = useRootStore();
@@ -59,7 +61,11 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 	return (
 		<>
 			{sessionState === 'inactive' ? (
-				<SessionActionCard description={t.noSessionHelp}>{null}</SessionActionCard>
+				<SessionActionCard description={t.noSessionHelp}>
+					<Button type="button" onClick={onNavigateSchedule}>
+						{t.scheduleOpenSchedule}
+					</Button>
+				</SessionActionCard>
 			) : sessionState === 'scheduled' ? (
 				<SessionOverrideCard
 					description={

@@ -40,6 +40,7 @@ const meta = {
 		onRun: fn(),
 		onAddGuest: fn(),
 		onNavigateQueue: fn(),
+		onNavigateSchedule: fn(),
 	},
 	render: function SessionStory(args: SessionViewProps) {
 		const [extensionMinutes, setExtensionMinutes] = useState(args.extensionMinutes);
