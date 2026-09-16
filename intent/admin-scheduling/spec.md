@@ -10,15 +10,15 @@ before Build and how each was decided.
 
 ## Answers to the intent's open questions
 
-| #   | Intent question                        | Proposed answer                                                                                                                                                                                                                                                                                                                                         |
-| --- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Auto-close counts from what?           | From the session's **actual** registration open time. Start Now moves that time to the moment staff press it, so auto-close moves with it. Counting from the originally scheduled time would give a session started a day early an auto-close time in the past.                                                                                         |
-| 2   | Auto-closing before the lottery ran    | Decided: forced endings (auto-close and reset) resolve every guest still in line — `registered`, `waiting`, or `called` — to `cancelled`, with no notification. `no_show` is reserved for guests who actually missed their turn, because a high `no_show` count will later count against a guest. See [C4](#c4-guests-in-a-forcibly-ended-session).     |
-| 3   | Delete on the pattern row              | Deletes the pattern and its Pending session, if that session hasn't opened yet. A session that is already active keeps running; when it ends, no next session is created. Ended sessions keep their data and simply stop pointing at the pattern.                                                                                                       |
-| 4   | One-off sessions alongside the pattern | Adding a one-off session **replaces** the pattern's Pending session. When the one-off session ends, the pattern creates its next session as usual. Adding one is blocked while a session is active or another one-off session is pending. Decided: one-off sessions are a real use, available in production ([C8](#c8-one-off-sessions-in-production)). |
-| 5   | Editing the Pending session            | Allowed while it is still Pending: times, capacity, lottery delay, auto-close, and questions. Editing the pattern regenerates a Pattern-created Pending session from scratch, discarding those edits, and the UI asks before doing so.                                                                                                                  |
-| 6   | The Session tab                        | Keeps steering the live session: phase controls, registration overrides, broadcast. It loses the settings form and session-mode selector — creating and editing sessions moves to the Schedule tab. The Question bank tab edits the pattern's questions.                                                                                                |
-| 7   | Grid on a phone                        | Below 600px wide, the grid shows three columns — Date (with times as a second line), Status, and Actions — and row actions move into an overflow menu.                                                                                                                                                                                                  |
+| #   | Intent question                        | Proposed answer                                                                                                                                                                                                                                                                                                                                                                    |
+| --- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Auto-close counts from what?           | From the session's **actual** registration open time. Start Now moves that time to the moment staff press it, so auto-close moves with it. Counting from the originally scheduled time would give a session started a day early an auto-close time in the past.                                                                                                                    |
+| 2   | Auto-closing before the lottery ran    | Decided: however a session ends — Close Session, auto-close, or reset — every guest still in line (`registered`, `waiting`, or `called`) is resolved to `cancelled`, with no notification. `no_show` is recorded only when a worker marks a guest as one, because a high `no_show` count will later count against a guest. See [C4](#c4-guests-still-in-line-when-a-session-ends). |
+| 3   | Delete on the pattern row              | Deletes the pattern and its Pending session, if that session hasn't opened yet. A session that is already active keeps running; when it ends, no next session is created. Ended sessions keep their data and simply stop pointing at the pattern.                                                                                                                                  |
+| 4   | One-off sessions alongside the pattern | Adding a one-off session **replaces** the pattern's Pending session. When the one-off session ends, the pattern creates its next session as usual. Adding one is blocked while a session is active or another one-off session is pending. Decided: one-off sessions are a real use, available in production ([C8](#c8-one-off-sessions-in-production)).                            |
+| 5   | Editing the Pending session            | Allowed while it is still Pending: times, capacity, lottery delay, auto-close, and questions. Editing the pattern regenerates a Pattern-created Pending session from scratch, discarding those edits, and the UI asks before doing so.                                                                                                                                             |
+| 6   | The Session tab                        | Keeps steering the live session: phase controls, registration overrides, broadcast. It loses the settings form and session-mode selector — creating and editing sessions moves to the Schedule tab. The Question bank tab edits the pattern's questions.                                                                                                                           |
+| 7   | Grid on a phone                        | Below 600px wide, the grid shows three columns — Date (with times as a second line), Status, and Actions — and row actions move into an overflow menu.                                                                                                                                                                                                                             |
 
 ## Requirements
 
@@ -89,18 +89,21 @@ before Build and how each was decided.
 
 - **R19.** When a session has an auto-close time, it ends automatically at
   `registration opens + auto-close minutes` if it has not ended already.
-- **R20.** Ending a session runs one shared transaction that sets status to `ended` and resolves
-  guests still in line. What else happens depends on how it ended:
+- **R20.** Ending a session runs one shared transaction: status becomes `ended`, and every guest
+  still in line — `registered`, `waiting`, or `called` — becomes `cancelled`, with no notification.
+  Whether the next session is created depends on how it ended:
 
-  | Ended by      | `registered`                 | `waiting`, `called` | Next session created |
-  | ------------- | ---------------------------- | ------------------- | -------------------- |
-  | Close Session | (none remain after the draw) | `no_show`, as today | yes                  |
-  | Auto-close    | `cancelled`                  | `cancelled`         | yes                  |
-  | Reset         | `cancelled`                  | `cancelled`         | no                   |
+  | Ended by      | Next session created |
+  | ------------- | -------------------- |
+  | Close Session | yes                  |
+  | Auto-close    | yes                  |
+  | Reset         | no                   |
 
-  A forced ending is the market's doing, not the guest's, so it never records a `no_show`. This
-  adds `called → cancelled` to the visit lifecycle, applied only by the server when a session is
-  forcibly ended; guests still cancel only from `registered` or `waiting`.
+  A guest left in line when the market ends didn't miss their turn, so ending a session never
+  records a `no_show`; only a worker's `mark_no_show` does. This replaces today's behavior, where
+  Close Session resolves `waiting` and `called` guests to `no_show`. It also adds
+  `called → cancelled` to the visit lifecycle, applied only by the server when a session ends;
+  guests still cancel only from `registered` or `waiting`.
 
 - **R21.** A registration override (`update_registration`) cannot move registration close past the
   auto-close time.
@@ -335,11 +338,12 @@ a market by an hour.
 ### Also affected
 
 - **`docs/session-lifecycle.md` and `docs/data-model.md`:** diagrams redrawn and re-stamped with
-  `check:diagrams` after review. The visit lifecycle gains `called → cancelled` for forced endings,
+  `check:diagrams` after review. The visit lifecycle gains `called → cancelled` for ended sessions,
   and its prose stops describing `cancel` as guest-only.
 - **`src/services/visitStateMachine.ts`** and `resolveOutstandingVisits` in
-  `netlify/services/visitQueue.mts`: the resolved status becomes a parameter (`no_show` or
-  `cancelled`), and `registered` joins the statuses a forced ending resolves.
+  `netlify/services/visitQueue.mts`: the resolved status changes from `no_show` to `cancelled`, and
+  `registered` joins the statuses it resolves. `docs/session-lifecycle.md` currently says closing a
+  session resolves guests to `no_show`; that prose changes too, as do the `closeSession` tests.
 - **Reports:** a `cancelled` visit no longer always means the guest cancelled. Reports that treat
   cancellations as a guest choice should be checked in Build.
 - **Demo data:** `netlify/services/demoScenario.mts`, `scripts/fake-data.mts`, and their tests stop
@@ -389,14 +393,15 @@ set a delay. The plumbing is still built in full — the delay column, the `lott
 `postpone_lottery`, and the delay field in the pattern and session dialogs — because a stakeholder
 considers the automated draw important, and turning it on should need no further engineering.
 
-### C4. Guests in a forcibly ended session
+### C4. Guests still in line when a session ends
 
-When auto-close or a reset ends a session, some guests may still be `registered`, `waiting`, or
-`called`. Recording them as `no_show` would count against them later, although the market ended
-the session, not the guest.
+When a session ends, some guests may still be `registered`, `waiting`, or `called` — after a reset
+or auto-close, or simply because the day ended before they were called. Today Close Session records
+`waiting` and `called` guests as `no_show`, which would count against them later although they
+didn't miss their turn.
 
-**Decided:** forced endings resolve all three to `cancelled`, without notification (R20). Close
-Session keeps resolving `waiting` and `called` to `no_show`, as it does today.
+**Decided:** every ending — Close Session, auto-close, and reset — resolves all three to `cancelled`,
+without notification (R20). `no_show` comes only from a worker marking a guest.
 
 ### C5. The guest-facing schedule text is hard-coded
 
@@ -440,7 +445,7 @@ These are dependent pull requests, as a stack, for Stage 3 plan mode to refine:
    - `RecurrencePattern` and `SessionTimeline`, with DST unit tests.
 2. **Lifecycle:**
    - retire `draft` and `ad_hoc`;
-   - the shared end-session transaction, with `cancelled` for forced endings;
+   - the shared end-session transaction, resolving guests still in line to `cancelled`;
    - next-session creation;
    - `postpone_lottery`;
    - the `market-session-timer` workload;
