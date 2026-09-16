@@ -4,7 +4,11 @@ import { expect, fn, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { guestAdmissions } from '../../services/guestAdmission';
+import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
+import { RootStoreProvider } from '../../stores/react/store-context';
+import { RootStore } from '../../stores/root.store';
+import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { queueGuest } from './queueGuests.fixture';
 import { SessionView, type SessionViewProps } from './SessionView';
 import type { AdminMarketEvent } from './types';
@@ -110,6 +114,46 @@ export const ServiceStarted: Story = {
 		event: { ...event, status: 'service_started' },
 		sessionState: 'service_started',
 		counts: { waiting: 20, called: 5, served: 10, not_placed: 3 },
+	},
+};
+
+/**
+ * An automatic draw: the card says when it runs and offers to run it now or push it back. The card
+ * reads the draw time from the session store, so this story seeds one of its own.
+ */
+export const AutomaticLotteryPending: Story = {
+	args: LotteryPending.args,
+	decorators: [
+		(Story) => {
+			const store = new RootStore();
+
+			store.session.applyServerState({
+				event: {
+					id: event.id,
+					status: SessionStatusEnum.LOTTERY_PENDING,
+					capacity: event.capacity,
+					registrationOpensAt: event.registrationOpensAt,
+					registrationClosesAt: event.registrationClosesAt,
+					lotteryDelayMinutes: 10,
+					lotteryDrawsAt: '2026-09-03T18:10:30Z',
+				},
+				questions: [],
+				counts: {},
+			});
+
+			return (
+				<RootStoreProvider store={store}>
+					<Story />
+					<ConfirmationDrawer />
+				</RootStoreProvider>
+			);
+		},
+	],
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole('button', { name: t.runLotteryNow })).toBeEnabled();
+		await expect(
+			canvas.getByRole('button', { name: t.postponeLotteryBy.replace('{minutes}', '10') }),
+		).toBeEnabled();
 	},
 };
 

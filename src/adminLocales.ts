@@ -145,6 +145,8 @@ export interface AdminTranslation {
 	scheduleOpenSchedule: string;
 	lotteryDrawsAt: string;
 	postponeLotteryBy: string;
+	runLotteryNow: string;
+	questionBankNeedsPattern: string;
 	noSession: string;
 	noSessionHelp: string;
 	noShow: string;
@@ -379,8 +381,8 @@ export const adminTranslations = {
 		scheduleNothingOnDate: 'Nothing is scheduled on this date.',
 		scheduleShowingDate: 'Showing {date}',
 		scheduleClearDate: 'Show all',
-		scheduleAddPattern: 'Add recurring pattern',
-		scheduleAddOneOff: 'Add one-off session',
+		scheduleAddPattern: 'Add recurring',
+		scheduleAddOneOff: 'Add one-off',
 		scheduleOneOffBlockedActive: 'A session is running. Add a one-off session once it ends.',
 		scheduleOneOffBlockedPending:
 			'A one-off session is already pending, or someone has joined the next session.',
@@ -425,6 +427,9 @@ export const adminTranslations = {
 		scheduleOpenSchedule: 'Open the schedule',
 		lotteryDrawsAt: 'The lottery draws automatically at {time}.',
 		postponeLotteryBy: 'Postpone {minutes} min',
+		runLotteryNow: 'Run immediately',
+		questionBankNeedsPattern:
+			'Add a recurring pattern on the Schedule tab to set the questions its sessions ask.',
 		noSession: 'No session',
 		noSessionHelp: 'There is no session right now. Sessions are created on the Schedule tab.',
 		noShow: 'No show',

@@ -13,13 +13,13 @@ import { AdminDashboardLayout } from './admin/AdminDashboardLayout';
 import { DevModeView } from './admin/DevModeView';
 import { GuestDatabaseView } from './admin/GuestDatabaseView';
 import { MarketActionPrompts } from './admin/market-action-prompts';
-import { QuestionBankView } from './admin/QuestionBankView';
 import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
 import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
-import { SessionView } from './admin/SessionView';
+import { SessionTab } from './admin/SessionTab';
 import type { AdminView, ManualGuest, QueueGuest } from './admin/types';
+import { PatternQuestionBank } from './schedule/PatternQuestionBank';
 import { ScheduleView } from './schedule/ScheduleView';
 
 export type AdminDashboardProps = {
@@ -40,8 +40,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 	const locale = translations.locale;
 
 	const [activeView, setActiveView] = useState<AdminView>(view);
-	const [extensionMinutes, setExtensionMinutes] = useState(30);
-	const [postponementMinutes, setPostponementMinutes] = useState(30);
 	const [broadcast, setBroadcast] = useState({ title: '', body: '' });
 
 	useEffect(() => {
@@ -110,44 +108,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 		}
 	}
 
-	async function postponeRegistration() {
-		const confirmed = await confirmation.ask({
-			question: t.confirmPostponeRegistration,
-			confirmLabel: t.confirmContinue,
-			dismissLabel: t.cancel,
-		});
-
-		if (!confirmed) {
-			return;
-		}
-
-		if (await admin.postponeRegistration(postponementMinutes)) {
-			setPostponementMinutes(30);
-		}
-	}
-
-	async function extendRegistration() {
-		if (!event) {
-			return;
-		}
-
-		const closesAt = new Date(
-			new Date(event.registrationClosesAt).valueOf() + extensionMinutes * 60_000,
-		).toISOString();
-
-		if (await admin.updateRegistrationOverrides(closesAt, event.capacity)) {
-			setExtensionMinutes(30);
-		}
-	}
-
-	async function saveCapacityOverride(capacity: number) {
-		if (!event) {
-			return;
-		}
-
-		await admin.updateRegistrationOverrides(event.registrationClosesAt, capacity);
-	}
-
 	function runGuestCommand(guest: QueueGuest, command: VisitCommand) {
 		return admin.runGuestCommand(guest, command);
 	}
@@ -189,21 +149,10 @@ export const AdminDashboard = observer(function AdminDashboard({
 	return (
 		<AdminDashboardLayout activeView={activeView} onNavigate={navigate}>
 			{activeView === 'current-session' ? (
-				<SessionView
-					extensionMinutes={extensionMinutes}
-					onExtensionMinutesChange={setExtensionMinutes}
-					postponementMinutes={postponementMinutes}
-					onPostponementMinutesChange={setPostponementMinutes}
-					event={event}
-					sessionState={sessionState}
-					counts={counts}
+				<SessionTab
 					statusLabels={statusLabels}
 					registeredGuests={registeredSessionGuests}
 					admissions={sessionAdmissions}
-					busy={admin.isBusy}
-					onPostponeRegistration={() => void postponeRegistration()}
-					onExtendRegistration={() => void extendRegistration()}
-					onSaveCapacityOverride={(capacity) => void saveCapacityOverride(capacity)}
 					onRun={(action) => void runMarketAction(action as MarketAction)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
 					onNavigateQueue={() => navigate('queue')}
@@ -232,14 +181,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 					onSend={() => void sendBroadcast()}
 				/>
 			) : activeView === 'question-bank' ? (
-				// Read-only until the question bank edits the recurrence pattern's questions.
-				<QuestionBankView
-					questions={currentState?.questions ?? []}
-					onQuestionsChange={() => {}}
-					busy={admin.isBusy}
-					editable={false}
-					onSave={() => {}}
-				/>
+				<PatternQuestionBank />
 			) : activeView === 'reports' ? (
 				<ReportsView getAccessToken={getAccessToken} canExport={admin.can('export:guest-data')} />
 			) : activeView === 'guest-database' ? (
