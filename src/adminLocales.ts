@@ -93,6 +93,52 @@ export interface AdminTranslation {
 	noGuests: string;
 	noRegisteredGuests: string;
 	noHistory: string;
+	schedule: string;
+	scheduleIntro: string;
+	scheduleCalendarLabel: string;
+	scheduleGridLabel: string;
+	scheduleDateColumn: string;
+	scheduleRegistrationColumn: string;
+	scheduleLotteryColumn: string;
+	scheduleNoRows: string;
+	scheduleNothingOnDate: string;
+	scheduleShowingDate: string;
+	scheduleClearDate: string;
+	scheduleAddPattern: string;
+	scheduleAddOneOff: string;
+	scheduleOneOffBlockedActive: string;
+	scheduleOneOffBlockedPending: string;
+	scheduleEdit: string;
+	scheduleDelete: string;
+	scheduleStartNow: string;
+	scheduleCreateNext: string;
+	scheduleGoToSession: string;
+	schedulePatternDialogTitle: string;
+	scheduleSessionDialogTitle: string;
+	scheduleOneOffDialogTitle: string;
+	scheduleStartsOn: string;
+	scheduleDate: string;
+	scheduleOpensAt: string;
+	scheduleDuration: string;
+	scheduleLotteryDelay: string;
+	scheduleLotteryDelayHelp: string;
+	scheduleAutoClose: string;
+	scheduleAutoCloseHelp: string;
+	scheduleSave: string;
+	scheduleLoadError: string;
+	scheduleConfirmDeletePattern: string;
+	scheduleConfirmDeletePatternDetails: string;
+	scheduleConfirmReplacePending: string;
+	scheduleConfirmReplacePendingDetails: string;
+	scheduleConfirmReplaceWithOneOff: string;
+	scheduleConfirmReplaceWithOneOffDetails: string;
+	scheduleConfirmDeleteSession: string;
+	scheduleConfirmStartNow: string;
+	scheduleConfirmStartNowDetails: string;
+	scheduleConfirmCreateNext: string;
+	scheduleOpenSchedule: string;
+	lotteryDrawsAt: string;
+	postponeLotteryBy: string;
 	noSession: string;
 	noSessionHelp: string;
 	noShow: string;
@@ -315,6 +361,58 @@ export const adminTranslations = {
 		noGuests: 'No guests found.',
 		noRegisteredGuests: 'No guests have registered for this session yet.',
 		noHistory: 'No past sessions yet.',
+		schedule: 'Schedule',
+		scheduleIntro:
+			'Sessions repeat from the recurring pattern. When a session ends, the next one is created automatically.',
+		scheduleCalendarLabel: 'Schedule calendar',
+		scheduleGridLabel: 'Upcoming sessions',
+		scheduleDateColumn: 'Date',
+		scheduleRegistrationColumn: 'Registration',
+		scheduleLotteryColumn: 'Lottery',
+		scheduleNoRows: 'Nothing is scheduled. Add a recurring pattern or a one-off session.',
+		scheduleNothingOnDate: 'Nothing is scheduled on this date.',
+		scheduleShowingDate: 'Showing {date}',
+		scheduleClearDate: 'Show all',
+		scheduleAddPattern: 'Add recurring pattern',
+		scheduleAddOneOff: 'Add one-off session',
+		scheduleOneOffBlockedActive: 'A session is running. Add a one-off session once it ends.',
+		scheduleOneOffBlockedPending:
+			'A one-off session is already pending, or someone has joined the next session.',
+		scheduleEdit: 'Edit',
+		scheduleDelete: 'Delete',
+		scheduleStartNow: 'Start Now',
+		scheduleCreateNext: 'Create next session',
+		scheduleGoToSession: 'Go to session',
+		schedulePatternDialogTitle: 'Recurring pattern',
+		scheduleSessionDialogTitle: 'Edit session',
+		scheduleOneOffDialogTitle: 'One-off session',
+		scheduleStartsOn: 'First date (repeats weekly on this day)',
+		scheduleDate: 'Date',
+		scheduleOpensAt: 'Registration opens',
+		scheduleDuration: 'Registration open for (minutes)',
+		scheduleLotteryDelay: 'Draw the lottery automatically (minutes after registration closes)',
+		scheduleLotteryDelayHelp: 'Leave empty to draw the lottery by hand.',
+		scheduleAutoClose: 'Close the session automatically (hours after registration opens)',
+		scheduleAutoCloseHelp: 'Leave empty to never close it automatically.',
+		scheduleSave: 'Save',
+		scheduleLoadError: 'The schedule could not be loaded.',
+		scheduleConfirmDeletePattern: 'Delete the recurring pattern?',
+		scheduleConfirmDeletePatternDetails:
+			'Its next session is removed too, unless someone has joined it. Past sessions are kept.',
+		scheduleConfirmReplacePending: 'Save the pattern and recreate the next session?',
+		scheduleConfirmReplacePendingDetails: 'Any changes made to the next session are discarded.',
+		scheduleConfirmReplaceWithOneOff:
+			'Add this one-off session in place of the next scheduled session?',
+		scheduleConfirmReplaceWithOneOffDetails:
+			'The recurring pattern creates its next session again when the one-off session ends.',
+		scheduleConfirmDeleteSession: 'Delete this one-off session?',
+		scheduleConfirmStartNow: 'Open registration for this session now?',
+		scheduleConfirmStartNowDetails:
+			'Guests can register immediately, and the session closes automatically on its usual schedule from now.',
+		scheduleConfirmCreateNext: 'Create the next session from the recurring pattern?',
+		scheduleOpenSchedule: 'Open the schedule',
+		lotteryDrawsAt: 'The lottery draws automatically at {time}.',
+		postponeLotteryBy: 'Postpone {minutes} min',
 		noSession: 'No session',
 		noSessionHelp: 'There is no session right now. Sessions are created on the Schedule tab.',
 		noShow: 'No show',

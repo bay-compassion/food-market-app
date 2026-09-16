@@ -108,6 +108,7 @@ describe('admin navigation by permission', () => {
 		await waitFor(() =>
 			expect(navigationLabels(container)).toEqual([
 				t.currentSession,
+				t.schedule,
 				t.queue,
 				t.broadcastTitle,
 				t.questionBank,

@@ -103,6 +103,11 @@ export class MarketLocation {
 			.toFormat('h:mm a');
 	}
 
+	/** The wall-clock time of an instant at this location, as `HH:mm`. */
+	formatWallClock(instant: Date): LocalTime {
+		return DateTime.fromJSDate(instant, { zone: this.zone }).toFormat('HH:mm');
+	}
+
 	/** The local date `days` calendar days after `date` (or before, when negative). */
 	static addDays(date: LocalDate, days: number): LocalDate {
 		return DateTime.fromISO(date, { zone: 'utc' }).plus({ days }).toISODate()!;

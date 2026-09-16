@@ -134,9 +134,14 @@ Build-stage choices the spec left open:
     - The toolbar holds "Add recurring pattern" and "Add one-off session", plus the date-filter
       chip.
   - `ScheduleStatusChip`
-  - `RecurrencePatternDialog`, `SessionDialog`, and `SessionTemplateFields` (the shared fields:
-    open time, duration, capacity, lottery delay, auto-close). Both dialogs reuse the question
-    editor extracted from `QuestionBankView` as `QuestionListEditor`.
+  - `ScheduleFormDialog` and `SessionTemplateFields` (the shared fields: open time, duration,
+    capacity, lottery delay, auto-close), with the question editor extracted from
+    `QuestionBankView` as `QuestionListEditor`. _(Updated in Build: the pattern, one-off, and
+    edit-session forms differ only in title and date label, so one dialog serves all three instead
+    of separate `RecurrencePatternDialog` and `SessionDialog` components. The grid's toolbar sits
+    above the grid in `ScheduleView` rather than in a DataGrid toolbar slot, and every row action
+    lives in the row's menu, because an inline action needs an icon.)_
+  - `RootStore.requestHeaders()` becomes public so `useScheduleStore` can build its API client.
 
 ### Modified
 

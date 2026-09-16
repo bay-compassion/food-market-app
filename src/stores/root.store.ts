@@ -70,7 +70,8 @@ export class RootStore {
 		this.readPermissions = readPermissions;
 	}
 
-	private async requestHeaders(): Promise<HeadersInit> {
+	/** Headers that authenticate an admin request, for API clients built outside the store graph. */
+	async requestHeaders(): Promise<HeadersInit> {
 		if (!this.getAccessToken) {
 			return new Headers();
 		}
