@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=54d3cac97d4f, netlify/services/marketSession.mts=92c20d0cc51e, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=ebbc9d7ae6b3 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=82e4467b7a02, netlify/services/marketSession.mts=3240db4e439a, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=ebbc9d7ae6b3 -->
 
 # Session lifecycle
 
@@ -19,7 +19,7 @@ these states.
 
 Transitions labelled with a command name are admin actions. Those marked _(automatic)_ happen on
 their own when wall-clock time passes the registration or grace-period deadline —
-`automaticSessionStatus` is applied whenever the current session is read. Scheduling or changing a
+`SessionTimeline.statusAt` (`src/models/session-timeline.ts`) is applied whenever the current session is read. Scheduling or changing a
 registration window also creates a delayed Async Workload event that performs the close-time read,
 so the transition does not depend on a visitor loading the app at that moment.
 

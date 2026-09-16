@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
+import { SessionTimeline } from '../../src/models/session-timeline.js';
 import { ageRanges } from '../../src/services/ageRanges.js';
 import {
 	admissionNeedsQueuePosition,
@@ -12,7 +13,6 @@ import {
 	guestAdmissions,
 } from '../../src/services/guestAdmission.js';
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
-import { acceptsSelfRegistration } from '../../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import {
@@ -152,7 +152,7 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 
 		// Once the guest UI closes, an already-in-flight request may still land during the short grace
 		// period. `lottery_pending` is the hard boundary where the pool has been frozen.
-		if (!acceptsSelfRegistration(event, now)) {
+		if (!new SessionTimeline(event).acceptsSelfRegistration(now)) {
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
@@ -225,7 +225,8 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 
 				if (
 					!event ||
-					(submission.source === 'self' && !acceptsSelfRegistration(event, new Date())) ||
+					(submission.source === 'self' &&
+						!new SessionTimeline(event).acceptsSelfRegistration(new Date())) ||
 					(submission.source === 'admin' && !canAdmitGuest(event.status, submission.admission))
 				) {
 					throw new Error('INVALID_REGISTRATION_STATE');
