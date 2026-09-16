@@ -168,7 +168,9 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 							<span className={`event-state ${sessionState}`}>{sessionStatusLabel}</span>
 						) : null}
 						<h1>{viewLabels[activeView]}</h1>
-						{activeView !== 'queue' ? <p>{t.adminDescription}</p> : null}
+						{activeView !== 'queue' && activeView !== 'schedule' ? (
+							<p>{t.adminDescription}</p>
+						) : null}
 					</header>
 					<AdminFeedbackBanner />
 					{children}

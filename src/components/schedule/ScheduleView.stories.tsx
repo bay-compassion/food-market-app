@@ -96,7 +96,7 @@ export const PatternWithPendingSession: Story = {
 
 		await expect(await within(grid).findByText('Recurring')).toBeInTheDocument();
 		await expect(within(grid).getByText('Pending')).toBeInTheDocument();
-		await expect(canvas.queryByRole('button', { name: t.scheduleAddPattern })).toBeNull();
+		await expect(canvas.getByRole('button', { name: t.scheduleAddPattern })).toBeDisabled();
 	},
 };
 

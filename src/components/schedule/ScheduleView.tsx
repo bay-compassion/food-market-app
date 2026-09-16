@@ -38,13 +38,29 @@ const Layout = styled.div`
 		font-size: 14px;
 	}
 
+	/* The calendar is a fixed 320px wide: centered on a phone, flush beside the grid on desktop. */
 	.MuiDateCalendar-root {
+		margin: 0 auto;
+	}
+
+	.schedule-help {
 		margin: 0;
+		color: var(--color-text-subtle);
+		font-size: 14px;
+		line-height: 1.5;
 	}
 
 	@media (min-width: 960px) {
 		grid-template-columns: 320px minmax(0, 1fr);
 		align-items: start;
+
+		.MuiDateCalendar-root {
+			margin: 0;
+		}
+
+		.schedule-help {
+			grid-column: 1 / -1;
+		}
 	}
 `;
 
@@ -174,20 +190,18 @@ export const ScheduleView = observer(function ScheduleView({
 	return (
 		<LocalizationProvider dateAdapter={AdapterLuxon}>
 			<section className="admin-section schedule-view">
-				<div className="section-heading">
-					<h2>{t.schedule}</h2>
-					<p>{t.scheduleIntro}</p>
-				</div>
 				{schedule.error ? <Alert severity="error">{schedule.error}</Alert> : null}
 				<Layout>
 					<ScheduleCalendar />
 					<div>
 						<div className="schedule-toolbar">
-							{schedule.canAddPattern ? (
-								<Button type="button" onClick={() => setDialog({ kind: 'pattern' })}>
-									{t.scheduleAddPattern}
-								</Button>
-							) : null}
+							<Button
+								type="button"
+								disabled={!schedule.canAddPattern || schedule.isBusy}
+								onClick={() => setDialog({ kind: 'pattern' })}
+							>
+								{t.scheduleAddPattern}
+							</Button>
 							<Button
 								type="button"
 								variant="outlined"
@@ -216,6 +230,7 @@ export const ScheduleView = observer(function ScheduleView({
 						</div>
 						<ScheduleGrid onAction={(row, action) => void onAction(row, action)} />
 					</div>
+					<p className="schedule-help">{t.scheduleIntro}</p>
 				</Layout>
 			</section>
 			{dialog && initial ? (
