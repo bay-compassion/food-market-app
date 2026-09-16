@@ -6,6 +6,7 @@ import { adminTranslations } from '../../adminLocales';
 import type { CurrentSessionState, SessionCommand } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { CapacityOverrideForm } from './CapacityOverrideForm';
+import { LotteryPendingCard } from './LotteryPendingCard';
 import { SessionActionCard } from './SessionActionCard';
 import { SessionOverrideCard } from './SessionOverrideCard';
 import type { AdminMarketEvent } from './types';
@@ -153,11 +154,7 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 					</Button>
 				</SessionActionCard>
 			) : sessionState === 'lottery_pending' ? (
-				<SessionActionCard title={t.lotteryActions} description={t.lotteryPendingHelp}>
-					<Button type="button" disabled={busy} onClick={() => onRun('run_lottery')}>
-						{t.runLottery}
-					</Button>
-				</SessionActionCard>
+				<LotteryPendingCard busy={busy} onRun={onRun} />
 			) : (
 				<SessionActionCard description={t.guestList}>
 					<Button type="button" onClick={onNavigateQueue}>

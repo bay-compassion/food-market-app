@@ -347,6 +347,12 @@ Lower layers leave the admin temporarily unable to create sessions until the Sch
    2. Point `QuestionBankView` at the pattern through `useScheduleStore()`.
    3. If `AdminDashboard.tsx` is still over 250 lines, split it.
 
+   _(Updated in Build: the lottery controls are `LotteryPendingCard`, which reads the draw time and
+   postpones through the root store; the pattern-backed question bank is `PatternQuestionBank`,
+   wrapping the unchanged presentational `QuestionBankView`; and `AdminDashboard.tsx` was split by
+   moving the Session tab's own state and handlers into a `SessionTab` container, bringing it to
+   208 lines.)_
+
 ---
 
 # Risks
