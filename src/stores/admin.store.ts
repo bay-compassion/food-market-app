@@ -24,7 +24,7 @@ import type { MarketSessionStore } from './market-session.store.ts';
 /** The session commands the dashboard offers as one-click actions. */
 export type MarketAction = Exclude<
 	SessionCommand,
-	'postpone_registration' | 'update_registration' | 'postpone_lottery'
+	'postpone_registration' | 'update_registration' | 'postpone_lottery' | 'pause_lottery'
 >;
 
 /** A phone claim code on screen, with the name of the guest it is for. */
@@ -177,6 +177,18 @@ export class AdminStore {
 				throw new Error('postpone');
 			}
 
+			runInAction(() => (this._feedback = { kind: 'session-updated' }));
+
+			return true;
+		}, false);
+	}
+
+	/** Stops the automatic draw; a worker can still run it manually. */
+	async pauseLottery(): Promise<boolean> {
+		return this.run(async () => {
+			if (!(await this.session.sendCommand('pause_lottery'))) {
+				throw new Error('pause');
+			}
 			runInAction(() => (this._feedback = { kind: 'session-updated' }));
 
 			return true;

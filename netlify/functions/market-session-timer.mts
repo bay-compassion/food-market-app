@@ -85,7 +85,7 @@ export async function runSessionTimer(event: AsyncWorkloadEvent<TimerEvent>, now
 				return;
 			}
 
-			const drawn = await runLottery(current);
+			const drawn = await runLottery(current, undefined, expectedAt);
 
 			if (drawn.ok) {
 				await requestNotificationDispatch({

@@ -23,7 +23,7 @@ const event: AdminMarketEvent = {
 };
 
 const meta = {
-	title: 'Admin/SessionView',
+	title: 'Admin/Current Session/SessionView',
 	component: SessionView,
 	parameters: { shell: 'admin' },
 	args: {
@@ -31,7 +31,7 @@ const meta = {
 		sessionState: 'inactive',
 		counts: {},
 		statusLabels: adminVisitStatusLabels('en'),
-		registeredGuests: [queueGuest({ status: 'registered', queuePosition: null })],
+		sessionGuests: [queueGuest({ status: 'registered', queuePosition: null })],
 		admissions: guestAdmissions,
 		busy: false,
 		extensionMinutes: 15,
@@ -67,7 +67,8 @@ type Story = StoryObj<typeof meta>;
 
 export const NoSession: Story = {
 	play: async ({ canvas }) => {
-		await expect(canvas.getByText(t.noSessionHelp)).toBeInTheDocument();
+		await expect(canvas.getByRole('button', { name: t.scheduleOpenSchedule })).toBeInTheDocument();
+		await expect(canvas.queryByLabelText(t.currentSession)).not.toBeInTheDocument();
 	},
 };
 
@@ -92,7 +93,30 @@ export const RegistrationClosed: Story = {
 		event: { ...event, status: 'registration_closed' },
 		sessionState: 'registration_closed',
 	},
+	decorators: [
+		(Story) => {
+			const store = new RootStore();
+
+			store.session.applyServerState({
+				event: {
+					...event,
+					status: SessionStatusEnum.REGISTRATION_CLOSED,
+					registrationGraceEndsAt: new Date(Date.now() + 30_000).toISOString(),
+				},
+				questions: [],
+				counts: {},
+			});
+
+			return (
+				<RootStoreProvider store={store}>
+					<Story />
+					<ConfirmationDrawer />
+				</RootStoreProvider>
+			);
+		},
+	],
 	play: async ({ canvas, userEvent, args }) => {
+		await expect(canvas.getByRole('timer')).toHaveTextContent(t.graceCountdown.split('{time}')[0]!);
 		await userEvent.click(canvas.getByRole('button', { name: t.reopenRegistration }));
 		await expect(args.onRun).toHaveBeenCalledWith('reopen_registration');
 	},
@@ -135,7 +159,7 @@ export const AutomaticLotteryPending: Story = {
 					registrationOpensAt: event.registrationOpensAt,
 					registrationClosesAt: event.registrationClosesAt,
 					lotteryDelayMinutes: 10,
-					lotteryDrawsAt: '2026-09-03T18:10:30Z',
+					lotteryDrawsAt: new Date(Date.now() + 600_000).toISOString(),
 				},
 				questions: [],
 				counts: {},
@@ -150,6 +174,10 @@ export const AutomaticLotteryPending: Story = {
 		},
 	],
 	play: async ({ canvas }) => {
+		await expect(canvas.getByRole('timer')).toHaveTextContent(
+			t.lotteryCountdown.split('{time}')[0]!,
+		);
+		await expect(canvas.getByRole('button', { name: t.pauseLottery })).toBeEnabled();
 		await expect(canvas.getByRole('button', { name: t.runLotteryNow })).toBeEnabled();
 		await expect(
 			canvas.getByRole('button', { name: t.postponeLotteryBy.replace('{minutes}', '10') }),
@@ -165,5 +193,28 @@ export const Busy: Story = {
 		for (const button of stepper.getAllByRole('button')) {
 			await expect(button).toBeDisabled();
 		}
+	},
+};
+
+export const RegistrationSections: Story = {
+	args: {
+		...RegistrationOpen.args,
+		sessionGuests: [
+			queueGuest({ id: 'registered', firstName: 'Ada', status: 'registered', queuePosition: null }),
+			queueGuest({ id: 'cancelled', firstName: 'Grace', status: 'cancelled', queuePosition: null }),
+		],
+	},
+	play: async ({ canvas, userEvent }) => {
+		const registered = canvas.getByRole('button', { name: `${t.registered} 1` });
+		const cancelled = canvas.getByRole('button', { name: `${t.cancelled} 1` });
+
+		await expect(canvas.getByRole('table', { name: t.registered })).toHaveTextContent('Ada');
+		await expect(canvas.getByRole('table', { name: t.cancelled })).toHaveTextContent('Grace');
+		await userEvent.click(cancelled);
+		await expect(cancelled).toHaveAttribute('aria-expanded', 'false');
+		await expect(canvas.queryByRole('table', { name: t.cancelled })).not.toBeInTheDocument();
+		await expect(registered).toHaveAttribute('aria-expanded', 'true');
+		await userEvent.click(cancelled);
+		await expect(canvas.getByRole('table', { name: t.cancelled })).toHaveTextContent('Grace');
 	},
 };

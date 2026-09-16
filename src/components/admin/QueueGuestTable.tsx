@@ -15,6 +15,10 @@ export type QueueGuestTableProps = {
 const GuestTable = styled(Table)`
 	table-layout: auto;
 
+	.admin-dashboard &.guest-list {
+		display: table;
+	}
+
 	.MuiTableCell-root {
 		padding: 10px 0;
 		border: 0;

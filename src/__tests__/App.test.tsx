@@ -676,22 +676,12 @@ describe('App', () => {
 	it.each([
 		{
 			status: 'scheduled',
-			shown: [
-				'Registration scheduled',
-				'Postpone registration',
-				'Open registration now',
-				'Add guest',
-			],
+			shown: ['Registration scheduled', 'Postpone', 'Open Early', 'Add guest'],
 			hidden: ['Schedule registration', 'Today’s overview', 'Broadcast notification'],
 		},
 		{
 			status: 'registration_open',
-			shown: [
-				'Registration overrides',
-				'Extend registration by (minutes)',
-				'Close registration',
-				'Add guest',
-			],
+			shown: ['Extend registration by (minutes)', 'Close early', 'Add guest'],
 			hidden: ['Today’s overview', 'Run lottery draw'],
 		},
 		{
@@ -707,7 +697,7 @@ describe('App', () => {
 		{
 			// Queue management moved to its own view, so current-session only points at it.
 			status: 'service_started',
-			shown: ['Today’s overview', 'Manage the queue', 'Add guest'],
+			shown: ['Today’s overview', 'Go to Queue', 'Add guest'],
 			hidden: ['Schedule registration', 'Run lottery draw', 'Call next'],
 		},
 	] as const)(
@@ -801,7 +791,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.textContent).toContain('Ada Lovelace'));
 
-		expect(container.textContent).toContain('Registered guests');
+		expect(container.textContent).toContain('Registered');
 		expect(container.textContent).not.toContain('Grace Hopper');
 	});
 
@@ -830,9 +820,9 @@ describe('App', () => {
 
 		const { container } = renderDashboard();
 
-		await waitFor(() => expect(container.textContent).toContain('Close registration'));
+		await waitFor(() => expect(container.textContent).toContain('Close early'));
 
-		await user.click(screen.getByRole('button', { name: 'Close registration' }));
+		await user.click(screen.getByRole('button', { name: 'Close early' }));
 
 		expect((await screen.findByRole('alertdialog')).textContent).toContain(
 			'Close registration now?',

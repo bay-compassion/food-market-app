@@ -5,6 +5,7 @@ import { adminTranslations } from '../../adminLocales';
 import type { SessionCommand } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { SessionActionCard } from './SessionActionCard';
+import { SessionTransitionTimer } from './SessionTransitionTimer';
 
 export type LotteryPendingCardProps = {
 	busy?: boolean;
@@ -45,6 +46,10 @@ export const LotteryPendingCard = observer(function LotteryPendingCard({
 			title={t.lotteryActions}
 			description={t.lotteryDrawsAt.replace('{time}', time)}
 		>
+			<SessionTransitionTimer kind="lottery" />
+			<Button type="button" disabled={busy} onClick={() => void admin.pauseLottery()}>
+				{t.pauseLottery}
+			</Button>
 			<Button type="button" disabled={busy} onClick={() => onRun('run_lottery')}>
 				{t.runLotteryNow}
 			</Button>

@@ -98,7 +98,7 @@ function Fixture(_: AdminFeedbackBannerArgs) {
 }
 
 const meta = {
-	title: 'Admin/AdminFeedbackBanner',
+	title: 'Admin/Shared/AdminFeedbackBanner',
 	component: Fixture,
 	parameters: { shell: 'admin' },
 	decorators: [withAddedGuest],

@@ -5,6 +5,7 @@ import { useId } from 'react';
 
 export type NumberSpinnerProps = {
 	label: string;
+	disabled?: boolean;
 	value: number | string;
 	onChange: (value: number | string) => void;
 	/** The lowest count the buttons will step down to. Typed entry is clamped to it as well. */
@@ -142,6 +143,7 @@ function toNumericValue(value: number | string): number | null {
  */
 export function NumberSpinner({
 	label,
+	disabled,
 	value,
 	onChange,
 	min,
@@ -159,6 +161,7 @@ export function NumberSpinner({
 
 	return (
 		<NumberField.Root
+			disabled={disabled}
 			value={toNumericValue(value)}
 			min={min}
 			max={max}

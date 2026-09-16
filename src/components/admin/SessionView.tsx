@@ -15,7 +15,7 @@ import type { ManualGuest, QueueGuest } from './types';
 export type SessionViewProps = SessionPhaseControlsProps & {
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;
-	registeredGuests: QueueGuest[];
+	sessionGuests: QueueGuest[];
 	admissions: ManualAdmission[];
 	onAddGuest: (guest: ManualGuest) => void;
 };
@@ -40,7 +40,7 @@ export const SessionView = observer(function SessionView({
 	sessionState,
 	counts,
 	statusLabels,
-	registeredGuests,
+	sessionGuests,
 	admissions,
 	busy,
 	onRun,
@@ -59,7 +59,7 @@ export const SessionView = observer(function SessionView({
 				<SessionOverview counts={counts} statusLabels={statusLabels} />
 			) : null}
 
-			<SessionStepper sessionState={sessionState}>
+			<SessionStepper sessionState={sessionState} event={event}>
 				<SessionPhaseControls
 					{...phaseControls}
 					event={event}
@@ -69,7 +69,7 @@ export const SessionView = observer(function SessionView({
 				/>
 			</SessionStepper>
 
-			{showsRegisteredGuests ? <SessionGuestList guests={registeredGuests} /> : null}
+			{showsRegisteredGuests ? <SessionGuestList guests={sessionGuests} /> : null}
 
 			{/* A worker can add someone by hand at any stage; only what "adding" means changes. */}
 			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />

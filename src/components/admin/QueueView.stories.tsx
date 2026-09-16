@@ -51,7 +51,7 @@ function Queue({ locale, serviceStarted, busy, admissions, guests, counts }: Que
 }
 
 const meta = {
-	title: 'Admin/QueueView',
+	title: 'Admin/Queue/QueueView',
 	component: Queue,
 	parameters: { shell: 'admin' },
 	args: {

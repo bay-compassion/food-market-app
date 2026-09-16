@@ -61,7 +61,7 @@ function Fixture({ state }: { state: 'populated' | 'empty' | 'loading' | 'failur
 }
 
 const meta = {
-	title: 'Admin/Demo guest picker',
+	title: 'Admin/Dev Mode/Demo guest picker',
 	component: Fixture,
 	parameters: { shell: 'admin' },
 } satisfies Meta<typeof Fixture>;

@@ -331,3 +331,33 @@ export async function postponeLottery(event: MarketEventRow, body: unknown): Pro
 
 	return { ok: true };
 }
+
+/** Clearing the delay invalidates any queued draw timer, which rechecks the current deadline. */
+export async function pauseLottery(event: MarketEventRow): Promise<ActionResult> {
+	const delay = event.lotteryDelayMinutes;
+
+	if (!canRunSessionCommand(event.status, 'pause_lottery') || delay == null) {
+		return { ok: false, status: 409, error: 'Only a pending automatic draw can be paused.' };
+	}
+	const [updated] = await tracedQuery('market_session.pause_lottery', () =>
+		db
+			.update(marketEvents)
+			.set({ lotteryDelayMinutes: null })
+			.where(
+				and(
+					eq(marketEvents.id, event.id),
+					eq(marketEvents.status, 'lottery_pending'),
+					eq(marketEvents.lotteryDelayMinutes, delay),
+				),
+			)
+			.returning(),
+	);
+
+	return updated
+		? { ok: true }
+		: {
+				ok: false,
+				status: 409,
+				error: 'That session transition is not allowed from the current state.',
+			};
+}

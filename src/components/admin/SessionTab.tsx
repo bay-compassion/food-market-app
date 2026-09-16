@@ -12,7 +12,7 @@ import type { ManualGuest, QueueGuest } from './types';
 
 export type SessionTabProps = {
 	statusLabels: Record<VisitStatus, string>;
-	registeredGuests: QueueGuest[];
+	sessionGuests: QueueGuest[];
 	admissions: ManualAdmission[];
 	onRun: (action: SessionCommand) => void;
 	onAddGuest: (guest: ManualGuest) => void;

@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=5fddc71a0e8b, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=5031da498902 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=5031da498902 -->
 
 # Session lifecycle
 
@@ -47,7 +47,7 @@ stateDiagram-v2
     registration_closed --> registration_open : reopen_registration
     registration_closed --> lottery_pending : grace period ends (automatic)
 
-    lottery_pending --> lottery_pending : postpone_lottery
+    lottery_pending --> lottery_pending : postpone_lottery / pause_lottery
     lottery_pending --> service_started : run_lottery (Run Immediately)<br/>or draw time passes (automatic)
 
     service_started --> ended : close_session
@@ -61,10 +61,11 @@ stateDiagram-v2
     end note
 ```
 
-Three commands change a session without changing its state: `postpone_registration` shifts a
+Four commands change a session without changing its state: `postpone_registration` shifts a
 scheduled window later, `update_registration` extends the close time or capacity of an open one (but
 never past its auto-close time), and `postpone_lottery` pushes an automatic draw back by 1–10
-minutes.
+minutes. `pause_lottery` clears the lottery delay, invalidating queued draw timers and leaving
+the draw available as a manual action.
 
 Two optional offsets on a session drive its automatic steps:
 

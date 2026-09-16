@@ -96,9 +96,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 				(first.queuePosition ?? Number.MAX_SAFE_INTEGER) -
 				(second.queuePosition ?? Number.MAX_SAFE_INTEGER),
 		);
-	const registeredSessionGuests = currentSessionGuests.filter(
-		(guest) => guest.status === 'registered',
-	);
+
 	const outstandingCount = (counts.waiting ?? 0) + (counts.called ?? 0);
 	const prompts = new MarketActionPrompts(t, outstandingCount);
 
@@ -151,7 +149,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 			{activeView === 'current-session' ? (
 				<SessionTab
 					statusLabels={statusLabels}
-					registeredGuests={registeredSessionGuests}
+					sessionGuests={currentSessionGuests}
 					admissions={sessionAdmissions}
 					onRun={(action) => void runMarketAction(action as MarketAction)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
