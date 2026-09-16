@@ -23,6 +23,7 @@ import {
 	closeRegistration,
 	closeSession,
 	openRegistration,
+	postponeLottery,
 	postponeRegistration,
 	reopenRegistration,
 	resetSession,
@@ -69,6 +70,10 @@ const actions: Record<string, MarketAction> = {
 		notificationTypes: ['registration_closed'],
 	},
 	close_session: { permission: 'run:queue', run: (event) => closeSession(event) },
+	postpone_lottery: {
+		permission: 'manage:sessions',
+		run: (event, body) => postponeLottery(event, body),
+	},
 	run_lottery: {
 		permission: 'manage:sessions',
 		run: (event) => runLottery(event),

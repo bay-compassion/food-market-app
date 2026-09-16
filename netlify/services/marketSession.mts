@@ -7,6 +7,8 @@ import { tracedQuery } from '../lib/sentry.mjs';
 import { requestNotificationDispatch } from './notificationDispatch.mjs';
 import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
+import { endSession } from './sessionEnding.mjs';
+import { scheduleSessionTimersQuietly, upcomingSessionTimers } from './sessionTimers.mjs';
 
 export type MarketEventRow = typeof marketEvents.$inferSelect;
 
@@ -31,6 +33,11 @@ async function getLatestActiveEvent() {
  * unauthenticated `GET /api/market` can trigger a database write as a side effect of a read.
  * It's guarded by an optimistic-concurrency `WHERE`, so it's race-safe, but callers/tests should
  * not assume this is a pure read.
+ *
+ * An overdue auto-close is applied here too, so a lost timer heals the next time anyone opens the
+ * app — and like any auto-close it creates the pattern's next session. A read never creates a
+ * session on its own, though: with no session at all (after a reset) it returns `null`. Nor does it
+ * ever draw the lottery, which is irreversible and notifies every registered guest.
  */
 export async function getCurrentEvent() {
 	let event = await getLatestActiveEvent();
@@ -40,6 +47,24 @@ export async function getCurrentEvent() {
 	}
 
 	const now = new Date();
+
+	if (new SessionTimeline(event).isOverdueForAutoClose(now)) {
+		const overdue = event;
+		const { nextSession } = await tracedQuery('market_session.auto_close', () =>
+			db.transaction((tx) => endSession(tx, overdue, 'auto_close', now)),
+		);
+
+		if (nextSession) {
+			await scheduleSessionTimersQuietly(nextSession, upcomingSessionTimers);
+		}
+
+		event = nextSession ?? (await getLatestActiveEvent());
+
+		if (!event) {
+			return null;
+		}
+	}
+
 	const automaticStatus = new SessionTimeline(event).statusAt(now);
 
 	if (automaticStatus !== event.status) {
@@ -85,6 +110,11 @@ export async function getCurrentEvent() {
 			}),
 		);
 
+		// The draw can only be timed once the grace deadline is known, which is this moment.
+		if (transition.changed && transition.changed.status !== 'registration_open') {
+			await scheduleSessionTimersQuietly(transition.changed, ['lottery_draw']);
+		}
+
 		if (transition.notificationQueued) {
 			await requestNotificationDispatch({
 				marketEventId: current.id,
@@ -121,8 +151,14 @@ export async function marketOverview() {
 			.groupBy(visits.status),
 	);
 
+	const timeline = new SessionTimeline(event);
+
 	return {
-		event,
+		event: {
+			...event,
+			lotteryDrawsAt: timeline.lotteryDrawsAt,
+			autoClosesAt: timeline.autoClosesAt,
+		},
 		questions,
 		counts: Object.fromEntries(rows.map((row) => [row.status, row.count])),
 	};

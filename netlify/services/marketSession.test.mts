@@ -6,10 +6,15 @@ import { baseEvent } from '../test/marketEventFixture.mjs';
 vi.mock('../../db/index.mjs', () => ({ db }));
 vi.mock('./pushNotifications.mjs', () => ({ notificationsEnabled: vi.fn(() => true) }));
 vi.mock('./notificationDispatch.mjs', () => ({ requestNotificationDispatch: vi.fn() }));
-vi.mock('./marketLifecycleEvents.mjs', () => ({ scheduleRegistrationClose: vi.fn() }));
+vi.mock('./sessionTimers.mjs', () => ({
+	scheduleSessionTimers: vi.fn(),
+	scheduleSessionTimersQuietly: vi.fn(),
+	upcomingSessionTimers: ['registration_close', 'auto_close'],
+}));
 
 import { getCurrentEvent } from './marketSession.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
+import { scheduleSessionTimersQuietly } from './sessionTimers.mjs';
 
 afterEach(() => {
 	resetDbStub();
@@ -76,5 +81,77 @@ describe('getCurrentEvent', () => {
 		const event = await getCurrentEvent();
 
 		expect(event?.status).toBe('lottery_pending');
+	});
+});
+
+describe('getCurrentEvent auto-close', () => {
+	it('ends an overdue session on read and returns the session created in its place', async () => {
+		// Arrange
+		const overdue = baseEvent({
+			status: 'service_started',
+			registrationOpensAt: new Date(Date.now() - 13 * 3_600_000),
+			registrationClosesAt: new Date(Date.now() - 12 * 3_600_000),
+			autoCloseAfterMinutes: 720,
+			recurrencePatternId: 'pattern-1',
+		});
+		const next = baseEvent({
+			id: 'next-event',
+			status: 'scheduled',
+			registrationOpensAt: new Date(Date.now() + 6 * 24 * 3_600_000),
+			registrationClosesAt: new Date(Date.now() + 6 * 24 * 3_600_000 + 3_600_000),
+		});
+
+		queueResult([overdue]); // latest active event
+		queueResult([overdue]); // endSession lock
+		queueResult(undefined); // end
+		queueResult([]); // nobody in line
+		queueResult([
+			{
+				id: 'pattern-1',
+				locationId: 'location-1',
+				startsOn: '2026-09-19',
+				registrationOpensAt: '10:30:00',
+				registrationDurationMinutes: 60,
+				capacity: 30,
+				lotteryDelayMinutes: null,
+				autoCloseAfterMinutes: 720,
+			},
+		]);
+		queueResult([{ id: 'location-1', name: 'The Bay Church', timeZone: 'America/Los_Angeles' }]);
+		queueResult([next]); // insert ... returning
+		queueResult([]); // no pattern questions
+
+		// Act
+		const event = await getCurrentEvent();
+
+		// Assert
+		expect(event?.id).toBe('next-event');
+		expect(scheduleSessionTimersQuietly).toHaveBeenCalledWith(next, [
+			'registration_close',
+			'auto_close',
+		]);
+	});
+
+	it('returns no session when an overdue one-off session ends and there is no pattern', async () => {
+		// Arrange
+		const overdue = baseEvent({
+			status: 'registration_open',
+			registrationOpensAt: new Date(Date.now() - 2 * 3_600_000),
+			registrationClosesAt: new Date(Date.now() + 3_600_000),
+			autoCloseAfterMinutes: 60,
+		});
+
+		queueResult([overdue]); // latest active event
+		queueResult([overdue]); // endSession lock
+		queueResult(undefined); // end
+		queueResult([]); // nobody in line
+		queueResult([]); // no pattern
+		queueResult([]); // nothing else unfinished
+
+		// Act
+		const event = await getCurrentEvent();
+
+		// Assert
+		expect(event).toBeNull();
 	});
 });
