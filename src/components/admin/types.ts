@@ -28,5 +28,3 @@ export {
 	viewsFor,
 	type AdminView,
 } from '../../services/admin-views.ts';
-
-export type { SessionSettings } from '../../services/session-settings.ts';

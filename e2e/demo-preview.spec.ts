@@ -15,7 +15,6 @@ test('demo tab follows live visits, cancels, and retains isolated identity on re
 				event: {
 					id: 'demo-event',
 					status: 'service_started',
-					sessionMode: 'scheduled',
 					capacity: 30,
 					registrationOpensAt: '2026-01-01T10:00:00Z',
 					registrationClosesAt: '2026-01-01T11:00:00Z',

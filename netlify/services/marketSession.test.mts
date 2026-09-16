@@ -18,11 +18,11 @@ afterEach(() => {
 
 describe('getCurrentEvent', () => {
 	it('returns the event unchanged when its automatic status already matches', async () => {
-		queueResult([baseEvent({ status: 'draft' })]);
+		queueResult([baseEvent()]);
 
 		const event = await getCurrentEvent();
 
-		expect(event?.status).toBe('draft');
+		expect(event?.status).toBe('registration_open');
 		expect(db.transaction).not.toHaveBeenCalled();
 	});
 

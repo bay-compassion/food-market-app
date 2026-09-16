@@ -1,4 +1,4 @@
-import { ne } from 'drizzle-orm';
+import { and, eq, ne, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { guests, marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
@@ -7,7 +7,11 @@ import type { DemoRoster } from '../../src/services/demo-preview.js';
 import type { ServiceProgress } from '../../src/services/demoScenario.js';
 import type { SessionStatus } from '../../src/services/sessionStateMachine.js';
 import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
-import { resolveOutstandingVisits } from './visitQueue.mjs';
+import { currentLocation } from './marketLocation.mjs';
+import type { MarketEventRow } from './marketSession.mjs';
+import { endSession } from './sessionEnding.mjs';
+
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export type DemoScenarioInput = {
 	stage: SessionStatus;
@@ -16,11 +20,10 @@ export type DemoScenarioInput = {
 
 /**
  * Guest/capacity sizing per stage, so the numbers make sense for what the stage is demoing:
- * nobody yet for `draft`/`scheduled`, under capacity while registration is still open, and
+ * nobody yet for `scheduled`, under capacity while registration is still open, and
  * oversubscribed once the lottery is relevant, so it actually has both winners and losers.
  */
 const scenarioSizeByStage: Record<SessionStatus, { guests: number; capacity: number }> = {
-	draft: { guests: 0, capacity: 30 },
 	scheduled: { guests: 0, capacity: 30 },
 	registration_open: { guests: 22, capacity: 30 },
 	registration_closed: { guests: 34, capacity: 30 },
@@ -39,10 +42,36 @@ export function demoDataToolsEnabled() {
 }
 
 /**
+ * Moves a live session out of the way of a demo. A pending session nobody has joined is deleted —
+ * ending it would leave an empty session in history — and anything else is ended the way a reset
+ * ends it: guests still in line cancelled, and no next session created, since the demo takes its
+ * place.
+ */
+async function archiveSession(tx: Transaction, event: MarketEventRow) {
+	if (event.status === 'scheduled') {
+		const [deleted] = await tx
+			.delete(marketEvents)
+			.where(
+				and(
+					eq(marketEvents.id, event.id),
+					eq(marketEvents.status, 'scheduled'),
+					sql`NOT EXISTS (SELECT 1 FROM ${visits} WHERE ${visits.marketEventId} = ${marketEvents.id})`,
+				),
+			)
+			.returning({ id: marketEvents.id });
+
+		if (deleted) {
+			return;
+		}
+	}
+
+	await endSession(tx, event, 'reset');
+}
+
+/**
  * Replaces the current session with one staged at `input.stage`, for demos and screenshots.
- * Whatever session is currently live is archived first, the same way a real `close_session`
- * would — outstanding visits resolved to `no_show`, status set to `ended` — so this never deletes
- * history, just moves on from it.
+ * Whatever session is currently live is archived first (see `archiveSession`), so this never
+ * deletes history, just moves on from it.
  */
 export async function loadScenario(input: DemoScenarioInput): Promise<DemoRoster> {
 	const size = scenarioSizeByStage[input.stage];
@@ -59,20 +88,10 @@ export async function loadScenario(input: DemoScenarioInput): Promise<DemoRoster
 	const visitCredentials = new Map(data.visits.map((visit) => [visit.id, issueVisitToken()]));
 
 	await db.transaction(async (tx) => {
-		const stale = await tx
-			.select({ id: marketEvents.id })
-			.from(marketEvents)
-			.where(ne(marketEvents.status, 'ended'));
+		const stale = await tx.select().from(marketEvents).where(ne(marketEvents.status, 'ended'));
 
 		for (const event of stale) {
-			await resolveOutstandingVisits(tx, event.id);
-		}
-
-		if (stale.length) {
-			await tx
-				.update(marketEvents)
-				.set({ status: 'ended' })
-				.where(ne(marketEvents.status, 'ended'));
+			await archiveSession(tx, event);
 		}
 
 		if (data.guests.length) {
@@ -85,7 +104,11 @@ export async function loadScenario(input: DemoScenarioInput): Promise<DemoRoster
 			);
 		}
 
-		await tx.insert(marketEvents).values(data.sessions);
+		const location = await currentLocation(tx);
+
+		await tx
+			.insert(marketEvents)
+			.values(data.sessions.map((session) => ({ ...session, locationId: location.id })));
 
 		if (data.questions.length) {
 			await tx.insert(registrationQuestions).values(data.questions);

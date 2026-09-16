@@ -1,7 +1,4 @@
-export type SessionMode = 'scheduled' | 'ad_hoc';
-
 export type SessionStatus =
-	| 'draft'
 	| 'scheduled'
 	| 'registration_open'
 	| 'registration_closed'
@@ -10,7 +7,6 @@ export type SessionStatus =
 	| 'ended';
 
 export enum SessionStatusEnum {
-	DRAFT = 'draft',
 	SCHEDULED = 'scheduled',
 	REGISTRATION_OPEN = 'registration_open',
 	REGISTRATION_CLOSED = 'registration_closed',
@@ -21,7 +17,6 @@ export enum SessionStatusEnum {
 
 /** Every status, in lifecycle order. */
 export const sessionStatuses: SessionStatus[] = [
-	SessionStatusEnum.DRAFT,
 	SessionStatusEnum.SCHEDULED,
 	SessionStatusEnum.REGISTRATION_OPEN,
 	SessionStatusEnum.REGISTRATION_CLOSED,
@@ -43,37 +38,30 @@ export type CurrentSessionState =
 	| 'service_started';
 
 export type SessionCommand =
-	| 'schedule_registration'
 	| 'open_registration'
 	| 'postpone_registration'
 	| 'update_registration'
 	| 'close_registration'
 	| 'reopen_registration'
+	| 'postpone_lottery'
 	| 'run_lottery'
 	| 'close_session'
 	| 'reset_session';
 
 const commandSources: Record<SessionCommand, SessionStatus[]> = {
-	schedule_registration: ['draft'],
-	open_registration: ['draft', 'scheduled'],
+	open_registration: ['scheduled'],
 	postpone_registration: ['scheduled'],
 	update_registration: ['registration_open'],
 	close_registration: ['registration_open'],
 	reopen_registration: ['registration_closed'],
+	postpone_lottery: ['lottery_pending'],
 	run_lottery: ['lottery_pending'],
 	close_session: ['service_started'],
-	reset_session: [
-		'draft',
-		'scheduled',
-		'registration_open',
-		'registration_closed',
-		'lottery_pending',
-		'service_started',
-	],
+	// A session that never opened has nothing to reset; a pending one-off session is deleted instead.
+	reset_session: ['registration_open', 'registration_closed', 'lottery_pending', 'service_started'],
 };
 
 const commandTargets: Partial<Record<SessionCommand, SessionStatus>> = {
-	schedule_registration: 'scheduled',
 	open_registration: 'registration_open',
 	close_registration: 'registration_closed',
 	reopen_registration: 'registration_open',
@@ -96,15 +84,8 @@ export function currentSessionState(status?: SessionStatus): CurrentSessionState
 	return 'inactive';
 }
 
-export function canRunSessionCommand(
-	status: SessionStatus,
-	command: SessionCommand,
-	mode?: SessionMode,
-) {
-	return (
-		commandSources[command].includes(status) &&
-		(command !== 'schedule_registration' || mode === 'scheduled')
-	);
+export function canRunSessionCommand(status: SessionStatus, command: SessionCommand) {
+	return commandSources[command].includes(status);
 }
 
 export function sessionCommandTarget(command: SessionCommand) {

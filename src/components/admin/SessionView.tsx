@@ -59,10 +59,7 @@ export const SessionView = observer(function SessionView({
 				<SessionOverview counts={counts} statusLabels={statusLabels} />
 			) : null}
 
-			<SessionStepper
-				sessionState={sessionState}
-				sessionMode={event?.sessionMode ?? phaseControls.settings.sessionMode}
-			>
+			<SessionStepper sessionState={sessionState}>
 				<SessionPhaseControls
 					{...phaseControls}
 					event={event}
@@ -77,7 +74,8 @@ export const SessionView = observer(function SessionView({
 			{/* A worker can add someone by hand at any stage; only what "adding" means changes. */}
 			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />
 
-			{event ? (
+			{/* A session that never opened has nothing to reset. */}
+			{event && sessionState !== 'scheduled' ? (
 				<ResetCard className="admin-section reset-card">
 					<div>
 						<h2>{t.resetSession}</h2>

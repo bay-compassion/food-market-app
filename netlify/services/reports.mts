@@ -132,7 +132,8 @@ function guestDemographics({ start, end }: ReportRange) {
  * Whether raised odds actually changed who got in. Only self-registered visits count: a guest a
  * worker placed straight into the line never went through the draw, so including them would
  * report a placement rate the lottery had nothing to do with. Visits still `registered` are left
- * out too — their session has not drawn yet.
+ * out too — their session has not drawn yet. A cancelled visit counts only if it holds a queue
+ * position: it won a place and was cancelled afterwards, by the guest or when the session ended.
  */
 function lotteryOutcomes({ start, end }: ReportRange) {
 	return sql`
@@ -147,7 +148,10 @@ function lotteryOutcomes({ start, end }: ReportRange) {
 		JOIN visits v ON v.market_event_id = e.id
 		WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
 			AND v.source = 'self'
-			AND v.status IN ('waiting', 'called', 'served', 'no_show', 'not_placed')
+			AND (
+				v.status IN ('waiting', 'called', 'served', 'no_show', 'not_placed')
+				OR (v.status = 'cancelled' AND v.queue_position IS NOT NULL)
+			)
 		GROUP BY v.lottery_weight
 		ORDER BY v.lottery_weight
 	`;

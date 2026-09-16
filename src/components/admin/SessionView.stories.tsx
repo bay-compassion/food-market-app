@@ -4,7 +4,6 @@ import { expect, fn, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { guestAdmissions } from '../../services/guestAdmission';
-import { defaultSessionSettings } from '../../services/session-settings';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { queueGuest } from './queueGuests.fixture';
 import { SessionView, type SessionViewProps } from './SessionView';
@@ -16,7 +15,6 @@ const event: AdminMarketEvent = {
 	registrationOpensAt: '2026-09-03T17:00:00Z',
 	registrationClosesAt: '2026-09-03T18:00:00Z',
 	capacity: 50,
-	sessionMode: 'scheduled',
 	status: 'scheduled',
 };
 
@@ -27,7 +25,6 @@ const meta = {
 	args: {
 		event: null,
 		sessionState: 'inactive',
-		settings: defaultSessionSettings(new Date('2026-09-03T16:00:00Z')),
 		counts: {},
 		statusLabels: adminVisitStatusLabels('en'),
 		registeredGuests: [queueGuest({ status: 'registered', queuePosition: null })],
@@ -35,11 +32,8 @@ const meta = {
 		busy: false,
 		extensionMinutes: 15,
 		postponementMinutes: 15,
-		onSettingsChange: fn(),
 		onExtensionMinutesChange: fn(),
 		onPostponementMinutesChange: fn(),
-		onSaveSettings: fn(),
-		onSaveAndStartRegistration: fn(),
 		onPostponeRegistration: fn(),
 		onExtendRegistration: fn(),
 		onSaveCapacityOverride: fn(),
@@ -48,15 +42,12 @@ const meta = {
 		onNavigateQueue: fn(),
 	},
 	render: function SessionStory(args: SessionViewProps) {
-		const [settings, setSettings] = useState(args.settings);
 		const [extensionMinutes, setExtensionMinutes] = useState(args.extensionMinutes);
 		const [postponementMinutes, setPostponementMinutes] = useState(args.postponementMinutes);
 
 		return (
 			<SessionView
 				{...args}
-				settings={settings}
-				onSettingsChange={setSettings}
 				extensionMinutes={extensionMinutes}
 				onExtensionMinutesChange={setExtensionMinutes}
 				postponementMinutes={postponementMinutes}
@@ -69,7 +60,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Setup: Story = {};
+export const NoSession: Story = {
+	play: async ({ canvas }) => {
+		await expect(canvas.getByText(t.noSessionHelp)).toBeInTheDocument();
+	},
+};
 
 export const Scheduled: Story = {
 	args: { event, sessionState: 'scheduled' },
@@ -114,13 +109,6 @@ export const ServiceStarted: Story = {
 		event: { ...event, status: 'service_started' },
 		sessionState: 'service_started',
 		counts: { waiting: 20, called: 5, served: 10, not_placed: 3 },
-	},
-};
-
-export const AdHocRegistration: Story = {
-	args: {
-		...RegistrationOpen.args,
-		event: { ...event, status: 'registration_open', sessionMode: 'ad_hoc' },
 	},
 };
 

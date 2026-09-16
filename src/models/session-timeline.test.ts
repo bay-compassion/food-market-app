@@ -5,7 +5,6 @@ import { SessionTimeline, type SessionTiming } from './session-timeline';
 function timeline(overrides: Partial<SessionTiming> = {}) {
 	return new SessionTimeline({
 		status: 'scheduled',
-		sessionMode: 'scheduled',
 		registrationOpensAt: new Date('2026-07-18T16:00:00.000Z'),
 		registrationClosesAt: new Date('2026-07-18T17:00:00.000Z'),
 		...overrides,
@@ -62,16 +61,6 @@ describe('SessionTimeline', () => {
 		// Assert
 		expect(opened.registrationOpensAt.toISOString()).toBe('2026-07-18T15:00:00.000Z');
 		expect(opened.registrationClosesAt.toISOString()).toBe('2026-07-18T16:00:00.000Z');
-	});
-
-	it('keeps an ad hoc session’s close time when opening', () => {
-		// Act
-		const opened = timeline({ sessionMode: 'ad_hoc' }).openingWindow(
-			new Date('2026-07-18T15:00:00.000Z'),
-		);
-
-		// Assert
-		expect(opened.registrationClosesAt.toISOString()).toBe('2026-07-18T17:00:00.000Z');
 	});
 
 	it('shifts both times when postponed', () => {

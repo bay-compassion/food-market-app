@@ -78,7 +78,6 @@ function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisit
 		event: {
 			id: 'story-market',
 			status: SessionStatusEnum.REGISTRATION_OPEN,
-			sessionMode: 'ad_hoc',
 			capacity: 100,
 			registrationOpensAt: new Date(now - 60_000).toISOString(),
 			registrationClosesAt: new Date(now + 15 * 60_000).toISOString(),

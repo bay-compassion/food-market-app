@@ -13,7 +13,6 @@ function overviewWith(eventId: string | null = 'event-1'): SessionOverview {
 					registrationOpensAt: '2026-03-01T17:00:00.000Z',
 					registrationClosesAt: '2026-03-01T18:00:00.000Z',
 					capacity: 40,
-					sessionMode: 'scheduled',
 					status: 'registration_open',
 				}
 			: null,
@@ -52,7 +51,6 @@ function storeWith(
 		currentState: overviewWith(),
 		getStatus: vi.fn().mockResolvedValue(undefined),
 		sendCommand: vi.fn().mockResolvedValue(true),
-		saveSettings: vi.fn().mockResolvedValue(true),
 		applyServerState: vi.fn(),
 		...session,
 	};

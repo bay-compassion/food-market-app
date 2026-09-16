@@ -14,7 +14,6 @@ describe('RegistrationCountdown', () => {
 		const event = {
 			id: 'countdown-transition',
 			status: SessionStatusEnum.REGISTRATION_OPEN,
-			sessionMode: 'ad_hoc' as const,
 			capacity: 3,
 			registrationOpensAt: new Date(Date.now() - 60_000).toISOString(),
 			registrationClosesAt: new Date(Date.now() + 60_000).toISOString(),

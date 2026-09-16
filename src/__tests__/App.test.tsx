@@ -640,18 +640,13 @@ describe('App', () => {
 		vi.stubGlobal('fetch', fetchMock);
 		const { container, getAccessToken } = renderDashboard();
 
-		await waitFor(() => expect(container.textContent).toContain('Registration settings'));
+		// With no session, the Session tab says where sessions are created rather than offering a form.
+		await waitFor(() =>
+			expect(container.textContent).toContain(adminTranslations.en.noSessionHelp),
+		);
 
 		expect(container.textContent).toContain('Current session');
-		expect(container.textContent).toContain('Schedule registration');
-		expect(container.textContent).toContain('Registration open for (minutes)');
-		expect(container.textContent).not.toContain('Registration closes');
 		expect(container.textContent).not.toContain('Registration questions');
-
-		await user.selectOptions(container.querySelector('.settings-card select')!, 'ad_hoc');
-		expect(container.textContent).toContain('Open registration');
-		expect(container.textContent).toContain('Registration closes');
-		expect(container.textContent).not.toContain('Registration open for (minutes)');
 
 		// Selected by label rather than index — the nav gained a Queue tab, and positional
 		// indexing silently points at a different view every time the nav changes.
@@ -808,47 +803,6 @@ describe('App', () => {
 
 		expect(container.textContent).toContain('Registered guests');
 		expect(container.textContent).not.toContain('Grace Hopper');
-	});
-
-	it('converts the registration duration to an exact closing timestamp', async () => {
-		const fetchMock = vi.fn().mockImplementation((url: string) =>
-			Promise.resolve({
-				ok: true,
-				json: () =>
-					Promise.resolve(
-						url.startsWith('/api/admin/guests') || url.includes('view=history')
-							? []
-							: { event: null, questions: [], counts: {} },
-					),
-			}),
-		);
-
-		vi.stubGlobal('fetch', fetchMock);
-		const { container } = renderDashboard();
-
-		await waitFor(() => expect(container.querySelector('.settings-card form')).not.toBeNull());
-
-		const opensAt = '2026-07-18T09:00';
-
-		fireEvent.change(container.querySelector('input[type="datetime-local"]')!, {
-			target: { value: opensAt },
-		});
-		fireEvent.change(container.querySelector('input[list="registration-duration-options"]')!, {
-			target: { value: '45' },
-		});
-		fireEvent.submit(container.querySelector('.settings-card form')!);
-
-		await waitFor(() =>
-			expect(fetchMock.mock.calls.find(([, options]) => options?.method === 'PUT')).toBeDefined(),
-		);
-
-		const settingsRequest = fetchMock.mock.calls.find(([, options]) => options?.method === 'PUT');
-		const body = JSON.parse(String(settingsRequest?.[1]?.body));
-
-		expect(body.sessionMode).toBe('scheduled');
-		expect(body.registrationClosesAt).toBe(
-			new Date(new Date(opensAt).valueOf() + 45 * 60_000).toISOString(),
-		);
 	});
 
 	it('confirms a transition before sending it to the protected market endpoint', async () => {

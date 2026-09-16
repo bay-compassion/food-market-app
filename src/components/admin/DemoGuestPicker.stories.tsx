@@ -47,7 +47,7 @@ function Fixture({ state }: { state: 'populated' | 'empty' | 'loading' | 'failur
 		}
 
 		if (state === 'loading') {
-			void root.admin.loadDemoScenario('draft');
+			void root.admin.loadDemoScenario('scheduled');
 		}
 
 		return root;

@@ -13,7 +13,7 @@
 import type { Locale } from '../src/locales.js';
 import { ageRanges, type AgeRange } from '../src/services/ageRanges.js';
 import type { ServiceProgress } from '../src/services/demoScenario.js';
-import type { SessionMode, SessionStatus } from '../src/services/sessionStateMachine.js';
+import type { SessionStatus } from '../src/services/sessionStateMachine.js';
 import type { VisitStatus } from '../src/services/visitStateMachine.js';
 
 export type FakeDataOptions = {
@@ -46,7 +46,6 @@ export type PlannedSession = {
 	registrationClosesAt: Date;
 	registrationGraceEndsAt?: Date | null;
 	capacity: number;
-	sessionMode: SessionMode;
 	status: SessionStatus;
 	createdAt: Date;
 };
@@ -279,7 +278,6 @@ function buildSession(
 			registrationOpensAt,
 			registrationClosesAt: atHour(day, 11),
 			capacity: options.capacity + integerBetween(random, -5, 5),
-			sessionMode: 'scheduled',
 			status: 'ended',
 			createdAt: daysBefore(registrationOpensAt, 3),
 		},
@@ -517,7 +515,6 @@ function buildOpenSession(options: FakeDataOptions, random: Random) {
 		registrationOpensAt,
 		registrationClosesAt: minutesAfter(options.now, 90),
 		capacity: options.capacity + integerBetween(random, -5, 5),
-		sessionMode: 'scheduled',
 		status: 'registration_open',
 		createdAt: daysBefore(registrationOpensAt, 2),
 	} satisfies PlannedSession;
@@ -634,7 +631,7 @@ export type ScenarioOptions = {
 	stage: SessionStatus;
 	/** How far through service the queue is. Only read when `stage` is `service_started`. */
 	serviceProgress?: ServiceProgress;
-	/** Ignored (treated as 0) for `draft` and `scheduled` — nobody can have registered yet. */
+	/** Ignored (treated as 0) for `scheduled` — nobody can have registered yet. */
 	guests: number;
 	capacity: number;
 	seed: number;
@@ -655,13 +652,6 @@ function scenarioTiming(stage: SessionStatus, now: Date) {
 	const serviceStartsAt = minutesAfter(now, -80);
 
 	switch (stage) {
-		case 'draft':
-			// Not committed to a time yet, but the settings form needs something to show.
-			return {
-				registrationOpensAt: minutesAfter(now, 24 * 60),
-				registrationClosesAt: minutesAfter(now, 24 * 60 + 120),
-				serviceStartsAt,
-			};
 		case 'scheduled':
 			return {
 				registrationOpensAt: minutesAfter(now, 45),
@@ -693,7 +683,7 @@ function scenarioTiming(stage: SessionStatus, now: Date) {
 export function buildScenario(options: ScenarioOptions): FakeData {
 	const { stage, now, capacity } = options;
 	const random = createRandom(options.seed);
-	const guestCount = stage === 'draft' || stage === 'scheduled' ? 0 : options.guests;
+	const guestCount = stage === 'scheduled' ? 0 : options.guests;
 	const guests = buildGuests({ guests: guestCount, now }, random);
 	const { registrationOpensAt, registrationClosesAt, serviceStartsAt } = scenarioTiming(stage, now);
 
@@ -702,7 +692,6 @@ export function buildScenario(options: ScenarioOptions): FakeData {
 		registrationOpensAt,
 		registrationClosesAt,
 		capacity,
-		sessionMode: 'scheduled',
 		status: stage,
 		registrationGraceEndsAt:
 			stage === 'registration_closed'

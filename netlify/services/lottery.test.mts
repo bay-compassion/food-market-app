@@ -87,7 +87,7 @@ describe('runLottery', () => {
 	}
 
 	it('returns 409 when the lottery cannot run from the current status', async () => {
-		const result = await runLottery(baseEvent({ status: 'draft' }));
+		const result = await runLottery(baseEvent({ status: 'scheduled' }));
 
 		expect(result).toEqual({
 			ok: false,

@@ -140,7 +140,6 @@ describe('buildScenario', () => {
 
 	it('produces exactly one session, staged at the requested status', () => {
 		for (const stage of [
-			'draft',
 			'scheduled',
 			'registration_open',
 			'registration_closed',
@@ -155,8 +154,8 @@ describe('buildScenario', () => {
 		}
 	});
 
-	it('has no guests or visits yet in draft or scheduled', () => {
-		for (const stage of ['draft', 'scheduled'] as const) {
+	it('has no guests or visits yet while scheduled', () => {
+		for (const stage of ['scheduled'] as const) {
 			const data = buildScenarioFor({ stage });
 
 			expect(data.guests).toHaveLength(0);

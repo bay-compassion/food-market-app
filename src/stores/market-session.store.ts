@@ -2,11 +2,7 @@ import { runInAction } from 'mobx';
 
 import { makeReactive } from '../services/make-reactive.ts';
 import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
-import {
-	type SessionCommand,
-	type SessionMode,
-	SessionStatusEnum,
-} from '../services/sessionStateMachine.ts';
+import { type SessionCommand, SessionStatusEnum } from '../services/sessionStateMachine.ts';
 import type { VisitStatus } from '../services/visitStateMachine.ts';
 
 export type SessionQuestion = {
@@ -22,11 +18,18 @@ export type SessionEvent = {
 	registrationClosesAt: string;
 	registrationGraceEndsAt?: string | null;
 	capacity: number;
-	sessionMode: SessionMode;
 	status: SessionStatusEnum;
+	/** Null for a one-off session. */
+	recurrencePatternId?: string | null;
+	lotteryDelayMinutes?: number | null;
+	autoCloseAfterMinutes?: number | null;
+	/** When the lottery draws on its own; null when it is drawn by hand. */
+	lotteryDrawsAt?: string | null;
+	/** When the session ends on its own; null when it never does. */
+	autoClosesAt?: string | null;
 };
 
-export type MarketEventTiming = Pick<SessionEvent, 'id' | 'status' | 'sessionMode'> & {
+export type MarketEventTiming = Pick<SessionEvent, 'id' | 'status'> & {
 	registrationOpensAt: Date;
 	registrationClosesAt: Date;
 };
@@ -37,21 +40,13 @@ export type SessionOverview = {
 	counts: Partial<Record<VisitStatus, number>>;
 };
 
-export type SessionSettingsInput = {
-	registrationOpensAt: string;
-	registrationClosesAt: string;
-	capacity: number;
-	sessionMode: SessionMode;
-	questions: Array<Omit<SessionQuestion, 'id'> & { id?: string }>;
-};
-
 type SessionCommandParameters = {
-	schedule_registration: undefined;
 	open_registration: undefined;
 	postpone_registration: { minutes: number };
 	update_registration: { registrationClosesAt: string; capacity: number };
 	close_registration: undefined;
 	reopen_registration: undefined;
+	postpone_lottery: { minutes: number };
 	run_lottery: undefined;
 	close_session: undefined;
 	reset_session: undefined;
@@ -179,11 +174,7 @@ export class MarketSessionStore {
 			? []
 			: [parameters: SessionCommandParameters[Command]]
 	): Promise<boolean> {
-		return this.sendMutation('POST', { action: command, ...parameters[0] });
-	}
-
-	async saveSettings(settings: SessionSettingsInput): Promise<boolean> {
-		return this.sendMutation('PUT', settings);
+		return this.sendMutation({ action: command, ...parameters[0] });
 	}
 
 	/** Applies a market overview returned by another endpoint, such as the demo-data loader. */
@@ -211,7 +202,7 @@ export class MarketSessionStore {
 		}
 	}
 
-	private async sendMutation(method: 'POST' | 'PUT', body: object): Promise<boolean> {
+	private async sendMutation(body: object): Promise<boolean> {
 		const revision = ++this.requestRevision;
 
 		this._pendingCommands += 1;
@@ -223,7 +214,7 @@ export class MarketSessionStore {
 			headers.set('Content-Type', 'application/json');
 
 			const response = await fetch('/api/admin/market', {
-				method,
+				method: 'POST',
 				headers,
 				body: JSON.stringify(body),
 			});

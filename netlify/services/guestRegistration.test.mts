@@ -170,7 +170,6 @@ describe('registerGuest eligibility', () => {
 				{
 					id: 'event-1',
 					status,
-					sessionMode: 'scheduled',
 					registrationOpensAt: new Date(Date.now() - 120_000),
 					registrationClosesAt: new Date(Date.now() - 60_000),
 				},
@@ -183,12 +182,11 @@ describe('registerGuest eligibility', () => {
 		},
 	);
 
-	it('rejects a self submission while the session is still in draft', async () => {
+	it('rejects a self submission before a scheduled session opens', async () => {
 		queueResult([
 			{
 				id: 'event-1',
-				status: 'draft',
-				sessionMode: 'scheduled',
+				status: 'scheduled',
 				registrationOpensAt: new Date(Date.now() + 60_000),
 				registrationClosesAt: new Date(Date.now() + 120_000),
 			},
@@ -205,7 +203,6 @@ describe('registerGuest eligibility', () => {
 			{
 				id: 'event-1',
 				status: 'scheduled',
-				sessionMode: 'scheduled',
 				registrationOpensAt: new Date(Date.now() + 60_000),
 				registrationClosesAt: new Date(Date.now() + 120_000),
 			},
@@ -221,7 +218,6 @@ describe('registerGuest eligibility', () => {
 		const graceEvent = {
 			id: 'event-1',
 			status: 'registration_closed',
-			sessionMode: 'scheduled',
 			registrationOpensAt: new Date(Date.now() - 120_000),
 			registrationClosesAt: new Date(Date.now() - 10_000),
 			registrationGraceEndsAt: new Date(Date.now() + 20_000),
@@ -243,7 +239,6 @@ describe('registerGuest eligibility', () => {
 			{
 				id: 'event-1',
 				status: 'registration_closed',
-				sessionMode: 'scheduled',
 				registrationOpensAt: new Date(Date.now() - 120_000),
 				registrationClosesAt: new Date(Date.now() - 60_000),
 				registrationGraceEndsAt: new Date(Date.now() - 30_000),
@@ -260,7 +255,6 @@ describe('registerGuest eligibility', () => {
 			{
 				id: 'event-1',
 				status: 'registration_open',
-				sessionMode: 'scheduled',
 				registrationOpensAt: new Date(Date.now() - 60_000),
 				registrationClosesAt: new Date(Date.now() + 60_000),
 			},
@@ -282,7 +276,6 @@ describe('registerGuest eligibility', () => {
 			{
 				id: 'event-1',
 				status: 'registration_open',
-				sessionMode: 'scheduled',
 				registrationOpensAt: new Date(Date.now() - 60_000),
 				registrationClosesAt: new Date(Date.now() + 60_000),
 			},
@@ -304,7 +297,6 @@ describe('registerGuest happy paths', () => {
 	const openEvent = {
 		id: 'event-1',
 		status: 'registration_open',
-		sessionMode: 'scheduled',
 		registrationOpensAt: new Date(Date.now() - 60_000),
 		registrationClosesAt: new Date(Date.now() + 60_000),
 	};

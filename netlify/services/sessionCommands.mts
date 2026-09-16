@@ -1,4 +1,4 @@
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
@@ -7,15 +7,14 @@ import { SessionTimeline } from '../../src/models/session-timeline.js';
 import {
 	canRunSessionCommand,
 	sessionCommandTarget,
-	type SessionStatus,
 } from '../../src/services/sessionStateMachine.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import { scheduleRegistrationClose } from './marketLifecycleEvents.mjs';
 import type { ActionResult, MarketEventRow } from './marketSession.mjs';
 import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
+import { endSession } from './sessionEnding.mjs';
 import { capacitySchema, timestampSchema } from './sessionInput.mjs';
-import { resolveOutstandingVisits } from './visitQueue.mjs';
 
 /** What a worker can still change once registration is open: how long, and for how many. */
 const registrationOverrideSchema = z.object({
@@ -30,36 +29,16 @@ export function parseRegistrationOverride(value: unknown) {
 /** A scheduled session can slip by up to a day; anything longer should be rescheduled instead. */
 const postponementSchema = z.object({ minutes: z.coerce.number().int().min(1).max(1440) });
 
-async function transitionEvent(event: MarketEventRow, from: SessionStatus, to: SessionStatus) {
-	if (event.status !== from) {
-		return false;
-	}
-	const [updated] = await tracedQuery('market_session.transition', () =>
-		db
-			.update(marketEvents)
-			.set({ status: to })
-			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, from)))
-			.returning({ id: marketEvents.id }),
-	);
-
-	return Boolean(updated);
-}
-
 export async function resetSession(event: MarketEventRow): Promise<ActionResult> {
-	const target = sessionCommandTarget('reset_session');
-
-	if (!target || !canRunSessionCommand(event.status, 'reset_session', event.sessionMode)) {
+	if (!canRunSessionCommand(event.status, 'reset_session')) {
 		return { ok: false, status: 409, error: 'The current session could not be reset.' };
 	}
-	const [reset] = await tracedQuery('market_session.reset', () =>
-		db
-			.update(marketEvents)
-			.set({ status: target })
-			.where(and(eq(marketEvents.id, event.id), ne(marketEvents.status, 'ended')))
-			.returning({ id: marketEvents.id }),
+
+	const { ended } = await tracedQuery('market_session.reset', () =>
+		db.transaction((tx) => endSession(tx, event, 'reset')),
 	);
 
-	if (!reset) {
+	if (!ended) {
 		return { ok: false, status: 409, error: 'The current session could not be reset.' };
 	}
 
@@ -73,7 +52,7 @@ export async function updateRegistration(
 	const override = parseRegistrationOverride(body);
 
 	if (
-		!canRunSessionCommand(event.status, 'update_registration', event.sessionMode) ||
+		!canRunSessionCommand(event.status, 'update_registration') ||
 		!override ||
 		override.registrationClosesAt < event.registrationClosesAt ||
 		override.registrationClosesAt <= event.registrationOpensAt
@@ -101,40 +80,13 @@ export async function updateRegistration(
 	return { ok: true };
 }
 
-export async function scheduleRegistration(event: MarketEventRow): Promise<ActionResult> {
-	const target = sessionCommandTarget('schedule_registration');
-
-	if (
-		!target ||
-		!canRunSessionCommand(event.status, 'schedule_registration', event.sessionMode) ||
-		event.registrationOpensAt <= new Date()
-	) {
-		return { ok: false, status: 409, error: 'Only a future scheduled session can be scheduled.' };
-	}
-
-	if (!(await transitionEvent(event, event.status, target))) {
-		return {
-			ok: false,
-			status: 409,
-			error: 'That session transition is not allowed from the current state.',
-		};
-	}
-
-	await scheduleRegistrationClose(event);
-
-	return { ok: true };
-}
-
 export async function postponeRegistration(
 	event: MarketEventRow,
 	body: unknown,
 ): Promise<ActionResult> {
 	const postponement = postponementSchema.safeParse(body);
 
-	if (
-		!canRunSessionCommand(event.status, 'postpone_registration', event.sessionMode) ||
-		!postponement.success
-	) {
+	if (!canRunSessionCommand(event.status, 'postpone_registration') || !postponement.success) {
 		return {
 			ok: false,
 			status: 409,
@@ -165,7 +117,7 @@ export async function postponeRegistration(
 export async function openRegistration(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('open_registration');
 
-	if (!target || !canRunSessionCommand(event.status, 'open_registration', event.sessionMode)) {
+	if (!target || !canRunSessionCommand(event.status, 'open_registration')) {
 		return {
 			ok: false,
 			status: 409,
@@ -183,9 +135,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 		db
 			.update(marketEvents)
 			.set({ status: target, registrationGraceEndsAt: null, ...window })
-			.where(
-				and(eq(marketEvents.id, event.id), inArray(marketEvents.status, ['draft', 'scheduled'])),
-			)
+			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
 			.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt }),
 	);
 
@@ -205,7 +155,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 export async function reopenRegistration(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('reopen_registration');
 
-	if (!target || !canRunSessionCommand(event.status, 'reopen_registration', event.sessionMode)) {
+	if (!target || !canRunSessionCommand(event.status, 'reopen_registration')) {
 		return {
 			ok: false,
 			status: 409,
@@ -240,35 +190,19 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 }
 
 export async function closeSession(event: MarketEventRow): Promise<ActionResult> {
-	const target = sessionCommandTarget('close_session');
-
-	if (!target || !canRunSessionCommand(event.status, 'close_session', event.sessionMode)) {
+	if (!canRunSessionCommand(event.status, 'close_session')) {
 		return {
 			ok: false,
 			status: 409,
 			error: 'That session transition is not allowed from the current state.',
 		};
 	}
-	// Guests still waiting or called are resolved in the same transaction as the transition, so
-	// ending a session never leaves someone in a status that implies service is still coming.
-	const closed = await tracedQuery('market_session.close_session', () =>
-		db.transaction(async (tx) => {
-			const [updated] = await tx
-				.update(marketEvents)
-				.set({ status: target })
-				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
-				.returning({ id: marketEvents.id });
 
-			if (!updated) {
-				return false;
-			}
-			await resolveOutstandingVisits(tx, event.id);
-
-			return true;
-		}),
+	const { ended } = await tracedQuery('market_session.close_session', () =>
+		db.transaction((tx) => endSession(tx, event, 'close')),
 	);
 
-	if (!closed) {
+	if (!ended) {
 		return {
 			ok: false,
 			status: 409,
@@ -282,7 +216,7 @@ export async function closeSession(event: MarketEventRow): Promise<ActionResult>
 export async function closeRegistration(event: MarketEventRow): Promise<ActionResult> {
 	const target = sessionCommandTarget('close_registration');
 
-	if (!target || !canRunSessionCommand(event.status, 'close_registration', event.sessionMode)) {
+	if (!target || !canRunSessionCommand(event.status, 'close_registration')) {
 		return {
 			ok: false,
 			status: 409,

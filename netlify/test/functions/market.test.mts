@@ -71,25 +71,11 @@ describe('market handler GET ?view=history (requires Auth0)', () => {
 	});
 });
 
-describe('market handler PUT (requires Auth0)', () => {
-	it('returns the requirePermission response when unauthorized, without parsing the body', async () => {
-		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
-
-		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
-
+describe('market handler PUT', () => {
+	it('is no longer offered: sessions are created from the schedule', async () => {
 		const response = await handler(request('PUT', { body: { capacity: 10 } }));
 
-		expect(response.status).toBe(401);
-		await expect(response.json()).resolves.toEqual({ error: 'Authorization required.' });
-		expect(response.headers.get('Cache-Control')).toBe('no-store');
-	});
-
-	it('validates settings once authorized', async () => {
-		vi.mocked(requirePermission).mockResolvedValueOnce(null);
-
-		const response = await handler(request('PUT', { body: { capacity: -1 } }));
-
-		expect(response.status).toBe(400);
+		expect(response.status).toBe(405);
 		expect(db.select).not.toHaveBeenCalled();
 	});
 });

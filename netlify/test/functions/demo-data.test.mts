@@ -96,7 +96,7 @@ describe('POST /api/admin/demo-data', () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		vi.mocked(demoDataToolsEnabled).mockReturnValueOnce(false);
 
-		const response = await handler(request('POST', { body: { stage: 'draft' } }));
+		const response = await handler(request('POST', { body: { stage: 'scheduled' } }));
 
 		expect(response.status).toBe(404);
 		expect(loadScenario).not.toHaveBeenCalled();

@@ -19,10 +19,13 @@ import type { SessionCommand } from '../services/sessionStateMachine.ts';
 import type { VisitCommand } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
 import { DemoStore } from './demo.store';
-import type { SessionSettingsInput, MarketSessionStore } from './market-session.store.ts';
+import type { MarketSessionStore } from './market-session.store.ts';
 
 /** The session commands the dashboard offers as one-click actions. */
-export type MarketAction = Exclude<SessionCommand, 'postpone_registration' | 'update_registration'>;
+export type MarketAction = Exclude<
+	SessionCommand,
+	'postpone_registration' | 'update_registration' | 'postpone_lottery'
+>;
 
 /** A phone claim code on screen, with the name of the guest it is for. */
 export type GuestClaim = GuestClaimCode & { guestName: string };
@@ -153,18 +156,6 @@ export class AdminStore {
 		runInAction(() => (this._history = history));
 	}
 
-	async saveSettings(settings: SessionSettingsInput): Promise<boolean> {
-		return this.run(async () => {
-			if (!(await this.session.saveSettings(settings))) {
-				throw new Error('save');
-			}
-
-			runInAction(() => (this._feedback = { kind: 'saved' }));
-
-			return true;
-		}, false);
-	}
-
 	async runMarketAction(action: MarketAction): Promise<void> {
 		await this.run(async () => {
 			if (!(await this.session.sendCommand(action))) {
@@ -183,6 +174,19 @@ export class AdminStore {
 	async postponeRegistration(minutes: number): Promise<boolean> {
 		return this.run(async () => {
 			if (!(await this.session.sendCommand('postpone_registration', { minutes }))) {
+				throw new Error('postpone');
+			}
+
+			runInAction(() => (this._feedback = { kind: 'session-updated' }));
+
+			return true;
+		}, false);
+	}
+
+	/** Pushes an automatic lottery draw back by a few minutes. */
+	async postponeLottery(minutes: number): Promise<boolean> {
+		return this.run(async () => {
+			if (!(await this.session.sendCommand('postpone_lottery', { minutes }))) {
 				throw new Error('postpone');
 			}
 
