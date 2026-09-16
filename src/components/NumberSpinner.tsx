@@ -1,6 +1,6 @@
 import { NumberField } from '@base-ui/react/number-field';
 import styled from '@emotion/styled';
-import { Button, FormLabel, OutlinedInput } from '@mui/material';
+import { Button, FormLabel, IconButton, InputAdornment, OutlinedInput } from '@mui/material';
 import { useId } from 'react';
 
 export type NumberSpinnerProps = {
@@ -10,7 +10,16 @@ export type NumberSpinnerProps = {
 	/** The lowest count the buttons will step down to. Typed entry is clamped to it as well. */
 	min?: number;
 	max?: number;
+	/** How far one press of a step button moves the value. Defaults to 1. */
+	step?: number;
 	required?: boolean;
+	/** Shown in the input while it is empty, e.g. what leaving an optional count out means. */
+	placeholder?: string;
+	/**
+	 * Accessible name for a button that empties the field. The button is offered only when this is
+	 * set, for a count that may be left out, and only while the field has a value to clear.
+	 */
+	clearLabel?: string;
 	/** Optional helper text shown under the label, e.g. clarifying what to include in the count. */
 	hint?: string;
 	/** Accessible name for the step-down button, which shows only a glyph. */
@@ -99,6 +108,18 @@ function StepGlyph({ direction }: { direction: 'up' | 'down' }) {
 	);
 }
 
+/** Material's `Clear` glyph, inlined for the same reason. */
+function ClearGlyph() {
+	return (
+		<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+			<path
+				fill="currentColor"
+				d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+			/>
+		</svg>
+	);
+}
+
 /** The form keeps an unanswered count as `''`, where Base UI spells the same absence `null`. */
 function toNumericValue(value: number | string): number | null {
 	if (value === '') {
@@ -125,7 +146,10 @@ export function NumberSpinner({
 	onChange,
 	min,
 	max,
+	step,
 	required = false,
+	placeholder,
+	clearLabel,
 	hint,
 	decrementLabel,
 	incrementLabel,
@@ -138,6 +162,7 @@ export function NumberSpinner({
 			value={toNumericValue(value)}
 			min={min}
 			max={max}
+			step={step}
 			required={required}
 			// Reported back in the form's own vocabulary, so the store and `GuestFormState` keep
 			// holding `number | ''` and neither has to learn about Base UI.
@@ -180,6 +205,21 @@ export function NumberSpinner({
 							onFocus={props.onFocus}
 							onBlur={props.onBlur}
 							onChange={props.onChange}
+							placeholder={placeholder}
+							endAdornment={
+								clearLabel && value !== '' ? (
+									<InputAdornment position="end">
+										<IconButton
+											aria-label={clearLabel}
+											edge="end"
+											size="small"
+											onClick={() => onChange('')}
+										>
+											<ClearGlyph />
+										</IconButton>
+									</InputAdornment>
+								) : undefined
+							}
 							slotProps={{ input: props }}
 						/>
 					)}

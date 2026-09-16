@@ -1,6 +1,8 @@
 import FormLabel from '@mui/material/FormLabel';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';
 import { createTheme } from '@mui/material/styles';
+// Types only: lets the theme style the date pickers without pulling them into the initial chunk.
+import type {} from '@mui/x-date-pickers/themeAugmentation';
 
 /**
  * The keyboard focus ring `base.css` puts on every bare control, reapplied to the MUI wrapper.
@@ -13,6 +15,28 @@ import { createTheme } from '@mui/material/styles';
 const focusRing = {
 	outline: '3px solid var(--color-focus)',
 	outlineOffset: '2px',
+} as const;
+
+const outlinedRoot = {
+	color: 'var(--color-text)',
+	backgroundColor: 'var(--color-background)',
+	borderRadius: 'var(--radius-md)',
+	fontFamily: 'var(--font-body)',
+	fontSize: 16,
+	fontWeight: 400,
+	'&:has(:focus-visible)': focusRing,
+} as const;
+
+const steadyOutline = { borderWidth: 2, borderColor: 'var(--color-border)' } as const;
+
+const notchedOutline = {
+	// The label sits above the control, never inside its border, so the notch MUI cuts for a
+	// floating one is closed up and the outline goes back to hugging the field. Left as MUI has it,
+	// the border box stands 5px taller than the 58px the design system specifies, and it eats the
+	// gap under the label to do it.
+	top: 0,
+	'& legend': { display: 'none' },
+	...steadyOutline,
 } as const;
 
 /**
@@ -134,32 +158,14 @@ export const appTheme = createTheme({
 		MuiOutlinedInput: {
 			styleOverrides: {
 				root: {
-					color: 'var(--color-text)',
-					backgroundColor: 'var(--color-background)',
-					borderRadius: 'var(--radius-md)',
-					fontFamily: 'var(--font-body)',
-					fontSize: 16,
-					fontWeight: 400,
-					'&:has(:focus-visible)': focusRing,
+					...outlinedRoot,
 					// The outline keeps one weight and color throughout: focus is signalled by the ring
 					// above, so MUI's hover and focus border colors would only compete with it.
 					[`&:hover .${outlinedInputClasses.notchedOutline},
-						&.Mui-focused .${outlinedInputClasses.notchedOutline}`]: {
-						borderWidth: 2,
-						borderColor: 'var(--color-border)',
-					},
+						&.Mui-focused .${outlinedInputClasses.notchedOutline}`]: steadyOutline,
 					'&.MuiInputBase-multiline': { padding: '14px 16px' },
 				},
-				notchedOutline: {
-					// The label sits above the control, never inside its border, so the notch MUI cuts
-					// for a floating one is closed up and the outline goes back to hugging the field.
-					// Left as MUI has it, the border box stands 5px taller than the 58px the design
-					// system specifies, and it eats the gap under the label to do it.
-					top: 0,
-					'& legend': { display: 'none' },
-					borderWidth: 2,
-					borderColor: 'var(--color-border)',
-				},
+				notchedOutline,
 				input: {
 					height: 58,
 					boxSizing: 'border-box',
@@ -168,6 +174,34 @@ export const appTheme = createTheme({
 					'&:focus-visible': { outline: 0 },
 					'&::placeholder': { color: 'var(--color-placeholder)', opacity: 1 },
 					'&.MuiInputBase-inputMultiline': { height: 'auto', padding: 0 },
+				},
+			},
+		},
+		// The date and time pickers draw their own field rather than a `TextField`, so the same label
+		// placement and outline are applied to it separately.
+		MuiPickersTextField: {
+			defaultProps: {
+				fullWidth: true,
+				slots: { inputLabel: FormLabel },
+				slotProps: { inputLabel: { required: false } },
+			},
+		},
+		MuiPickersOutlinedInput: {
+			styleOverrides: {
+				root: {
+					...outlinedRoot,
+					// Spelled out rather than imported from the pickers' class map, which would put picker
+					// code in the initial chunk that this theme ships in.
+					[`&:hover .MuiPickersOutlinedInput-notchedOutline,
+						&.Mui-focused .MuiPickersOutlinedInput-notchedOutline`]: steadyOutline,
+				},
+				notchedOutline,
+				sectionsContainer: {
+					display: 'flex',
+					alignItems: 'center',
+					height: 58,
+					boxSizing: 'border-box',
+					padding: '0 16px',
 				},
 			},
 		},

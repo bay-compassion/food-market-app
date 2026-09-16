@@ -139,7 +139,24 @@ export const AddOneOffOpensTheForm: Story = {
 		const dialog = within(await within(document.body).findByRole('dialog'));
 
 		await expect(dialog.getByText(t.scheduleOneOffDialogTitle)).toBeInTheDocument();
-		await expect(dialog.getByLabelText(t.scheduleOpensAt)).toHaveValue('10:30');
+		// The pickers keep their formatted value on a hidden input behind the editable sections.
+		await expect(dialog.getByDisplayValue('10:30 AM')).toBeInTheDocument();
+		await expect(dialog.getByRole('textbox', { name: t.scheduleDuration })).toHaveValue('60');
+	},
+};
+
+/** An optional count offers a clear button, and clearing it leaves the field showing what empty means. */
+export const ClearingAutoCloseLeavesItEmpty: Story = {
+	play: async ({ canvas }) => {
+		await userEvent.click(await canvas.findByRole('button', { name: t.scheduleAddOneOff }));
+
+		const dialog = within(await within(document.body).findByRole('dialog'));
+
+		await userEvent.click(dialog.getByRole('button', { name: t.scheduleClearAutoClose }));
+
+		await expect(dialog.getByPlaceholderText(t.scheduleAutoCloseNever)).toHaveValue('');
+		await expect(dialog.queryByRole('button', { name: t.scheduleClearAutoClose })).toBeNull();
+		await expect(dialog.getByRole('button', { name: t.scheduleSave })).toBeEnabled();
 	},
 };
 

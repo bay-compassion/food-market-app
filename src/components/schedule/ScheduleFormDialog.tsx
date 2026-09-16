@@ -1,9 +1,12 @@
 import styled from '@emotion/styled';
 import { Button } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateTime } from 'luxon';
 import { useId, useState, type FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { SessionTemplate } from '../../services/schedule-payload';
+import { useScheduleStore } from '../../stores/react/use-schedule-store';
 import { QuestionListEditor } from '../admin/QuestionListEditor';
 import type { Question } from '../admin/types';
 import { Dialog } from '../ui/Dialog';
@@ -24,10 +27,12 @@ const Form = styled.form`
 	display: grid;
 	gap: 15px;
 
-	small {
-		color: var(--color-text-subtle);
-		font-family: var(--font-body);
-		font-weight: 400;
+	/* The dashboard's stylesheet outlines every bare input; an MUI input's wrapper draws its own. */
+	.MuiInputBase-input {
+		min-height: 0;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
 	}
 `;
 
@@ -46,13 +51,22 @@ export function ScheduleFormDialog({
 }: ScheduleFormDialogProps) {
 	const t = adminTranslations.en;
 	const formId = useId();
-	const [date, setDate] = useState(initial.date);
-	const [draft, setDraft] = useState(() => draftFrom(initial));
+	// Dates and times are the market's, whatever time zone the phone is set to.
+	const timeZone = useScheduleStore().location?.timeZone ?? 'default';
+	const [date, setDate] = useState<DateTime | null>(() =>
+		DateTime.fromISO(initial.date, { zone: timeZone }),
+	);
+	const [draft, setDraft] = useState(() => draftFrom(initial, timeZone));
 	const [questions, setQuestions] = useState<Question[]>(initial.questions);
+	const template = templateFrom(draft);
+	const localDate = date?.isValid ? date.toISODate() : null;
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		onSubmit({ ...templateFrom(draft), date, questions });
+
+		if (template && localDate) {
+			onSubmit({ ...template, date: localDate, questions });
+		}
 	}
 
 	return (
@@ -66,23 +80,15 @@ export function ScheduleFormDialog({
 					<Button type="button" variant="outlined" onClick={onClose}>
 						{t.cancel}
 					</Button>
-					<Button type="submit" form={formId} disabled={busy}>
+					<Button type="submit" form={formId} disabled={busy || !template || !localDate}>
 						{t.scheduleSave}
 					</Button>
 				</>
 			}
 		>
 			<Form id={formId} className="admin-dashboard" onSubmit={handleSubmit}>
-				<label>
-					<span>{dateLabel}</span>
-					<input
-						type="date"
-						required
-						value={date}
-						onChange={(event) => setDate(event.target.value)}
-					/>
-				</label>
-				<SessionTemplateFields draft={draft} onChange={setDraft} />
+				<DatePicker label={dateLabel} timezone={timeZone} value={date} onChange={setDate} />
+				<SessionTemplateFields draft={draft} timeZone={timeZone} onChange={setDraft} />
 				<QuestionListEditor questions={questions} onChange={setQuestions} />
 			</Form>
 		</Dialog>
