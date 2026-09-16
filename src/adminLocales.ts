@@ -124,6 +124,12 @@ export interface AdminTranslation {
 	scheduleLotteryDelayHelp: string;
 	scheduleAutoClose: string;
 	scheduleAutoCloseHelp: string;
+	scheduleLotteryManual: string;
+	scheduleAutoCloseNever: string;
+	scheduleClearLotteryDelay: string;
+	scheduleClearAutoClose: string;
+	scheduleDecrease: string;
+	scheduleIncrease: string;
 	scheduleSave: string;
 	scheduleLoadError: string;
 	scheduleConfirmDeletePattern: string;
@@ -391,9 +397,15 @@ export const adminTranslations = {
 		scheduleOpensAt: 'Registration opens',
 		scheduleDuration: 'Registration open for (minutes)',
 		scheduleLotteryDelay: 'Draw the lottery automatically (minutes after registration closes)',
-		scheduleLotteryDelayHelp: 'Leave empty to draw the lottery by hand.',
+		scheduleLotteryDelayHelp: 'Clear it to draw the lottery by hand.',
 		scheduleAutoClose: 'Close the session automatically (hours after registration opens)',
-		scheduleAutoCloseHelp: 'Leave empty to never close it automatically.',
+		scheduleAutoCloseHelp: 'Clear it to never close the session automatically.',
+		scheduleLotteryManual: 'By hand',
+		scheduleAutoCloseNever: 'Never',
+		scheduleClearLotteryDelay: 'Clear the automatic lottery draw',
+		scheduleClearAutoClose: 'Clear the automatic close',
+		scheduleDecrease: 'Decrease',
+		scheduleIncrease: 'Increase',
 		scheduleSave: 'Save',
 		scheduleLoadError: 'The schedule could not be loaded.',
 		scheduleConfirmDeletePattern: 'Delete the recurring pattern?',
