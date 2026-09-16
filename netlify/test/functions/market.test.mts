@@ -7,7 +7,11 @@ vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 vi.mock('../../services/notificationDispatch.mjs', () => ({
 	requestNotificationDispatch: vi.fn(),
 }));
-vi.mock('../../services/marketLifecycleEvents.mjs', () => ({ scheduleRegistrationClose: vi.fn() }));
+vi.mock('../../services/sessionTimers.mjs', () => ({
+	scheduleSessionTimers: vi.fn(),
+	scheduleSessionTimersQuietly: vi.fn(),
+	upcomingSessionTimers: ['registration_close', 'auto_close'],
+}));
 
 import { requirePermission } from '../../lib/auth.mjs';
 import handler from '../../routes/admin/market.mjs';

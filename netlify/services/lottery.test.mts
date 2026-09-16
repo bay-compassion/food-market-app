@@ -6,7 +6,11 @@ import { baseEvent } from '../test/marketEventFixture.mjs';
 vi.mock('../../db/index.mjs', () => ({ db }));
 vi.mock('./pushNotifications.mjs', () => ({ notificationsEnabled: vi.fn(() => true) }));
 vi.mock('./notificationDispatch.mjs', () => ({ requestNotificationDispatch: vi.fn() }));
-vi.mock('./marketLifecycleEvents.mjs', () => ({ scheduleRegistrationClose: vi.fn() }));
+vi.mock('./sessionTimers.mjs', () => ({
+	scheduleSessionTimers: vi.fn(),
+	scheduleSessionTimersQuietly: vi.fn(),
+	upcomingSessionTimers: ['registration_close', 'auto_close'],
+}));
 
 import { runLottery, weightedShuffle } from './lottery.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';

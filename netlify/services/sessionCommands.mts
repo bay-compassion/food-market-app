@@ -9,12 +9,12 @@ import {
 	sessionCommandTarget,
 } from '../../src/services/sessionStateMachine.js';
 import { tracedQuery } from '../lib/sentry.mjs';
-import { scheduleRegistrationClose } from './marketLifecycleEvents.mjs';
 import type { ActionResult, MarketEventRow } from './marketSession.mjs';
 import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
 import { endSession } from './sessionEnding.mjs';
 import { capacitySchema, timestampSchema } from './sessionInput.mjs';
+import { scheduleSessionTimers, upcomingSessionTimers } from './sessionTimers.mjs';
 
 /** What a worker can still change once registration is open: how long, and for how many. */
 const registrationOverrideSchema = z.object({
@@ -59,12 +59,22 @@ export async function updateRegistration(
 	) {
 		return { ok: false, status: 400, error: 'Please provide valid registration overrides.' };
 	}
+
+	const autoClosesAt = new SessionTimeline(event).autoClosesAt;
+
+	if (autoClosesAt && override.registrationClosesAt >= autoClosesAt) {
+		return {
+			ok: false,
+			status: 400,
+			error: 'Registration cannot close after the session closes automatically.',
+		};
+	}
 	const [updated] = await tracedQuery('market_session.update_registration', () =>
 		db
 			.update(marketEvents)
 			.set(override)
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_open')))
-			.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt }),
+			.returning(),
 	);
 
 	if (!updated) {
@@ -75,7 +85,7 @@ export async function updateRegistration(
 		};
 	}
 
-	await scheduleRegistrationClose(updated);
+	await scheduleSessionTimers(updated, ['registration_close']);
 
 	return { ok: true };
 }
@@ -98,7 +108,7 @@ export async function postponeRegistration(
 			.update(marketEvents)
 			.set(new SessionTimeline(event).postponedWindow(postponement.data.minutes))
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
-			.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt }),
+			.returning(),
 	);
 
 	if (!updated) {
@@ -109,7 +119,7 @@ export async function postponeRegistration(
 		};
 	}
 
-	await scheduleRegistrationClose(updated);
+	await scheduleSessionTimers(updated, upcomingSessionTimers);
 
 	return { ok: true };
 }
@@ -136,7 +146,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 			.update(marketEvents)
 			.set({ status: target, registrationGraceEndsAt: null, ...window })
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'scheduled')))
-			.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt }),
+			.returning(),
 	);
 
 	if (!updated) {
@@ -147,7 +157,7 @@ export async function openRegistration(event: MarketEventRow): Promise<ActionRes
 		};
 	}
 
-	await scheduleRegistrationClose(updated);
+	await scheduleSessionTimers(updated, upcomingSessionTimers);
 
 	return { ok: true };
 }
@@ -173,7 +183,7 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 					event.registrationClosesAt > minimumClose ? event.registrationClosesAt : minimumClose,
 			})
 			.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, 'registration_closed')))
-			.returning({ id: marketEvents.id, registrationClosesAt: marketEvents.registrationClosesAt }),
+			.returning(),
 	);
 
 	if (!updated) {
@@ -184,7 +194,7 @@ export async function reopenRegistration(event: MarketEventRow): Promise<ActionR
 		};
 	}
 
-	await scheduleRegistrationClose(updated);
+	await scheduleSessionTimers(updated, ['registration_close']);
 
 	return { ok: true };
 }
@@ -198,7 +208,7 @@ export async function closeSession(event: MarketEventRow): Promise<ActionResult>
 		};
 	}
 
-	const { ended } = await tracedQuery('market_session.close_session', () =>
+	const { ended, nextSession } = await tracedQuery('market_session.close_session', () =>
 		db.transaction((tx) => endSession(tx, event, 'close')),
 	);
 
@@ -208,6 +218,10 @@ export async function closeSession(event: MarketEventRow): Promise<ActionResult>
 			status: 409,
 			error: 'That session transition is not allowed from the current state.',
 		};
+	}
+
+	if (nextSession) {
+		await scheduleSessionTimers(nextSession, upcomingSessionTimers);
 	}
 
 	return { ok: true };
@@ -230,10 +244,10 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 				.update(marketEvents)
 				.set({ status: target, registrationGraceEndsAt })
 				.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, event.status)))
-				.returning({ id: marketEvents.id });
+				.returning();
 
 			if (!updated) {
-				return false;
+				return null;
 			}
 
 			if (notificationsEnabled()) {
@@ -250,7 +264,7 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 				);
 			}
 
-			return true;
+			return updated;
 		}),
 	);
 
@@ -261,6 +275,59 @@ export async function closeRegistration(event: MarketEventRow): Promise<ActionRe
 			error: 'That session transition is not allowed from the current state.',
 		};
 	}
+
+	await scheduleSessionTimers(closed, ['lottery_draw']);
+
+	return { ok: true };
+}
+
+/** How far a worker can push back an automatic draw in one go. */
+const lotteryPostponementSchema = z.object({ minutes: z.coerce.number().int().min(1).max(10) });
+
+/**
+ * Pushes an automatic lottery draw back by a few minutes, while it is still pending. The delay is
+ * stored as an offset, so this adds to it, and the draw timer is re-armed at the new time — the
+ * one already queued finds its time has moved and does nothing.
+ */
+export async function postponeLottery(event: MarketEventRow, body: unknown): Promise<ActionResult> {
+	const postponement = lotteryPostponementSchema.safeParse(body);
+	const delay = event.lotteryDelayMinutes;
+
+	if (
+		!canRunSessionCommand(event.status, 'postpone_lottery') ||
+		delay == null ||
+		!postponement.success
+	) {
+		return {
+			ok: false,
+			status: 409,
+			error: 'Only a pending automatic draw can be postponed, by 1 to 10 minutes.',
+		};
+	}
+
+	const [updated] = await tracedQuery('market_session.postpone_lottery', () =>
+		db
+			.update(marketEvents)
+			.set({ lotteryDelayMinutes: delay + postponement.data.minutes })
+			.where(
+				and(
+					eq(marketEvents.id, event.id),
+					eq(marketEvents.status, 'lottery_pending'),
+					eq(marketEvents.lotteryDelayMinutes, delay),
+				),
+			)
+			.returning(),
+	);
+
+	if (!updated) {
+		return {
+			ok: false,
+			status: 409,
+			error: 'That session transition is not allowed from the current state.',
+		};
+	}
+
+	await scheduleSessionTimers(updated, ['lottery_draw']);
 
 	return { ok: true };
 }
