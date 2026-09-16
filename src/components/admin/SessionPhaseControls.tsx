@@ -4,11 +4,12 @@ import type { FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { CurrentSessionState, SessionCommand } from '../../services/sessionStateMachine';
-import { useRootStore } from '../../stores/react/store-context';
+import { NumberSpinner } from '../NumberSpinner';
 import { CapacityOverrideForm } from './CapacityOverrideForm';
 import { LotteryPendingCard } from './LotteryPendingCard';
 import { SessionActionCard } from './SessionActionCard';
 import { SessionOverrideCard } from './SessionOverrideCard';
+import { SessionTransitionTimer } from './SessionTransitionTimer';
 import type { AdminMarketEvent } from './types';
 
 export type SessionPhaseControlsProps = {
@@ -43,14 +44,6 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 	onNavigateSchedule,
 }: SessionPhaseControlsProps) {
 	const t = adminTranslations.en;
-	const { translations } = useRootStore();
-
-	function formatEventDate(value: string) {
-		return new Intl.DateTimeFormat(translations.locale, {
-			dateStyle: 'medium',
-			timeStyle: 'short',
-		}).format(new Date(value));
-	}
 
 	function submitting(handler: () => void) {
 		return (formEvent: FormEvent<HTMLFormElement>) => {
@@ -69,11 +62,6 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 				</SessionActionCard>
 			) : sessionState === 'scheduled' ? (
 				<SessionOverrideCard
-					description={
-						<>
-							{t.scheduledFor} {formatEventDate(event!.registrationOpensAt)}
-						</>
-					}
 					action={
 						<Button type="button" disabled={busy} onClick={() => onRun('open_registration')}>
 							{t.openRegistrationNow}
@@ -81,20 +69,17 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 					}
 				>
 					<form onSubmit={submitting(onPostponeRegistration)}>
-						<label>
-							<span>{t.postponeByMinutes}</span>
-							<input
-								type="number"
-								min="1"
-								max="1440"
-								step="1"
-								required
-								value={postponementMinutes}
-								onChange={(changeEvent) =>
-									onPostponementMinutesChange(Number(changeEvent.target.value))
-								}
-							/>
-						</label>
+						<NumberSpinner
+							disabled={busy}
+							label={t.postponeByMinutes}
+							value={postponementMinutes}
+							min={1}
+							max={1440}
+							required
+							onChange={(value) => onPostponementMinutesChange(Number(value))}
+							decrementLabel={t.decreaseNumber}
+							incrementLabel={t.increaseNumber}
+						/>
 						<Button type="submit" variant="outlined" disabled={busy}>
 							{t.postponeRegistration}
 						</Button>
@@ -102,8 +87,6 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 				</SessionOverrideCard>
 			) : sessionState === 'registration_open' ? (
 				<SessionOverrideCard
-					title={t.registrationOverrides}
-					description={t.overridesHelp}
 					action={
 						<Button type="button" disabled={busy} onClick={() => onRun('close_registration')}>
 							{t.closeRegistration}
@@ -111,26 +94,17 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 					}
 				>
 					<form onSubmit={submitting(onExtendRegistration)}>
-						<label>
-							<span>{t.extendRegistrationMinutes}</span>
-							<input
-								type="number"
-								min="1"
-								max="1440"
-								step="1"
-								list="registration-extension-options"
-								required
-								value={extensionMinutes}
-								onChange={(changeEvent) =>
-									onExtensionMinutesChange(Number(changeEvent.target.value))
-								}
-							/>
-						</label>
-						<datalist id="registration-extension-options">
-							<option value="15" />
-							<option value="30" />
-							<option value="60" />
-						</datalist>
+						<NumberSpinner
+							disabled={busy}
+							label={t.extendRegistrationMinutes}
+							value={extensionMinutes}
+							min={1}
+							max={1440}
+							required
+							onChange={(value) => onExtensionMinutesChange(Number(value))}
+							decrementLabel={t.decreaseNumber}
+							incrementLabel={t.increaseNumber}
+						/>
 						<Button type="submit" variant="outlined" disabled={busy}>
 							{t.extendRegistration}
 						</Button>
@@ -144,6 +118,7 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 				</SessionOverrideCard>
 			) : sessionState === 'registration_closed' ? (
 				<SessionActionCard description={t.registrationClosedHelp}>
+					<SessionTransitionTimer kind="grace" />
 					<Button
 						type="button"
 						variant="outlined"
@@ -156,7 +131,7 @@ export const SessionPhaseControls = observer(function SessionPhaseControls({
 			) : sessionState === 'lottery_pending' ? (
 				<LotteryPendingCard busy={busy} onRun={onRun} />
 			) : (
-				<SessionActionCard description={t.guestList}>
+				<SessionActionCard>
 					<Button type="button" onClick={onNavigateQueue}>
 						{t.goToQueue}
 					</Button>

@@ -2,6 +2,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, visits } from '../../db/schema.mjs';
+import { SessionTimeline } from '../../src/models/session-timeline.js';
 import {
 	canRunSessionCommand,
 	sessionCommandTarget,
@@ -36,6 +37,7 @@ export function weightedShuffle<T extends { lotteryWeight: number }>(items: T[])
 export async function runLottery(
 	event: MarketEventRow,
 	shuffleFn: <T extends { lotteryWeight: number }>(items: T[]) => T[] = weightedShuffle,
+	expectedDrawAt?: string,
 ): Promise<ActionResult> {
 	if (!canRunSessionCommand(event.status, 'run_lottery')) {
 		return {
@@ -63,6 +65,13 @@ export async function runLottery(
 					.for('update');
 
 				if (!lockedEvent || lockedEvent.status !== 'lottery_pending') {
+					throw new Error('INVALID_SESSION_TRANSITION');
+				}
+
+				if (
+					expectedDrawAt &&
+					new SessionTimeline(lockedEvent).lotteryDrawsAt?.toISOString() !== expectedDrawAt
+				) {
 					throw new Error('INVALID_SESSION_TRANSITION');
 				}
 

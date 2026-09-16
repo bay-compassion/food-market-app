@@ -101,6 +101,20 @@ describe('runLottery', () => {
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
+	it('rejects an automatic draw paused before the transaction acquires the row lock', async () => {
+		// Arrange
+		const event = baseEvent({ status: 'lottery_pending', lotteryDelayMinutes: 5 });
+
+		queueResult([{ ...event, lotteryDelayMinutes: null }]);
+
+		// Act
+		const result = await runLottery(event, identity, '2026-09-26T18:35:30.000Z');
+
+		// Assert
+		expect(result).toMatchObject({ ok: false, status: 409 });
+		expect(db.update).not.toHaveBeenCalled();
+	});
+
 	it('selects up to capacity and marks the remainder not_placed, in shuffle order', async () => {
 		const event = baseEvent({ status: 'lottery_pending', capacity: 2 });
 

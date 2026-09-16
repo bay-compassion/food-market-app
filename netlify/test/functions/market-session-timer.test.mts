@@ -126,7 +126,7 @@ describe('market session timer workload', () => {
 		await runSessionTimer(timerEvent('lottery_draw', dueAt), dueAt);
 
 		// Assert
-		expect(runLottery).toHaveBeenCalledWith(pending);
+		expect(runLottery).toHaveBeenCalledWith(pending, undefined, dueAt.toISOString());
 		expect(requestNotificationDispatch).toHaveBeenCalledWith({
 			marketEventId: 'event-1',
 			types: ['lottery_selected', 'lottery_not_selected'],

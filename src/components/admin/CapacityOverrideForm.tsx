@@ -2,6 +2,7 @@ import { Button } from '@mui/material';
 import { useState, type FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
+import { NumberSpinner } from '../NumberSpinner';
 
 export type CapacityOverrideFormProps = {
 	/** The session's current capacity, which the field starts from. */
@@ -26,17 +27,17 @@ export function CapacityOverrideForm({ capacity, busy, onSave }: CapacityOverrid
 
 	return (
 		<form onSubmit={handleSubmit}>
-			<label>
-				<span>{t.capacity}</span>
-				<input
-					type="number"
-					min="1"
-					max="10000"
-					required
-					value={value}
-					onChange={(changeEvent) => setValue(Number(changeEvent.target.value))}
-				/>
-			</label>
+			<NumberSpinner
+				disabled={busy}
+				label={t.capacity}
+				value={value}
+				onChange={(value) => setValue(Number(value))}
+				min={1}
+				max={10000}
+				required
+				decrementLabel={t.decreaseNumber}
+				incrementLabel={t.increaseNumber}
+			/>
 			<Button type="submit" variant="outlined" disabled={busy}>
 				{t.updateCapacity}
 			</Button>

@@ -1,6 +1,16 @@
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
 
 export interface AdminTranslation {
+	registrationScheduledPast: string;
+	registrationOpenUntil: string;
+	registrationOpenPast: string;
+	decreaseNumber: string;
+	increaseNumber: string;
+	graceCountdown: string;
+	lotteryCountdown: string;
+	transitionDue: string;
+	pauseLottery: string;
+
 	addGuest: string;
 	addQuestion: string;
 	admissionLabel: string;
@@ -92,6 +102,7 @@ export interface AdminTranslation {
 	noActiveSession: string;
 	noGuests: string;
 	noRegisteredGuests: string;
+	noCancelledGuests: string;
 	noHistory: string;
 	schedule: string;
 	scheduleIntro: string;
@@ -279,6 +290,15 @@ export interface AdminTranslation {
  */
 export const adminTranslations = {
 	en: {
+		registrationScheduledPast: 'Registration was scheduled for',
+		registrationOpenUntil: 'Registration open until',
+		registrationOpenPast: 'Registration was open until',
+		decreaseNumber: 'Decrease value',
+		increaseNumber: 'Increase value',
+		graceCountdown: 'Lottery pending in {time}',
+		lotteryCountdown: 'Automatic draw in {time}',
+		transitionDue: 'Waiting for the server to transition…',
+		pauseLottery: 'Pause automatic draw',
 		addGuest: 'Add guest',
 		addQuestion: 'Add question',
 		admissionLabel: 'How should they join?',
@@ -313,7 +333,7 @@ export const adminTranslations = {
 		cancelled: 'Cancelled',
 		callGuest: 'Call guest',
 		closeSession: 'Close session',
-		closeRegistration: 'Close registration',
+		closeRegistration: 'Close early',
 		closed: 'Registration closed',
 		confirmCloseRegistration: 'Close registration now?',
 		confirmContinue: 'Continue',
@@ -330,7 +350,7 @@ export const adminTranslations = {
 		drawn: 'Lottery drawn',
 		editSettings: 'Lottery setup',
 		error: 'Something went wrong. Please try again.',
-		extendRegistration: 'Extend registration',
+		extendRegistration: 'Extend',
 		extendRegistrationMinutes: 'Extend registration by (minutes)',
 		guestList: 'Guest list',
 		guestDatabase: 'Guest database',
@@ -367,6 +387,7 @@ export const adminTranslations = {
 		returnToQueue: 'Return to queue',
 		noActiveSession: 'Registration inactive',
 		noGuests: 'No guests found.',
+		noCancelledGuests: 'Nobody has cancelled their registration.',
 		noRegisteredGuests: 'No guests have registered for this session yet.',
 		noHistory: 'No past sessions yet.',
 		schedule: 'Schedule',
@@ -424,7 +445,7 @@ export const adminTranslations = {
 		scheduleConfirmStartNowDetails:
 			'Guests can register immediately, and the session closes automatically on its usual schedule from now.',
 		scheduleConfirmCreateNext: 'Create the next session from the recurring pattern?',
-		scheduleOpenSchedule: 'Open the schedule',
+		scheduleOpenSchedule: 'Go to Schedule',
 		lotteryDrawsAt: 'The lottery draws automatically at {time}.',
 		postponeLotteryBy: 'Postpone {minutes} min',
 		runLotteryNow: 'Run immediately',
@@ -437,7 +458,7 @@ export const adminTranslations = {
 		notPlaced: 'Not placed',
 		placedToday: 'of {count} guests placed today',
 		open: 'Registration open',
-		openRegistrationNow: 'Open registration now',
+		openRegistrationNow: 'Open Early',
 		overview: 'Today’s overview',
 		overridesHelp: 'Extend the registration window or change queue capacity.',
 		questionPlaceholder: 'Enter a question for guests',
@@ -463,7 +484,7 @@ export const adminTranslations = {
 		noWaitingGuests: 'Nobody is waiting to be called.',
 		noCalledGuests: 'Nobody has been called up yet.',
 		queueNotStarted: 'The queue opens once you run the lottery and service starts.',
-		goToQueue: 'Manage the queue',
+		goToQueue: 'Go to Queue',
 		goToCurrentSession: 'Go to the current session',
 		queuePlacement: 'Place in the queue',
 		placeNext: 'Next up',
@@ -546,7 +567,7 @@ export const adminTranslations = {
 		resetSessionHelp:
 			'Return to inactive setup. This session and its guest records will remain in history.',
 		postponeByMinutes: 'Postpone by (minutes)',
-		postponeRegistration: 'Postpone registration',
+		postponeRegistration: 'Postpone',
 		remove: 'Remove',
 		required: 'Required',
 		runLottery: 'Run lottery draw',
@@ -554,7 +575,7 @@ export const adminTranslations = {
 		saveSettings: 'Save settings',
 		saved: 'Settings saved.',
 		scheduled: 'Registration scheduled',
-		scheduledFor: 'Registration will open',
+		scheduledFor: 'Registration scheduled for',
 		serviceStarted: 'Service started',
 		sessionUpdated: 'Session updated.',
 		scaleAnswer: '1–10 scale',
@@ -568,7 +589,7 @@ export const adminTranslations = {
 		settingsHelp: 'Set the window and maximum number of guests who receive a queue spot.',
 		sessionGuests: 'Guests',
 		textAnswer: 'Written answer',
-		updateCapacity: 'Update capacity',
+		updateCapacity: 'Update',
 		waiting: 'Waiting',
 		devMode: 'Dev Mode',
 		devModeIntro:

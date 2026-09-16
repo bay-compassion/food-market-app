@@ -35,7 +35,7 @@ function Grid({ locale, busy, canExport, guests }: GuestDatabaseGridArgs) {
 }
 
 const meta = {
-	title: 'Admin/GuestDatabaseGrid',
+	title: 'Admin/Guest Database/GuestDatabaseGrid',
 	component: Grid,
 	parameters: { shell: 'admin' },
 	args: { locale: 'en', busy: false, canExport: true, guests: busyQueue },

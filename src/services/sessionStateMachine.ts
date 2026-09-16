@@ -43,6 +43,7 @@ export type SessionCommand =
 	| 'update_registration'
 	| 'close_registration'
 	| 'reopen_registration'
+	| 'pause_lottery'
 	| 'postpone_lottery'
 	| 'run_lottery'
 	| 'close_session'
@@ -54,6 +55,7 @@ const commandSources: Record<SessionCommand, SessionStatus[]> = {
 	update_registration: ['registration_open'],
 	close_registration: ['registration_open'],
 	reopen_registration: ['registration_closed'],
+	pause_lottery: ['lottery_pending'],
 	postpone_lottery: ['lottery_pending'],
 	run_lottery: ['lottery_pending'],
 	close_session: ['service_started'],

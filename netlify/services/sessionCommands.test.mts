@@ -18,6 +18,7 @@ import {
 	closeSession,
 	openRegistration,
 	postponeLottery,
+	pauseLottery,
 	postponeRegistration,
 	reopenRegistration,
 	resetSession,
@@ -250,5 +251,29 @@ describe('session timers and the scheduled lottery', () => {
 		// Assert
 		expect(result).toMatchObject({ ok: false, status: 409 });
 		expect(db.update).not.toHaveBeenCalled();
+	});
+});
+
+describe('pauseLottery', () => {
+	it('clears the automatic delay without rearming a draw', async () => {
+		vi.mocked(scheduleSessionTimers).mockClear();
+		const event = baseEvent({ status: 'lottery_pending', lotteryDelayMinutes: 5 });
+
+		queueResult([{ ...event, lotteryDelayMinutes: null }]);
+		await expect(pauseLottery(event)).resolves.toEqual({ ok: true });
+		expect(db.update).toHaveBeenCalled();
+		expect(scheduleSessionTimers).not.toHaveBeenCalled();
+	});
+	it.each([
+		{ status: 'service_started' as const, lotteryDelayMinutes: 5 },
+		{ status: 'lottery_pending' as const, lotteryDelayMinutes: null },
+	])('rejects a draw that cannot be paused: %o', async (state) => {
+		await expect(pauseLottery(baseEvent(state))).resolves.toMatchObject({ ok: false, status: 409 });
+	});
+	it('rejects a concurrent transition', async () => {
+		queueResult([]);
+		await expect(
+			pauseLottery(baseEvent({ status: 'lottery_pending', lotteryDelayMinutes: 5 })),
+		).resolves.toMatchObject({ ok: false, status: 409 });
 	});
 });

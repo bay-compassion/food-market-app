@@ -41,6 +41,7 @@ export type SessionOverview = {
 };
 
 type SessionCommandParameters = {
+	pause_lottery: undefined;
 	open_registration: undefined;
 	postpone_registration: { minutes: number };
 	update_registration: { registrationClosesAt: string; capacity: number };

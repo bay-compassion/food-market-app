@@ -52,6 +52,30 @@ const preview: Preview = {
 
 	parameters: {
 		layout: 'fullscreen',
+		options: {
+			storySort: {
+				order: [
+					'Design System',
+					'Primitives',
+					'Guest',
+					'Components',
+					'Admin',
+					// Match adminViews in src/services/admin-views.ts, with shared components last.
+					[
+						'Current Session',
+						'Schedule',
+						'Queue',
+						'Broadcast',
+						'Question Bank',
+						'Guest Database',
+						'Session History',
+						'Reports',
+						'Dev Mode',
+						'Shared',
+					],
+				],
+			},
+		},
 		viewport: { options: INITIAL_VIEWPORTS },
 		// 'todo' surfaces accessibility findings in the panel without failing the story test run.
 		// Switch a story to 'error' once its violations are cleared to keep them from coming back.

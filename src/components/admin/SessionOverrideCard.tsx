@@ -8,12 +8,27 @@ const OverrideCard = styled.section`
 	}
 
 	.override-grid form {
+		display: flex;
+		align-items: flex-end;
+		gap: 10px;
+		min-width: 0;
 		margin-top: 0;
-		padding: 16px;
+		padding: 8px;
 		border-radius: var(--radius-md);
 		background: #f3f6f4;
 	}
 
+	.number-spinner {
+		flex: 1;
+		min-width: 0;
+	}
+	.number-spinner-group {
+		grid-template-columns: 32px minmax(32px, 1fr) 32px;
+		gap: 4px;
+	}
+	.override-grid form > button {
+		min-height: 58px;
+	}
 	.standalone-action {
 		display: flex;
 		justify-content: flex-end;
@@ -31,7 +46,7 @@ const OverrideCard = styled.section`
 
 type SessionOverrideCardProps = {
 	title?: string;
-	description: ReactNode;
+	description?: ReactNode;
 	action: ReactNode;
 	children: ReactNode;
 };
@@ -45,7 +60,7 @@ export function SessionOverrideCard({
 	return (
 		<OverrideCard className="admin-section settings-card">
 			{title ? <h2>{title}</h2> : null}
-			<p>{description}</p>
+			{description ? <p>{description}</p> : null}
 			<div className="override-grid">{children}</div>
 			<div className="standalone-action">{action}</div>
 		</OverrideCard>
