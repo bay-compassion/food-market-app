@@ -42,6 +42,7 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `POST /api/lottery-registration`         | nothing — public self-service lottery entry             |
 | `GET /api/admin/market?view=history`     | `run:queue`                                             |
 | `POST /api/admin/market`                 | `manage:sessions`, except `close_session` → `run:queue` |
+| `/api/admin/schedule` (every method)     | `manage:sessions`                                       |
 | `GET`, `POST`, `PATCH /api/admin/guests` | `run:queue`                                             |
 | `POST /api/admin/queue`                  | `run:queue`                                             |
 | `POST /api/admin/broadcast`              | `manage:sessions`                                       |

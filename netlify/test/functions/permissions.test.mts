@@ -12,6 +12,7 @@ import guestsHandler from '../../routes/admin/guests.mjs';
 import marketHandler from '../../routes/admin/market.mjs';
 import queueHandler from '../../routes/admin/queue.mjs';
 import reportsHandler from '../../routes/admin/reports.mjs';
+import scheduleHandler from '../../routes/admin/schedule.mjs';
 import lotteryRegistrationHandler from '../../routes/guests/lottery-registration.mjs';
 import publicMarketHandler from '../../routes/market/market.mjs';
 
@@ -122,6 +123,36 @@ describe('endpoint permissions', () => {
 			marketHandler,
 			json('https://x/api/admin/market', 'POST', { action: 'close_session' }),
 			'run:queue',
+		],
+		[
+			'reading the schedule',
+			scheduleHandler,
+			json('https://x/api/admin/schedule', 'GET'),
+			'manage:sessions',
+		],
+		[
+			'saving the recurrence pattern',
+			scheduleHandler,
+			json('https://x/api/admin/schedule/pattern', 'PUT', {}),
+			'manage:sessions',
+		],
+		[
+			'adding a one-off session',
+			scheduleHandler,
+			json('https://x/api/admin/schedule/sessions', 'POST', {}),
+			'manage:sessions',
+		],
+		[
+			'deleting a session',
+			scheduleHandler,
+			json('https://x/api/admin/schedule/sessions/event-1', 'DELETE'),
+			'manage:sessions',
+		],
+		[
+			'postponing the lottery',
+			marketHandler,
+			json('https://x/api/admin/market', 'POST', { action: 'postpone_lottery', minutes: 5 }),
+			'manage:sessions',
 		],
 		[
 			'running the lottery',

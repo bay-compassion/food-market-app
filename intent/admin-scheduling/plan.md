@@ -92,8 +92,18 @@ Build-stage choices the spec left open:
     - `auto_close` → `endSession(…, 'auto_close')`.
   - `asyncWorkloadConfig.events` also lists the legacy `market.registration-close` name, so
     events queued before deploy still run.
-- **`netlify/services/schedule.mts`** — the schedule payload and the pattern and session commands
-  (see API). Zod schemas take local date and time strings, resolved through `MarketLocation`.
+- **`netlify/services/schedule.mts`** — the schedule payload (`getSchedule`) and the helpers the
+  commands share: locking the unfinished session, deleting an unjoined Pending session, resolving a
+  dialog's local date and time through `MarketLocation`, and recognising a unique violation.
+  _(Updated in Build: the commands were split out to keep each file focused.)_
+  - **`netlify/services/schedulePattern.mts`** — `savePattern`, `deletePattern`,
+    `createNextSessionNow`.
+  - **`netlify/services/scheduleSessions.mts`** — `addOneOffSession`, `updateSession`,
+    `deleteSession`.
+  - **`netlify/services/sessionInput.mts`** — Zod schemas for pattern and session input, which take
+    local date and time strings.
+  - **`src/services/schedule-payload.ts`** — the wire types, shared by the route and the browser
+    client so they cannot drift.
 - **`netlify/services/marketLocation.mts`** — `currentLocation(tx?)`: the single location row,
   oldest first.
 - **`netlify/routes/admin/schedule.mts`** — Hono routes. Mounted in
