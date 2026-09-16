@@ -20,7 +20,7 @@ or download the whole guest database in one click.
 | Permission            | Allows                                                                                                   |
 | --------------------- | -------------------------------------------------------------------------------------------------------- |
 | `run:queue`           | Call guests, change a visit's status, add a guest by hand, close the day's session, read session history |
-| `manage:sessions`     | Session settings, the question bank, the registration lifecycle, the lottery, broadcasts                 |
+| `manage:sessions`     | The schedule, the question bank, the registration lifecycle, the lottery, broadcasts                     |
 | `read:reports`        | The reports screen — counts and rates, never a guest's name                                              |
 | `export:guest-data`   | The visit export, which carries guest names and phone numbers                                            |
 | `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
@@ -41,7 +41,6 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `POST /api/guest-information`            | nothing — saves guest identity only                     |
 | `POST /api/lottery-registration`         | nothing — public self-service lottery entry             |
 | `GET /api/admin/market?view=history`     | `run:queue`                                             |
-| `PUT /api/admin/market`                  | `manage:sessions`                                       |
 | `POST /api/admin/market`                 | `manage:sessions`, except `close_session` → `run:queue` |
 | `GET`, `POST`, `PATCH /api/admin/guests` | `run:queue`                                             |
 | `POST /api/admin/queue`                  | `run:queue`                                             |
@@ -146,8 +145,8 @@ single click, which is a different exposure from reading today's line.
 The Dev Mode screen (`src/components/admin/DevModeView.tsx`, behind `POST /api/admin/demo-data`) lets
 someone holding `manage:demo-data` replace whatever session is currently live with fake guests and
 visits staged at any point on the session lifecycle — for demos and screenshots. Loading a scenario
-archives the current session the same way `close_session` would, so it is destructive to whatever
-is live at the time.
+archives the current session the same way `reset_session` would (a pending session nobody has
+joined is deleted instead), so it is destructive to whatever is live at the time.
 
 Because of that, the permission alone is not enough: `POST /api/admin/demo-data` also checks
 `ENABLE_DEMO_DATA_TOOLS`, an environment variable that has to be set to `true` for the specific

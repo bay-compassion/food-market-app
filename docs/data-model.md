@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=b016cd051283 -->
+<!-- diagram-sources: db/schema.mts=1622e20913d8 -->
 
 # Database structure
 
@@ -15,6 +15,10 @@ moves through, and [`user-journey.md`](user-journey.md) for the path a guest tak
 
 ```mermaid
 erDiagram
+    market_locations ||--o{ market_events : "hosts"
+    market_locations ||--o| recurrence_patterns : "repeats on"
+    recurrence_patterns ||--o{ recurrence_pattern_questions : "asks"
+    recurrence_patterns |o--o{ market_events : "created"
     market_events ||--o{ registration_questions : "asks"
     market_events ||--o{ visits : "hosts"
     guests ||--o{ visits : "attends"
@@ -24,13 +28,45 @@ erDiagram
     guests ||--o| guest_claims : "awaits a phone"
     visits ||--o{ notification_deliveries : "queues"
 
+    market_locations {
+        uuid id PK
+        text name
+        text time_zone "IANA name; local dates and times are read in it"
+        timestamptz created_at
+    }
+
+    recurrence_patterns {
+        uuid id PK
+        uuid location_id FK "unique: one pattern per location for now"
+        date starts_on "repeats weekly on this date's weekday"
+        time registration_opens_at "local wall-clock time"
+        integer registration_duration_minutes
+        integer capacity
+        integer lottery_delay_minutes "nullable; null draws by hand"
+        integer auto_close_after_minutes "nullable; null never closes automatically"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    recurrence_pattern_questions {
+        uuid id PK
+        uuid recurrence_pattern_id FK "cascade delete; copied onto each new session"
+        text prompt
+        text type "text | scale"
+        boolean required
+        integer position
+    }
+
     market_events {
         uuid id PK
+        uuid location_id FK "at most one unfinished session per location"
+        uuid recurrence_pattern_id FK "nullable; null for a one-off; set null when the pattern is deleted"
         timestamptz registration_opens_at
         timestamptz registration_closes_at
         timestamptz registration_grace_ends_at "nullable; freezes the lottery pool when reached"
         integer capacity
-        text session_mode "scheduled | ad_hoc"
+        integer lottery_delay_minutes "nullable; minutes after the grace deadline"
+        integer auto_close_after_minutes "nullable; minutes after registration opens"
         text status "see session-lifecycle.md"
         timestamptz created_at
     }

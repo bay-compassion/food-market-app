@@ -224,7 +224,9 @@ describe('session timers and the scheduled lottery', () => {
 
 		// Assert
 		expect(result).toEqual({ ok: true });
+
 		const set = db.update.mock.results[0]!.value.set as ReturnType<typeof vi.fn>;
+
 		expect(set).toHaveBeenCalledWith({ lotteryDelayMinutes: 20 });
 		expect(scheduleSessionTimers).toHaveBeenCalledWith(updated, ['lottery_draw']);
 	});
