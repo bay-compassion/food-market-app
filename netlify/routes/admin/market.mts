@@ -9,26 +9,30 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { runLottery } from '../../services/lottery.mjs';
 import {
-	closeRegistration,
-	closeSession,
 	getCurrentEvent,
 	marketHistory,
 	marketOverview,
-	openRegistration,
-	parseSettings,
-	postponeRegistration,
-	reopenRegistration,
-	resetSession,
-	runLottery,
-	saveSettings as saveSettingsService,
-	scheduleRegistration,
-	updateRegistration,
 	type ActionResult,
 	type MarketEventRow,
 } from '../../services/marketSession.mjs';
 import { requestNotificationDispatch } from '../../services/notificationDispatch.mjs';
 import type { NotificationType } from '../../services/pushNotifications.mjs';
+import {
+	closeRegistration,
+	closeSession,
+	openRegistration,
+	postponeRegistration,
+	reopenRegistration,
+	resetSession,
+	scheduleRegistration,
+	updateRegistration,
+} from '../../services/sessionCommands.mjs';
+import {
+	parseSettings,
+	saveSettings as saveSettingsService,
+} from '../../services/sessionSettings.mjs';
 
 async function overview() {
 	return Response.json(await marketOverview());
