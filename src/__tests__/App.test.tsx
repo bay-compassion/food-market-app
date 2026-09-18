@@ -228,8 +228,11 @@ describe('App', () => {
 		// Household, children, then seniors — `GuestLotteryForm`'s stable relative order.
 		const countInputs = container.querySelectorAll<HTMLInputElement>('.number-spinner-input input');
 
+		await user.clear(countInputs[0]!);
 		await user.type(countInputs[0]!, '2');
+		await user.clear(countInputs[1]!);
 		await user.type(countInputs[1]!, '1');
+		await user.clear(countInputs[2]!);
 		await user.type(countInputs[2]!, '0');
 
 		fireEvent.submit(container.querySelector('form')!);

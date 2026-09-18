@@ -122,9 +122,9 @@ export class RegistrationStore {
 			firstName: this.guestStore.identity?.firstName ?? '',
 			lastName: this.guestStore.identity?.lastName ?? '',
 			ageRange: savedHousehold?.ageRange ?? '',
-			householdSize: savedHousehold?.householdSize ?? '',
-			childrenCount: savedHousehold?.childrenCount ?? '',
-			seniorsCount: savedHousehold?.seniorsCount ?? '',
+			householdSize: savedHousehold?.householdSize ?? 1,
+			childrenCount: savedHousehold?.childrenCount ?? 0,
+			seniorsCount: savedHousehold?.seniorsCount ?? 0,
 			phone: this.guestStore.identity?.phone ?? '',
 		};
 	}

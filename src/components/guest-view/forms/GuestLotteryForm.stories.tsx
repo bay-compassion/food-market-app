@@ -66,12 +66,16 @@ export const CountsHaveTheirOwnFloor: Story = {
 		await userEvent.click(
 			within(household).getByRole('button', { name: translations.en.countIncrementLabel }),
 		);
+		await expect(within(household).getByRole('textbox')).toHaveValue('2');
+		await userEvent.click(stepDown(household));
 		await expect(within(household).getByRole('textbox')).toHaveValue('1');
 		await expect(stepDown(household)).toBeDisabled();
 
 		await userEvent.click(
 			within(children).getByRole('button', { name: translations.en.countIncrementLabel }),
 		);
+		await expect(within(children).getByRole('textbox')).toHaveValue('1');
+		await userEvent.click(stepDown(children));
 		await expect(within(children).getByRole('textbox')).toHaveValue('0');
 		await expect(stepDown(children)).toBeDisabled();
 	},

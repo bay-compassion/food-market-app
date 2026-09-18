@@ -15,7 +15,7 @@ describe('RegistrationStore', () => {
 	});
 
 	describe('prefilling', () => {
-		it('starts with empty fields when there is no cached identity or household', () => {
+		it('defaults household counts when there is no cached identity or household', () => {
 			// Arrange & Act
 			const store = new RegistrationStore(guestStore, { storage });
 
@@ -24,9 +24,9 @@ describe('RegistrationStore', () => {
 				firstName: '',
 				lastName: '',
 				ageRange: '',
-				householdSize: '',
-				childrenCount: '',
-				seniorsCount: '',
+				householdSize: 1,
+				childrenCount: 0,
+				seniorsCount: 0,
 				phone: '',
 			});
 		});
