@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=e94fb2583ddc, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=a5754266760b, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=2b0205accda7, src/stores/market-session.store.ts=7f95f07cee04, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=217306754150, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
+<!-- diagram-sources: src/App.tsx=e94fb2583ddc, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=8ee80322c315, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=2b0205accda7, src/stores/market-session.store.ts=7f95f07cee04, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=217306754150, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
 
 # Guest journey
 
@@ -217,7 +217,8 @@ flowchart TD
   guest's identity.** `GuestLotteryForm` asks for these details each time a guest enters a session's
   lottery; the browser separately keeps its own last-entered copy in `localStorage`
   (`bay-compassion.guest-household`) purely to prefill that form next time — it's never sent to the
-  server as part of identity, and never read back from a server-side guest profile. See
+  server as part of identity, and never read back from a server-side guest profile. Without saved
+  counts, household size defaults to 1 and children and seniors each default to 0. See
   [`data-model.md`](data-model.md) for how this moved off `guests`. Each visit also snapshots the
   normalized phone number so later reconciliation can see earlier values after a guest renews their
   identity.
