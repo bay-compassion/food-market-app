@@ -51,7 +51,6 @@ export const PatternQuestionBank = observer(function PatternQuestionBank() {
 
 	return (
 		<>
-			{schedule.error ? <Alert severity="error">{schedule.error}</Alert> : null}
 			{schedule.isLoaded && !pattern ? (
 				<Alert severity="info">{t.questionBankNeedsPattern}</Alert>
 			) : null}

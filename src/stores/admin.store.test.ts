@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { adminTranslations } from '../adminLocales';
 import type { AdminApi, AdminGuest } from '../services/admin-api';
 import type { Permission } from '../services/permissions';
 import { AdminStore } from './admin.store';
 import type { MarketSessionStore, SessionOverview } from './market-session.store';
+import { NotificationStore } from './notification.store';
 
 function overviewWith(eventId: string | null = 'event-1'): SessionOverview {
 	return {
@@ -54,6 +56,7 @@ function storeWith(
 		applyServerState: vi.fn(),
 		...session,
 	};
+	const notifications = new NotificationStore();
 	const apiStub = {
 		listAllGuests: vi.fn().mockResolvedValue([]),
 		listSessionGuests: vi.fn().mockResolvedValue([]),
@@ -79,9 +82,11 @@ function storeWith(
 		store: new AdminStore(sessionStub as unknown as MarketSessionStore, {
 			api: apiStub as unknown as AdminApi,
 			readPermissions,
+			notifications,
 		}),
 		api: apiStub,
 		session: sessionStub,
+		notifications,
 	};
 }
 
@@ -288,9 +293,40 @@ describe('AdminStore', () => {
 		});
 	});
 
+	it('raises a failed action as an error toast', async () => {
+		// Arrange
+		const { store, notifications } = storeWith(
+			{},
+			{ sendCommand: vi.fn().mockResolvedValue(false) },
+		);
+
+		// Act
+		await store.runMarketAction('close_session');
+
+		// Assert
+		expect(notifications.pending).toEqual([
+			expect.objectContaining({ message: adminTranslations.en.error, severity: 'error' }),
+		]);
+	});
+
+	it('keeps a guest who can be put on a phone out of the toasts, for the banner to offer', async () => {
+		// Arrange
+		const { store, notifications } = storeWith();
+
+		// Act
+		await store.addGuest(
+			{ firstName: 'Ada', lastName: 'Lovelace', admission: 'lottery' } as never,
+			{ locale: 'en' },
+		);
+
+		// Assert
+		expect(store.claimableGuest).toEqual({ guestId: 'guest-1', name: 'Ada Lovelace' });
+		expect(notifications.pending).toEqual([]);
+	});
+
 	it('offers no phone for a guest recorded as served after the fact', async () => {
 		// Arrange
-		const { store } = storeWith();
+		const { store, notifications } = storeWith();
 
 		// Act
 		await store.addGuest({ firstName: 'Ada', lastName: 'Lovelace', admission: 'served' } as never, {
@@ -300,6 +336,10 @@ describe('AdminStore', () => {
 
 		// Assert
 		expect(store.feedback).toMatchObject({ kind: 'guest-added', offersPhoneClaim: false });
+		expect(store.claimableGuest).toBeNull();
+		expect(notifications.pending).toEqual([
+			expect.objectContaining({ message: 'Ada Lovelace was added.', severity: 'success' }),
+		]);
 	});
 
 	it('opens a claim code for a guest, leaving the feedback in place to reopen it', async () => {

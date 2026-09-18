@@ -7,13 +7,14 @@ import { AdminApi, type ManualGuest } from '../../services/admin-api';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
+import { NotificationToasts } from '../ui/NotificationToasts';
 import { AdminFeedbackBanner } from './AdminFeedbackBanner';
 import { GuestClaimDialog } from './GuestClaimDialog';
 
 /**
- * The line under an admin screen's heading that reports the worker's last action. After a manual
- * add it also offers the QR code that puts the new record on the guest's own phone — except for a
- * `served` record, which is written after the guest has left.
+ * The line under an admin screen's heading that offers, after a manual add, the QR code that puts
+ * the new record on the guest's own phone — except for a `served` record, which is written after
+ * the guest has left and so is reported only as a toast.
  *
  * Each story adds a guest through a stubbed API, so the banner shows what the real add leaves
  * behind rather than a hand-built feedback object.
@@ -80,6 +81,8 @@ const withAddedGuest: Decorator = (Story, context) => {
 	return (
 		<RootStoreProvider store={store}>
 			<Story />
+			{/* The decorator's toaster reads the decorator's store, not this one. */}
+			<NotificationToasts />
 		</RootStoreProvider>
 	);
 };
@@ -121,11 +124,16 @@ export const GuestAdded: Story = {
 	},
 };
 
-/** A record of someone served after the fact: they are not at the table, so no QR code. */
+/**
+ * A record of someone served after the fact: they are not at the table, so there is no QR code to
+ * offer and nothing to keep on screen — the outcome is a toast, and the banner stays away.
+ */
 export const RecordedAsServed: Story = {
 	args: { admission: 'served' },
 	play: async ({ canvas }) => {
-		await expect(await canvas.findByRole('status')).toHaveTextContent('Ada Lovelace was added.');
+		// The toast renders in a portal outside the story's canvas.
+		await expect(await screen.findByRole('alert')).toHaveTextContent('Ada Lovelace was added.');
+		await expect(canvas.queryByRole('status')).not.toBeInTheDocument();
 		await expect(canvas.queryByRole('button', { name: t.guestClaimShow })).not.toBeInTheDocument();
 	},
 };

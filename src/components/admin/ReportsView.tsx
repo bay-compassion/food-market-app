@@ -12,6 +12,7 @@ import {
 	type ReportId,
 	type ReportRow,
 } from '../../services/reports';
+import { useRootStore } from '../../stores/react/store-context';
 import { ReportFilters } from './ReportFilters';
 import { ReportTable } from './ReportTable';
 
@@ -55,13 +56,20 @@ function download(blob: Blob, filename: string) {
  */
 export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 	const t = adminTranslations.en;
+	const { notifications } = useRootStore();
 	const [range] = useState(defaultReportRange);
 	const [selectedReport, setSelectedReport] = useState<ReportId>('session-summary');
 	const [from, setFrom] = useState(range.from);
 	const [to, setTo] = useState(range.to);
 	const [rows, setRows] = useState<ReportRow[]>([]);
 	const [isBusy, setIsBusy] = useState(false);
+	/** An inline note about the range itself; a failed request is a toast instead. */
 	const [feedback, setFeedback] = useState('');
+	/**
+	 * Whether the last load failed. The toast is gone in seconds, but this keeps the screen from
+	 * then reading "no sessions in this range", which would be a claim about data it never got.
+	 */
+	const [loadFailed, setLoadFailed] = useState(false);
 
 	const columns = reportColumns[selectedReport];
 	const isRangeValid = reportRangeBounds(from, to) !== null;
@@ -84,6 +92,7 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 			latestRequest.current += 1;
 			setRows([]);
 			setIsBusy(false);
+			setLoadFailed(false);
 			setFeedback(t.reportRangeInvalid);
 
 			return;
@@ -93,6 +102,7 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 
 		setIsBusy(true);
 		setFeedback('');
+		setLoadFailed(false);
 
 		try {
 			const params = new URLSearchParams({ from, to });
@@ -125,13 +135,14 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 			}
 
 			setRows([]);
-			setFeedback(t.error);
+			setLoadFailed(true);
+			notifications.error(t.error);
 		} finally {
 			if (requestId === latestRequest.current) {
 				setIsBusy(false);
 			}
 		}
-	}, [authHeaders, from, selectedReport, t.error, t.reportRangeInvalid, to]);
+	}, [authHeaders, from, notifications, selectedReport, t.error, t.reportRangeInvalid, to]);
 
 	useEffect(() => {
 		void loadReport();
@@ -173,7 +184,7 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 
 			download(await response.blob(), csvFilename('visits', from, to));
 		} catch {
-			setFeedback(t.error);
+			notifications.error(t.error);
 		} finally {
 			setIsBusy(false);
 		}
@@ -201,7 +212,7 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 
 				{rows.length ? (
 					<ReportTable columns={columns} rows={rows} />
-				) : !isBusy && !feedback ? (
+				) : !isBusy && !feedback && !loadFailed ? (
 					<p className="empty-state">{t.reportEmpty}</p>
 				) : null}
 

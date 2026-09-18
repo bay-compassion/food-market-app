@@ -6,6 +6,7 @@ import { StorageKey, StorageService } from '../../../services/storage.service';
 import type { GuestIdentity } from '../../../stores/guest.store';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
+import { NotificationToasts } from '../../ui/NotificationToasts';
 import { GuestIdentityCard } from './GuestIdentityCard';
 
 type GuestIdentityCardArgs = {
@@ -46,7 +47,10 @@ class MemoryStorage implements Storage {
 	}
 }
 
-/** Provides the component with the same seeded store shape it receives in the running app. */
+/**
+ * Provides the component with the same seeded store shape it receives in the running app, and the
+ * toasts its menu raises — the preview decorator's toaster reads the decorator's store, not this one.
+ */
 const withGuestStore: Decorator = (Story, context) => {
 	const { deviceToken, identity, locale, notificationsDisabled } =
 		context.args as GuestIdentityCardArgs;
@@ -68,6 +72,7 @@ const withGuestStore: Decorator = (Story, context) => {
 	return (
 		<RootStoreProvider store={store}>
 			<Story />
+			<NotificationToasts />
 		</RootStoreProvider>
 	);
 };

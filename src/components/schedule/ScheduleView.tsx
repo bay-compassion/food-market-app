@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Alert, Button, Chip } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { observer } from 'mobx-react-lite';
@@ -190,7 +190,6 @@ export const ScheduleView = observer(function ScheduleView({
 	return (
 		<LocalizationProvider dateAdapter={AdapterLuxon}>
 			<section className="admin-section schedule-view">
-				{schedule.error ? <Alert severity="error">{schedule.error}</Alert> : null}
 				<Layout>
 					<ScheduleCalendar />
 					<div>

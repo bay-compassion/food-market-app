@@ -24,11 +24,11 @@ function callArgs(fetchMock: Mock, index: number) {
 	return calls[index < 0 ? calls.length + index : index]!;
 }
 
-function renderReports(fetchMock: Mock, canExport = true) {
+function renderReports(fetchMock: Mock, canExport = true, store = new RootStore()) {
 	vi.stubGlobal('fetch', fetchMock);
 
 	return render(
-		<RootStoreProvider store={new RootStore()}>
+		<RootStoreProvider store={store}>
 			<ReportsView getAccessToken={() => Promise.resolve('token')} canExport={canExport} />
 		</RootStoreProvider>,
 	);
@@ -161,9 +161,23 @@ describe('ReportsView', () => {
 		expect(container.textContent).toContain(t.reportDownloadCsv);
 	});
 
-	it('shows the error message when the report request fails', async () => {
-		const { container } = renderReports(vi.fn(() => Promise.resolve({ ok: false } as Response)));
+	it('raises an error toast, not an empty report, when the report request fails', async () => {
+		// Arrange
+		const store = new RootStore();
 
-		await waitFor(() => expect(container.textContent).toContain(t.error));
+		// Act
+		const { container } = renderReports(
+			vi.fn(() => Promise.resolve({ ok: false } as Response)),
+			true,
+			store,
+		);
+
+		// Assert
+		await waitFor(() =>
+			expect(store.notifications.pending).toEqual([
+				expect.objectContaining({ message: t.error, severity: 'error' }),
+			]),
+		);
+		expect(container.textContent).not.toContain(t.reportEmpty);
 	});
 });
