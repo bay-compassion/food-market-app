@@ -1,5 +1,6 @@
 import { runInAction } from 'mobx';
 
+import { adminTranslations } from '../adminLocales.ts';
 import type { Locale } from '../locales.ts';
 import {
 	AdminApi,
@@ -10,7 +11,11 @@ import {
 	type ManualGuest,
 	type QueueGuest,
 } from '../services/admin-api.ts';
-import type { AdminFeedback } from '../services/admin-feedback.ts';
+import {
+	adminFeedbackSeverity,
+	adminFeedbackText,
+	type AdminFeedback,
+} from '../services/admin-feedback.ts';
 import { viewsFor, type AdminView } from '../services/admin-views.ts';
 import { admissionOffersPhoneClaim } from '../services/guestAdmission.ts';
 import { makeReactive } from '../services/make-reactive.ts';
@@ -20,6 +25,7 @@ import type { VisitCommand } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
 import { DemoStore } from './demo.store';
 import type { MarketSessionStore } from './market-session.store.ts';
+import { NotificationStore } from './notification.store.ts';
 
 /** The session commands the dashboard offers as one-click actions. */
 export type MarketAction = Exclude<
@@ -34,6 +40,8 @@ export type AdminStoreOptions = {
 	api?: AdminApi;
 	/** Reads the permissions this worker holds. Injected so the store stays free of Auth0. */
 	readPermissions?: () => Promise<Permission[]>;
+	/** Where each outcome is raised as a toast. `RootStore` passes the app's own. */
+	notifications?: NotificationStore;
 };
 
 /**
@@ -58,6 +66,7 @@ export class AdminStore {
 	private _guestClaim: GuestClaim | null = null;
 	private readonly api: AdminApi;
 	private readonly readPermissions: () => Promise<Permission[]>;
+	private readonly notifications: NotificationStore;
 
 	get guests(): DatabaseGuest[] {
 		return this._guests;
@@ -79,8 +88,22 @@ export class AdminStore {
 		return this._isBusy;
 	}
 
+	/** The outcome of the worker's last action, which has already been raised as a toast. */
 	get feedback(): AdminFeedback | null {
 		return this._feedback;
+	}
+
+	/**
+	 * A guest just added by hand whom the worker may put on the guest's own phone. Unlike every
+	 * other outcome this stays on screen, as a banner with the way to do it, until the worker does
+	 * something else — a toast would be gone before a guest had their phone out.
+	 */
+	get claimableGuest(): { guestId: string; name: string } | null {
+		const feedback = this._feedback;
+
+		return feedback?.kind === 'guest-added' && feedback.offersPhoneClaim
+			? { guestId: feedback.guestId, name: feedback.name }
+			: null;
 	}
 
 	/** The code on screen for a guest to scan with their phone, if the worker has opened one. */
@@ -99,8 +122,14 @@ export class AdminStore {
 	) {
 		this.api = options.api ?? new AdminApi();
 		this.readPermissions = options.readPermissions ?? (async () => []);
+		this.notifications = options.notifications ?? new NotificationStore();
 
-		return makeReactive(this, { api: false, readPermissions: false, session: false });
+		return makeReactive(this, {
+			api: false,
+			readPermissions: false,
+			notifications: false,
+			session: false,
+		});
 	}
 
 	can(permission: Permission): boolean {
@@ -109,6 +138,18 @@ export class AdminStore {
 
 	clearFeedback(): void {
 		this._feedback = null;
+	}
+
+	/** Records the outcome of an action and raises it as a toast, unless it has a banner of its own. */
+	private report(feedback: AdminFeedback): void {
+		this._feedback = feedback;
+
+		if (!this.claimableGuest) {
+			this.notifications.notify(
+				adminFeedbackText(feedback, adminTranslations.en),
+				adminFeedbackSeverity(feedback),
+			);
+		}
 	}
 
 	/**
@@ -132,7 +173,7 @@ export class AdminStore {
 				await this.refreshAll();
 			}
 		} catch {
-			runInAction(() => (this._feedback = { kind: 'error' }));
+			runInAction(() => this.report({ kind: 'error' }));
 		}
 	}
 
@@ -163,10 +204,10 @@ export class AdminStore {
 			}
 
 			await Promise.all([this.refreshGuests(), this.refreshSessionGuests()]);
-			runInAction(
-				() =>
-					(this._feedback =
-						action === 'run_lottery' ? { kind: 'draw-complete' } : { kind: 'session-updated' }),
+			runInAction(() =>
+				this.report(
+					action === 'run_lottery' ? { kind: 'draw-complete' } : { kind: 'session-updated' },
+				),
 			);
 		}, undefined);
 	}
@@ -177,7 +218,7 @@ export class AdminStore {
 				throw new Error('postpone');
 			}
 
-			runInAction(() => (this._feedback = { kind: 'session-updated' }));
+			runInAction(() => this.report({ kind: 'session-updated' }));
 
 			return true;
 		}, false);
@@ -189,7 +230,7 @@ export class AdminStore {
 			if (!(await this.session.sendCommand('pause_lottery'))) {
 				throw new Error('pause');
 			}
-			runInAction(() => (this._feedback = { kind: 'session-updated' }));
+			runInAction(() => this.report({ kind: 'session-updated' }));
 
 			return true;
 		}, false);
@@ -202,7 +243,7 @@ export class AdminStore {
 				throw new Error('postpone');
 			}
 
-			runInAction(() => (this._feedback = { kind: 'session-updated' }));
+			runInAction(() => this.report({ kind: 'session-updated' }));
 
 			return true;
 		}, false);
@@ -219,7 +260,7 @@ export class AdminStore {
 				throw new Error('override');
 			}
 
-			runInAction(() => (this._feedback = { kind: 'saved' }));
+			runInAction(() => this.report({ kind: 'saved' }));
 
 			return true;
 		}, false);
@@ -241,7 +282,7 @@ export class AdminStore {
 		} catch {
 			runInAction(() => {
 				guest.status = previous;
-				this._feedback = { kind: 'error' };
+				this.report({ kind: 'error' });
 			});
 		}
 	}
@@ -258,14 +299,13 @@ export class AdminStore {
 
 			await this.session.getStatus();
 			await this.refreshAll();
-			runInAction(
-				() =>
-					(this._feedback = {
-						kind: 'guest-added',
-						guestId,
-						name: `${guest.firstName} ${guest.lastName}`.trim(),
-						offersPhoneClaim: admissionOffersPhoneClaim(guest.admission),
-					}),
+			runInAction(() =>
+				this.report({
+					kind: 'guest-added',
+					guestId,
+					name: `${guest.firstName} ${guest.lastName}`.trim(),
+					offersPhoneClaim: admissionOffersPhoneClaim(guest.admission),
+				}),
 			);
 		}, undefined);
 	}
@@ -286,11 +326,11 @@ export class AdminStore {
 				if (code) {
 					this._guestClaim = { guestName: guest.name, ...code };
 				} else {
-					this._feedback = { kind: 'guest-claim-refused' };
+					this.report({ kind: 'guest-claim-refused' });
 				}
 			});
 		} catch {
-			runInAction(() => (this._feedback = { kind: 'error' }));
+			runInAction(() => this.report({ kind: 'error' }));
 		}
 	}
 
@@ -305,7 +345,7 @@ export class AdminStore {
 			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
 
 			if (!called.length) {
-				runInAction(() => (this._feedback = { kind: 'no-waiting-guests' }));
+				runInAction(() => this.report({ kind: 'no-waiting-guests' }));
 			}
 		}, undefined);
 	}
@@ -314,11 +354,12 @@ export class AdminStore {
 		return this.run(async () => {
 			const recipients = await this.api.sendBroadcast(message);
 
-			runInAction(
-				() =>
-					(this._feedback = recipients
+			runInAction(() =>
+				this.report(
+					recipients
 						? { kind: 'broadcast-queued', recipients }
-						: { kind: 'broadcast-no-recipients' }),
+						: { kind: 'broadcast-no-recipients' },
+				),
 			);
 
 			return recipients > 0;
@@ -337,7 +378,7 @@ export class AdminStore {
 			runInAction(() => this.demo.save(response.demoRoster, response.event?.id ?? null));
 			this.session.applyServerState(response);
 			await this.refreshAll();
-			runInAction(() => (this._feedback = { kind: 'demo-loaded' }));
+			runInAction(() => this.report({ kind: 'demo-loaded' }));
 		}, undefined);
 	}
 
@@ -359,7 +400,7 @@ export class AdminStore {
 			return await action();
 		} catch {
 			runInAction(() => {
-				this._feedback = { kind: 'error' };
+				this.report({ kind: 'error' });
 			});
 
 			return onFailure;

@@ -21,6 +21,7 @@ export function useScheduleStore(): ScheduleStore {
 		store = new ScheduleStore(
 			new ScheduleApi({ requestHeaders: () => root.requestHeaders() }),
 			root.session,
+			root.notifications,
 		);
 		stores.set(root, store);
 	}

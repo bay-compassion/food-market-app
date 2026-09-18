@@ -1,10 +1,11 @@
 import type { AdminTranslation } from '../adminLocales.ts';
+import type { NotificationSeverity } from '../stores/notification.store.ts';
 
 /**
  * The outcome of an admin action, as the store records it.
  *
- * The store deals in outcomes rather than in sentences so it stays free of presentation: what a
- * worker reads is decided here, at the edge, by `adminFeedbackText`.
+ * The store deals in outcomes rather than in sentences: what a worker reads is decided here, by
+ * `adminFeedbackText`, and how urgently by `adminFeedbackSeverity`.
  */
 export type AdminFeedback =
 	| { kind: 'error' }
@@ -47,5 +48,24 @@ export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTransl
 			return t.guestAdded.replace('{name}', feedback.name);
 		case 'guest-claim-refused':
 			return t.guestClaimRefused;
+	}
+}
+
+/** How a toast for an outcome is coloured: a failure, a completed action, or a note about nothing to do. */
+export function adminFeedbackSeverity(feedback: AdminFeedback): NotificationSeverity {
+	switch (feedback.kind) {
+		case 'error':
+			return 'error';
+		case 'guest-claim-refused':
+		case 'no-waiting-guests':
+		case 'broadcast-no-recipients':
+			return 'info';
+		case 'saved':
+		case 'session-updated':
+		case 'draw-complete':
+		case 'broadcast-queued':
+		case 'demo-loaded':
+		case 'guest-added':
+			return 'success';
 	}
 }

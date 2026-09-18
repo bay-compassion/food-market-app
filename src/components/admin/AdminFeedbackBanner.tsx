@@ -3,7 +3,6 @@ import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 
-import { adminFeedbackText } from '../../services/admin-feedback';
 import { useRootStore } from '../../stores/react/store-context';
 
 // The surface itself is the shared `.admin-feedback` rule in `AdminDashboardLayout`.
@@ -20,17 +19,13 @@ const Banner = styled.div`
 `;
 
 /**
- * The outcome of the worker's last action. A guest just added by hand also gets the way onto their
- * own phone from here, which stays available until the worker does something else.
+ * The way onto a guest's own phone, for a guest the worker has just added by hand. It stays until
+ * the worker does something else; every other outcome is a toast (see `AdminStore.report`).
  */
 export const AdminFeedbackBanner = observer(function AdminFeedbackBanner() {
 	const { translations, admin } = useRootStore();
 	const t = translations.adminTranslation;
-	const text = adminFeedbackText(admin.feedback, t);
-	const claimable =
-		admin.feedback?.kind === 'guest-added' && admin.feedback.offersPhoneClaim
-			? { guestId: admin.feedback.guestId, name: admin.feedback.name }
-			: null;
+	const claimable = admin.claimableGuest;
 	const claimableGuestId = claimable?.guestId ?? null;
 	const bannerRef = useRef<HTMLDivElement>(null);
 
@@ -42,22 +37,16 @@ export const AdminFeedbackBanner = observer(function AdminFeedbackBanner() {
 		}
 	}, [claimableGuestId]);
 
-	if (!text) {
+	if (!claimable) {
 		return null;
 	}
 
 	return (
 		<Banner ref={bannerRef} className="admin-feedback">
-			<p role="status">{text}</p>
-			{claimable ? (
-				<Button
-					size="small"
-					variant="outlined"
-					onClick={() => void admin.showGuestClaim(claimable)}
-				>
-					{t.guestClaimShow}
-				</Button>
-			) : null}
+			<p role="status">{t.guestAdded.replace('{name}', claimable.name)}</p>
+			<Button size="small" variant="outlined" onClick={() => void admin.showGuestClaim(claimable)}>
+				{t.guestClaimShow}
+			</Button>
 		</Banner>
 	);
 });

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ScheduleApi } from '../services/schedule-api';
 import type { SchedulePayload, ScheduleSessionPayload } from '../services/schedule-payload';
 import type { MarketSessionStore } from './market-session.store';
+import { NotificationStore } from './notification.store';
 import { ScheduleStore } from './schedule.store';
 
 // Tuesday 2026-09-22, 5 AM Pacific.
@@ -48,10 +49,15 @@ function payload(overrides: Partial<SchedulePayload> = {}): SchedulePayload {
 	};
 }
 
-async function loadedStore(data: SchedulePayload, api: Partial<ScheduleApi> = {}) {
+async function loadedStore(
+	data: SchedulePayload,
+	api: Partial<ScheduleApi> = {},
+	notifications = new NotificationStore(),
+) {
 	const store = new ScheduleStore(
 		{ load: vi.fn().mockResolvedValue(data), ...api } as unknown as ScheduleApi,
 		{ sendCommand: vi.fn().mockResolvedValue(true), error: null } as unknown as MarketSessionStore,
+		notifications,
 		() => now,
 	);
 
@@ -161,18 +167,28 @@ describe('ScheduleStore', () => {
 		});
 	});
 
-	it('keeps the previous schedule and records the server’s reason when a write is refused', async () => {
+	it('keeps the previous schedule and reports the server’s reason when a write is refused', async () => {
 		// Arrange
-		const store = await loadedStore(payload(), {
-			addSession: vi.fn().mockRejectedValue(new Error('Another session is already scheduled.')),
-		});
+		const notifications = new NotificationStore();
+		const store = await loadedStore(
+			payload(),
+			{
+				addSession: vi.fn().mockRejectedValue(new Error('Another session is already scheduled.')),
+			},
+			notifications,
+		);
 
 		// Act
 		const saved = await store.addOneOff({ ...pattern, date: '2026-09-23' });
 
 		// Assert
 		expect(saved).toBe(false);
-		expect(store.error).toBe('Another session is already scheduled.');
+		expect(notifications.pending).toEqual([
+			expect.objectContaining({
+				message: 'Another session is already scheduled.',
+				severity: 'error',
+			}),
+		]);
 		expect(store.rows).toHaveLength(2);
 		expect(store.isBusy).toBe(false);
 	});

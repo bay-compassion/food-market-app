@@ -5,6 +5,7 @@ import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 
 import { AppThemeProvider } from '../src/components/AppThemeProvider';
 import { ConfirmationDrawer } from '../src/components/ui/ConfirmationDrawer';
+import { NotificationToasts } from '../src/components/ui/NotificationToasts';
 import { languages, type Locale } from '../src/locales';
 import { RootStoreProvider } from '../src/stores/react/store-context';
 import { RootStore } from '../src/stores/root.store';
@@ -99,7 +100,8 @@ const preview: Preview = {
 		/**
 		 * Wraps the story in its page shell and the writing direction its locale calls for, and
 		 * provides the root store the app would provide in real use — along with the confirmation
-		 * sheet `App` mounts, so a story whose component asks for confirmation actually shows it.
+		 * sheet and toasts `App` mounts, so a story whose component asks for confirmation or raises
+		 * a notification actually shows it.
 		 *
 		 * The store is not optional scaffolding: `useRootStore()` throws without a provider, so any
 		 * component resolving its own copy — rather than taking every string as a prop — cannot
@@ -129,6 +131,7 @@ const preview: Preview = {
 								<Story />
 							</div>
 							<ConfirmationDrawer />
+							<NotificationToasts />
 						</>
 					),
 				},

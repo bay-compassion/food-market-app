@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Alert, Button, IconButton, Menu, MenuItem, Snackbar } from '@mui/material';
+import { Button, IconButton, Menu, MenuItem } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState, type MouseEvent } from 'react';
 
@@ -32,15 +32,13 @@ function MoreIcon() {
 
 /** Actions that apply to the identity stored on this browser. */
 export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
-	const { guest, translations } = useRootStore();
+	const { guest, notifications, translations } = useRootStore();
 	const copy = useTranslation().guestView.identityIndicator;
 	const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 	const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
 	const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
-	const [copyFailed, setCopyFailed] = useState(false);
 	const [optingOut, setOptingOut] = useState(false);
-	const [optOutFailed, setOptOutFailed] = useState(false);
 	const horizontal = translations.dir === 'rtl' ? 'left' : 'right';
 
 	function openMenu(event: MouseEvent<HTMLElement>) {
@@ -54,12 +52,11 @@ export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
 	async function optOut() {
 		closeMenu();
 		setOptingOut(true);
-		setOptOutFailed(false);
 
 		try {
 			await guest.disableSmsNotifications();
 		} catch {
-			setOptOutFailed(true);
+			notifications.error(copy.optOutError);
 		} finally {
 			setOptingOut(false);
 		}
@@ -70,20 +67,17 @@ export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
 			return;
 		}
 
-		setCopyFailed(false);
-
 		try {
 			await navigator.clipboard.writeText(guest.deviceId);
 			setCopied(true);
 		} catch {
-			setCopyFailed(true);
+			notifications.error(copy.copyDeviceIdError);
 		}
 	}
 
 	function openDeviceDialog() {
 		closeMenu();
 		setCopied(false);
-		setCopyFailed(false);
 		setDeviceDialogOpen(true);
 	}
 
@@ -135,7 +129,6 @@ export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
 				}
 			>
 				<DeviceId>{guest.deviceId}</DeviceId>
-				{copyFailed ? <Alert severity="error">{copy.copyDeviceIdError}</Alert> : null}
 			</Dialog>
 
 			<Dialog
@@ -156,12 +149,6 @@ export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
 			>
 				<p>{copy.forgetDialogDescription}</p>
 			</Dialog>
-
-			<Snackbar open={optOutFailed} autoHideDuration={6000} onClose={() => setOptOutFailed(false)}>
-				<Alert severity="error" variant="filled" onClose={() => setOptOutFailed(false)}>
-					{copy.optOutError}
-				</Alert>
-			</Snackbar>
 		</>
 	);
 });

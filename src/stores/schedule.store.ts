@@ -13,6 +13,7 @@ import type {
 	SessionTemplate,
 } from '../services/schedule-payload.ts';
 import type { MarketSessionStore } from './market-session.store.ts';
+import type { NotificationStore } from './notification.store.ts';
 
 /** Why a one-off session cannot be added right now, if it cannot. */
 export type OneOffBlock = 'active-session' | 'pending-session';
@@ -44,14 +45,14 @@ export class ScheduleStore {
 	private _selectedDate: LocalDate | null = null;
 	private _visibleMonth: LocalDate | null = null;
 	private _isBusy = false;
-	private _error: string | null = null;
 
 	constructor(
 		private readonly api: ScheduleApi,
 		private readonly session: MarketSessionStore,
+		private readonly notifications: NotificationStore,
 		private readonly now: () => Date = () => new Date(),
 	) {
-		return makeReactive(this, { api: false, session: false, now: false });
+		return makeReactive(this, { api: false, session: false, notifications: false, now: false });
 	}
 
 	get isLoaded(): boolean {
@@ -60,10 +61,6 @@ export class ScheduleStore {
 
 	get isBusy(): boolean {
 		return this._isBusy;
-	}
-
-	get error(): string | null {
-		return this._error;
 	}
 
 	get selectedDate(): LocalDate | null {
@@ -303,7 +300,6 @@ export class ScheduleStore {
 
 	private async apply(request: () => Promise<SchedulePayload>): Promise<boolean> {
 		this._isBusy = true;
-		this._error = null;
 
 		try {
 			const payload = await request();
@@ -312,10 +308,10 @@ export class ScheduleStore {
 
 			return true;
 		} catch (cause) {
-			runInAction(
-				() =>
-					(this._error =
-						cause instanceof Error ? cause.message : 'The schedule could not be updated.'),
+			// A refused write is an outcome of what the worker just did, not a state of the schedule,
+			// so it is reported and then gone rather than left on the page.
+			this.notifications.error(
+				cause instanceof Error ? cause.message : 'The schedule could not be updated.',
 			);
 
 			return false;
