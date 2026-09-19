@@ -38,6 +38,7 @@
     "@base-ui/react": "^1.7.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@launchdarkly/react-sdk": "^4.1.19",
     "@mui/material": "^9.4.0",
     "@mui/x-data-grid": "^9.13.0",
     "@mui/x-date-pickers": "^9.13.0",

@@ -1,3 +1,4 @@
+import type { LDReactClient } from '@launchdarkly/react-sdk';
 import * as Sentry from '@sentry/react';
 import { useEffect } from 'react';
 import {
@@ -8,6 +9,7 @@ import {
 	useNavigationType,
 } from 'react-router';
 
+import { launchDarklySettings } from './launchdarkly-settings.ts';
 import { sentrySettings } from './sentry-settings.ts';
 
 /**
@@ -20,6 +22,12 @@ import { sentrySettings } from './sentry-settings.ts';
  */
 
 const settings = sentrySettings(import.meta.env);
+const ldSettings = launchDarklySettings(import.meta.env);
+
+/** The LaunchDarkly flag `enableReplayWhenFlagged` reads. Must exist in the project and default
+ * to `false` — a flag key LaunchDarkly can't resolve evaluates to that `false` forever, which
+ * looks identical to "off on purpose." */
+const REPLAY_FLAG_KEY = 'sentry-replay-enabled';
 
 function initializeSentry() {
 	if (!settings) {
@@ -50,7 +58,9 @@ function initializeSentry() {
 		dataCollection: { userInfo: false },
 	});
 
-	if (settings.replaysOnErrorSampleRate > 0) {
+	// With a LaunchDarkly project configured, `enableReplayWhenFlagged` decides this instead —
+	// `main.tsx` calls it once the client exists, which happens after this function runs.
+	if (!ldSettings && settings.replaysOnErrorSampleRate > 0) {
 		void loadReplay();
 	}
 }
@@ -67,6 +77,38 @@ async function loadReplay() {
 	const { addReplay } = await import('./sentry-replay.ts');
 
 	addReplay();
+}
+
+/**
+ * Turns on error replay at runtime, from `sentry-replay-enabled` instead of the build-time
+ * `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` switch `initializeSentry` otherwise uses — a project
+ * that wants to flip replay on or off without a redeploy passes its LaunchDarkly client here.
+ *
+ * Called from `main.tsx`, next to where that client is constructed, rather than from a component:
+ * nothing here renders, and `App` — the shell every route and every test renders — can't safely
+ * call a LaunchDarkly hook, since it mounts with no `LDProvider` in the unit tests and Storybook.
+ *
+ * The flag is only ever read to turn replay *on*; there is no supported way to remove a Sentry
+ * integration once added, so flipping it back off stops new sessions from being flagged but does
+ * not un-load replay from ones already running.
+ */
+export function enableReplayWhenFlagged(client: LDReactClient): void {
+	if (!settings) {
+		return;
+	}
+
+	let loaded = false;
+	const checkFlag = () => {
+		if (loaded || !client.boolVariation(REPLAY_FLAG_KEY, false)) {
+			return;
+		}
+		loaded = true;
+		client.off(`change:${REPLAY_FLAG_KEY}`, checkFlag);
+		void loadReplay();
+	};
+
+	client.on(`change:${REPLAY_FLAG_KEY}`, checkFlag);
+	void client.waitForInitialization().then(checkFlag);
 }
 
 // Sentry has to be running before anything it instruments is constructed, and the router is built

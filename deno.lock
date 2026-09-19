@@ -15,6 +15,7 @@
         "npm:@base-ui/react@^1.7.0",
         "npm:@emotion/react@^11.14.0",
         "npm:@emotion/styled@^11.14.1",
+        "npm:@launchdarkly/react-sdk@^4.1.19",
         "npm:@mui/material@^9.4.0",
         "npm:@mui/x-data-grid@^9.13.0",
         "npm:@mui/x-date-pickers@^9.13.0",
