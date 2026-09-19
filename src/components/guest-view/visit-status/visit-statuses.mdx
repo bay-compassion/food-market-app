@@ -1,0 +1,90 @@
+import { Markdown, Meta, Story } from '@storybook/addon-docs/blocks';
+import { Mermaid } from 'mdx-mermaid/lib/Mermaid';
+
+import * as GuestStates from '../GuestVisitStatus.stories.tsx';
+import { NotOpen } from '../GuestNotOpenState.stories.tsx';
+
+<Meta title="Guest/Guest States" />
+
+# Guest States
+
+Guests move through a distinct set of states when using the app.
+
+<Mermaid
+	chart={`
+	flowchart TD
+		Start([Market Closed])
+		MarketOpens[Market Opens]
+		Lottery[Lottery Drawn]
+		MarketCloses([Market Closes])
+
+    	Start --> |On schedule or manually| MarketOpens
+    	MarketOpens --> |Registered within window| Registered
+    	MarketOpens --> |Missed window| MarketCloses
+
+    	Registered --> Lottery
+    	RegistrationCloses[Registration Closes] --> Cancelled
+
+    	Lottery --> |Selected| Waiting
+    	Lottery --> |Cancels| Cancelled
+    	Lottery --> |Not Selected| MarketCloses
+
+    	Waiting --> Called --> Served
+    	Served --> MarketCloses
+
+    	Waiting --> |Cancels| Cancelled
+    	Called --> |Cancels| Cancelled
+
+    	Cancelled --> MarketCloses
+    	MarketCloses --> End([↺ Restart])
+    `}
+
+/>
+
+<br />
+
+## Status Cards
+
+The following cards are used to represent the status of a guest.
+
+### Market Closed
+
+This is the state for most of the week, from the time when the previous market event has MarketClosesed until registration opens for the next market event.
+
+<Story of={NotOpen} />
+
+### Market Opens
+
+See the forms documentation for more information on the guest registration form.
+
+### Registered
+
+The guest has filled out the registration form and is waiting for the lottery draw.
+
+<Story of={GuestStates.Registered} />
+
+### Registration Closed
+
+The registration window has closed.
+
+### Lottery Pending
+
+<Story of={GuestStates.Called} />
+
+### Waiting
+
+<Story of={GuestStates.Waiting} />
+
+### Called
+
+<Story of={GuestStates.Called} />
+
+### Served
+
+<Story of={GuestStates.Served} />
+
+### Cancelled
+
+The user has cancelled their visit.
+
+<Story of={GuestStates.Cancelled} />

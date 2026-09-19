@@ -1,4 +1,6 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import remarkMermaid from 'mdx-mermaid';
+import { Mermaid } from 'mdx-mermaid/lib/Mermaid';
 import type { PluginOption } from 'vite';
 
 /**
@@ -14,8 +16,28 @@ function pluginName(plugin: unknown): string {
 }
 
 const config: StorybookConfig = {
-	stories: ['./docs/**/*.mdx', './docs/**/*.stories.tsx', '../src/**/*.stories.tsx'],
-	addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
+	stories: [
+		'./docs/**/*.mdx',
+		'./docs/**/*.stories.tsx',
+		'../src/**/*.mdx',
+		'../src/**/*.stories.tsx',
+	],
+	addons: [
+		{
+			name: '@storybook/addon-docs',
+			options: {
+				remarkPlugins: [[remarkMermaid, { output: 'svg' }]],
+				components: { mermaid: Mermaid, Mermaid },
+				mdxPluginOptions: {
+					mdxCompileOptions: {
+						// Add mdx-mermaid as a remark plugin
+						remarkPlugins: [remarkMermaid],
+					},
+				},
+			},
+		},
+		'@storybook/addon-a11y',
+	],
 	framework: {
 		name: '@storybook/react-vite',
 		options: {},

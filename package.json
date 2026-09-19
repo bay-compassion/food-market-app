@@ -96,6 +96,8 @@
     "del-cli": "^7.0.0",
     "drizzle-kit": "^1.0.0-beta.22",
     "jsdom": "^29.1.1",
+    "mdx-mermaid": "^2.0.4",
+    "mermaid": "^12.0.0",
     "mobx-react-lite": "^4.1.1",
     "netlify-cli": "^27.5.2",
     "npm-run-all2": "^9.0.2",
