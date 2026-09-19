@@ -11,17 +11,18 @@ suite all have none, so they never spend quota and never talk to Sentry.
 
 ## What is instrumented
 
-| Product         | Where                                          | Draws on         |
-| --------------- | ---------------------------------------------- | ---------------- |
-| Browser errors  | `src/sentry.ts`, via React's root error hooks  | errors           |
-| Browser tracing | `src/sentry.ts`, route-aware page and nav load | spans            |
-| Session replay  | `src/sentry-replay.ts`, on error only          | replays          |
-| User feedback   | `src/sentry-feedback.ts`, opt-in for beta      | errors, replays  |
-| Server errors   | `routeHandler`, and both async workloads       | errors           |
-| Server tracing  | `netlify/lib/sentry.mts`, one span per request | spans            |
-| Database spans  | `tracedQuery` at each query site               | spans            |
-| Server logs     | Winston transport in `netlify/lib/logging.mts` | logs             |
-| Source maps     | `@sentry/vite-plugin` in `vite.config.ts`      | nothing billable |
+| Product                 | Where                                                          | Draws on         |
+| ----------------------- | -------------------------------------------------------------- | ---------------- |
+| Browser errors          | `src/sentry.ts`, via React's root error hooks                  | errors           |
+| Browser tracing         | `src/sentry.ts`, route-aware page and nav load                 | spans            |
+| Session replay          | `src/sentry-replay.ts`, on error only                          | replays          |
+| Session replay override | `enableReplayWhenFlagged` in `src/sentry.ts`, via LaunchDarkly | replays          |
+| User feedback           | `src/sentry-feedback.ts`, opt-in for beta                      | errors, replays  |
+| Server errors           | `routeHandler`, and both async workloads                       | errors           |
+| Server tracing          | `netlify/lib/sentry.mts`, one span per request                 | spans            |
+| Database spans          | `tracedQuery` at each query site                               | spans            |
+| Server logs             | Winston transport in `netlify/lib/logging.mts`                 | logs             |
+| Source maps             | `@sentry/vite-plugin` in `vite.config.ts`                      | nothing billable |
 
 A guest's page load and the API request it makes are the **same trace**: the browser sends a
 `sentry-trace` header, and `tracedRequest` continues it on the server instead of starting a new
@@ -125,21 +126,21 @@ rather than an API route; the API endpoints either mutate market state or requir
 
 Set these on the Netlify site. Only the DSNs are required; the rest have working defaults.
 
-| Variable                                            | Applies to | Default                      |
-| --------------------------------------------------- | ---------- | ---------------------------- |
-| `VITE_SENTRY_DSN`                                   | browser    | unset — Sentry stays off     |
-| `VITE_SENTRY_ENVIRONMENT`                           | browser    | Vite's mode                  |
-| `VITE_SENTRY_TRACES_SAMPLE_RATE`                    | browser    | `1`                          |
-| `VITE_SENTRY_ENABLED`                               | browser    | on — set `false` to disable  |
-| `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE`           | browser    | `1` — set `0` to drop replay |
-| `VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE`            | browser    | `0`                          |
-| `VITE_SENTRY_FEEDBACK_ENABLED`                      | browser    | off — set `true` for beta    |
-| `VITE_SENTRY_USER_INFO_ENABLED`                     | browser    | off — beta deploys only      |
-| `SENTRY_DSN`                                        | functions  | unset — Sentry stays off     |
-| `SENTRY_ENVIRONMENT`                                | functions  | Netlify's `CONTEXT`          |
-| `SENTRY_RELEASE`                                    | functions  | Netlify's `COMMIT_REF`       |
-| `SENTRY_TRACES_SAMPLE_RATE`                         | functions  | `1`                          |
-| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | build      | unset — no source map upload |
+| Variable                                            | Applies to | Default                                                            |
+| --------------------------------------------------- | ---------- | ------------------------------------------------------------------ |
+| `VITE_SENTRY_DSN`                                   | browser    | unset — Sentry stays off                                           |
+| `VITE_SENTRY_ENVIRONMENT`                           | browser    | Vite's mode                                                        |
+| `VITE_SENTRY_TRACES_SAMPLE_RATE`                    | browser    | `1`                                                                |
+| `VITE_SENTRY_ENABLED`                               | browser    | on — set `false` to disable                                        |
+| `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE`           | browser    | `1` — ignored once `VITE_LAUNCHDARKLY_CLIENT_ID` is set; see below |
+| `VITE_SENTRY_REPLAY_SESSION_SAMPLE_RATE`            | browser    | `0`                                                                |
+| `VITE_SENTRY_FEEDBACK_ENABLED`                      | browser    | off — set `true` for beta                                          |
+| `VITE_SENTRY_USER_INFO_ENABLED`                     | browser    | off — beta deploys only                                            |
+| `SENTRY_DSN`                                        | functions  | unset — Sentry stays off                                           |
+| `SENTRY_ENVIRONMENT`                                | functions  | Netlify's `CONTEXT`                                                |
+| `SENTRY_RELEASE`                                    | functions  | Netlify's `COMMIT_REF`                                             |
+| `SENTRY_TRACES_SAMPLE_RATE`                         | functions  | `1`                                                                |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | build      | unset — no source map upload                                       |
 
 `VITE_` variables are read at build time, so changing one needs a redeploy, not just a restart.
 
@@ -156,6 +157,20 @@ puts a guest's error next to the request that failed behind it; the two DSNs dif
 Sample rates are read as numbers between 0 and 1; anything else falls back to the default. If the
 error allowance is what runs out, the fix is an inbound filter or a spike protection setting in
 Sentry rather than a code change — the SDK is already only reporting real failures.
+
+### Turning replay on without a redeploy
+
+With `VITE_LAUNCHDARKLY_CLIENT_ID` set (see `src/launchdarkly-settings.ts`), the boolean flag
+`sentry-replay-enabled` decides whether error replay loads instead of
+`VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` — `enableReplayWhenFlagged` in `src/sentry.ts` subscribes
+to it as soon as the LaunchDarkly client exists. The flag must already exist in the LaunchDarkly
+project and default to `false`; a flag key LaunchDarkly can't resolve evaluates to that same
+`false` forever, which looks identical to "off on purpose" from inside the app. There is no
+supported way to remove a Sentry integration once added, so switching the flag back off stops new
+sessions from loading replay but does not affect one already running.
+
+With no LaunchDarkly project configured, `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` still decides it
+at build time, unchanged from before.
 
 ### Source maps
 

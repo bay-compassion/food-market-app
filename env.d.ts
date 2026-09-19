@@ -5,6 +5,7 @@ interface ImportMetaEnv {
 	readonly VITE_AUTH0_CLIENT_ID?: string;
 	readonly VITE_AUTH0_DOMAIN?: string;
 	readonly VITE_AUTH0_ISSUER?: string;
+	readonly VITE_LAUNCHDARKLY_CLIENT_ID?: string;
 	readonly VITE_SENTRY_DSN?: string;
 	readonly VITE_SENTRY_ENABLED?: string;
 	readonly VITE_SENTRY_ENVIRONMENT?: string;
