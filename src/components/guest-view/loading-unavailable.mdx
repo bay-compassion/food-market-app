@@ -6,33 +6,32 @@ import { Still } from '../../../.storybook/docs/Still';
 
 # Loading and Unavailable
 
-What a guest sees while the market is being looked up, and when it cannot be.
+These examples show what happens while the app checks the market's status, and when that check fails.
 
-## Checking the market's status
+## While the app checks
 
-The first thing the app does is ask whether a market is running. On a slow connection the guest waits
-on this message.
+When a guest opens the app, it checks whether a market is running. On a slow connection, the guest
+sees this loading screen.
 
 <Still
 	id="market-loading"
 	alt="The app bar, and a spinner with the words 'Checking today's market status'"
 />
 
-## The market's status could not be loaded
+## If the check fails
 
-**Decision needed.** This is not an ordinary unavailable screen. When the app cannot reach the server
-it cannot tell whether a market is running, and it shows the Market Closed card anyway. During an open
-market that is false: the guest is told registration opens next Saturday when it may be open now, and
-may leave rather than try again.
+**Decision needed.** If the app cannot reach the server, it cannot tell whether registration is open
+or the market is underway. Today it shows the Market Closed card anyway. That could tell a guest to
+come back next Saturday when they may be able to register now.
 
 <Still
 	id="market-unavailable"
 	alt="The Market Closed card, shown because the market's status could not be loaded"
 />
 
-The choices, for a guest whose phone cannot reach the server:
+Which response should the app use when it cannot check the status?
 
-1. Say that the status could not be checked, and ask the guest to try again.
-2. Show the registration form anyway, and let the server accept or refuse it. This was the original
-   intention.
-3. Leave it as it is.
+1. Explain that the status could not be checked and ask the guest to try again.
+2. Show the registration form and let the server accept or reject a submission. This was the
+   original intention.
+3. Keep showing the Market Closed card.

@@ -12,109 +12,174 @@ import { InProgress } from '../GuestServiceState.stories.tsx';
 
 <Meta title="Guest/Guest States" tags={['review']} />
 
-# Guest States
-
-Guests move through a distinct set of states when using the app. Each one is a screen of its own, and
-each has a color: the same color marks its box in the chart below and its heading further down.
-
-<div className="review-fullpage">
+<div className="review-fullpage review-flowchart">
+	<h1>Guest States</h1>
+	<p>
+		The screen changes as registration opens, the lottery is drawn, and the guest's visit
+		progresses. Follow the arrows to see what can happen next. Each color in the chart matches a
+		heading below.
+	</p>
 	<Mermaid chart={guestStateFlowchart()} />
+	<p>
+		The chart shows screens, not every event. Closing registration does not change a registered
+		guest's card; they continue to see Registered until the lottery result arrives.
+	</p>
 </div>
 
-<br />
+## Before a guest enters the lottery
 
-Some moments have no screen of their own, so they are arrows in the chart rather than boxes. When the
-lottery is drawn, a registered guest keeps seeing the Registered card until their result arrives.
-When registration closes, a guest who has already registered sees no change either.
+These screens depend on whether the market is accepting registrations.
 
-## Status Cards
-
-The following cards are used to represent the status of a guest.
+<div className="review-state">
 
 ### <StatePip state="marketClosed" /> Market Closed
 
-This is the state for most of the week, from the time when the previous market closes until
-registration opens for the next one. A guest sees this card again once the market they took part in
-has closed.
+This card appears between markets, before registration opens. It appears again after the market ends.
 
 <Story of={NotOpen} />
 
+</div>
+
+<div className="review-state">
+
 ### <StatePip state="registrationOpen" /> Registration Open
 
-A guest who has not registered yet is shown the registration form. A new guest is asked for their name
-and phone number together with their household details; a guest the app already knows is asked for the
-household details alone. See the forms documentation for more information.
+A guest who has not registered sees a form. If this phone has their name and number saved, the form
+asks only for today's household details. Otherwise it asks for their name and number too. See Forms
+for both versions.
 
 <Story of={RegistrationForm} />
 
+</div>
+
+## After a guest enters the lottery
+
+These cards show the guest's progress from registration through the queue and service.
+
+<div className="review-state">
+
 ### <StatePip state="registered" /> Registered
 
-The guest has filled out the registration form and is waiting for the lottery draw. They keep seeing
-this card after registration closes, until their result arrives.
+The guest has entered the lottery. This card remains after registration closes, until their result
+arrives.
 
 <Story of={GuestStates.Registered} />
 
+</div>
+
+<div className="review-state">
+
 ### <StatePip state="waiting" /> Waiting
 
-The guest was selected in the lottery. The card shows their place in line and how many guests are
-ahead of them. The guest at the front of the line is told they are next.
+The guest was selected. The card shows their current place in line and how many guests are ahead.
 
 <Story of={GuestStates.Waiting} />
 
+</div>
+
+<div className="review-state">
+
+#### Next in line
+
+When the guest reaches the front of the line, the card says they are next.
+
 <Story of={GuestStates.WaitingNext} />
+
+</div>
+
+<div className="review-state">
 
 ### <StatePip state="called" /> Called
 
-A worker has called the guest. The card changes to tell them it is their turn, and asks them to come to
-the entrance.
+A team member has called the guest. The card asks them to come to the entrance.
 
 <Story of={GuestStates.Called} />
 
+</div>
+
+<div className="review-state">
+
 ### <StatePip state="served" /> Served
 
-The guest's visit is complete.
+The guest has been served. Their visit is complete.
 
 <Story of={GuestStates.Served} />
 
+</div>
+
+## Other visit outcomes
+
+Not every visit ends with service. These cards cover the other results and actions.
+
+<div className="review-state">
+
 ### <StatePip state="notSelected" /> Not Selected
 
-The guest registered but was not selected in the lottery. Supplies are limited, so not everyone can be
-placed.
+The guest entered the lottery but was not selected. Supplies are limited, so not everyone receives a
+place in line.
 
 <Story of={GuestStates.NotPlaced} />
 
+</div>
+
+<div className="review-state">
+
 ### <StatePip state="noShow" /> No Show
 
-A worker called the guest but could not find them. A worker can still return them to the line until the
-market closes.
+A team member called the guest but could not find them. A team member can return them to the line
+before the market closes.
 
 <Story of={GuestStates.NoShow} />
 
+</div>
+
+<div className="review-state">
+
 ### <StatePip state="cancelled" /> Cancelled
 
-The guest gave up their place. A guest can only do this while they are Registered or Waiting — once
-they have been called, it is a worker's decision. If registration is still open, a guest who cancels is
-offered the registration form again; once it has closed they see this card until the market closes.
+The guest chose to cancel while Registered or Waiting. After they are called, only a team member can
+change their status. If registration is still open, the guest can enter again; after it closes, they
+see this card until the market ends.
 
 <Story of={GuestStates.Cancelled} />
 
-Before giving up their place, the guest is asked to confirm.
+</div>
+
+<div className="review-state">
+
+#### Confirm cancellation
+
+The app asks the guest to confirm before cancelling.
 
 <Still
 	id="cancel-asked"
 	alt="A sheet asking the guest to confirm cancelling their place in the queue, with Yes cancel and Keep my place buttons"
 />
 
+</div>
+
+## Guests who missed registration
+
+These screens appear when a guest has not entered the lottery.
+
+<div className="review-state">
+
 ### <StatePip state="registrationClosed" /> Registration Closed
 
-The guest did not register, and the registration window has closed. This covers the short wait while the
-lottery is being drawn, too.
+Registration has closed, but the market has not started serving guests. A guest who did not enter the
+lottery sees this card, including while the lottery is being drawn.
 
 <Story of={RegistrationClosed} />
 
+</div>
+
+<div className="review-state">
+
 ### <StatePip state="marketUnderway" /> Market Underway
 
-The guest did not register, and arrived after the market had started serving people. They are asked to
-speak with a market team member.
+The market has started serving guests. Someone who did not register is asked to speak with a market
+team member.
 
 <Story of={InProgress} />
+
+</div>

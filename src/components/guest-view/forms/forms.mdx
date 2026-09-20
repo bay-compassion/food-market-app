@@ -8,37 +8,35 @@ import * as CombinedForm from './GuestCombinedForm.stories.tsx';
 
 <Meta title="Guest/Forms" tags={['review']} />
 
-# Guest Forms
+# Forms
 
-A guest fills in a form in one of three situations. Which one they see depends on whether this phone
-already knows them, and on whether registration is open.
+There are three ways a guest can provide information. Saving a name and phone number prepares this
+phone for a future visit; it does not enter the lottery. When registration opens, the guest enters the
+lottery with either a full form or a shorter form, depending on what is already saved on the phone.
 
-## Saving information for later — the Identity Form
+## Save information before registration opens
 
-A guest can save their name and phone number ahead of time, from the "Save my information" button
-shown while registration is not open. It asks for nothing else. It does not enter the lottery and it
-does not hold a place. The details are kept on this phone, so the guest does not need to enter them
-again on their next visit.
+The "Save my information" button opens a form for the guest's name and phone number. Those details
+stay on this phone for next time. Saving them does not reserve a place or enter the lottery.
 
 <Story of={InformationForm.Default} />
 
-Once the form is submitted, the guest is told their information is saved.
+After submitting, the guest sees a confirmation that their information was saved.
 
 <Still id="identity-saved" alt="The identity form's success message: Your information is saved" />
 
-## A new guest entering the lottery — the Combined Form
+## Enter the lottery without saved information
 
-When registration is open and this phone does not know the guest yet, one form asks for everything at
-once: name, phone number, and household details. Submitting it enters the lottery, and the name and
-phone number are saved on this phone for next time.
+During registration, a guest whose phone has no saved information enters their name, phone number,
+and household details in one form. Submitting it enters the lottery and saves their name and phone
+number on this phone for next time.
 
 <Story of={CombinedForm.RegistrationForm} />
 
-## A returning guest entering the lottery — the Lottery Form
+## Enter the lottery with saved information
 
-When registration is open and this phone already knows the guest, because they saved their
-information or registered before, the app shows who they are and asks only for the household
-details. The name and phone number are already known. The household details are asked every market,
+During registration, a guest who previously saved their information or registered on this phone sees
+their name and enters only their household details. The app asks for those details at each market
 because they describe that day's visit.
 
 <Story of={LotteryForm.Default} />

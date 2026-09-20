@@ -4,12 +4,21 @@ import { useEffect, useState } from 'react';
 import { isStoryIndex, reviewPages } from './review-index';
 
 const List = styled.div`
+	@media print {
+		break-inside: avoid-page;
+		page-break-inside: avoid;
+	}
+
 	.section {
 		display: flex;
 		gap: 14px;
 		align-items: baseline;
 		padding: 9px 0;
 		border-top: 1px solid #d9dfdc;
+	}
+
+	.section:first-child {
+		border-top: 0;
 	}
 
 	.number {

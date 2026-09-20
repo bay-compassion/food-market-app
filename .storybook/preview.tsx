@@ -78,12 +78,12 @@ const preview: Preview = {
 					[
 						'Introduction',
 						'Forms',
+						'Text Messages',
 						'Guest States',
 						'Loading and Unavailable',
 						'Text Updates',
 						'Identity Menu',
 						'QR Codes',
-						'Text Messages',
 					],
 					'Components',
 					'Admin',

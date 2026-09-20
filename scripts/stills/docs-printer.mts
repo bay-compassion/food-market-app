@@ -72,8 +72,14 @@ function printCss(sectionNumber: number | null, paper: PageSize): string {
 		html, body { background: #fff !important; }
 		.sbdocs-wrapper { padding: 0 !important; min-height: 0 !important; }
 		.sbdocs-content { max-width: none !important; padding: 0 !important; }
-		/* A heading, and the paragraph that introduces a figure, stay on the page with what follows. */
-		.sbdocs-content h1, .sbdocs-content h2, .sbdocs-content h3, .sbdocs-content p { break-after: avoid; break-inside: avoid; }
+		/* Keep every MDX heading with the next block without chaining whole paragraphs together. */
+		.sbdocs-content :is(h1, h2, h3, h4, h5, h6) {
+			break-after: avoid-page !important;
+			page-break-after: avoid !important;
+			break-inside: avoid-page;
+		}
+		.sbdocs-content p { break-inside: avoid-page; orphans: 3; widows: 3; }
+		.sbdocs-content h2 + p:has(+ .review-state) { break-after: avoid-page; }
 		/* A diagram is a picture, and one this tall would take a page to itself. */
 		.sbdocs-content svg[id^='mermaid'], .sbdocs-content .mermaid svg {
 			display: block; margin: 0 auto; max-height: 700px; width: auto; max-width: 100%;
@@ -84,12 +90,17 @@ function printCss(sectionNumber: number | null, paper: PageSize): string {
 		 * property names a page in an at-page rule, and a named page can have margins of its own.
 		 */
 		@page fullpage { size: ${paper.widthIn}in ${paper.heightIn}in; margin: ${fullPageMarginIn}in; }
-		.review-fullpage { page: fullpage; break-before: page; break-after: page; }
+		.review-fullpage { page: fullpage; break-before: page; break-after: page; break-inside: avoid-page; }
 		.review-fullpage svg {
 			/* Mermaid sets its own maximum width in the element's style, and the general diagram rule above caps its height; only !important beats both. */
 			display: block; margin: 0 auto; width: ${fullPageWidthPx(paper)}px !important; max-width: none !important; height: auto;
 			max-height: ${fullPageHeightPx(paper)}px !important;
 		}
+		.review-flowchart svg {
+			width: ${Math.round(fullPageWidthPx(paper) * 0.93)}px !important;
+			max-height: ${fullPageHeightPx(paper) - 150}px !important;
+		}
+		.review-state { break-inside: avoid-page; page-break-inside: avoid; }
 		body { counter-reset: figure; }
 		${figureSelector} {
 			counter-increment: figure;
