@@ -1,90 +1,110 @@
-import { Markdown, Meta, Story } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { Mermaid } from 'mdx-mermaid/lib/Mermaid';
 
+import { StatePip } from '../../../../.storybook/docs/StatePip';
+import { guestStateFlowchart } from '../../../../.storybook/docs/guest-states';
+import { RegistrationForm } from '../forms/GuestCombinedForm.stories.tsx';
 import * as GuestStates from '../GuestVisitStatus.stories.tsx';
 import { NotOpen } from '../GuestNotOpenState.stories.tsx';
+import { RegistrationClosed } from '../GuestRegistrationClosedState.stories.tsx';
+import { InProgress } from '../GuestServiceState.stories.tsx';
 
-<Meta title="Guest/Guest States" />
+<Meta title="Guest/Guest States" tags={['review']} />
 
 # Guest States
 
-Guests move through a distinct set of states when using the app.
+Guests move through a distinct set of states when using the app. Each one is a screen of its own, and
+each has a color: the same color marks its box in the chart below and its heading further down.
 
-<Mermaid
-	chart={`
-	flowchart TD
-		Start([Market Closed])
-		MarketOpens[Market Opens]
-		Lottery[Lottery Drawn]
-		MarketCloses([Market Closes])
-
-    	Start --> |On schedule or manually| MarketOpens
-    	MarketOpens --> |Registered within window| Registered
-    	MarketOpens --> |Missed window| MarketCloses
-
-    	Registered --> Lottery
-    	RegistrationCloses[Registration Closes] --> Cancelled
-
-    	Lottery --> |Selected| Waiting
-    	Lottery --> |Cancels| Cancelled
-    	Lottery --> |Not Selected| MarketCloses
-
-    	Waiting --> Called --> Served
-    	Served --> MarketCloses
-
-    	Waiting --> |Cancels| Cancelled
-    	Called --> |Cancels| Cancelled
-
-    	Cancelled --> MarketCloses
-    	MarketCloses --> End([↺ Restart])
-    `}
-
-/>
+<Mermaid chart={guestStateFlowchart()} />
 
 <br />
+
+Some moments have no screen of their own, so they are arrows in the chart rather than boxes. When the
+lottery is drawn, a registered guest keeps seeing the Registered card until their result arrives.
+When registration closes, a guest who has already registered sees no change either.
 
 ## Status Cards
 
 The following cards are used to represent the status of a guest.
 
-### Market Closed
+### <StatePip state="marketClosed" /> Market Closed
 
-This is the state for most of the week, from the time when the previous market event has MarketClosesed until registration opens for the next market event.
+This is the state for most of the week, from the time when the previous market closes until
+registration opens for the next one. A guest sees this card again once the market they took part in
+has closed.
 
 <Story of={NotOpen} />
 
-### Market Opens
+### <StatePip state="registrationOpen" /> Registration Open
 
-See the forms documentation for more information on the guest registration form.
+A guest who has not registered yet is shown the registration form. A new guest is asked for their name
+and phone number together with their household details; a guest the app already knows is asked for the
+household details alone. See the forms documentation for more information.
 
-### Registered
+<Story of={RegistrationForm} />
 
-The guest has filled out the registration form and is waiting for the lottery draw.
+### <StatePip state="registered" /> Registered
+
+The guest has filled out the registration form and is waiting for the lottery draw. They keep seeing
+this card after registration closes, until their result arrives.
 
 <Story of={GuestStates.Registered} />
 
-### Registration Closed
+### <StatePip state="waiting" /> Waiting
 
-The registration window has closed.
-
-### Lottery Pending
-
-<Story of={GuestStates.Called} />
-
-### Waiting
+The guest was selected in the lottery. The card shows their place in line and how many guests are
+ahead of them. The guest at the front of the line is told they are next.
 
 <Story of={GuestStates.Waiting} />
 
-### Called
+<Story of={GuestStates.WaitingNext} />
+
+### <StatePip state="called" /> Called
+
+A worker has called the guest. The card changes to tell them it is their turn, and asks them to come to
+the entrance.
 
 <Story of={GuestStates.Called} />
 
-### Served
+### <StatePip state="served" /> Served
+
+The guest's visit is complete.
 
 <Story of={GuestStates.Served} />
 
-### Cancelled
+### <StatePip state="notSelected" /> Not Selected
 
-The user has cancelled their visit.
+The guest registered but was not selected in the lottery. Supplies are limited, so not everyone can be
+placed.
+
+<Story of={GuestStates.NotPlaced} />
+
+### <StatePip state="noShow" /> No Show
+
+A worker called the guest but could not find them. A worker can still return them to the line until the
+market closes.
+
+<Story of={GuestStates.NoShow} />
+
+### <StatePip state="cancelled" /> Cancelled
+
+The guest gave up their place. A guest can only do this while they are Registered or Waiting — once
+they have been called, it is a worker's decision. If registration is still open, a guest who cancels is
+offered the registration form again; once it has closed they see this card until the market closes.
 
 <Story of={GuestStates.Cancelled} />
+
+### <StatePip state="registrationClosed" /> Registration Closed
+
+The guest did not register, and the registration window has closed. This covers the short wait while the
+lottery is being drawn, too.
+
+<Story of={RegistrationClosed} />
+
+### <StatePip state="marketUnderway" /> Market Underway
+
+The guest did not register, and arrived after the market had started serving people. They are asked to
+speak with a market team member.
+
+<Story of={InProgress} />

@@ -90,21 +90,21 @@ The history includes the awkward cases worth testing against: oversubscribed ses
 worker added by hand, no-shows, cancellations, and visits served without a recorded time. The
 script refuses to touch a database that is not on localhost unless you pass `--force`.
 
-### Printable app stills
+### Review document
 
-Design conversations go better around a table than around a screen. `npm run capture:stills`
-photographs the app's major arcs — a guest's day, where it goes otherwise, and the market's state
-through the day — and lays them out as sheets of paper, numbered so you can point at one and sized
-so a sheet is always one sheet:
+Copy and design reviews go better on paper, and the people doing them rarely have the app or a code
+editor. `npm run capture:stills` builds a PDF for them to mark up. Its spine is the MDX docs pages in
+Storybook that tag themselves `review`, with their stories shown inside the app's own bar and footer;
+after them come photographs of the running app for what a docs page cannot show — a dialog, a
+failure, a text message:
 
 ```bash
 npx playwright install chromium             # once
-npm run capture:stills                      # → stills/stills.pdf
-npm run capture:stills -- --arc guest-day --columns 2 --rows 1
+npm run capture:stills                      # → stills/review.pdf
+npm run capture:stills -- --locale es       # the same document, in Spanish
 ```
 
-The sheets are an edit, not an inventory: about twenty hand-picked stories out of Storybook's two
-hundred. See [`docs/stills.md`](docs/stills.md) for the arcs, how to add a beat to one, and the
+See [`docs/stills.md`](docs/stills.md) for how to write a page, what the stills are for, and the
 page-size options.
 
 ## Checks
@@ -252,7 +252,7 @@ importantly, how to connect it without handing it the app's own database credent
 
 - `src/` — React frontend
 - `public/` — static frontend assets
-- `scripts/stills/` — the printable stills capture; see [`docs/stills.md`](docs/stills.md)
+- `scripts/stills/` — the review document's capture; see [`docs/stills.md`](docs/stills.md)
 - `netlify/functions/` — API endpoints, including guest check-in
 - `netlify/database/migrations/` — Netlify DB migrations; read [`docs/migrations.md`](docs/migrations.md)
   before changing anything here

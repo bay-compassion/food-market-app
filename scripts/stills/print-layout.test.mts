@@ -105,6 +105,19 @@ describe('PrintLayout', () => {
 		expect(strip.columnSpan).toBe(1);
 	});
 
+	it('prints a short still at the same scale as a phone screen rather than enlarging it to fit', () => {
+		// Arrange
+		const sheet = layout({ columns: 1, rows: 1 });
+
+		// Act
+		const screen = sheet.place({ width: 390, height: 844 });
+		const message = sheet.place({ width: 390, height: 400 });
+
+		// Assert
+		expect(message.widthIn).toBeCloseTo(screen.widthIn);
+		expect(message.heightIn).toBeLessThan(screen.heightIn);
+	});
+
 	it('refuses a grid the paper cannot carry', () => {
 		// Arrange
 		const sheet = layout({ rows: 40 });

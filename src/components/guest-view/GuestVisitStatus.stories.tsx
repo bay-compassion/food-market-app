@@ -1,4 +1,5 @@
-import type { Decorator, Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { expect, within } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
@@ -15,11 +16,15 @@ import { GuestVisitState } from './GuestVisitState';
  * countdown, and the cancel action stay in the arrangement they actually ship in.
  *
  * `GuestVisitStatus` reads the current visit from the root store rather than taking it as props,
- * so each story seeds a fresh store — via a mocked `/api/visit` — instead of passing visit fields
- * straight through as props.
+ * so each story seeds a fresh store whose own visit lookup answers for it.
+ *
+ * That lookup is handed to the store rather than faked on `window.fetch`, and the visit token lives
+ * in the store's own storage rather than `localStorage`. A docs page renders every one of these
+ * stories in one window, and the visit store refreshes itself every fifteen seconds: with a shared
+ * `fetch`, whichever story rendered last answered for all of them, and every card eventually turned
+ * into that story's status.
  */
 const visitTokenStorageKey = 'bay-compassion.visit-token';
-const originalFetch = window.fetch.bind(window);
 
 type GuestVisitStatusArgs = {
 	locale: Locale;
@@ -30,47 +35,44 @@ type GuestVisitStatusArgs = {
 	submissionError: boolean;
 };
 
-const withVisitEndpoint: Decorator = (Story, context) => {
-	const args = context.args as GuestVisitStatusArgs;
-
-	window.localStorage.setItem(visitTokenStorageKey, 'story-visit-token');
-
-	window.fetch = (input, init) => {
-		const url = String(input instanceof Request ? input.url : input);
-
-		if (url !== '/api/visit') {
-			return originalFetch(input, init);
-		}
-
-		if ((init?.method ?? 'GET') === 'GET') {
-			return Promise.resolve(
-				Response.json({
+/** A store whose visit is this story's, and which touches no state outside itself. */
+function seededStore({
+	locale,
+	visitStatus,
+	queuePosition,
+	aheadOfYou,
+	isCancelling,
+	submissionError,
+}: GuestVisitStatusArgs) {
+	const saved = new Map([[visitTokenStorageKey, 'story-visit-token']]);
+	const store = new RootStore({
+		visit: {
+			storage: {
+				getItem: (key) => saved.get(key) ?? null,
+				setItem: (key, value) => void saved.set(key, value),
+				removeItem: (key) => void saved.delete(key),
+			},
+			lookupCurrentVisit: async () => ({
+				found: true,
+				visit: {
 					id: 'story-visit',
 					marketEventId: 'story-market',
-					status: args.visitStatus,
-					queuePosition: args.queuePosition,
-					aheadOfYou: args.aheadOfYou,
-				}),
-			);
-		}
+					status: visitStatus,
+					queuePosition,
+					aheadOfYou,
+				},
+			}),
+			cancelVisit: () => {
+				if (isCancelling) {
+					return new Promise(() => {});
+				}
 
-		if (args.isCancelling) {
-			return new Promise(() => {});
-		}
-
-		if (args.submissionError) {
-			return Promise.resolve(new Response(null, { status: 500 }));
-		}
-
-		return Promise.resolve(Response.json({ id: 'story-visit', status: 'cancelled' }));
-	};
-
-	return <Story />;
-};
-
-/** Seeds a store from the mocked endpoint above, then renders the panel against it. */
-function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisitStatusArgs) {
-	const store = new RootStore();
+				return submissionError
+					? Promise.reject(new Error('cancel'))
+					: Promise.resolve({ id: 'story-visit', status: 'cancelled' as const });
+			},
+		},
+	});
 	const now = Date.now();
 
 	store.translations.setLanguage(locale);
@@ -91,6 +93,14 @@ function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisit
 		}
 	});
 
+	return store;
+}
+
+function VisitStatusPanel(args: GuestVisitStatusArgs) {
+	// Built once per set of args: a store made on every render would be thrown away, refresh and
+	// all, each time the page around it re-rendered.
+	const [store] = useState(() => seededStore(args));
+
 	return (
 		<RootStoreProvider store={store}>
 			<GuestVisitState />
@@ -104,11 +114,15 @@ function SeededVisitStatus({ locale, isCancelling, submissionError }: GuestVisit
 	);
 }
 
+/** Seeds a store for this story's visit, and starts over when the toolbar or a control changes it. */
+function SeededVisitStatus(args: GuestVisitStatusArgs) {
+	return <VisitStatusPanel key={JSON.stringify(args)} {...args} />;
+}
+
 const meta = {
 	title: 'Guest/Session States/GuestVisitStatus',
 	component: SeededVisitStatus,
 	parameters: { shell: 'guest' },
-	decorators: [withVisitEndpoint],
 	argTypes: {
 		visitStatus: {
 			control: 'select',

@@ -8,11 +8,7 @@ import type { PrintLayout } from './print-layout.mjs';
  * `preferCSSPageSize` is what makes the `@page` rule authoritative, so the PDF's pages are the
  * sheets the layout computed rather than whatever the printer defaults to.
  */
-export async function renderPdf(
-	htmlPath: string,
-	pdfPath: string,
-	layout: PrintLayout,
-): Promise<void> {
+export async function renderPdf(htmlPath: string, layout: PrintLayout): Promise<Uint8Array> {
 	const browser = await launchChromium();
 
 	try {
@@ -20,8 +16,8 @@ export async function renderPdf(
 
 		await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'networkidle' });
 		await page.emulateMedia({ media: 'print' });
-		await page.pdf({
-			path: pdfPath,
+
+		return await page.pdf({
 			printBackground: true,
 			preferCSSPageSize: true,
 			width: `${layout.pageWidthIn}in`,

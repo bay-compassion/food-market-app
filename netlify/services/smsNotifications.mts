@@ -3,13 +3,18 @@ import { and, asc, eq, inArray, isNull, lt, or } from 'drizzle-orm';
 import { db } from '../../db/index.mjs';
 import { guests, notificationDeliveries, smsSubscriptions, visits } from '../../db/schema.mjs';
 import { translations, type Locale } from '../../src/locales.js';
+import {
+	deliveryCopy,
+	smsMessage,
+	type DeliveryType,
+} from '../../src/services/notification-copy.js';
 import { getLogger } from '../lib/logging.mjs';
 import { tracedQuery } from '../lib/sentry.mjs';
 import type {
 	NotificationDeliveryOptions,
 	NotificationDeliveryResult,
 } from './notificationDelivery.mjs';
-import { deliveryCopy, notificationsEnabled, type DeliveryType } from './pushNotifications.mjs';
+import { notificationsEnabled } from './pushNotifications.mjs';
 import { TwilioSmsTransport } from './sms-transport.mjs';
 
 /**
@@ -18,30 +23,10 @@ import { TwilioSmsTransport } from './sms-transport.mjs';
  * https://www.twilio.com/docs/api/errors
  */
 const permanentFailureCodes = new Set([21211, 21610, 21614]);
-const smsPrefix = 'The Bay Compassion: ';
-const smsUnsubscribe = 'Reply STOP to unsubscribe';
 
-export function smsMessage(
-	locale: Locale,
-	type: DeliveryType,
-	queuePosition: number | null,
-	custom?: { title: string | null; body: string | null },
-) {
-	const copy = deliveryCopy(locale, type, custom);
-	const body =
-		type === 'registration_confirmed'
-			? translations[locale].smsNotificationRegisteredBody
-			: copy.body;
-	const position =
-		type === 'lottery_selected' && queuePosition !== null
-			? `\n${translations[locale].smsNotificationSelectedPosition.replace(
-					'{position}',
-					String(queuePosition),
-				)}`
-			: '';
-
-	return `${smsPrefix}${copy.title}\n\n${body}${position}\n\n${smsUnsubscribe}`;
-}
+// Composing a message is shared with the stills capture, which prints it without the database and
+// Twilio this module reaches.
+export { smsMessage } from '../../src/services/notification-copy.js';
 
 export function smsConfiguration() {
 	return { configured: notificationsEnabled() && TwilioSmsTransport.configured() };

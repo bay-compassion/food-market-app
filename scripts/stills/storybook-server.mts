@@ -2,29 +2,38 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 
 /**
- * Storybook is the stills' source of truth. Its story index already enumerates every state the
- * components can be in — including the ones the running app cannot easily be driven into — and its
- * titles already carry the grouping, so the capture never has to describe a state itself.
+ * The tag an MDX docs page puts on its `<Meta>` to be printed in the review document:
+ *
+ *     <Meta title="Guest/Forms" tags={['review']} />
+ *
+ * The pages, and the words on them, are written in Storybook by whoever owns the explanation; this
+ * is the whole of what the capture needs to know about them.
  */
-export type StorybookStory = {
+export const reviewTag = 'review';
+
+/** A docs page that asked to be printed. */
+export type ReviewDoc = {
+	/** The docs entry's id, e.g. `guest-forms--docs` — the `id` in its Storybook URL. */
 	id: string;
-	/** The story's path in the sidebar, e.g. `Guest/Session States/GuestVisitStatus`. */
+	/** Its sidebar path, e.g. `Guest/Forms`. */
 	title: string;
-	/** The individual state, e.g. `Waiting Next`. */
-	name: string;
-	tags: string[];
+	/** The last part of the path, e.g. `Forms`, which is what the document calls the page. */
+	label: string;
 };
 
-type StoryIndexEntry = StorybookStory & { type: string };
+type IndexEntry = { id: string; title: string; type: string; tags?: string[] };
 
-type StoryIndex = { entries: Record<string, StoryIndexEntry> };
+type StoryIndex = { entries: Record<string, IndexEntry> };
 
 function isStoryIndex(value: unknown): value is StoryIndex {
 	return typeof value === 'object' && value !== null && 'entries' in value;
 }
 
-/** Every `story` entry, in the order Storybook lists them, which is the sidebar's order. */
-export async function fetchStories(baseUrl: string): Promise<StorybookStory[]> {
+/**
+ * Every docs page tagged for review, in sidebar-path order — the order a reader would find them in
+ * Storybook, since the index itself lists them in whatever order the files were discovered.
+ */
+export async function fetchReviewDocs(baseUrl: string): Promise<ReviewDoc[]> {
 	const response = await fetch(new URL('index.json', `${baseUrl}/`));
 
 	if (!response.ok) {
@@ -38,20 +47,28 @@ export async function fetchStories(baseUrl: string): Promise<StorybookStory[]> {
 	}
 
 	return Object.values(index.entries)
-		.filter((entry) => entry.type === 'story')
-		.map(({ id, title, name, tags }) => ({ id, title, name, tags: tags ?? [] }));
+		.filter((entry) => entry.type === 'docs' && entry.tags?.includes(reviewTag))
+		.map(({ id, title }) => ({ id, title, label: title.split('/').at(-1) ?? title }))
+		.sort((first, second) => first.title.localeCompare(second.title));
 }
 
-/** The story's own page, without the manager chrome around it. */
-export function storyUrl(baseUrl: string, storyId: string, globals?: string): string {
+/**
+ * A docs page on its own, without the manager chrome around it.
+ *
+ * `globals` reach every story embedded in the page, which is how the whole document is put in one
+ * language and inside the app's own bar and footer without any page saying so.
+ */
+export function docsUrl(baseUrl: string, docId: string, globals: Record<string, string>): string {
 	const url = new URL('iframe.html', `${baseUrl}/`);
 
-	url.searchParams.set('id', storyId);
-	url.searchParams.set('viewMode', 'story');
-
-	if (globals) {
-		url.searchParams.set('globals', globals);
-	}
+	url.searchParams.set('id', docId);
+	url.searchParams.set('viewMode', 'docs');
+	url.searchParams.set(
+		'globals',
+		Object.entries(globals)
+			.map(([name, value]) => `${name}:${value}`)
+			.join(';'),
+	);
 
 	return url.href;
 }
@@ -65,8 +82,8 @@ async function isListening(baseUrl: string): Promise<boolean> {
 }
 
 /**
- * A Storybook to capture from: either one the caller already has running — which is how you want to
- * work while you are iterating on a sheet — or one started for the run and shut down after it.
+ * A Storybook to print docs pages from: either one already running — which is how you want to work
+ * while you are writing a page — or one started for the run and shut down after it.
  */
 export class StorybookServer {
 	private process: ChildProcess | undefined;

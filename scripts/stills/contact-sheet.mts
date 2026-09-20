@@ -12,8 +12,13 @@ export type SheetMeta = {
 	generatedAt: Date;
 	/** The commit the stills were shot from, so a marked-up print can be traced back to code. */
 	revision: string;
-	/** Either a single forced language, or a note that each story kept its own. */
+	/** The language every screen was shot in. */
 	language: string;
+	/**
+	 * The docs pages printed ahead of the stills, in order. They are the document's first sections,
+	 * so the stills' sections are numbered after them and the contents page lists them all.
+	 */
+	docs: { title: string; pages: number }[];
 };
 
 function escapeHtml(value: string): string {
@@ -28,9 +33,9 @@ function inches(value: number): string {
 	return `${value.toFixed(3)}in`;
 }
 
-/** `Guest/Session States/GuestVisitStatus` reads as `GuestVisitStatus` under a still. */
-function componentOf(title: string): string {
-	return title.split('/').at(-1) ?? title;
+/** Where in the app a still was taken, without a claim code or anything else after the path. */
+function pathOf(route: string | undefined): string {
+	return (route ?? '/').split(/[?#]/)[0] ?? '/';
 }
 
 /**
@@ -51,9 +56,9 @@ export class ContactSheet {
 		return this.sections.reduce((total, section) => total + section.stills.length, 0);
 	}
 
-	/** Sheets of stills — the contents page in front of them is counted separately. */
+	/** Sheets behind the contents page: each section's opener, and then its stills. */
 	get sheetCount(): number {
-		return this.sections.reduce((total, section) => total + this.pagesOf(section).length, 0);
+		return this.sections.reduce((total, section) => total + this.sheetsIn(section), 0);
 	}
 
 	toHtml(): string {
@@ -64,9 +69,20 @@ export class ContactSheet {
 			`<style>${this.css()}</style>`,
 			`</head><body>`,
 			this.coverPage(),
-			this.sections.map((section, index) => this.sectionPages(section, index + 1)).join('\n'),
+			this.sections
+				.map((section, index) => this.sectionPages(section, this.firstSectionNumber + index))
+				.join('\n'),
 			`</body></html>`,
 		].join('\n');
+	}
+
+	/** Docs pages come first, so the first of the stills' sections is numbered after them. */
+	private get firstSectionNumber(): number {
+		return this.meta.docs.length + 1;
+	}
+
+	private sheetsIn(section: SheetSection): number {
+		return 1 + this.pagesOf(section).length;
 	}
 
 	private pagesOf(section: SheetSection): number[][] {
@@ -75,22 +91,32 @@ export class ContactSheet {
 
 	private coverPage(): string {
 		const { layout, meta } = this;
-		const contents = this.sections
+		const docs = meta.docs
+			.map(
+				(doc, index) => `<li><span class="index">${index + 1}</span>
+					<span class="name">${escapeHtml(doc.title)}
+						<em>Explanation, with the screens it describes</em></span>
+					<span class="count">${doc.pages} page${doc.pages === 1 ? '' : 's'}</span>
+				</li>`,
+			)
+			.join('\n');
+		const stills = this.sections
 			.map((section, index) => {
-				const sheets = this.pagesOf(section).length;
+				const sheets = this.sheetsIn(section);
 
-				return `<li><span class="index">${index + 1}</span>
+				return `<li><span class="index">${this.firstSectionNumber + index}</span>
 					<span class="name">${escapeHtml(section.arc.title)}
 						<em>${escapeHtml(section.arc.summary)}</em></span>
 					<span class="count">${section.stills.length} stills · ${sheets} sheet${sheets === 1 ? '' : 's'}</span>
 				</li>`;
 			})
 			.join('\n');
+		const contents = `${docs}\n${stills}`;
 
 		return `<article class="page cover">
 			<h1>${escapeHtml(meta.title)}</h1>
-			<p class="lede">The large movements of a market day, one arc per run of sheets.
-				Numbers are <b>arc.still</b> — quote them when you mark a sheet up.</p>
+			<p class="lede">What a guest sees and is sent, exactly as the app shows it on a phone.
+				Numbers are <b>section.figure</b> — quote them when you mark a page up.</p>
 			<ol class="contents">${contents}</ol>
 			<dl class="colophon">
 				<dt>Captured</dt><dd>${escapeHtml(meta.generatedAt.toISOString().slice(0, 16).replace('T', ' '))} UTC</dd>
@@ -105,8 +131,9 @@ export class ContactSheet {
 	private sectionPages(section: SheetSection, arcNumber: number): string {
 		const pages = this.pagesOf(section);
 
-		return pages
-			.map((indices, pageIndex) => {
+		return [
+			this.opener(section, arcNumber),
+			...pages.map((indices, pageIndex) => {
 				const cells = indices.map((index) => this.cell(section, index, arcNumber)).join('\n');
 
 				return `<article class="page">
@@ -116,8 +143,31 @@ export class ContactSheet {
 					</header>
 					<div class="grid">${cells}</div>
 				</article>`;
-			})
+			}),
+		].join('\n');
+	}
+
+	/**
+	 * A sheet of its own ahead of a section's stills, for the author's explanation of it. It is a
+	 * page rather than a block on the first still's sheet because a still fills its sheet, and
+	 * because a reviewer should read what a section is for before they start marking it up.
+	 */
+	private opener(section: SheetSection, arcNumber: number): string {
+		const { arc } = section;
+		const paragraphs = (arc.details ?? '')
+			.split(/\n\s*\n/)
+			.map((paragraph) => paragraph.trim())
+			.filter(Boolean)
+			.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
 			.join('\n');
+
+		return `<article class="page opener">
+			<p class="number">${arcNumber}</p>
+			<h2>${escapeHtml(arc.title)}</h2>
+			<p class="summary">${escapeHtml(arc.summary)}</p>
+			<div class="details">${paragraphs}</div>
+			<p class="count">${section.stills.length} stills follow, numbered ${arcNumber}.1 to ${arcNumber}.${section.stills.length}.</p>
+		</article>`;
 	}
 
 	private cell(section: SheetSection, index: number, arcNumber: number): string {
@@ -130,21 +180,18 @@ export class ContactSheet {
 		const placed = this.layout.place(still);
 		const cellWidth =
 			placed.columnSpan === 1 ? this.layout.cellWidthIn : this.layout.contentWidthIn;
-		const notes = [still.truncated ? 'cut off' : '', still.failed ? 'failed to render' : '']
-			.filter(Boolean)
-			.join(' · ');
+		const notes = still.truncated ? 'cut off' : '';
 
 		return `<figure class="cell" style="width:${inches(cellWidth)}">
+			<figcaption>
+				<b>${arcNumber}.${index + 1}</b> ${escapeHtml(still.step.caption)}
+				${still.step.note ? `<span class="note">${escapeHtml(still.step.note)}</span>` : ''}
+				<em>${[still.step.message ? '' : pathOf(still.step.route), notes].filter(Boolean).map(escapeHtml).join(' · ')}</em>
+			</figcaption>
 			<div class="shot">
 				<img src="${escapeHtml(still.file.split('\\').join('/'))}" alt=""
 					style="width:${inches(placed.widthIn)};height:${inches(placed.heightIn)}">
 			</div>
-			<figcaption>
-				<b>${arcNumber}.${index + 1}</b> ${escapeHtml(still.step.caption)}
-				<em>${escapeHtml(componentOf(still.story.title))} · ${escapeHtml(still.story.name)}${
-					notes ? ` · ${escapeHtml(notes)}` : ''
-				}</em>
-			</figcaption>
 		</figure>`;
 	}
 
@@ -178,8 +225,9 @@ export class ContactSheet {
 				gap: ${inches(layout.gapIn)}; height: ${inches(layout.gridHeightIn - layout.gapIn * 0.5)};
 			}
 			.cell { margin: 0; height: ${inches(layout.cellHeightIn)}; display: flex; flex-direction: column; }
-			/* No fixed height: a caption sits directly under its own still, so a short one is never
-			   stranded inches below the thing it names. The cell keeps the row's height. */
+			/* The caption sits above its still, so a reader meets the name of a screen before the screen.
+			   No fixed height on the still: it sits directly under its own caption, and the cell keeps
+			   the row's height. */
 			.shot {
 				display: flex; align-items: flex-start; justify-content: center;
 				max-height: ${inches(layout.stillHeightIn)};
@@ -188,11 +236,19 @@ export class ContactSheet {
 				object-fit: contain; border: 0.5pt solid #b4b4b4; border-radius: 0.02in; background: #fff;
 			}
 			figcaption {
-				height: ${inches(layout.captionHeightIn)}; padding-top: 0.04in;
-				font-size: 7.5pt; line-height: 1.25; overflow: hidden;
+				height: ${inches(layout.captionHeightIn)}; padding-bottom: 0.06in;
+				font-size: 8.5pt; line-height: 1.25; overflow: hidden; text-align: center;
 			}
 			figcaption b { font-weight: 700; }
-			figcaption em { display: block; font-style: normal; color: #6b6b6b; font-size: 6.5pt; }
+			figcaption .note { display: block; color: #444; font-size: 7.5pt; }
+			figcaption em { display: block; font-style: normal; color: #6b6b6b; font-size: 7pt; }
+			.opener { display: flex; flex-direction: column; }
+			.opener .number { margin: 0.5in 0 0; font-size: 40pt; font-weight: 700; line-height: 1; color: #b4b4b4; }
+			.opener h2 { margin: 0.05in 0 0.1in; font-size: 24pt; line-height: 1.15; font-weight: 650; }
+			.opener .summary { margin: 0 0 0.35in; font-size: 11pt; color: #555; max-width: 5.6in; }
+			.opener .details { flex: 1; max-width: 5.6in; }
+			.opener .details p { margin: 0 0 0.16in; font-size: 11pt; line-height: 1.5; }
+			.opener .count { margin: 0; font-size: 7.5pt; color: #6b6b6b; border-top: 0.5pt solid #ddd; padding-top: 0.12in; }
 			.cover { display: flex; flex-direction: column; }
 			.cover h1 { font-size: 26pt; line-height: 1.1; margin: 0.3in 0 0.12in; font-weight: 650; }
 			.cover .lede { font-size: 10pt; color: #444; margin: 0 0 0.3in; max-width: 5.4in; }

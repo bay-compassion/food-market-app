@@ -39,6 +39,13 @@ export type PrintLayoutOptions = {
  */
 export const fullRowWidthPx = 640;
 
+/**
+ * The height of a phone screen as captured. A still shorter than this is not enlarged past the
+ * scale a phone screen gets, so a short still — a text message, a one-card screen — prints its
+ * words at the same size as everything around it instead of blown up to fill the width of the page.
+ */
+export const referenceStillHeightPx = 844;
+
 /** A still's pixel dimensions as captured. */
 export type StillSize = { width: number; height: number };
 
@@ -53,10 +60,12 @@ export const defaultPrintLayoutOptions: PrintLayoutOptions = {
 	paper: 'letter',
 	orientation: 'portrait',
 	marginIn: 0.4,
-	columns: 3,
-	rows: 2,
+	// One still to a sheet: a whole screen is tall, a reviewer needs to read every word of it, and
+	// a still narrower than the page leaves margin on both sides to write in.
+	columns: 1,
+	rows: 1,
 	gapIn: 0.22,
-	captionHeightIn: 0.46,
+	captionHeightIn: 0.62,
 	headerHeightIn: 0.42,
 };
 
@@ -158,7 +167,11 @@ export class PrintLayout {
 	place(size: StillSize): PlacedStill {
 		const columnSpan = size.width > fullRowWidthPx ? this.columns : 1;
 		const boxWidthIn = columnSpan === 1 ? this.cellWidthIn : this.contentWidthIn;
-		const scale = Math.min(boxWidthIn / size.width, this.stillHeightIn / size.height);
+		const scale = Math.min(
+			boxWidthIn / size.width,
+			this.stillHeightIn / size.height,
+			this.stillHeightIn / referenceStillHeightPx,
+		);
 
 		return { widthIn: size.width * scale, heightIn: size.height * scale, columnSpan };
 	}

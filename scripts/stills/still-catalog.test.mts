@@ -1,29 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { stillArcs, StillCatalog, stillFrames, type StillArc } from './still-catalog.mjs';
-import type { StorybookStory } from './storybook-index.mjs';
-
-function story(id: string): StorybookStory {
-	return { id, title: 'Guest/Whatever', name: 'Whatever', tags: [] };
-}
+import { translations } from '../../src/locales.js';
+import { stillArcs, StillCatalog, type StillArc } from './still-catalog.mjs';
 
 const arcs: StillArc[] = [
 	{
 		id: 'guest-day',
 		title: 'A guest’s day',
 		summary: '',
-		frame: 'phone',
 		steps: [
-			{ id: 'first', caption: 'Between markets' },
-			{ id: 'second', caption: 'Recognized on this device', frame: 'component' },
+			{ id: 'first', caption: 'Between markets', anchor: () => 'first' },
+			{ id: 'second', caption: 'Registration is open', anchor: () => 'second' },
 		],
 	},
 	{
-		id: 'market-day',
-		title: 'The market’s state',
+		id: 'elsewhere',
+		title: 'Other ways in',
 		summary: '',
-		frame: 'desktop',
-		steps: [{ id: 'third', caption: 'Registration open' }],
+		steps: [{ id: 'third', caption: 'Saving details', anchor: () => 'third' }],
 	},
 ];
 
@@ -36,7 +30,7 @@ describe('StillCatalog', () => {
 		const sections = catalog.sections();
 
 		// Assert
-		expect(sections.map((section) => section.arc.id)).toEqual(['guest-day', 'market-day']);
+		expect(sections.map((section) => section.arc.id)).toEqual(['guest-day', 'elsewhere']);
 		expect(sections[0]?.steps.map((step) => step.id)).toEqual(['first', 'second']);
 	});
 
@@ -45,64 +39,50 @@ describe('StillCatalog', () => {
 		const catalog = new StillCatalog(arcs);
 
 		// Act
-		const sections = catalog.sections(['market-day']);
+		const sections = catalog.sections(['elsewhere']);
 
 		// Assert
-		expect(sections.map((section) => section.arc.id)).toEqual(['market-day']);
+		expect(sections.map((section) => section.arc.id)).toEqual(['elsewhere']);
 	});
+});
 
-	it('shoots a step at the frame it names, falling back to its arc’s', () => {
+describe('the shipped arcs', () => {
+	const steps = stillArcs.flatMap((arc) => arc.steps);
+
+	it('have unique arc ids and unique step ids, since a step id names its PNG', () => {
 		// Arrange
-		const catalog = new StillCatalog(arcs);
-		const arc = arcs[0]!;
+		const arcIds = stillArcs.map((arc) => arc.id);
+		const stepIds = steps.map((step) => step.id);
 
 		// Act
-		const inherited = catalog.frameFor(arc, arc.steps[0]!);
-		const overridden = catalog.frameFor(arc, arc.steps[1]!);
-
-		// Assert
-		expect(inherited).toBe(stillFrames.phone);
-		expect(overridden).toBe(stillFrames.component);
-	});
-
-	it('names the step ids Storybook no longer has', () => {
-		// Arrange
-		const catalog = new StillCatalog(arcs);
-
-		// Act
-		const missing = catalog.missing([story('first'), story('third')]);
-
-		// Assert
-		expect(missing).toEqual(['second']);
-	});
-
-	it('does not treat a story no arc names as a problem', () => {
-		// Arrange
-		const catalog = new StillCatalog(arcs);
-
-		// Act
-		const missing = catalog.missing([
-			story('first'),
-			story('second'),
-			story('third'),
-			story('spare'),
-		]);
-
-		// Assert
-		expect(missing).toEqual([]);
-	});
-
-	it('ships arcs whose ids are unique and whose steps are never repeated', () => {
-		// Arrange
-		const ids = stillArcs.map((arc) => arc.id);
-		const stepIds = stillArcs.flatMap((arc) => arc.steps.map((step) => step.id));
-
-		// Act
-		const uniqueIds = new Set(ids);
+		const uniqueArcIds = new Set(arcIds);
 		const uniqueStepIds = new Set(stepIds);
 
 		// Assert
-		expect(uniqueIds.size).toBe(ids.length);
+		expect(uniqueArcIds.size).toBe(arcIds.length);
 		expect(uniqueStepIds.size).toBe(stepIds.length);
+	});
+
+	it('name an anchor that exists in every language, so a forced locale can still find its screen', () => {
+		// Arrange
+		const languages = Object.values(translations);
+
+		// Act
+		const anchors = steps.flatMap((step) => languages.map((copy) => step.anchor(copy)));
+
+		// Assert
+		expect(anchors.every((anchor) => typeof anchor === 'string' && anchor.length > 0)).toBe(true);
+	});
+
+	it('open something in every step that is shot as an overlay', () => {
+		// Arrange
+		const overlays = steps.filter((step) => step.overlay);
+
+		// Act
+		const withoutInteraction = overlays.filter((step) => step.interact === undefined);
+
+		// Assert
+		expect(overlays.length).toBeGreaterThan(0);
+		expect(withoutInteraction.map((step) => step.id)).toEqual([]);
 	});
 });
