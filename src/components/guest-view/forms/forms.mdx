@@ -10,12 +10,15 @@ import * as CombinedForm from './GuestCombinedForm.stories.tsx';
 
 # Guest Forms
 
-The Food Market app has two forms that guests interact with.
+A guest fills in a form in one of three situations. Which one they see depends on whether this phone
+already knows them, and on whether registration is open.
 
-## Identity Form
+## Saving information for later — the Identity Form
 
-The `IdentityForm` is used to collect the user's first and last name and phone number. The user may only be asked to
-fill this form in once if they choose to save their information.
+A guest can save their name and phone number ahead of time, from the "Save my information" button
+shown while registration is not open. It asks for nothing else. It does not enter the lottery and it
+does not hold a place. The details are kept on this phone, so the guest does not need to enter them
+again on their next visit.
 
 <Story of={InformationForm.Default} />
 
@@ -23,14 +26,19 @@ Once the form is submitted, the guest is told their information is saved.
 
 <Still id="identity-saved" alt="The identity form's success message: Your information is saved" />
 
-## Lottery Form
+## A new guest entering the lottery — the Combined Form
 
-The user is asked to fill out the `LotteryForm` for every market event. It includes demographic information.
-
-<Story of={LotteryForm.Default} />
-
-## Combined Form
-
-If the user had chosen to save their identity information, they will be shown a combined form of the `InformationForm` and `LotteryForm`.
+When registration is open and this phone does not know the guest yet, one form asks for everything at
+once: name, phone number, and household details. Submitting it enters the lottery, and the name and
+phone number are saved on this phone for next time.
 
 <Story of={CombinedForm.RegistrationForm} />
+
+## A returning guest entering the lottery — the Lottery Form
+
+When registration is open and this phone already knows the guest, because they saved their
+information or registered before, the app shows who they are and asks only for the household
+details. The name and phone number are already known. The household details are asked every market,
+because they describe that day's visit.
+
+<Story of={LotteryForm.Default} />

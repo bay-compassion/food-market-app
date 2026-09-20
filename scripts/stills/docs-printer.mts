@@ -24,6 +24,9 @@ export type PrintedPage = {
  */
 export const sideMarginIn = 1.4;
 
+/** The margin round a full page, which needs every inch it can have. */
+const fullPageMarginIn = 0.6;
+
 /** Room for the running header. */
 export const verticalMarginIn = 0.75;
 
@@ -64,7 +67,7 @@ function escapeHtml(value: string): string {
  * words and figures, a number on every figure so a reviewer can quote it, and figures kept whole
  * where a page can hold them. Front matter has no number, so its figures, if any, have none.
  */
-function printCss(sectionNumber: number | null): string {
+function printCss(sectionNumber: number | null, paper: PageSize): string {
 	return `
 		html, body { background: #fff !important; }
 		.sbdocs-wrapper { padding: 0 !important; min-height: 0 !important; }
@@ -74,6 +77,18 @@ function printCss(sectionNumber: number | null): string {
 		/* A diagram is a picture, and one this tall would take a page to itself. */
 		.sbdocs-content svg[id^='mermaid'], .sbdocs-content .mermaid svg {
 			display: block; margin: 0 auto; max-height: 700px; width: auto; max-width: 100%;
+		}
+		/*
+		 * A page of its own, with slim margins: for a figure that has to be read across the whole
+		 * sheet, like a flowchart whose arrow labels are unreadable in a narrow column. The page
+		 * property names a page in an at-page rule, and a named page can have margins of its own.
+		 */
+		@page fullpage { size: ${paper.widthIn}in ${paper.heightIn}in; margin: ${fullPageMarginIn}in; }
+		.review-fullpage { page: fullpage; break-before: page; break-after: page; }
+		.review-fullpage svg {
+			/* Mermaid sets its own maximum width in the element's style, and the general diagram rule above caps its height; only !important beats both. */
+			display: block; margin: 0 auto; width: ${fullPageWidthPx(paper)}px !important; max-width: none !important; height: auto;
+			max-height: ${fullPageHeightPx(paper)}px !important;
 		}
 		body { counter-reset: figure; }
 		${figureSelector} {
@@ -97,6 +112,16 @@ function printCss(sectionNumber: number | null): string {
 		}`
 		}
 	`;
+}
+
+/** The width of a full page's content, in the page's own pixels. */
+function fullPageWidthPx(paper: PageSize): number {
+	return ((paper.widthIn - 2 * fullPageMarginIn) * cssPxPerInch) / zoom;
+}
+
+/** The tallest a figure can be on a full page, in the page's own pixels, less room for the header. */
+function fullPageHeightPx(paper: PageSize): number {
+	return ((paper.heightIn - 2 * fullPageMarginIn) * cssPxPerInch) / zoom - 40;
 }
 
 /**
@@ -221,7 +246,7 @@ export class DocsPrinter {
 			}
 
 			await this.untilRendered(tab, page);
-			await tab.addStyleTag({ content: printCss(options.number) });
+			await tab.addStyleTag({ content: printCss(options.number, paper) });
 			await tab.emulateMedia({ media: 'print' });
 			await tab.evaluate(fitFiguresToPage, {
 				limitPx: figureHeightLimitPx(paper),
@@ -238,6 +263,8 @@ export class DocsPrinter {
 					right: `${sideMarginIn}in`,
 				},
 				scale: zoom,
+				// The `@page` rules decide each page's size, so a page can be turned on its side.
+				preferCSSPageSize: true,
 				printBackground: true,
 				displayHeaderFooter: true,
 				// The page number is stamped once the document is assembled, when it is known.

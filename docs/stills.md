@@ -61,6 +61,9 @@ exactly those two.
 - **Layout.** Words run down a narrow column with wide margins either side to write in. A heading and
   the paragraph above a figure stay on the page with it. A figure too tall to share a page with its
   own introduction is shrunk to fit, rather than split.
+- **A figure that needs the whole page.** Wrap it in `<div className="review-fullpage">` and it gets a
+  page of its own with slim margins, scaled to fill it. The flowchart on the "Guest States" page is
+  one: in the narrow column its arrow labels were too small to read.
 - **Numbers.** Section headers name the section; every page after the first is stamped `Page n of N`.
 - **The clock is held.** Every countdown reads as it would at ten on a Saturday morning, Bay Area
   time, so a document made next month is the same document.

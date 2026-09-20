@@ -6,8 +6,10 @@ import * as Messages from '../../../.storybook/docs/TextMessages.stories.tsx';
 
 # Text Messages
 
-What a guest is texted, once they have agreed to text updates. Push notifications carry the same
-title and body.
+What a guest is texted, once they have agreed to text updates. Push notifications, the alerts a phone
+can show, use the same titles. Their wording matches too, apart from the first message: the text says
+"Your entry into the lottery has been confirmed", where the alert says "Your registration is
+confirmed."
 
 Two pieces of every text message are **required** and shaded on every message below: the sender's name
 at the start, `The Bay Compassion:`, and the line `Reply STOP to unsubscribe` at the end. They are not
@@ -24,11 +26,15 @@ wording between them can be changed.
 
 ## Selected in the lottery
 
-The only message that carries the guest's place in line.
+The only message that carries the guest's place in line. That place is where the guest stands when
+the text is sent. The text is not sent again as the line moves; the app keeps updating it.
 
 <Story of={Messages.Selected} />
 
 ## Not selected in the lottery
+
+The text says the guest was not selected "for today's service". The app's card for the same moment says
+"not selected in today's lottery". See Decisions to review in the Introduction.
 
 <Story of={Messages.NotSelected} />
 

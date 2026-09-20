@@ -20,10 +20,19 @@ on this message.
 
 ## The market's status could not be loaded
 
-If the request fails, nothing tells the guest that something went wrong. They see the Market Closed
-card, whatever the market's real state is.
+**Decision needed.** This is not an ordinary unavailable screen. When the app cannot reach the server
+it cannot tell whether a market is running, and it shows the Market Closed card anyway. During an open
+market that is false: the guest is told registration opens next Saturday when it may be open now, and
+may leave rather than try again.
 
 <Still
 	id="market-unavailable"
 	alt="The Market Closed card, shown because the market's status could not be loaded"
 />
+
+The choices, for a guest whose phone cannot reach the server:
+
+1. Say that the status could not be checked, and ask the guest to try again.
+2. Show the registration form anyway, and let the server accept or refuse it. This was the original
+   intention.
+3. Leave it as it is.
