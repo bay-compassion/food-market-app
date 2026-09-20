@@ -31,3 +31,9 @@ export type TypeScaleProps = {
 	token: '--font-heading' | '--font-body';
 	samples: TypeSample[];
 };
+
+export type MastheadProps = {
+	title: string;
+	/** A line under the title, such as the audience or the kind of document. */
+	subtitle?: string;
+};
