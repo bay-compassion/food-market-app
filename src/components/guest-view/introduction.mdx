@@ -5,53 +5,146 @@ import { Masthead } from '../../../.storybook/docs/components/Masthead';
 
 <Meta title="Guest/Introduction" tags={['review-front']} />
 
-<Masthead title="Review Document" subtitle="Guest Views" />
+<Masthead title="Review Document" subtitle="Guest App" />
 
-What a guest sees and is sent, shown on a phone.
+Everything a guest reads in the app and in text messages, shown on a phone so the wording can be
+reviewed before launch.
+
+Most of what we need from you is feedback on the wording: anything that is unclear, wrong, unkind, or
+inconsistent. A few places also need a decision. Those are listed under Decisions to review.
+
+## How the app works
+
+Guests use the app on their phone to get a place in line at the market. Places are given by lottery,
+not first come, first served. A guest registers during a short window, and when it closes the app
+draws the lottery. Selected guests are put in line, shown their place, and called to the entrance when
+it is their turn. Guests who are not selected are told so.
+
+The screen a guest sees depends on two things.
+
+**What the market is doing.** The market is in one of four states:
+
+- **Market Closed**: most of the week, and again once the market is over.
+- **Registration Open**: guests can register.
+- **Registration Closed**: the window has shut and the lottery is being drawn.
+- **Market Underway**: guests are being served.
+
+**Where the guest's own visit stands.** A guest who registers is **Registered**, then **Waiting**
+once selected, **Called** when it is their turn, and **Served** when they are done. Three other
+outcomes are possible: **Not Selected**, **No Show**, and **Cancelled**.
+
+The Guest States section shows every one of these screens and how they connect. The other sections
+cover the forms, the texts a guest can choose to receive, and the QR codes staff use.
 
 ## How to read it
 
-Every screen is shown inside the app's own top bar and footer, at the size of a phone. Screens and
-messages are numbered **section.figure** — the third screen in section 2 is **2.3** — so quote the
-number when you mark a page up. The margins are left empty on purpose; write in them.
+Every screen is shown at the size of a phone, inside the app's own top bar and footer. Screens and
+text messages are numbered by section and position: the third screen in section 2 is **2.3**. Please
+quote the number in your feedback. The margins are left empty for your notes.
 
-Some screens are photographs of the running app rather than pictures of a single card, because they
-only appear after a guest does something, such as opening a dialog.
+Some screens only appear after a guest does something, such as opening a dialog. Those are
+screenshots of the running app.
 
 ## About the examples
 
-These are representative English captures of the app, made for review. They are not screenshots of a
-live market, and some details are made up or held still:
+The screens are sample content in English, made for review. They are not from a live market, and some
+details are made up or fixed:
 
-- The guest is always **Sample Guest**, and phone numbers, the device ID, and the sender's number are
-  made up.
-- **Times are held** at ten on a Saturday morning, so a countdown reads the same every time it is made.
-  The queue positions shown (7th, 25th) are examples.
-- The questions a market adds to the form, and the wording of a broadcast text, are examples: staff
-  write both for each market.
-- The web address under the QR code is the address this document was made from, not the live site's.
-- Only English is shown. The app has the same wording in other languages.
+- The guest is always **Sample Guest**. The phone numbers, the device ID, and the number texts come
+  from are made up.
+- The clock is fixed at ten on a Saturday morning, so a countdown reads the same every time. The
+  queue positions shown (7th, 25th) are examples.
+- Staff write the questions a market adds to the registration form and the wording of a broadcast
+  text, separately for each market. The ones shown are examples.
+- The web address under the QR code is a preview address, not the live site's.
+- The app has translations for several other languages. After deciding on the English copy, we will
+  translate it into the other languages.
 
 ## Decisions to review
 
-These are the choices in this document that most change what a guest does. Please look at them before
-you proofread.
+Wording feedback can wait for the pages that follow. These five are different: each is a choice about
+how the app behaves or how it is described, and each changes what a guest does. Please read them
+first, and write your answer in the last column, separately from your proofreading.
 
-1. **The lottery, and how it is described.** How guests are chosen, and how that is explained: that
-   registering early does not improve anyone's chances, that supplies are limited, and what a guest
-   who was not selected is told. Is it clear, and does it feel fair?
-2. **Arriving, and being called.** What a guest should do when they arrive without having registered,
-   or when they miss being called. Today both are told to speak with a market team member. Is that
-   enough?
-3. **Required text-message wording is English only.** The sender's name and the STOP line are
-   required on every text and are never translated, so a guest reading another language meets English
-   there. Is that acceptable?
-4. **A failed status check tells guests the market is closed.** See Loading and Unavailable. It needs
-   a decision, not proofreading.
-5. **Words that mean the same thing.** "Check in", "register", and "enter the lottery". "Text
-   updates", "text messages", and "notifications". "Selected", "placed", and "on the list". "Service"
-   and "the lottery". For example, the QR poster says "Scan to check in", but scanning opens the app;
-   it does not check anyone in or hold a place. Which word should each one be?
+<table>
+	<colgroup>
+		<col style={{ width: '24%' }} />
+		<col style={{ width: '46%' }} />
+		<col style={{ width: '30%' }} />
+	</colgroup>
+	<thead>
+		<tr>
+			<th>Decision</th>
+			<th>Question</th>
+			<th>Your answer</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<strong>1. The lottery, and how it is explained</strong>
+			</td>
+			<td>
+				How are guests chosen, and how does the app say so? It says that registering early does not
+				improve anyone's chances, that supplies are limited, and what a guest who was not selected
+				is told. Is it clear, and does it feel fair?
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>2. Arriving unregistered, and missing your call</strong>
+			</td>
+			<td>
+				A guest who arrives without having registered, and a guest who misses being called, are both
+				told to speak with a market team member. Is that enough?
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>3. Required text-message wording is English only</strong>
+			</td>
+			<td>
+				Every text starts with the sender's name, <code>The Bay Compassion:</code>, and ends with{' '}
+				<code>Reply STOP to unsubscribe</code>. Both are required and are never translated, so a
+				guest reading another language meets English there. Is that acceptable?
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>4. A failed status check tells guests the market is closed</strong>
+			</td>
+			<td>
+				If the app cannot reach the server, it cannot tell whether a market is running, so it shows
+				the Market Closed card anyway. During an open market that is wrong. Which of the options on
+				the Loading and Unavailable page should we take?
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>5. Different words for the same thing</strong>
+			</td>
+			<td>
+				The app uses several terms for one idea. Which word should each one be?
+				<br />
+				<strong>Getting a place:</strong> "check in", "register", "enter the lottery". The QR poster
+				says "Scan to check in", but scanning opens the app. It does not check anyone in or hold a
+				place.
+				<br />
+				<strong>Updates:</strong> "text updates", "text messages", "notifications".
+				<br />
+				<strong>Being chosen:</strong> "selected", "placed", "on the list".
+				<br />
+				<strong>The event itself:</strong> "service" and "the lottery". A text says "not selected
+				for today's service" where the app's card says "not selected in today's lottery".
+			</td>
+			<td></td>
+		</tr>
+	</tbody>
+</table>
 
 ## Contents
 
