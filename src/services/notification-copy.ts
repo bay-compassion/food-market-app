@@ -53,9 +53,8 @@ export function deliveryCopy(locale: Locale, type: DeliveryType, custom?: Custom
 }
 
 /**
- * Opens every text message. Carriers and Twilio's campaign registration require the sender to be
- * named and the recipient to be told how to stop, so this and `smsUnsubscribe` are not copy anyone
- * may edit or drop, and neither is translated.
+ * The current prefix and opt-out instruction for every text message. This implementation still
+ * leaves both in English; only STOP must remain in English when the instruction is localized.
  */
 export const smsPrefix = 'The Bay Compassion: ';
 export const smsUnsubscribe = 'Reply STOP to unsubscribe';

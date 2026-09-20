@@ -6,21 +6,13 @@ import * as Messages from '../../../.storybook/docs/TextMessages.stories.tsx';
 
 # Text Messages
 
-These are the messages sent to guests who enabled text updates. Phone alerts use the same titles and
-mostly the same wording. The registration confirmation differs: the text says "Your entry into the
-lottery has been confirmed", while the alert says "Your registration is confirmed."
+These examples show messages sent to guests who enabled text updates. Phone alerts use the same
+titles and generally the same wording.
 
-The shaded parts of each example are required: `The Bay Compassion:` at the start and
-`Reply STOP to unsubscribe` at the end. They remain in English in every language and cannot be edited.
-The wording between them can be reviewed.
-
-## Entry confirmed
-
-<Story of={Messages.Registered} />
-
-## Registration closed
-
-<Story of={Messages.RegistrationClosed} />
+The shaded parts show the sender name, `The Bay Compassion:`, and the opt-out instruction currently
+sent at the end of each text: `Reply STOP to unsubscribe`. The current messages leave both in English.
+Only `STOP` must remain in English; the surrounding instruction can be translated. See the decision
+in the Introduction.
 
 ## Selected for the queue
 

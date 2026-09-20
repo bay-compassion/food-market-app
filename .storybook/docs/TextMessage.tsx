@@ -67,12 +67,12 @@ const Message = styled.figure`
 `;
 
 /**
- * A text message as a guest receives it, with the parts that are required on every message shaded.
+ * A text message as a guest receives it, with the currently fixed parts shaded.
  *
  * It is drawn from the parts `smsMessage` joins, so it cannot disagree with what is sent. The shaded
- * parts are marked `data-required` for the story that holds them to being exactly the prefix and the
- * unsubscribe line. The required text is English in every language, so it stays left-to-right inside
- * a right-to-left message.
+ * parts are marked `data-required` for the story that checks the current prefix and unsubscribe line.
+ * Both are still English in every language, so they stay left-to-right inside a right-to-left
+ * message. Only STOP must remain English when the opt-out wording is localized.
  */
 export function TextMessage({ parts }: { parts: SmsMessageParts }) {
 	const required = (text: string) => (
@@ -97,12 +97,12 @@ export function TextMessage({ parts }: { parts: SmsMessageParts }) {
 				<li>
 					<span className="swatch required" />
 					<span>
-						<b>Required</b> on every text message. It is not optional and it is not translated.
+						<b>Currently fixed</b> in every text message. Only STOP must stay in English.
 					</span>
 				</li>
 				<li>
 					<span className="swatch" />
-					<span>Wording that can be changed.</span>
+					<span>Message content.</span>
 				</li>
 			</ul>
 		</Message>

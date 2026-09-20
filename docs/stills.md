@@ -52,9 +52,9 @@ Nothing about a page is listed in a script. A page that exists and is tagged is 
 Text messages are stories too — [`.storybook/docs/TextMessages.stories.tsx`](../.storybook/docs/TextMessages.stories.tsx)
 draws them with the same code the server sends them with
 ([`src/services/notification-copy.ts`](../src/services/notification-copy.ts)), so a page cannot
-disagree with what a guest receives. The `The Bay Compassion: ` prefix and the `Reply STOP to
-unsubscribe` line are required on every message and shaded on each; a story holds them to being
-exactly those two.
+disagree with what a guest receives. The current formatter adds the prefix `The Bay Compassion: ` and
+the opt-out line `Reply STOP to unsubscribe` in English to every message. The examples shade and
+check those exact strings. Only `STOP` must stay in English when the opt-out instruction is translated.
 
 ### The printed page
 

@@ -33,7 +33,7 @@ const meta = {
 	tags: ['!dev'],
 	parameters: { shell: 'bare' },
 	args: { locale: 'en', queuePosition: null },
-	/** Whatever the message says, the two required pieces are on it, and nothing else is shaded. */
+	/** Check the two currently fixed pieces, and that nothing else is shaded. */
 	play: async ({ canvasElement }) => {
 		const shaded = [...canvasElement.querySelectorAll('[data-required]')].map(
 			(element) => element.textContent,
@@ -73,7 +73,7 @@ export const Broadcast: Story = {
 	},
 };
 
-/** Right-to-left rendering: the message reads from the right, the required English does not. */
+/** Right-to-left rendering: the message reads from the right, the fixed English does not. */
 export const RightToLeft: Story = {
 	args: { type: 'called' },
 	globals: { locale: 'ar' },
