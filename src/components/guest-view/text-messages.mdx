@@ -1,0 +1,43 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as Messages from '../../../.storybook/docs/TextMessages.stories.tsx';
+
+<Meta title="Guest/Text Messages" tags={['review']} />
+
+# Text Messages
+
+What a guest is texted, once they have agreed to text updates. Push notifications carry the same
+title and body.
+
+Two pieces of every text message are **required** and shaded on every message below: the sender's name
+at the start, `The Bay Compassion:`, and the line `Reply STOP to unsubscribe` at the end. They are not
+optional, they are in English whatever language the guest uses, and they cannot be edited. Only the
+wording between them can be changed.
+
+## Registered for the lottery
+
+<Story of={Messages.Registered} />
+
+## Registration has closed
+
+<Story of={Messages.RegistrationClosed} />
+
+## Selected in the lottery
+
+The only message that carries the guest's place in line.
+
+<Story of={Messages.Selected} />
+
+## Not selected in the lottery
+
+<Story of={Messages.NotSelected} />
+
+## Called to the entrance
+
+<Story of={Messages.Called} />
+
+## A broadcast from the market team
+
+Staff write each broadcast, so its words are never translated. This wording is an example.
+
+<Story of={Messages.Broadcast} />

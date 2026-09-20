@@ -1,5 +1,7 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks';
 
+import { Still } from '../../../../.storybook/docs/Still';
+
 import * as LotteryForm from './GuestLotteryForm.stories.tsx';
 import * as InformationForm from './GuestInformationForm.stories.tsx';
 import * as CombinedForm from './GuestCombinedForm.stories.tsx';
@@ -16,6 +18,10 @@ The `IdentityForm` is used to collect the user's first and last name and phone n
 fill this form in once if they choose to save their information.
 
 <Story of={InformationForm.Default} />
+
+Once the form is submitted, the guest is told their information is saved.
+
+<Still id="identity-saved" alt="The identity form's success message: Your information is saved" />
 
 ## Lottery Form
 

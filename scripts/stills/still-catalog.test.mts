@@ -1,66 +1,59 @@
 import { describe, expect, it } from 'vitest';
 
 import { translations } from '../../src/locales.js';
-import { stillArcs, StillCatalog, type StillArc } from './still-catalog.mjs';
+import { StillCatalog, stills, type StillStep } from './still-catalog.mjs';
 
-const arcs: StillArc[] = [
-	{
-		id: 'guest-day',
-		title: 'A guest’s day',
-		summary: '',
-		steps: [
-			{ id: 'first', caption: 'Between markets', anchor: () => 'first' },
-			{ id: 'second', caption: 'Registration is open', anchor: () => 'second' },
-		],
-	},
-	{
-		id: 'elsewhere',
-		title: 'Other ways in',
-		summary: '',
-		steps: [{ id: 'third', caption: 'Saving details', anchor: () => 'third' }],
-	},
+const some: StillStep[] = [
+	{ id: 'first', anchor: () => 'first' },
+	{ id: 'second', anchor: () => 'second' },
+	{ id: 'third', anchor: () => 'third' },
 ];
 
 describe('StillCatalog', () => {
-	it('keeps the arcs and their steps in the order they are declared', () => {
+	it('keeps the stills in the order they are declared when none are named', () => {
 		// Arrange
-		const catalog = new StillCatalog(arcs);
+		const catalog = new StillCatalog(some);
 
 		// Act
-		const sections = catalog.sections();
+		const selected = catalog.select();
 
 		// Assert
-		expect(sections.map((section) => section.arc.id)).toEqual(['guest-day', 'elsewhere']);
-		expect(sections[0]?.steps.map((step) => step.id)).toEqual(['first', 'second']);
+		expect(selected.map((step) => step.id)).toEqual(['first', 'second', 'third']);
 	});
 
-	it('keeps only the requested arcs when some are named', () => {
+	it('keeps only the named stills, in catalog order', () => {
 		// Arrange
-		const catalog = new StillCatalog(arcs);
+		const catalog = new StillCatalog(some);
 
 		// Act
-		const sections = catalog.sections(['elsewhere']);
+		const selected = catalog.select(['third', 'first']);
 
 		// Assert
-		expect(sections.map((section) => section.arc.id)).toEqual(['elsewhere']);
+		expect(selected.map((step) => step.id)).toEqual(['first', 'third']);
+	});
+
+	it('refuses a name it does not know, and lists the ones it does', () => {
+		// Arrange
+		const catalog = new StillCatalog(some);
+
+		// Act
+		const select = () => catalog.select(['first', 'nope']);
+
+		// Assert
+		expect(select).toThrow(/No still named nope\. Known stills: first, second, third/);
 	});
 });
 
-describe('the shipped arcs', () => {
-	const steps = stillArcs.flatMap((arc) => arc.steps);
-
-	it('have unique arc ids and unique step ids, since a step id names its PNG', () => {
+describe('the shipped stills', () => {
+	it('have unique ids, since an id names a PNG and is what a page embeds it by', () => {
 		// Arrange
-		const arcIds = stillArcs.map((arc) => arc.id);
-		const stepIds = steps.map((step) => step.id);
+		const ids = stills.map((step) => step.id);
 
 		// Act
-		const uniqueArcIds = new Set(arcIds);
-		const uniqueStepIds = new Set(stepIds);
+		const unique = new Set(ids);
 
 		// Assert
-		expect(uniqueArcIds.size).toBe(arcIds.length);
-		expect(uniqueStepIds.size).toBe(stepIds.length);
+		expect(unique.size).toBe(ids.length);
 	});
 
 	it('name an anchor that exists in every language, so a forced locale can still find its screen', () => {
@@ -68,15 +61,15 @@ describe('the shipped arcs', () => {
 		const languages = Object.values(translations);
 
 		// Act
-		const anchors = steps.flatMap((step) => languages.map((copy) => step.anchor(copy)));
+		const anchors = stills.flatMap((step) => languages.map((copy) => step.anchor(copy)));
 
 		// Assert
 		expect(anchors.every((anchor) => typeof anchor === 'string' && anchor.length > 0)).toBe(true);
 	});
 
-	it('open something in every step that is shot as an overlay', () => {
+	it('open something in every still that is shot as an overlay', () => {
 		// Arrange
-		const overlays = steps.filter((step) => step.overlay);
+		const overlays = stills.filter((step) => step.overlay);
 
 		// Act
 		const withoutInteraction = overlays.filter((step) => step.interact === undefined);

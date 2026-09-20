@@ -74,6 +74,17 @@ const preview: Preview = {
 					'Design System',
 					'Primitives',
 					'Guest',
+					// The review document prints its sections in this order, so it is the document's outline.
+					[
+						'Introduction',
+						'Forms',
+						'Guest States',
+						'Loading and Unavailable',
+						'Text Updates',
+						'Identity Menu',
+						'QR Codes',
+						'Text Messages',
+					],
 					'Components',
 					'Admin',
 					// Match adminViews in src/services/admin-views.ts, with shared components last.

@@ -6,10 +6,7 @@ import { SceneFixtures, stillsClock } from './scene-fixtures.mjs';
 import type { StillStep } from './still-catalog.mjs';
 
 function fixturesFor(overrides: Partial<StillStep> = {}, locale: 'en' | 'es' = 'en') {
-	return new SceneFixtures(
-		{ id: 'scene', caption: 'A scene', anchor: () => '', ...overrides },
-		locale,
-	);
+	return new SceneFixtures({ id: 'scene', anchor: () => '', ...overrides }, locale);
 }
 
 describe('SceneFixtures', () => {

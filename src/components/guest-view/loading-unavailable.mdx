@@ -1,0 +1,29 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Still } from '../../../.storybook/docs/Still';
+
+<Meta title="Guest/Loading and Unavailable" tags={['review']} />
+
+# Loading and Unavailable
+
+What a guest sees while the market is being looked up, and when it cannot be.
+
+## Checking the market's status
+
+The first thing the app does is ask whether a market is running. On a slow connection the guest waits
+on this message.
+
+<Still
+	id="market-loading"
+	alt="The app bar, and a spinner with the words 'Checking today's market status'"
+/>
+
+## The market's status could not be loaded
+
+If the request fails, nothing tells the guest that something went wrong. They see the Market Closed
+card, whatever the market's real state is.
+
+<Still
+	id="market-unavailable"
+	alt="The Market Closed card, shown because the market's status could not be loaded"
+/>

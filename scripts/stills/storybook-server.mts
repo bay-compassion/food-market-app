@@ -1,39 +1,15 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 
-/**
- * The tag an MDX docs page puts on its `<Meta>` to be printed in the review document:
- *
- *     <Meta title="Guest/Forms" tags={['review']} />
- *
- * The pages, and the words on them, are written in Storybook by whoever owns the explanation; this
- * is the whole of what the capture needs to know about them.
- */
-export const reviewTag = 'review';
-
-/** A docs page that asked to be printed. */
-export type ReviewDoc = {
-	/** The docs entry's id, e.g. `guest-forms--docs` — the `id` in its Storybook URL. */
-	id: string;
-	/** Its sidebar path, e.g. `Guest/Forms`. */
-	title: string;
-	/** The last part of the path, e.g. `Forms`, which is what the document calls the page. */
-	label: string;
-};
-
-type IndexEntry = { id: string; title: string; type: string; tags?: string[] };
-
-type StoryIndex = { entries: Record<string, IndexEntry> };
-
-function isStoryIndex(value: unknown): value is StoryIndex {
-	return typeof value === 'object' && value !== null && 'entries' in value;
-}
+import { isStoryIndex, reviewPages, type ReviewPage } from '../../.storybook/docs/review-index.js';
 
 /**
- * Every docs page tagged for review, in sidebar-path order — the order a reader would find them in
- * Storybook, since the index itself lists them in whatever order the files were discovered.
+ * The docs pages that make up the review document, read from Storybook's own index. A page joins by
+ * tagging itself — `<Meta title="Guest/Forms" tags={['review']} />` — and the words on it are the
+ * document's words; this is the whole of what the capture needs to know about them. See
+ * `.storybook/docs/review-index.ts`, which the contents page uses too.
  */
-export async function fetchReviewDocs(baseUrl: string): Promise<ReviewDoc[]> {
+export async function fetchReviewPages(baseUrl: string): Promise<ReviewPage[]> {
 	const response = await fetch(new URL('index.json', `${baseUrl}/`));
 
 	if (!response.ok) {
@@ -46,10 +22,7 @@ export async function fetchReviewDocs(baseUrl: string): Promise<ReviewDoc[]> {
 		throw new Error(`Storybook at ${baseUrl} returned a story index in an unfamiliar shape.`);
 	}
 
-	return Object.values(index.entries)
-		.filter((entry) => entry.type === 'docs' && entry.tags?.includes(reviewTag))
-		.map(({ id, title }) => ({ id, title, label: title.split('/').at(-1) ?? title }))
-		.sort((first, second) => first.title.localeCompare(second.title));
+	return reviewPages(index);
 }
 
 /**
@@ -96,7 +69,11 @@ export class StorybookServer {
 	}
 
 	/** Starts `storybook dev` on `port` and resolves once it is answering for its story index. */
-	static async start(port: number, timeoutMs = 180_000): Promise<StorybookServer> {
+	static async start(
+		port: number,
+		options: { env?: Record<string, string>; timeoutMs?: number } = {},
+	): Promise<StorybookServer> {
+		const { env = {}, timeoutMs = 180_000 } = options;
 		const server = new StorybookServer(`http://127.0.0.1:${port}`);
 
 		if (await isListening(server.baseUrl)) {
@@ -107,7 +84,7 @@ export class StorybookServer {
 			'npx',
 			['storybook', 'dev', '-p', String(port), '--ci', '--quiet', '--no-open'],
 			// Its own process group, so shutting it down takes the Vite server it spawns with it.
-			{ stdio: ['ignore', 'ignore', 'inherit'], detached: true },
+			{ stdio: ['ignore', 'ignore', 'inherit'], detached: true, env: { ...process.env, ...env } },
 		);
 
 		const deadline = Date.now() + timeoutMs;

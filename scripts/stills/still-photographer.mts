@@ -4,11 +4,9 @@ import path from 'node:path';
 import type { Browser, Page } from 'playwright';
 
 import { translations, type Locale } from '../../src/locales.js';
-import { smsMessageParts } from '../../src/services/notification-copy.js';
 import { launchChromium } from './chromium.mjs';
 import { SceneFixtures, stillsTimeZone } from './scene-fixtures.mjs';
 import type { StillStep } from './still-catalog.mjs';
-import { textMessageHtml } from './text-message.mjs';
 
 export type Still = {
 	step: StillStep;
@@ -79,29 +77,13 @@ export class StillPhotographer {
 
 		await using context = await this.newPhone();
 
-		const { message } = step;
-
-		// A text message is not part of the app, so it has no server to stand in for.
-		if (!message) {
-			await fixtures.install(context);
-		}
+		await fixtures.install(context);
 
 		const page = await context.newPage();
 
-		if (message) {
-			// Short to begin with: the still grows to the message, rather than being a phone's worth of white.
-			await page.setViewportSize({ width: phone.width, height: 240 });
-			await page.setContent(
-				textMessageHtml(
-					smsMessageParts(this.locale, message.type, message.queuePosition ?? null, message.custom),
-					this.locale,
-				),
-			);
-		} else {
-			await page.goto(new URL(step.route ?? '/', `${this.baseUrl}/`).href, {
-				waitUntil: 'domcontentloaded',
-			});
-		}
+		await page.goto(new URL(step.route ?? '/', `${this.baseUrl}/`).href, {
+			waitUntil: 'domcontentloaded',
+		});
 
 		await this.during(step, `reaching “${step.anchor(copy)}” at ${step.route ?? '/'}`, async () => {
 			await page
@@ -157,7 +139,7 @@ export class StillPhotographer {
 		try {
 			await run();
 		} catch (error) {
-			throw new Error(`The still “${step.caption}” (${step.id}) failed while ${stage}.`, {
+			throw new Error(`The still “${step.id}” failed while ${stage}.`, {
 				cause: error,
 			});
 		}

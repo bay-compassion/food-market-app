@@ -1,6 +1,7 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks';
 import { Mermaid } from 'mdx-mermaid/lib/Mermaid';
 
+import { Still } from '../../../../.storybook/docs/Still';
 import { StatePip } from '../../../../.storybook/docs/StatePip';
 import { guestStateFlowchart } from '../../../../.storybook/docs/guest-states';
 import { RegistrationForm } from '../forms/GuestCombinedForm.stories.tsx';
@@ -94,6 +95,13 @@ they have been called, it is a worker's decision. If registration is still open,
 offered the registration form again; once it has closed they see this card until the market closes.
 
 <Story of={GuestStates.Cancelled} />
+
+Before giving up their place, the guest is asked to confirm.
+
+<Still
+	id="cancel-asked"
+	alt="A sheet asking the guest to confirm cancelling their place in the queue, with Yes cancel and Keep my place buttons"
+/>
 
 ### <StatePip state="registrationClosed" /> Registration Closed
 

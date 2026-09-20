@@ -1,0 +1,37 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import { Still } from '../../.storybook/docs/Still';
+import * as GuestClaimCard from './guest-view/identity/GuestClaimCard.stories.tsx';
+
+<Meta title="Guest/QR Codes" tags={['review']} />
+
+# QR Codes
+
+There are two QR codes. One is a poster that points guests at the app. The other is shown by a worker
+to set up a phone for a guest they added by hand.
+
+## The poster
+
+A printable page that opens the app when scanned.
+
+The web address under the code is the one this document was made from; the printed poster shows the
+live site's. The Back and Print buttons at the top do not appear on paper.
+
+<Still
+	id="qr-poster"
+	alt="The QR code poster: a heading, a short description, a QR code, and the web address beneath it"
+/>
+
+## Setting up a phone
+
+A guest scans a worker's code, and the link opens this screen. Nothing happens until they tap the
+button.
+
+<Story of={GuestClaimCard.FreshPhone} />
+
+## Setting up a phone that already has someone's details
+
+The guest is warned that setting the phone up replaces what is on it, and that it cannot be
+recovered.
+
+<Story of={GuestClaimCard.PhoneWithSavedData} />

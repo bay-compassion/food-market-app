@@ -1,0 +1,70 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Still } from '../../../../.storybook/docs/Still';
+
+<Meta title="Guest/Text Updates" tags={['review']} />
+
+# Text Updates
+
+A guest the app already knows can agree to text messages about their visit. The button on the
+"Recognized on this device" card opens the agreement, and the card shows which of these states the
+setting is in.
+
+## Asked to agree
+
+The agreement is in a dialog. The button to enable text updates stays unavailable until the box is
+ticked.
+
+<Still
+	id="text-updates"
+	alt="The text message updates dialog, with an unticked agreement and a disabled Enable button"
+/>
+
+## Agreed
+
+Once the box is ticked, the button becomes available.
+
+<Still
+	id="text-updates-agreed"
+	alt="The dialog with the agreement ticked and the Enable text updates button available"
+/>
+
+## Agreed, but it did not go through
+
+<Still
+	id="text-updates-failed"
+	alt="The dialog with an error saying the guest's text updates could not be enabled"
+/>
+
+## Text updates are on
+
+The dialog closes and the card says so.
+
+<Still
+	id="text-updates-enabled"
+	alt="The recognized-on-this-device card showing Notifications Enabled"
+/>
+
+## Texted STOP earlier
+
+A guest who has texted STOP to the market's number can only start again by texting START. The dialog
+explains this and offers to open a text with START ready to send.
+
+<Still
+	id="text-updates-opted-out"
+	alt="The dialog explaining that the guest previously stopped text messages and must send START"
+/>
+
+## Checking whether text updates are on
+
+<Still
+	id="text-updates-loading"
+	alt="The recognized-on-this-device card with a spinner and the words Checking notification status"
+/>
+
+## Could not check whether text updates are on
+
+<Still
+	id="text-updates-unavailable"
+	alt="The recognized-on-this-device card with an error saying the notification status could not be retrieved"
+/>

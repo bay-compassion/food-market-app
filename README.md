@@ -93,10 +93,10 @@ script refuses to touch a database that is not on localhost unless you pass `--f
 ### Review document
 
 Copy and design reviews go better on paper, and the people doing them rarely have the app or a code
-editor. `npm run capture:stills` builds a PDF for them to mark up. Its spine is the MDX docs pages in
-Storybook that tag themselves `review`, with their stories shown inside the app's own bar and footer;
-after them come photographs of the running app for what a docs page cannot show — a dialog, a
-failure, a text message:
+editor. `npm run capture:stills` builds a PDF for them to mark up. Every word in it is an MDX page in
+Storybook that tags itself `review`, with its stories shown inside the app's own bar and footer; the
+one thing the script makes is photographs of the running app, for screens a story cannot show, which
+a page embeds with `<Still id="…" />`:
 
 ```bash
 npx playwright install chromium             # once
@@ -105,7 +105,7 @@ npm run capture:stills -- --locale es       # the same document, in Spanish
 ```
 
 See [`docs/stills.md`](docs/stills.md) for how to write a page, what the stills are for, and the
-page-size options.
+options.
 
 ## Checks
 

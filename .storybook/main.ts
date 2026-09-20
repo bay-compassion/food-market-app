@@ -1,3 +1,6 @@
+import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import type { StorybookConfig } from '@storybook/react-vite';
 import remarkMermaid from 'mdx-mermaid';
 import { Mermaid } from 'mdx-mermaid/lib/Mermaid';
@@ -15,7 +18,19 @@ function pluginName(plugin: unknown): string {
 	return plugin && typeof plugin === 'object' && 'name' in plugin ? String(plugin.name) : '';
 }
 
+/**
+ * Where `npm run capture:stills` writes its photographs, served at `/stills` so a docs page can embed
+ * one with `<Still id="…" />`. The capture names another folder through the environment when it is
+ * asked to write elsewhere. It is made here if it is missing: a static folder that does not exist
+ * when Storybook starts is one Storybook will not serve when it appears later.
+ */
+const stillsDirectory =
+	process.env.REVIEW_STILLS_DIR ?? fileURLToPath(new URL('../stills/png', import.meta.url));
+
+mkdirSync(stillsDirectory, { recursive: true });
+
 const config: StorybookConfig = {
+	staticDirs: [{ from: stillsDirectory, to: '/stills' }],
 	stories: [
 		'./docs/**/*.mdx',
 		'./docs/**/*.stories.tsx',
