@@ -224,15 +224,35 @@ function calendarDay(date: Date) {
 	return `${date.getFullYear()}-${month}-${day}`;
 }
 
+/**
+ * Real Bay Area codes paired with the 555-01XX line block that NANP reserves for fiction, so a
+ * generated number can never belong to anyone. Each area code yields 100 numbers, and a generated
+ * number is distinct per guest, so the pool bounds how many guests can be built.
+ */
+const fictionalAreaCodes = ['415', '510', '650', '408', '925', '707', '628', '669', '831', '341'];
+const fictionalLinesPerAreaCode = 100;
+
+function fictionalPhone(index: number) {
+	const areaCode = fictionalAreaCodes[Math.floor(index / fictionalLinesPerAreaCode)];
+
+	if (areaCode === undefined) {
+		throw new RangeError(
+			`Cannot build more than ${fictionalAreaCodes.length * fictionalLinesPerAreaCode} guests with distinct fictional phone numbers.`,
+		);
+	}
+
+	// Provider suppression relies on the explicit `fake` marker, not on interpreting the number;
+	// the reserved range is a second line of defence and makes generated guests easy to spot.
+	const line = `${index % fictionalLinesPerAreaCode}`.padStart(2, '0');
+
+	return `(${areaCode}) 555-01${line}`;
+}
+
 function buildGuests(options: { guests: number; now: Date }, random: Random) {
 	return Array.from({ length: options.guests }, (_unused, index) => {
 		const locale = pickShare(random, localeShares);
 		const names = namesByLocale[locale];
-		// The shared 555 area code makes generated guests easy to spot in addition to their explicit
-		// `fake` marker. Provider suppression relies on the marker, not on interpreting the number.
-		const exchange = 100 + Math.floor(index / 100);
-		const line = `${index % 100}`.padStart(2, '0');
-		const phone = `(555) ${exchange}-${line}${integerBetween(random, 10, 99)}`;
+		const phone = fictionalPhone(index);
 
 		return {
 			id: crypto.randomUUID(),
