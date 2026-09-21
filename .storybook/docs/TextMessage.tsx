@@ -86,12 +86,7 @@ export function TextMessage({ parts }: { parts: SmsMessageParts }) {
 			<figcaption className="kind">Text message</figcaption>
 			<p className="bubble">
 				{required(parts.prefix)}
-				{parts.title}
-				{'\n\n'}
-				{parts.body}
-				{parts.position === null ? '' : `\n${parts.position}`}
-				{'\n\n'}
-				{required(parts.unsubscribe)}
+				{parts.text} {required(parts.unsubscribe)}
 			</p>
 			<ul className="key">
 				<li>

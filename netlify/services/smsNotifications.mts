@@ -5,8 +5,8 @@ import { guests, notificationDeliveries, smsSubscriptions, visits } from '../../
 import { translations, type Locale } from '../../src/locales.js';
 import {
 	deliveryCopy,
+	isSmsNotificationType,
 	smsMessage,
-	type DeliveryType,
 } from '../../src/services/notification-copy.js';
 import { getLogger } from '../lib/logging.mjs';
 import { tracedQuery } from '../lib/sentry.mjs';
@@ -28,8 +28,38 @@ const permanentFailureCodes = new Set([21211, 21610, 21614]);
 // Twilio this module reaches.
 export { smsMessage } from '../../src/services/notification-copy.js';
 
+function guestLocale(locale: string): Locale {
+	return Object.hasOwn(translations, locale) ? (locale as Locale) : 'en';
+}
+
 export function smsConfiguration() {
 	return { configured: notificationsEnabled() && TwilioSmsTransport.configured() };
+}
+
+/**
+ * Tells a guest who has just consented that text updates are working. It is sent straight away
+ * rather than queued, since it is about the guest and not a visit, and a failure to send it must not
+ * undo their consent.
+ */
+export async function sendSmsWelcome(guest: {
+	normalizedPhone: string;
+	locale: string;
+	fake: boolean;
+}) {
+	const transport = notificationsEnabled() ? TwilioSmsTransport.fromEnvironment() : null;
+
+	if (!transport || guest.fake) {
+		return;
+	}
+
+	try {
+		await transport.send({
+			to: guest.normalizedPhone,
+			body: smsMessage(guestLocale(guest.locale), 'welcome', null),
+		});
+	} catch (cause: unknown) {
+		getLogger().warn({ message: 'sms.welcome_failed', err: cause });
+	}
 }
 
 export async function deliverPendingSmsNotifications(
@@ -116,7 +146,8 @@ export async function deliverPendingSmsNotifications(
 	let skipped = 0;
 
 	for (const row of rows) {
-		if (row.fake || !row.subscribed || !row.phone) {
+		// Rows queued before a type lost its text message can still be waiting here.
+		if (row.fake || !row.subscribed || !row.phone || !isSmsNotificationType(row.type)) {
 			await db
 				.update(notificationDeliveries)
 				.set({
@@ -125,15 +156,17 @@ export async function deliverPendingSmsNotifications(
 					claimedBy: null,
 					lastError: row.fake
 						? 'Fake guest; SMS delivery suppressed.'
-						: 'No active SMS subscription.',
+						: !isSmsNotificationType(row.type)
+							? 'No text message for this notification.'
+							: 'No active SMS subscription.',
 				})
 				.where(eq(notificationDeliveries.id, row.id));
 			skipped += 1;
 			continue;
 		}
 
-		const locale = Object.hasOwn(translations, row.locale) ? (row.locale as Locale) : 'en';
-		const type = row.type as DeliveryType;
+		const locale = guestLocale(row.locale);
+		const type = row.type;
 		const copy = deliveryCopy(locale, type, { title: row.title, body: row.body });
 
 		if (!copy.title || !copy.body || (type === 'lottery_selected' && row.queuePosition === null)) {

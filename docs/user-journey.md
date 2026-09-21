@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=8ee80322c315, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=7f95f07cee04, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=217306754150, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=8ee80322c315, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=7f95f07cee04, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
 
 # Guest journey
 
@@ -66,7 +66,7 @@ flowchart TD
     smsComposer -. returns .-> startRequired
     startRequired -. check again .-> deviceAuth
     notifyButton -. opens .-> offer{Consent dialog:<br/>approve the full SMS terms?}
-    offer -- yes --> subscribed[Save consent for the guest;<br/>server finds their current-market visit<br/>for any catch-up text]
+    offer -- yes --> subscribed[Save consent for the guest;<br/>server texts a welcome, then finds their<br/>current-market visit for any catch-up text]
     offer -- no --> notifyButton
     subscribed --> notificationEnabled
     notificationEnabled --> activeSession{Market session active?}
@@ -123,7 +123,7 @@ flowchart TD
     saveIdentity --> registered[Visit created: registered]
     registered --> status
 
-    status --> regClosed[Registration closes<br/>30-second grace period<br/>push/sms: registration_closed]
+    status --> regClosed[Registration closes<br/>30-second grace period<br/>push: registration_closed]
     regClosed --> lotteryPending[lottery_pending:<br/>registration pool frozen]
     lotteryPending --> lottery{Lottery}
     lottery -- selected --> waiting[waiting: guest sees their place in line<br/>and how many are ahead<br/>push/sms: lottery_selected]
@@ -270,8 +270,10 @@ flowchart TD
   credential to the authenticated `/api/notification-status` endpoint during initialization,
   which hashes it to identify the guest and restores consent without exposing profile data. The
   same credential authorizes `/api/sms-subscription`; no visit token participates in consent. On a
-  new opt-in, the server looks up the guest's visit in the newest non-ended market event and sends
-  the appropriate catch-up text if that visit has a live status. If the guest previously sent
+  new opt-in, the server sends a one-time welcome text confirming that updates are working, then
+  looks up the guest's visit in the newest non-ended market event and sends the appropriate
+  catch-up text if that visit has a live status. Registration confirmed and registration closed
+  are push-only; they never produce a text. If the guest previously sent
   `STOP`, the notification status includes the Twilio sender that received it. The consent dialog
   explains that the guest must send `START`, opens a prefilled text to that sender, and lets the
   guest check again after returning to the app. The identity indicator shows a

@@ -7,14 +7,14 @@ import {
 	smsPrefix,
 	smsUnsubscribe,
 	type CustomNotification,
-	type DeliveryType,
+	type SmsMessageKind,
 } from '../../src/services/notification-copy';
 import { TextMessage } from './TextMessage';
 
 type SpecimenArgs = {
 	/** Driven by the toolbar's locale picker, per the repo's story convention. */
 	locale: Locale;
-	type: DeliveryType;
+	type: SmsMessageKind;
 	queuePosition: number | null;
 	custom?: CustomNotification;
 };
@@ -47,11 +47,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Sent when a guest's entry into the lottery is confirmed. */
-export const Registered: Story = { args: { type: 'registration_confirmed' } };
-
-/** Sent when the registration window closes. */
-export const RegistrationClosed: Story = { args: { type: 'registration_closed' } };
+/** Sent once, when the guest consents to text messages. */
+export const Welcome: Story = { args: { type: 'welcome' } };
 
 /** Sent when the guest is selected; the only message that carries their place in line. */
 export const Selected: Story = { args: { type: 'lottery_selected', queuePosition: 7 } };

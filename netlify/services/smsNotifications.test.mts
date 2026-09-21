@@ -12,6 +12,7 @@ vi.mock('twilio', () => ({
 
 import {
 	deliverPendingSmsNotifications,
+	sendSmsWelcome,
 	smsConfiguration,
 	smsMessage,
 } from './smsNotifications.mjs';
@@ -40,24 +41,82 @@ describe('smsMessage', () => {
 			const message = smsMessage(code, 'called', null);
 
 			expect(message).toMatch(/^The Bay Compassion: /);
-			expect(message).toContain(translations[code].notificationCalledBody);
+			expect(message).toContain(translations[code].notifications.sms.called);
 			expect(message).toMatch(/Reply STOP to unsubscribe$/);
 		}
 	});
 
-	it('confirms entry into the lottery', () => {
-		expect(smsMessage('en', 'registration_confirmed', null)).toContain(
-			'Your entry into the lottery has been confirmed.',
+	it('welcomes a guest who has just consented, in one line', () => {
+		expect(smsMessage('en', 'welcome', null)).toBe(
+			'The Bay Compassion: Welcome! You are now set up to receive text updates. Reply STOP to unsubscribe',
 		);
 	});
 
 	it('includes the guest queue position in a localized lottery-selection message', () => {
 		expect(smsMessage('es', 'lottery_selected', 12)).toBe(
-			'The Bay Compassion: Fue seleccionado\n\n' +
-				'Fue seleccionado. Espere hasta que le llamemos.\n' +
-				'Su lugar en la fila es 12.\n\n' +
+			'The Bay Compassion: ¡Fue seleccionado! Su lugar en la fila es 12. Espere hasta que le llamemos. ' +
 				'Reply STOP to unsubscribe',
 		);
+	});
+
+	it('refuses a lottery-selection message with no queue position', () => {
+		expect(() => smsMessage('en', 'lottery_selected', null)).toThrow(/queue position/);
+	});
+
+	it('joins a broadcast’s title and body', () => {
+		expect(
+			smsMessage('en', 'broadcast', null, { title: 'Market update', body: 'Running late.' }),
+		).toBe('The Bay Compassion: Market update: Running late. Reply STOP to unsubscribe');
+	});
+});
+
+describe('sendSmsWelcome', () => {
+	const guest = { normalizedPhone: '+15551234567', locale: 'es', fake: false };
+
+	it('texts the welcome in the guest’s language', async () => {
+		stubTwilioEnv();
+		messagesCreate.mockResolvedValueOnce({});
+
+		await sendSmsWelcome(guest);
+
+		expect(messagesCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				to: '+15551234567',
+				body: smsMessage('es', 'welcome', null),
+			}),
+		);
+	});
+
+	it('falls back to English for a locale it has no translation for', async () => {
+		stubTwilioEnv();
+		messagesCreate.mockResolvedValueOnce({});
+
+		await sendSmsWelcome({ ...guest, locale: 'xx' });
+
+		expect(messagesCreate).toHaveBeenCalledWith(
+			expect.objectContaining({ body: smsMessage('en', 'welcome', null) }),
+		);
+	});
+
+	it('sends nothing to a fake guest', async () => {
+		stubTwilioEnv();
+
+		await sendSmsWelcome({ ...guest, fake: true });
+
+		expect(messagesCreate).not.toHaveBeenCalled();
+	});
+
+	it('sends nothing when unconfigured', async () => {
+		await sendSmsWelcome(guest);
+
+		expect(messagesCreate).not.toHaveBeenCalled();
+	});
+
+	it('does not throw when Twilio rejects the welcome', async () => {
+		stubTwilioEnv();
+		messagesCreate.mockRejectedValueOnce(new Error('Network error'));
+
+		await expect(sendSmsWelcome(guest)).resolves.toBeUndefined();
 	});
 });
 
@@ -117,7 +176,7 @@ describe('deliverPendingSmsNotifications', () => {
 			expect.objectContaining({
 				messagingServiceSid: 'messaging-service-sid',
 				to: '+15551234567',
-				body: 'The Bay Compassion: It’s your turn\n\nPlease come to the entrance now.\n\nReply STOP to unsubscribe',
+				body: 'The Bay Compassion: It’s your turn. Please come to the entrance now. Reply STOP to unsubscribe',
 			}),
 		);
 	});
@@ -136,6 +195,32 @@ describe('deliverPendingSmsNotifications', () => {
 				locale: 'en',
 				phone: '+15551234567',
 				fake: true,
+				subscribed: 'sms-sub-1',
+			},
+		]);
+		queueResult(undefined); // claim delivery
+		queueResult(undefined); // update -> skipped
+
+		const result = await deliverPendingSmsNotifications();
+
+		expect(result).toEqual({ sent: 0, failed: 0, skipped: 1, processed: 1 });
+		expect(messagesCreate).not.toHaveBeenCalled();
+	});
+
+	it('skips a queued type that no longer has a text message', async () => {
+		stubTwilioEnv();
+		queueResult([
+			{
+				id: 'delivery-1',
+				visitId: 'visit-1',
+				guestId: 'guest-1',
+				attempts: 0,
+				type: 'registration_closed',
+				title: null,
+				body: null,
+				locale: 'en',
+				phone: '+15551234567',
+				fake: false,
 				subscribed: 'sms-sub-1',
 			},
 		]);

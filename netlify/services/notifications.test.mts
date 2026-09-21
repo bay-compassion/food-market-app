@@ -41,12 +41,7 @@ describe('queueNotification', () => {
 	it('queues one row per channel per visit, leaving conflicts alone', async () => {
 		queueResult(undefined);
 
-		await queueNotification(
-			client,
-			['visit-1', 'visit-2'],
-			'registration_closed',
-			'registration_closed',
-		);
+		await queueNotification(client, ['visit-1', 'visit-2'], 'called', 'called');
 
 		const rows = lastInsertedRows();
 
@@ -60,6 +55,20 @@ describe('queueNotification', () => {
 			]),
 		);
 	});
+
+	it.each(['registration_confirmed', 'registration_closed'] as const)(
+		'queues %s for push only, since it has no text message',
+		async (type) => {
+			queueResult(undefined);
+
+			await queueNotification(client, ['visit-1', 'visit-2'], type, type);
+
+			expect(lastInsertedRows()).toEqual([
+				expect.objectContaining({ visitId: 'visit-1', channel: 'push' }),
+				expect.objectContaining({ visitId: 'visit-2', channel: 'push' }),
+			]);
+		},
+	);
 
 	it('carries custom title and body through to every row', async () => {
 		queueResult(undefined);

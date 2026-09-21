@@ -182,6 +182,39 @@ export interface AppBarTranslations {
 	feedbackForm: FeedbackFormTranslations;
 }
 
+/** A push notification's headline and detail. */
+export interface NotificationMessageTranslations {
+	title: string;
+	body: string;
+}
+
+/** Everything a guest is told about their visit outside the page: push, text, and their prompts. */
+export interface NotificationTranslations {
+	registered: NotificationMessageTranslations;
+	registrationClosed: NotificationMessageTranslations;
+	selected: NotificationMessageTranslations;
+	notSelected: NotificationMessageTranslations;
+	called: NotificationMessageTranslations;
+	/** Text messages. These have no title: each is one line, with the prefix added around it. */
+	sms: {
+		/** Sent when a guest consents to texts, so it stands alone. */
+		welcome: string;
+		/** `{position}` is the guest's place in line. */
+		selected: string;
+		notSelected: string;
+		called: string;
+	};
+	/** Asking the browser for push permission. */
+	pushOptIn: {
+		enable: string;
+		denied: string;
+		enabled: string;
+		error: string;
+		iosInstall: string;
+		unsupported: string;
+	};
+}
+
 export interface Translation {
 	appBar: AppBarTranslations;
 	guestView: GuestViewTranslations;
@@ -219,24 +252,7 @@ export interface Translation {
 	language: string;
 	languagePrompt: string;
 	marketName: string;
-	notificationCalledBody: string;
-	notificationCalledTitle: string;
-	notificationNotSelectedBody: string;
-	notificationNotSelectedTitle: string;
-	notificationRegisteredBody: string;
-	notificationRegisteredTitle: string;
-	notificationRegistrationClosedBody: string;
-	notificationRegistrationClosedTitle: string;
-	notificationSelectedBody: string;
-	notificationSelectedTitle: string;
-	notificationsEnable: string;
-	notificationsDenied: string;
-	notificationsEnabled: string;
-	notificationsError: string;
-	notificationsIosInstall: string;
-	notificationsUnsupported: string;
-	smsNotificationRegisteredBody: string;
-	smsNotificationSelectedPosition: string;
+	notifications: NotificationTranslations;
 	seniorsCount: string;
 	phone: string;
 	privacy: string;
@@ -465,25 +481,44 @@ export const translations = {
 		language: 'Language',
 		languagePrompt: 'Choose your language',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Please come to the entrance now.',
-		notificationCalledTitle: 'It’s your turn',
-		notificationNotSelectedBody: 'You were not selected for today’s service.',
-		notificationNotSelectedTitle: 'Lottery result',
-		notificationRegisteredBody: 'Your registration is confirmed.',
-		notificationRegisteredTitle: 'Registration confirmed',
-		notificationRegistrationClosedBody: 'Registration has closed. The lottery will begin soon.',
-		notificationRegistrationClosedTitle: 'Registration closed',
-		notificationSelectedBody: 'You were selected. Please wait until you are called.',
-		notificationSelectedTitle: 'You were selected',
-		notificationsEnable: 'Notify me about this visit',
-		notificationsDenied: 'Notifications are blocked. Enable them in your device settings.',
-		notificationsEnabled: 'Notifications are enabled for this visit.',
-		notificationsError: 'We could not enable notifications. Please try again.',
-		notificationsIosInstall:
-			'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
-		notificationsUnsupported: 'Push notifications are not available on this device.',
-		smsNotificationRegisteredBody: 'Your entry into the lottery has been confirmed.',
-		smsNotificationSelectedPosition: 'Your position is {position}.',
+		notifications: {
+			registered: {
+				title: 'Registration confirmed',
+				body: 'Your registration is confirmed.',
+			},
+			registrationClosed: {
+				title: 'Registration closed',
+				body: 'Registration has closed. The lottery will begin soon.',
+			},
+			selected: {
+				title: 'You were selected',
+				body: 'You were selected. Please wait until you are called.',
+			},
+			notSelected: {
+				title: 'Lottery result',
+				body: 'You were not selected for today’s service.',
+			},
+			called: {
+				title: 'It’s your turn',
+				body: 'Please come to the entrance now.',
+			},
+			sms: {
+				welcome: 'Welcome! You are now set up to receive text updates.',
+				selected:
+					'You were selected! Your position is {position}. Please wait until you are called.',
+				notSelected: 'You were not selected for today’s service.',
+				called: 'It’s your turn. Please come to the entrance now.',
+			},
+			pushOptIn: {
+				enable: 'Notify me about this visit',
+				denied: 'Notifications are blocked. Enable them in your device settings.',
+				enabled: 'Notifications are enabled for this visit.',
+				error: 'We could not enable notifications. Please try again.',
+				iosInstall:
+					'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
+				unsupported: 'Push notifications are not available on this device.',
+			},
+		},
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you.',
@@ -713,26 +748,45 @@ export const translations = {
 		language: 'Idioma',
 		languagePrompt: 'Elija su idioma',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Por favor, acérquese a la entrada ahora.',
-		notificationCalledTitle: 'Es su turno',
-		notificationNotSelectedBody: 'No fue seleccionado para el servicio de hoy.',
-		notificationNotSelectedTitle: 'Resultado del sorteo',
-		notificationRegisteredBody: 'Su registro está confirmado.',
-		notificationRegisteredTitle: 'Registro confirmado',
-		notificationRegistrationClosedBody: 'El registro cerró. El sorteo comenzará pronto.',
-		notificationRegistrationClosedTitle: 'Registro cerrado',
-		notificationSelectedBody: 'Fue seleccionado. Espere hasta que le llamemos.',
-		notificationSelectedTitle: 'Fue seleccionado',
-		notificationsEnable: 'Notificarme sobre esta visita',
-		notificationsDenied:
-			'Las notificaciones están bloqueadas. Actívelas en la configuración de su dispositivo.',
-		notificationsEnabled: 'Las notificaciones están activadas para esta visita.',
-		notificationsError: 'No pudimos activar las notificaciones. Inténtelo de nuevo.',
-		notificationsIosInstall:
-			'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
-		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
-		smsNotificationRegisteredBody: 'Se ha confirmado su inscripción en el sorteo.',
-		smsNotificationSelectedPosition: 'Su lugar en la fila es {position}.',
+		notifications: {
+			registered: {
+				title: 'Registro confirmado',
+				body: 'Su registro está confirmado.',
+			},
+			registrationClosed: {
+				title: 'Registro cerrado',
+				body: 'El registro cerró. El sorteo comenzará pronto.',
+			},
+			selected: {
+				title: 'Fue seleccionado',
+				body: 'Fue seleccionado. Espere hasta que le llamemos.',
+			},
+			notSelected: {
+				title: 'Resultado del sorteo',
+				body: 'No fue seleccionado para el servicio de hoy.',
+			},
+			called: {
+				title: 'Es su turno',
+				body: 'Por favor, acérquese a la entrada ahora.',
+			},
+			sms: {
+				welcome: '¡Le damos la bienvenida! Ya recibirá actualizaciones por mensaje de texto.',
+				selected:
+					'¡Fue seleccionado! Su lugar en la fila es {position}. Espere hasta que le llamemos.',
+				notSelected: 'No fue seleccionado para el servicio de hoy.',
+				called: 'Es su turno. Por favor, acérquese a la entrada ahora.',
+			},
+			pushOptIn: {
+				enable: 'Notificarme sobre esta visita',
+				denied:
+					'Las notificaciones están bloqueadas. Actívelas en la configuración de su dispositivo.',
+				enabled: 'Las notificaciones están activadas para esta visita.',
+				error: 'No pudimos activar las notificaciones. Inténtelo de nuevo.',
+				iosInstall:
+					'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
+				unsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
+			},
+		},
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle.',
@@ -958,25 +1012,44 @@ export const translations = {
 		language: 'زبان',
 		languagePrompt: 'زبان خود را انتخاب کنید',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'لطفاً همین حالا به ورودی مراجعه کنید.',
-		notificationCalledTitle: 'نوبت شماست',
-		notificationNotSelectedBody: 'شما برای خدمات امروز انتخاب نشدید.',
-		notificationNotSelectedTitle: 'نتیجه قرعه‌کشی',
-		notificationRegisteredBody: 'ثبت‌نام شما تأیید شد.',
-		notificationRegisteredTitle: 'ثبت‌نام تأیید شد',
-		notificationRegistrationClosedBody: 'ثبت‌نام بسته شد. قرعه‌کشی به‌زودی آغاز می‌شود.',
-		notificationRegistrationClosedTitle: 'ثبت‌نام بسته شد',
-		notificationSelectedBody: 'شما انتخاب شدید. لطفاً تا زمان فراخوان منتظر بمانید.',
-		notificationSelectedTitle: 'شما انتخاب شدید',
-		notificationsEnable: 'درباره این مراجعه به من اطلاع دهید',
-		notificationsDenied: 'اعلان‌ها مسدود هستند. آن‌ها را در تنظیمات دستگاه فعال کنید.',
-		notificationsEnabled: 'اعلان‌ها برای این مراجعه فعال شدند.',
-		notificationsError: 'نتوانستیم اعلان‌ها را فعال کنیم. لطفاً دوباره تلاش کنید.',
-		notificationsIosInstall:
-			'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
-		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
-		smsNotificationRegisteredBody: 'ورود شما به قرعه‌کشی تأیید شد.',
-		smsNotificationSelectedPosition: 'جایگاه شما در صف {position} است.',
+		notifications: {
+			registered: {
+				title: 'ثبت‌نام تأیید شد',
+				body: 'ثبت‌نام شما تأیید شد.',
+			},
+			registrationClosed: {
+				title: 'ثبت‌نام بسته شد',
+				body: 'ثبت‌نام بسته شد. قرعه‌کشی به‌زودی آغاز می‌شود.',
+			},
+			selected: {
+				title: 'شما انتخاب شدید',
+				body: 'شما انتخاب شدید. لطفاً تا زمان فراخوان منتظر بمانید.',
+			},
+			notSelected: {
+				title: 'نتیجه قرعه‌کشی',
+				body: 'شما برای خدمات امروز انتخاب نشدید.',
+			},
+			called: {
+				title: 'نوبت شماست',
+				body: 'لطفاً همین حالا به ورودی مراجعه کنید.',
+			},
+			sms: {
+				welcome: 'خوش آمدید! از این پس به‌روزرسانی‌ها را با پیامک دریافت می‌کنید.',
+				selected:
+					'شما انتخاب شدید! جایگاه شما در صف {position} است. لطفاً تا زمان فراخوان منتظر بمانید.',
+				notSelected: 'شما برای خدمات امروز انتخاب نشدید.',
+				called: 'نوبت شماست. لطفاً همین حالا به ورودی مراجعه کنید.',
+			},
+			pushOptIn: {
+				enable: 'درباره این مراجعه به من اطلاع دهید',
+				denied: 'اعلان‌ها مسدود هستند. آن‌ها را در تنظیمات دستگاه فعال کنید.',
+				enabled: 'اعلان‌ها برای این مراجعه فعال شدند.',
+				error: 'نتوانستیم اعلان‌ها را فعال کنیم. لطفاً دوباره تلاش کنید.',
+				iosInstall:
+					'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
+				unsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
+			},
+		},
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی به شما استفاده می‌شود.',
@@ -1210,26 +1283,44 @@ export const translations = {
 		language: 'Wika',
 		languagePrompt: 'Piliin ang iyong wika',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Pumunta na po kayo sa pasukan ngayon.',
-		notificationCalledTitle: 'Oras mo na',
-		notificationNotSelectedBody: 'Hindi ka napili para sa serbisyo ngayong araw.',
-		notificationNotSelectedTitle: 'Resulta ng lottery',
-		notificationRegisteredBody: 'Kumpirmado na ang iyong pagpaparehistro.',
-		notificationRegisteredTitle: 'Kumpirmado ang pagpaparehistro',
-		notificationRegistrationClosedBody:
-			'Sarado na ang pagpaparehistro. Magsisimula na ang lottery.',
-		notificationRegistrationClosedTitle: 'Sarado na ang pagpaparehistro',
-		notificationSelectedBody: 'Napili ka. Mangyaring maghintay hanggang tawagin ka.',
-		notificationSelectedTitle: 'Napili ka',
-		notificationsEnable: 'Abisuhan ako tungkol sa pagbisitang ito',
-		notificationsDenied: 'Naka-block ang mga abiso. I-enable ang mga ito sa settings ng device.',
-		notificationsEnabled: 'Naka-enable ang mga abiso para sa pagbisitang ito.',
-		notificationsError: 'Hindi namin ma-enable ang mga abiso. Pakisubukang muli.',
-		notificationsIosInstall:
-			'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
-		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
-		smsNotificationRegisteredBody: 'Nakumpirma na ang iyong pagsali sa lottery.',
-		smsNotificationSelectedPosition: 'Ang iyong puwesto sa pila ay {position}.',
+		notifications: {
+			registered: {
+				title: 'Kumpirmado ang pagpaparehistro',
+				body: 'Kumpirmado na ang iyong pagpaparehistro.',
+			},
+			registrationClosed: {
+				title: 'Sarado na ang pagpaparehistro',
+				body: 'Sarado na ang pagpaparehistro. Magsisimula na ang lottery.',
+			},
+			selected: {
+				title: 'Napili ka',
+				body: 'Napili ka. Mangyaring maghintay hanggang tawagin ka.',
+			},
+			notSelected: {
+				title: 'Resulta ng lottery',
+				body: 'Hindi ka napili para sa serbisyo ngayong araw.',
+			},
+			called: {
+				title: 'Oras mo na',
+				body: 'Pumunta na po kayo sa pasukan ngayon.',
+			},
+			sms: {
+				welcome: 'Maligayang pagdating! Makakatanggap ka na ng mga update sa text.',
+				selected:
+					'Napili ka! Ang iyong puwesto sa pila ay {position}. Mangyaring maghintay hanggang tawagin ka.',
+				notSelected: 'Hindi ka napili para sa serbisyo ngayong araw.',
+				called: 'Oras mo na. Pumunta na po kayo sa pasukan ngayon.',
+			},
+			pushOptIn: {
+				enable: 'Abisuhan ako tungkol sa pagbisitang ito',
+				denied: 'Naka-block ang mga abiso. I-enable ang mga ito sa settings ng device.',
+				enabled: 'Naka-enable ang mga abiso para sa pagbisitang ito.',
+				error: 'Hindi namin ma-enable ang mga abiso. Pakisubukang muli.',
+				iosInstall:
+					'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
+				unsupported: 'Hindi available ang mga push notification sa device na ito.',
+			},
+		},
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayong mapagsilbihan.',
@@ -1455,25 +1546,44 @@ export const translations = {
 		language: 'Ngôn ngữ',
 		languagePrompt: 'Chọn ngôn ngữ của bạn',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'Vui lòng đến lối vào ngay bây giờ.',
-		notificationCalledTitle: 'Đến lượt bạn',
-		notificationNotSelectedBody: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
-		notificationNotSelectedTitle: 'Kết quả xổ số',
-		notificationRegisteredBody: 'Đăng ký của bạn đã được xác nhận.',
-		notificationRegisteredTitle: 'Đã xác nhận đăng ký',
-		notificationRegistrationClosedBody: 'Đăng ký đã đóng. Xổ số sẽ sớm bắt đầu.',
-		notificationRegistrationClosedTitle: 'Đã đóng đăng ký',
-		notificationSelectedBody: 'Bạn đã được chọn. Vui lòng chờ đến khi được gọi.',
-		notificationSelectedTitle: 'Bạn đã được chọn',
-		notificationsEnable: 'Thông báo cho tôi về lượt ghé này',
-		notificationsDenied: 'Thông báo đang bị chặn. Hãy bật trong phần cài đặt thiết bị.',
-		notificationsEnabled: 'Đã bật thông báo cho lượt ghé này.',
-		notificationsError: 'Chúng tôi không thể bật thông báo. Vui lòng thử lại.',
-		notificationsIosInstall:
-			'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
-		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
-		smsNotificationRegisteredBody: 'Việc tham gia xổ số của bạn đã được xác nhận.',
-		smsNotificationSelectedPosition: 'Vị trí của bạn trong hàng là {position}.',
+		notifications: {
+			registered: {
+				title: 'Đã xác nhận đăng ký',
+				body: 'Đăng ký của bạn đã được xác nhận.',
+			},
+			registrationClosed: {
+				title: 'Đã đóng đăng ký',
+				body: 'Đăng ký đã đóng. Xổ số sẽ sớm bắt đầu.',
+			},
+			selected: {
+				title: 'Bạn đã được chọn',
+				body: 'Bạn đã được chọn. Vui lòng chờ đến khi được gọi.',
+			},
+			notSelected: {
+				title: 'Kết quả xổ số',
+				body: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
+			},
+			called: {
+				title: 'Đến lượt bạn',
+				body: 'Vui lòng đến lối vào ngay bây giờ.',
+			},
+			sms: {
+				welcome: 'Chào mừng bạn! Bạn sẽ nhận được cập nhật qua tin nhắn.',
+				selected:
+					'Bạn đã được chọn! Vị trí của bạn trong hàng là {position}. Vui lòng chờ đến khi được gọi.',
+				notSelected: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
+				called: 'Đến lượt bạn. Vui lòng đến lối vào ngay bây giờ.',
+			},
+			pushOptIn: {
+				enable: 'Thông báo cho tôi về lượt ghé này',
+				denied: 'Thông báo đang bị chặn. Hãy bật trong phần cài đặt thiết bị.',
+				enabled: 'Đã bật thông báo cho lượt ghé này.',
+				error: 'Chúng tôi không thể bật thông báo. Vui lòng thử lại.',
+				iosInstall:
+					'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
+				unsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
+			},
+		},
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn.',
@@ -1685,24 +1795,42 @@ export const translations = {
 		language: '语言',
 		languagePrompt: '选择您的语言',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: '请现在到入口来。',
-		notificationCalledTitle: '轮到您了',
-		notificationNotSelectedBody: '您未被选中参加今天的服务。',
-		notificationNotSelectedTitle: '抽签结果',
-		notificationRegisteredBody: '您的登记已确认。',
-		notificationRegisteredTitle: '登记已确认',
-		notificationRegistrationClosedBody: '登记已关闭。抽签即将开始。',
-		notificationRegistrationClosedTitle: '登记已关闭',
-		notificationSelectedBody: '您已被选中。请等待叫号。',
-		notificationSelectedTitle: '您已被选中',
-		notificationsEnable: '通知我此次到访的状态',
-		notificationsDenied: '通知已被阻止。请在设备设置中启用。',
-		notificationsEnabled: '已为此次到访启用通知。',
-		notificationsError: '无法启用通知。请重试。',
-		notificationsIosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
-		notificationsUnsupported: '此设备不支持推送通知。',
-		smsNotificationRegisteredBody: '您已确认参加抽签。',
-		smsNotificationSelectedPosition: '您的排队位置是 {position}。',
+		notifications: {
+			registered: {
+				title: '登记已确认',
+				body: '您的登记已确认。',
+			},
+			registrationClosed: {
+				title: '登记已关闭',
+				body: '登记已关闭。抽签即将开始。',
+			},
+			selected: {
+				title: '您已被选中',
+				body: '您已被选中。请等待叫号。',
+			},
+			notSelected: {
+				title: '抽签结果',
+				body: '您未被选中参加今天的服务。',
+			},
+			called: {
+				title: '轮到您了',
+				body: '请现在到入口来。',
+			},
+			sms: {
+				welcome: '欢迎！您现在可以通过短信接收更新了。',
+				selected: '您已被选中！您的排队位置是 {position}。请等待叫号。',
+				notSelected: '您未被选中参加今天的服务。',
+				called: '轮到您了。请现在到入口来。',
+			},
+			pushOptIn: {
+				enable: '通知我此次到访的状态',
+				denied: '通知已被阻止。请在设备设置中启用。',
+				enabled: '已为此次到访启用通知。',
+				error: '无法启用通知。请重试。',
+				iosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
+				unsupported: '此设备不支持推送通知。',
+			},
+		},
 		seniorsCount: '您为多少老年人（55岁以上）采购',
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们为您提供服务。',
@@ -1926,25 +2054,42 @@ export const translations = {
 		language: 'اللغة',
 		languagePrompt: 'اختر لغتك',
 		marketName: 'The Bay Compassion',
-		notificationCalledBody: 'يرجى التوجه إلى المدخل الآن.',
-		notificationCalledTitle: 'حان دورك',
-		notificationNotSelectedBody: 'لم يتم اختيارك لخدمة اليوم.',
-		notificationNotSelectedTitle: 'نتيجة القرعة',
-		notificationRegisteredBody: 'تم تأكيد تسجيلك.',
-		notificationRegisteredTitle: 'تم تأكيد التسجيل',
-		notificationRegistrationClosedBody: 'أُغلق التسجيل. ستبدأ القرعة قريبًا.',
-		notificationRegistrationClosedTitle: 'أُغلق التسجيل',
-		notificationSelectedBody: 'تم اختيارك. يرجى الانتظار حتى يتم استدعاؤك.',
-		notificationSelectedTitle: 'تم اختيارك',
-		notificationsEnable: 'أبلغني بمستجدات هذه الزيارة',
-		notificationsDenied: 'الإشعارات محظورة. فعّلها من إعدادات جهازك.',
-		notificationsEnabled: 'تم تفعيل الإشعارات لهذه الزيارة.',
-		notificationsError: 'تعذر تفعيل الإشعارات. يرجى المحاولة مرة أخرى.',
-		notificationsIosInstall:
-			'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
-		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
-		smsNotificationRegisteredBody: 'تم تأكيد دخولك في القرعة.',
-		smsNotificationSelectedPosition: 'مكانك في الصف هو {position}.',
+		notifications: {
+			registered: {
+				title: 'تم تأكيد التسجيل',
+				body: 'تم تأكيد تسجيلك.',
+			},
+			registrationClosed: {
+				title: 'أُغلق التسجيل',
+				body: 'أُغلق التسجيل. ستبدأ القرعة قريبًا.',
+			},
+			selected: {
+				title: 'تم اختيارك',
+				body: 'تم اختيارك. يرجى الانتظار حتى يتم استدعاؤك.',
+			},
+			notSelected: {
+				title: 'نتيجة القرعة',
+				body: 'لم يتم اختيارك لخدمة اليوم.',
+			},
+			called: {
+				title: 'حان دورك',
+				body: 'يرجى التوجه إلى المدخل الآن.',
+			},
+			sms: {
+				welcome: 'مرحبًا! أصبحت الآن جاهزًا لتلقي التحديثات عبر الرسائل النصية.',
+				selected: 'تم اختيارك! مكانك في الصف هو {position}. يرجى الانتظار حتى يتم استدعاؤك.',
+				notSelected: 'لم يتم اختيارك لخدمة اليوم.',
+				called: 'حان دورك. يرجى التوجه إلى المدخل الآن.',
+			},
+			pushOptIn: {
+				enable: 'أبلغني بمستجدات هذه الزيارة',
+				denied: 'الإشعارات محظورة. فعّلها من إعدادات جهازك.',
+				enabled: 'تم تفعيل الإشعارات لهذه الزيارة.',
+				error: 'تعذر تفعيل الإشعارات. يرجى المحاولة مرة أخرى.',
+				iosInstall: 'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
+				unsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
+			},
+		},
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك.',

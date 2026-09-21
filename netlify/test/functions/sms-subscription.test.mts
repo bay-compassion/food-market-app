@@ -12,6 +12,7 @@ vi.mock('../../lib/deviceAuth.mjs', () => ({ authorizedGuest: vi.fn() }));
 vi.mock('../../services/notifications.mjs', () => ({ requeueNotification: vi.fn() }));
 vi.mock('../../services/smsNotifications.mjs', () => ({
 	deliverPendingSmsNotifications: vi.fn(),
+	sendSmsWelcome: vi.fn(),
 	smsConfiguration: vi.fn(),
 }));
 vi.mock('../../services/twilio-consent.mjs', () => ({
@@ -23,11 +24,12 @@ import handler from '../../routes/notifications/sms-subscription.mjs';
 import { requeueNotification } from '../../services/notifications.mjs';
 import {
 	deliverPendingSmsNotifications,
+	sendSmsWelcome,
 	smsConfiguration,
 } from '../../services/smsNotifications.mjs';
 
 const validToken = 'a'.repeat(40);
-const guest = { id: 'guest-1', normalizedPhone: '+15551234567' };
+const guest = { id: 'guest-1', normalizedPhone: '+15551234567', locale: 'en', fake: false };
 
 beforeEach(() => {
 	consentManagerFromEnvironment.mockReturnValue({
@@ -59,6 +61,7 @@ afterEach(() => {
 	vi.mocked(authorizedGuest).mockReset();
 	vi.mocked(requeueNotification).mockReset();
 	vi.mocked(deliverPendingSmsNotifications).mockReset();
+	vi.mocked(sendSmsWelcome).mockReset();
 	consentManagerFromEnvironment.mockReset();
 	restoreWebsiteConsent.mockReset();
 });
@@ -131,7 +134,25 @@ describe('sms-subscription handler POST', () => {
 			'lottery_selected',
 			['sms'],
 		);
+		expect(sendSmsWelcome).toHaveBeenCalledWith(guest);
 		expect(consentManagerFromEnvironment).not.toHaveBeenCalled();
+	});
+
+	it('welcomes a new subscriber without replaying a registration text', async () => {
+		vi.mocked(smsConfiguration).mockReturnValueOnce({ configured: true });
+		vi.mocked(authorizedGuest).mockResolvedValueOnce(guest);
+		queueResult([]); // existing subscription lookup
+		queueResult([]); // stored STOP lookup
+		queueResult(undefined); // insert...onConflictDoUpdate
+		queueResult([{ id: 'event-1' }]); // current event lookup
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // guest's current-market visit lookup
+
+		const response = await handler(request('POST', { token: validToken, body: { consent: true } }));
+
+		expect(response.status).toBe(200);
+		expect(sendSmsWelcome).toHaveBeenCalledWith(guest);
+		expect(requeueNotification).not.toHaveBeenCalled();
+		expect(deliverPendingSmsNotifications).not.toHaveBeenCalled();
 	});
 
 	it('subscribes without a catch-up notification when the guest has no current-market visit', async () => {
@@ -161,6 +182,7 @@ describe('sms-subscription handler POST', () => {
 		const response = await handler(request('POST', { token: validToken, body: { consent: true } }));
 
 		expect(response.status).toBe(200);
+		expect(sendSmsWelcome).not.toHaveBeenCalled();
 		expect(requeueNotification).not.toHaveBeenCalled();
 		expect(deliverPendingSmsNotifications).not.toHaveBeenCalled();
 	});

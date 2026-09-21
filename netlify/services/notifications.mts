@@ -1,5 +1,6 @@
 import { db } from '../../db/index.mjs';
 import { notificationDeliveries } from '../../db/schema.mjs';
+import { isSmsNotificationType } from '../../src/services/notification-copy.js';
 import { getLogger } from '../lib/logging.mjs';
 import type { NotificationDeliveryOptions } from './notificationDelivery.mjs';
 import { deliverPendingNotifications, type DeliveryType } from './pushNotifications.mjs';
@@ -19,8 +20,13 @@ function rows(
 	channels: readonly NotificationChannel[],
 	custom?: { title: string; body: string },
 ) {
+	// A type with no text message never queues an SMS row, whichever caller asks for one.
+	const deliverable = channels.filter(
+		(channel) => channel !== 'sms' || isSmsNotificationType(type),
+	);
+
 	return visitIds.flatMap((visitId) =>
-		channels.map((channel) => ({
+		deliverable.map((channel) => ({
 			visitId,
 			type,
 			dedupeKey,

@@ -20,6 +20,7 @@ import { requeueNotification } from '../../services/notifications.mjs';
 import type { NotificationType } from '../../services/pushNotifications.mjs';
 import {
 	deliverPendingSmsNotifications,
+	sendSmsWelcome,
 	smsConfiguration,
 } from '../../services/smsNotifications.mjs';
 import { TwilioConsentManager } from '../../services/twilio-consent.mjs';
@@ -119,16 +120,18 @@ smsSubscriptionRoutes.post(
 			return Response.json({ subscribed: true });
 		}
 
+		await sendSmsWelcome(guest);
+
 		const currentVisit = await currentMarketVisitForGuest(guest.id);
 
 		if (!currentVisit) {
 			return Response.json({ subscribed: true });
 		}
 
-		// Statuses with no entry here are terminal (served, no_show, cancelled) — subscribing at that
-		// point should not replay a notification about a visit that is already over.
+		// Statuses with no entry here either have no text message (registered) or are terminal (served,
+		// no_show, cancelled) — subscribing at that point should not replay a notification about a
+		// visit that is already over.
 		const catchUpNotifications: Partial<Record<VisitStatus, NotificationType>> = {
-			registered: 'registration_confirmed',
 			waiting: 'lottery_selected',
 			not_placed: 'lottery_not_selected',
 			called: 'called',

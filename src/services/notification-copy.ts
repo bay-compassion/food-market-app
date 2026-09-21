@@ -19,28 +19,14 @@ export type DeliveryType = NotificationType | 'broadcast';
 export type CustomNotification = { title: string | null; body: string | null };
 
 export function notificationCopy(locale: Locale, type: NotificationType) {
-	const copy = translations[locale];
+	const { registered, registrationClosed, selected, notSelected, called } =
+		translations[locale].notifications;
 	const messages = {
-		registration_confirmed: {
-			title: copy.notificationRegisteredTitle,
-			body: copy.notificationRegisteredBody,
-		},
-		registration_closed: {
-			title: copy.notificationRegistrationClosedTitle,
-			body: copy.notificationRegistrationClosedBody,
-		},
-		lottery_selected: {
-			title: copy.notificationSelectedTitle,
-			body: copy.notificationSelectedBody,
-		},
-		lottery_not_selected: {
-			title: copy.notificationNotSelectedTitle,
-			body: copy.notificationNotSelectedBody,
-		},
-		called: {
-			title: copy.notificationCalledTitle,
-			body: copy.notificationCalledBody,
-		},
+		registration_confirmed: registered,
+		registration_closed: registrationClosed,
+		lottery_selected: selected,
+		lottery_not_selected: notSelected,
+		called,
 	} satisfies Record<NotificationType, { title: string; body: string }>;
 
 	return messages[type];
@@ -59,50 +45,75 @@ export function deliveryCopy(locale: Locale, type: DeliveryType, custom?: Custom
 export const smsPrefix = 'The Bay Compassion: ';
 export const smsUnsubscribe = 'Reply STOP to unsubscribe';
 
+/**
+ * The notifications a guest is also texted about. Registration confirmed and closed are push-only:
+ * they tell a guest what they already know, and a text costs them data and attention.
+ */
+export const smsNotificationTypes = [
+	'lottery_selected',
+	'lottery_not_selected',
+	'called',
+	'broadcast',
+] as const satisfies readonly DeliveryType[];
+
+export type SmsNotificationType = (typeof smsNotificationTypes)[number];
+
+export function isSmsNotificationType(type: string): type is SmsNotificationType {
+	return (smsNotificationTypes as readonly string[]).includes(type);
+}
+
+/** What a text message can say: a queued notification, or the welcome sent when a guest consents. */
+export type SmsMessageKind = SmsNotificationType | 'welcome';
+
 /** A text message broken into the pieces it is made of, so the required ones can be told apart. */
-export type SmsMessageParts = {
-	prefix: string;
-	title: string;
-	body: string;
-	/** Only a lottery selection carries the guest's place in line. */
-	position: string | null;
-	unsubscribe: string;
-};
+export type SmsMessageParts = { prefix: string; text: string; unsubscribe: string };
+
+function smsText(
+	locale: Locale,
+	kind: SmsMessageKind,
+	queuePosition: number | null,
+	custom?: CustomNotification,
+) {
+	const { sms } = translations[locale].notifications;
+
+	switch (kind) {
+		case 'welcome':
+			return sms.welcome;
+		case 'lottery_selected':
+			if (queuePosition === null) {
+				throw new Error('A lottery selection text needs the guest’s queue position.');
+			}
+
+			return sms.selected.replace('{position}', String(queuePosition));
+		case 'lottery_not_selected':
+			return sms.notSelected;
+		case 'called':
+			return sms.called;
+		case 'broadcast':
+			return `${custom?.title ?? ''}: ${custom?.body ?? ''}`;
+	}
+}
 
 export function smsMessageParts(
 	locale: Locale,
-	type: DeliveryType,
+	kind: SmsMessageKind,
 	queuePosition: number | null,
 	custom?: CustomNotification,
 ): SmsMessageParts {
-	const copy = deliveryCopy(locale, type, custom);
-	const body =
-		type === 'registration_confirmed'
-			? translations[locale].smsNotificationRegisteredBody
-			: copy.body;
-	const position =
-		type === 'lottery_selected' && queuePosition !== null
-			? translations[locale].smsNotificationSelectedPosition.replace(
-					'{position}',
-					String(queuePosition),
-				)
-			: null;
-
-	return { prefix: smsPrefix, title: copy.title, body, position, unsubscribe: smsUnsubscribe };
+	return {
+		prefix: smsPrefix,
+		text: smsText(locale, kind, queuePosition, custom),
+		unsubscribe: smsUnsubscribe,
+	};
 }
 
 export function smsMessage(
 	locale: Locale,
-	type: DeliveryType,
+	kind: SmsMessageKind,
 	queuePosition: number | null,
 	custom?: CustomNotification,
 ) {
-	const { prefix, title, body, position, unsubscribe } = smsMessageParts(
-		locale,
-		type,
-		queuePosition,
-		custom,
-	);
+	const { prefix, text, unsubscribe } = smsMessageParts(locale, kind, queuePosition, custom);
 
-	return `${prefix}${title}\n\n${body}${position === null ? '' : `\n${position}`}\n\n${unsubscribe}`;
+	return `${prefix}${text} ${unsubscribe}`;
 }
