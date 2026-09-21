@@ -235,8 +235,12 @@ export interface Translation {
 	notificationsError: string;
 	notificationsIosInstall: string;
 	notificationsUnsupported: string;
-	smsNotificationRegisteredBody: string;
-	smsNotificationSelectedPosition: string;
+	/** The text sent when a guest consents to texts. Sent without a title, so it stands alone. */
+	smsNotificationWelcome: string;
+	/** `{position}` is the guest's place in line. */
+	smsNotificationSelected: string;
+	smsNotificationNotSelected: string;
+	smsNotificationCalled: string;
 	seniorsCount: string;
 	phone: string;
 	privacy: string;
@@ -482,8 +486,11 @@ export const translations = {
 		notificationsIosInstall:
 			'On iPhone or iPad, add this app to your Home Screen before enabling notifications.',
 		notificationsUnsupported: 'Push notifications are not available on this device.',
-		smsNotificationRegisteredBody: 'Your entry into the lottery has been confirmed.',
-		smsNotificationSelectedPosition: 'Your position is {position}.',
+		smsNotificationWelcome: 'Welcome! You are now set up to receive text updates.',
+		smsNotificationSelected:
+			'You were selected! Your position is {position}. Please wait until you are called.',
+		smsNotificationNotSelected: 'You were not selected for today’s service.',
+		smsNotificationCalled: 'It’s your turn. Please come to the entrance now.',
 		seniorsCount: 'Number of seniors (55+) you’re shopping for',
 		phone: 'Phone number',
 		privacy: 'Your information is only used to help us serve you.',
@@ -731,8 +738,12 @@ export const translations = {
 		notificationsIosInstall:
 			'En iPhone o iPad, agregue esta aplicación a la pantalla de inicio antes de activar las notificaciones.',
 		notificationsUnsupported: 'Las notificaciones push no están disponibles en este dispositivo.',
-		smsNotificationRegisteredBody: 'Se ha confirmado su inscripción en el sorteo.',
-		smsNotificationSelectedPosition: 'Su lugar en la fila es {position}.',
+		smsNotificationWelcome:
+			'¡Le damos la bienvenida! Ya recibirá actualizaciones por mensaje de texto.',
+		smsNotificationSelected:
+			'¡Fue seleccionado! Su lugar en la fila es {position}. Espere hasta que le llamemos.',
+		smsNotificationNotSelected: 'No fue seleccionado para el servicio de hoy.',
+		smsNotificationCalled: 'Es su turno. Por favor, acérquese a la entrada ahora.',
 		seniorsCount: 'Número de personas mayores (55+) para quienes está comprando',
 		phone: 'Número de teléfono',
 		privacy: 'Su información solo se utiliza para atenderle.',
@@ -975,8 +986,11 @@ export const translations = {
 		notificationsIosInstall:
 			'در آیفون یا آیپد، پیش از فعال کردن اعلان‌ها این برنامه را به صفحه اصلی اضافه کنید.',
 		notificationsUnsupported: 'اعلان‌های فوری در این دستگاه در دسترس نیستند.',
-		smsNotificationRegisteredBody: 'ورود شما به قرعه‌کشی تأیید شد.',
-		smsNotificationSelectedPosition: 'جایگاه شما در صف {position} است.',
+		smsNotificationWelcome: 'خوش آمدید! از این پس به‌روزرسانی‌ها را با پیامک دریافت می‌کنید.',
+		smsNotificationSelected:
+			'شما انتخاب شدید! جایگاه شما در صف {position} است. لطفاً تا زمان فراخوان منتظر بمانید.',
+		smsNotificationNotSelected: 'شما برای خدمات امروز انتخاب نشدید.',
+		smsNotificationCalled: 'نوبت شماست. لطفاً همین حالا به ورودی مراجعه کنید.',
 		seniorsCount: 'تعداد سالمندان (۵۵ به بالا) که برای آن‌ها خرید می‌کنید',
 		phone: 'شماره تلفن',
 		privacy: 'اطلاعات شما فقط برای کمک به خدمت‌رسانی به شما استفاده می‌شود.',
@@ -1228,8 +1242,11 @@ export const translations = {
 		notificationsIosInstall:
 			'Sa iPhone o iPad, idagdag muna ang app na ito sa Home Screen bago i-enable ang mga abiso.',
 		notificationsUnsupported: 'Hindi available ang mga push notification sa device na ito.',
-		smsNotificationRegisteredBody: 'Nakumpirma na ang iyong pagsali sa lottery.',
-		smsNotificationSelectedPosition: 'Ang iyong puwesto sa pila ay {position}.',
+		smsNotificationWelcome: 'Maligayang pagdating! Makakatanggap ka na ng mga update sa text.',
+		smsNotificationSelected:
+			'Napili ka! Ang iyong puwesto sa pila ay {position}. Mangyaring maghintay hanggang tawagin ka.',
+		smsNotificationNotSelected: 'Hindi ka napili para sa serbisyo ngayong araw.',
+		smsNotificationCalled: 'Oras mo na. Pumunta na po kayo sa pasukan ngayon.',
 		seniorsCount: 'Bilang ng mga senior (55+) na binibilhan mo',
 		phone: 'Numero ng telepono',
 		privacy: 'Ginagamit lamang ang inyong impormasyon upang matulungan namin kayong mapagsilbihan.',
@@ -1472,8 +1489,11 @@ export const translations = {
 		notificationsIosInstall:
 			'Trên iPhone hoặc iPad, hãy thêm ứng dụng này vào Màn hình chính trước khi bật thông báo.',
 		notificationsUnsupported: 'Thiết bị này không hỗ trợ thông báo đẩy.',
-		smsNotificationRegisteredBody: 'Việc tham gia xổ số của bạn đã được xác nhận.',
-		smsNotificationSelectedPosition: 'Vị trí của bạn trong hàng là {position}.',
+		smsNotificationWelcome: 'Chào mừng bạn! Bạn sẽ nhận được cập nhật qua tin nhắn.',
+		smsNotificationSelected:
+			'Bạn đã được chọn! Vị trí của bạn trong hàng là {position}. Vui lòng chờ đến khi được gọi.',
+		smsNotificationNotSelected: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
+		smsNotificationCalled: 'Đến lượt bạn. Vui lòng đến lối vào ngay bây giờ.',
 		seniorsCount: 'Số người cao tuổi (55+) bạn đang mua sắm cho',
 		phone: 'Số điện thoại',
 		privacy: 'Thông tin của bạn chỉ được dùng để giúp chúng tôi phục vụ bạn.',
@@ -1701,8 +1721,10 @@ export const translations = {
 		notificationsError: '无法启用通知。请重试。',
 		notificationsIosInstall: '在 iPhone 或 iPad 上，请先将此应用添加到主屏幕，然后再启用通知。',
 		notificationsUnsupported: '此设备不支持推送通知。',
-		smsNotificationRegisteredBody: '您已确认参加抽签。',
-		smsNotificationSelectedPosition: '您的排队位置是 {position}。',
+		smsNotificationWelcome: '欢迎！您现在可以通过短信接收更新了。',
+		smsNotificationSelected: '您已被选中！您的排队位置是 {position}。请等待叫号。',
+		smsNotificationNotSelected: '您未被选中参加今天的服务。',
+		smsNotificationCalled: '轮到您了。请现在到入口来。',
 		seniorsCount: '您为多少老年人（55岁以上）采购',
 		phone: '电话号码',
 		privacy: '您的信息仅用于帮助我们为您提供服务。',
@@ -1943,8 +1965,11 @@ export const translations = {
 		notificationsIosInstall:
 			'على iPhone أو iPad، أضف هذا التطبيق إلى الشاشة الرئيسية قبل تفعيل الإشعارات.',
 		notificationsUnsupported: 'الإشعارات الفورية غير متاحة على هذا الجهاز.',
-		smsNotificationRegisteredBody: 'تم تأكيد دخولك في القرعة.',
-		smsNotificationSelectedPosition: 'مكانك في الصف هو {position}.',
+		smsNotificationWelcome: 'مرحبًا! أصبحت الآن جاهزًا لتلقي التحديثات عبر الرسائل النصية.',
+		smsNotificationSelected:
+			'تم اختيارك! مكانك في الصف هو {position}. يرجى الانتظار حتى يتم استدعاؤك.',
+		smsNotificationNotSelected: 'لم يتم اختيارك لخدمة اليوم.',
+		smsNotificationCalled: 'حان دورك. يرجى التوجه إلى المدخل الآن.',
 		seniorsCount: 'عدد كبار السن (55 فما فوق) الذين تتسوق من أجلهم',
 		phone: 'رقم الهاتف',
 		privacy: 'تُستخدم معلوماتك فقط لمساعدتنا على خدمتك.',

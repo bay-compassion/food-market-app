@@ -14,7 +14,12 @@ export async function authorizedGuest(request: Request) {
 	}
 
 	const [guest] = await db
-		.select({ id: guests.id, normalizedPhone: guests.normalizedPhone })
+		.select({
+			id: guests.id,
+			normalizedPhone: guests.normalizedPhone,
+			locale: guests.locale,
+			fake: guests.fake,
+		})
 		.from(guests)
 		.where(eq(guests.deviceTokenHash, hashDeviceToken(token)))
 		.limit(1);

@@ -86,7 +86,7 @@ Two optional offsets on a session drive its automatic steps:
   status `registered`.
 - **`registration_closed`** — the form is closed, but an in-flight self-service request may still
   commit during the 30-second grace period. Reaching this state queues a `registration_closed`
-  notification for everyone already holding a `registered` visit.
+  notification (push only, no text message) for everyone already holding a `registered` visit.
 - **`lottery_pending`** — the grace period has ended and the registration pool is frozen. New
   lottery entries are rejected, and the draw can now run without racing a late request.
 - **`service_started`** — the lottery has run. Up to `capacity` visits become `waiting` with a

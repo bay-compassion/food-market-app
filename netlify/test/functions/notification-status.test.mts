@@ -31,6 +31,8 @@ describe('notification-status handler', () => {
 		vi.mocked(authorizedGuest).mockResolvedValueOnce({
 			id: 'guest-1',
 			normalizedPhone: '+15551234567',
+			locale: 'en',
+			fake: false,
 		});
 		queueResult([{ id: 'push-1' }]);
 		queueResult([{ id: 'sms-1' }]);
@@ -50,6 +52,8 @@ describe('notification-status handler', () => {
 		vi.mocked(authorizedGuest).mockResolvedValueOnce({
 			id: 'guest-1',
 			normalizedPhone: '+15551234567',
+			locale: 'en',
+			fake: false,
 		});
 		queueResult([]);
 		queueResult([]);
@@ -68,6 +72,8 @@ describe('notification-status handler', () => {
 		vi.mocked(authorizedGuest).mockResolvedValueOnce({
 			id: 'guest-1',
 			normalizedPhone: '+15551234567',
+			locale: 'en',
+			fake: false,
 		});
 		queueResult([]);
 		queueResult([]);
