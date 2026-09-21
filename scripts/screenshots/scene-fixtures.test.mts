@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { SessionStatusEnum } from '../../src/services/sessionStateMachine.js';
 import { StorageKey } from '../../src/services/storage.service.js';
-import { SceneFixtures, stillsClock } from './scene-fixtures.mjs';
-import type { StillStep } from './still-catalog.mjs';
+import { SceneFixtures, screenshotClock } from './scene-fixtures.mjs';
+import type { ScreenshotStep } from './screenshot-catalog.mjs';
 
-function fixturesFor(overrides: Partial<StillStep> = {}, locale: 'en' | 'es' = 'en') {
+function fixturesFor(overrides: Partial<ScreenshotStep> = {}, locale: 'en' | 'es' = 'en') {
 	return new SceneFixtures({ id: 'scene', anchor: () => '', ...overrides }, locale);
 }
 
@@ -73,7 +73,7 @@ describe('SceneFixtures', () => {
 
 		// Act
 		const { event } = fixtures.market;
-		const now = stillsClock.getTime();
+		const now = screenshotClock.getTime();
 		const insideWindow =
 			new Date(event?.registrationOpensAt ?? 0).getTime() <= now &&
 			now < new Date(event?.registrationClosesAt ?? 0).getTime();

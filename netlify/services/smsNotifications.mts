@@ -24,7 +24,7 @@ import { TwilioSmsTransport } from './sms-transport.mjs';
  */
 const permanentFailureCodes = new Set([21211, 21610, 21614]);
 
-// Composing a message is shared with the stills capture, which prints it without the database and
+// Composing a message is shared with the screenshots capture, which prints it without the database and
 // Twilio this module reaches.
 export { smsMessage } from '../../src/services/notification-copy.js';
 

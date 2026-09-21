@@ -6,7 +6,7 @@ import { createServer, type ViteDevServer } from 'vite';
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 
 /**
- * The running app the stills are photographed from.
+ * The running app the screenshots are captured from.
  *
  * It is the real app — the same `src/` a guest's phone loads — with every `/api` call answered by
  * the capture rather than by a backend, so there is no database, Netlify runtime, or Auth0 tenant to
@@ -30,10 +30,10 @@ export class AppServer {
 			root: repositoryRoot,
 			plugins: [react()],
 			// A name nothing is called, so no `VITE_*` value reaches the app from a developer's `.env`
-			// or shell. A stills run must stay off Sentry, LaunchDarkly, and Auth0 whatever this
+			// or shell. A screenshots run must stay off Sentry, LaunchDarkly, and Auth0 whatever this
 			// machine has configured, and must look like the fresh clone the guests' screens are
 			// written against.
-			envPrefix: 'BAY_COMPASSION_STILLS_NEVER_MATCHES_',
+			envPrefix: 'BAY_COMPASSION_SCREENSHOTS_NEVER_MATCHES_',
 			define: { __SENTRY_DEBUG__: 'false' },
 			resolve: { alias: { '@': fileURLToPath(new URL('../../src', import.meta.url)) } },
 			logLevel: 'warn',

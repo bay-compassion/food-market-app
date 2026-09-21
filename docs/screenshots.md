@@ -1,21 +1,21 @@
 # The review document
 
-`npm run capture:stills` builds a PDF for people who will mark it up rather than run the app: a
+`npm run capture:screenshots` builds a PDF for people who will mark it up rather than run the app: a
 stakeholder who reads a section, writes a copy change in the margin, and hands the pages back. It
 needs no app, Storybook, or code editor on their end.
 
 ```bash
 npx playwright install chromium   # once
-npm run capture:stills
-open stills/review.pdf
+npm run capture:screenshots
+open screenshots/review.pdf
 ```
 
-The run writes to `stills/` (git-ignored):
+The run writes to `screenshots/` (git-ignored):
 
 | File           | What it is                                                     |
 | -------------- | -------------------------------------------------------------- |
 | `review.pdf`   | The whole document: title page and contents, then its sections |
-| `png/<id>.png` | Each photograph on its own, and where Storybook serves it from |
+| `png/<id>.png` | Each screenshot on its own, and where Storybook serves it from |
 
 ## Everything is an MDX page
 
@@ -43,7 +43,7 @@ Nothing about a page is listed in a script. A page that exists and is tagged is 
 - **Stories**, as `<Story of={…} />`. Every story on a page is shown inside the app's own top bar and
   footer, in a phone-wide column. The capture turns on the toolbar's **App frame** global; you can
   turn it on yourself in Storybook to see a story the same way.
-- **Stills**, as `<Still id="cancel-asked" alt="…" />`: photographs of the running app, for a screen a
+- **Screenshots**, as `<Screenshot id="cancel-asked" alt="…" />`: screenshots of the running app, for a screen a
   story cannot show. See below.
 - **`<Contents />`**, on the title page: the sections in order, each with the page it starts on, and
   when and from what the document was made. In Storybook, which has no print run, it lists the
@@ -67,7 +67,7 @@ check those exact strings. Only `STOP` must stay in English when the opt-out ins
 - **Numbers.** Section headers name the section; every page after the first is stamped `Page n of N`.
 - **The clock is held.** Every countdown reads as it would at ten on a Saturday morning, Bay Area
   time, so a document made next month is the same document.
-- **Language.** `--locale es` puts every story and photograph in Spanish. The prose is whatever was
+- **Language.** `--locale es` puts every story and screenshot in Spanish. The prose is whatever was
   written, in the language it was written in.
 
 ### A hazard: stories share a window
@@ -78,19 +78,19 @@ visit store refreshes itself every fifteen seconds, and a fake `fetch` made ever
 States" page turn into the last story's status. Hand a fake to the store instead (`RootStore` takes
 per-store options), as `GuestVisitStatus.stories.tsx` does.
 
-## Stills
+## Screenshots
 
 A docs page embeds components that sit still. A dialog, a menu, or a confirmation sheet exists only
 after a guest does something, and would open on top of the page it is embedded in; a screen where the
-server fails, or never answers, is not a component at all. Those are photographed from the running
-app on a phone — bar and footer included — and embedded with `<Still id="…" />`.
+server fails, or never answers, is not a component at all. Those are captured from the running
+app on a phone — bar and footer included — and embedded with `<Screenshot id="…" />`.
 
-The photographs are taken first, and Storybook serves them at `/stills` while it prints the pages
-that use them. The run stops if a page embeds one that nobody photographed. Storybook does not
+The screenshots are taken first, and Storybook serves them at `/screenshots` while it prints the pages
+that use them. The run stops if a page embeds one that nobody captured. Storybook does not
 serve a folder that did not exist when it started, so it is made if missing.
 
 A state a story can show belongs in a story: write it, and embed it. The catalog,
-[`scripts/stills/still-catalog.mts`](../scripts/stills/still-catalog.mts), is only for the rest.
+[`scripts/screenshots/screenshot-catalog.mts`](../scripts/screenshots/screenshot-catalog.mts), is only for the rest.
 
 There is no backend behind the app. A screen is put in its state the way a guest's phone and the
 server would put it there:
@@ -99,9 +99,9 @@ server would put it there:
 - **What the server says** — `/api/market` and `/api/visit` are answered by the capture, so the
   market can be open, closed, or serving, a visit can be in any status, and a call can be slow,
   refused, or never answered.
-- **What the guest does next** — a still can fill in fields and tap before the photograph.
+- **What the guest does next** — a screenshot can fill in fields and tap before the screenshot.
 
-A still is the state the app is in:
+A screenshot is the state the app is in:
 
 ```ts
 {
@@ -115,12 +115,12 @@ A still is the state the app is in:
 },
 ```
 
-What a still shows, and any caveat about it, is written in the page that embeds it — not here. The
+What a screenshot shows, and any caveat about it, is written in the page that embeds it — not here. The
 `id` names the PNG and is what a page embeds it by, so it should not change. `overlay: true` shoots
 the screen a guest sees rather than the page behind an open dialog.
 
 **The anchor is a guard.** It is text — taken from `locales.ts`, not written as a literal — that
-must be on screen before the photograph is taken. A still that never reaches its screen stops the
+must be on screen before the screenshot is taken. A screenshot that never reaches its screen stops the
 run and names itself: a route that moved, a fixture the app stopped understanding, or a `getByLabel`
 that no longer matches. A figure of the wrong screen in the middle of the document is worse than
 none.
@@ -128,7 +128,7 @@ none.
 To add one, add a step with the `guest`, `market`, and `visit` that put the app there, `server` to
 make it answer differently, and `interact` to take the guest one step further; then embed it. A state
 that needs a different server answer, or a different thing saved on the phone, is a change in
-[`scene-fixtures.mts`](../scripts/stills/scene-fixtures.mts).
+[`scene-fixtures.mts`](../scripts/screenshots/scene-fixtures.mts).
 
 The admin dashboard is not in the document. It sits behind Auth0, which a capture with no backend
 cannot sign in to. Adding it would take a test-only stand-in for the sign-in wrapper, the way
@@ -141,43 +141,43 @@ a page, leave your own running and point the capture at it:
 
 ```bash
 npm run storybook                                                 # in one terminal
-npm run capture:stills -- --storybook-url http://localhost:6006
+npm run capture:screenshots -- --storybook-url http://localhost:6006
 ```
 
-A Storybook you started yourself serves stills from `stills/png`. If you write them somewhere else
-with `--out`, start it with `REVIEW_STILLS_DIR` set to that folder's `png`.
+A Storybook you started yourself serves screenshots from `screenshots/png`. If you write them somewhere else
+with `--out`, start it with `REVIEW_SCREENSHOTS_DIR` set to that folder's `png`.
 
-Naming a still photographs only that one and builds no document, which is what makes iterating on it
+Naming a screenshot captures only that one and builds no document, which is what makes iterating on it
 quick:
 
 ```bash
-npm run capture:stills -- --still cancel-asked
-npm run capture:stills -- --help          # lists the stills
+npm run capture:screenshots -- --screenshot cancel-asked
+npm run capture:screenshots -- --help          # lists the screenshots
 ```
 
 Likewise for the app, with your own `npm run dev`: `--app-url http://localhost:5173`.
 
 ## Options
 
-| Option                  | Default    | Meaning                                                        |
-| ----------------------- | ---------- | -------------------------------------------------------------- |
-| `--out <dir>`           | `stills`   | Output directory                                               |
-| `--paper <name>`        | `letter`   | `letter` or `a4`                                               |
-| `--orientation <name>`  | `portrait` | `portrait` or `landscape`                                      |
-| `--still <id>`          | all        | Photograph only these stills and build no document; repeatable |
-| `--no-docs`             | —          | Photograph the stills and build no document                    |
-| `--locale <code>`       | `en`       | Language of every screen and story                             |
-| `--storybook-url <url>` | —          | Use a Storybook already running                                |
-| `--storybook-port <n>`  | `6100`     | Port to start Storybook on                                     |
-| `--app-url <url>`       | —          | Use an app already running (`npm run dev`)                     |
-| `--port <n>`            | `5180`     | Port to start the app on                                       |
-| `--settle <ms>`         | `350`      | Pause after each still renders, before it is shot              |
-| `--scale <n>`           | `2`        | Device pixel ratio of the stills                               |
+| Option                  | Default       | Meaning                                                          |
+| ----------------------- | ------------- | ---------------------------------------------------------------- |
+| `--out <dir>`           | `screenshots` | Output directory                                                 |
+| `--paper <name>`        | `letter`      | `letter` or `a4`                                                 |
+| `--orientation <name>`  | `portrait`    | `portrait` or `landscape`                                        |
+| `--screenshot <id>`     | all           | Capture only these screenshots and build no document; repeatable |
+| `--no-docs`             | —             | Capture the screenshots and build no document                    |
+| `--locale <code>`       | `en`          | Language of every screen and story                               |
+| `--storybook-url <url>` | —             | Use a Storybook already running                                  |
+| `--storybook-port <n>`  | `6100`        | Port to start Storybook on                                       |
+| `--app-url <url>`       | —             | Use an app already running (`npm run dev`)                       |
+| `--port <n>`            | `5180`        | Port to start the app on                                         |
+| `--settle <ms>`         | `350`         | Pause after each screenshot renders, before it is captured       |
+| `--scale <n>`           | `2`           | Device pixel ratio of the screenshots                            |
 
 ## Reading the run
 
 Each section prints its page and figure counts, so a page that came up short of the figures it was
-written with shows in the output. A `~` beside a still means its page was taller than can be read
+written with shows in the output. A `~` beside a screenshot means its page was taller than can be read
 legibly and shows only the top of it.
 
 Browsers are not part of `npm run checks`, for the same reason `test:e2e` and `test:storybook` are

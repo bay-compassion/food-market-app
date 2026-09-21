@@ -21,25 +21,25 @@ const Figure = styled.figure`
 `;
 
 /**
- * A photograph of the running app, made by `npm run capture:stills`, for a screen a story cannot
+ * A screenshot of the running app, made by `npm run capture:screenshots`, for a screen a story cannot
  * show — one a guest only reaches by doing something, such as a dialog opening on top of the page.
  *
- * `id` is the still's id in `scripts/stills/still-catalog.mts`. The `review-figure` class is what
+ * `id` is the screenshot's id in `scripts/screenshots/screenshot-catalog.mts`. The `review-figure` class is what
  * the print run numbers and keeps whole on a page, as it does for a story. The picture is fetched
- * relative to the page, from the folder Storybook serves the photographs out of.
+ * relative to the page, from the folder Storybook serves the screenshots out of.
  */
-export function Still({ id, alt }: { id: string; alt: string }) {
+export function Screenshot({ id, alt }: { id: string; alt: string }) {
 	const [missing, setMissing] = useState(false);
 
 	return (
 		<Figure className="review-figure">
 			{missing ? (
 				<p className="missing">
-					No photograph of <code>{id}</code> yet. Run <code>npm run capture:stills</code> and
+					No screenshot of <code>{id}</code> yet. Run <code>npm run capture:screenshots</code> and
 					reload.
 				</p>
 			) : (
-				<img src={`stills/${id}.png`} alt={alt} width={390} onError={() => setMissing(true)} />
+				<img src={`screenshots/${id}.png`} alt={alt} width={390} onError={() => setMissing(true)} />
 			)}
 		</Figure>
 	);

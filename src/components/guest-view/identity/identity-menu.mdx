@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-import { Still } from '../../../../.storybook/docs/Still';
+import { Screenshot } from '../../../../.storybook/docs/Screenshot';
 
 <Meta title="Guest/Identity Menu" tags={['review']} />
 
@@ -11,7 +11,7 @@ phone. It also offers Opt Out when the guest has enabled text updates.
 
 ## Open the menu
 
-<Still
+<Screenshot
 	id="identity-menu"
 	alt="The three-dot menu open on the recognized-on-this-device card, with Opt Out, Forget Information and Show Device ID"
 />
@@ -21,14 +21,17 @@ phone. It also offers Opt Out when the guest has enabled text updates.
 The device ID identifies this phone to the market. A team member may ask the guest to read it aloud or
 copy it. The ID shown here is made up.
 
-<Still id="device-id" alt="A dialog titled Device ID, showing a made-up ID and a Copy button" />
+<Screenshot
+	id="device-id"
+	alt="A dialog titled Device ID, showing a made-up ID and a Copy button"
+/>
 
 ## Forget saved information
 
 This removes the saved name, phone number, and device ID from this phone. The app asks the guest to
 confirm because the information cannot be recovered from the phone.
 
-<Still
+<Screenshot
 	id="forget-information"
 	alt="A dialog asking the guest to confirm forgetting their information, with Cancel and Forget Information buttons"
 />

@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-import { Still } from '../../../.storybook/docs/Still';
+import { Screenshot } from '../../../.storybook/docs/Screenshot';
 
 <Meta title="Guest/Loading and Unavailable" tags={['review']} />
 
@@ -13,7 +13,7 @@ These examples show what happens while the app checks the market's status, and w
 When a guest opens the app, it checks whether a market is running. On a slow connection, the guest
 sees this loading screen.
 
-<Still
+<Screenshot
 	id="market-loading"
 	alt="The app bar, and a spinner with the words 'Checking today's market status'"
 />
@@ -24,7 +24,7 @@ sees this loading screen.
 or the market is underway. Today it shows the Market Closed card anyway. That could tell a guest to
 come back next Saturday when they may be able to register now.
 
-<Still
+<Screenshot
 	id="market-unavailable"
 	alt="The Market Closed card, shown because the market's status could not be loaded"
 />

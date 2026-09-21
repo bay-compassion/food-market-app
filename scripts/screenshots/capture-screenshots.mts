@@ -6,16 +6,16 @@
  * The document is meant to leave the screen: printed, marked up by people who never open a code
  * editor, and handed back. Every word in it is written in MDX, in a page tagged `review`, and every
  * story on those pages sits inside the app's own bar and footer. The one thing this script makes
- * itself is photographs of the running app, for screens a story cannot show — a dialog, a failure,
- * a form just submitted — which a page embeds with `<Still id="…" />`. They are taken first, so
+ * itself is screenshots of the running app, for screens a story cannot show — a dialog, a failure,
+ * a form just submitted — which a page embeds with `<Screenshot id="…" />`. They are taken first, so
  * that Storybook can serve them when it prints the pages that use them.
  *
  * Usage:
- *   npm run capture:stills
- *   npm run capture:stills -- --still cancel-asked        (photograph one still; no document)
- *   npm run capture:stills -- --storybook-url http://localhost:6006 --locale es
+ *   npm run capture:screenshots
+ *   npm run capture:screenshots -- --screenshot cancel-asked        (capture one screenshot; no document)
+ *   npm run capture:screenshots -- --storybook-url http://localhost:6006 --locale es
  *
- * See docs/stills.md.
+ * See docs/screenshots.md.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -29,16 +29,16 @@ import { AppServer } from './app-server.mjs';
 import { assembleDocument } from './assemble-document.mjs';
 import { DocsPrinter, type PrintedPage } from './docs-printer.mjs';
 import { pageSize, paperSizes, type PaperSize } from './paper.mjs';
-import { StillCatalog } from './still-catalog.mjs';
-import { StillPhotographer, type Still } from './still-photographer.mjs';
+import { ScreenshotCatalog } from './screenshot-catalog.mjs';
+import { Screenshotter, type Screenshot } from './screenshotter.mjs';
 import { fetchReviewPages, StorybookServer } from './storybook-server.mjs';
 
 const { values } = parseArgs({
 	options: {
-		out: { type: 'string', default: 'stills' },
+		out: { type: 'string', default: 'screenshots' },
 		paper: { type: 'string', default: 'letter' },
 		orientation: { type: 'string', default: 'portrait' },
-		still: { type: 'string', multiple: true, default: [] },
+		screenshot: { type: 'string', multiple: true, default: [] },
 		locale: { type: 'string', default: 'en' },
 		'app-url': { type: 'string' },
 		port: { type: 'string', default: '5180' },
@@ -54,22 +54,22 @@ const { values } = parseArgs({
 if (values.help) {
 	console.log(
 		[
-			'Build the review document: Storybook docs pages, with photographs of the running app.',
+			'Build the review document: Storybook docs pages, with screenshots of the running app.',
 			'',
-			'  --out <dir>            Output directory (default: stills)',
+			'  --out <dir>            Output directory (default: screenshots)',
 			`  --paper <name>         ${Object.keys(paperSizes).join(' | ')} (default: letter)`,
 			'  --orientation <name>   portrait | landscape (default: portrait)',
-			'  --still <id>           Photograph only these stills, and build no document; repeatable',
-			'  --no-docs              Photograph the stills, and build no document',
+			'  --screenshot <id>      Capture only these screenshots, and build no document; repeatable',
+			'  --no-docs              Capture the screenshots, and build no document',
 			`  --locale <code>        Language of every screen and story (${languages.map((l) => l.code).join(', ')}; default: en)`,
 			'  --app-url <url>        Use an app already running (npm run dev) instead of starting one',
 			'  --port <n>             Port to start the app on (default: 5180)',
 			'  --storybook-url <url>  Use a Storybook already running instead of starting one',
 			'  --storybook-port <n>   Port to start Storybook on (default: 6100)',
-			'  --settle <ms>          Pause after each still renders, before it is shot (default: 350)',
-			'  --scale <n>            Device pixel ratio of the stills (default: 2)',
+			'  --settle <ms>          Pause after each screenshot renders, before it is captured (default: 350)',
+			'  --scale <n>            Device pixel ratio of the screenshots (default: 2)',
 			'',
-			`Stills: ${new StillCatalog().ids.join(', ')}`,
+			`Screenshots: ${new ScreenshotCatalog().ids.join(', ')}`,
 		].join('\n'),
 	);
 	process.exit(0);
@@ -116,42 +116,42 @@ function revision(): string {
 
 const language = locale(values.locale);
 const outputDirectory = path.resolve(values.out);
-const stillsDirectory = path.join(outputDirectory, 'png');
+const screenshotsDirectory = path.join(outputDirectory, 'png');
 const page = pageSize(
 	paper(values.paper),
 	values.orientation === 'landscape' ? 'landscape' : 'portrait',
 );
-const steps = new StillCatalog().select(values.still);
-const buildsDocument = values.docs && values.still.length === 0;
+const steps = new ScreenshotCatalog().select(values.screenshot);
+const buildsDocument = values.docs && values.screenshot.length === 0;
 
-/** Photographs the stills, before anything that embeds them is printed. */
-async function photographStills(): Promise<Still[]> {
+/** Captures the screenshots, before anything that embeds them is printed. */
+async function takeScreenshots(): Promise<Screenshot[]> {
 	await using app = values['app-url']
 		? AppServer.existing(values['app-url'])
 		: await AppServer.start(Math.round(number('port', values.port)));
-	await using photographer = await StillPhotographer.open({
+	await using screenshotter = await Screenshotter.open({
 		baseUrl: app.baseUrl,
 		outputDirectory,
 		locale: language,
 		settleMs: number('settle', values.settle),
 		deviceScaleFactor: number('scale', values.scale),
 	});
-	const stills: Still[] = [];
+	const screenshots: Screenshot[] = [];
 
-	process.stdout.write(`Stills (${steps.length}) `);
+	process.stdout.write(`Screenshots (${steps.length}) `);
 
-	// A still that never reaches its screen throws out of `capture`, which ends the run: a figure of
+	// A screenshot that never reaches its screen throws out of `capture`, which ends the run: a figure of
 	// the wrong screen in the middle of the document is worse than no figure.
 	for (const step of steps) {
-		const still = await photographer.capture(step);
+		const screenshot = await screenshotter.capture(step);
 
-		stills.push(still);
-		process.stdout.write(still.truncated ? '~' : '.');
+		screenshots.push(screenshot);
+		process.stdout.write(screenshot.truncated ? '~' : '.');
 	}
 
 	process.stdout.write('\n');
 
-	return stills;
+	return screenshots;
 }
 
 /** What the contents page needs and only a run can know: where each section starts, and when. */
@@ -213,8 +213,8 @@ async function printDocument(): Promise<PrintedPage[]> {
 	await using storybook = values['storybook-url']
 		? StorybookServer.existing(values['storybook-url'])
 		: await StorybookServer.start(Math.round(number('storybook-port', values['storybook-port'])), {
-				// So the folder the stills were just written to is the one Storybook serves at `/stills`.
-				env: { REVIEW_STILLS_DIR: stillsDirectory },
+				// So the folder the screenshots were just written to is the one Storybook serves at `/screenshots`.
+				env: { REVIEW_SCREENSHOTS_DIR: screenshotsDirectory },
 			});
 	const pages = await fetchReviewPages(storybook.baseUrl);
 	const front = pages.filter(({ kind }) => kind === 'front');
@@ -249,17 +249,17 @@ async function printDocument(): Promise<PrintedPage[]> {
 	return [...(await printFront(printer, front, printedSections)), ...printedSections];
 }
 
-await mkdir(stillsDirectory, { recursive: true });
+await mkdir(screenshotsDirectory, { recursive: true });
 
-const stills = await photographStills();
-const cutOff = stills.filter((still) => still.truncated);
+const screenshots = await takeScreenshots();
+const cutOff = screenshots.filter((screenshot) => screenshot.truncated);
 
-for (const still of cutOff) {
-	console.log(`  cut off  ${still.step.id}`);
+for (const screenshot of cutOff) {
+	console.log(`  cut off  ${screenshot.step.id}`);
 }
 
 if (!buildsDocument) {
-	console.log(`\n${stills.length} stills → ${stillsDirectory}`);
+	console.log(`\n${screenshots.length} screenshots → ${screenshotsDirectory}`);
 } else {
 	const printed = await printDocument();
 	const document = await assembleDocument(printed);
@@ -269,6 +269,6 @@ if (!buildsDocument) {
 	const pages = printed.reduce((total, { pages: count }) => total + count, 0);
 
 	console.log(
-		`\n${printed.length} docs pages, ${pages} pages, ${stills.length} stills → ${outputDirectory}`,
+		`\n${printed.length} docs pages, ${pages} pages, ${screenshots.length} screenshots → ${outputDirectory}`,
 	);
 }

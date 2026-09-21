@@ -5,7 +5,7 @@ import type { ReviewContents, ReviewPage } from '../../.storybook/docs/review-in
 import type { Locale } from '../../src/locales.js';
 import { launchChromium } from './chromium.mjs';
 import type { PageSize } from './paper.mjs';
-import { stillsClock, stillsTimeZone } from './scene-fixtures.mjs';
+import { screenshotClock, screenshotTimeZone } from './scene-fixtures.mjs';
 import { docsUrl } from './storybook-server.mjs';
 
 /** A docs page, printed. */
@@ -13,7 +13,7 @@ export type PrintedPage = {
 	page: ReviewPage;
 	pdf: Uint8Array;
 	pages: number;
-	/** How many stories and stills the page embeds, so a page that printed short of them is visible. */
+	/** How many stories and screenshots the page embeds, so a page that printed short of them is visible. */
 	figures: number;
 };
 
@@ -51,7 +51,7 @@ const quietMs = 1_500;
 /** CSS pixels to an inch, which is the unit a printed page's size is turned into. */
 const cssPxPerInch = 96;
 
-/** Everything a page embeds that the print numbers and keeps whole: a story, or a still. */
+/** Everything a page embeds that the print numbers and keeps whole: a story, or a screenshot. */
 const figureSelector = '.sb-story, .review-figure';
 
 function escapeHtml(value: string): string {
@@ -214,7 +214,7 @@ export class DocsPrinter {
 	/**
 	 * Prints one page. `number` is its section's number, or `null` for front matter. `contents` is
 	 * what the run knows about the whole document, for the page that lists it. Throws if Storybook
-	 * shows an error instead of the page, or the page embeds a still nobody photographed.
+	 * shows an error instead of the page, or the page embeds a screenshot nobody captured.
 	 */
 	async print(
 		page: ReviewPage,
@@ -227,11 +227,11 @@ export class DocsPrinter {
 			colorScheme: 'light',
 			reducedMotion: 'reduce',
 			locale: this.locale,
-			timezoneId: stillsTimeZone,
+			timezoneId: screenshotTimeZone,
 		});
 
 		try {
-			await context.clock.setFixedTime(stillsClock);
+			await context.clock.setFixedTime(screenshotClock);
 
 			if (options.contents) {
 				await context.addInitScript((contents) => {
@@ -311,7 +311,7 @@ export class DocsPrinter {
 	 * later, such as a diagram. A cold Storybook can also reload the page once while it finishes
 	 * optimizing its dependencies, so a navigation in the middle of the wait starts it over.
 	 *
-	 * A still that was never photographed shows a notice in its place, which is what is looked for at
+	 * A screenshot that was never captured shows a notice in its place, which is what is looked for at
 	 * the end: the document does not print with a hole where a picture should be.
 	 */
 	private async untilRendered(tab: Page, page: ReviewPage): Promise<void> {
@@ -361,8 +361,8 @@ export class DocsPrinter {
 
 				if (missing.length > 0) {
 					throw new Error(
-						`“${page.title}” embeds stills nobody photographed: ${missing.join(', ')}. ` +
-							'Name them in scripts/stills/still-catalog.mts, or fix the id.',
+						`“${page.title}” embeds screenshots nobody captured: ${missing.join(', ')}. ` +
+							'Name them in scripts/screenshots/screenshot-catalog.mts, or fix the id.',
 					);
 				}
 
@@ -371,7 +371,7 @@ export class DocsPrinter {
 				const navigated = String(error).includes('Execution context was destroyed');
 
 				if (!navigated || attempt >= 3) {
-					throw error instanceof Error && error.message.includes('nobody photographed')
+					throw error instanceof Error && error.message.includes('nobody captured')
 						? error
 						: new Error(`“${page.title}” (${page.id}) did not finish rendering.`, {
 								cause: error,

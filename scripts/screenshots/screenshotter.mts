@@ -5,16 +5,16 @@ import type { Browser, Page } from 'playwright';
 
 import { translations, type Locale } from '../../src/locales.js';
 import { launchChromium } from './chromium.mjs';
-import { SceneFixtures, stillsTimeZone } from './scene-fixtures.mjs';
-import type { StillStep } from './still-catalog.mjs';
+import { SceneFixtures, screenshotTimeZone } from './scene-fixtures.mjs';
+import type { ScreenshotStep } from './screenshot-catalog.mjs';
 
-export type Still = {
-	step: StillStep;
+export type Screenshot = {
+	step: ScreenshotStep;
 	/** Path of the PNG, relative to the output directory. */
 	file: string;
 	width: number;
 	height: number;
-	/** The page was taller than a sheet can carry legibly, so the still shows only the top of it. */
+	/** The page was taller than a sheet can carry legibly, so the screenshot shows only the top of it. */
 	truncated: boolean;
 };
 
@@ -23,7 +23,7 @@ const phone = { width: 390, height: 844 } as const;
 
 /**
  * Beyond this a page stops being something you can read on paper: scaled to fit a sheet it would be
- * a sliver. The still is cut off here, and says so.
+ * a sliver. The screenshot is cut off here, and says so.
  */
 const maxHeight = 3_200;
 
@@ -33,7 +33,7 @@ const anchorTimeoutMs = 15_000;
 /** How long a run waits for web fonts before deciding they are not coming. */
 const fontTimeoutMs = 10_000;
 
-export class StillPhotographer {
+export class Screenshotter {
 	private webFonts: 'pending' | 'loaded' | 'unavailable' = 'pending';
 
 	private constructor(
@@ -51,27 +51,27 @@ export class StillPhotographer {
 		locale: Locale;
 		settleMs?: number;
 		deviceScaleFactor?: number;
-	}): Promise<StillPhotographer> {
+	}): Promise<Screenshotter> {
 		await mkdir(path.join(options.outputDirectory, 'png'), { recursive: true });
 
-		return new StillPhotographer(
+		return new Screenshotter(
 			await launchChromium(),
 			options.baseUrl,
 			options.outputDirectory,
 			options.locale,
 			options.settleMs ?? 350,
-			// 2× gives roughly 300dpi once a phone still is printed a couple of inches wide.
+			// 2× gives roughly 300dpi once a phone screenshot is printed a couple of inches wide.
 			options.deviceScaleFactor ?? 2,
 		);
 	}
 
 	/**
-	 * Photographs one beat on a phone of its own — a fresh browser context, so nothing one beat
+	 * Captures one beat on a phone of its own — a fresh browser context, so nothing one beat
 	 * saved on the device can leak into the next.
 	 *
 	 * Throws if the beat never reaches its screen, or cannot do what it asks of the guest.
 	 */
-	async capture(step: StillStep): Promise<Still> {
+	async capture(step: ScreenshotStep): Promise<Screenshot> {
 		const copy = translations[this.locale];
 		const fixtures = new SceneFixtures(step, this.locale);
 
@@ -135,11 +135,15 @@ export class StillPhotographer {
 	 * Runs one stage of a beat, and names the beat and the stage if it fails. A printed arc with a
 	 * spinner, or the wrong screen, in the middle of it is worse than a run that stops.
 	 */
-	private async during(step: StillStep, stage: string, run: () => Promise<void>): Promise<void> {
+	private async during(
+		step: ScreenshotStep,
+		stage: string,
+		run: () => Promise<void>,
+	): Promise<void> {
 		try {
 			await run();
 		} catch (error) {
-			throw new Error(`The still “${step.id}” failed while ${stage}.`, {
+			throw new Error(`The screenshot “${step.id}” failed while ${stage}.`, {
 				cause: error,
 			});
 		}
@@ -155,7 +159,7 @@ export class StillPhotographer {
 			reducedMotion: 'reduce',
 			// A first visit has no saved language, so the app picks one from the browser's.
 			locale: this.locale,
-			timezoneId: stillsTimeZone,
+			timezoneId: screenshotTimeZone,
 		});
 	}
 
@@ -177,7 +181,7 @@ export class StillPhotographer {
 
 			if (!loaded) {
 				console.warn(
-					`\nWeb fonts did not load within ${fontTimeoutMs / 1000}s — these stills use fallback ` +
+					`\nWeb fonts did not load within ${fontTimeoutMs / 1000}s — these screenshots use fallback ` +
 						'faces. Check this machine can reach fonts.googleapis.com.',
 				);
 			}

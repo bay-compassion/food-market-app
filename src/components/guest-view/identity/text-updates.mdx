@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-import { Still } from '../../../../.storybook/docs/Still';
+import { Screenshot } from '../../../../.storybook/docs/Screenshot';
 
 <Meta title="Guest/Text Updates" tags={['review']} />
 
@@ -15,7 +15,7 @@ consent through the possible results, then show what happens if the status canno
 The guest opens a dialog with the text message agreement. They must tick the box before they can
 enable updates.
 
-<Still
+<Screenshot
 	id="text-updates"
 	alt="The text message updates dialog, with an unticked agreement and a disabled Enable button"
 />
@@ -24,7 +24,7 @@ enable updates.
 
 Ticking the box enables the button to turn on text updates.
 
-<Still
+<Screenshot
 	id="text-updates-agreed"
 	alt="The dialog with the agreement ticked and the Enable text updates button available"
 />
@@ -33,7 +33,7 @@ Ticking the box enables the button to turn on text updates.
 
 If the request fails, the dialog stays open and shows an error.
 
-<Still
+<Screenshot
 	id="text-updates-failed"
 	alt="The dialog with an error saying the guest's text updates could not be enabled"
 />
@@ -44,7 +44,7 @@ When updates are enabled, the dialog closes and the card says "Notifications Ena
 and dialog use "text updates" and "text message updates" for the same setting. See the terminology
 decision in the Introduction.
 
-<Still
+<Screenshot
 	id="text-updates-enabled"
 	alt="The recognized-on-this-device card showing Notifications Enabled"
 />
@@ -54,7 +54,7 @@ decision in the Introduction.
 A guest who previously texted STOP must text START to receive updates again. The dialog explains this
 and offers to open a text with START ready to send.
 
-<Still
+<Screenshot
 	id="text-updates-opted-out"
 	alt="The dialog explaining that the guest previously stopped text messages and must send START"
 />
@@ -63,7 +63,7 @@ and offers to open a text with START ready to send.
 
 While the app checks the guest's text update setting, the card shows a loading message.
 
-<Still
+<Screenshot
 	id="text-updates-loading"
 	alt="The recognized-on-this-device card with a spinner and the words Checking notification status"
 />
@@ -72,7 +72,7 @@ While the app checks the guest's text update setting, the card shows a loading m
 
 If the check fails, the card shows an error instead of the setting.
 
-<Still
+<Screenshot
 	id="text-updates-unavailable"
 	alt="The recognized-on-this-device card with an error saying the notification status could not be retrieved"
 />

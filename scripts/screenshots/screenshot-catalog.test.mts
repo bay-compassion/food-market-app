@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
 import { translations } from '../../src/locales.js';
-import { StillCatalog, stills, type StillStep } from './still-catalog.mjs';
+import { ScreenshotCatalog, screenshots, type ScreenshotStep } from './screenshot-catalog.mjs';
 
-const some: StillStep[] = [
+const some: ScreenshotStep[] = [
 	{ id: 'first', anchor: () => 'first' },
 	{ id: 'second', anchor: () => 'second' },
 	{ id: 'third', anchor: () => 'third' },
 ];
 
-describe('StillCatalog', () => {
-	it('keeps the stills in the order they are declared when none are named', () => {
+describe('ScreenshotCatalog', () => {
+	it('keeps the screenshots in the order they are declared when none are named', () => {
 		// Arrange
-		const catalog = new StillCatalog(some);
+		const catalog = new ScreenshotCatalog(some);
 
 		// Act
 		const selected = catalog.select();
@@ -21,9 +21,9 @@ describe('StillCatalog', () => {
 		expect(selected.map((step) => step.id)).toEqual(['first', 'second', 'third']);
 	});
 
-	it('keeps only the named stills, in catalog order', () => {
+	it('keeps only the named screenshots, in catalog order', () => {
 		// Arrange
-		const catalog = new StillCatalog(some);
+		const catalog = new ScreenshotCatalog(some);
 
 		// Act
 		const selected = catalog.select(['third', 'first']);
@@ -34,20 +34,20 @@ describe('StillCatalog', () => {
 
 	it('refuses a name it does not know, and lists the ones it does', () => {
 		// Arrange
-		const catalog = new StillCatalog(some);
+		const catalog = new ScreenshotCatalog(some);
 
 		// Act
 		const select = () => catalog.select(['first', 'nope']);
 
 		// Assert
-		expect(select).toThrow(/No still named nope\. Known stills: first, second, third/);
+		expect(select).toThrow(/No screenshot named nope\. Known screenshots: first, second, third/);
 	});
 });
 
-describe('the shipped stills', () => {
+describe('the shipped screenshots', () => {
 	it('have unique ids, since an id names a PNG and is what a page embeds it by', () => {
 		// Arrange
-		const ids = stills.map((step) => step.id);
+		const ids = screenshots.map((step) => step.id);
 
 		// Act
 		const unique = new Set(ids);
@@ -61,15 +61,15 @@ describe('the shipped stills', () => {
 		const languages = Object.values(translations);
 
 		// Act
-		const anchors = stills.flatMap((step) => languages.map((copy) => step.anchor(copy)));
+		const anchors = screenshots.flatMap((step) => languages.map((copy) => step.anchor(copy)));
 
 		// Assert
 		expect(anchors.every((anchor) => typeof anchor === 'string' && anchor.length > 0)).toBe(true);
 	});
 
-	it('open something in every still that is shot as an overlay', () => {
+	it('open something in every screenshot that is shot as an overlay', () => {
 		// Arrange
-		const overlays = stills.filter((step) => step.overlay);
+		const overlays = screenshots.filter((step) => step.overlay);
 
 		// Act
 		const withoutInteraction = overlays.filter((step) => step.interact === undefined);

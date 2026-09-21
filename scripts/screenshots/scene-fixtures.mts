@@ -4,16 +4,16 @@ import type { Locale } from '../../src/locales.js';
 import type { CurrentVisit } from '../../src/services/guestVisitApi.js';
 import { SessionStatusEnum } from '../../src/services/sessionStateMachine.js';
 import { StorageKey } from '../../src/services/storage.service.js';
-import type { StillStep } from './still-catalog.mjs';
+import type { ScreenshotStep } from './screenshot-catalog.mjs';
 
 /**
  * Where a visit token is kept. `visit.store.ts` holds it in a module-private constant, so the name
- * is repeated here rather than imported; a rename there shows up as a still with no visit in it,
+ * is repeated here rather than imported; a rename there shows up as a screenshot with no visit in it,
  * which the beat's anchor turns into a failed run.
  */
 const visitTokenKey = 'bay-compassion.visit-token';
 
-/** A made-up guest, so no still ever carries anyone's real name or number. */
+/** A made-up guest, so no screenshot ever carries anyone's real name or number. */
 export const fictionalGuest = {
 	firstName: 'Sample',
 	lastName: 'Guest',
@@ -22,10 +22,10 @@ export const fictionalGuest = {
 
 /**
  * Ten in the morning on a Saturday market day, in the Bay Area. The clock is held here so a
- * countdown reads the same in every run, and so a still made next month is the same still.
+ * countdown reads the same in every run, and so a screenshot made next month is the same screenshot.
  */
-export const stillsClock = new Date('2026-09-19T17:00:00Z');
-export const stillsTimeZone = 'America/Los_Angeles';
+export const screenshotClock = new Date('2026-09-19T17:00:00Z');
+export const screenshotTimeZone = 'America/Los_Angeles';
 
 const minutes = (count: number) => count * 60_000;
 
@@ -55,9 +55,9 @@ type MarketResponse = {
  */
 export class SceneFixtures {
 	constructor(
-		private readonly step: StillStep,
+		private readonly step: ScreenshotStep,
 		private readonly locale: Locale,
-		private readonly now: Date = stillsClock,
+		private readonly now: Date = screenshotClock,
 	) {}
 
 	/** The device's `localStorage`, key to raw string. */
@@ -70,12 +70,12 @@ export class SceneFixtures {
 		};
 
 		if (guest === 'identified') {
-			entries[StorageKey.GUEST_DEVICE_TOKEN] = JSON.stringify('stills-device-token');
+			entries[StorageKey.GUEST_DEVICE_TOKEN] = JSON.stringify('screenshots-device-token');
 			entries[StorageKey.GUEST_IDENTITY] = JSON.stringify(fictionalGuest);
 		}
 
 		if (visit) {
-			entries[visitTokenKey] = 'stills-visit-token';
+			entries[visitTokenKey] = 'screenshots-visit-token';
 		}
 
 		return entries;
@@ -100,7 +100,7 @@ export class SceneFixtures {
 
 		return {
 			event: {
-				id: 'stills-market',
+				id: 'screenshots-market',
 				status: market,
 				capacity: 60,
 				registrationOpensAt: new Date(window.opens).toISOString(),
@@ -117,8 +117,8 @@ export class SceneFixtures {
 
 		return visit
 			? {
-					id: 'stills-visit',
-					marketEventId: 'stills-market',
+					id: 'screenshots-visit',
+					marketEventId: 'screenshots-market',
 					status: visit.status,
 					queuePosition: visit.queuePosition ?? null,
 					aheadOfYou: visit.aheadOfYou ?? null,
@@ -157,7 +157,7 @@ export class SceneFixtures {
 				return server.market === 'unreachable' ? fail(503) : route.fulfill({ json: this.market });
 			case '/api/visit':
 				if (method === 'PATCH') {
-					return route.fulfill({ json: { id: 'stills-visit', status: 'cancelled' } });
+					return route.fulfill({ json: { id: 'screenshots-visit', status: 'cancelled' } });
 				}
 
 				return this.visit
@@ -165,11 +165,15 @@ export class SceneFixtures {
 					: route.fulfill({ status: 404, json: { error: 'No visit.' } });
 			case '/api/lottery-registration':
 				return route.fulfill({
-					json: { id: 'stills-visit', status: 'registered', visitToken: 'stills-visit-token' },
+					json: {
+						id: 'screenshots-visit',
+						status: 'registered',
+						visitToken: 'screenshots-visit-token',
+					},
 				});
 			case '/api/guest-information':
 				return route.fulfill({
-					json: { guestId: 'stills-guest', deviceToken: 'stills-device-token' },
+					json: { guestId: 'screenshots-guest', deviceToken: 'screenshots-device-token' },
 				});
 			case '/api/push-subscription':
 				return route.fulfill({ json: { configured: false, publicKey: null } });

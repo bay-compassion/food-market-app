@@ -12,7 +12,7 @@ import type {
 	NotificationDeliveryResult,
 } from './notificationDelivery.mjs';
 
-// The wording of a notification is shared with the stills capture, which prints it without the
+// The wording of a notification is shared with the screenshots capture, which prints it without the
 // database this module reaches, so it lives with the other code both sides can import.
 export {
 	deliveryCopy,

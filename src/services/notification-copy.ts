@@ -1,5 +1,5 @@
 // `.js` rather than `.ts` on the import below: this file is read by the browser app, the Netlify
-// functions (NodeNext), and the stills capture script, and `.js` is the one extension all three
+// functions (NodeNext), and the screenshots capture script, and `.js` is the one extension all three
 // resolve to `locales.ts`.
 import { translations, type Locale } from '../locales.js';
 

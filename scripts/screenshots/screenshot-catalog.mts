@@ -36,18 +36,18 @@ export type ServerScene = {
 };
 
 /**
- * One photograph: a whole screen of the running app, and the state that puts it there.
+ * One screenshot: a whole screen of the running app, and the state that puts it there.
  *
- * A still is described by the state the app is in rather than by a component, because it is the app
+ * A screenshot is described by the state the app is in rather than by a component, because it is the app
  * — bar, footer, and all — not a piece of it. The state is what a guest's phone and the server would
  * say: what is saved on the device, what today's market is doing, and what their visit is. `interact`
  * then takes the guest one step further, for a screen that is not a resting state.
  *
- * What a still shows, and any caveat about it, is written where it is used — in the MDX page that
- * embeds it with `<Still id="…" />` — not here.
+ * What a screenshot shows, and any caveat about it, is written where it is used — in the MDX page that
+ * embeds it with `<Screenshot id="…" />` — not here.
  */
-export type StillStep = {
-	/** Names the still's PNG and is what a page embeds it by, so it never changes. */
+export type ScreenshotStep = {
+	/** Names the screenshot's PNG and is what a page embeds it by, so it never changes. */
 	id: string;
 	/** Where the phone is pointed. Defaults to the guest home screen. */
 	route?: string;
@@ -57,15 +57,15 @@ export type StillStep = {
 	market?: SessionStatusEnum | null;
 	visit?: VisitScene;
 	server?: ServerScene;
-	/** What a guest does after the screen has settled, before it is photographed. */
+	/** What a guest does after the screen has settled, before it is captured. */
 	interact?: (page: Page, copy: Translation) => Promise<void>;
 	/**
-	 * A sheet or dialog is open, so the still is the screen a guest sees rather than the whole page
+	 * A sheet or dialog is open, so the screenshot is the screen a guest sees rather than the whole page
 	 * scrolled out flat behind it.
 	 */
 	overlay?: boolean;
 	/**
-	 * Text that must be on screen before the photograph is taken. Written against the copy rather
+	 * Text that must be on screen before the screenshot is taken. Written against the copy rather
 	 * than as a literal, so a wording change follows itself — and so a beat that never reaches its
 	 * screen (a route that moved, a fixture the app stopped understanding) stops the run instead of
 	 * printing a spinner in the middle of the document.
@@ -99,12 +99,12 @@ async function openTextUpdates(page: Page, copy: Translation) {
 const enabledTexts: ServerScene = { notifications: 'enabled' };
 
 /**
- * The photographs, for the screens a docs page cannot show as a story: those a guest only reaches by
+ * The screenshots, for the screens a docs page cannot show as a story: those a guest only reaches by
  * doing something (a dialog, a menu, a confirmation sheet, a form just submitted), where the server
  * answers with a failure or does not answer, and routes rather than components. A state a story can
  * show belongs in a story, embedded in the page that explains it; this list is only for the rest.
  */
-export const stills: StillStep[] = [
+export const screenshots: ScreenshotStep[] = [
 	{
 		id: 'identity-saved',
 		route: '/signup',
@@ -254,24 +254,24 @@ export const stills: StillStep[] = [
 	},
 ];
 
-export class StillCatalog {
-	constructor(private readonly all: readonly StillStep[] = stills) {}
+export class ScreenshotCatalog {
+	constructor(private readonly all: readonly ScreenshotStep[] = screenshots) {}
 
 	get ids(): string[] {
 		return this.all.map((step) => step.id);
 	}
 
 	/**
-	 * The named stills in catalog order, or all of them when none are named. A name the catalog does
-	 * not know stops the run: a page that embeds a still under a name nobody photographs is the same
+	 * The named screenshots in catalog order, or all of them when none are named. A name the catalog does
+	 * not know stops the run: a page that embeds a screenshot under a name nobody captures is the same
 	 * mistake from the other side, and this is the side that can say so.
 	 */
-	select(only: readonly string[] = []): StillStep[] {
+	select(only: readonly string[] = []): ScreenshotStep[] {
 		const unknown = only.filter((id) => !this.all.some((step) => step.id === id));
 
 		if (unknown.length > 0) {
 			throw new Error(
-				`No still named ${unknown.join(', ')}. Known stills: ${this.ids.join(', ')}.`,
+				`No screenshot named ${unknown.join(', ')}. Known screenshots: ${this.ids.join(', ')}.`,
 			);
 		}
 
