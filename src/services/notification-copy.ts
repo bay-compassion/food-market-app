@@ -19,28 +19,14 @@ export type DeliveryType = NotificationType | 'broadcast';
 export type CustomNotification = { title: string | null; body: string | null };
 
 export function notificationCopy(locale: Locale, type: NotificationType) {
-	const copy = translations[locale];
+	const { registered, registrationClosed, selected, notSelected, called } =
+		translations[locale].notifications;
 	const messages = {
-		registration_confirmed: {
-			title: copy.notificationRegisteredTitle,
-			body: copy.notificationRegisteredBody,
-		},
-		registration_closed: {
-			title: copy.notificationRegistrationClosedTitle,
-			body: copy.notificationRegistrationClosedBody,
-		},
-		lottery_selected: {
-			title: copy.notificationSelectedTitle,
-			body: copy.notificationSelectedBody,
-		},
-		lottery_not_selected: {
-			title: copy.notificationNotSelectedTitle,
-			body: copy.notificationNotSelectedBody,
-		},
-		called: {
-			title: copy.notificationCalledTitle,
-			body: copy.notificationCalledBody,
-		},
+		registration_confirmed: registered,
+		registration_closed: registrationClosed,
+		lottery_selected: selected,
+		lottery_not_selected: notSelected,
+		called,
 	} satisfies Record<NotificationType, { title: string; body: string }>;
 
 	return messages[type];
@@ -88,21 +74,21 @@ function smsText(
 	queuePosition: number | null,
 	custom?: CustomNotification,
 ) {
-	const copy = translations[locale];
+	const { sms } = translations[locale].notifications;
 
 	switch (kind) {
 		case 'welcome':
-			return copy.smsNotificationWelcome;
+			return sms.welcome;
 		case 'lottery_selected':
 			if (queuePosition === null) {
 				throw new Error('A lottery selection text needs the guest’s queue position.');
 			}
 
-			return copy.smsNotificationSelected.replace('{position}', String(queuePosition));
+			return sms.selected.replace('{position}', String(queuePosition));
 		case 'lottery_not_selected':
-			return copy.smsNotificationNotSelected;
+			return sms.notSelected;
 		case 'called':
-			return copy.smsNotificationCalled;
+			return sms.called;
 		case 'broadcast':
 			return `${custom?.title ?? ''}: ${custom?.body ?? ''}`;
 	}

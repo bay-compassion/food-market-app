@@ -41,7 +41,7 @@ describe('smsMessage', () => {
 			const message = smsMessage(code, 'called', null);
 
 			expect(message).toMatch(/^The Bay Compassion: /);
-			expect(message).toContain(translations[code].smsNotificationCalled);
+			expect(message).toContain(translations[code].notifications.sms.called);
 			expect(message).toMatch(/Reply STOP to unsubscribe$/);
 		}
 	});
