@@ -1,0 +1,140 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Contents } from '../../../.storybook/docs/Contents';
+import { Masthead } from '../../../.storybook/docs/components/Masthead';
+
+<Meta title="Guest/Introduction" tags={['review-front']} />
+
+<Masthead title="Guest App Review" subtitle="Screens and text messages" />
+
+This document shows what guests read in the app and in text messages. Please review the wording before
+launch: flag anything unclear, inaccurate, unkind, or inconsistent. We also need your answers to the
+five decisions below.
+
+## How to review
+
+Start with the decisions on this page, then review the screens and messages in the sections that
+follow. Each example has a section and item number; **2.3** means the third item in section 2. Please
+include that number with your comments. The margins are available for notes.
+
+Screens appear at phone size, with the app's top bar and footer. Some interactions, such as an open
+dialog or an error, are shown as screenshots of the running app.
+
+The examples are in English and use sample data:
+
+- The guest is **Sample Guest**. Phone numbers, the device ID, and the number that sends texts are
+  made up.
+- The clock is fixed at 10 a.m. on a Saturday, so countdowns stay the same. Queue positions such as
+  7th and 25th are examples.
+- Questions added to a registration form and broadcast texts are written by staff for each market.
+  The versions here are examples.
+- The address below the QR code is a preview address.
+
+The app also has translations. Once the English wording is settled, the other languages will need a
+copy review too.
+
+## What guests do
+
+Guests register on their phones during a short window to enter a lottery for a place in line.
+Registering earlier does not improve their chances. After registration closes, the lottery selects
+guests for the queue. Selected guests can see their place and are called to the entrance when it is
+their turn. Guests who are not selected are told so.
+
+The screen depends on whether registration is open and on the guest's own visit. A registered guest
+may go from **Registered** to **Waiting**, **Called**, and **Served**. Other possible outcomes are
+**Not Selected**, **No Show**, and **Cancelled**. The Guest States section shows the full set of
+screens and the paths between them. The other sections cover forms, text updates, messages, and staff
+QR codes.
+
+## Decisions to review
+
+Please answer these questions in the last column. They concern the guest experience as well as its
+wording; comments on individual screens can go on the pages that follow.
+
+<table className="review-decisions">
+	<colgroup>
+		<col style={{ width: '24%' }} />
+		<col style={{ width: '46%' }} />
+		<col style={{ width: '30%' }} />
+	</colgroup>
+	<thead>
+		<tr>
+			<th>Decision</th>
+			<th>What we need to know</th>
+			<th>Your answer</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<strong>1. Explaining the lottery</strong>
+			</td>
+			<td>
+				Does the app explain the selection process clearly and fairly? In particular, does it make
+				clear that registering early does not help, supplies are limited, and some guests will not
+				be selected?
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>2. Guests who need help at the market</strong>
+			</td>
+			<td>
+				Guests who arrive without registering, or miss their call, are told to speak with a market
+				team member. Is that the right instruction for both situations?
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>3. Opt-out wording in other languages</strong>
+			</td>
+			<td>
+				Every text currently ends with <code>Reply STOP to unsubscribe</code> in English. Only{' '}
+				<code>STOP</code> must stay in English. Should the surrounding instruction be translated
+				into the guest's language?
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>4. When the market status cannot be checked</strong>
+			</td>
+			<td>
+				If the app cannot reach the server, it shows the Market Closed card, which may be wrong.
+				Which option should we choose? See Loading and Unavailable.
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<strong>5. Consistent terms</strong>
+			</td>
+			<td>
+				Which words should the app use consistently?
+				<div className="review-terms">
+					<div>
+						<strong>Entering:</strong> "check in", "register", or "enter the lottery"? The QR poster
+						says "Scan to check in", although scanning only opens the app.
+					</div>
+					<div>
+						<strong>Messages:</strong> "text updates", "text messages", or "notifications"?
+					</div>
+					<div>
+						<strong>Lottery result:</strong> "selected", "placed", or "on the list"?
+					</div>
+					<div>
+						<strong>What guests are selected for:</strong> "today's service" or "today's lottery"?
+						The text and app card currently use different wording.
+					</div>
+				</div>
+			</td>
+			<td></td>
+		</tr>
+	</tbody>
+</table>
+
+## Contents
+
+<Contents />

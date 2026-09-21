@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Screenshot } from '../../../../.storybook/docs/Screenshot';
+
+<Meta title="Guest/Identity Menu" tags={['review']} />
+
+# Identity Menu
+
+The menu on the "Recognized on this device" card lets a guest manage the information saved on this
+phone. It also offers Opt Out when the guest has enabled text updates.
+
+## Open the menu
+
+<Screenshot
+	id="identity-menu"
+	alt="The three-dot menu open on the recognized-on-this-device card, with Opt Out, Forget Information and Show Device ID"
+/>
+
+## Show the device ID
+
+The device ID identifies this phone to the market. A team member may ask the guest to read it aloud or
+copy it. The ID shown here is made up.
+
+<Screenshot
+	id="device-id"
+	alt="A dialog titled Device ID, showing a made-up ID and a Copy button"
+/>
+
+## Forget saved information
+
+This removes the saved name, phone number, and device ID from this phone. The app asks the guest to
+confirm because the information cannot be recovered from the phone.
+
+<Screenshot
+	id="forget-information"
+	alt="A dialog asking the guest to confirm forgetting their information, with Cancel and Forget Information buttons"
+/>

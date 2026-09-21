@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 
+import { AppFooter } from '../src/components/AppFooter';
 import { AppThemeProvider } from '../src/components/AppThemeProvider';
+import { AppBar } from '../src/components/ui/app-bar/AppBar';
 import { ConfirmationDrawer } from '../src/components/ui/ConfirmationDrawer';
 import { NotificationToasts } from '../src/components/ui/NotificationToasts';
 import { languages, type Locale } from '../src/locales';
@@ -43,10 +45,23 @@ const preview: Preview = {
 				dynamicTitle: true,
 			},
 		},
+		appFrame: {
+			description: 'Show guest stories inside the app bar and footer, as a guest sees them',
+			toolbar: {
+				title: 'App frame',
+				icon: 'browser',
+				items: [
+					{ value: 'off', title: 'Story only' },
+					{ value: 'on', title: 'Inside the app' },
+				],
+				dynamicTitle: true,
+			},
+		},
 	},
 
 	initialGlobals: {
 		locale: 'en' satisfies Locale,
+		appFrame: 'off',
 		// This is a mobile-first product, so a story opens at phone width unless told otherwise.
 		viewport: { value: 'iphone14', isRotated: false },
 	},
@@ -59,6 +74,17 @@ const preview: Preview = {
 					'Design System',
 					'Primitives',
 					'Guest',
+					// The review document prints its sections in this order, so it is the document's outline.
+					[
+						'Introduction',
+						'Forms',
+						'Text Messages',
+						'Guest States',
+						'Loading and Unavailable',
+						'Text Updates',
+						'Identity Menu',
+						'QR Codes',
+					],
 					'Components',
 					'Admin',
 					// Match adminViews in src/services/admin-views.ts, with shared components last.
@@ -119,6 +145,7 @@ const preview: Preview = {
 				return created;
 			});
 			const shell: Shell = (context.parameters.shell as Shell | undefined) ?? 'bare';
+			const framed = context.globals.appFrame === 'on' && shell === 'guest';
 
 			// A router as well as the store: a component that navigates (the save-information button, the
 			// app bar's mode toggle) throws outright without one, rather than merely failing to move.
@@ -127,9 +154,21 @@ const preview: Preview = {
 					path: '*',
 					element: (
 						<>
-							<div className={shells[shell]} dir={store.translations.dir}>
-								<Story />
-							</div>
+							{framed ? (
+								// The chrome `App` puts around every route, so a guest story reads as the screen
+								// it is part of. Only guest stories: an admin screen has no app bar to sit under.
+								<main className="app-shell sb-app-frame" dir={store.translations.dir}>
+									<AppBar />
+									<div className={shells.guest}>
+										<Story />
+									</div>
+									<AppFooter />
+								</main>
+							) : (
+								<div className={shells[shell]} dir={store.translations.dir}>
+									<Story />
+								</div>
+							)}
 							<ConfirmationDrawer />
 							<NotificationToasts />
 						</>

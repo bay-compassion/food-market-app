@@ -123,3 +123,6 @@ storybook-static
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Printable app screenshots (npm run capture:screenshots)
+/screenshots/

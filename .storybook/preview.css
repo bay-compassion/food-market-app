@@ -17,3 +17,24 @@
 .sb-bare-shell {
 	padding: 24px;
 }
+
+/*
+ * A guest story shown inside the app's own bar and footer (the `appFrame` toolbar global). It is a
+ * phone-wide column and only as tall as its story: `.app-shell` is at least a viewport high, which
+ * on a docs page leaves a screenful of white under every story.
+ */
+.sb-app-frame {
+	min-height: 0;
+	max-width: 390px;
+	margin: 0 auto;
+	border: 1px solid var(--color-border);
+}
+
+/* Review-document prose sits in MDX; these rules apply in Storybook and in the printed PDF. */
+.sbdocs-content .review-terms {
+	margin-top: 0.4em;
+}
+
+.sbdocs-content .review-terms > div + div {
+	margin-top: 0.4em;
+}

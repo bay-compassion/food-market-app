@@ -1,0 +1,41 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as Messages from '../../../.storybook/docs/TextMessages.stories.tsx';
+
+<Meta title="Guest/Text Messages" tags={['review']} />
+
+# Text Messages
+
+These examples show messages sent to guests who enabled text updates. Phone alerts use the same
+titles and generally the same wording.
+
+The shaded parts show the sender name, `The Bay Compassion:`, and the opt-out instruction currently
+sent at the end of each text: `Reply STOP to unsubscribe`. The current messages leave both in English.
+Only `STOP` must remain in English; the surrounding instruction can be translated. See the decision
+in the Introduction.
+
+## Selected for the queue
+
+This is the only text that includes the guest's place in line. The number is their position when the
+text is sent. The app continues to update their position as the line moves; it does not send another
+text for each change.
+
+<Story of={Messages.Selected} />
+
+## Not selected
+
+The text says "not selected for today's service", while the app's card says "not selected in today's
+lottery". See the terminology decision in the Introduction.
+
+<Story of={Messages.NotSelected} />
+
+## Called to the entrance
+
+<Story of={Messages.Called} />
+
+## Message from the market team
+
+A team member writes each broadcast for that market. The example below is not translated
+automatically; its wording is sample content.
+
+<Story of={Messages.Broadcast} />

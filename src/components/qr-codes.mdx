@@ -1,0 +1,40 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import { Screenshot } from '../../.storybook/docs/Screenshot';
+import * as GuestClaimCard from './guest-view/identity/GuestClaimCard.stories.tsx';
+
+<Meta title="Guest/QR Codes" tags={['review']} />
+
+# QR Codes
+
+Guests may scan one of two QR codes: a poster that opens the app, or a code from a market team member
+that connects this phone to a guest they registered manually.
+
+## Open the app from a poster
+
+Scanning the poster opens the app. The address shown here belongs to this preview; a live poster will
+show the live site's address. The Back and Print buttons appear on screen but not on the printed
+poster.
+
+**Wording to check.** The poster says "Scan to check in" and "the check-in page". Scanning opens the
+app; the guest must still register to enter the lottery. See the terminology decision in the
+Introduction.
+
+<Screenshot
+	id="qr-poster"
+	alt="The QR code poster: a heading, a short description, a QR code, and the web address beneath it"
+/>
+
+## Connect a new phone to a manually registered guest
+
+A team member can register a guest manually and show them a code. Scanning it opens this screen; the
+guest must tap the button to connect their phone to that registration.
+
+<Story of={GuestClaimCard.FreshPhone} />
+
+## Connect a phone with saved information
+
+If the phone already has someone else's information saved, the screen warns that connecting it to the
+new registration will replace those details and that they cannot be recovered from the phone.
+
+<Story of={GuestClaimCard.PhoneWithSavedData} />

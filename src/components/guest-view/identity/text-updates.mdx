@@ -1,0 +1,78 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Screenshot } from '../../../../.storybook/docs/Screenshot';
+
+<Meta title="Guest/Text Updates" tags={['review']} />
+
+# Text Updates
+
+A guest whose information is saved on this phone can choose to receive text updates about their
+visit. They start from the "Recognized on this device" card. These examples follow the choice from
+consent through the possible results, then show what happens if the status cannot be checked.
+
+## Ask for consent
+
+The guest opens a dialog with the text message agreement. They must tick the box before they can
+enable updates.
+
+<Screenshot
+	id="text-updates"
+	alt="The text message updates dialog, with an unticked agreement and a disabled Enable button"
+/>
+
+## Consent given
+
+Ticking the box enables the button to turn on text updates.
+
+<Screenshot
+	id="text-updates-agreed"
+	alt="The dialog with the agreement ticked and the Enable text updates button available"
+/>
+
+## Could not turn on updates
+
+If the request fails, the dialog stays open and shows an error.
+
+<Screenshot
+	id="text-updates-failed"
+	alt="The dialog with an error saying the guest's text updates could not be enabled"
+/>
+
+## Updates enabled
+
+When updates are enabled, the dialog closes and the card says "Notifications Enabled". The button
+and dialog use "text updates" and "text message updates" for the same setting. See the terminology
+decision in the Introduction.
+
+<Screenshot
+	id="text-updates-enabled"
+	alt="The recognized-on-this-device card showing Notifications Enabled"
+/>
+
+## Previously texted STOP
+
+A guest who previously texted STOP must text START to receive updates again. The dialog explains this
+and offers to open a text with START ready to send.
+
+<Screenshot
+	id="text-updates-opted-out"
+	alt="The dialog explaining that the guest previously stopped text messages and must send START"
+/>
+
+## Checking update status
+
+While the app checks the guest's text update setting, the card shows a loading message.
+
+<Screenshot
+	id="text-updates-loading"
+	alt="The recognized-on-this-device card with a spinner and the words Checking notification status"
+/>
+
+## Could not check update status
+
+If the check fails, the card shows an error instead of the setting.
+
+<Screenshot
+	id="text-updates-unavailable"
+	alt="The recognized-on-this-device card with an error saying the notification status could not be retrieved"
+/>

@@ -4,6 +4,7 @@ import webPush from 'web-push';
 import { db } from '../../db/index.mjs';
 import { guests, notificationDeliveries, pushSubscriptions, visits } from '../../db/schema.mjs';
 import { translations, type Locale } from '../../src/locales.js';
+import { deliveryCopy, type DeliveryType } from '../../src/services/notification-copy.js';
 import { getLogger } from '../lib/logging.mjs';
 import { tracedQuery } from '../lib/sentry.mjs';
 import type {
@@ -11,16 +12,15 @@ import type {
 	NotificationDeliveryResult,
 } from './notificationDelivery.mjs';
 
-export const notificationTypes = [
-	'registration_confirmed',
-	'registration_closed',
-	'lottery_selected',
-	'lottery_not_selected',
-	'called',
-] as const;
-
-export type NotificationType = (typeof notificationTypes)[number];
-export type DeliveryType = NotificationType | 'broadcast';
+// The wording of a notification is shared with the screenshots capture, which prints it without the
+// database this module reaches, so it lives with the other code both sides can import.
+export {
+	deliveryCopy,
+	notificationCopy,
+	notificationTypes,
+	type DeliveryType,
+	type NotificationType,
+} from '../../src/services/notification-copy.js';
 
 export function notificationsEnabled() {
 	return process.env.NOTIFICATIONS_ENABLED?.trim().toLowerCase() !== 'false';
@@ -41,44 +41,6 @@ export function pushConfiguration() {
 	const configuration = settings();
 
 	return { configured: Boolean(configuration), publicKey: configuration?.publicKey ?? null };
-}
-
-export function notificationCopy(locale: Locale, type: NotificationType) {
-	const copy = translations[locale];
-	const messages = {
-		registration_confirmed: {
-			title: copy.notificationRegisteredTitle,
-			body: copy.notificationRegisteredBody,
-		},
-		registration_closed: {
-			title: copy.notificationRegistrationClosedTitle,
-			body: copy.notificationRegistrationClosedBody,
-		},
-		lottery_selected: {
-			title: copy.notificationSelectedTitle,
-			body: copy.notificationSelectedBody,
-		},
-		lottery_not_selected: {
-			title: copy.notificationNotSelectedTitle,
-			body: copy.notificationNotSelectedBody,
-		},
-		called: {
-			title: copy.notificationCalledTitle,
-			body: copy.notificationCalledBody,
-		},
-	} satisfies Record<NotificationType, { title: string; body: string }>;
-
-	return messages[type];
-}
-
-export function deliveryCopy(
-	locale: Locale,
-	type: DeliveryType,
-	custom?: { title: string | null; body: string | null },
-) {
-	return type === 'broadcast'
-		? { title: custom?.title ?? '', body: custom?.body ?? '' }
-		: notificationCopy(locale, type);
 }
 
 export async function deliverPendingNotifications(

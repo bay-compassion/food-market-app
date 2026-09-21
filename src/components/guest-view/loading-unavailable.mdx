@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Screenshot } from '../../../.storybook/docs/Screenshot';
+
+<Meta title="Guest/Loading and Unavailable" tags={['review']} />
+
+# Loading and Unavailable
+
+These examples show what happens while the app checks the market's status, and when that check fails.
+
+## While the app checks
+
+When a guest opens the app, it checks whether a market is running. On a slow connection, the guest
+sees this loading screen.
+
+<Screenshot
+	id="market-loading"
+	alt="The app bar, and a spinner with the words 'Checking today's market status'"
+/>
+
+## If the check fails
+
+**Decision needed.** If the app cannot reach the server, it cannot tell whether registration is open
+or the market is underway. Today it shows the Market Closed card anyway. That could tell a guest to
+come back next Saturday when they may be able to register now.
+
+<Screenshot
+	id="market-unavailable"
+	alt="The Market Closed card, shown because the market's status could not be loaded"
+/>
+
+Which response should the app use when it cannot check the status?
+
+1. Explain that the status could not be checked and ask the guest to try again.
+2. Show the registration form and let the server accept or reject a submission. This was the
+   original intention.
+3. Keep showing the Market Closed card.

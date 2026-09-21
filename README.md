@@ -90,6 +90,23 @@ The history includes the awkward cases worth testing against: oversubscribed ses
 worker added by hand, no-shows, cancellations, and visits served without a recorded time. The
 script refuses to touch a database that is not on localhost unless you pass `--force`.
 
+### Review document
+
+Copy and design reviews go better on paper, and the people doing them rarely have the app or a code
+editor. `npm run capture:screenshots` builds a PDF for them to mark up. Every word in it is an MDX page in
+Storybook that tags itself `review`, with its stories shown inside the app's own bar and footer; the
+one thing the script makes is screenshots of the running app, for screens a story cannot show, which
+a page embeds with `<Screenshot id="…" />`:
+
+```bash
+npx playwright install chromium             # once
+npm run capture:screenshots                      # → screenshots/review.pdf
+npm run capture:screenshots -- --locale es       # the same document, in Spanish
+```
+
+See [`docs/screenshots.md`](docs/screenshots.md) for how to write a page, what the screenshots are for, and the
+options.
+
 ## Checks
 
 Run these commands from the repository root before opening a pull request:
@@ -235,6 +252,7 @@ importantly, how to connect it without handing it the app's own database credent
 
 - `src/` — React frontend
 - `public/` — static frontend assets
+- `scripts/screenshots/` — the review document's capture; see [`docs/screenshots.md`](docs/screenshots.md)
 - `netlify/functions/` — API endpoints, including guest check-in
 - `netlify/database/migrations/` — Netlify DB migrations; read [`docs/migrations.md`](docs/migrations.md)
   before changing anything here

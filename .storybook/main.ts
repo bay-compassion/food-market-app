@@ -1,4 +1,9 @@
+import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import type { StorybookConfig } from '@storybook/react-vite';
+import remarkMermaid from 'mdx-mermaid';
+import { Mermaid } from 'mdx-mermaid/lib/Mermaid';
 import type { PluginOption } from 'vite';
 
 /**
@@ -13,9 +18,42 @@ function pluginName(plugin: unknown): string {
 	return plugin && typeof plugin === 'object' && 'name' in plugin ? String(plugin.name) : '';
 }
 
+/**
+ * Where `npm run capture:screenshots` writes its screenshots, served at `/screenshots` so a docs page can embed
+ * one with `<Screenshot id="…" />`. The capture names another folder through the environment when it is
+ * asked to write elsewhere. It is made here if it is missing: a static folder that does not exist
+ * when Storybook starts is one Storybook will not serve when it appears later.
+ */
+const screenshotsDirectory =
+	process.env.REVIEW_SCREENSHOTS_DIR ??
+	fileURLToPath(new URL('../screenshots/png', import.meta.url));
+
+mkdirSync(screenshotsDirectory, { recursive: true });
+
 const config: StorybookConfig = {
-	stories: ['./docs/**/*.mdx', './docs/**/*.stories.tsx', '../src/**/*.stories.tsx'],
-	addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
+	staticDirs: [{ from: screenshotsDirectory, to: '/screenshots' }],
+	stories: [
+		'./docs/**/*.mdx',
+		'./docs/**/*.stories.tsx',
+		'../src/**/*.mdx',
+		'../src/**/*.stories.tsx',
+	],
+	addons: [
+		{
+			name: '@storybook/addon-docs',
+			options: {
+				remarkPlugins: [[remarkMermaid, { output: 'svg' }]],
+				components: { mermaid: Mermaid, Mermaid },
+				mdxPluginOptions: {
+					mdxCompileOptions: {
+						// Add mdx-mermaid as a remark plugin
+						remarkPlugins: [remarkMermaid],
+					},
+				},
+			},
+		},
+		'@storybook/addon-a11y',
+	],
 	framework: {
 		name: '@storybook/react-vite',
 		options: {},
