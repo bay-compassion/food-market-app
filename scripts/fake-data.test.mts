@@ -29,6 +29,19 @@ describe('buildFakeData', () => {
 		expect(guests.every((guest) => guest.fake)).toBe(true);
 	});
 
+	it('gives every guest a distinct number in the 555-01XX block reserved for fiction', () => {
+		const { guests } = build({ guests: 120 });
+
+		const phones = guests.map((guest) => guest.phone);
+
+		expect(phones.every((phone) => /^\(\d{3}\) 555-01\d{2}$/.test(phone))).toBe(true);
+		expect(new Set(phones).size).toBe(phones.length);
+	});
+
+	it('refuses to reuse a fictional number once the pool runs out', () => {
+		expect(() => build({ guests: 1001 })).toThrow(RangeError);
+	});
+
 	it('replays the same history for the same seed', () => {
 		const first = build();
 		const second = build();
