@@ -42,6 +42,7 @@ import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import { translations } from '../locales';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
+import { StoryLDProvider } from '../testing/StoryLDProvider';
 import { answerConfirmation } from './render-with-app';
 
 /**
@@ -84,9 +85,11 @@ async function renderApp(initialPath = '/') {
 
 	await act(async () => {
 		result = render(
-			<RootStoreProvider store={new RootStore()}>
-				<RouterProvider router={router} />
-			</RootStoreProvider>,
+			<StoryLDProvider>
+				<RootStoreProvider store={new RootStore()}>
+					<RouterProvider router={router} />
+				</RootStoreProvider>
+			</StoryLDProvider>,
 		);
 	});
 

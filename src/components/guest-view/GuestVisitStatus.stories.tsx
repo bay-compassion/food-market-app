@@ -7,6 +7,8 @@ import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
+import { StoryLDProvider } from '../../testing/StoryLDProvider';
+import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../hooks/use-line-position-indicator-enabled';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { GuestVisitState } from './GuestVisitState';
 
@@ -196,6 +198,32 @@ export const Cancelled: Story = {
 /** A failed cancel request. The error sits above the cancel button. */
 export const CancelFailed: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 3, aheadOfYou: 2, submissionError: true },
+};
+
+/** The `line-position-indicator-enabled` flag off: the row of figures, the cart, and the "guests
+ *  ahead of you" count all disappear together, leaving the queue position number to stand alone. */
+export const WaitingLinePositionIndicatorOff: Story = {
+	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
+	decorators: [
+		(Story) => (
+			<StoryLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
+				<Story />
+			</StoryLDProvider>
+		),
+	],
+};
+
+/** The same flag off in the called state — the panel reads fine with nothing standing in for the
+ *  cart line. */
+export const CalledLinePositionIndicatorOff: Story = {
+	args: { visitStatus: 'called' },
+	decorators: [
+		(Story) => (
+			<StoryLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
+				<Story />
+			</StoryLDProvider>
+		),
+	],
 };
 
 /** Right-to-left rendering, which the Arabic and Farsi locales need. */

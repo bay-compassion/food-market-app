@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 
 import type { VisitStatusTranslations } from '@/locales.ts';
 
+import { useLinePositionIndicatorEnabled } from '../../hooks/use-line-position-indicator-enabled';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 import { QueuePositionDots } from './QueuePositionDots';
 
@@ -10,6 +11,8 @@ const CartLine = styled.div`
 `;
 
 export function CalledVisitStatus({ copy }: { copy: VisitStatusTranslations['called'] }) {
+	const showLinePositionIndicator = useLinePositionIndicatorEnabled();
+
 	return (
 		<GuestVisitStatusPanel
 			icon="→"
@@ -18,11 +21,13 @@ export function CalledVisitStatus({ copy }: { copy: VisitStatusTranslations['cal
 			heading={copy.header}
 			description={copy.details}
 			details={
-				<CartLine className="called-cart-line">
-					{/* The guest has reached the cart itself, which `linePosition={0}` is what emphasizes —
-					    there's no `guestsAhead` to read once the guest has been called. */}
-					<QueuePositionDots linePosition={0} />
-				</CartLine>
+				showLinePositionIndicator ? (
+					<CartLine className="called-cart-line">
+						{/* The guest has reached the cart itself, which `linePosition={0}` is what emphasizes
+						    — there's no `guestsAhead` to read once the guest has been called. */}
+						<QueuePositionDots linePosition={0} />
+					</CartLine>
+				) : null
 			}
 		/>
 	);

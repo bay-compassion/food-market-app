@@ -7,6 +7,7 @@ import { AppThemeProvider } from '../components/AppThemeProvider';
 import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
+import { StoryLDProvider } from '../testing/StoryLDProvider';
 
 export type RenderWithAppOptions = {
 	/** A store seeded by the test. One is built for the test when this is omitted. */
@@ -15,6 +16,9 @@ export type RenderWithAppOptions = {
 	route?: string;
 	/** Extra routes, for a test that asserts navigation actually landed somewhere. */
 	routes?: { path: string; element: ReactNode }[];
+	/** LaunchDarkly flag overrides, for a test that asserts on a flag's other state. See
+	 *  `StoryLDProvider`. Every flag not listed here falls through to its reading hook's default. */
+	flags?: Record<string, boolean>;
 };
 
 export type RenderWithAppResult = RenderResult & {
@@ -25,7 +29,9 @@ export type RenderWithAppResult = RenderResult & {
 
 /**
  * Renders a component with the things the real app always supplies: the MUI theme, root store,
- * router, and the confirmation sheet `App` mounts for every screen under it.
+ * router, the confirmation sheet `App` mounts for every screen under it, and a LaunchDarkly client
+ * — `useBoolVariation` throws without one in its tree, same as `useRootStore()` without a
+ * `RootStoreProvider`.
  *
  * The store is built here rather than in `test-setup.ts` because several of its constituent
  * stores read `localStorage` synchronously in their constructor (device token, visit token, ...) —
@@ -43,10 +49,12 @@ export function renderWithApp(
 
 	const result = render(
 		<AppThemeProvider>
-			<RootStoreProvider store={store}>
-				<RouterProvider router={router} />
-				<ConfirmationDrawer />
-			</RootStoreProvider>
+			<StoryLDProvider flags={options.flags}>
+				<RootStoreProvider store={store}>
+					<RouterProvider router={router} />
+					<ConfirmationDrawer />
+				</RootStoreProvider>
+			</StoryLDProvider>
 		</AppThemeProvider>,
 	);
 
