@@ -60,7 +60,7 @@ function initializeSentry() {
 
 	// With a LaunchDarkly project configured, `enableReplayWhenFlagged` decides this instead —
 	// `main.tsx` calls it once the client exists, which happens after this function runs.
-	if (!ldSettings && settings.replaysOnErrorSampleRate > 0) {
+	if (ldSettings.status !== 'configured' && settings.replaysOnErrorSampleRate > 0) {
 		void loadReplay();
 	}
 }

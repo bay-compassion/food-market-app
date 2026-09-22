@@ -24,6 +24,9 @@ for (const key of ['PATH', 'HOME', 'TMPDIR', 'CI', 'TERM', 'DISPLAY', 'PLAYWRIGH
 	}
 }
 environment.PGUSER = 'postgres';
+// The app refuses to start without a LaunchDarkly client ID; this rig opts out on purpose so every
+// flag reads as its default and nothing reaches LaunchDarkly.
+environment.VITE_LAUNCHDARKLY_DISABLED = 'true';
 environment.QUEUE_RIG_STATE = state;
 environment.QUEUE_RIG_WORKSPACE = path.join(directory, 'app');
 const server = spawn(process.execPath, ['--import', 'tsx', 'e2e-queue/server.mts'], {
