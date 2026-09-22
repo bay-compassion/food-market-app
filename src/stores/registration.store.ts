@@ -61,6 +61,17 @@ export class RegistrationStore {
 		this.registrationAnswers = {};
 	}
 
+	/**
+	 * Re-derives the form from this device's current state — blank identity fields and the default
+	 * household counts, the same as a device that has never saved anything. Called after
+	 * `GuestStore.forget()`, so a form still on screen does not keep showing what the guest just
+	 * asked to forget.
+	 */
+	resetToDeviceState(): void {
+		this.guest = this.prefillGuest();
+		this.registrationAnswers = {};
+	}
+
 	/** The answer to one of the session's configured registration questions. */
 	setAnswer(questionId: string, value: string | number): void {
 		this.registrationAnswers[questionId] = value;

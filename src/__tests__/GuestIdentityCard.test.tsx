@@ -15,6 +15,10 @@ function seedIdentity() {
 		StorageKey.GUEST_IDENTITY,
 		JSON.stringify({ firstName: 'Ari', lastName: 'Guest', phone: '555-123-4567' }),
 	);
+	window.localStorage.setItem(
+		StorageKey.GUEST_HOUSEHOLD,
+		JSON.stringify({ ageRange: '30-44', householdSize: 3, childrenCount: 1, seniorsCount: 0 }),
+	);
 }
 
 function notificationFetch(smsConsented = false) {
@@ -45,32 +49,13 @@ afterEach(() => {
 });
 
 describe('GuestIdentityCard menu', () => {
-	it('shows and copies the device ID', async () => {
-		// Arrange
-		const user = userEvent.setup();
-
-		vi.stubGlobal('fetch', notificationFetch());
-		renderWithApp(<GuestIdentityCard />);
-
-		// Act
-		await user.click(screen.getByRole('button', { name: 'Open identity menu' }));
-		await user.click(screen.getByRole('menuitem', { name: 'Show Device ID' }));
-
-		// Assert
-		expect(screen.getByRole('heading', { name: 'Device ID' })).toBeTruthy();
-		expect(screen.getByText(deviceId)).toBeTruthy();
-
-		await user.click(screen.getByRole('button', { name: 'Copy' }));
-		expect(await navigator.clipboard.readText()).toBe(deviceId);
-		expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy();
-	});
-
 	it('confirms before forgetting the locally stored identity', async () => {
 		// Arrange
 		const user = userEvent.setup();
 
 		vi.stubGlobal('fetch', notificationFetch());
-		renderWithApp(<GuestIdentityCard />);
+		const { store } = renderWithApp(<GuestIdentityCard />);
+
 		await user.click(screen.getByRole('button', { name: 'Open identity menu' }));
 
 		// Act
@@ -80,7 +65,7 @@ describe('GuestIdentityCard menu', () => {
 		expect(screen.getByRole('heading', { name: 'Forget your information?' })).toBeTruthy();
 		expect(
 			screen.getByText(
-				'This removes your saved name, phone number, and device ID from this device. This cannot be undone.',
+				'This removes your saved name, phone number, device ID, and household details from this device. This cannot be undone.',
 			),
 		).toBeTruthy();
 		expect(window.localStorage.getItem(StorageKey.GUEST_DEVICE_TOKEN)).not.toBeNull();
@@ -93,6 +78,18 @@ describe('GuestIdentityCard menu', () => {
 		).toBeTruthy();
 		expect(window.localStorage.getItem(StorageKey.GUEST_DEVICE_TOKEN)).toBeNull();
 		expect(window.localStorage.getItem(StorageKey.GUEST_IDENTITY)).toBeNull();
+		expect(window.localStorage.getItem(StorageKey.GUEST_HOUSEHOLD)).toBeNull();
+		// The registration form still on screen (or about to be, on `/signup` or the queue form)
+		// must not keep offering the identity or household counts back.
+		expect(store.registration.guest).toEqual({
+			firstName: '',
+			lastName: '',
+			ageRange: '',
+			householdSize: 1,
+			childrenCount: 0,
+			seniorsCount: 0,
+			phone: '',
+		});
 	});
 
 	it('opts out of SMS updates', async () => {

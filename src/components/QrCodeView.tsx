@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 
 import { createQrCodeSvg } from '../services/qrCode';
 import { useTranslation } from '../stores/react/use-translation';
+import { BackButton } from './ui/BackButton';
 
 const Page = styled.section`
 	display: grid;
@@ -107,18 +108,7 @@ export const QrCodeView = observer(function QrCodeView() {
 	return (
 		<Page className="qr-page">
 			<div className="qr-page-controls">
-				<button type="button" className="qr-back" onClick={() => void navigate('/')}>
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						aria-hidden="true"
-					>
-						<path d="M15 18l-6-6 6-6" />
-					</svg>
-					{t.backToGuest}
-				</button>
+				<BackButton className="qr-back" label={t.backToGuest} onClick={() => void navigate('/')} />
 				<button type="button" className="qr-print" onClick={() => window.print()}>
 					<svg
 						viewBox="0 0 24 24"

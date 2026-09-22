@@ -96,6 +96,44 @@ describe('RegistrationStore', () => {
 		});
 	});
 
+	describe('resetToDeviceState', () => {
+		it('re-derives the form once the device has forgotten its saved identity and household', async () => {
+			// Arrange
+			storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'device-token');
+			storage.set(StorageKey.GUEST_IDENTITY, {
+				firstName: 'Ada',
+				lastName: 'Lovelace',
+				phone: '555-123-4567',
+			});
+			storage.set(StorageKey.GUEST_HOUSEHOLD, {
+				ageRange: '30-44',
+				householdSize: 3,
+				childrenCount: 1,
+				seniorsCount: 0,
+			});
+			const identifiedGuestStore = new GuestStore({ storage });
+			const store = new RegistrationStore(identifiedGuestStore, { storage });
+
+			store.setAnswer('q-1', 'by bus');
+			await identifiedGuestStore.forget();
+
+			// Act
+			store.resetToDeviceState();
+
+			// Assert
+			expect(store.guest).toEqual({
+				firstName: '',
+				lastName: '',
+				ageRange: '',
+				householdSize: 1,
+				childrenCount: 0,
+				seniorsCount: 0,
+				phone: '',
+			});
+			expect(store.registrationAnswers).toEqual({});
+		});
+	});
+
 	describe('submit', () => {
 		it('registers for the queue and saves the household for next time', async () => {
 			// Arrange

@@ -74,13 +74,8 @@ export interface GuestViewTranslations {
 	};
 	identityIndicator: {
 		cancelForgetInformation: string;
-		closeDeviceIdDialog: string;
 		closeForgetDialog: string;
 		closeNotificationsDialog: string;
-		copyDeviceId: string;
-		copyDeviceIdError: string;
-		deviceIdCopied: string;
-		deviceIdDialogTitle: string;
 		forgetDialogDescription: string;
 		forgetDialogTitle: string;
 		forgetInformation: string;
@@ -94,7 +89,6 @@ export interface GuestViewTranslations {
 		optOut: string;
 		optOutError: string;
 		saveInformationAction: string;
-		showDeviceId: string;
 		unidentifiedHeading: string;
 		unidentifiedMessage: string;
 	};
@@ -179,6 +173,12 @@ export interface AppBarTranslations {
 	adminPanel: string;
 	signOut: string;
 	sendFeedback: string;
+	closeDeviceIdDialog: string;
+	copyDeviceId: string;
+	copyDeviceIdError: string;
+	deviceIdCopied: string;
+	deviceIdDialogTitle: string;
+	showDeviceId: string;
 	feedbackForm: FeedbackFormTranslations;
 }
 
@@ -282,6 +282,12 @@ export const translations = {
 			adminPanel: 'Admin Panel',
 			signOut: 'Sign Out',
 			sendFeedback: 'Send feedback',
+			closeDeviceIdDialog: 'Close device ID',
+			copyDeviceId: 'Copy',
+			copyDeviceIdError: 'We could not copy the device ID. Please try again.',
+			deviceIdCopied: 'Copied',
+			deviceIdDialogTitle: 'Device ID',
+			showDeviceId: 'Show Device ID',
 			feedbackForm: {
 				formTitle: 'Send feedback',
 				nameLabel: 'Name (optional)',
@@ -306,15 +312,10 @@ export const translations = {
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Cancel',
-				closeDeviceIdDialog: 'Close device ID',
 				closeForgetDialog: 'Close forget information confirmation',
 				closeNotificationsDialog: 'Close text message updates',
-				copyDeviceId: 'Copy',
-				copyDeviceIdError: 'We could not copy the device ID. Please try again.',
-				deviceIdCopied: 'Copied',
-				deviceIdDialogTitle: 'Device ID',
 				forgetDialogDescription:
-					'This removes your saved name, phone number, and device ID from this device. This cannot be undone.',
+					'This removes your saved name, phone number, device ID, and household details from this device. This cannot be undone.',
 				forgetDialogTitle: 'Forget your information?',
 				forgetInformation: 'Forget Information',
 				heading: 'Recognized on this device',
@@ -328,7 +329,6 @@ export const translations = {
 				optOut: 'Opt Out',
 				optOutError: 'We could not opt you out of text updates. Please try again.',
 				saveInformationAction: 'Save my information',
-				showDeviceId: 'Show Device ID',
 				unidentifiedHeading: 'Save your information for next time',
 				unidentifiedMessage:
 					'Save your name and phone number so you do not need to enter them again on your next visit. This does not enter you in the lottery.',
@@ -547,6 +547,12 @@ export const translations = {
 			adminPanel: 'Panel de administración',
 			signOut: 'Cerrar sesión',
 			sendFeedback: 'Enviar comentarios',
+			closeDeviceIdDialog: 'Cerrar ID del dispositivo',
+			copyDeviceId: 'Copiar',
+			copyDeviceIdError: 'No pudimos copiar el ID del dispositivo. Inténtelo de nuevo.',
+			deviceIdCopied: 'Copiado',
+			deviceIdDialogTitle: 'ID del dispositivo',
+			showDeviceId: 'Mostrar ID del dispositivo',
 			feedbackForm: {
 				formTitle: 'Enviar comentarios',
 				nameLabel: 'Nombre (opcional)',
@@ -571,15 +577,10 @@ export const translations = {
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Cancelar',
-				closeDeviceIdDialog: 'Cerrar ID del dispositivo',
 				closeForgetDialog: 'Cerrar confirmación para olvidar información',
 				closeNotificationsDialog: 'Cerrar actualizaciones por SMS',
-				copyDeviceId: 'Copiar',
-				copyDeviceIdError: 'No pudimos copiar el ID del dispositivo. Inténtelo de nuevo.',
-				deviceIdCopied: 'Copiado',
-				deviceIdDialogTitle: 'ID del dispositivo',
 				forgetDialogDescription:
-					'Esto elimina de este dispositivo su nombre, número de teléfono e ID del dispositivo guardados. Esta acción no se puede deshacer.',
+					'Esto elimina de este dispositivo su nombre, número de teléfono, ID del dispositivo y los detalles de su hogar guardados. Esta acción no se puede deshacer.',
 				forgetDialogTitle: '¿Olvidar su información?',
 				forgetInformation: 'Olvidar información',
 				heading: 'Reconocido en este dispositivo',
@@ -593,7 +594,6 @@ export const translations = {
 				optOut: 'Cancelar suscripción',
 				optOutError: 'No pudimos cancelar sus actualizaciones por SMS. Inténtelo de nuevo.',
 				saveInformationAction: 'Guardar mi información',
-				showDeviceId: 'Mostrar ID del dispositivo',
 				unidentifiedHeading: 'Guarde su información para la próxima vez',
 				unidentifiedMessage:
 					'Guarde su nombre y número de teléfono para no tener que ingresarlos de nuevo en su próxima visita. Esto no le inscribe en el sorteo.',
@@ -815,6 +815,12 @@ export const translations = {
 			adminPanel: 'پنل مدیریت',
 			signOut: 'خروج',
 			sendFeedback: 'ارسال بازخورد',
+			closeDeviceIdDialog: 'بستن شناسه دستگاه',
+			copyDeviceId: 'کپی',
+			copyDeviceIdError: 'شناسه دستگاه کپی نشد. لطفاً دوباره تلاش کنید.',
+			deviceIdCopied: 'کپی شد',
+			deviceIdDialogTitle: 'شناسه دستگاه',
+			showDeviceId: 'نمایش شناسه دستگاه',
 			feedbackForm: {
 				formTitle: 'ارسال بازخورد',
 				nameLabel: 'نام (اختیاری)',
@@ -839,15 +845,10 @@ export const translations = {
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'لغو',
-				closeDeviceIdDialog: 'بستن شناسه دستگاه',
 				closeForgetDialog: 'بستن تأیید فراموش کردن اطلاعات',
 				closeNotificationsDialog: 'بستن به‌روزرسانی‌های پیامکی',
-				copyDeviceId: 'کپی',
-				copyDeviceIdError: 'شناسه دستگاه کپی نشد. لطفاً دوباره تلاش کنید.',
-				deviceIdCopied: 'کپی شد',
-				deviceIdDialogTitle: 'شناسه دستگاه',
 				forgetDialogDescription:
-					'این کار نام، شماره تلفن و شناسه دستگاه ذخیره‌شده شما را از این دستگاه حذف می‌کند و قابل بازگشت نیست.',
+					'این کار نام، شماره تلفن، شناسه دستگاه و اطلاعات خانوار ذخیره‌شده شما را از این دستگاه حذف می‌کند و قابل بازگشت نیست.',
 				forgetDialogTitle: 'اطلاعات شما فراموش شود؟',
 				forgetInformation: 'فراموش کردن اطلاعات',
 				heading: 'شناسایی‌شده در این دستگاه',
@@ -860,7 +861,6 @@ export const translations = {
 				optOut: 'لغو اشتراک',
 				optOutError: 'لغو به‌روزرسانی‌های پیامکی انجام نشد. لطفاً دوباره تلاش کنید.',
 				saveInformationAction: 'ذخیره اطلاعات من',
-				showDeviceId: 'نمایش شناسه دستگاه',
 				unidentifiedHeading: 'اطلاعات خود را برای دفعه بعد ذخیره کنید',
 				unidentifiedMessage:
 					'نام و شماره تلفن خود را ذخیره کنید تا در مراجعه بعدی نیازی به وارد کردن دوباره آن‌ها نداشته باشید. این کار شما را وارد قرعه‌کشی نمی‌کند.',
@@ -1078,6 +1078,12 @@ export const translations = {
 			adminPanel: 'Panel ng admin',
 			signOut: 'Mag-sign out',
 			sendFeedback: 'Magpadala ng puna',
+			closeDeviceIdDialog: 'Isara ang device ID',
+			copyDeviceId: 'Kopyahin',
+			copyDeviceIdError: 'Hindi namin makopya ang device ID. Pakisubukang muli.',
+			deviceIdCopied: 'Nakopya',
+			deviceIdDialogTitle: 'ID ng Device',
+			showDeviceId: 'Ipakita ang Device ID',
 			feedbackForm: {
 				formTitle: 'Magpadala ng puna',
 				nameLabel: 'Pangalan (opsyonal)',
@@ -1102,15 +1108,10 @@ export const translations = {
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Kanselahin',
-				closeDeviceIdDialog: 'Isara ang device ID',
 				closeForgetDialog: 'Isara ang pagkumpirma sa paglimot ng impormasyon',
 				closeNotificationsDialog: 'Isara ang mga update sa text',
-				copyDeviceId: 'Kopyahin',
-				copyDeviceIdError: 'Hindi namin makopya ang device ID. Pakisubukang muli.',
-				deviceIdCopied: 'Nakopya',
-				deviceIdDialogTitle: 'ID ng Device',
 				forgetDialogDescription:
-					'Aalisin nito sa device na ito ang iyong naka-save na pangalan, numero ng telepono, at device ID. Hindi ito maaaring ibalik.',
+					'Aalisin nito sa device na ito ang iyong naka-save na pangalan, numero ng telepono, device ID, at mga detalye ng sambahayan. Hindi ito maaaring ibalik.',
 				forgetDialogTitle: 'Kalimutan ang iyong impormasyon?',
 				forgetInformation: 'Kalimutan ang Impormasyon',
 				heading: 'Nakilala sa device na ito',
@@ -1124,7 +1125,6 @@ export const translations = {
 				optOut: 'Mag-opt Out',
 				optOutError: 'Hindi ka namin maalis sa mga text update. Pakisubukang muli.',
 				saveInformationAction: 'I-save ang aking impormasyon',
-				showDeviceId: 'Ipakita ang Device ID',
 				unidentifiedHeading: 'I-save ang iyong impormasyon para sa susunod',
 				unidentifiedMessage:
 					'I-save ang iyong pangalan at numero ng telepono para hindi mo na kailangang ilagay muli ang mga ito sa susunod mong pagbisita. Hindi ka nito isinasali sa lottery.',
@@ -1349,6 +1349,12 @@ export const translations = {
 			adminPanel: 'Bảng quản trị',
 			signOut: 'Đăng xuất',
 			sendFeedback: 'Gửi góp ý',
+			closeDeviceIdDialog: 'Đóng mã thiết bị',
+			copyDeviceId: 'Sao chép',
+			copyDeviceIdError: 'Không thể sao chép mã thiết bị. Vui lòng thử lại.',
+			deviceIdCopied: 'Đã sao chép',
+			deviceIdDialogTitle: 'Mã thiết bị',
+			showDeviceId: 'Hiển thị mã thiết bị',
 			feedbackForm: {
 				formTitle: 'Gửi góp ý',
 				nameLabel: 'Tên (không bắt buộc)',
@@ -1373,15 +1379,10 @@ export const translations = {
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Hủy',
-				closeDeviceIdDialog: 'Đóng mã thiết bị',
 				closeForgetDialog: 'Đóng xác nhận quên thông tin',
 				closeNotificationsDialog: 'Đóng cập nhật qua SMS',
-				copyDeviceId: 'Sao chép',
-				copyDeviceIdError: 'Không thể sao chép mã thiết bị. Vui lòng thử lại.',
-				deviceIdCopied: 'Đã sao chép',
-				deviceIdDialogTitle: 'Mã thiết bị',
 				forgetDialogDescription:
-					'Thao tác này sẽ xóa tên, số điện thoại và mã thiết bị đã lưu khỏi thiết bị này. Không thể hoàn tác.',
+					'Thao tác này sẽ xóa tên, số điện thoại, mã thiết bị và thông tin hộ gia đình đã lưu khỏi thiết bị này. Không thể hoàn tác.',
 				forgetDialogTitle: 'Quên thông tin của bạn?',
 				forgetInformation: 'Quên thông tin',
 				heading: 'Đã nhận dạng trên thiết bị này',
@@ -1394,7 +1395,6 @@ export const translations = {
 				optOut: 'Hủy đăng ký',
 				optOutError: 'Không thể hủy cập nhật qua SMS. Vui lòng thử lại.',
 				saveInformationAction: 'Lưu thông tin của tôi',
-				showDeviceId: 'Hiển thị mã thiết bị',
 				unidentifiedHeading: 'Lưu thông tin cho lần sau',
 				unidentifiedMessage:
 					'Lưu tên và số điện thoại để bạn không phải nhập lại trong lần ghé tiếp theo. Việc này không đưa bạn vào danh sách xổ số.',
@@ -1612,6 +1612,12 @@ export const translations = {
 			adminPanel: '管理面板',
 			signOut: '退出登录',
 			sendFeedback: '发送反馈',
+			closeDeviceIdDialog: '关闭设备 ID',
+			copyDeviceId: '复制',
+			copyDeviceIdError: '无法复制设备 ID。请重试。',
+			deviceIdCopied: '已复制',
+			deviceIdDialogTitle: '设备 ID',
+			showDeviceId: '显示设备 ID',
 			feedbackForm: {
 				formTitle: '发送反馈',
 				nameLabel: '姓名（选填）',
@@ -1635,14 +1641,10 @@ export const translations = {
 			},
 			identityIndicator: {
 				cancelForgetInformation: '取消',
-				closeDeviceIdDialog: '关闭设备 ID',
 				closeForgetDialog: '关闭忘记信息确认对话框',
 				closeNotificationsDialog: '关闭短信更新',
-				copyDeviceId: '复制',
-				copyDeviceIdError: '无法复制设备 ID。请重试。',
-				deviceIdCopied: '已复制',
-				deviceIdDialogTitle: '设备 ID',
-				forgetDialogDescription: '这会从此设备中删除已保存的姓名、电话号码和设备 ID，且无法撤销。',
+				forgetDialogDescription:
+					'这会从此设备中删除已保存的姓名、电话号码、设备 ID 和家庭信息，且无法撤销。',
 				forgetDialogTitle: '忘记您的信息？',
 				forgetInformation: '忘记信息',
 				heading: '已在此设备上识别',
@@ -1655,7 +1657,6 @@ export const translations = {
 				optOut: '取消订阅',
 				optOutError: '无法取消短信更新。请重试。',
 				saveInformationAction: '保存我的信息',
-				showDeviceId: '显示设备 ID',
 				unidentifiedHeading: '保存信息，方便下次使用',
 				unidentifiedMessage:
 					'保存您的姓名和电话号码，下次到访时就无需再次输入。这不会让您进入抽签。',
@@ -1858,6 +1859,12 @@ export const translations = {
 			adminPanel: 'لوحة الإدارة',
 			signOut: 'تسجيل الخروج',
 			sendFeedback: 'إرسال ملاحظات',
+			closeDeviceIdDialog: 'إغلاق معرّف الجهاز',
+			copyDeviceId: 'نسخ',
+			copyDeviceIdError: 'تعذر نسخ معرّف الجهاز. يرجى المحاولة مرة أخرى.',
+			deviceIdCopied: 'تم النسخ',
+			deviceIdDialogTitle: 'معرّف الجهاز',
+			showDeviceId: 'عرض معرّف الجهاز',
 			feedbackForm: {
 				formTitle: 'إرسال ملاحظات',
 				nameLabel: 'الاسم (اختياري)',
@@ -1882,15 +1889,10 @@ export const translations = {
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'إلغاء',
-				closeDeviceIdDialog: 'إغلاق معرّف الجهاز',
 				closeForgetDialog: 'إغلاق تأكيد نسيان المعلومات',
 				closeNotificationsDialog: 'إغلاق تحديثات الرسائل النصية',
-				copyDeviceId: 'نسخ',
-				copyDeviceIdError: 'تعذر نسخ معرّف الجهاز. يرجى المحاولة مرة أخرى.',
-				deviceIdCopied: 'تم النسخ',
-				deviceIdDialogTitle: 'معرّف الجهاز',
 				forgetDialogDescription:
-					'سيؤدي هذا إلى حذف اسمك ورقم هاتفك ومعرّف الجهاز المحفوظة من هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.',
+					'سيؤدي هذا إلى حذف اسمك ورقم هاتفك ومعرّف الجهاز وبيانات الأسرة المحفوظة من هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.',
 				forgetDialogTitle: 'هل تريد نسيان معلوماتك؟',
 				forgetInformation: 'نسيان المعلومات',
 				heading: 'تم التعرّف عليك على هذا الجهاز',
@@ -1903,7 +1905,6 @@ export const translations = {
 				optOut: 'إلغاء الاشتراك',
 				optOutError: 'تعذر إلغاء اشتراكك في التحديثات النصية. يرجى المحاولة مرة أخرى.',
 				saveInformationAction: 'حفظ معلوماتي',
-				showDeviceId: 'عرض معرّف الجهاز',
 				unidentifiedHeading: 'احفظ معلوماتك للمرة القادمة',
 				unidentifiedMessage:
 					'احفظ اسمك ورقم هاتفك حتى لا تضطر إلى إدخالهما مرة أخرى في زيارتك القادمة. هذا لا يدخلك في القرعة.',

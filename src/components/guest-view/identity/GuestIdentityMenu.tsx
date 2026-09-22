@@ -1,4 +1,3 @@
-import styled from '@emotion/styled';
 import { Button, IconButton, Menu, MenuItem } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState, type MouseEvent } from 'react';
@@ -6,19 +5,6 @@ import { useState, type MouseEvent } from 'react';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { Dialog } from '../../ui/Dialog';
-
-const DeviceId = styled.code`
-	display: block;
-	padding: 14px;
-	overflow-wrap: anywhere;
-	border-radius: var(--radius-sm);
-	color: var(--color-brand-dark);
-	background: var(--color-surface-soft);
-	font-size: 14px;
-	line-height: 1.5;
-	direction: ltr;
-	text-align: start;
-`;
 
 function MoreIcon() {
 	return (
@@ -32,12 +18,10 @@ function MoreIcon() {
 
 /** Actions that apply to the identity stored on this browser. */
 export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
-	const { guest, notifications, translations } = useRootStore();
+	const { guest, notifications, registration, translations } = useRootStore();
 	const copy = useTranslation().guestView.identityIndicator;
 	const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-	const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
 	const [forgetDialogOpen, setForgetDialogOpen] = useState(false);
-	const [copied, setCopied] = useState(false);
 	const [optingOut, setOptingOut] = useState(false);
 	const horizontal = translations.dir === 'rtl' ? 'left' : 'right';
 
@@ -62,25 +46,6 @@ export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
 		}
 	}
 
-	async function copyDeviceId() {
-		if (!guest.deviceId) {
-			return;
-		}
-
-		try {
-			await navigator.clipboard.writeText(guest.deviceId);
-			setCopied(true);
-		} catch {
-			notifications.error(copy.copyDeviceIdError);
-		}
-	}
-
-	function openDeviceDialog() {
-		closeMenu();
-		setCopied(false);
-		setDeviceDialogOpen(true);
-	}
-
 	function openForgetDialog() {
 		closeMenu();
 		setForgetDialogOpen(true);
@@ -89,6 +54,9 @@ export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
 	function forgetInformation() {
 		setForgetDialogOpen(false);
 		void guest.forget();
+		// The form still on screen is a form the guest just asked to have forgotten — it must not
+		// keep offering the identity or household counts back on the next field it reads.
+		registration.resetToDeviceState();
 	}
 
 	return (
@@ -114,22 +82,7 @@ export const GuestIdentityMenu = observer(function GuestIdentityMenu() {
 					{copy.optOut}
 				</MenuItem>
 				<MenuItem onClick={openForgetDialog}>{copy.forgetInformation}</MenuItem>
-				<MenuItem onClick={openDeviceDialog}>{copy.showDeviceId}</MenuItem>
 			</Menu>
-
-			<Dialog
-				open={deviceDialogOpen}
-				title={copy.deviceIdDialogTitle}
-				closeLabel={copy.closeDeviceIdDialog}
-				onClose={() => setDeviceDialogOpen(false)}
-				actions={
-					<Button onClick={() => void copyDeviceId()}>
-						{copied ? copy.deviceIdCopied : copy.copyDeviceId}
-					</Button>
-				}
-			>
-				<DeviceId>{guest.deviceId}</DeviceId>
-			</Dialog>
 
 			<Dialog
 				open={forgetDialogOpen}
