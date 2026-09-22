@@ -3,7 +3,7 @@ import { useBoolVariation } from '@launchdarkly/react-sdk';
 /** The LaunchDarkly flag `useLinePositionIndicatorEnabled` reads. Must exist in the project — a
  *  flag key LaunchDarkly can't resolve evaluates to this hook's default forever, which looks
  *  identical to "on on purpose." Exported so a story or test can target it through
- *  `StoryLDProvider`'s `flags` map without hard-coding the key a second time. */
+ *  `StaticLDProvider`'s `flags` map without hard-coding the key a second time. */
 export const LINE_POSITION_INDICATOR_FLAG_KEY = 'line-position-indicator-enabled';
 
 /**
@@ -18,8 +18,8 @@ export const LINE_POSITION_INDICATOR_FLAG_KEY = 'line-position-indicator-enabled
  * shipped, so the safe fallback is the current behavior, not the absence of it. This flag exists
  * as a kill switch a project can use to hide it without a redeploy, not to gate a rollout.
  *
- * Requires an `LDProvider` in the tree, same as any other LaunchDarkly hook — see the "Any future
- * component that reads a flag" note in `main.tsx`. `WaitingVisitStatus` and `CalledVisitStatus`
+ * Requires an `LDReactContext` in the tree, same as any other LaunchDarkly hook — `main.tsx` always
+ * mounts one (or refuses to start), and stories and tests use `StaticLDProvider`. `WaitingVisitStatus` and `CalledVisitStatus`
  * call this instead of `QueuePositionDots` importing the SDK directly, so the component that
  * decides whether the row appears also decides what replaces it (nothing, in both cases).
  */

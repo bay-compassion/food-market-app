@@ -4,13 +4,14 @@ import {
 	createLDReactProviderWithClient,
 	type LDContext,
 } from '@launchdarkly/react-sdk';
-import { StrictMode } from 'react';
+import { StrictMode, type ComponentType, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 
 import { auth0Settings, returnToPath } from './auth';
 import { AppThemeProvider } from './components/AppThemeProvider';
-import { launchDarklySettings } from './launchdarkly-settings';
+import { StaticLDProvider } from './components/StaticLDProvider';
+import { launchDarklySettings, MISSING_LAUNCHDARKLY_MESSAGE } from './launchdarkly-settings';
 import { router } from './router';
 import { enableReplayWhenFlagged, reactErrorHandler } from './sentry';
 import { isUserInfoEnabled, SentryUserReporter } from './sentry-user';
@@ -45,30 +46,37 @@ async function bootstrap() {
 	};
 
 	const ldSettings = launchDarklySettings(import.meta.env);
+
+	// A missing client ID is a misconfiguration, so the app stops here, before anything renders,
+	// rather than on whichever screen first reads a flag. A Netlify build already refuses to finish
+	// without one (`vite.config.ts`); this catches everything else — a fresh clone, a local preview.
+	if (ldSettings.status === 'missing') {
+		throw new Error(MISSING_LAUNCHDARKLY_MESSAGE);
+	}
+
 	/**
-	 * Unlike `Auth0Provider` below, `LDProvider` is mounted only when a project is actually
-	 * configured. Building a client eagerly is unavoidable — even with `deferInitialization`, its
-	 * constructor alone fires a goals request and a diagnostic event — so there is no way to hand
-	 * out a working client that stays off the network, the way `sentry.ts` does for a missing DSN.
-	 * Any future component that reads a flag therefore needs a provider in its tree, exactly as
-	 * `useRootStore()` needs a `RootStoreProvider`: a component that reads flags without one throws
-	 * loudly instead of quietly serving stale or wrong data, and a story or test that exercises it
-	 * nests its own `LDProvider`, the same way a story that seeds its own store nests its own
-	 * `ConfirmationDrawer`.
+	 * Every flag-reading component needs an `LDReactContext` in its tree, the same way
+	 * `useRootStore()` needs a `RootStoreProvider`. With a project configured that is the SDK's own
+	 * provider; with LaunchDarkly deliberately disabled it is the stub client, which resolves every
+	 * flag to its hook's default. There is no silent fallback between the two: which one mounts is
+	 * decided by the environment, and an environment that says neither never gets this far.
 	 *
 	 * `createClient` (rather than the `createLDReactProvider` convenience) is what hands back a
 	 * client `enableReplayWhenFlagged` can subscribe to directly; `createLDReactProviderWithClient`
 	 * wraps that same instance for the hooks, so `.start()` is this function's job instead of the
 	 * provider's.
 	 */
-	const ldClient = ldSettings ? createClient(ldSettings.clientSideId, context) : null;
+	let LDProvider: ComponentType<{ children: ReactNode }>;
 
-	if (ldClient) {
+	if (ldSettings.status === 'configured') {
+		const ldClient = createClient(ldSettings.clientSideId, context);
+
 		void ldClient.start();
 		enableReplayWhenFlagged(ldClient);
+		LDProvider = createLDReactProviderWithClient(ldClient);
+	} else {
+		LDProvider = StaticLDProvider;
 	}
-
-	const LDProvider = ldClient ? createLDReactProviderWithClient(ldClient) : null;
 
 	const app = (
 		<AppThemeProvider>
@@ -98,7 +106,11 @@ async function bootstrap() {
 		</AppThemeProvider>
 	);
 
-	const tree = <StrictMode>{LDProvider ? <LDProvider>{app}</LDProvider> : app}</StrictMode>;
+	const tree = (
+		<StrictMode>
+			<LDProvider>{app}</LDProvider>
+		</StrictMode>
+	);
 
 	rootStore.start();
 	// React 19 swallows render errors once a boundary handles them; these hand both the caught and

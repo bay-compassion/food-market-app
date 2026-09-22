@@ -38,11 +38,11 @@ import { GuestView } from '../components/guest-view/GuestView';
 import { PrivacyPage } from '../components/legal/PrivacyPage';
 import { TermsPage } from '../components/legal/TermsPage';
 import { SignupView } from '../components/routes/SignupView';
+import { StaticLDProvider } from '../components/StaticLDProvider';
 import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import { translations } from '../locales';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
-import { StoryLDProvider } from '../testing/StoryLDProvider';
 import { answerConfirmation } from './render-with-app';
 
 /**
@@ -85,11 +85,11 @@ async function renderApp(initialPath = '/') {
 
 	await act(async () => {
 		result = render(
-			<StoryLDProvider>
+			<StaticLDProvider>
 				<RootStoreProvider store={new RootStore()}>
 					<RouterProvider router={router} />
 				</RootStoreProvider>
-			</StoryLDProvider>,
+			</StaticLDProvider>,
 		);
 	});
 

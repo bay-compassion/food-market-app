@@ -169,8 +169,8 @@ project and default to `false`; a flag key LaunchDarkly can't resolve evaluates 
 supported way to remove a Sentry integration once added, so switching the flag back off stops new
 sessions from loading replay but does not affect one already running.
 
-With no LaunchDarkly project configured, `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` still decides it
-at build time, unchanged from before.
+With LaunchDarkly deliberately disabled (`VITE_LAUNCHDARKLY_DISABLED=true`, which only test rigs
+set), `VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE` still decides it at build time.
 
 ### Source maps
 

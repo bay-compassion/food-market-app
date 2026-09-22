@@ -7,8 +7,8 @@ import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
-import { StoryLDProvider } from '../../testing/StoryLDProvider';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../hooks/use-line-position-indicator-enabled';
+import { StaticLDProvider } from '../StaticLDProvider';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { GuestVisitState } from './GuestVisitState';
 
@@ -206,9 +206,9 @@ export const WaitingLinePositionIndicatorOff: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
 	decorators: [
 		(Story) => (
-			<StoryLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
+			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
 				<Story />
-			</StoryLDProvider>
+			</StaticLDProvider>
 		),
 	],
 };
@@ -219,9 +219,9 @@ export const CalledLinePositionIndicatorOff: Story = {
 	args: { visitStatus: 'called' },
 	decorators: [
 		(Story) => (
-			<StoryLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
+			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
 				<Story />
-			</StoryLDProvider>
+			</StaticLDProvider>
 		),
 	],
 };
