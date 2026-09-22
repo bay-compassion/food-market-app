@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=0100784f6b84, src/stores/guest.store.ts=9f91cfa8f3e3, src/stores/registration.store.ts=8ee80322c315, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=7f95f07cee04, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=d46cb5e2b411, src/stores/visit.store.ts=3a88088d1d10, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=7f95f07cee04, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=b93f87b0b696, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=deac0d1cd59c -->
 
 # Guest journey
 
@@ -51,9 +51,9 @@ flowchart TD
     revokeSms --> notificationState
     identityActions -. "Forget Information" .-> confirmForget{Confirm forgetting<br/>saved information?}
     confirmForget -- no --> identityShown
-    confirmForget -- yes --> forgetIdentity[Remove local profile<br/>and device token]
+    confirmForget -- yes --> forgetIdentity[Remove local profile,<br/>device token, and saved<br/>household composition;<br/>reset the in-progress form]
     forgetIdentity --> hasIdentity
-    identityActions -. "Show Device ID" .-> showDeviceId[Show device ID dialog<br/>with copy action]
+    identityShown -. "Show Device ID" in top nav menu .-> showDeviceId[Show device ID dialog<br/>with copy action]
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
     deviceAuth --> notificationRequest{Status retrieval}
     notificationRequest -- pending --> notificationLoading[Show loading indicator]

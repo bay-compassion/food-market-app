@@ -233,6 +233,9 @@ export class GuestStore {
 	async forget(): Promise<void> {
 		this.storage?.remove(StorageKey.GUEST_DEVICE_TOKEN);
 		this.storage?.remove(StorageKey.GUEST_IDENTITY);
+		// The household composition saved purely to prefill the lottery-entry fields is still
+		// information this device remembers about the guest, so it goes too.
+		this.storage?.remove(StorageKey.GUEST_HOUSEHOLD);
 		this._deviceToken = null;
 		this._identity = null;
 	}

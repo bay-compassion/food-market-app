@@ -88,6 +88,11 @@ async function openIdentityMenu(page: Page, copy: Translation) {
 	await page.getByRole('menuitem', { name: identityIndicator.forgetInformation }).waitFor();
 }
 
+async function openAppBarMenu(page: Page, copy: Translation) {
+	await page.getByRole('button', { name: copy.appBar.openMenu }).click();
+	await page.getByRole('menuitem', { name: copy.appBar.staffLogin }).waitFor();
+}
+
 async function openTextUpdates(page: Page, copy: Translation) {
 	const { identityIndicator } = copy.guestView;
 
@@ -224,11 +229,9 @@ export const screenshots: ScreenshotStep[] = [
 		server: enabledTexts,
 		overlay: true,
 		interact: async (page, copy) => {
-			const { identityIndicator } = copy.guestView;
-
-			await openIdentityMenu(page, copy);
-			await page.getByRole('menuitem', { name: identityIndicator.showDeviceId }).click();
-			await page.getByRole('dialog', { name: identityIndicator.deviceIdDialogTitle }).waitFor();
+			await openAppBarMenu(page, copy);
+			await page.getByRole('menuitem', { name: copy.appBar.showDeviceId }).click();
+			await page.getByRole('dialog', { name: copy.appBar.deviceIdDialogTitle }).waitFor();
 		},
 		anchor: (copy) => copy.formTitle,
 	},

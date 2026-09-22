@@ -520,6 +520,37 @@ describe('GuestStore.adopt', () => {
 	});
 });
 
+describe('GuestStore.forget', () => {
+	it('clears the saved identity, device token, and household composition', async () => {
+		// Arrange
+		const storage = new StorageService();
+
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'device-token');
+		storage.set(StorageKey.GUEST_IDENTITY, {
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			phone: '510-555-0123',
+		});
+		storage.set(StorageKey.GUEST_HOUSEHOLD, {
+			ageRange: '30-44',
+			householdSize: 3,
+			childrenCount: 1,
+			seniorsCount: 0,
+		});
+		const store = new GuestStore({ storage });
+
+		// Act
+		await store.forget();
+
+		// Assert
+		expect(store.isIdentified).toBe(false);
+		expect(store.identity).toBeNull();
+		expect(storage.get(StorageKey.GUEST_DEVICE_TOKEN)).toBeNull();
+		expect(storage.get(StorageKey.GUEST_IDENTITY)).toBeNull();
+		expect(storage.get(StorageKey.GUEST_HOUSEHOLD)).toBeNull();
+	});
+});
+
 describe('GuestStore.adopt on a shared phone', () => {
 	it('never shows the previous guest’s SMS consent, even if the reload fails', async () => {
 		// Arrange

@@ -1,5 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react';
+import styled from '@emotion/styled';
 import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -13,15 +15,31 @@ import { authReturnUrl } from '../../../auth';
 import { isFeedbackEnabled, openFeedbackForm } from '../../../sentry-feedback-trigger';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
+import { Dialog } from '../Dialog';
 import { MoreVertIcon } from '../icons/MoreVertIcon';
 import { OpenExternalIcon } from '../icons/OpenExternalIcon';
+
+const DeviceId = styled.code`
+	display: block;
+	padding: 14px;
+	overflow-wrap: anywhere;
+	border-radius: var(--radius-sm);
+	color: var(--color-brand-dark);
+	background: var(--color-surface-soft);
+	font-size: 14px;
+	line-height: 1.5;
+	direction: ltr;
+	text-align: start;
+`;
 
 /** Secondary navigation and the authenticated staff account, tucked behind one menu. */
 export const AppBarMenu = observer(function AppBarMenu() {
 	const { isAuthenticated, user, logout } = useAuth0();
 	const { appBar: t, marketName } = useTranslation();
-	const { translations } = useRootStore();
+	const { guest, notifications, translations } = useRootStore();
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+	const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
+	const [copied, setCopied] = useState(false);
 	const id = useId();
 	const open = Boolean(anchorEl);
 	const horizontal = translations.dir === 'rtl' ? 'left' : 'right';
@@ -42,6 +60,25 @@ export const AppBarMenu = observer(function AppBarMenu() {
 	function signOut() {
 		close();
 		void logout({ logoutParams: { returnTo: authReturnUrl } });
+	}
+
+	function openDeviceDialog() {
+		close();
+		setCopied(false);
+		setDeviceDialogOpen(true);
+	}
+
+	async function copyDeviceId() {
+		if (!guest.deviceId) {
+			return;
+		}
+
+		try {
+			await navigator.clipboard.writeText(guest.deviceId);
+			setCopied(true);
+		} catch {
+			notifications.error(t.copyDeviceIdError);
+		}
 	}
 
 	return (
@@ -99,6 +136,8 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				<MenuItem component={Link} to="/admin" onClick={close}>
 					{isAuthenticated ? t.adminPanel : t.staffLogin}
 				</MenuItem>
+				{/* Only a device that has saved an identity has one to show. */}
+				{guest.deviceId ? <MenuItem onClick={openDeviceDialog}>{t.showDeviceId}</MenuItem> : null}
 				{isFeedbackEnabled && <MenuItem onClick={sendFeedback}>{t.sendFeedback}</MenuItem>}
 				{isAuthenticated && [
 					<Divider key="account-divider" />,
@@ -128,6 +167,20 @@ export const AppBarMenu = observer(function AppBarMenu() {
 					</MenuItem>,
 				]}
 			</Menu>
+
+			<Dialog
+				open={deviceDialogOpen}
+				title={t.deviceIdDialogTitle}
+				closeLabel={t.closeDeviceIdDialog}
+				onClose={() => setDeviceDialogOpen(false)}
+				actions={
+					<Button onClick={() => void copyDeviceId()}>
+						{copied ? t.deviceIdCopied : t.copyDeviceId}
+					</Button>
+				}
+			>
+				<DeviceId>{guest.deviceId}</DeviceId>
+			</Dialog>
 		</>
 	);
 });
