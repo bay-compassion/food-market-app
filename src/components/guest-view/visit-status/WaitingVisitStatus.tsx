@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 
 import type { VisitStatusTranslations } from '@/locales.ts';
 
+import { useLinePositionIndicatorEnabled } from '../../hooks/use-line-position-indicator-enabled';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 import { QueuePositionDots } from './QueuePositionDots';
 
@@ -81,6 +82,7 @@ export type WaitingVisitStatusProps = {
 };
 
 export function WaitingVisitStatus({ copy, queuePosition, guestsAhead }: WaitingVisitStatusProps) {
+	const showLinePositionIndicator = useLinePositionIndicatorEnabled();
 	const queueDetails = queuePosition ? (
 		<QueueStanding className="queue-standing">
 			<QueuePosition className="queue-position">
@@ -89,7 +91,7 @@ export function WaitingVisitStatus({ copy, queuePosition, guestsAhead }: Waiting
 			</QueuePosition>
 			{guestsAhead === 0 ? (
 				<QueueNext className="queue-next">{copy.waiting.youAreNext}</QueueNext>
-			) : guestsAhead !== null ? (
+			) : guestsAhead !== null && showLinePositionIndicator ? (
 				<GuestsAhead className="guests-ahead">
 					{/* `guestsAhead` here is always at least 1 (the `=== 0` branch above claims that
 					    case), and `linePosition` counts outward from the cart starting at 1 for the

@@ -11,6 +11,7 @@ import { NotificationToasts } from '../src/components/ui/NotificationToasts';
 import { languages, type Locale } from '../src/locales';
 import { RootStoreProvider } from '../src/stores/react/store-context';
 import { RootStore } from '../src/stores/root.store';
+import { StoryLDProvider } from '../src/testing/StoryLDProvider';
 
 // The app's own stylesheets, in the same order `main.ts` loads them, so a story in isolation
 // inherits exactly the cascade it would get inside the running app.
@@ -111,6 +112,19 @@ const preview: Preview = {
 	},
 
 	decorators: [
+		/**
+		 * Provides the LaunchDarkly client a flag-reading component needs — `useBoolVariation` throws
+		 * without one in its tree, the same failure mode `useRootStore()` has with no `RootStoreProvider`.
+		 * Every flag defaults to whatever the reading hook itself defaults to (see `launchdarkly-stub.tsx`),
+		 * which is what a story sees for a flag it never mentions. A story that wants to see a flag's
+		 * other state nests its own `StoryLDProvider`, which wins over this one.
+		 */
+		(Story) => (
+			<StoryLDProvider>
+				<Story />
+			</StoryLDProvider>
+		),
+
 		/**
 		 * Feeds the toolbar's locale into the story's `locale` prop. Only stories that already
 		 * declare a `locale` arg get it — otherwise React would warn about an unknown prop on
