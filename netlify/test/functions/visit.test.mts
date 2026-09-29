@@ -69,7 +69,11 @@ describe('visit handler GET', () => {
 
 		expect(response.status).toBe(200);
 		// A registered guest is still pre-lottery, so there is no queue to be ahead of.
-		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: null });
+		await expect(response.json()).resolves.toEqual({
+			...visit,
+			aheadOfYou: null,
+			nowCalling: null,
+		});
 	});
 
 	it('reports how many waiting guests are ahead of a waiting visit', async () => {
@@ -84,11 +88,32 @@ describe('visit handler GET', () => {
 
 		queueResult([visit]);
 		queueResult([{ count: 3 }]);
+		queueResult([{ queuePosition: 1 }]);
 
 		const response = await handler(request('GET', { token: validToken }));
 
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: 3 });
+		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: 3, nowCalling: 1 });
+	});
+
+	it('reports no number being called before anyone has been called', async () => {
+		const visit = {
+			id: 'visit-1',
+			status: 'waiting',
+			marketEventId: 'event-1',
+			queuePosition: 1,
+			calledAt: null,
+			sessionStatus: 'service_started',
+		};
+
+		queueResult([visit]);
+		queueResult([{ count: 0 }]);
+		queueResult([]);
+
+		const response = await handler(request('GET', { token: validToken }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: 0, nowCalling: null });
 	});
 
 	it('reports no queue position once the guest has been called', async () => {
@@ -106,7 +131,11 @@ describe('visit handler GET', () => {
 		const response = await handler(request('GET', { token: validToken }));
 
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: null });
+		await expect(response.json()).resolves.toEqual({
+			...visit,
+			aheadOfYou: null,
+			nowCalling: null,
+		});
 	});
 
 	it('returns 410 when the visit belongs to an ended session', async () => {

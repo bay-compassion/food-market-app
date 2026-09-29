@@ -109,6 +109,7 @@ function VisitStatusRow({
 			status,
 			queuePosition,
 			aheadOfYou,
+			nowCalling: null,
 		};
 
 		return new RootStore({

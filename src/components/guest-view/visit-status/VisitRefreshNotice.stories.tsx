@@ -45,6 +45,7 @@ function SeededRefreshNotice({ locale, visitStatus, refreshIntervalSeconds }: Re
 						status: visitStatus,
 						queuePosition: 7,
 						aheadOfYou: 6,
+						nowCalling: 1,
 					},
 				}),
 		},

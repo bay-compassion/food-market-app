@@ -36,6 +36,8 @@ export interface VisitStatusTranslations {
 		queuePositionLabel: string;
 		guestsAheadLabel: string;
 		youAreNext: string;
+		nowCallingLabel: string;
+		nowCallingNone: string;
 	};
 	called: {
 		header: string;
@@ -396,6 +398,8 @@ export const translations = {
 					queuePositionLabel: 'Your place in line',
 					guestsAheadLabel: 'Guests ahead of you',
 					youAreNext: 'You are next',
+					nowCallingLabel: 'Now calling',
+					nowCallingNone: 'No numbers called yet',
 				},
 				called: { header: 'It’s your turn', details: 'Please come to the entrance now.' },
 				served: {
@@ -663,6 +667,8 @@ export const translations = {
 					queuePositionLabel: 'Su lugar en la fila',
 					guestsAheadLabel: 'Invitados delante de usted',
 					youAreNext: 'Usted es el siguiente',
+					nowCallingLabel: 'Llamando ahora',
+					nowCallingNone: 'Aún no se ha llamado ningún número',
 				},
 				called: { header: 'Es su turno', details: 'Por favor, acérquese a la entrada ahora.' },
 				served: {
@@ -928,6 +934,8 @@ export const translations = {
 					queuePositionLabel: 'جایگاه شما در صف',
 					guestsAheadLabel: 'مهمانان جلوتر از شما',
 					youAreNext: 'شما نفر بعدی هستید',
+					nowCallingLabel: 'در حال فراخوانی',
+					nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
 				},
 				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به ورودی مراجعه کنید.' },
 				served: {
@@ -1194,6 +1202,8 @@ export const translations = {
 					queuePositionLabel: 'Ang inyong puwesto sa pila',
 					guestsAheadLabel: 'Mga bisita bago kayo',
 					youAreNext: 'Kayo na ang susunod',
+					nowCallingLabel: 'Tinatawag ngayon',
+					nowCallingNone: 'Wala pang tinatawag na numero',
 				},
 				called: {
 					header: 'Kayo na po ang susunod',
@@ -1461,6 +1471,8 @@ export const translations = {
 					queuePositionLabel: 'Vị trí của bạn trong hàng',
 					guestsAheadLabel: 'Số khách trước bạn',
 					youAreNext: 'Bạn là người tiếp theo',
+					nowCallingLabel: 'Đang gọi số',
+					nowCallingNone: 'Chưa gọi số nào',
 				},
 				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến lối vào ngay bây giờ.' },
 				served: {
@@ -1718,6 +1730,8 @@ export const translations = {
 					queuePositionLabel: '您的排队位置',
 					guestsAheadLabel: '您前面的访客',
 					youAreNext: '下一位就是您',
+					nowCallingLabel: '正在叫号',
+					nowCallingNone: '尚未叫号',
 				},
 				called: { header: '轮到您了', details: '请现在到入口来。' },
 				served: {
@@ -1971,6 +1985,8 @@ export const translations = {
 					queuePositionLabel: 'مكانك في الصف',
 					guestsAheadLabel: 'الضيوف الذين أمامك',
 					youAreNext: 'أنت التالي',
+					nowCallingLabel: 'الرقم الحالي',
+					nowCallingNone: 'لم يتم النداء على أي رقم بعد',
 				},
 				called: { header: 'حان دورك', details: 'يرجى التوجه إلى المدخل الآن.' },
 				served: {

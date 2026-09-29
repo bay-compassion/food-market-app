@@ -122,6 +122,7 @@ export class SceneFixtures {
 					status: visit.status,
 					queuePosition: visit.queuePosition ?? null,
 					aheadOfYou: visit.aheadOfYou ?? null,
+					nowCalling: null,
 				}
 			: null;
 	}

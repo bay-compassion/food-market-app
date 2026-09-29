@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 
 import type { VisitStatusTranslations } from '@/locales.ts';
 
-import { useLinePositionIndicatorEnabled } from '../../hooks/use-line-position-indicator-enabled';
+import { useLinePositionIndicator } from '../../hooks/use-line-position-indicator';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 import { QueuePositionDots } from './QueuePositionDots';
 
@@ -11,7 +11,9 @@ const CartLine = styled.div`
 `;
 
 export function CalledVisitStatus({ copy }: { copy: VisitStatusTranslations['called'] }) {
-	const showLinePositionIndicator = useLinePositionIndicatorEnabled();
+	// Only the `guests-ahead` indicator has a called-state counterpart: the now-calling board would
+	// just show the guest their own number, which the "it's your turn" panel already says.
+	const showLinePositionIndicator = useLinePositionIndicator() === 'guests-ahead';
 
 	return (
 		<GuestVisitStatusPanel
