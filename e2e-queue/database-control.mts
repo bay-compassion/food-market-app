@@ -91,15 +91,16 @@ export class DatabaseControl {
 		});
 		const session = data.sessions[0]!;
 
+		// The location comes from the migrations' seed, which `TRUNCATE` leaves in place; picking the
+		// oldest matches how the app itself resolves the current location (`currentLocation`).
 		await this.database.query(
-			`INSERT INTO market_events (id, registration_opens_at, registration_closes_at, capacity, session_mode, status)
-			 VALUES ($1, $2, $3, $4, $5, $6)`,
+			`INSERT INTO market_events (id, location_id, registration_opens_at, registration_closes_at, capacity, status)
+			 VALUES ($1, (SELECT id FROM market_locations ORDER BY created_at LIMIT 1), $2, $3, $4, $5)`,
 			[
 				session.id,
 				session.registrationOpensAt,
 				new Date(Date.now() + 12 * 60 * 60 * 1000),
 				session.capacity,
-				'ad_hoc',
 				session.status,
 			],
 		);

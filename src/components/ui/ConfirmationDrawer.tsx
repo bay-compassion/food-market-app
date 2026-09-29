@@ -88,6 +88,9 @@ export const ConfirmationDrawer = observer(function ConfirmationDrawer() {
 			// would animate an empty panel.
 			transitionDuration={0}
 			onClose={() => confirmation.dismiss()}
+			// A drawer sits at `zIndex.drawer`, below `zIndex.modal`, but this sheet is asked from
+			// inside dialogs (saving a schedule, removing a question) and must land on top of them.
+			sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
 			slotProps={{
 				paper: {
 					className: 'confirmation-panel',

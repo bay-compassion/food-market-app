@@ -1,6 +1,6 @@
 import { adminTranslations } from '../src/adminLocales';
 import { translations } from '../src/locales';
-import { test, expect, type GuestBrowser } from './fixtures';
+import { confirm, test, expect, type GuestBrowser } from './fixtures';
 
 const adminCopy = adminTranslations.en;
 const copy = translations.en.guestView.visitStatus;
@@ -25,12 +25,14 @@ test('guests register, enter the lottery, and follow the live queue through serv
 	});
 	await test.step('Admin closes registration and waits for the real grace period', async () => {
 		await admin.getByRole('button', { name: adminCopy.closeRegistration, exact: true }).click();
+		await confirm(admin);
 		await expect(
 			admin.getByRole('button', { name: adminCopy.runLottery, exact: true }),
 		).toBeVisible({ timeout: 50_000 });
 	});
 	await test.step('Admin runs the lottery; guests see their actual results', async () => {
 		await admin.getByRole('button', { name: adminCopy.runLottery, exact: true }).click();
+		await confirm(admin);
 		await expect
 			.poll(
 				async () => (await database.visits()).filter((visit) => visit.status === 'waiting').length,
@@ -54,7 +56,7 @@ test('guests register, enter the lottery, and follow the live queue through serv
 				);
 			} else {
 				await expect(
-					page.getByRole('heading', { name: copy.labels.not_placed, exact: true }),
+					page.getByRole('heading', { name: copy.not_placed.header, exact: true }),
 				).toBeVisible();
 			}
 		}
@@ -92,18 +94,24 @@ test('guests register, enter the lottery, and follow the live queue through serv
 			.click();
 		await firstGuest.page.bringToFront();
 		await expect(
-			firstGuest.page.getByRole('heading', { name: copy.labels.served, exact: true }),
+			firstGuest.page.getByRole('heading', { name: copy.served.header, exact: true }),
 		).toBeVisible();
+		// The rig runs with LaunchDarkly disabled, so `line-position-indicator` is at its `none`
+		// default and there is no guests-ahead count on screen to watch fall. Only the queue position
+		// is shown whatever the flag says; the next step's "You are next" covers the guest's screen
+		// following the queue as it advances.
 		await thirdGuest.page.bringToFront();
-		await expect(thirdGuest.page.locator('.guests-ahead strong')).toHaveText('1');
+		await expect(thirdGuest.page.locator('.queue-position strong')).toHaveText(
+			String(third!.queue_position),
+		);
 		const visit = (await database.visits()).find((visit) => visit.id === first!.id)!;
 
 		expect(visit.status).toBe('served');
 		expect(visit.served_at).not.toBeNull();
 	});
 	await test.step('A waiting guest cancels; the next guest sees nobody ahead', async () => {
-		secondGuest.page.once('dialog', (dialog) => void dialog.accept());
 		await secondGuest.page.getByRole('button', { name: copy.cancelAction, exact: true }).click();
+		await confirm(secondGuest.page);
 		await expect(
 			secondGuest.page.getByRole('button', { name: copy.cancelAction, exact: true }),
 		).toHaveCount(0);
@@ -111,7 +119,7 @@ test('guests register, enter the lottery, and follow the live queue through serv
 			.poll(async () => (await database.visits()).find((visit) => visit.id === second!.id)?.status)
 			.toBe('cancelled');
 		await expect(
-			secondGuest.page.getByRole('heading', { name: copy.labels.cancelled, exact: true }),
+			secondGuest.page.getByRole('heading', { name: copy.cancelled.header, exact: true }),
 		).toBeVisible();
 		await thirdGuest.page.bringToFront();
 		await expect(thirdGuest.page.getByText(copy.waiting.youAreNext, { exact: true })).toBeVisible();
