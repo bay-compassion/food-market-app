@@ -1,6 +1,6 @@
 import { adminTranslations } from '../src/adminLocales';
 import { translations } from '../src/locales';
-import { test, expect } from './fixtures';
+import { confirm, test, expect } from './fixtures';
 
 const adminCopy = adminTranslations.en;
 const guestCopy = translations.en;
@@ -147,8 +147,9 @@ test('a manager moves a registered guest to a new phone from the Actions menu, a
 		await admin
 			.getByRole('button', { name: `${adminCopy.moreActions}: Hal QueueTest`, exact: true })
 			.click();
-		// The confirmation naming the phone on file is accepted by the admin fixture.
+		// The confirmation names the phone on file before any code is issued.
 		await admin.getByRole('menuitem', { name: adminCopy.guestClaimShow }).click();
+		await confirm(admin);
 		const response = await claimResponse;
 
 		expect(response.status()).toBe(201);

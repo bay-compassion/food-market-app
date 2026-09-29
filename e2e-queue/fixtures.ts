@@ -4,6 +4,18 @@ import { translations } from '../src/locales';
 import { QueueDatabase } from './queue-database';
 import { readRigState } from './rig-state';
 
+/**
+ * Answers the app's confirmation sheet with its confirming button, the first of its two answers.
+ * The app asks through `ConfirmationDrawer`, an in-page `alertdialog`, not `window.confirm`, so
+ * Playwright's `dialog` event never fires for it and every confirmed action has to answer it here.
+ */
+export async function confirm(page: Page) {
+	const sheet = page.getByRole('alertdialog');
+
+	await sheet.getByRole('button').first().click();
+	await expect(sheet).toBeHidden();
+}
+
 export class GuestBrowser {
 	constructor(
 		readonly page: Page,
@@ -53,7 +65,6 @@ export const test = base.extend<{
 			});
 		});
 		await page.goto('/admin/current-session');
-		page.on('dialog', (dialog) => void dialog.accept());
 		await use(page);
 	},
 	guestBrowser: async ({ browser, contextOptions, baseURL }, use, testInfo) => {
