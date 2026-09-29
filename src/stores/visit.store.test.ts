@@ -13,6 +13,7 @@ const currentRegisteredVisit = {
 	status: 'registered' as const,
 	queuePosition: null,
 	aheadOfYou: null,
+	nowCalling: null,
 };
 
 function sessionOverview(eventId: string): SessionOverview {
@@ -75,6 +76,7 @@ describe('VisitStore', () => {
 				status: 'registered',
 				queuePosition: null,
 				aheadOfYou: null,
+				nowCalling: null,
 			});
 		});
 

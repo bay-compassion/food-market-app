@@ -35,10 +35,11 @@ import { authReturnUrl } from '../auth';
 import { AdminAuthView } from '../components/AdminAuthView';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { GuestView } from '../components/guest-view/GuestView';
+import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../components/hooks/use-line-position-indicator';
 import { PrivacyPage } from '../components/legal/PrivacyPage';
 import { TermsPage } from '../components/legal/TermsPage';
 import { SignupView } from '../components/routes/SignupView';
-import { StaticLDProvider } from '../components/StaticLDProvider';
+import { StaticLDProvider, type StaticFlagValue } from '../components/StaticLDProvider';
 import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import { translations } from '../locales';
 import { RootStoreProvider } from '../stores/react/store-context';
@@ -64,7 +65,7 @@ const adminToken = accessTokenWith([
 	'export:guest-data',
 ]);
 
-async function renderApp(initialPath = '/') {
+async function renderApp(initialPath = '/', flags: Record<string, StaticFlagValue> = {}) {
 	const router = createMemoryRouter(
 		[
 			{
@@ -85,7 +86,7 @@ async function renderApp(initialPath = '/') {
 
 	await act(async () => {
 		result = render(
-			<StaticLDProvider>
+			<StaticLDProvider flags={flags}>
 				<RootStoreProvider store={new RootStore()}>
 					<RouterProvider router={router} />
 				</RootStoreProvider>
@@ -428,7 +429,11 @@ describe('App', () => {
 		expect(container.textContent).not.toContain('Your place in line');
 	});
 
-	async function renderWithVisit(visit: Record<string, unknown>, marketStatus = 'service_started') {
+	async function renderWithVisit(
+		visit: Record<string, unknown>,
+		marketStatus = 'service_started',
+		flags: Record<string, StaticFlagValue> = {},
+	) {
 		window.localStorage.setItem('bay-compassion.visit-token', 'visit-token');
 		vi.stubGlobal(
 			'fetch',
@@ -447,16 +452,17 @@ describe('App', () => {
 			),
 		);
 
-		return renderApp();
+		return renderApp('/', flags);
 	}
 
+	const guestsAheadFlags = { [LINE_POSITION_INDICATOR_FLAG_KEY]: 'guests-ahead' };
+
 	it('shows a waiting guest their place in line and how many are ahead', async () => {
-		const { container } = await renderWithVisit({
-			id: 'visit-1',
-			status: 'waiting',
-			queuePosition: 7,
-			aheadOfYou: 3,
-		});
+		const { container } = await renderWithVisit(
+			{ id: 'visit-1', status: 'waiting', queuePosition: 7, aheadOfYou: 3 },
+			'service_started',
+			guestsAheadFlags,
+		);
 
 		await waitFor(() => expect(container.textContent).toContain('Your place in line'));
 
@@ -465,12 +471,11 @@ describe('App', () => {
 	});
 
 	it('tells a waiting guest when nobody is ahead of them', async () => {
-		const { container } = await renderWithVisit({
-			id: 'visit-1',
-			status: 'waiting',
-			queuePosition: 1,
-			aheadOfYou: 0,
-		});
+		const { container } = await renderWithVisit(
+			{ id: 'visit-1', status: 'waiting', queuePosition: 1, aheadOfYou: 0 },
+			'service_started',
+			guestsAheadFlags,
+		);
 
 		await waitFor(() => expect(container.textContent).toContain('You are next'));
 

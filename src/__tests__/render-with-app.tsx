@@ -4,7 +4,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import { AppThemeProvider } from '../components/AppThemeProvider';
-import { StaticLDProvider } from '../components/StaticLDProvider';
+import { StaticLDProvider, type StaticFlagValue } from '../components/StaticLDProvider';
 import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
@@ -18,7 +18,7 @@ export type RenderWithAppOptions = {
 	routes?: { path: string; element: ReactNode }[];
 	/** LaunchDarkly flag overrides, for a test that asserts on a flag's other state. See
 	 *  `StaticLDProvider`. Every flag not listed here falls through to its reading hook's default. */
-	flags?: Record<string, boolean>;
+	flags?: Record<string, StaticFlagValue>;
 };
 
 export type RenderWithAppResult = RenderResult & {

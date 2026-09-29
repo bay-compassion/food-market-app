@@ -35,7 +35,7 @@ test('demo tab follows live visits, cancels, and retains isolated identity on re
 				id: 'demo-visit',
 				marketEventId: 'demo-event',
 				status,
-				queuePosition: 3,
+				queuePosition: ahead + 1,
 				aheadOfYou: ahead,
 			},
 		});
@@ -82,7 +82,8 @@ test('demo tab follows live visits, cancels, and retains isolated identity on re
 	await guest.waitForResponse((response) => response.url().endsWith('/api/visit'), {
 		timeout: 20_000,
 	});
-	await expect(guest.locator('.guests-ahead strong')).toHaveText('1', { timeout: 20_000 });
+	// The queue position renders whichever `line-position-indicator` the dev server resolves.
+	await expect(guest.locator('.queue-position strong')).toHaveText('2', { timeout: 20_000 });
 	guest.on('dialog', (dialog) => dialog.accept());
 	await guest.getByRole('button', { name: 'Cancel', exact: false }).click();
 	await expect(guest.getByRole('button', { name: 'Cancel', exact: false })).toHaveCount(0);

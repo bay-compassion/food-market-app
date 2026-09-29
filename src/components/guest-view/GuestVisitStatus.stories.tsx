@@ -7,7 +7,10 @@ import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
-import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../hooks/use-line-position-indicator-enabled';
+import {
+	LINE_POSITION_INDICATOR_FLAG_KEY,
+	type LinePositionIndicator,
+} from '../hooks/use-line-position-indicator';
 import { StaticLDProvider } from '../StaticLDProvider';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { GuestVisitState } from './GuestVisitState';
@@ -33,6 +36,7 @@ type GuestVisitStatusArgs = {
 	visitStatus: VisitStatus;
 	queuePosition: number | null;
 	aheadOfYou: number | null;
+	nowCalling: number | null;
 	isCancelling: boolean;
 	submissionError: boolean;
 };
@@ -43,6 +47,7 @@ function seededStore({
 	visitStatus,
 	queuePosition,
 	aheadOfYou,
+	nowCalling,
 	isCancelling,
 	submissionError,
 }: GuestVisitStatusArgs) {
@@ -62,6 +67,7 @@ function seededStore({
 					status: visitStatus,
 					queuePosition,
 					aheadOfYou,
+					nowCalling,
 				},
 			}),
 			cancelVisit: () => {
@@ -136,6 +142,7 @@ const meta = {
 		visitStatus: 'registered',
 		queuePosition: null,
 		aheadOfYou: null,
+		nowCalling: null,
 		isCancelling: false,
 		submissionError: false,
 	},
@@ -144,6 +151,17 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+
+/** Pins the `line-position-indicator` flag for one story. */
+function withIndicator(indicator: LinePositionIndicator): NonNullable<Story['decorators']> {
+	return [
+		(Story) => (
+			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}>
+				<Story />
+			</StaticLDProvider>
+		),
+	];
+}
 
 /** Registered for today, before the lottery or queue has placed the guest. */
 export const Registered: Story = {
@@ -155,19 +173,23 @@ export const Registered: Story = {
 	},
 };
 
-/** In line, with a place in the queue and a count of the guests ahead. */
+/** In line, with a place in the queue and a count of the guests ahead
+ *  (`line-position-indicator: guests-ahead`). */
 export const Waiting: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
+	decorators: withIndicator('guests-ahead'),
 };
 
 /** Next up. `aheadOfYou: 0` swaps the count for the "you're next" line. */
 export const WaitingNext: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 1, aheadOfYou: 0 },
+	decorators: withIndicator('guests-ahead'),
 };
 
 /** Called to the entrance — the one state that turns the panel into an "it's your turn" message. */
 export const Called: Story = {
 	args: { visitStatus: 'called' },
+	decorators: withIndicator('guests-ahead'),
 };
 
 /** Cancelling is in flight, so the cancel button is disabled. */
@@ -200,30 +222,44 @@ export const CancelFailed: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 3, aheadOfYou: 2, submissionError: true },
 };
 
-/** The `line-position-indicator-enabled` flag off: the row of figures, the cart, and the "guests
- *  ahead of you" count all disappear together, leaving the queue position number to stand alone. */
-export const WaitingLinePositionIndicatorOff: Story = {
+/** `line-position-indicator: none`, the default — the row of figures, the cart, and the "guests ahead of you"
+ *  count all disappear together, leaving the queue position number to stand alone. */
+export const WaitingLinePositionIndicatorNone: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
-	decorators: [
-		(Story) => (
-			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
-				<Story />
-			</StaticLDProvider>
-		),
-	],
+	decorators: withIndicator('none'),
 };
 
-/** The same flag off in the called state — the panel reads fine with nothing standing in for the
- *  cart line. */
-export const CalledLinePositionIndicatorOff: Story = {
+/** The called state with anything but `guests-ahead`, including the default — the panel reads fine with nothing standing
+ *  in for the cart line. */
+export const CalledLinePositionIndicatorNone: Story = {
 	args: { visitStatus: 'called' },
-	decorators: [
-		(Story) => (
-			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: false }}>
-				<Story />
-			</StaticLDProvider>
-		),
-	],
+	decorators: withIndicator('none'),
+};
+
+/** `line-position-indicator: now-calling` — a "now calling" board, like a DMV's, in place of the
+ *  dots and the guests-ahead count. */
+export const WaitingNowCalling: Story = {
+	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6, nowCalling: 1 },
+	decorators: withIndicator('now-calling'),
+	play: async ({ canvas }) => {
+		const board = within(await canvas.findByRole('status'));
+
+		await expect(
+			board.getByText(translations.en.guestView.visitStatus.waiting.nowCallingLabel),
+		).toBeInTheDocument();
+		await expect(board.getByText('1')).toBeInTheDocument();
+	},
+};
+
+/** The same board before anyone has been called: it says so rather than showing a blank. */
+export const WaitingNowCallingNoneYet: Story = {
+	args: { visitStatus: 'waiting', queuePosition: 2, aheadOfYou: 1, nowCalling: null },
+	decorators: withIndicator('now-calling'),
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(translations.en.guestView.visitStatus.waiting.nowCallingNone),
+		).toBeInTheDocument();
+	},
 };
 
 /** Right-to-left rendering, which the Arabic and Farsi locales need. */

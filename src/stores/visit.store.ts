@@ -80,6 +80,11 @@ export class VisitStore {
 		return this._currentVisit?.status === 'waiting' ? this._currentVisit.aheadOfYou : null;
 	}
 
+	/** The queue number the market is calling right now, or `null` before anyone has been called. */
+	get nowCalling(): number | null {
+		return this._currentVisit?.status === 'waiting' ? this._currentVisit.nowCalling : null;
+	}
+
 	/**
 	 * When the next background refresh is due, as epoch milliseconds, or `null` while none is
 	 * scheduled. Guests reach for the browser's reload button when nothing on screen admits that
@@ -175,6 +180,7 @@ export class VisitStore {
 			status: registration.status,
 			queuePosition: null,
 			aheadOfYou: null,
+			nowCalling: null,
 		};
 		this.scheduleRefresh();
 	}

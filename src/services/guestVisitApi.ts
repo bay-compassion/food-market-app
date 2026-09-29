@@ -12,6 +12,8 @@ export type CurrentVisit = {
 	status: VisitStatus;
 	queuePosition: number | null;
 	aheadOfYou: number | null;
+	/** The queue number most recently called in this session; only reported while waiting. */
+	nowCalling: number | null;
 };
 
 export type GuestRegistrationInput = GuestFormState & {

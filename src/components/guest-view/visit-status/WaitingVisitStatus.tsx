@@ -2,8 +2,9 @@ import styled from '@emotion/styled';
 
 import type { VisitStatusTranslations } from '@/locales.ts';
 
-import { useLinePositionIndicatorEnabled } from '../../hooks/use-line-position-indicator-enabled';
+import { useLinePositionIndicator } from '../../hooks/use-line-position-indicator';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
+import { NowCallingIndicator } from './NowCallingIndicator';
 import { QueuePositionDots } from './QueuePositionDots';
 
 const QueueStanding = styled.div`
@@ -79,19 +80,28 @@ export type WaitingVisitStatusProps = {
 	copy: VisitStatusTranslations;
 	queuePosition: number | null;
 	guestsAhead: number | null;
+	nowCalling: number | null;
 };
 
-export function WaitingVisitStatus({ copy, queuePosition, guestsAhead }: WaitingVisitStatusProps) {
-	const showLinePositionIndicator = useLinePositionIndicatorEnabled();
+export function WaitingVisitStatus({
+	copy,
+	queuePosition,
+	guestsAhead,
+	nowCalling,
+}: WaitingVisitStatusProps) {
+	const indicator = useLinePositionIndicator();
 	const queueDetails = queuePosition ? (
 		<QueueStanding className="queue-standing">
+			{indicator === 'now-calling' ? (
+				<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />
+			) : null}
 			<QueuePosition className="queue-position">
 				<span>{copy.waiting.queuePositionLabel}</span>
 				<strong>{queuePosition}</strong>
 			</QueuePosition>
 			{guestsAhead === 0 ? (
 				<QueueNext className="queue-next">{copy.waiting.youAreNext}</QueueNext>
-			) : guestsAhead !== null && showLinePositionIndicator ? (
+			) : guestsAhead !== null && indicator === 'guests-ahead' ? (
 				<GuestsAhead className="guests-ahead">
 					{/* `guestsAhead` here is always at least 1 (the `=== 0` branch above claims that
 					    case), and `linePosition` counts outward from the cart starting at 1 for the
