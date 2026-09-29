@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { useCountdownTimer } from '../../hooks/use-countdown-timer';
+import { useReloadCountdown } from '../../hooks/use-reload-countdown';
 
 const Notice = styled.div`
 	display: grid;
@@ -50,13 +51,15 @@ const Message = styled.p`
 /**
  * Tells a waiting guest when their queue standing next updates, so reaching for the browser's
  * reload button stops looking like the only way to find out. Rendered only while the visit is
- * actually being refreshed in the background — a finished or cancelled visit has nothing pending.
+ * actually being refreshed in the background — a finished or cancelled visit has nothing pending —
+ * and only while the `show-reload-countdown` flag is on.
  */
 export const VisitRefreshNotice = observer(function VisitRefreshNotice() {
 	const { visit } = useRootStore();
+	const showCountdown = useReloadCountdown();
 	const nextRefreshAt = visit.nextRefreshAt;
 
-	if (nextRefreshAt === null) {
+	if (!showCountdown || nextRefreshAt === null) {
 		return null;
 	}
 

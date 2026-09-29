@@ -5,6 +5,8 @@ import { translations, type Locale } from '../../../locales';
 import type { VisitStatus } from '../../../services/visitStateMachine';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
+import { RELOAD_COUNTDOWN_FLAG_KEY } from '../../hooks/use-reload-countdown';
+import { StaticLDProvider } from '../../StaticLDProvider';
 import { VisitRefreshNotice } from './VisitRefreshNotice';
 
 /**
@@ -14,7 +16,8 @@ import { VisitRefreshNotice } from './VisitRefreshNotice';
  *
  * The notice reads the schedule from the visit store rather than taking props, so each story seeds
  * its own store — a stubbed visit lookup and a refresh interval — and provides it. A visit in a
- * finished state schedules nothing, which is why `Served` renders empty.
+ * finished state schedules nothing, which is why `Served` renders empty. The notice sits behind the
+ * `show-reload-countdown` flag, off by default, so these stories turn it on unless they say otherwise.
  */
 const storyVisitToken = 'story-visit-token';
 
@@ -29,9 +32,15 @@ type RefreshNoticeArgs = {
 	locale: Locale;
 	visitStatus: VisitStatus;
 	refreshIntervalSeconds: number;
+	showReloadCountdown: boolean;
 };
 
-function SeededRefreshNotice({ locale, visitStatus, refreshIntervalSeconds }: RefreshNoticeArgs) {
+function SeededRefreshNotice({
+	locale,
+	visitStatus,
+	refreshIntervalSeconds,
+	showReloadCountdown,
+}: RefreshNoticeArgs) {
 	const store = new RootStore({
 		visit: {
 			storage: tokenStorage,
@@ -55,9 +64,11 @@ function SeededRefreshNotice({ locale, visitStatus, refreshIntervalSeconds }: Re
 	void store.visit.refresh();
 
 	return (
-		<RootStoreProvider store={store}>
-			<VisitRefreshNotice />
-		</RootStoreProvider>
+		<StaticLDProvider flags={{ [RELOAD_COUNTDOWN_FLAG_KEY]: showReloadCountdown }}>
+			<RootStoreProvider store={store}>
+				<VisitRefreshNotice />
+			</RootStoreProvider>
+		</StaticLDProvider>
 	);
 }
 
@@ -71,7 +82,12 @@ const meta = {
 			options: ['registered', 'waiting', 'called', 'served', 'not_placed', 'no_show', 'cancelled'],
 		},
 	},
-	args: { locale: 'en', visitStatus: 'waiting', refreshIntervalSeconds: 15 },
+	args: {
+		locale: 'en',
+		visitStatus: 'waiting',
+		refreshIntervalSeconds: 15,
+		showReloadCountdown: true,
+	},
 } satisfies Meta<typeof SeededRefreshNotice>;
 
 export default meta;
@@ -95,6 +111,16 @@ export const SlowRefresh: Story = {
 /** Nothing is pending once the visit is over, so the notice removes itself. */
 export const Served: Story = {
 	args: { visitStatus: 'served' },
+	play: async ({ canvas }) => {
+		await expect(
+			canvas.queryByText(translations.en.guestView.refreshNotice.noNeedToRefresh),
+		).toBeNull();
+	},
+};
+
+/** With the `show-reload-countdown` flag off — its default — the notice never renders. */
+export const FlagOff: Story = {
+	args: { showReloadCountdown: false },
 	play: async ({ canvas }) => {
 		await expect(
 			canvas.queryByText(translations.en.guestView.refreshNotice.noNeedToRefresh),
