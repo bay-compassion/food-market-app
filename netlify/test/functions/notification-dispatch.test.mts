@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { db } from '../dbStub.mjs';
+
+vi.mock('../../../db/index.mjs', () => ({ db }));
 vi.mock('../../services/notifications.mjs', () => ({ deliverQueuedNotifications: vi.fn() }));
 
 import { dispatchNotifications } from '../../functions/notification-dispatch.mjs';
