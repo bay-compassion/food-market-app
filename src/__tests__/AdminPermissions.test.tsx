@@ -51,7 +51,7 @@ function renderDashboard(
 				ok: true,
 				json: () =>
 					Promise.resolve(
-						url.startsWith('/api/market') && !url.includes('history')
+						url === '/api/market' || url === '/api/admin/market/overview'
 							? { event, questions: [], counts: {} }
 							: url.startsWith('/api/admin/reports')
 								? { rows: [] }

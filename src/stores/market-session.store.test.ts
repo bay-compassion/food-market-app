@@ -178,3 +178,55 @@ describe('MarketSessionStore', () => {
 		expect(fetchMock).toHaveBeenCalledTimes(4);
 	});
 });
+
+describe('market polling endpoint selection', () => {
+	it.each([false, true])(
+		'selects the correct endpoint with staff authentication %s',
+		async (staff) => {
+			const headers = vi.fn(
+				async (): Promise<HeadersInit> => (staff ? { Authorization: 'Bearer token' } : {}),
+			);
+			const fetchMock = vi
+				.spyOn(globalThis, 'fetch')
+				.mockResolvedValue(Response.json(overview(scheduledEvent)));
+			const store = new MarketSessionStore({ requestHeaders: headers });
+
+			await store.getStatus();
+
+			expect(headers).toHaveBeenCalledTimes(1);
+			expect(fetchMock.mock.calls[0]?.[0]).toBe(
+				staff ? '/api/admin/market/overview' : '/api/market',
+			);
+			expect(new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get('Authorization')).toBe(
+				staff ? 'Bearer token' : null,
+			);
+		},
+	);
+
+	it('does not let a read started before a command replace its authoritative response', async () => {
+		let finishRead!: (response: Response) => void;
+		const fetchMock = vi
+			.spyOn(globalThis, 'fetch')
+			.mockImplementationOnce(
+				() =>
+					new Promise((resolve) => {
+						finishRead = resolve;
+					}),
+			)
+			.mockResolvedValueOnce(
+				Response.json(overview({ ...scheduledEvent, status: SessionStatusEnum.REGISTRATION_OPEN })),
+			);
+		const store = new MarketSessionStore({
+			requestHeaders: () => ({ Authorization: 'Bearer token' }),
+		});
+
+		const read = store.getStatus();
+
+		await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+		await store.sendCommand('open_registration');
+		finishRead(Response.json(overview(scheduledEvent)));
+		await read;
+
+		expect(store.currentStatus).toBe(SessionStatusEnum.REGISTRATION_OPEN);
+	});
+});

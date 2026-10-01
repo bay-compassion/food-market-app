@@ -121,6 +121,8 @@ async function runAction(request: Request) {
 export const adminMarketRoutes = createRouter<AdminEnv>();
 
 adminMarketRoutes.get('/market', withPermission('run:queue'), () => history());
+adminMarketRoutes.get('/market/overview', withPermission('run:queue'), () => overview());
+adminMarketRoutes.all('/market/overview', methodNotAllowed);
 adminMarketRoutes.post(
 	'/market',
 	async (context, next) => {

@@ -10,6 +10,7 @@ import { requirePermission, verifyAuth0Token } from '../../lib/auth.mjs';
 
 const paths = [
 	'/api/admin/market',
+	'/api/admin/market/overview',
 	'/api/market',
 	'/api/admin/queue',
 	'/api/admin/guests',

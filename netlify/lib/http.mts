@@ -82,6 +82,8 @@ export function routeHandler<E extends Env>(app: Hono<E>, functionName = 'api') 
 		const fields = { method: request.method, path: paths.has(path) ? path : '[unmatched]' };
 
 		return withLogger(log, async () => {
+			log.info({ message: 'http.received', ...fields });
+
 			try {
 				return await tracedRequest(request, `${fields.method} ${fields.path}`, async () => {
 					const response = await boundary.fetch(request);
@@ -106,6 +108,7 @@ export function routeHandler<E extends Env>(app: Hono<E>, functionName = 'api') 
 					durationMs: performance.now() - started,
 					err,
 				});
+
 				throw err;
 			} finally {
 				// The runtime freezes as soon as this response is written, so anything Sentry has

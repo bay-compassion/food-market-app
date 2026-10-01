@@ -21,6 +21,7 @@ for correlation; unexpected thrown errors remain under Netlify's response handli
 
 | Event                          | Fields                                                                                     | Level                              |
 | ------------------------------ | ------------------------------------------------------------------------------------------ | ---------------------------------- |
+| `http.received`                | `method`, `path`                                                                           | info                               |
 | `http.completed`               | `method`, `path`, `status`, `durationMs`                                                   | info; warn for 4xx; error for 5xx  |
 | `http.failed`                  | `method`, `path`, `status: 500`, `durationMs`, `err`                                       | error                              |
 | `job.completed`                | `durationMs`                                                                               | info                               |
@@ -34,8 +35,10 @@ for correlation; unexpected thrown errors remain under Netlify's response handli
 | `guest_claim.redeemed`         | `guestId`, `replacedDevice`                                                                | info                               |
 
 HTTP duration measures handler execution through response creation, not client download time.
-There is one HTTP completion or failure record per handled request, including authentication,
-validation, unknown-route, and body-limit responses. Platform rejections before function execution
+Each handled request emits `http.received` before routing, then `http.completed` when a response
+is created or `http.failed` if the handler throws. The pair shares `function` and `requestId`.
+These events cover authentication, validation, unknown-route, and body-limit responses.
+Request and response bodies, headers, and query values are not logged. Platform rejections before function execution
 cannot be logged here. Empty notification batches produce no delivery summary. The scheduled job
 still emits a completion record when notifications are disabled. Delivery failures count unsuccessful
 attempts, including deliveries that remain pending for retry.
