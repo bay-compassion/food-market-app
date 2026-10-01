@@ -263,7 +263,9 @@ export class MarketSessionStore {
 		this._error = null;
 
 		try {
-			const response = await fetch('/api/market', { headers: await this.requestHeaders() });
+			const headers = new Headers(await this.requestHeaders());
+			const endpoint = headers.has('Authorization') ? '/api/admin/market/overview' : '/api/market';
+			const response = await fetch(endpoint, { headers });
 
 			if (!response.ok) {
 				throw await responseError(response, 'Failed to fetch market status');

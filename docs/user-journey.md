@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=7f95f07cee04, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=928c01bd6869, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=deac0d1cd59c -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=1e2a055a860e, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=928c01bd6869, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=deac0d1cd59c -->
 
 # Guest journey
 
@@ -15,7 +15,10 @@ Both read the current market session from the shared
 [`src/stores/root.store.ts`](../src/stores/root.store.ts) — every store it composes
 (`src/stores/*.store.ts`) lives for the app's lifetime, not any one component's mount. The root's
 [`MarketSessionStore`](../src/stores/market-session.store.ts) polls `/api/market` (is registration
-open?), while the root's [`GuestStore`](../src/stores/guest.store.ts) owns the device credential
+open?). Guest responses share a deploy-scoped Netlify Blobs snapshot for up to five seconds,
+with expiry shortened at session deadlines. Authenticated staff use the live
+`/api/admin/market/overview` endpoint. The root's [`GuestStore`](../src/stores/guest.store.ts)
+owns the device credential
 used by `/api/lottery-registration` (register for a session), `/api/guest-information` (identity
 only, no session), and
 `/api/notification-status` (retrieve consent) and `/api/sms-subscription` (grant or revoke SMS

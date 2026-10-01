@@ -37,6 +37,21 @@ the registration routes. Market polling happens every 5 seconds and visit pollin
 seconds, so applying a low IP-based limit to all API routes could lock out an entire market.
 Netlify's default DDoS protections remain in place for the site.
 
+Guest `/api/market` reads reuse a strongly consistent, deploy-scoped Netlify Blobs snapshot
+for up to five seconds; browser and CDN responses still use `no-store`. Staff poll
+`/api/admin/market/overview`, protected by Auth0 and `run:queue`, which always reads the
+database. Blobs contain only the existing public overview, never guest credentials or visit data.
+Cache expiry respects session deadlines so database reads still recover overdue transitions.
+A ten-second conditional-write lease coordinates refreshes; after one second of contention,
+a request falls back to an uncached database read. Blob failures also fall back to the database
+and log `market_overview.cache_failed` with an operation field. Compare market query counts
+and these warnings under similar guest traffic after rollout; function invocation volume
+remains unchanged.
+
+The local Netlify Blobs server omits ETags on GET responses. The cache adapter obtains an ETag
+from the blob listing and then reads the body again, so a concurrent write invalidates the
+conditional refresh claim. Production responses that include an ETag use a single read.
+
 The rule is enforced by Netlify, not by an in-memory Hono counter (which would be unreliable across
 serverless instances). It is not enforced by unit tests or the Vite development server. Netlify
 documents an enforcement delay of up to 10 seconds. Inspect the rule in a deploy's summary, watch

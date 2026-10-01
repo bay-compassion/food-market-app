@@ -636,7 +636,7 @@ describe('App', () => {
 
 	it('sends an access token from the administration surfaces', async () => {
 		const user = userEvent.setup();
-		const fetchMock = vi.fn().mockImplementation((url: string) =>
+		const fetchMock = vi.fn().mockImplementation((url: string, _init?: RequestInit) =>
 			Promise.resolve({
 				ok: true,
 				json: () =>
@@ -677,11 +677,12 @@ describe('App', () => {
 		expect(container.textContent).toContain('Add guest');
 		expect(getAccessToken).toHaveBeenCalled();
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/market',
-			expect.objectContaining({
-				headers: expect.objectContaining({ Authorization: `Bearer ${adminToken}` }),
-			}),
+			'/api/admin/market/overview',
+			expect.objectContaining({ headers: expect.any(Headers) }),
 		);
+		const staffPoll = fetchMock.mock.calls.find(([url]) => url === '/api/admin/market/overview');
+
+		expect(new Headers(staffPoll?.[1]?.headers).get('Authorization')).toBe(`Bearer ${adminToken}`);
 	});
 
 	it.each([
