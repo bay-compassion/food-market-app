@@ -85,7 +85,7 @@ describe('structured logging', () => {
 		[401, 'warn'],
 		[503, 'error'],
 	] as const)(
-		'logs one completion for status %s without request credentials or query values',
+		'logs a request and response for status %s without credentials or query values',
 		async (status, level) => {
 			const { records, logger } = capture();
 			const app = createRouter().post('/example', () => new Response(null, { status }));
@@ -99,8 +99,16 @@ describe('structured logging', () => {
 				routeHandler(app, 'registration')(request, { requestId: 'netlify-id' }),
 			);
 
-			expect(records).toHaveLength(1);
+			expect(records).toHaveLength(2);
 			expect(records[0]).toMatchObject({
+				message: 'http.received',
+				level: 'info',
+				method: 'POST',
+				path: '/example',
+				function: 'registration',
+				requestId: 'netlify-id',
+			});
+			expect(records[1]).toMatchObject({
 				message: 'http.completed',
 				level,
 				status,
@@ -130,9 +138,11 @@ describe('structured logging', () => {
 			);
 		});
 
-		expect(records).toHaveLength(2);
-		expect(records[0]).toMatchObject({ status: 404, path: '[unmatched]' });
-		expect(records[1]).toMatchObject({ status: 413, path: '/example' });
+		expect(records).toHaveLength(4);
+		expect(records[0]).toMatchObject({ message: 'http.received', path: '[unmatched]' });
+		expect(records[1]).toMatchObject({ status: 404, path: '[unmatched]' });
+		expect(records[2]).toMatchObject({ message: 'http.received', path: '/example' });
+		expect(records[3]).toMatchObject({ status: 413, path: '/example' });
 		expect(reached).not.toHaveBeenCalled();
 	});
 
@@ -147,8 +157,10 @@ describe('structured logging', () => {
 		const result = withLogger(logger, () => handler(new Request('https://example.com/example')));
 
 		await expect(result).rejects.toBe(failure);
-		expect(records).toHaveLength(1);
-		expect(records[0]).toMatchObject({ message: 'http.failed', level: 'error', status: 500 });
+		expect(records).toHaveLength(2);
+		expect(records[0]).toMatchObject({ message: 'http.received', level: 'info' });
+		expect(records[1]).toMatchObject({ message: 'http.failed', level: 'error', status: 500 });
+		expect(records[0]?.requestId).toBe(records[1]?.requestId);
 		expect(JSON.stringify(records)).not.toContain('secret');
 	});
 
@@ -171,6 +183,8 @@ describe('structured logging', () => {
 			const first = handler(new Request('https://example.com/example?wait=1'));
 
 			await entered.promise;
+			expect(records).toHaveLength(1);
+			expect(records[0]).toMatchObject({ message: 'http.received' });
 			const second = await handler(new Request('https://example.com/example'));
 
 			gate.resolve();
@@ -182,10 +196,25 @@ describe('structured logging', () => {
 			getLogger().info({ message: 'outside' });
 		});
 
-		expect(records[0]?.requestId).toBe(records[1]?.requestId);
-		expect(records[2]?.requestId).toBe(records[3]?.requestId);
-		expect(records[0]?.requestId).not.toBe(records[2]?.requestId);
-		expect(records[4]).not.toHaveProperty('requestId');
+		expect(records.map((record) => record.message)).toEqual([
+			'http.received',
+			'http.received',
+			'service.work',
+			'http.completed',
+			'service.work',
+			'http.completed',
+			'outside',
+		]);
+
+		for (const index of [4, 5]) {
+			expect(records[index]?.requestId).toBe(records[0]?.requestId);
+		}
+
+		for (const index of [2, 3]) {
+			expect(records[index]?.requestId).toBe(records[1]?.requestId);
+		}
+		expect(records[0]?.requestId).not.toBe(records[1]?.requestId);
+		expect(records[6]).not.toHaveProperty('requestId');
 	});
 
 	it('correlates scheduled work, logs completion, and preserves job failures', async () => {
