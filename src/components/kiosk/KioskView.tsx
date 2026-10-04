@@ -7,6 +7,7 @@ import { isAuth0Configured } from '../../auth';
 import { languages, translations, type Locale, type Translation } from '../../locales';
 import { LanguageRotation } from '../../models/language-rotation';
 import { KioskApi } from '../../services/kiosk-api';
+import { QueueNumerals } from '../../services/queue-numerals';
 import { KioskStore } from '../../stores/kiosk.store';
 import { useRootStore } from '../../stores/react/store-context';
 import { isLanguage } from '../../stores/translation.store';
@@ -55,6 +56,7 @@ const KioskScreen = observer(function KioskScreen() {
 	);
 	const translation: Translation = translations[locale];
 	const t = translation.kiosk;
+	const numerals = useMemo(() => new QueueNumerals(locale), [locale]);
 	const [store] = useState(
 		() =>
 			new KioskStore({ api: new KioskApi({ requestHeaders: () => rootStore.requestHeaders() }) }),
@@ -106,6 +108,7 @@ const KioskScreen = observer(function KioskScreen() {
 			<KioskBoard
 				board={board}
 				translation={translation}
+				numerals={numerals}
 				reconnecting={store.failure === 'connection'}
 			/>
 		);

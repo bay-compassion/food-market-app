@@ -1,6 +1,8 @@
 import styled from '@emotion/styled';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import type { QueueNumerals } from '../../services/queue-numerals';
+
 const Panel = styled.section`
 	display: flex;
 	flex-direction: column;
@@ -34,6 +36,7 @@ const Panel = styled.section`
 
 	li {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		min-width: 2.6ch;
@@ -45,6 +48,12 @@ const Panel = styled.section`
 		font-weight: 700;
 		line-height: 1.1;
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* The language's own digits, under the Western ones. */
+	li > span + span {
+		font-size: 0.55em;
+		font-synthesis: weight;
 	}
 
 	/* Not a number to come up for, so it must not look like one. */
@@ -63,6 +72,7 @@ export type UnclaimedNumbersProps = {
 	numbers: number[];
 	/** Labels the tile standing in for the numbers that don't fit; `{count}` is how many. */
 	moreLabel: string;
+	numerals: QueueNumerals;
 };
 
 /**
@@ -71,14 +81,13 @@ export type UnclaimedNumbersProps = {
  * How many fit depends on the screen, so it is measured rather than fixed: every number is laid
  * out, and while the last tile falls below the list's bottom edge, one more number is folded into
  * the "+N more" tile. That runs in a layout effect, so the shrinking happens before paint and the
- * room never sees an overflowing frame. A new list, a new language, or a resized panel starts over
- * from showing all.
+ * room never sees an overflowing frame. A new list or a resized panel starts over from showing all;
+ * a new language remounts this (the board keys it on the locale), since every tile can change size.
  */
-export function UnclaimedNumbers({ heading, numbers, moreLabel }: UnclaimedNumbersProps) {
+export function UnclaimedNumbers({ heading, numbers, moreLabel, numerals }: UnclaimedNumbersProps) {
 	const listRef = useRef<HTMLUListElement>(null);
 	const [limit, setLimit] = useState(Number.POSITIVE_INFINITY);
-	// The label is part of it: the display's language rotates, and a longer "+N more" may no longer fit.
-	const signature = `${numbers.join(',')}|${moreLabel}`;
+	const signature = numbers.join(',');
 	const [measuredSignature, setMeasuredSignature] = useState(signature);
 
 	if (measuredSignature !== signature) {
@@ -120,11 +129,16 @@ export function UnclaimedNumbers({ heading, numbers, moreLabel }: UnclaimedNumbe
 			</h2>
 			<ul ref={listRef}>
 				{numbers.slice(0, shown).map((position) => (
-					<li key={position}>{position}</li>
+					<li key={position}>
+						<span>{position}</span>
+						{numerals.hasNativeDigits ? (
+							<span lang={numerals.locale}>{numerals.nativeOf(position)}</span>
+						) : null}
+					</li>
 				))}
 				{hidden > 0 ? (
 					<li data-more="" dir="auto">
-						{moreLabel.replace('{count}', String(hidden))}
+						{moreLabel.replace('{count}', numerals.inline(hidden))}
 					</li>
 				) : null}
 			</ul>

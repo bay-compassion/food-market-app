@@ -3,6 +3,7 @@ import { expect, within } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
 import { QueueBoard, type QueueBoardState } from '../../models/queue-board';
+import { QueueNumerals } from '../../services/queue-numerals';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
 
@@ -31,6 +32,7 @@ const meta = {
 			<KioskBoard
 				board={new QueueBoard(state)}
 				translation={translations[locale]}
+				numerals={new QueueNumerals(locale)}
 				reconnecting={reconnecting}
 			/>
 		</KioskFrame>
@@ -83,6 +85,29 @@ export const MoreThanFit: Story = {
 		const list = more.parentElement!;
 
 		await expect(more.offsetTop + more.offsetHeight).toBeLessThanOrEqual(list.clientHeight);
+	},
+};
+
+/** In Arabic, every queue number is written twice: Western digits above Eastern Arabic ones. */
+export const ArabicNumerals: Story = {
+	globals: { locale: 'ar' },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		await expect(canvas.getByText('٢٣')).toBeInTheDocument();
+		await expect(canvas.getByText('٢١')).toBeInTheDocument();
+	},
+};
+
+/** Farsi's own digits differ from Arabic's for 4, 5, and 6, so it gets its own set. */
+export const FarsiNumerals: Story = {
+	globals: { locale: 'fa' },
+	args: { nowCalling: 45, called: [56, 45, 14] },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		await expect(canvas.getByText('۴۵')).toBeInTheDocument();
+		await expect(canvas.getByText('۵۶')).toBeInTheDocument();
 	},
 };
 
