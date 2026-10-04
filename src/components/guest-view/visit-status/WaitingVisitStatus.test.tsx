@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import { translations } from '@/locales.ts';
 
+import { RootStoreProvider } from '../../../stores/react/store-context';
+import { RootStore } from '../../../stores/root.store';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../../hooks/use-line-position-indicator';
 import { StaticLDProvider } from '../../StaticLDProvider';
 import { WaitingVisitStatus } from './WaitingVisitStatus';
@@ -21,21 +23,26 @@ function renderWithIndicator(
 		<StaticLDProvider
 			flags={indicator === undefined ? {} : { [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}
 		>
-			<WaitingVisitStatus copy={copy} {...visit} />
+			<RootStoreProvider store={new RootStore()}>
+				<WaitingVisitStatus copy={copy} {...visit} />
+			</RootStoreProvider>
 		</StaticLDProvider>,
 	);
 }
 
 describe('WaitingVisitStatus', () => {
-	it.each([undefined, 'something-new'])('shows only the queue position for %s', (indicator) => {
-		// Arrange & Act
-		const { container } = renderWithIndicator(indicator);
+	it.each([undefined, 'something-new'])(
+		'falls back to the now-calling board for %s',
+		(indicator) => {
+			// Arrange & Act
+			const { container } = renderWithIndicator(indicator);
 
-		// Assert
-		expect(container.querySelector('.queue-position')).not.toBeNull();
-		expect(container.querySelector('.guests-ahead')).toBeNull();
-		expect(container.querySelector('.now-calling')).toBeNull();
-	});
+			// Assert
+			expect(container.querySelector('.queue-position')).not.toBeNull();
+			expect(container.querySelector('.now-calling')).not.toBeNull();
+			expect(container.querySelector('.guests-ahead')).toBeNull();
+		},
+	);
 
 	it('shows the guests-ahead count for guests-ahead', () => {
 		// Arrange & Act

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import { translations } from '@/locales.ts';
 
+import { RootStoreProvider } from '../../../stores/react/store-context';
+import { RootStore } from '../../../stores/root.store';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../../hooks/use-line-position-indicator';
 import { StaticLDProvider } from '../../StaticLDProvider';
 import { CalledVisitStatus } from './CalledVisitStatus';
@@ -14,7 +16,9 @@ describe('CalledVisitStatus', () => {
 		// Arrange & Act
 		const { container } = render(
 			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: 'guests-ahead' }}>
-				<CalledVisitStatus copy={copy} />
+				<RootStoreProvider store={new RootStore()}>
+					<CalledVisitStatus copy={copy} />
+				</RootStoreProvider>
 			</StaticLDProvider>,
 		);
 
@@ -30,7 +34,9 @@ describe('CalledVisitStatus', () => {
 				<StaticLDProvider
 					flags={indicator === undefined ? {} : { [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}
 				>
-					<CalledVisitStatus copy={copy} />
+					<RootStoreProvider store={new RootStore()}>
+						<CalledVisitStatus copy={copy} />
+					</RootStoreProvider>
 				</StaticLDProvider>,
 			);
 

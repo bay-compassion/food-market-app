@@ -96,8 +96,8 @@ test('guests register, enter the lottery, and follow the live queue through serv
 		await expect(
 			firstGuest.page.getByRole('heading', { name: copy.served.header, exact: true }),
 		).toBeVisible();
-		// The rig runs with LaunchDarkly disabled, so `line-position-indicator` is at its `none`
-		// default and there is no guests-ahead count on screen to watch fall. Only the queue position
+		// The rig runs with LaunchDarkly disabled, so `line-position-indicator` is at its
+		// `now-calling` default and there is no guests-ahead count on screen to watch fall. Only the queue position
 		// is shown whatever the flag says; the next step's "You are next" covers the guest's screen
 		// following the queue as it advances.
 		await thirdGuest.page.bringToFront();

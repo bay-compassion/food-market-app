@@ -242,7 +242,7 @@ flowchart TD
   It also returns `nowCalling`, the queue position most recently called. The
   `line-position-indicator` flag picks which of these the guest sees beside their own number: the
   guests-ahead count with its row of figures (`guests-ahead`), a DMV-style "now calling" board
-  (`now-calling`), or neither (`none`, the default).
+  (`now-calling`, the default), or neither (`none`).
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status
   word — a guest glancing at their phone from across the room has to catch it.
 - **An admin can add a guest directly, at any stage of the session.** The worker fills in the same

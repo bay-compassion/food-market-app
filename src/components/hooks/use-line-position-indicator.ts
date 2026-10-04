@@ -31,7 +31,7 @@ function isLinePositionIndicator(value: string): value is LinePositionIndicator 
 /** What an unresolved flag — or a variation this build doesn't know — falls back to. Matches the
  *  flag's off variation in LaunchDarkly, so an unreachable LaunchDarkly and a disabled flag look
  *  the same to a guest. */
-const defaultIndicator: LinePositionIndicator = 'none';
+const defaultIndicator: LinePositionIndicator = 'now-calling';
 
 /**
  * Which line position indicator to show. Requires an `LDReactContext` in the tree, same as any
