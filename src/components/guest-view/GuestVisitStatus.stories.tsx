@@ -202,16 +202,13 @@ export const WaitingNext: Story = {
 };
 
 /** Called to the entrance — the one state that turns the panel into an "it's your turn" message.
- *  The stamp under the heading — a blinking live dot, the guest's name, and today's date — is what
+ *  The stamp under the heading — a blinking dot, the guest's name, and today's date — is what
  *  the check-in worker reads to tell a live screen for today from a screenshot. */
 export const Called: Story = {
 	args: { visitStatus: 'called' },
 	decorators: withIndicator('guests-ahead'),
 	play: async ({ canvas }) => {
-		await expect(
-			await canvas.findByText(translations.en.guestView.visitStatus.ticket.liveLabel),
-		).toBeInTheDocument();
-		await expect(canvas.getByText('Ada L')).toBeInTheDocument();
+		await expect(await canvas.findByText('Ada L')).toBeInTheDocument();
 	},
 };
 
@@ -245,21 +242,21 @@ export const CancelFailed: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 3, aheadOfYou: 2, submissionError: true },
 };
 
-/** `line-position-indicator: none`, the default — the row of figures, the cart, and the "guests ahead of you"
+/** `line-position-indicator: none` — the row of figures, the cart, and the "guests ahead of you"
  *  count all disappear together, leaving the queue position number to stand alone. */
 export const WaitingLinePositionIndicatorNone: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
 	decorators: withIndicator('none'),
 };
 
-/** The called state with anything but `guests-ahead`, including the default — the panel reads fine with nothing standing
+/** The called state with anything but `guests-ahead`, including the `now-calling` default — the panel reads fine with nothing standing
  *  in for the cart line. */
 export const CalledLinePositionIndicatorNone: Story = {
 	args: { visitStatus: 'called' },
 	decorators: withIndicator('none'),
 };
 
-/** `line-position-indicator: now-calling` — a "now calling" board, like a DMV's, in place of the
+/** `line-position-indicator: now-calling`, the default — a "now calling" board, like a DMV's, in place of the
  *  dots and the guests-ahead count. */
 export const WaitingNowCalling: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6, nowCalling: 1 },

@@ -3,7 +3,6 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
 import { useRootStore } from '../../../stores/react/store-context';
-import { useTranslation } from '../../../stores/react/use-translation';
 import { useToday } from '../../hooks/use-today';
 
 const blink = keyframes`
@@ -15,6 +14,15 @@ const ripple = keyframes`
 	0% { transform: scale(1); opacity: 0.45; }
 	70%, 100% { transform: scale(2.4); opacity: 0; }
 `;
+
+/** mm/dd/yyyy on the Gregorian calendar with Western digits, independent of the guest's language. */
+const ticketDateFormat = new Intl.DateTimeFormat('en-US', {
+	month: '2-digit',
+	day: '2-digit',
+	year: 'numeric',
+	calendar: 'gregory',
+	numberingSystem: 'latn',
+});
 
 const Stamp = styled.div`
 	display: flex;
@@ -33,17 +41,6 @@ const Stamp = styled.div`
 	strong {
 		font-weight: 700;
 	}
-`;
-
-const Live = styled.span`
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	color: var(--color-success);
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
 `;
 
 const LiveDot = styled.span`
@@ -74,33 +71,22 @@ const LiveDot = styled.span`
 `;
 
 /**
- * The guest's name and today's date with a slowly blinking "live" mark — what a check-in worker
- * reads, like a deli ticket, to tell that this screen belongs to the person holding it, is for
- * today's market, and is the running app rather than a screenshot of it.
+ * The guest's name and today's date beside a slowly blinking dot — what a check-in worker reads,
+ * like a deli ticket, to tell that this screen belongs to the person holding it, is for today's
+ * market, and is the running app rather than a screenshot of it.
  *
- * The date is formatted in the guest's language but always on the Gregorian calendar with Western
- * digits, so the day stays legible to a worker who does not read the guest's script.
+ * The date is always mm/dd/yyyy, whatever the guest's language: it is there for staff to check, not
+ * for the guest to read.
  */
 export const VisitTicketStamp = observer(function VisitTicketStamp() {
-	const t = useTranslation();
-	const { guest, translations } = useRootStore();
+	const { guest } = useRootStore();
 	const today = useToday();
-	const date = new Intl.DateTimeFormat(translations.locale, {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric',
-		calendar: 'gregory',
-		numberingSystem: 'latn',
-	}).format(today);
 
 	return (
 		<Stamp className="visit-ticket-stamp">
-			<Live>
-				<LiveDot aria-hidden="true" />
-				{t.guestView.visitStatus.ticket.liveLabel}
-			</Live>
+			<LiveDot aria-hidden="true" />
 			{guest.displayedName ? <strong>{guest.displayedName}</strong> : null}
-			<span>{date}</span>
+			<span>{ticketDateFormat.format(today)}</span>
 		</Stamp>
 	);
 });

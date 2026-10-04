@@ -43,11 +43,6 @@ export interface VisitStatusTranslations {
 		header: string;
 		details: string;
 	};
-	/** The name-and-date stamp a check-in worker reads on the waiting and called cards. */
-	ticket: {
-		/** Beside the blinking dot that marks the screen as the running app, not a screenshot. */
-		liveLabel: string;
-	};
 	served: {
 		header: string;
 		details: string;
@@ -407,7 +402,6 @@ export const translations = {
 					nowCallingNone: 'No numbers called yet',
 				},
 				called: { header: 'It’s your turn', details: 'Please come to the entrance now.' },
-				ticket: { liveLabel: 'Live' },
 				served: {
 					header: 'Thank you for coming',
 					details:
@@ -677,7 +671,6 @@ export const translations = {
 					nowCallingNone: 'Aún no se ha llamado ningún número',
 				},
 				called: { header: 'Es su turno', details: 'Por favor, acérquese a la entrada ahora.' },
-				ticket: { liveLabel: 'En vivo' },
 				served: {
 					header: 'Gracias por venir',
 					details:
@@ -945,7 +938,6 @@ export const translations = {
 					nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
 				},
 				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به ورودی مراجعه کنید.' },
-				ticket: { liveLabel: 'زنده' },
 				served: {
 					header: 'از حضورتان سپاسگزاریم',
 					details:
@@ -1217,7 +1209,6 @@ export const translations = {
 					header: 'Kayo na po ang susunod',
 					details: 'Pumunta na po kayo sa pasukan ngayon.',
 				},
-				ticket: { liveLabel: 'Live ngayon' },
 				served: {
 					header: 'Salamat po sa pagpunta',
 					details:
@@ -1484,7 +1475,6 @@ export const translations = {
 					nowCallingNone: 'Chưa gọi số nào',
 				},
 				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến lối vào ngay bây giờ.' },
-				ticket: { liveLabel: 'Trực tiếp' },
 				served: {
 					header: 'Cảm ơn bạn đã đến',
 					details:
@@ -1744,7 +1734,6 @@ export const translations = {
 					nowCallingNone: '尚未叫号',
 				},
 				called: { header: '轮到您了', details: '请现在到入口来。' },
-				ticket: { liveLabel: '实时' },
 				served: {
 					header: '感谢您的到来',
 					details: '您今天的到访已完成。登记将于下周六上午 10:30 重新开放。',
@@ -2000,7 +1989,6 @@ export const translations = {
 					nowCallingNone: 'لم يتم النداء على أي رقم بعد',
 				},
 				called: { header: 'حان دورك', details: 'يرجى التوجه إلى المدخل الآن.' },
-				ticket: { liveLabel: 'مباشر' },
 				served: {
 					header: 'شكرًا لحضورك',
 					details:

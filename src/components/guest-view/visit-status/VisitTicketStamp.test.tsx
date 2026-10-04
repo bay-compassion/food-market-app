@@ -1,8 +1,6 @@
 import { act, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { translations } from '@/locales.ts';
-
 import { StorageKey, StorageService } from '../../../services/storage.service';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
@@ -38,7 +36,7 @@ describe('VisitTicketStamp', () => {
 		vi.useRealTimers();
 	});
 
-	it('shows the live mark, the guest’s name, and today’s date', () => {
+	it('shows the guest’s name and today’s date as mm/dd/yyyy', () => {
 		// Arrange
 		const store = identifiedStore();
 
@@ -50,9 +48,7 @@ describe('VisitTicketStamp', () => {
 		);
 
 		// Assert
-		expect(container.textContent).toContain(translations.en.guestView.visitStatus.ticket.liveLabel);
-		expect(container.textContent).toContain('Ada L');
-		expect(container.textContent).toContain('Sat, Oct 3');
+		expect(container.textContent).toBe('Ada L10/03/2026');
 	});
 
 	it('moves to the new date at midnight', async () => {
@@ -67,10 +63,10 @@ describe('VisitTicketStamp', () => {
 		await act(() => vi.advanceTimersByTimeAsync(31_000));
 
 		// Assert
-		expect(container.textContent).toContain('Sun, Oct 4');
+		expect(container.textContent).toContain('10/04/2026');
 	});
 
-	it('keeps Western digits for an Arabic-reading guest', () => {
+	it('keeps mm/dd/yyyy for an Arabic-reading guest', () => {
 		// Arrange
 		const store = identifiedStore();
 
@@ -84,8 +80,7 @@ describe('VisitTicketStamp', () => {
 		);
 
 		// Assert
-		expect(container.textContent).toContain(translations.ar.guestView.visitStatus.ticket.liveLabel);
-		expect(container.textContent).toMatch(/\b3\b/);
+		expect(container.textContent).toContain('10/03/2026');
 	});
 
 	it('leaves the name out for a guest with no identity on this device', () => {
