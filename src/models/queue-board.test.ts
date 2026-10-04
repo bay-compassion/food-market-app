@@ -5,7 +5,7 @@ import { QueueBoard, type QueueBoardState } from './queue-board';
 const calling: QueueBoardState = {
 	sessionStatus: 'service_started',
 	nowCalling: 9,
-	called: [4, 7, 9],
+	called: [9, 7, 4],
 	waitingCount: 20,
 };
 
@@ -31,17 +31,17 @@ describe('QueueBoard', () => {
 		const stillWaitingFor = board.stillWaitingFor;
 
 		// Assert
-		expect(stillWaitingFor).toEqual([4, 7]);
+		expect(stillWaitingFor).toEqual([7, 4]);
 	});
 
 	it('keeps every called number when the latest has already been served', () => {
 		// Arrange
-		const board = new QueueBoard({ ...calling, called: [4, 7] });
+		const board = new QueueBoard({ ...calling, called: [7, 4] });
 
 		// Act
 		const stillWaitingFor = board.stillWaitingFor;
 
 		// Assert
-		expect(stillWaitingFor).toEqual([4, 7]);
+		expect(stillWaitingFor).toEqual([7, 4]);
 	});
 });

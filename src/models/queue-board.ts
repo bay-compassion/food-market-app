@@ -6,7 +6,7 @@ export type QueueBoardState = {
 	sessionStatus: SessionStatus | null;
 	/** The queue number most recently called, or `null` before anyone has been called. */
 	nowCalling: number | null;
-	/** Every number called but not yet served or marked a no-show, in queue order. */
+	/** Every number called but not yet served or marked a no-show, most recently called first. */
 	called: number[];
 	/** How many guests are still in line, not yet called. */
 	waitingCount: number;

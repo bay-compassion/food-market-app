@@ -7,7 +7,9 @@ import styled from '@emotion/styled';
 export const KioskFrame = styled.main`
 	display: flex;
 	flex-direction: column;
-	min-height: 100dvh;
+	/* A fixed height, not a minimum: content that doesn't fit must give way, never push the
+	   footer off the bottom of a screen nobody can scroll. */
+	height: 100dvh;
 	padding: 4vmin 5vmin;
 	background: var(--color-brand-dark);
 	color: var(--color-on-brand);

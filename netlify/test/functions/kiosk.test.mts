@@ -85,7 +85,7 @@ describe('kiosk handler', () => {
 	it('returns the number being called, those not yet claimed, and the line behind them', async () => {
 		// Arrange
 		currentEvent('service_started');
-		queueResult([{ queuePosition: 3 }, { queuePosition: 7 }, { queuePosition: 8 }]);
+		queueResult([{ queuePosition: 8 }, { queuePosition: 7 }, { queuePosition: 3 }]);
 		queueResult([{ count: 12 }]);
 		queueResult([{ queuePosition: 8 }]);
 
@@ -97,7 +97,7 @@ describe('kiosk handler', () => {
 		await expect(response.json()).resolves.toEqual({
 			sessionStatus: 'service_started',
 			nowCalling: 8,
-			called: [3, 7, 8],
+			called: [8, 7, 3],
 			waitingCount: 12,
 		});
 	});

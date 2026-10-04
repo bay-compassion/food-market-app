@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { visits } from '../../db/schema.mjs';
@@ -64,7 +64,9 @@ export async function queueBoard(): Promise<QueueBoardState> {
 					isNotNull(visits.queuePosition),
 				),
 			)
-			.orderBy(asc(visits.queuePosition)),
+			// Newest first, matching `latestCalledPosition`'s tie-break within a batch, so the
+			// display drops the oldest when it runs out of room.
+			.orderBy(desc(visits.calledAt), desc(visits.queuePosition)),
 	);
 	const [waiting] = await tracedQuery('queue_board.waiting_count', () =>
 		db

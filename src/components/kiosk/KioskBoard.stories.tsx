@@ -18,7 +18,7 @@ const meta = {
 	args: {
 		sessionStatus: 'service_started',
 		nowCalling: 23,
-		called: [14, 17, 21, 23],
+		called: [23, 21, 17, 14],
 		waitingCount: 31,
 		reconnecting: false,
 	},
@@ -41,11 +41,40 @@ export const WithUnclaimedNumbers: Story = {
 			}),
 		);
 
+		// Most recently called first.
 		await expect(unclaimed.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-			'14',
-			'17',
 			'21',
+			'17',
+			'14',
 		]);
+	},
+};
+
+/** More unclaimed numbers than the panel holds: the newest that fit, then one tile for the rest. */
+export const MoreThanFit: Story = {
+	args: {
+		nowCalling: 60,
+		called: Array.from({ length: 30 }, (_, index) => 60 - index),
+	},
+	play: async ({ canvasElement }) => {
+		const items = within(
+			within(canvasElement).getByRole('region', {
+				name: translations.en.kiosk.stillWaitingFor,
+			}),
+		).getAllByRole('listitem');
+		const more = items.at(-1)!;
+		const numbers = items.slice(0, -1).map((item) => Number(item.textContent));
+		const hidden = 29 - numbers.length;
+
+		await expect(more).toHaveTextContent(
+			translations.en.kiosk.moreCount.replace('{count}', String(hidden)),
+		);
+		// The newest unclaimed numbers stay; the oldest fold into the tile.
+		await expect(numbers).toEqual(Array.from({ length: numbers.length }, (_, index) => 59 - index));
+		// Nothing spills past the panel's bottom edge.
+		const list = more.parentElement!;
+
+		await expect(more.offsetTop + more.offsetHeight).toBeLessThanOrEqual(list.clientHeight);
 	},
 };
 

@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 
 import type { QueueBoard } from '../../models/queue-board';
 import { useTranslation } from '../../stores/react/use-translation';
+import { UnclaimedNumbers } from './UnclaimedNumbers';
 
 const announce = keyframes`
 	0%, 100% { color: var(--color-on-brand); transform: scale(1); }
@@ -14,12 +15,14 @@ const Layout = styled.div<{ $split: boolean }>`
 	display: grid;
 	flex: 1;
 	grid-template-columns: ${({ $split }) => ($split ? '3fr 2fr' : '1fr')};
+	grid-template-rows: minmax(0, 1fr);
 	gap: 5vmin;
 	min-height: 0;
 
 	@media (orientation: portrait) {
 		grid-template-columns: 1fr;
-		grid-template-rows: ${({ $split }) => ($split ? '3fr 2fr' : '1fr')};
+		grid-template-rows: ${({ $split }) =>
+			$split ? 'minmax(0, 3fr) minmax(0, 2fr)' : 'minmax(0, 1fr)'};
 	}
 `;
 
@@ -55,46 +58,6 @@ const NowCalling = styled.section`
 		margin: 4vmin 0 0;
 		font-size: clamp(1.5rem, 5vmin, 4rem);
 		font-weight: 500;
-	}
-`;
-
-const StillWaiting = styled.section`
-	display: flex;
-	flex-direction: column;
-	gap: 3vmin;
-	padding: 4vmin;
-	border-radius: var(--radius-lg);
-	background: rgb(255 255 255 / 8%);
-	overflow: hidden;
-
-	h2 {
-		margin: 0;
-		font-size: clamp(1.5rem, 4.5vmin, 3.5rem);
-		font-weight: 600;
-		line-height: 1.2;
-	}
-
-	ul {
-		display: flex;
-		flex-wrap: wrap;
-		align-content: flex-start;
-		gap: 2.5vmin;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	li {
-		min-width: 2.6ch;
-		padding: 1vmin 2.5vmin;
-		border-radius: var(--radius-md);
-		background: var(--color-focus);
-		color: var(--color-brand-dark);
-		font-size: clamp(2.5rem, 10vmin, 8rem);
-		font-weight: 700;
-		line-height: 1.1;
-		text-align: center;
-		font-variant-numeric: tabular-nums;
 	}
 `;
 
@@ -142,14 +105,11 @@ export const KioskBoard = observer(function KioskBoard({ board, reconnecting }: 
 					)}
 				</NowCalling>
 				{stillWaitingFor.length > 0 ? (
-					<StillWaiting aria-labelledby="kiosk-still-waiting">
-						<h2 id="kiosk-still-waiting">{copy.stillWaitingFor}</h2>
-						<ul>
-							{stillWaitingFor.map((position) => (
-								<li key={position}>{position}</li>
-							))}
-						</ul>
-					</StillWaiting>
+					<UnclaimedNumbers
+						heading={copy.stillWaitingFor}
+						numbers={stillWaitingFor}
+						moreLabel={copy.moreCount}
+					/>
 				) : null}
 			</Layout>
 			<Footer>

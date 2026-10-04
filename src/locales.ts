@@ -158,6 +158,8 @@ export interface KioskTranslations {
 	stillWaitingFor: string;
 	/** `{count}` is how many guests are still in line, not yet called. */
 	waitingCount: string;
+	/** The tile standing in for unclaimed numbers that don't fit; `{count}` is how many. */
+	moreCount: string;
 	notStarted: string;
 	ended: string;
 	loading: string;
@@ -499,6 +501,7 @@ export const translations = {
 			nowCallingNone: 'No numbers called yet',
 			stillWaitingFor: 'Already called — please come to the table',
 			waitingCount: 'In line: {count}',
+			moreCount: '+{count} more',
 			notStarted: 'Numbers will be called here once the market opens',
 			ended: 'Today’s market has ended. Thank you for coming!',
 			loading: 'Loading the line…',
@@ -781,6 +784,7 @@ export const translations = {
 			nowCallingNone: 'Aún no se ha llamado ningún número',
 			stillWaitingFor: 'Ya llamados: pase a la mesa, por favor',
 			waitingCount: 'En la fila: {count}',
+			moreCount: '+{count} más',
 			notStarted: 'Los números se llamarán aquí cuando abra el mercado',
 			ended: 'El mercado de hoy ha terminado. ¡Gracias por venir!',
 			loading: 'Cargando la fila…',
@@ -1061,6 +1065,7 @@ export const translations = {
 			nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
 			stillWaitingFor: 'فراخوانده‌شده — لطفاً به میز مراجعه کنید',
 			waitingCount: 'در صف: {count}',
+			moreCount: 'شماره‌های دیگر: {count}',
 			notStarted: 'پس از باز شدن بازار، شماره‌ها اینجا اعلام می‌شوند',
 			ended: 'بازار امروز به پایان رسید. از حضور شما سپاسگزاریم!',
 			loading: 'در حال بارگیری صف…',
@@ -1346,6 +1351,7 @@ export const translations = {
 			nowCallingNone: 'Wala pang tinatawag na numero',
 			stillWaitingFor: 'Natawag na — pakilapit sa mesa',
 			waitingCount: 'Nasa pila: {count}',
+			moreCount: '+{count} pa',
 			notStarted: 'Dito tatawagin ang mga numero kapag nagbukas na ang market',
 			ended: 'Tapos na ang market ngayong araw. Salamat sa pagpunta!',
 			loading: 'Nilo-load ang pila…',
@@ -1624,6 +1630,7 @@ export const translations = {
 			nowCallingNone: 'Chưa gọi số nào',
 			stillWaitingFor: 'Đã gọi — vui lòng đến bàn',
 			waitingCount: 'Đang xếp hàng: {count}',
+			moreCount: '+{count} số khác',
 			notStarted: 'Các số sẽ được gọi tại đây khi chợ mở cửa',
 			ended: 'Chợ hôm nay đã kết thúc. Cảm ơn quý vị đã đến!',
 			loading: 'Đang tải hàng chờ…',
@@ -1890,6 +1897,7 @@ export const translations = {
 			nowCallingNone: '尚未叫号',
 			stillWaitingFor: '已叫号——请到桌前',
 			waitingCount: '排队中：{count}',
+			moreCount: '另有 {count} 个',
 			notStarted: '市场开放后将在此叫号',
 			ended: '今天的市场已结束。感谢您的光临！',
 			loading: '正在加载队列…',
@@ -2164,6 +2172,7 @@ export const translations = {
 			nowCallingNone: 'لم يتم النداء على أي رقم بعد',
 			stillWaitingFor: 'تم النداء — يُرجى التوجه إلى الطاولة',
 			waitingCount: 'في الطابور: {count}',
+			moreCount: 'أرقام أخرى: {count}',
 			notStarted: 'ستُنادى الأرقام هنا عند افتتاح السوق',
 			ended: 'انتهى سوق اليوم. شكرًا لحضوركم!',
 			loading: 'جارٍ تحميل الطابور…',
