@@ -24,29 +24,46 @@ const ticketDateFormat = new Intl.DateTimeFormat('en-US', {
 	numberingSystem: 'latn',
 });
 
+/* Sized to be read off a phone held up at arm's length: the name and date are the largest text on
+   the card after the heading, in the condensed heading face so a long name still fits a line. */
 const Stamp = styled.div`
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: auto auto;
 	align-items: center;
 	justify-content: center;
-	gap: 4px 10px;
+	column-gap: 14px;
 	margin: 0 auto 20px;
-	padding: 8px 16px;
-	border: 1.5px dashed color-mix(in srgb, var(--color-border) 60%, transparent);
+	padding: 12px 22px;
+	border: 2px dashed color-mix(in srgb, var(--color-border) 60%, transparent);
 	border-radius: var(--radius-md);
 	color: var(--color-text);
-	font-size: 15px;
-	line-height: 1.3;
+	font-family: var(--font-heading);
+	font-weight: 700;
+	line-height: 1.15;
+	text-align: start;
+`;
 
-	strong {
-		font-weight: 700;
-	}
+const Details = styled.div`
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+`;
+
+const Name = styled.strong`
+	font-size: 30px;
+	overflow-wrap: anywhere;
+`;
+
+const TicketDate = styled.span`
+	font-size: 26px;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.02em;
 `;
 
 const LiveDot = styled.span`
 	position: relative;
-	width: 10px;
-	height: 10px;
+	width: 16px;
+	height: 16px;
 	border-radius: var(--radius-pill);
 	background: var(--color-success);
 	animation: ${blink} 2s ease-in-out infinite;
@@ -83,10 +100,14 @@ export const VisitTicketStamp = observer(function VisitTicketStamp() {
 	const today = useToday();
 
 	return (
-		<Stamp className="visit-ticket-stamp">
+		// Left-to-right in every language: staff read it in English, and it should look the same on
+		// every guest's phone.
+		<Stamp className="visit-ticket-stamp" dir="ltr">
 			<LiveDot aria-hidden="true" />
-			{guest.displayedName ? <strong>{guest.displayedName}</strong> : null}
-			<span>{ticketDateFormat.format(today)}</span>
+			<Details>
+				{guest.displayedName ? <Name>{guest.displayedName}</Name> : null}
+				<TicketDate>{ticketDateFormat.format(today)}</TicketDate>
+			</Details>
 		</Stamp>
 	);
 });
