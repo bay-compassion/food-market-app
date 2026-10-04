@@ -71,12 +71,14 @@ export type UnclaimedNumbersProps = {
  * How many fit depends on the screen, so it is measured rather than fixed: every number is laid
  * out, and while the last tile falls below the list's bottom edge, one more number is folded into
  * the "+N more" tile. That runs in a layout effect, so the shrinking happens before paint and the
- * room never sees an overflowing frame. A new list or a resized panel starts over from showing all.
+ * room never sees an overflowing frame. A new list, a new language, or a resized panel starts over
+ * from showing all.
  */
 export function UnclaimedNumbers({ heading, numbers, moreLabel }: UnclaimedNumbersProps) {
 	const listRef = useRef<HTMLUListElement>(null);
 	const [limit, setLimit] = useState(Number.POSITIVE_INFINITY);
-	const signature = numbers.join(',');
+	// The label is part of it: the display's language rotates, and a longer "+N more" may no longer fit.
+	const signature = `${numbers.join(',')}|${moreLabel}`;
 	const [measuredSignature, setMeasuredSignature] = useState(signature);
 
 	if (measuredSignature !== signature) {
@@ -113,12 +115,18 @@ export function UnclaimedNumbers({ heading, numbers, moreLabel }: UnclaimedNumbe
 
 	return (
 		<Panel aria-labelledby="kiosk-still-waiting">
-			<h2 id="kiosk-still-waiting">{heading}</h2>
+			<h2 id="kiosk-still-waiting" dir="auto">
+				{heading}
+			</h2>
 			<ul ref={listRef}>
 				{numbers.slice(0, shown).map((position) => (
 					<li key={position}>{position}</li>
 				))}
-				{hidden > 0 ? <li data-more="">{moreLabel.replace('{count}', String(hidden))}</li> : null}
+				{hidden > 0 ? (
+					<li data-more="" dir="auto">
+						{moreLabel.replace('{count}', String(hidden))}
+					</li>
+				) : null}
 			</ul>
 		</Panel>
 	);

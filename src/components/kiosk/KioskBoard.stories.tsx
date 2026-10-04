@@ -1,30 +1,38 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
-import { translations } from '../../locales';
+import { translations, type Locale } from '../../locales';
 import { QueueBoard, type QueueBoardState } from '../../models/queue-board';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
 
-type Args = QueueBoardState & { reconnecting: boolean };
+type Args = QueueBoardState & { reconnecting: boolean; locale: Locale };
 
 /**
  * The `/kiosk` room display while numbers are being called — sized for a tablet or monitor read
  * from across the room, not a phone. View it full screen; the type scales with the viewport.
+ *
+ * The real display rotates its language on its own clock; here the toolbar's locale picks one, so
+ * each language's longest copy can be checked against the layout.
  */
 const meta = {
 	title: 'Kiosk/KioskBoard',
 	parameters: { shell: 'bare', layout: 'fullscreen' },
 	args: {
+		locale: 'en',
 		sessionStatus: 'service_started',
 		nowCalling: 23,
 		called: [23, 21, 17, 14],
 		waitingCount: 31,
 		reconnecting: false,
 	},
-	render: ({ reconnecting, ...state }) => (
-		<KioskFrame>
-			<KioskBoard board={new QueueBoard(state)} reconnecting={reconnecting} />
+	render: ({ reconnecting, locale, ...state }) => (
+		<KioskFrame dir="ltr" lang={locale}>
+			<KioskBoard
+				board={new QueueBoard(state)}
+				translation={translations[locale]}
+				reconnecting={reconnecting}
+			/>
 		</KioskFrame>
 	),
 } satisfies Meta<Args>;

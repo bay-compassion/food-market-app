@@ -1,9 +1,8 @@
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
-import { observer } from 'mobx-react-lite';
 
+import type { Translation } from '../../locales';
 import type { QueueBoard } from '../../models/queue-board';
-import { useTranslation } from '../../stores/react/use-translation';
 import { UnclaimedNumbers } from './UnclaimedNumbers';
 
 const announce = keyframes`
@@ -77,6 +76,8 @@ const Footer = styled.footer`
 
 export type KioskBoardProps = {
 	board: QueueBoard;
+	/** The language the display is showing right now, which rotates independently of the app's. */
+	translation: Translation;
 	/** The latest read failed; the board on screen is the last one that succeeded. */
 	reconnecting: boolean;
 };
@@ -88,18 +89,17 @@ export type KioskBoardProps = {
  * The number is keyed on itself so its highlight replays each time a new one is called — the
  * flash across the room is what makes a guest look up.
  */
-export const KioskBoard = observer(function KioskBoard({ board, reconnecting }: KioskBoardProps) {
-	const t = useTranslation();
-	const copy = t.kiosk;
+export function KioskBoard({ board, translation, reconnecting }: KioskBoardProps) {
+	const copy = translation.kiosk;
 	const { nowCalling, stillWaitingFor } = board;
 
 	return (
 		<>
 			<Layout $split={stillWaitingFor.length > 0}>
 				<NowCalling aria-live="polite">
-					<h1>{copy.nowCalling}</h1>
+					<h1 dir="auto">{copy.nowCalling}</h1>
 					{nowCalling === null ? (
-						<p>{copy.nowCallingNone}</p>
+						<p dir="auto">{copy.nowCallingNone}</p>
 					) : (
 						<strong key={nowCalling}>{nowCalling}</strong>
 					)}
@@ -113,10 +113,14 @@ export const KioskBoard = observer(function KioskBoard({ board, reconnecting }: 
 				) : null}
 			</Layout>
 			<Footer>
-				<span>{t.marketName}</span>
-				{reconnecting ? <span role="status">{copy.reconnecting}</span> : null}
-				<span>{copy.waitingCount.replace('{count}', String(board.waitingCount))}</span>
+				<span>{translation.marketName}</span>
+				{reconnecting ? (
+					<span role="status" dir="auto">
+						{copy.reconnecting}
+					</span>
+				) : null}
+				<span dir="auto">{copy.waitingCount.replace('{count}', String(board.waitingCount))}</span>
 			</Footer>
 		</>
 	);
-});
+}

@@ -57,9 +57,9 @@ export type KioskMessageProps = {
 export function KioskMessage({ message, action }: KioskMessageProps) {
 	return (
 		<Message role="status" aria-live="polite">
-			<p>{message}</p>
+			<p dir="auto">{message}</p>
 			{action ? (
-				<button type="button" onClick={action.onClick}>
+				<button type="button" dir="auto" onClick={action.onClick}>
 					{action.label}
 				</button>
 			) : null}
