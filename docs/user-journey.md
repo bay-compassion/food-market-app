@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=1e2a055a860e, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=928c01bd6869, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=deac0d1cd59c -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=e72b1453c15b, src/stores/market-session.store.ts=1e2a055a860e, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=9f1e48fd573b, netlify/services/guestRegistration.mts=b7aa91ee7435, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=d6457e18b8cc, netlify/routes/guests/visit.mts=ad359c5d258c, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=deac0d1cd59c -->
 
 # Guest journey
 
@@ -242,7 +242,9 @@ flowchart TD
   It also returns `nowCalling`, the queue position most recently called. The
   `line-position-indicator` flag picks which of these the guest sees beside their own number: the
   guests-ahead count with its row of figures (`guests-ahead`), a DMV-style "now calling" board
-  (`now-calling`, the default), or neither (`none`).
+  (`now-calling`, the default), or neither (`none`). The same number heads the `/kiosk` room
+  display (`latestCalledPosition` in `netlify/services/queue-board.mts`), so a guest's phone and
+  the screen on the wall never disagree.
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status
   word — a guest glancing at their phone from across the room has to catch it.
 - **An admin can add a guest directly, at any stage of the session.** The worker fills in the same

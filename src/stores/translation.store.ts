@@ -7,6 +7,10 @@ export type Language = keyof typeof translations;
 
 const supportedLanguages = Object.keys(translations) as Language[];
 
+export function isLanguage(value: unknown): value is Language {
+	return supportedLanguages.includes(value as Language);
+}
+
 export class TranslationStore {
 	locale: Language = 'en';
 	language: Language = 'en';

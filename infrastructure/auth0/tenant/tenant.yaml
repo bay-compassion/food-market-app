@@ -22,6 +22,8 @@ resourceServers:
           already use
       - value: manage:demo-data
         description: Add demo datasets
+      - value: view:kiosk
+        description: The room display — queue numbers being called, no names
     signing_alg: RS256
     skip_consent_for_verifiable_first_party_clients: true
     subject_type_authorization:
@@ -197,6 +199,8 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: run:queue
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: view:kiosk
+        resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: developer
     description: Developer role with superuser like permissions
@@ -204,9 +208,17 @@ roles:
       - permission_name: manage:demo-data
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
+  - name: kiosk
+    description: The account a room display signs in as — shows the queue, nothing else
+    permissions:
+      - permission_name: view:kiosk
+        resource_server_identifier: https://thebaycompassion.org
+    type: tenant
   - name: worker
     description: Role for non-admin staff users
     permissions:
       - permission_name: run:queue
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: view:kiosk
         resource_server_identifier: https://thebaycompassion.org
     type: tenant

@@ -4,12 +4,13 @@ Everyone who signs in to the admin area holds an Auth0 role, and that role decid
 they get and which requests the server will answer. Without one, a signed-in account sees an
 explanation and nothing else.
 
-## The two roles
+## The roles
 
-| Role     | Who it is for                                      | Holds                |
-| -------- | -------------------------------------------------- | -------------------- |
-| `worker` | Volunteers running the market                      | `run:queue`          |
-| `admin`  | Whoever is responsible for the market and its data | all five permissions |
+| Role     | Who it is for                                      | Holds                                    |
+| -------- | -------------------------------------------------- | ---------------------------------------- |
+| `worker` | Volunteers running the market                      | `run:queue`, `view:kiosk`                |
+| `admin`  | Whoever is responsible for the market and its data | the first five permissions, `view:kiosk` |
+| `kiosk`  | The account a room display signs in as             | `view:kiosk` only                        |
 
 Two roles rather than three because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
@@ -25,6 +26,7 @@ or download the whole guest database in one click.
 | `export:guest-data`   | The visit export, which carries guest names and phone numbers                                            |
 | `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
 | `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
+| `view:kiosk`          | The `/kiosk` room display — queue numbers being called, never a guest's name                             |
 
 The first five sit behind two roles on purpose. Splitting out a third role later — a board member
 or grant writer who should read reports but never see a name, holding `read:reports` alone — is
@@ -50,6 +52,7 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET /api/admin/reports`                 | `read:reports`                                          |
 | `GET /api/admin/reports?view=export`     | `export:guest-data`                                     |
 | `GET`, `POST /api/admin/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
+| `GET /api/admin/kiosk`                   | `view:kiosk`                                            |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session
@@ -67,7 +70,7 @@ a token with no permissions, and the moment the server starts checking, they are
 admin area. The reverse order is safe: turning RBAC on with no enforcement deployed just adds a
 claim nothing reads yet, so you can confirm tokens look right and merge afterwards.
 
-1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the six
+1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the seven
    permissions above.
 2. **Same API → Settings → RBAC Settings.** Turn on _Enable RBAC_ **and** _Add Permissions in the
    Access Token_. The second one is what puts the `permissions` claim in the token; without it
@@ -134,6 +137,34 @@ An override is an account handover, so treat it like one:
 list guests. It is on `admin` in `infrastructure/auth0/tenant/tenant.yaml`. Push that to
 Auth0 before merging the code that checks it; until then an admin's override is refused with a 403
 and nothing else changes.
+
+## The room display
+
+`/kiosk` is a full-screen "now calling" board for a tablet or monitor in the room: the number
+being called, the numbers called earlier that nobody has come up for yet, and how many are still in
+line. It shows queue numbers only, never a name. It is not linked from anywhere a guest can reach,
+but an unlinked URL is not a lock — what keeps the unattended machine from being commandeered is
+who it is signed in as.
+
+1. **Create one Auth0 user per display** (or one shared by every display), e.g.
+   `kiosk-hall@…`, with a long generated password, and give it the `kiosk` role and nothing else.
+2. **On the display, open `/kiosk` and sign in as that user.** Add `?lang=es` (any supported
+   language code) once to choose the display's language; the device remembers it.
+3. **Lock the device to the page** — Chrome's `--kiosk` flag, Guided Access on an iPad, or Screen
+   Pinning on Android — so there is no address bar to type `/admin` into.
+
+Anyone who reaches `/admin` on that machine anyway finds an account with no screens, and every
+admin endpoint answers 403, because `view:kiosk` grants nothing but `GET /api/admin/kiosk`. If the
+device is lost, block the user in Auth0. `worker` and `admin` hold `view:kiosk` as well, so a staff
+member can open the display on their own device to check it.
+
+The display keeps its screen awake where the browser supports the Screen Wake Lock API, and keeps
+the last board up with a "Reconnecting…" note if a poll fails. If Auth0 cannot renew its token
+silently — its session lapsed, or the user was blocked — it says so and offers a sign-in button
+for a worker.
+
+Push `infrastructure/auth0/tenant/tenant.yaml` to Auth0 before merging the code that checks
+`view:kiosk`; until then the display is refused with a 403 and nothing else changes.
 
 ## What this does not do
 

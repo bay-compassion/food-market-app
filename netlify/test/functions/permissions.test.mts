@@ -9,6 +9,7 @@ import { requirePermission } from '../../lib/auth.mjs';
 import broadcastHandler from '../../routes/admin/broadcast.mjs';
 import guestClaimsHandler from '../../routes/admin/guest-claims.mjs';
 import guestsHandler from '../../routes/admin/guests.mjs';
+import kioskHandler from '../../routes/admin/kiosk.mjs';
 import marketHandler from '../../routes/admin/market.mjs';
 import queueHandler from '../../routes/admin/queue.mjs';
 import reportsHandler from '../../routes/admin/reports.mjs';
@@ -171,6 +172,12 @@ describe('endpoint permissions', () => {
 			broadcastHandler,
 			json('https://x/api/admin/broadcast', 'POST', { title: 'Hi', body: 'We are open' }),
 			'manage:sessions',
+		],
+		[
+			'showing the room display',
+			kioskHandler,
+			json('https://x/api/admin/kiosk', 'GET'),
+			'view:kiosk',
 		],
 	];
 
