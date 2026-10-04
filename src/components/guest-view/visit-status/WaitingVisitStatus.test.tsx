@@ -31,15 +31,18 @@ function renderWithIndicator(
 }
 
 describe('WaitingVisitStatus', () => {
-	it.each([undefined, 'something-new'])('shows only the queue position for %s', (indicator) => {
-		// Arrange & Act
-		const { container } = renderWithIndicator(indicator);
+	it.each([undefined, 'something-new'])(
+		'falls back to the now-calling board for %s',
+		(indicator) => {
+			// Arrange & Act
+			const { container } = renderWithIndicator(indicator);
 
-		// Assert
-		expect(container.querySelector('.queue-position')).not.toBeNull();
-		expect(container.querySelector('.guests-ahead')).toBeNull();
-		expect(container.querySelector('.now-calling')).toBeNull();
-	});
+			// Assert
+			expect(container.querySelector('.queue-position')).not.toBeNull();
+			expect(container.querySelector('.now-calling')).not.toBeNull();
+			expect(container.querySelector('.guests-ahead')).toBeNull();
+		},
+	);
 
 	it('shows the guests-ahead count for guests-ahead', () => {
 		// Arrange & Act
