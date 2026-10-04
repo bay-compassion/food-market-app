@@ -1,41 +1,59 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { ReactNode } from 'react';
 import { expect, within } from 'storybook/test';
 
-import { translations, type Locale } from '../../locales';
+import { languages, translations, type Locale } from '../../locales';
 import { QueueBoard, type QueueBoardState } from '../../models/queue-board';
-import { QueueNumerals } from '../../services/queue-numerals';
+import { KioskLanguage, KioskLanguagesProvider } from './kiosk-languages';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
 
-type Args = QueueBoardState & { reconnecting: boolean; locale: Locale };
+type Args = QueueBoardState & { reconnecting: boolean; secondary: Locale };
+
+const rotation = languages.map(({ code }) => code).filter((code) => code !== 'en');
+
+/** The display as `/kiosk` frames it, with `locale` as the second language — English alone for `en`. */
+function Display({ locale, children }: { locale: Locale; children: ReactNode }) {
+	return (
+		<KioskLanguagesProvider
+			value={{
+				primary: new KioskLanguage('en'),
+				secondary: locale === 'en' ? null : new KioskLanguage(locale),
+				rotation: locale === 'en' ? [] : rotation,
+			}}
+		>
+			<KioskFrame dir="ltr" lang="en">
+				{children}
+			</KioskFrame>
+		</KioskLanguagesProvider>
+	);
+}
 
 /**
  * The `/kiosk` room display while numbers are being called — sized for a tablet or monitor read
  * from across the room, not a phone. View it full screen; the type scales with the viewport.
  *
- * The real display rotates its language on its own clock; here the toolbar's locale picks one, so
- * each language's longest copy can be checked against the layout.
+ * Every line is English with a second language under it. The real display rotates the second one
+ * on its own clock; here the `secondary` control picks it (English shows English alone, as
+ * `?lang=en` does), so each language's longest copy can be checked against the layout. It is its
+ * own control rather than the toolbar's locale, which the preview feeds into any `locale` arg.
  */
 const meta = {
 	title: 'Kiosk/KioskBoard',
 	parameters: { shell: 'bare', layout: 'fullscreen' },
+	argTypes: { secondary: { control: 'select', options: languages.map(({ code }) => code) } },
 	args: {
-		locale: 'en',
+		secondary: 'es',
 		sessionStatus: 'service_started',
 		nowCalling: 23,
 		called: [23, 21, 17, 14],
 		waitingCount: 31,
 		reconnecting: false,
 	},
-	render: ({ reconnecting, locale, ...state }) => (
-		<KioskFrame dir="ltr" lang={locale}>
-			<KioskBoard
-				board={new QueueBoard(state)}
-				translation={translations[locale]}
-				numerals={new QueueNumerals(locale)}
-				reconnecting={reconnecting}
-			/>
-		</KioskFrame>
+	render: ({ reconnecting, secondary, ...state }) => (
+		<Display locale={secondary}>
+			<KioskBoard board={new QueueBoard(state)} reconnecting={reconnecting} />
+		</Display>
 	),
 } satisfies Meta<Args>;
 
@@ -90,7 +108,7 @@ export const MoreThanFit: Story = {
 
 /** In Arabic, every queue number is written twice: Western digits above Eastern Arabic ones. */
 export const ArabicNumerals: Story = {
-	globals: { locale: 'ar' },
+	args: { secondary: 'ar' },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
@@ -101,8 +119,7 @@ export const ArabicNumerals: Story = {
 
 /** Farsi's own digits differ from Arabic's for 4, 5, and 6, so it gets its own set. */
 export const FarsiNumerals: Story = {
-	globals: { locale: 'fa' },
-	args: { nowCalling: 45, called: [56, 45, 14] },
+	args: { secondary: 'fa', nowCalling: 45, called: [56, 45, 14] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
@@ -128,9 +145,31 @@ export const Reconnecting: Story = {
 
 /** Every state that is not a queue being called is one sentence filling the display. */
 export const BeforeTheMarketOpens: Story = {
-	render: () => (
-		<KioskFrame>
-			<KioskMessage message={translations.en.kiosk.notStarted} />
-		</KioskFrame>
+	render: ({ secondary }) => (
+		<Display locale={secondary}>
+			<KioskMessage message={(copy) => copy.notStarted} />
+		</Display>
 	),
+};
+
+/** The row of language names along the bottom fills in the one showing now. */
+export const LanguageIndicator: Story = {
+	args: { secondary: 'vi' },
+	play: async ({ canvasElement }) => {
+		const active = canvasElement.querySelector('ol [data-active]');
+
+		await expect(active).toHaveTextContent(languages.find(({ code }) => code === 'vi')!.label);
+		// English is always on screen, so it is not one of the turns.
+		await expect(canvasElement.querySelectorAll('ol li')).toHaveLength(languages.length - 1);
+	},
+};
+
+/** Pinned to English (`?lang=en`): one language, no second line, no indicator. */
+export const EnglishOnly: Story = {
+	args: { secondary: 'en' },
+	play: async ({ canvasElement }) => {
+		await expect(canvasElement.querySelector('[lang="es"]')).toBeNull();
+		await expect(canvasElement.querySelector('ol')).toBeNull();
+		await expect(within(canvasElement).getByText(translations.en.kiosk.nowCalling)).toBeVisible();
+	},
 };

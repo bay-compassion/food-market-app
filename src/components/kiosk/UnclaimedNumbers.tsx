@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import type { QueueNumerals } from '../../services/queue-numerals';
+import { Bilingual, useKioskLanguages } from './kiosk-languages';
 
 const Panel = styled.section`
 	display: flex;
@@ -15,6 +15,8 @@ const Panel = styled.section`
 
 	h2 {
 		margin: 0;
+		/* Explicit, so a right-to-left second line stays under the English rather than flipping. */
+		text-align: left;
 		font-size: clamp(1.5rem, 4.5vmin, 3.5rem);
 		font-weight: 600;
 		line-height: 1.2;
@@ -51,13 +53,14 @@ const Panel = styled.section`
 	}
 
 	/* The language's own digits, under the Western ones. */
-	li > span + span {
+	li:not([data-more]) > span + span {
 		font-size: 0.55em;
 		font-synthesis: weight;
 	}
 
 	/* Not a number to come up for, so it must not look like one. */
 	li[data-more] {
+		text-align: center;
 		border: 0.5vmin solid currentcolor;
 		background: none;
 		color: var(--color-on-brand);
@@ -67,12 +70,8 @@ const Panel = styled.section`
 `;
 
 export type UnclaimedNumbersProps = {
-	heading: string;
 	/** Most recently called first, so the ones that drop off are the oldest. */
 	numbers: number[];
-	/** Labels the tile standing in for the numbers that don't fit; `{count}` is how many. */
-	moreLabel: string;
-	numerals: QueueNumerals;
 };
 
 /**
@@ -84,7 +83,9 @@ export type UnclaimedNumbersProps = {
  * room never sees an overflowing frame. A new list or a resized panel starts over from showing all;
  * a new language remounts this (the board keys it on the locale), since every tile can change size.
  */
-export function UnclaimedNumbers({ heading, numbers, moreLabel, numerals }: UnclaimedNumbersProps) {
+export function UnclaimedNumbers({ numbers }: UnclaimedNumbersProps) {
+	const { secondary } = useKioskLanguages();
+	const native = secondary?.numerals.hasNativeDigits ? secondary : null;
 	const listRef = useRef<HTMLUListElement>(null);
 	const [limit, setLimit] = useState(Number.POSITIVE_INFINITY);
 	const signature = numbers.join(',');
@@ -124,21 +125,21 @@ export function UnclaimedNumbers({ heading, numbers, moreLabel, numerals }: Uncl
 
 	return (
 		<Panel aria-labelledby="kiosk-still-waiting">
-			<h2 id="kiosk-still-waiting" dir="auto">
-				{heading}
+			<h2 id="kiosk-still-waiting">
+				<Bilingual text={(copy) => copy.stillWaitingFor} />
 			</h2>
 			<ul ref={listRef}>
 				{numbers.slice(0, shown).map((position) => (
 					<li key={position}>
 						<span>{position}</span>
-						{numerals.hasNativeDigits ? (
-							<span lang={numerals.locale}>{numerals.nativeOf(position)}</span>
-						) : null}
+						{native ? <span lang={native.locale}>{native.numerals.nativeOf(position)}</span> : null}
 					</li>
 				))}
 				{hidden > 0 ? (
-					<li data-more="" dir="auto">
-						{moreLabel.replace('{count}', numerals.inline(hidden))}
+					<li data-more="">
+						<Bilingual
+							text={(copy, numerals) => copy.moreCount.replace('{count}', numerals.inline(hidden))}
+						/>
 					</li>
 				) : null}
 			</ul>

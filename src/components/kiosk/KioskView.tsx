@@ -4,23 +4,25 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 
 import { isAuth0Configured } from '../../auth';
-import { languages, translations, type Locale, type Translation } from '../../locales';
+import { languages, type Locale } from '../../locales';
 import { LanguageRotation } from '../../models/language-rotation';
 import { KioskApi } from '../../services/kiosk-api';
-import { QueueNumerals } from '../../services/queue-numerals';
 import { KioskStore } from '../../stores/kiosk.store';
 import { useRootStore } from '../../stores/react/store-context';
 import { isLanguage } from '../../stores/translation.store';
 import { useRotatingLocale } from '../hooks/use-rotating-locale';
 import { useScreenWakeLock } from '../hooks/use-screen-wake-lock';
 import { RequireAuth } from '../RequireAuth';
+import { KioskLanguage, KioskLanguagesProvider, type KioskLanguages } from './kiosk-languages';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
 
-const rotation = LanguageRotation.favoringFirst<Locale>(
-	// English first: `favoringFirst` gives the first language the longer turn.
-	['en', ...languages.map(({ code }) => code).filter((code) => code !== 'en')],
-	{ firstMs: 20_000, restMs: 8_000 },
+const english = new KioskLanguage('en');
+
+/** English is always on screen, so only the others take turns underneath it. */
+const rotation = LanguageRotation.evenly<Locale>(
+	languages.map(({ code }) => code).filter((code) => code !== 'en'),
+	8_000,
 );
 
 /**
@@ -31,12 +33,13 @@ const rotation = LanguageRotation.favoringFirst<Locale>(
  * change the queue. It renders outside the app shell — no bar, no menu, no footer — so there is
  * nothing on screen to tap through to.
  *
- * It cycles through every language — English for 20 seconds, then each of the others for 8 — so
- * a guest who reads any of them sees their own about once a minute. `?lang=es` pins one
- * language instead. Either way the choice is the display's alone: it never touches the language
- * saved for the app on this device. The layout stays left-to-right throughout; Arabic and Farsi
- * text still runs right-to-left within its own line (`dir="auto"`), but the screen does not flip
- * every few seconds.
+ * Every line is in English, always, with a second language under it that rotates through the
+ * rest, 8 seconds each — so a guest who reads any of them sees their own about every 48 seconds —
+ * and a row of language names along the bottom shows which is up. `?lang=es` pins the second
+ * language; `?lang=en` shows English alone. Either way the choice is the display's alone: it never
+ * touches the language saved for the app on this device. The layout stays left-to-right
+ * throughout; Arabic and Farsi lines still run right-to-left within themselves (`dir="auto"`), but
+ * the screen does not flip every few seconds.
  */
 export function KioskView() {
 	return (
@@ -51,12 +54,19 @@ const KioskScreen = observer(function KioskScreen() {
 	const { isAuthenticated, isLoading, getAccessTokenSilently, loginWithRedirect } = useAuth0();
 	const { pathname, search } = useLocation();
 	const lang = useSearchParams()[0].get('lang');
-	const locale = useRotatingLocale(
-		useMemo(() => (isLanguage(lang) ? LanguageRotation.fixed(lang) : rotation), [lang]),
+	const activeRotation = useMemo(
+		() => (isLanguage(lang) ? LanguageRotation.fixed<Locale>(lang) : rotation),
+		[lang],
 	);
-	const translation: Translation = translations[locale];
-	const t = translation.kiosk;
-	const numerals = useMemo(() => new QueueNumerals(locale), [locale]);
+	const secondaryLocale = useRotatingLocale(activeRotation);
+	const languagesShown = useMemo<KioskLanguages>(
+		() => ({
+			primary: english,
+			secondary: secondaryLocale === 'en' ? null : new KioskLanguage(secondaryLocale),
+			rotation: activeRotation.locales.length > 1 ? activeRotation.locales : [],
+		}),
+		[activeRotation, secondaryLocale],
+	);
 	const [store] = useState(
 		() =>
 			new KioskStore({ api: new KioskApi({ requestHeaders: () => rootStore.requestHeaders() }) }),
@@ -84,39 +94,34 @@ const KioskScreen = observer(function KioskScreen() {
 	let content;
 
 	if (store.failure === 'forbidden') {
-		content = <KioskMessage message={t.notPermitted} />;
+		content = <KioskMessage message={(copy) => copy.notPermitted} />;
 	} else if (store.failure === 'sign_in') {
 		content = (
 			<KioskMessage
-				message={t.signInRequired}
+				message={(copy) => copy.signInRequired}
 				action={{
-					label: t.signIn,
+					label: (copy) => copy.signIn,
 					onClick: () => void loginWithRedirect({ appState: { returnTo: `${pathname}${search}` } }),
 				}}
 			/>
 		);
 	} else if (isLoading || !canRead || store.isLoading) {
-		content = <KioskMessage message={t.loading} />;
+		content = <KioskMessage message={(copy) => copy.loading} />;
 	} else if (!board) {
-		content = <KioskMessage message={t.reconnecting} />;
+		content = <KioskMessage message={(copy) => copy.reconnecting} />;
 	} else if (board.phase === 'not_started') {
-		content = <KioskMessage message={t.notStarted} />;
+		content = <KioskMessage message={(copy) => copy.notStarted} />;
 	} else if (board.phase === 'ended') {
-		content = <KioskMessage message={t.ended} />;
+		content = <KioskMessage message={(copy) => copy.ended} />;
 	} else {
-		content = (
-			<KioskBoard
-				board={board}
-				translation={translation}
-				numerals={numerals}
-				reconnecting={store.failure === 'connection'}
-			/>
-		);
+		content = <KioskBoard board={board} reconnecting={store.failure === 'connection'} />;
 	}
 
 	return (
-		<KioskFrame dir="ltr" lang={locale}>
-			{content}
-		</KioskFrame>
+		<KioskLanguagesProvider value={languagesShown}>
+			<KioskFrame dir="ltr" lang="en">
+				{content}
+			</KioskFrame>
+		</KioskLanguagesProvider>
 	);
 });

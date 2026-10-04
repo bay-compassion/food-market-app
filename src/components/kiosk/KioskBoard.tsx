@@ -1,9 +1,9 @@
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 
-import type { Translation } from '../../locales';
 import type { QueueBoard } from '../../models/queue-board';
-import type { QueueNumerals } from '../../services/queue-numerals';
+import { Bilingual, useKioskLanguages } from './kiosk-languages';
+import { LanguageIndicator } from './LanguageIndicator';
 import { UnclaimedNumbers } from './UnclaimedNumbers';
 
 const announce = keyframes`
@@ -32,6 +32,12 @@ const NowCalling = styled.section`
 	align-items: center;
 	justify-content: center;
 	text-align: center;
+
+	h1,
+	p {
+		/* Explicit, so a right-to-left second line stays centred under the English. */
+		text-align: center;
+	}
 
 	h1 {
 		margin: 0;
@@ -80,13 +86,38 @@ const NowCalling = styled.section`
 `;
 
 const Footer = styled.footer`
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	gap: 2vmin 5vmin;
+	display: grid;
+	grid-template-areas: 'name languages count';
+	grid-template-columns: 1fr auto 1fr;
+	align-items: end;
+	gap: 2vmin 4vmin;
 	padding-top: 3vmin;
 	font-size: clamp(1.25rem, 3.5vmin, 2.75rem);
 	font-weight: 500;
+
+	/* Too narrow for the language row between the two: it takes a row of its own. */
+	@media (orientation: portrait) {
+		grid-template-areas: 'languages languages' 'name count';
+		grid-template-columns: 1fr 1fr;
+	}
+
+	> :first-child {
+		grid-area: name;
+	}
+
+	> div > span {
+		display: block;
+	}
+
+	> ol {
+		grid-area: languages;
+	}
+
+	/* Explicit sides: dir="auto" on a right-to-left second line would otherwise flip it. */
+	> :last-child {
+		grid-area: count;
+		text-align: right;
+	}
 
 	[role='status'] {
 		color: var(--color-focus);
@@ -95,10 +126,6 @@ const Footer = styled.footer`
 
 export type KioskBoardProps = {
 	board: QueueBoard;
-	/** The language the display is showing right now, which rotates independently of the app's. */
-	translation: Translation;
-	/** How that language writes numbers — Western digits, and its own where it has them. */
-	numerals: QueueNumerals;
 	/** The latest read failed; the board on screen is the last one that succeeded. */
 	reconnecting: boolean;
 };
@@ -107,51 +134,58 @@ export type KioskBoardProps = {
  * The room display while numbers are being called: the number called now, filling most of the
  * screen, and beside it the numbers called earlier that have not come to the table yet.
  *
- * The number is keyed on itself so its highlight replays each time a new one is called — the
- * flash across the room is what makes a guest look up. In Arabic and Farsi it is written twice,
- * Western digits above the language's own, since guests read one or the other but not always both.
+ * Every line is English with the rotating language under it. The number is keyed on itself so its
+ * highlight replays each time a new one is called — the flash across the room is what makes a
+ * guest look up. While the rotating language is Arabic or Farsi it is also written in that
+ * language's own digits, since guests read one set or the other but not always both.
  */
-export function KioskBoard({ board, translation, numerals, reconnecting }: KioskBoardProps) {
-	const copy = translation.kiosk;
+export function KioskBoard({ board, reconnecting }: KioskBoardProps) {
+	const { primary, secondary } = useKioskLanguages();
+	const native = secondary?.numerals.hasNativeDigits ? secondary : null;
 	const { nowCalling, stillWaitingFor } = board;
 
 	return (
 		<>
 			<Layout $split={stillWaitingFor.length > 0}>
 				<NowCalling aria-live="polite">
-					<h1 dir="auto">{copy.nowCalling}</h1>
+					<h1>
+						<Bilingual text={(copy) => copy.nowCalling} />
+					</h1>
 					{nowCalling === null ? (
-						<p dir="auto">{copy.nowCallingNone}</p>
+						<p>
+							<Bilingual text={(copy) => copy.nowCallingNone} />
+						</p>
 					) : (
-						<strong key={nowCalling} data-native={numerals.hasNativeDigits || undefined}>
+						<strong key={nowCalling} data-native={native ? true : undefined}>
 							<span>{nowCalling}</span>
-							{numerals.hasNativeDigits ? (
-								<span lang={numerals.locale}>{numerals.nativeOf(nowCalling)}</span>
+							{native ? (
+								<span lang={native.locale}>{native.numerals.nativeOf(nowCalling)}</span>
 							) : null}
 						</strong>
 					)}
 				</NowCalling>
 				{stillWaitingFor.length > 0 ? (
-					<UnclaimedNumbers
-						// A new language can change every tile's size, so start the fitting over.
-						key={numerals.locale}
-						heading={copy.stillWaitingFor}
-						numerals={numerals}
-						numbers={stillWaitingFor}
-						moreLabel={copy.moreCount}
-					/>
+					// A new language can change every tile's size, so start the fitting over.
+					<UnclaimedNumbers key={secondary?.locale ?? 'en'} numbers={stillWaitingFor} />
 				) : null}
 			</Layout>
 			<Footer>
-				<span>{translation.marketName}</span>
-				{reconnecting ? (
-					<span role="status" dir="auto">
-						{copy.reconnecting}
-					</span>
-				) : null}
-				<span dir="auto">
-					{copy.waitingCount.replace('{count}', numerals.inline(board.waitingCount))}
-				</span>
+				<div>
+					<span>{primary.marketName}</span>
+					{reconnecting ? (
+						<span role="status">
+							<Bilingual text={(copy) => copy.reconnecting} />
+						</span>
+					) : null}
+				</div>
+				<LanguageIndicator />
+				<div>
+					<Bilingual
+						text={(copy, numerals) =>
+							copy.waitingCount.replace('{count}', numerals.inline(board.waitingCount))
+						}
+					/>
+				</div>
 			</Footer>
 		</>
 	);

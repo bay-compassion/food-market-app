@@ -1,5 +1,8 @@
 import styled from '@emotion/styled';
 
+import { Bilingual, type KioskText } from './kiosk-languages';
+import { LanguageIndicator } from './LanguageIndicator';
+
 /**
  * The room display's full-screen backdrop. Every size is in viewport units: the screen is read from
  * across a room, so text scales with the display rather than sitting at a phone's pixel sizes.
@@ -29,6 +32,8 @@ const Message = styled.section`
 
 	p {
 		max-width: 28ch;
+		/* Explicit, so a right-to-left second line stays centred under the English. */
+		text-align: center;
 		margin: 0;
 		font-size: clamp(2rem, 7vmin, 6rem);
 		font-weight: 600;
@@ -48,21 +53,30 @@ const Message = styled.section`
 `;
 
 export type KioskMessageProps = {
-	message: string;
+	message: KioskText;
 	/** A button under the message, for the one state a worker has to act on. */
-	action?: { label: string; onClick: () => void };
+	action?: { label: KioskText; onClick: () => void };
 };
 
-/** One sentence filling the display, for every state that is not a queue being called. */
+/**
+ * One sentence filling the display, in English with the rotating language under it, for every
+ * state that is not a queue being called.
+ */
 export function KioskMessage({ message, action }: KioskMessageProps) {
 	return (
-		<Message role="status" aria-live="polite">
-			<p dir="auto">{message}</p>
-			{action ? (
-				<button type="button" dir="auto" onClick={action.onClick}>
-					{action.label}
-				</button>
-			) : null}
-		</Message>
+		<>
+			<Message role="status" aria-live="polite">
+				<p>
+					<Bilingual text={message} />
+				</p>
+				{action ? (
+					<button type="button" onClick={action.onClick}>
+						<Bilingual text={action.label} />
+					</button>
+				) : null}
+			</Message>
+			{/* The message fills the frame, so this sits along the bottom edge, as on the board. */}
+			<LanguageIndicator />
+		</>
 	);
 }

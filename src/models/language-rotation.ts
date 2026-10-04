@@ -23,14 +23,17 @@ export class LanguageRotation<Locale extends string> {
 		return new LanguageRotation([{ locale, durationMs: Number.MAX_SAFE_INTEGER }]);
 	}
 
-	/** Every language in turn, the first for `firstMs` and each of the rest for `restMs`. */
-	static favoringFirst<Locale extends string>(
+	/** Every language in turn, each for `durationMs`. */
+	static evenly<Locale extends string>(
 		locales: readonly Locale[],
-		{ firstMs, restMs }: { firstMs: number; restMs: number },
+		durationMs: number,
 	): LanguageRotation<Locale> {
-		return new LanguageRotation(
-			locales.map((locale, index) => ({ locale, durationMs: index === 0 ? firstMs : restMs })),
-		);
+		return new LanguageRotation(locales.map((locale) => ({ locale, durationMs })));
+	}
+
+	/** The languages in the order they take their turns. */
+	get locales(): Locale[] {
+		return this.slots.map(({ locale }) => locale);
 	}
 
 	/** The language showing at `timeMs` (epoch milliseconds). */

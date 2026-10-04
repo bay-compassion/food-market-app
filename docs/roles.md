@@ -148,9 +148,10 @@ who it is signed in as.
 
 1. **Create one Auth0 user per display** (or one shared by every display), e.g.
    `kiosk-hall@…`, with a long generated password, and give it the `kiosk` role and nothing else.
-2. **On the display, open `/kiosk` and sign in as that user.** The display cycles through every
-   language, English for 20 seconds and each of the others for 8. Add `?lang=es` (any supported
-   language code) to pin one language instead.
+2. **On the display, open `/kiosk` and sign in as that user.** Every line on the display is in
+   English, with a second language underneath that rotates through the others, 8 seconds each; a
+   row of language names along the bottom shows which one is up. Add `?lang=es` (any supported
+   language code) to pin the second language, or `?lang=en` for English alone.
 3. **Lock the device to the page** — Chrome's `--kiosk` flag, Guided Access on an iPad, or Screen
    Pinning on Android — so there is no address bar to type `/admin` into.
 
