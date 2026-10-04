@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import { translations } from '@/locales.ts';
 
+import { RootStoreProvider } from '../../../stores/react/store-context';
+import { RootStore } from '../../../stores/root.store';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../../hooks/use-line-position-indicator';
 import { StaticLDProvider } from '../../StaticLDProvider';
 import { WaitingVisitStatus } from './WaitingVisitStatus';
@@ -21,7 +23,9 @@ function renderWithIndicator(
 		<StaticLDProvider
 			flags={indicator === undefined ? {} : { [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}
 		>
-			<WaitingVisitStatus copy={copy} {...visit} />
+			<RootStoreProvider store={new RootStore()}>
+				<WaitingVisitStatus copy={copy} {...visit} />
+			</RootStoreProvider>
 		</StaticLDProvider>,
 	);
 }

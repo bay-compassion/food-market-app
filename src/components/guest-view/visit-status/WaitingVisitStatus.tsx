@@ -6,6 +6,7 @@ import { useLinePositionIndicator } from '../../hooks/use-line-position-indicato
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 import { NowCallingIndicator } from './NowCallingIndicator';
 import { QueuePositionDots } from './QueuePositionDots';
+import { VisitTicketStamp } from './VisitTicketStamp';
 
 const QueueStanding = styled.div`
 	display: flex;
@@ -121,7 +122,12 @@ export function WaitingVisitStatus({
 			icon="✓"
 			heading={copy.waiting.header}
 			description={copy.waiting.details}
-			details={queueDetails}
+			details={
+				<>
+					<VisitTicketStamp />
+					{queueDetails}
+				</>
+			}
 		/>
 	);
 }

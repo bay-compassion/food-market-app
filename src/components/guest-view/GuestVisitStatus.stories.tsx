@@ -4,6 +4,7 @@ import { expect, within } from 'storybook/test';
 
 import { translations, type Locale } from '../../locales';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
+import { StorageKey, StorageService } from '../../services/storage.service';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
@@ -52,7 +53,21 @@ function seededStore({
 	submissionError,
 }: GuestVisitStatusArgs) {
 	const saved = new Map([[visitTokenStorageKey, 'story-visit-token']]);
+	// The guest the waiting and called cards stamp by name. Kept in the store's own storage too, so
+	// no story on a docs page reads another's identity out of `localStorage`.
+	const guestSaved = new Map<string, string>([
+		[StorageKey.GUEST_DEVICE_TOKEN, JSON.stringify('story-device-token')],
+		[
+			StorageKey.GUEST_IDENTITY,
+			JSON.stringify({ firstName: 'Ada', lastName: 'Lovelace', phone: '510-555-0123' }),
+		],
+	]);
 	const store = new RootStore({
+		storage: new StorageService({
+			getItem: (key) => guestSaved.get(key) ?? null,
+			setItem: (key, value) => void guestSaved.set(key, value),
+			removeItem: (key) => void guestSaved.delete(key),
+		} as Storage),
 		visit: {
 			storage: {
 				getItem: (key) => saved.get(key) ?? null,
@@ -186,10 +201,18 @@ export const WaitingNext: Story = {
 	decorators: withIndicator('guests-ahead'),
 };
 
-/** Called to the entrance — the one state that turns the panel into an "it's your turn" message. */
+/** Called to the entrance — the one state that turns the panel into an "it's your turn" message.
+ *  The stamp under the heading — a blinking live dot, the guest's name, and today's date — is what
+ *  the check-in worker reads to tell a live screen for today from a screenshot. */
 export const Called: Story = {
 	args: { visitStatus: 'called' },
 	decorators: withIndicator('guests-ahead'),
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(translations.en.guestView.visitStatus.ticket.liveLabel),
+		).toBeInTheDocument();
+		await expect(canvas.getByText('Ada L')).toBeInTheDocument();
+	},
 };
 
 /** Cancelling is in flight, so the cancel button is disabled. */
