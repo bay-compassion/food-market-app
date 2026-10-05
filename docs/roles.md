@@ -98,7 +98,7 @@ exports.onExecutePostLogin = async (event, api) => {
 	);
 
 	if (name) {
-		api.accessToken.setCustomClaim('https://bay-compassion.org/claims/name', name.trim());
+		api.accessToken.setCustomClaim('https://thebaycompassion.org/claims/name', name.trim());
 	}
 };
 ```
