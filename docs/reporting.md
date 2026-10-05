@@ -72,7 +72,7 @@ that reason, and the screen says so above the button. The reports themselves cou
 identifying them, and are safe to share as-is.
 
 Both files start with a byte-order mark so Excel reads them as UTF-8 — without it, every guest
-name that is not plain ASCII is mangled, and this app registers guests in seven languages.
+name that is not plain ASCII is mangled, and this app registers guests in eight languages.
 
 ## Who can see reports
 

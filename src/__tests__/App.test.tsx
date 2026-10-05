@@ -171,7 +171,7 @@ describe('App', () => {
 		const user = userEvent.setup();
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(7));
+		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
 
 		await user.click(container.querySelectorAll('.language-option')[1]!);
 
@@ -195,20 +195,21 @@ describe('App', () => {
 	it('offers the requested language options on the guest page', async () => {
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(7));
+		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
 
 		expect(container.textContent).toContain('فارسی');
 		expect(container.textContent).toContain('Tagalog');
 		expect(container.textContent).toContain('Tiếng Việt');
 		expect(container.textContent).toContain('中文');
 		expect(container.textContent).toContain('العربية');
+		expect(container.textContent).toContain('Français');
 	});
 
 	it('renders Persian in a right-to-left layout', async () => {
 		const user = userEvent.setup();
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(7));
+		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
 
 		await user.click(container.querySelectorAll('.language-option')[2]!);
 

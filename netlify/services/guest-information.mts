@@ -3,12 +3,13 @@ import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { guests } from '../../db/schema.mjs';
+import { languages, type Locale } from '../../src/locales.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import { hashDeviceToken, issueDeviceToken, normalizePhone } from './guestCredentials.mjs';
 
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export const guestLocales = ['en', 'es', 'fa', 'tl', 'vi', 'zh', 'ar'] as const;
+export const guestLocales = languages.map(({ code }) => code) as [Locale, ...Locale[]];
 
 /** A guest's own name, as they typed it. */
 export const guestNameSchema = z.string().trim().min(1).max(100);
