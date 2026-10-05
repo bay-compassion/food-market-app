@@ -138,6 +138,25 @@ export class QueueDeskStore {
 		}
 	}
 
+	/** Whether a guest can be served and the next one called in one step: someone must be waiting. */
+	canServeAndCallNext(guest: QueueGuest): boolean {
+		return guest.status === 'called' && this.roster.waiting.length > 0;
+	}
+
+	/**
+	 * Serves the guest whose ticket is open and calls the next one, opening their ticket in its
+	 * place — or closing it, when nobody was left to call.
+	 */
+	async serveAndCallNext(guest: QueueGuest): Promise<void> {
+		this._selectedVisitId = null;
+
+		const [called] = await this.admin.serveAndCallNext(guest);
+
+		if (called) {
+			runInAction(() => (this._selectedVisitId = called));
+		}
+	}
+
 	async run(guest: QueueGuest, command: VisitCommand): Promise<void> {
 		await this.admin.runGuestCommand(guest, command);
 	}

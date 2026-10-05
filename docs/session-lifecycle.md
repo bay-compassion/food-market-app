@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=5031da498902 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=86b320d3af1b -->
 
 # Session lifecycle
 
@@ -175,6 +175,11 @@ Nothing transitions out of `served`, so `served_at` is only ever written once.
 Workers call guests in batches. `call_next` on `/api/admin/queue` takes the next N waiting guests in
 queue order and calls them in a single statement, so two workers running the queue at the same time
 cannot claim the same guest.
+
+`serve_and_call_next` on the same endpoint is the step a worker at the entrance repeats all day:
+`serve` for one `called` visit, then `call` for the next waiting guest, in one transaction. It adds
+no transition of its own. If the visit is no longer `called` — another worker already finished it —
+the whole step is refused with a `409` and nobody is called.
 
 `queue_position` is display ordering, not an identifier — there is no unique constraint on it. A
 guest a worker places in the line goes either at the front of the waiting guests (shifting them

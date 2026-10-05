@@ -146,3 +146,64 @@ describe('queue handler call_next', () => {
 		expect(response.status).toBe(400);
 	});
 });
+
+describe('queue handler serve_and_call_next', () => {
+	const visitId = '6f1c2a4e-3b5d-4c7e-9f80-1a2b3c4d5e6f';
+
+	it('serves the guest and calls the next one in a single transaction', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([activeEvent()]);
+		queueResult([{ id: visitId }]);
+		queueResult([{ id: 'visit-2' }]);
+
+		const response = await handler(request('POST', { action: 'serve_and_call_next', visitId }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ served: visitId, called: ['visit-2'] });
+		expect(db.transaction).toHaveBeenCalledTimes(1);
+	});
+
+	it('still serves the guest when nobody is left to call', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([activeEvent()]);
+		queueResult([{ id: visitId }]);
+		queueResult([]);
+
+		const response = await handler(request('POST', { action: 'serve_and_call_next', visitId }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ served: visitId, called: [] });
+	});
+
+	it('calls nobody when the guest was already finished by someone else', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([activeEvent()]);
+		queueResult([]);
+
+		const response = await handler(request('POST', { action: 'serve_and_call_next', visitId }));
+
+		expect(response.status).toBe(409);
+		expect(db.update).toHaveBeenCalledTimes(1);
+	});
+
+	it('rejects a visit id that is not a UUID', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+
+		const response = await handler(
+			request('POST', { action: 'serve_and_call_next', visitId: 'visit-1' }),
+		);
+
+		expect(response.status).toBe(400);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+
+	it('rejects serving before service starts', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([activeEvent('ended')]);
+
+		const response = await handler(request('POST', { action: 'serve_and_call_next', visitId }));
+
+		expect(response.status).toBe(409);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+});

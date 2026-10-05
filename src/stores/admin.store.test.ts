@@ -69,6 +69,7 @@ function storeWith(
 			replacesDevice: false,
 		}),
 		callNext: vi.fn().mockResolvedValue(['visit-1']),
+		serveAndCallNext: vi.fn().mockResolvedValue(['visit-2']),
 		sendBroadcast: vi.fn().mockResolvedValue(3),
 		loadDemoScenario: vi.fn().mockResolvedValue({
 			...overviewWith(),
@@ -427,6 +428,48 @@ describe('AdminStore', () => {
 
 		// Assert
 		expect(store.feedback).toBeNull();
+	});
+
+	it('shows a guest as served while serving them and calling the next one', async () => {
+		// Arrange
+		let resolveServe = (_called: string[]) => {};
+		const { store, api } = storeWith({
+			serveAndCallNext: vi.fn(
+				() =>
+					new Promise<string[]>((resolve) => {
+						resolveServe = resolve;
+					}),
+			),
+		});
+		const guest = guestWith({ status: 'called' });
+
+		// Act
+		const pending = store.serveAndCallNext(guest);
+		const whileSending = guest.status;
+
+		resolveServe(['visit-2']);
+		const called = await pending;
+
+		// Assert
+		expect(whileSending).toBe('served');
+		expect(api.serveAndCallNext).toHaveBeenCalledWith('visit-1');
+		expect(called).toEqual(['visit-2']);
+	});
+
+	it('puts a guest back on called, and calls nobody, when serving them is refused', async () => {
+		// Arrange
+		const { store } = storeWith({
+			serveAndCallNext: vi.fn().mockRejectedValue(new Error('serve_and_call_next')),
+		});
+		const guest = guestWith({ status: 'called' });
+
+		// Act
+		const called = await store.serveAndCallNext(guest);
+
+		// Assert
+		expect(called).toEqual([]);
+		expect(guest.status).toBe('called');
+		expect(store.feedback).toEqual({ kind: 'error' });
 	});
 
 	it('resolves to the visits it called', async () => {

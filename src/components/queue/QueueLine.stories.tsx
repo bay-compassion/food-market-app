@@ -38,21 +38,32 @@ const numberedQueue: AdminGuest[] = busyQueue.map((guest, index) => ({
  */
 function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 	let roster = guests.map((guest) => ({ ...guest }));
+
+	/** Calls the first guest still waiting, as the server's queue order would. */
+	function callNext(): string[] {
+		const next = roster.find((guest) => guest.status === 'waiting');
+
+		if (!next) {
+			return [];
+		}
+
+		roster = roster.map((guest) =>
+			guest === next ? { ...guest, status: 'called', calledAt: new Date().toISOString() } : guest,
+		);
+
+		return [next.id];
+	}
+
 	const api = {
 		listSessionGuests: async () => roster,
 		runGuestCommand: async () => {},
-		callNext: async () => {
-			const next = roster.find((guest) => guest.status === 'waiting');
-
-			if (!next) {
-				return [];
-			}
-
+		callNext: async () => callNext(),
+		serveAndCallNext: async (visitId: string) => {
 			roster = roster.map((guest) =>
-				guest === next ? { ...guest, status: 'called', calledAt: new Date().toISOString() } : guest,
+				guest.id === visitId ? { ...guest, status: 'served' } : guest,
 			);
 
-			return [next.id];
+			return callNext();
 		},
 	} as unknown as AdminApi;
 	const overview: SessionOverview = {
@@ -153,6 +164,21 @@ export const TicketOpen: Story = {
 
 		await expect(name).toBeVisible();
 		await expect(tag.getByText('ES')).toBeVisible();
+	},
+};
+
+/**
+ * At the table, serving the open ticket's guest calls the next one in the same tap, and their
+ * ticket — with the name tag to write — takes its place.
+ */
+export const ServingAndCallingNext: Story = {
+	args: { openVisitId: 'guest-called-1' },
+	play: async () => {
+		const page = within(document.body);
+
+		await userEvent.click(await page.findByRole('button', { name: t.serveAndCallNext }));
+
+		await expect(await page.findByText('Linh N.')).toBeVisible();
 	},
 };
 
