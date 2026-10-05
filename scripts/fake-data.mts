@@ -116,9 +116,22 @@ const namesByLocale: Record<Locale, { first: string[]; last: string[] }> = {
 		first: ['سميرة', 'خالد', 'نادية', 'رامي', 'هدى', 'عمر', 'ليلى', 'ياسر'],
 		last: ['الحسن', 'الخوري', 'منصور', 'الصايغ', 'حداد', 'العتيبي', 'شاهين'],
 	},
+	fr: {
+		first: [
+			'Amadou',
+			'Mireille',
+			'Jean-Baptiste',
+			'Fatoumata',
+			'Didier',
+			'Nadège',
+			'Moussa',
+			'Solène',
+		],
+		last: ['Diallo', 'Joseph', 'Kouassi', 'Lefebvre', 'Mbemba', 'Traoré', 'Duval'],
+	},
 };
 
-/** Roughly the mix the market sees, so reports are not an even split across seven languages. */
+/** Roughly the mix the market sees, so reports are not an even split across eight languages. */
 const localeShares: [Locale, number][] = [
 	['en', 40],
 	['es', 28],
@@ -127,6 +140,7 @@ const localeShares: [Locale, number][] = [
 	['tl', 6],
 	['fa', 5],
 	['ar', 3],
+	['fr', 2],
 ];
 
 /** The tiers a worker can pick from, at the rate a worker realistically picks them. */

@@ -3,15 +3,19 @@ import { outdent } from 'outdent';
 /**
  * `label` is the language's own name, for a guest choosing it; `englishLabel` is what an
  * English-reading worker sees on the admin screens.
+ *
+ * Ordered by how many people speak each language at home in Contra Costa County (ACS 2024
+ * 1-year, table B16001), so the picker and the kiosk rotation put the most common first.
  */
 export const languages = [
 	{ code: 'en', label: 'English', englishLabel: 'English' },
 	{ code: 'es', label: 'Español', englishLabel: 'Spanish' },
-	{ code: 'fa', label: 'فارسی', englishLabel: 'Farsi' },
 	{ code: 'tl', label: 'Tagalog', englishLabel: 'Tagalog' },
-	{ code: 'vi', label: 'Tiếng Việt', englishLabel: 'Vietnamese' },
 	{ code: 'zh', label: '中文', englishLabel: 'Chinese' },
+	{ code: 'fa', label: 'فارسی', englishLabel: 'Farsi' },
 	{ code: 'ar', label: 'العربية', englishLabel: 'Arabic' },
+	{ code: 'vi', label: 'Tiếng Việt', englishLabel: 'Vietnamese' },
+	{ code: 'fr', label: 'Français', englishLabel: 'French' },
 ] as const;
 
 export type Locale = (typeof languages)[number]['code'];
@@ -2245,5 +2249,295 @@ export const translations = {
 		termsAndConditions: 'الشروط والأحكام',
 		statusLoading: 'جارٍ التحقق من حالة السوق اليوم…',
 		welcome: 'مرحبًا بكم في سوق الطعام المجتمعي',
+	},
+	fr: {
+		appBar: {
+			openMenu: 'Ouvrir le menu',
+			accountMenu: 'Menu du compte',
+			website: 'Site web de The Bay Compassion',
+			qrCode: 'Code QR',
+			staffLogin: 'Connexion du personnel',
+			adminPanel: 'Panneau d’administration',
+			signOut: 'Se déconnecter',
+			sendFeedback: 'Envoyer un commentaire',
+			closeDeviceIdDialog: 'Fermer l’identifiant de l’appareil',
+			copyDeviceId: 'Copier',
+			copyDeviceIdError:
+				'Nous n’avons pas pu copier l’identifiant de l’appareil. Veuillez réessayer.',
+			deviceIdCopied: 'Copié',
+			deviceIdDialogTitle: 'Identifiant de l’appareil',
+			showDeviceId: 'Afficher l’identifiant de l’appareil',
+			feedbackForm: {
+				formTitle: 'Envoyer un commentaire',
+				nameLabel: 'Nom (facultatif)',
+				namePlaceholder: 'Votre nom',
+				messageLabel: 'Votre commentaire',
+				messagePlaceholder:
+					'Dites-nous ce qui n’a pas fonctionné ou ce qui pourrait être amélioré. Merci de ne pas inclure de données personnelles.',
+				submitButtonLabel: 'Envoyer',
+				cancelButtonLabel: 'Annuler',
+				successMessageText: 'Merci pour votre commentaire !',
+				isRequiredLabel: '(obligatoire)',
+				errorEmptyMessageText: 'Veuillez écrire un message avant de l’envoyer.',
+				errorTimeoutText: 'L’envoi a pris trop de temps. Veuillez réessayer.',
+				errorGenericText: 'Votre commentaire n’a pas pu être envoyé. Veuillez réessayer.',
+			},
+		},
+		guestView: {
+			forms: {
+				informationLegend: 'Vos informations',
+				lotteryLegend: 'Détails de l’inscription au tirage au sort',
+				questionsLegend: 'Questions',
+			},
+			identityIndicator: {
+				cancelForgetInformation: 'Annuler',
+				closeForgetDialog: 'Fermer la confirmation d’effacement des informations',
+				closeNotificationsDialog: 'Fermer les mises à jour par SMS',
+				forgetDialogDescription:
+					'Cela supprime de cet appareil votre nom, votre numéro de téléphone, l’identifiant de l’appareil et les informations sur votre foyer. Cette action est irréversible.',
+				forgetDialogTitle: 'Effacer vos informations ?',
+				forgetInformation: 'Effacer mes informations',
+				heading: 'Reconnu sur cet appareil',
+				notificationsAction: 'M’envoyer les mises à jour par SMS',
+				notificationsDialogTitle: 'Mises à jour par SMS',
+				notificationsEnabled: 'Notifications activées',
+				notificationsError:
+					'Nous n’avons pas pu vérifier l’état de vos notifications. Veuillez réessayer plus tard.',
+				notificationsLoading: 'Vérification de l’état des notifications…',
+				openIdentityMenu: 'Ouvrir le menu d’identité',
+				optOut: 'Se désabonner',
+				optOutError: 'Nous n’avons pas pu vous désabonner des SMS. Veuillez réessayer.',
+				saveInformationAction: 'Enregistrer mes informations',
+				unidentifiedHeading: 'Enregistrez vos informations pour la prochaine fois',
+				unidentifiedMessage:
+					'Enregistrez votre nom et votre numéro de téléphone pour ne pas avoir à les saisir à nouveau lors de votre prochaine visite. Cela ne vous inscrit pas au tirage au sort.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'J’accepte de recevoir des SMS de The Bay Compassion concernant ma place dans la file et l’état de ma visite. La fréquence des messages varie, généralement pas plus de quelques messages par jour de marché. Des frais de messagerie et de données peuvent s’appliquer. Répondez STOP pour vous désabonner ou HELP pour obtenir de l’aide. Votre consentement n’est pas nécessaire pour bénéficier du marché alimentaire.',
+				enable: 'Activer les mises à jour par SMS',
+				enabled: 'Les mises à jour par SMS sont activées pour cette visite et les suivantes.',
+				error: 'Nous n’avons pas pu activer les mises à jour par SMS. Veuillez réessayer.',
+				optedOut:
+					'Vous avez déjà arrêté les SMS. Pour recevoir à nouveau les mises à jour, envoyez START à notre numéro.',
+				sendStart: 'Ouvrir un SMS avec START',
+				checkStart: 'J’ai envoyé START — vérifier à nouveau',
+			},
+			scheduleInformation: {
+				heading: 'Les inscriptions ouvrent chaque samedi à 10 h 30',
+				body: outdent`
+					Les inscriptions ne sont pas encore ouvertes. Veuillez revenir samedi à 10 h 30.
+					Tout le monde aura une chance égale de participer au tirage au sort de la file.
+				`,
+			},
+			notOpenState: {
+				heading: 'Le marché est fermé',
+				subheading:
+					'Les inscriptions rouvriront samedi prochain à 10 h 30 et resteront ouvertes jusqu’à 11 h 30.',
+				lotteryDescription:
+					'Les provisions étant limitées, le marché utilise un tirage au sort pour choisir les personnes qui peuvent faire leurs courses chaque semaine. Vous pouvez vous inscrire au tirage au sort à tout moment pendant le créneau d’une heure, de 10 h 30 à 11 h 30, le samedi. S’inscrire tôt n’augmente pas vos chances d’être choisi, il n’est donc pas nécessaire de vous inscrire en avance.',
+				selectionDescription:
+					'Le tirage au sort aura lieu à 11 h 30. Si vous êtes choisi, vous recevrez un numéro ici, dans l’application. Si vous acceptez de recevoir des SMS, vous serez également prévenu par SMS.',
+			},
+			registrationClosedState: {
+				heading: 'Les inscriptions sont closes',
+				description:
+					'Désolés — vous avez manqué le créneau d’inscription d’aujourd’hui. Les inscriptions rouvrent samedi prochain à 10 h 30, et chaque personne inscrite a la même chance au tirage au sort.',
+			},
+			serviceState: {
+				inProgressHeading: 'Le marché d’aujourd’hui est en cours',
+				inProgressDescription:
+					'Les inscriptions sont closes pour aujourd’hui. Si vous ne vous êtes pas encore présenté, veuillez vous adresser à un membre de l’équipe du marché.',
+			},
+			refreshNotice: {
+				countdown: 'Mise à jour dans {seconds} s',
+				updating: 'Mise à jour…',
+				noNeedToRefresh: 'Inutile d’actualiser — cette page se met à jour toute seule.',
+				accessibleDescription:
+					'Cette page se met à jour automatiquement. Vous n’avez pas besoin de l’actualiser.',
+			},
+			visitStatus: {
+				labels: {
+					registered: 'Inscrit',
+					waiting: 'En attente',
+					called: 'Appelé',
+					served: 'Servi',
+					not_placed: 'Non retenu',
+					no_show: 'Absent',
+					cancelled: 'Annulé',
+				},
+				registered: {
+					header: 'Vous participez au tirage au sort !',
+					details: 'Nous vous préviendrons après le tirage. Merci d’être venu.',
+				},
+				waiting: {
+					header: 'Vous êtes sur la liste !',
+					details: 'Nous vous préviendrons quand ce sera votre tour. Merci d’être venu.',
+					queuePositionLabel: 'Votre place dans la file',
+					guestsAheadLabel: 'Personnes devant vous',
+					youAreNext: 'Vous êtes le prochain',
+					nowCallingLabel: 'Numéro appelé',
+					nowCallingNone: 'Aucun numéro appelé pour l’instant',
+				},
+				called: {
+					header: 'C’est votre tour',
+					details: 'Veuillez vous présenter à l’entrée maintenant.',
+				},
+				served: {
+					header: 'Merci d’être venu',
+					details:
+						'Votre visite d’aujourd’hui est terminée. Les inscriptions rouvrent samedi prochain à 10 h 30.',
+				},
+				not_placed: {
+					header: 'Non retenu aujourd’hui',
+					details:
+						'Désolés — vous n’avez pas été choisi au tirage au sort d’aujourd’hui. Les provisions sont limitées, tout le monde ne peut donc pas obtenir une place. Vous pourrez participer à nouveau samedi prochain à 10 h 30.',
+				},
+				no_show: {
+					header: 'Nous vous avons manqué',
+					details:
+						'Nous avons appelé votre numéro, mais nous ne vous avons pas trouvé. Si vous êtes encore là, veuillez vous adresser à un membre de l’équipe du marché à l’entrée.',
+				},
+				cancelled: {
+					header: 'Visite annulée',
+					details:
+						'Votre place pour aujourd’hui a été annulée. Vous pourrez vous inscrire à nouveau à la prochaine ouverture des inscriptions.',
+				},
+				cancelAction: 'Annuler cette visite',
+				cancelConfirmation: 'Annuler votre place dans la file pour cette visite ?',
+				cancelConfirm: 'Oui, annuler ma visite',
+				cancelDismiss: 'Garder ma place',
+				updateError:
+					'Nous n’avons pas pu mettre à jour cette visite. Veuillez demander de l’aide à un membre de l’équipe du marché.',
+			},
+		},
+		admin: 'Administration',
+		adminDescription: 'Les outils de gestion de la file seront bientôt disponibles.',
+		adminTitle: 'Une façon plus simple d’accueillir chaque voisin.',
+		age: 'Âge',
+		agePlaceholder: 'Choisissez votre tranche d’âge',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
+		authConfigurationDescription:
+			'Ajoutez les variables d’environnement Auth0 au moyen de l’extension Auth0 de Netlify, puis redéployez le site.',
+		authConfigurationRequired: 'La connexion administrateur n’est pas configurée',
+		authError:
+			'Nous n’avons pas pu vérifier votre session administrateur. Veuillez vous reconnecter.',
+		authLoading: 'Vérification de votre session administrateur…',
+		backToGuest: 'Retour à l’inscription',
+		childrenCount: 'Nombre d’enfants pour qui vous faites les courses',
+		compassionFood: 'Aliments solidaires',
+		countDecrementLabel: 'Diminuer le nombre',
+		countIncrementLabel: 'Augmenter le nombre',
+		chooseAnswer: 'Choisissez une réponse',
+		signupView: {
+			formDescription:
+				'Enregistrez votre nom et votre numéro de téléphone pour ne pas avoir à les saisir à nouveau lors de votre prochaine visite. Cela ne vous inscrit pas au tirage au sort et ne réserve pas de place dans la file.',
+			formTitle: 'Enregistrez vos informations pour la prochaine fois',
+			submit: 'Enregistrer mes informations',
+			submitting: 'Enregistrement…',
+			successDescription:
+				'Vous n’aurez pas à les saisir à nouveau lors de votre prochaine visite. Vous n’êtes pas inscrit au tirage au sort et n’avez pas réservé de place dans la file.',
+			successTitle: 'Vos informations sont enregistrées',
+		},
+		claimView: {
+			title: 'Configurer ce téléphone',
+			description:
+				'Un membre du personnel vous a ajouté. Configurez ce téléphone pour y voir votre statut et recevoir les mises à jour.',
+			replaceHeading: 'Les informations enregistrées seront remplacées',
+			replaceWarning:
+				'Ce téléphone contient déjà des informations enregistrées ou une visite. Le configurer pour vous les remplace, et elles ne pourront pas être récupérées.',
+			submit: 'Configurer ce téléphone',
+			submitting: 'Configuration…',
+			failed:
+				'Ce code a expiré ou a déjà été utilisé. Demandez-en un nouveau à un membre du personnel.',
+			missingCode:
+				'Il manque le code dans ce lien. Demandez à un membre du personnel de vous montrer à nouveau le code QR.',
+		},
+		kiosk: {
+			nowCalling: 'Numéro appelé',
+			nowCallingNone: 'Aucun numéro appelé pour l’instant',
+			stillWaitingFor: 'Déjà appelés',
+			waitingCount: 'Dans la file : {count}',
+			moreCount: '+{count} de plus',
+			notStarted: 'Les numéros seront appelés ici dès l’ouverture du marché',
+			ended: 'Le marché d’aujourd’hui est terminé. Merci d’être venus !',
+			loading: 'Chargement de la file…',
+			reconnecting: 'Reconnexion…',
+			signInRequired: 'Cet écran a été déconnecté. Un membre du personnel doit se reconnecter.',
+			signIn: 'Connexion du personnel',
+			notPermitted: 'Ce compte ne peut pas afficher l’écran de la file.',
+		},
+		firstName: 'Prénom',
+		formDescription: 'Quelques informations nous aident à préparer votre visite.',
+		formTitle: 'Parlez-nous de vous',
+		guest: 'Invité',
+		heroCopy:
+			'Ensemble, nous nous épanouissons. Inscrivez-vous ci-dessous, et notre équipe s’occupe du reste.',
+		household: 'Nombre de personnes dans votre foyer',
+		householdHint: 'Comptez-vous aussi',
+		lastName: 'Nom de famille',
+		language: 'Langue',
+		languagePrompt: 'Choisissez votre langue',
+		marketName: 'The Bay Compassion',
+		notifications: {
+			registered: {
+				title: 'Inscription confirmée',
+				body: 'Votre inscription est confirmée.',
+			},
+			registrationClosed: {
+				title: 'Inscriptions closes',
+				body: 'Les inscriptions sont closes. Le tirage au sort va bientôt commencer.',
+			},
+			selected: {
+				title: 'Vous avez été choisi',
+				body: 'Vous avez été choisi. Veuillez attendre d’être appelé.',
+			},
+			notSelected: {
+				title: 'Résultat du tirage au sort',
+				body: 'Vous n’avez pas été choisi pour le service d’aujourd’hui.',
+			},
+			called: {
+				title: 'C’est votre tour',
+				body: 'Veuillez vous présenter à l’entrée maintenant.',
+			},
+			sms: {
+				welcome: 'Bienvenue ! Vous recevrez désormais les mises à jour par SMS.',
+				selected:
+					'Vous avez été choisi ! Votre place est la {position}. Veuillez attendre d’être appelé.',
+				notSelected: 'Vous n’avez pas été choisi pour le service d’aujourd’hui.',
+				called: 'C’est votre tour. Veuillez vous présenter à l’entrée maintenant.',
+			},
+			pushOptIn: {
+				enable: 'M’avertir pour cette visite',
+				denied: 'Les notifications sont bloquées. Activez-les dans les réglages de votre appareil.',
+				enabled: 'Les notifications sont activées pour cette visite.',
+				error: 'Nous n’avons pas pu activer les notifications. Veuillez réessayer.',
+				iosInstall:
+					'Sur iPhone ou iPad, ajoutez cette application à votre écran d’accueil avant d’activer les notifications.',
+				unsupported: 'Les notifications push ne sont pas disponibles sur cet appareil.',
+			},
+		},
+		seniorsCount: 'Nombre de personnes âgées (55 ans et plus) pour qui vous faites les courses',
+		phone: 'Numéro de téléphone',
+		privacy: 'Vos informations servent uniquement à mieux vous servir.',
+		privacyPolicy: 'Politique de confidentialité',
+		qrCodeDescription:
+			'Scannez ce code avec l’appareil photo d’un téléphone, ou ouvrez le lien ci-dessous, pour accéder à la page d’inscription.',
+		qrCodeImageAlt: 'Code QR menant à la page d’inscription',
+		qrCodePrint: 'Imprimer',
+		qrCodeTitle: 'Scannez pour vous inscrire',
+		registrationClosesIn: 'Fin des inscriptions dans',
+		registrationClosesInMinutes: 'Fin des inscriptions dans {minutes} min',
+		submissionError: 'Nous n’avons pas pu enregistrer votre inscription. Veuillez réessayer.',
+		submit: 'Participer au tirage au sort',
+		submitting: 'Inscription au tirage au sort…',
+		termsAndConditions: 'Conditions générales',
+		statusLoading: 'Vérification de l’état du marché d’aujourd’hui…',
+		welcome: 'Bienvenue au marché alimentaire communautaire',
 	},
 } as const satisfies Record<Locale, Translation>;
