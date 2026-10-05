@@ -146,8 +146,19 @@ export class AdminApi {
 	}
 
 	/** Moves one guest through the visit lifecycle — calling, serving, marking a no-show. */
-	async runGuestCommand(id: string, command: VisitCommand): Promise<void> {
-		this.assertOk(await this.send('PATCH', '/api/admin/guests', { id, command }), 'command');
+	/**
+	 * Runs a visit command. `placement` says where `return_to_queue` puts the guest; without one they
+	 * go back to the place they had.
+	 */
+	async runGuestCommand(
+		id: string,
+		command: VisitCommand,
+		placement?: QueuePlacement,
+	): Promise<void> {
+		this.assertOk(
+			await this.send('PATCH', '/api/admin/guests', { id, command, placement }),
+			'command',
+		);
 	}
 
 	/**

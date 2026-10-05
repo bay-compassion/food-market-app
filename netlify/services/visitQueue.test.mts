@@ -57,3 +57,59 @@ describe('runVisitCommand timestamps', () => {
 		expect(lastUpdateValues()).toEqual({ status: 'no_show' });
 	});
 });
+
+describe('runVisitCommand return_to_queue placement', () => {
+	it('puts a returning guest behind everyone when asked for the back of the line', async () => {
+		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
+		queueResult([{ position: 12 }]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end' });
+
+		expect(result.ok).toBe(true);
+		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null, queuePosition: 13 });
+	});
+
+	it('puts a returning guest at the front, shifting the waiting guests down', async () => {
+		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
+		queueResult([{ position: 12 }]);
+		queueResult([{ position: 5 }]);
+		queueResult([]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'next' });
+
+		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null, queuePosition: 5 });
+	});
+
+	it('keeps the guest’s old place when no placement is given', async () => {
+		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		await runVisitCommand('visit-1', 'return_to_queue');
+
+		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null });
+	});
+
+	it('rolls the line back when another worker moved the guest first', async () => {
+		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
+		queueResult([{ position: 12 }]);
+		queueResult([{ position: 5 }]);
+		queueResult([]);
+		queueResult([]);
+
+		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'next' });
+
+		expect(result).toEqual({ ok: false, status: 409, error: expect.any(String) });
+		await expect(db.transaction.mock.results.at(-1)?.value).rejects.toThrow();
+	});
+
+	it('ignores a placement for any other command', async () => {
+		queueResult([{ status: 'called', marketEventId: 'event-1' }]);
+		queueResult([{ id: 'visit-1', status: 'served' }]);
+
+		await runVisitCommand('visit-1', 'serve', { placement: 'end' });
+
+		expect(lastUpdateValues()).toEqual({ status: 'served', servedAt: expect.any(Date) });
+	});
+});

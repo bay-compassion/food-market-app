@@ -17,7 +17,7 @@ import {
 	type AdminFeedback,
 } from '../services/admin-feedback.ts';
 import { viewsFor, type AdminView } from '../services/admin-views.ts';
-import { admissionOffersPhoneClaim } from '../services/guestAdmission.ts';
+import { admissionOffersPhoneClaim, type QueuePlacement } from '../services/guestAdmission.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
 import type { SessionCommand } from '../services/sessionStateMachine.ts';
@@ -291,12 +291,19 @@ export class AdminStore {
 	 * Moves a guest through the visit lifecycle, showing the new status immediately and putting the
 	 * old one back if the server disagrees. The queue is read at a glance during service, so the row
 	 * must not sit on the previous status while the request is in flight.
+	 *
+	 * `placement` says where `return_to_queue` puts the guest; without one they go back to the place
+	 * they had.
 	 */
-	async runGuestCommand(guest: QueueGuest, command: VisitCommand): Promise<void> {
+	async runGuestCommand(
+		guest: QueueGuest,
+		command: VisitCommand,
+		placement?: QueuePlacement,
+	): Promise<void> {
 		await this.changeGuestStatus(
 			guest,
 			visitCommandTarget(command),
-			() => this.api.runGuestCommand(guest.id, command),
+			() => this.api.runGuestCommand(guest.id, command, placement),
 			undefined,
 		);
 	}

@@ -208,6 +208,19 @@ describe('AdminStore', () => {
 		expect(guest.status).toBe('called');
 	});
 
+	it('says where a guest returned to the queue should go', async () => {
+		// Arrange
+		const { store, api } = storeWith();
+		const guest = guestWith({ status: 'no_show' });
+
+		// Act
+		await store.runGuestCommand(guest, 'return_to_queue', 'end');
+
+		// Assert
+		expect(api.runGuestCommand).toHaveBeenCalledWith('visit-1', 'return_to_queue', 'end');
+		expect(guest.status).toBe('waiting');
+	});
+
 	it('puts a guest back on their previous status when the command fails', async () => {
 		// Arrange
 		const { store } = storeWith({

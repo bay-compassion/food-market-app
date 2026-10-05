@@ -62,17 +62,40 @@ function visitCommandChanges(command: VisitCommand) {
 	}
 }
 
+/** Thrown inside a command's transaction to roll it back when another worker got there first. */
+class TransitionRefused extends Error {}
+
+const transitionRefused: VisitCommandResult = {
+	ok: false,
+	status: 409,
+	error: 'That visit transition is not allowed from the current status.',
+};
+
+export type VisitCommandOptions = {
+	/**
+	 * Where `return_to_queue` puts the guest: `end` behind everyone waiting, `next` at the front.
+	 * Without one, the guest goes back to the place they had. Ignored by every other command.
+	 */
+	placement?: QueuePlacement;
+};
+
 /**
  * Applies a single visit transition, rejecting anything the state machine disallows. The update
  * re-checks the source status in its `WHERE`, so two workers acting on the same visit at once
- * cannot both succeed — the loser gets the same 409 as an illegal transition.
+ * cannot both succeed — the loser gets the same 409 as an illegal transition, and anything the
+ * command did to make room in the line is rolled back with it.
  */
 export async function runVisitCommand(
 	visitId: string,
 	command: VisitCommand,
+	options: VisitCommandOptions = {},
 ): Promise<VisitCommandResult> {
 	const [current] = await tracedQuery('visit.read_status', () =>
-		db.select({ status: visits.status }).from(visits).where(eq(visits.id, visitId)).limit(1),
+		db
+			.select({ status: visits.status, marketEventId: visits.marketEventId })
+			.from(visits)
+			.where(eq(visits.id, visitId))
+			.limit(1),
 	);
 
 	if (!current) {
@@ -80,37 +103,45 @@ export async function runVisitCommand(
 	}
 
 	if (!canRunVisitCommand(current.status, command)) {
-		return {
-			ok: false,
-			status: 409,
-			error: 'That visit transition is not allowed from the current status.',
-		};
+		return transitionRefused;
 	}
 
-	const changes = visitCommandChanges(command);
+	const placement = command === 'return_to_queue' ? options.placement : undefined;
 
-	const updated = await tracedQuery('visit.apply_command', () =>
-		db.transaction(async (tx) => {
-			const [visit] = await tx
-				.update(visits)
-				.set(changes)
-				.where(and(eq(visits.id, visitId), eq(visits.status, current.status)))
-				.returning({ id: visits.id, status: visits.status });
+	let updated: { id: string; status: string };
 
-			if (visit && command === 'call') {
-				await queueCalledNotifications(tx, [visit.id]);
-			}
+	try {
+		updated = await tracedQuery('visit.apply_command', () =>
+			db.transaction(async (tx) => {
+				const changes = placement
+					? {
+							...visitCommandChanges(command),
+							queuePosition: await nextQueuePosition(tx, current.marketEventId, placement),
+						}
+					: visitCommandChanges(command);
+				const [visit] = await tx
+					.update(visits)
+					.set(changes)
+					.where(and(eq(visits.id, visitId), eq(visits.status, current.status)))
+					.returning({ id: visits.id, status: visits.status });
 
-			return visit ?? null;
-		}),
-	);
+				if (!visit) {
+					throw new TransitionRefused();
+				}
 
-	if (!updated) {
-		return {
-			ok: false,
-			status: 409,
-			error: 'That visit transition is not allowed from the current status.',
-		};
+				if (command === 'call') {
+					await queueCalledNotifications(tx, [visit.id]);
+				}
+
+				return visit;
+			}),
+		);
+	} catch (error) {
+		if (error instanceof TransitionRefused) {
+			return transitionRefused;
+		}
+
+		throw error;
 	}
 
 	if (command === 'call') {

@@ -306,6 +306,11 @@ export interface QueueDeskTranslation {
 	callNext: string;
 	/** Serves the open ticket's guest and calls the next one, in one tap. */
 	serveAndCallNext: string;
+	/** The default way back into the line: behind everyone waiting. */
+	returnToBack: string;
+	returnToFront: string;
+	/** Names the arrow beside "return to back" that opens the other places. */
+	returnOptions: string;
 	addGuest: string;
 	/** `{number}` is the queue position, `{name}` the guest's full name. */
 	openTicket: string;
@@ -673,6 +678,9 @@ export const adminTranslations = {
 			noneDone: 'Nobody has finished yet.',
 			callNext: 'Call next',
 			serveAndCallNext: 'Serve and call next',
+			returnToBack: 'Return to back of line',
+			returnToFront: 'Return to front of line',
+			returnOptions: 'Other places in line',
 			addGuest: 'Add guest',
 			openTicket: 'Open ticket {number}, {name}',
 			ticket: 'Ticket',

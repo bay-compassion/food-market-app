@@ -4,7 +4,9 @@ import { expect, userEvent, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import type { AdminApi, AdminGuest } from '../../services/admin-api';
+import type { QueuePlacement } from '../../services/guestAdmission';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
+import type { VisitCommand } from '../../services/visitStateMachine';
 import type { SessionOverview } from '../../stores/market-session.store';
 import { QueueDeskStore } from '../../stores/queue-desk.store';
 import { RootStoreProvider } from '../../stores/react/store-context';
@@ -68,9 +70,34 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 		return [next.id];
 	}
 
+	/** Puts a guest back in line at the back or the front, the way the server does. */
+	function returnToQueue(visitId: string, placement: QueuePlacement) {
+		const positions = roster.map((guest) => guest.queuePosition ?? 0);
+		const front = Math.min(
+			...roster
+				.filter((guest) => guest.status === 'waiting')
+				.map((guest) => guest.queuePosition ?? 0),
+		);
+		const position = placement === 'end' ? Math.max(...positions) + 1 : front;
+
+		roster = roster.map((guest) => {
+			if (guest.id === visitId) {
+				return { ...guest, status: 'waiting', calledAt: null, queuePosition: position };
+			}
+
+			return placement === 'next' && guest.status === 'waiting'
+				? { ...guest, queuePosition: (guest.queuePosition ?? 0) + 1 }
+				: guest;
+		});
+	}
+
 	const api = {
 		listSessionGuests: async () => roster,
-		runGuestCommand: async () => {},
+		runGuestCommand: async (visitId: string, command: VisitCommand, placement?: QueuePlacement) => {
+			if (command === 'return_to_queue' && placement) {
+				returnToQueue(visitId, placement);
+			}
+		},
 		callNext: async () => callNext(),
 		serveAndCallNext: async (visitId: string) => {
 			roster = roster.map((guest) =>
@@ -222,6 +249,28 @@ export const ServingALateArrival: Story = {
 			await page.findByRole('button', { name: adminTranslations.en.markServed }),
 		).toBeVisible();
 		await expect(page.queryByRole('button', { name: t.serveAndCallNext })).toBeNull();
+	},
+};
+
+/**
+ * A no-show has, in effect, lost their turn, so returning one puts them at the back of the line by
+ * default. The arrow beside the button offers the front instead, at the volunteer's discretion.
+ */
+export const ReturningANoShow: Story = {
+	args: { openVisitId: 'guest-no-show-1' },
+	play: async ({ canvasElement }) => {
+		const page = within(document.body);
+
+		await userEvent.click(await page.findByRole('button', { name: t.returnOptions }));
+		await userEvent.click(await page.findByRole('menuitem', { name: t.returnToFront }));
+
+		const waiting = within(within(canvasElement).getByRole('region', { name: t.waiting }));
+
+		await expect(
+			await waiting.findByRole('button', {
+				name: t.openTicket.replace('{number}', '3').replace('{name}', 'Amira Haddad'),
+			}),
+		).toBeVisible();
 	},
 };
 

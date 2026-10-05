@@ -17,7 +17,12 @@ import { adminProfileSchema, createGuestProfile } from '../../services/guest-inf
 import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
 
-const visitUpdateSchema = z.object({ id: z.string(), command: z.enum(visitCommands) });
+const visitUpdateSchema = z.object({
+	id: z.string(),
+	command: z.enum(visitCommands),
+	/** Where `return_to_queue` puts the guest; without one they go back to the place they had. */
+	placement: z.enum(['next', 'end']).optional(),
+});
 
 async function currentEventId() {
 	const [event] = await tracedQuery('admin_guests.read_event', () =>
@@ -122,7 +127,8 @@ async function updateGuest(request: Request) {
 		return jsonError('Invalid guest update.');
 	}
 
-	const result = await runVisitCommand(update.data.id, update.data.command);
+	const { id, command, placement } = update.data;
+	const result = await runVisitCommand(id, command, { placement });
 
 	return result.ok ? Response.json(result.visit) : jsonError(result.error, result.status);
 }
