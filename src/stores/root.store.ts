@@ -5,7 +5,7 @@ import { AdminStore, type AdminStoreOptions } from './admin.store.ts';
 import { ConfirmationStore } from './confirmation.store.ts';
 import { GuestClaimStore, type GuestClaimStoreOptions } from './guest-claim.store.ts';
 import { GuestStore } from './guest.store.ts';
-import { MarketSessionStore } from './market-session.store.ts';
+import { MarketSessionStore, type MarketSessionStoreOptions } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
 import { RegistrationStore } from './registration.store.ts';
 import { TranslationStore } from './translation.store.ts';
@@ -16,6 +16,7 @@ export type RootStoreOptions = {
 	browserStorage?: Storage;
 	previewName?: string;
 	admin?: AdminStoreOptions;
+	session?: Pick<MarketSessionStoreOptions, 'fetch'>;
 	claim?: GuestClaimStoreOptions;
 	visit?: VisitStoreOptions;
 };
@@ -49,7 +50,10 @@ export class RootStore {
 		this.guest = new GuestStore({ storage: this.storage });
 		this.guest.notificationsDisabled = !!options.previewName;
 		this.registration = new RegistrationStore(this.guest, { storage: this.storage });
-		this.session = new MarketSessionStore({ requestHeaders: () => this.requestHeaders() });
+		this.session = new MarketSessionStore({
+			requestHeaders: () => this.requestHeaders(),
+			...options.session,
+		});
 		this.visit = new VisitStore(this, { storage: options.browserStorage, ...options.visit });
 		this.claim = new GuestClaimStore(this.guest, this.visit, options.claim);
 		this.admin = new AdminStore(this.session, {

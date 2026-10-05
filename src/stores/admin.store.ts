@@ -64,6 +64,13 @@ export class AdminStore {
 	private _isBusy = false;
 	private _feedback: AdminFeedback | null = null;
 	private _guestClaim: GuestClaim | null = null;
+	/** Guest commands sent and not yet answered. A poll landing meanwhile would undo their status. */
+	private pendingGuestCommands = 0;
+	/**
+	 * Bumped as each change to the guest list starts — a command, a call, an add — so a list
+	 * requested before it can be told apart and dropped.
+	 */
+	private sessionGuestsRevision = 0;
 	private readonly api: AdminApi;
 	private readonly readPermissions: () => Promise<Permission[]>;
 	private readonly notifications: NotificationStore;
@@ -129,6 +136,8 @@ export class AdminStore {
 			readPermissions: false,
 			notifications: false,
 			session: false,
+			pendingGuestCommands: false,
+			sessionGuestsRevision: false,
 		});
 	}
 
@@ -158,13 +167,7 @@ export class AdminStore {
 	 * rather than as a screen that was never theirs.
 	 */
 	async load(): Promise<void> {
-		try {
-			const permissions = await this.readPermissions();
-
-			runInAction(() => (this._permissions = permissions));
-		} catch {
-			runInAction(() => (this._permissions = []));
-		}
+		await this.loadPermissions();
 
 		try {
 			await this.session.getStatus();
@@ -177,6 +180,17 @@ export class AdminStore {
 		}
 	}
 
+	/** Reads which permissions this worker holds, treating a failed read as holding none. */
+	async loadPermissions(): Promise<void> {
+		try {
+			const permissions = await this.readPermissions();
+
+			runInAction(() => (this._permissions = permissions));
+		} catch {
+			runInAction(() => (this._permissions = []));
+		}
+	}
+
 	async refreshGuests(search = ''): Promise<void> {
 		const guests = await this.api.listAllGuests(search);
 
@@ -185,10 +199,17 @@ export class AdminStore {
 
 	async refreshSessionGuests(): Promise<void> {
 		const eventId = this.session.currentState?.event?.id ?? null;
+		const revision = this.sessionGuestsRevision;
 
 		const guests = eventId ? await this.api.listSessionGuests(eventId) : [];
 
-		runInAction(() => (this._sessionGuests = guests));
+		runInAction(() => {
+			// A list read while a guest command was in flight predates it, and would put the status
+			// the worker just changed back until the next refresh.
+			if (revision === this.sessionGuestsRevision && this.pendingGuestCommands === 0) {
+				this._sessionGuests = guests;
+			}
+		});
 	}
 
 	async refreshHistory(): Promise<void> {
@@ -274,10 +295,18 @@ export class AdminStore {
 	async runGuestCommand(guest: QueueGuest, command: VisitCommand): Promise<void> {
 		const previous = guest.status;
 
-		runInAction(() => (guest.status = visitCommandTarget(command)));
+		runInAction(() => {
+			guest.status = visitCommandTarget(command);
+			this.pendingGuestCommands += 1;
+			this.sessionGuestsRevision += 1;
+		});
 
 		try {
-			await this.api.runGuestCommand(guest.id, command);
+			try {
+				await this.api.runGuestCommand(guest.id, command);
+			} finally {
+				runInAction(() => (this.pendingGuestCommands -= 1));
+			}
 			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
 		} catch {
 			runInAction(() => {
@@ -288,6 +317,7 @@ export class AdminStore {
 	}
 
 	async addGuest(guest: ManualGuest, context: { marketEventId?: string | null; locale: Locale }) {
+		this.sessionGuestsRevision += 1;
 		await this.run(async () => {
 			const { guestId } = await this.api.addGuest(guest, {
 				marketEventId:
@@ -338,8 +368,11 @@ export class AdminStore {
 		this._guestClaim = null;
 	}
 
-	async callNext(count: number): Promise<void> {
-		await this.run(async () => {
+	/** Calls the next `count` guests in line. Resolves to the visits called, in queue order. */
+	async callNext(count: number): Promise<string[]> {
+		this.sessionGuestsRevision += 1;
+
+		return this.run(async () => {
 			const called = await this.api.callNext(count);
 
 			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
@@ -347,7 +380,9 @@ export class AdminStore {
 			if (!called.length) {
 				runInAction(() => this.report({ kind: 'no-waiting-guests' }));
 			}
-		}, undefined);
+
+			return called;
+		}, []);
 	}
 
 	async sendBroadcast(message: { title: string; body: string }): Promise<boolean> {

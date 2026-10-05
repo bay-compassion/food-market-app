@@ -429,6 +429,73 @@ describe('AdminStore', () => {
 		expect(store.feedback).toBeNull();
 	});
 
+	it('resolves to the visits it called', async () => {
+		// Arrange
+		const { store } = storeWith({ callNext: vi.fn().mockResolvedValue(['visit-7']) });
+
+		// Act
+		const called = await store.callNext(1);
+
+		// Assert
+		expect(called).toEqual(['visit-7']);
+	});
+
+	it('ignores a guest list read before the guests it just called', async () => {
+		// Arrange
+		let resolveList = (_guests: AdminGuest[]) => {};
+		const guest = guestWith({ status: 'waiting' });
+		const listSessionGuests = vi
+			.fn()
+			.mockImplementationOnce(
+				() =>
+					new Promise<AdminGuest[]>((resolve) => {
+						resolveList = resolve;
+					}),
+			)
+			.mockResolvedValue([{ ...guest, status: 'called' }]);
+		const { store } = storeWith({ listSessionGuests });
+
+		// Act
+		const poll = store.refreshSessionGuests();
+
+		await store.callNext(1);
+		resolveList([guest]);
+		await poll;
+
+		// Assert
+		expect(store.sessionGuests[0]?.status).toBe('called');
+	});
+
+	it('ignores a guest list read while a guest command was in flight', async () => {
+		// Arrange
+		let resolveList = (_guests: AdminGuest[]) => {};
+		const guest = guestWith({ status: 'called' });
+		const listSessionGuests = vi
+			.fn()
+			.mockResolvedValueOnce([guest])
+			.mockImplementationOnce(
+				() =>
+					new Promise<AdminGuest[]>((resolve) => {
+						resolveList = resolve;
+					}),
+			)
+			.mockResolvedValue([{ ...guest, status: 'served' }]);
+		const { store } = storeWith({ listSessionGuests });
+
+		await store.refreshSessionGuests();
+		const target = store.sessionGuests[0]!;
+
+		// Act
+		const poll = store.refreshSessionGuests();
+
+		await store.runGuestCommand(target, 'serve');
+		resolveList([{ ...guest, status: 'called' }]);
+		await poll;
+
+		// Assert
+		expect(store.sessionGuests[0]?.status).toBe('served');
+	});
+
 	it('counts the recipients a broadcast reached', async () => {
 		// Arrange
 		const { store } = storeWith();
