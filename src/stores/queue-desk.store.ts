@@ -138,9 +138,16 @@ export class QueueDeskStore {
 		}
 	}
 
-	/** Whether a guest can be served and the next one called in one step: someone must be waiting. */
+	/**
+	 * Whether a guest can be served and the next one called in one step. Only for the guest called
+	 * most recently: the line advances past them and nobody else, so serving a late arrival who was
+	 * called earlier must not call someone new while the current guest is still on their way. And
+	 * only while someone is waiting to be called.
+	 */
 	canServeAndCallNext(guest: QueueGuest): boolean {
-		return guest.status === 'called' && this.roster.waiting.length > 0;
+		const { roster } = this;
+
+		return roster.mostRecentlyCalled?.id === guest.id && roster.waiting.length > 0;
 	}
 
 	/**

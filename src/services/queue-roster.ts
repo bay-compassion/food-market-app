@@ -24,6 +24,14 @@ export class QueueRoster {
 			.sort((first, second) => (first.calledAt ?? '').localeCompare(second.calledAt ?? ''));
 	}
 
+	/**
+	 * The guest called last — the one the line is currently waiting on. Anyone called before them
+	 * who is still `called` is a late arrival, served when they turn up rather than in turn.
+	 */
+	get mostRecentlyCalled(): QueueGuest | null {
+		return this.called.at(-1) ?? null;
+	}
+
 	/** Still in line, in the order the draw put them in. */
 	get waiting(): QueueGuest[] {
 		return this.guests.filter((guest) => guest.status === 'waiting').sort(byQueuePosition);

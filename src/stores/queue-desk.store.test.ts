@@ -177,22 +177,34 @@ describe('QueueDeskStore', () => {
 		expect(desk.selected).toBeNull();
 	});
 
-	it('offers serving and calling next only for a called guest with someone still waiting', () => {
+	it('offers serving and calling next only for the guest called most recently', () => {
 		// Arrange
-		const called = guestWith({ id: 'visit-1', status: 'called' });
-		const waiting = guestWith({ id: 'visit-2', status: 'waiting' });
-		const withLine = deskWith({ guests: [called, waiting] }).desk;
-		const withoutLine = deskWith({ guests: [called] }).desk;
+		const late = guestWith({ id: 'visit-1', status: 'called', calledAt: '2026-08-08T18:00:00Z' });
+		const current = guestWith({
+			id: 'visit-2',
+			status: 'called',
+			calledAt: '2026-08-08T18:05:00Z',
+		});
+		const waiting = guestWith({ id: 'visit-3', status: 'waiting' });
+		const { desk } = deskWith({ guests: [late, current, waiting] });
 
 		// Act
-		const offers = [
-			withLine.canServeAndCallNext(called),
-			withLine.canServeAndCallNext(waiting),
-			withoutLine.canServeAndCallNext(called),
-		];
+		const offers = [late, current, waiting].map((guest) => desk.canServeAndCallNext(guest));
 
 		// Assert
-		expect(offers).toEqual([true, false, false]);
+		expect(offers).toEqual([false, true, false]);
+	});
+
+	it('does not offer serving and calling next with nobody left waiting', () => {
+		// Arrange
+		const current = guestWith({ status: 'called', calledAt: '2026-08-08T18:05:00Z' });
+		const { desk } = deskWith({ guests: [current] });
+
+		// Act
+		const offered = desk.canServeAndCallNext(current);
+
+		// Assert
+		expect(offered).toBe(false);
 	});
 
 	it('keeps no ticket open when nobody was left to call', async () => {
