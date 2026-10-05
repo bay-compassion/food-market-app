@@ -168,17 +168,34 @@ export const TicketOpen: Story = {
 };
 
 /**
- * At the table, serving the open ticket's guest calls the next one in the same tap, and their
- * ticket — with the name tag to write — takes its place.
+ * At the table, serving the guest called most recently calls the next one in the same tap, and
+ * their ticket — with the name tag to write — takes its place.
  */
 export const ServingAndCallingNext: Story = {
-	args: { openVisitId: 'guest-called-1' },
+	args: { openVisitId: 'guest-called-2' },
 	play: async () => {
 		const page = within(document.body);
 
 		await userEvent.click(await page.findByRole('button', { name: t.serveAndCallNext }));
 
 		await expect(await page.findByText('Linh N.')).toBeVisible();
+	},
+};
+
+/**
+ * A guest called earlier who has only now reached the table is a late arrival. Serving them must
+ * not advance the line past the guest called most recently, so their ticket offers "Mark served"
+ * alone.
+ */
+export const ServingALateArrival: Story = {
+	args: { openVisitId: 'guest-called-1' },
+	play: async () => {
+		const page = within(document.body);
+
+		await expect(
+			await page.findByRole('button', { name: adminTranslations.en.markServed }),
+		).toBeVisible();
+		await expect(page.queryByRole('button', { name: t.serveAndCallNext })).toBeNull();
 	},
 };
 

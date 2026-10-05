@@ -39,8 +39,9 @@ const Actions = styled.div`
 
 /**
  * What a volunteer can do with the open ticket. The state machine decides which commands exist;
- * the likely next one is filled. For a called guest with someone still in line, that is serving
- * them and calling the next guest in one tap, which opens the next ticket in this one's place.
+ * the likely next one is filled. For the guest called most recently, with someone still in line,
+ * that is serving them and calling the next guest in one tap, which opens the next ticket in this
+ * one's place; a late arrival called earlier is only marked served, so the line does not advance.
  * Any other command closes the ticket — the volunteer's next tap is the next guest, not this one.
  */
 export const TicketActions = observer(function TicketActions({ guest }: { guest: QueueGuest }) {

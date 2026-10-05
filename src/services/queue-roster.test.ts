@@ -33,6 +33,19 @@ describe('QueueRoster', () => {
 		expect(roster.called.map((each) => each.id)).toEqual(['earliest', 'recent']);
 	});
 
+	it('names the guest called last as the one the line is waiting on', () => {
+		// Arrange
+		const recent = guest('recent', 'called', { calledAt: '2026-08-08T18:05:00.000Z' });
+		const earliest = guest('earliest', 'called', { calledAt: '2026-08-08T18:00:00.000Z' });
+
+		// Act
+		const roster = new QueueRoster([recent, earliest]);
+
+		// Assert
+		expect(roster.mostRecentlyCalled?.id).toBe('recent');
+		expect(new QueueRoster([]).mostRecentlyCalled).toBeNull();
+	});
+
 	it('orders waiting guests by queue position, with unplaced guests last', () => {
 		// Arrange
 		const guests = [
