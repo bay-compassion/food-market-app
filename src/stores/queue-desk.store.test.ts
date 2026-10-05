@@ -1,8 +1,10 @@
+import { observable } from 'mobx';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { AdminGuest } from '../services/admin-api';
 import type { Permission } from '../services/permissions';
 import { SessionStatusEnum } from '../services/sessionStateMachine';
+import type { VisitEvent } from '../services/visit-events';
 import type { AdminStore } from './admin.store';
 import type { MarketSessionStore } from './market-session.store';
 import { QueueDeskStore } from './queue-desk.store';
@@ -39,17 +41,32 @@ function deskWith({
 	guests?: AdminGuest[];
 	called?: string[];
 } = {}) {
-	const admin = {
-		sessionGuests: guests,
-		isBusy: false,
-		can: (permission: Permission) => permissions.includes(permission),
-		loadPermissions: vi.fn().mockResolvedValue(undefined),
-		refreshSessionGuests: vi.fn().mockResolvedValue(undefined),
-		callNext: vi.fn().mockResolvedValue(called),
-		serveAndCallNext: vi.fn().mockResolvedValue(called),
-		runGuestCommand: vi.fn().mockResolvedValue(undefined),
-		runMarketAction: vi.fn().mockResolvedValue(undefined),
-	};
+	// Observable like the real `AdminStore`, so a reassigned list reaches the desk's computeds.
+	const admin = observable(
+		{
+			sessionGuests: guests,
+			isBusy: false,
+			can: (permission: Permission) => permissions.includes(permission),
+			loadPermissions: vi.fn().mockResolvedValue(undefined),
+			refreshSessionGuests: vi.fn().mockResolvedValue(undefined),
+			callNext: vi.fn().mockResolvedValue(called),
+			serveAndCallNext: vi.fn().mockResolvedValue(called),
+			listVisitEvents: vi.fn().mockResolvedValue([] as VisitEvent[]),
+			runGuestCommand: vi.fn().mockResolvedValue(undefined),
+			runMarketAction: vi.fn().mockResolvedValue(undefined),
+		},
+		{
+			can: false,
+			loadPermissions: false,
+			refreshSessionGuests: false,
+			callNext: false,
+			serveAndCallNext: false,
+			listVisitEvents: false,
+			runGuestCommand: false,
+			runMarketAction: false,
+		},
+		{ deep: false },
+	);
 	const session = {
 		currentStatus: status,
 		currentState: status ? { event: { id: 'event-1', status } } : null,
@@ -260,6 +277,87 @@ describe('QueueDeskStore', () => {
 			['return_to_queue', 'next'],
 			['mark_no_show', undefined],
 		]);
+	});
+
+	it('loads the history of the ticket it opens', async () => {
+		// Arrange
+		const { desk, admin } = deskWith();
+		const called: VisitEvent = {
+			id: 'event-1',
+			kind: 'called',
+			toStatus: 'called',
+			actor: { kind: 'worker', id: 'auth0|worker', name: 'Matt' },
+			details: {},
+			createdAt: '2026-10-05T18:24:00.000Z',
+		};
+
+		admin.listVisitEvents.mockResolvedValueOnce([called]);
+
+		// Act
+		const before = desk.history;
+
+		desk.select(admin.sessionGuests[0]!);
+
+		// Assert
+		expect(before).toBeNull();
+		await vi.waitFor(() => expect(desk.history).toEqual([called]));
+		expect(admin.listVisitEvents).toHaveBeenCalledWith('visit-1');
+		desk[Symbol.dispose]();
+	});
+
+	it('drops a history that arrives after the volunteer moved to another ticket', async () => {
+		// Arrange
+		let resolveFirst = (_events: VisitEvent[]) => {};
+		const second = guestWith({ id: 'visit-2' });
+		const { desk, admin } = deskWith({ guests: [guestWith(), second] });
+
+		admin.listVisitEvents
+			.mockImplementationOnce(
+				() =>
+					new Promise<VisitEvent[]>((resolve) => {
+						resolveFirst = resolve;
+					}),
+			)
+			.mockImplementationOnce(() => new Promise<VisitEvent[]>(() => {}));
+
+		// Act
+		desk.select(admin.sessionGuests[0]!);
+		desk.select(second);
+		resolveFirst([]);
+		await Promise.resolve();
+
+		// Assert
+		expect(desk.history).toBeNull();
+		desk[Symbol.dispose]();
+	});
+
+	it('reads the history again when the open ticket’s status changes', async () => {
+		// Arrange
+		const { desk, admin } = deskWith();
+
+		desk.select(admin.sessionGuests[0]!);
+		await vi.waitFor(() => expect(desk.history).toEqual([]));
+
+		// Act
+		admin.sessionGuests = [guestWith({ status: 'called' })];
+
+		// Assert
+		expect(admin.listVisitEvents).toHaveBeenCalledTimes(2);
+		desk[Symbol.dispose]();
+	});
+
+	it('shows an empty history rather than an error when the read fails', async () => {
+		// Arrange
+		const { desk, admin } = deskWith();
+
+		admin.listVisitEvents.mockRejectedValue(new Error('history'));
+
+		// Act
+		desk.select(admin.sessionGuests[0]!);
+
+		// Assert
+		await vi.waitFor(() => expect(desk.history).toEqual([]));
+		desk[Symbol.dispose]();
 	});
 
 	it('shares a read already in flight', async () => {

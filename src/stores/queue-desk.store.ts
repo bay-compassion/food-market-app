@@ -1,4 +1,4 @@
-import { runInAction } from 'mobx';
+import { reaction, runInAction, type IReactionDisposer } from 'mobx';
 
 import type { QueueGuest } from '../services/admin-api.ts';
 import {
@@ -10,6 +10,7 @@ import { makeReactive } from '../services/make-reactive.ts';
 import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
 import { QueueRoster } from '../services/queue-roster.ts';
 import { SessionStatusEnum } from '../services/sessionStateMachine.ts';
+import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand } from '../services/visitStateMachine.ts';
 import type { AdminStore } from './admin.store.ts';
 import type { MarketSessionStore } from './market-session.store.ts';
@@ -36,6 +37,9 @@ export class QueueDeskStore {
 	private _isStarted = false;
 	private readonly poller: PageVisibilityPoller;
 	private request: Promise<void> | null = null;
+	/** The open ticket's history, and which visit it belongs to — it outlives a switch of ticket. */
+	private _history: { visitId: string; events: VisitEvent[] } | null = null;
+	private readonly stopHistory: IReactionDisposer;
 
 	constructor(
 		private readonly admin: AdminStore,
@@ -48,7 +52,50 @@ export class QueueDeskStore {
 			() => {},
 		);
 
-		makeReactive(this, { admin: false, session: false, poller: false, request: false });
+		makeReactive(this, {
+			admin: false,
+			session: false,
+			poller: false,
+			request: false,
+			stopHistory: false,
+		});
+
+		// Read when a ticket opens, and again when its status changes — usually another volunteer
+		// acting on the same guest. Not on every poll: the history only grows when the status moves.
+		this.stopHistory = reaction(
+			() => (this.selected ? `${this.selected.id}:${this.selected.status}` : null),
+			(key) => {
+				if (key) {
+					void this.loadHistory();
+				}
+			},
+		);
+	}
+
+	/**
+	 * The open ticket's history, oldest first, or `null` until it has loaded. A reload for the same
+	 * ticket keeps the previous list on screen rather than blanking it.
+	 */
+	get history(): VisitEvent[] | null {
+		return this._history?.visitId === this._selectedVisitId ? this._history.events : null;
+	}
+
+	/** Reads the open ticket's history. A failed read shows an empty history, never an error. */
+	async loadHistory(): Promise<void> {
+		const visitId = this._selectedVisitId;
+
+		if (!visitId) {
+			return;
+		}
+
+		const events = await this.admin.listVisitEvents(visitId).catch(() => []);
+
+		runInAction(() => {
+			// The volunteer may have moved on to another ticket while this was in flight.
+			if (this._selectedVisitId === visitId) {
+				this._history = { visitId, events };
+			}
+		});
 	}
 
 	get phase(): QueueDeskPhase {
@@ -192,5 +239,6 @@ export class QueueDeskStore {
 
 	[Symbol.dispose](): void {
 		this.poller.stop();
+		this.stopHistory();
 	}
 }

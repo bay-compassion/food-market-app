@@ -6,6 +6,7 @@ import type { ServiceProgress } from './demoScenario.ts';
 import type { ManualAdmission, QueuePlacement } from './guestAdmission.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
 import type { SessionStatus } from './sessionStateMachine.ts';
+import type { VisitEvent } from './visit-events.ts';
 import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
 
 /** One visit as the queue screens render it. */
@@ -138,6 +139,16 @@ export class AdminApi {
 	}
 
 	/** Sessions that have finished, for the history screen. */
+	/** One visit's history, oldest first. */
+	async listVisitEvents(visitId: string): Promise<VisitEvent[]> {
+		const { events } = await this.readJson<{ events: VisitEvent[] }>(
+			await this.get(`/api/admin/visits/${encodeURIComponent(visitId)}/events`),
+			'visit_events',
+		);
+
+		return events;
+	}
+
 	async listHistory(): Promise<HistoricalEvent[]> {
 		return this.readJson<HistoricalEvent[]>(
 			await this.get('/api/admin/market?view=history'),

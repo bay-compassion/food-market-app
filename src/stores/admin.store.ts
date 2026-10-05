@@ -21,6 +21,7 @@ import { admissionOffersPhoneClaim, type QueuePlacement } from '../services/gues
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
 import type { SessionCommand } from '../services/sessionStateMachine.ts';
+import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
 import { DemoStore } from './demo.store';
@@ -210,6 +211,11 @@ export class AdminStore {
 				this._sessionGuests = guests;
 			}
 		});
+	}
+
+	/** One visit's history. Read on demand rather than held, since only an open ticket shows it. */
+	async listVisitEvents(visitId: string): Promise<VisitEvent[]> {
+		return this.api.listVisitEvents(visitId);
 	}
 
 	async refreshHistory(): Promise<void> {
