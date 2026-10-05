@@ -6,6 +6,7 @@ import { adminTranslations } from '../../adminLocales';
 import type { AdminApi, AdminGuest } from '../../services/admin-api';
 import type { QueuePlacement } from '../../services/guestAdmission';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
+import type { VisitEvent } from '../../services/visit-events';
 import type { VisitCommand } from '../../services/visitStateMachine';
 import type { SessionOverview } from '../../stores/market-session.store';
 import { QueueDeskStore } from '../../stores/queue-desk.store';
@@ -47,6 +48,57 @@ const numberedQueue: AdminGuest[] = [
 		marketEventId: eventId,
 	},
 ];
+
+const matt = { kind: 'worker', id: 'auth0|story-worker', name: 'Matt' } as const;
+
+/**
+ * A plausible history for a guest in the story line: drawn in the lottery, then whatever brought
+ * them to where they are now, each step a few minutes after the last.
+ */
+function historyFor(guest: AdminGuest | undefined): VisitEvent[] {
+	if (!guest) {
+		return [];
+	}
+
+	const start = Date.now() - 40 * 60_000;
+	const at = (minutes: number) => new Date(start + minutes * 60_000).toISOString();
+	const event = (
+		id: string,
+		kind: VisitEvent['kind'],
+		toStatus: VisitEvent['toStatus'],
+		actor: VisitEvent['actor'],
+		minutes: number,
+		details: VisitEvent['details'] = {},
+	): VisitEvent => ({
+		id: `${guest.id}-${id}`,
+		kind,
+		toStatus,
+		actor,
+		details,
+		createdAt: at(minutes),
+	});
+	const registered = event('registered', 'registered', 'registered', { kind: 'guest' }, 0);
+
+	if (guest.status === 'not_placed') {
+		return [registered, event('drawn', 'not_drawn', 'not_placed', { kind: 'system' }, 10)];
+	}
+
+	const drawn = event('drawn', 'drawn', 'waiting', { kind: 'system' }, 10, {
+		queuePosition: guest.queuePosition ?? undefined,
+	});
+	const called = event('called', 'called', 'called', matt, 25);
+
+	switch (guest.status) {
+		case 'called':
+			return [registered, drawn, called];
+		case 'served':
+			return [registered, drawn, called, event('served', 'served', 'served', matt, 30)];
+		case 'no_show':
+			return [registered, drawn, called, event('no-show', 'no_show', 'no_show', matt, 35)];
+		default:
+			return [registered, drawn];
+	}
+}
 
 /**
  * A root store whose admin API answers from `guests`, and a desk over it. Built here rather than by
@@ -93,6 +145,7 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 
 	const api = {
 		listSessionGuests: async () => roster,
+		listVisitEvents: async (visitId: string) => historyFor(roster.find(({ id }) => id === visitId)),
 		runGuestCommand: async (visitId: string, command: VisitCommand, placement?: QueuePlacement) => {
 			if (command === 'return_to_queue' && placement) {
 				returnToQueue(visitId, placement);
@@ -205,8 +258,8 @@ export const DuringService: Story = {
 };
 
 /**
- * A called guest's ticket, open: the clock since they were called, the name tag to write out, and
- * what to do once they reach the table.
+ * A called guest's ticket, open: the clock since they were called, the name tag to write out,
+ * what to do once they reach the table, and the history of how they got there.
  */
 export const TicketOpen: Story = {
 	args: { openVisitId: 'guest-called-1' },
@@ -217,6 +270,14 @@ export const TicketOpen: Story = {
 
 		await expect(name).toBeVisible();
 		await expect(tag.getByText('ES')).toBeVisible();
+
+		const history = within(
+			await within(document.body).findByRole('region', { name: t.history.title }),
+		);
+
+		await expect(history.getByText(t.history.kinds.called)).toBeVisible();
+		await expect(history.getByText(t.history.byWorker.replace('{name}', 'Matt'))).toBeVisible();
+		await expect(history.getByText(t.history.byLottery)).toBeVisible();
 	},
 };
 

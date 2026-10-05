@@ -1,4 +1,5 @@
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
+import type { VisitEventKind } from './services/visit-events.ts';
 
 export interface AdminTranslation {
 	registrationScheduledPast: string;
@@ -324,6 +325,25 @@ export interface QueueDeskTranslation {
 	/** How long ago a guest was called, short enough for a chip. `{minutes}` is a whole number. */
 	elapsedMinutes: string;
 	elapsedJustNow: string;
+	history: VisitHistoryTranslation;
+}
+
+/** The History panel on an open ticket: what happened to the visit, by whom, and when. */
+export interface VisitHistoryTranslation {
+	title: string;
+	empty: string;
+	kinds: Record<VisitEventKind, string>;
+	/** Appended to `returned`, saying where in line the guest went. */
+	returnedToBack: string;
+	returnedToFront: string;
+	/** `{name}` is the worker's name. */
+	byWorker: string;
+	/** A worker whose sign-in did not carry a name. */
+	byUnnamedWorker: string;
+	byGuest: string;
+	byLottery: string;
+	bySessionEnding: string;
+	bySystem: string;
 }
 
 /**
@@ -691,6 +711,29 @@ export const adminTranslations = {
 			household: 'Household of {count}',
 			elapsedMinutes: '{minutes}m',
 			elapsedJustNow: 'now',
+			history: {
+				title: 'History',
+				empty: 'No history recorded for this visit.',
+				kinds: {
+					registered: 'Registered',
+					added: 'Added by hand',
+					drawn: 'Drawn in the lottery',
+					not_drawn: 'Not drawn',
+					called: 'Called',
+					served: 'Served',
+					no_show: 'Marked no-show',
+					returned: 'Returned to queue',
+					cancelled: 'Cancelled',
+				},
+				returnedToBack: 'to the back',
+				returnedToFront: 'to the front',
+				byWorker: 'By {name}',
+				byUnnamedWorker: 'By a volunteer',
+				byGuest: 'By the guest',
+				byLottery: 'Lottery draw',
+				bySessionEnding: 'Session ended',
+				bySystem: 'Automatically',
+			},
 		},
 	},
 } satisfies Record<'en', AdminTranslation>;

@@ -9,6 +9,7 @@ import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { NameTagCard } from './NameTagCard';
 import { useQueueDesk } from './queue-desk-context';
 import { TicketActions } from './TicketActions';
+import { TicketHistory } from './TicketHistory';
 import { TicketSummary } from './TicketSummary';
 
 // The sheet renders in a portal, outside the queue screen's frame, so it carries its own styles.
@@ -54,8 +55,8 @@ const Sheet = styled(Drawer)`
 
 /**
  * The open ticket, risen from the bottom edge: its number and clock, the name tag to write out,
- * and what to do next. Opening one is how a volunteer works with a guest; the list behind it stays
- * numbers only.
+ * what to do next, and what has happened so far. Opening one is how a volunteer works with a
+ * guest; the list behind it stays one line per ticket.
  */
 export const TicketSheet = observer(function TicketSheet() {
 	const t = adminTranslations.en.queueDesk;
@@ -89,6 +90,7 @@ export const TicketSheet = observer(function TicketSheet() {
 						{language ? <span>{language}</span> : null}
 					</p>
 					<TicketActions guest={guest} />
+					<TicketHistory />
 				</>
 			) : null}
 		</Sheet>
