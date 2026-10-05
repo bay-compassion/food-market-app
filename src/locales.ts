@@ -3,15 +3,18 @@ import { outdent } from 'outdent';
 /**
  * `label` is the language's own name, for a guest choosing it; `englishLabel` is what an
  * English-reading worker sees on the admin screens.
+ *
+ * Ordered by how many people speak each language at home in Contra Costa County (ACS 2024
+ * 1-year, table B16001), so the picker and the kiosk rotation put the most common first.
  */
 export const languages = [
 	{ code: 'en', label: 'English', englishLabel: 'English' },
 	{ code: 'es', label: 'Español', englishLabel: 'Spanish' },
-	{ code: 'fa', label: 'فارسی', englishLabel: 'Farsi' },
 	{ code: 'tl', label: 'Tagalog', englishLabel: 'Tagalog' },
-	{ code: 'vi', label: 'Tiếng Việt', englishLabel: 'Vietnamese' },
 	{ code: 'zh', label: '中文', englishLabel: 'Chinese' },
+	{ code: 'fa', label: 'فارسی', englishLabel: 'Farsi' },
 	{ code: 'ar', label: 'العربية', englishLabel: 'Arabic' },
+	{ code: 'vi', label: 'Tiếng Việt', englishLabel: 'Vietnamese' },
 	{ code: 'fr', label: 'Français', englishLabel: 'French' },
 ] as const;
 

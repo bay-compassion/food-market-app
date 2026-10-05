@@ -173,7 +173,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
 
-		await user.click(container.querySelectorAll('.language-option')[1]!);
+		await user.click(within(container).getByRole('button', { name: 'Español' }));
 
 		expect(window.localStorage.getItem('bay-compassion.locale')).toBe('es');
 		expect(window.localStorage.getItem('bay-compassion.returning-visitor')).toBe('true');
@@ -211,7 +211,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
 
-		await user.click(container.querySelectorAll('.language-option')[2]!);
+		await user.click(within(container).getByRole('button', { name: 'فارسی' }));
 
 		expect(container.querySelector('.app-shell')!.getAttribute('dir')).toBe('rtl');
 		expect(container.textContent).toContain('درباره خودتان بگویید');
