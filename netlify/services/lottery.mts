@@ -11,6 +11,7 @@ import { tracedQuery } from '../lib/sentry.mjs';
 import type { ActionResult, MarketEventRow } from './marketSession.mjs';
 import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
+import { recordVisitEvents, systemActor } from './visit-events.mjs';
 
 /**
  * Orders visits for the draw, giving a heavier `lotteryWeight` proportionally better odds of
@@ -134,6 +135,23 @@ export async function runLottery(
 						await queueNotification(tx, notPlaced, 'lottery_not_selected', 'lottery_not_selected');
 					}
 				}
+
+				// The draw is the app's own act, whether the timer ran it or a worker pressed the button.
+				await recordVisitEvents(tx, [
+					...selectedRegistrations.map((registration, index) => ({
+						visitId: registration.id,
+						kind: 'drawn' as const,
+						toStatus: 'waiting' as const,
+						actor: systemActor,
+						details: { queuePosition: index + 1 + positionOffset },
+					})),
+					...notPlaced.map((visitId) => ({
+						visitId,
+						kind: 'not_drawn' as const,
+						toStatus: 'not_placed' as const,
+						actor: systemActor,
+					})),
+				]);
 
 				return true;
 			})

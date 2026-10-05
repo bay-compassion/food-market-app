@@ -3,6 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
+// History entries are an extra insert in each write's transaction; tested in visit-events.test.mts.
+vi.mock('../../services/visit-events.mjs', () => ({
+	recordVisitEvents: vi.fn(),
+	listVisitEvents: vi.fn(),
+	guestActor: { kind: 'guest' },
+	systemActor: { kind: 'system' },
+}));
 
 import handler from '../../routes/guests/visit.mjs';
 

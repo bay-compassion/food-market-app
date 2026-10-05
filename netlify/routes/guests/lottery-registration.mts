@@ -6,6 +6,7 @@ import {
 	routeHandler,
 } from '../../lib/http.mjs';
 import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
+import { guestActor } from '../../services/visit-events.mjs';
 
 export const lotteryRegistrationRoutes = createRouter();
 
@@ -18,7 +19,7 @@ lotteryRegistrationRoutes.post('/api/lottery-registration', async (context) => {
 		return jsonError('Please provide a valid lottery registration.');
 	}
 
-	const result = await registerGuest(submission);
+	const result = await registerGuest(submission, guestActor);
 
 	return result.ok
 		? Response.json(result.body, { status: result.status })

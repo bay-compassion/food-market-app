@@ -3,6 +3,7 @@ import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { db } from '../../db/index.mjs';
 import { visits } from '../../db/schema.mjs';
 import type { QueuePlacement } from '../../src/services/guestAdmission.js';
+import { visitCommandEvents, type VisitEventActor } from '../../src/services/visit-events.js';
 import {
 	canRunVisitCommand,
 	outstandingVisitStatuses,
@@ -13,6 +14,7 @@ import {
 import { tracedQuery } from '../lib/sentry.mjs';
 import { deliverQueuedNotifications, requeueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
+import { recordVisitEvents, systemActor } from './visit-events.mjs';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -72,6 +74,8 @@ const transitionRefused: VisitCommandResult = {
 };
 
 export type VisitCommandOptions = {
+	/** Who ran the command, for the visit's history. */
+	actor: VisitEventActor;
 	/**
 	 * Where `return_to_queue` puts the guest: `end` behind everyone waiting, `next` at the front.
 	 * Without one, the guest goes back to the place they had. Ignored by every other command.
@@ -88,7 +92,7 @@ export type VisitCommandOptions = {
 export async function runVisitCommand(
 	visitId: string,
 	command: VisitCommand,
-	options: VisitCommandOptions = {},
+	options: VisitCommandOptions,
 ): Promise<VisitCommandResult> {
 	const [current] = await tracedQuery('visit.read_status', () =>
 		db
@@ -113,12 +117,13 @@ export async function runVisitCommand(
 	try {
 		updated = await tracedQuery('visit.apply_command', () =>
 			db.transaction(async (tx) => {
-				const changes = placement
-					? {
-							...visitCommandChanges(command),
-							queuePosition: await nextQueuePosition(tx, current.marketEventId, placement),
-						}
-					: visitCommandChanges(command);
+				const queuePosition = placement
+					? await nextQueuePosition(tx, current.marketEventId, placement)
+					: undefined;
+				const changes =
+					queuePosition === undefined
+						? visitCommandChanges(command)
+						: { ...visitCommandChanges(command), queuePosition };
 				const [visit] = await tx
 					.update(visits)
 					.set(changes)
@@ -127,6 +132,20 @@ export async function runVisitCommand(
 
 				if (!visit) {
 					throw new TransitionRefused();
+				}
+
+				const kind = visitCommandEvents[command];
+
+				if (kind) {
+					await recordVisitEvents(tx, [
+						{
+							visitId: visit.id,
+							kind,
+							toStatus: visit.status,
+							actor: options.actor,
+							details: placement ? { placement, queuePosition } : undefined,
+						},
+					]);
 				}
 
 				if (command === 'call') {
@@ -156,7 +175,12 @@ export async function runVisitCommand(
  * notifications. The selection and the update are one statement so two workers calling at the same
  * moment cannot claim the same guests.
  */
-async function callNextInTransaction(tx: Transaction, marketEventId: string, count: number) {
+async function callNextInTransaction(
+	tx: Transaction,
+	marketEventId: string,
+	count: number,
+	actor: VisitEventActor,
+) {
 	const rows = await tx
 		.update(visits)
 		.set({ status: 'called', calledAt: sql`now()` })
@@ -174,15 +198,19 @@ async function callNextInTransaction(tx: Transaction, marketEventId: string, cou
 		.returning({ id: visits.id });
 	const visitIds = rows.map((row) => row.id);
 
+	await recordVisitEvents(
+		tx,
+		visitIds.map((visitId) => ({ visitId, kind: 'called', toStatus: 'called', actor })),
+	);
 	await queueCalledNotifications(tx, visitIds);
 
 	return visitIds;
 }
 
 /** Calls the next `count` waiting guests in queue order. */
-export async function callNextVisits(marketEventId: string, count: number) {
+export async function callNextVisits(marketEventId: string, count: number, actor: VisitEventActor) {
 	const called = await tracedQuery('visit.call_next', () =>
-		db.transaction((tx) => callNextInTransaction(tx, marketEventId, count)),
+		db.transaction((tx) => callNextInTransaction(tx, marketEventId, count, actor)),
 	);
 
 	await deliverCalledNotifications(called);
@@ -207,6 +235,7 @@ export type ServeAndCallNextResult =
 export async function serveAndCallNext(
 	marketEventId: string,
 	visitId: string,
+	actor: VisitEventActor,
 ): Promise<ServeAndCallNextResult> {
 	const result = await tracedQuery('visit.serve_and_call_next', () =>
 		db.transaction(async (tx) => {
@@ -226,7 +255,14 @@ export async function serveAndCallNext(
 				return null;
 			}
 
-			return { served: served.id, called: await callNextInTransaction(tx, marketEventId, 1) };
+			await recordVisitEvents(tx, [
+				{ visitId: served.id, kind: 'served', toStatus: 'served', actor },
+			]);
+
+			return {
+				served: served.id,
+				called: await callNextInTransaction(tx, marketEventId, 1, actor),
+			};
 		}),
 	);
 
@@ -254,6 +290,17 @@ export async function resolveOutstandingVisits(tx: Transaction, marketEventId: s
 				and(eq(visits.marketEventId, marketEventId), inArray(visits.status, stillInLineStatuses)),
 			)
 			.returning({ id: visits.id });
+
+		await recordVisitEvents(
+			tx,
+			resolved.map(({ id }) => ({
+				visitId: id,
+				kind: 'cancelled',
+				toStatus: 'cancelled',
+				actor: systemActor,
+				details: { cause: 'session_ended' },
+			})),
+		);
 
 		return resolved.length;
 	});

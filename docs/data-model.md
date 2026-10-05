@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=1622e20913d8 -->
+<!-- diagram-sources: db/schema.mts=18999929173e -->
 
 # Database structure
 
@@ -27,6 +27,7 @@ erDiagram
     guests ||--o| sms_opt_outs : "records STOP"
     guests ||--o| guest_claims : "awaits a phone"
     visits ||--o{ notification_deliveries : "queues"
+    visits ||--o{ visit_events : "records"
 
     market_locations {
         uuid id PK
@@ -115,6 +116,18 @@ erDiagram
         timestamptz created_at
     }
 
+    visit_events {
+        uuid id PK
+        uuid visit_id FK "cascade delete"
+        text kind "registered | added | drawn | not_drawn | called | served | no_show | returned | cancelled"
+        text to_status "the status the visit moved to"
+        text actor_kind "guest | worker | system"
+        text actor_id "nullable; the worker's Auth0 subject"
+        text actor_name "nullable; the worker's name as their sign-in gave it then"
+        jsonb details "placement, queue position, or why it was cancelled"
+        timestamptz created_at
+    }
+
     push_subscriptions {
         uuid id PK
         uuid visit_id FK "unique; cascade delete"
@@ -180,10 +193,15 @@ A few things the diagram can't show on its own:
   them once household composition moved to `visits` — they're mid backfill-then-drop, waiting on a
   later migration to actually remove them (see
   [`migrations.md`](migrations.md#the-backfill-then-drop-rule)).
-- **`called_at` and `served_at` are the only timing this database keeps.** There is no log of
-  status changes, so anything time-based in reporting is measured from those two columns. Both are
-  null for a visit a worker recorded after its session had already ended — that guest was handed
-  food outside the app, and stamping a time would be inventing one.
+- **`called_at` and `served_at` are the timing reporting measures from.** Both are null for a visit
+  a worker recorded after its session had already ended — that guest was handed food outside the
+  app, and stamping a time would be inventing one.
+- **`visit_events` is each visit's history: one row per status change, naming who made it.** Every
+  write that changes a visit's status adds its row in the same transaction, so the two never
+  disagree. It is append-only. A worker is named by their Auth0 subject and by the name their
+  sign-in carried at the time — copied, not looked up, so the history still reads correctly after
+  a volunteer leaves. Visits from before the table existed have no rows; nothing was backfilled
+  from `called_at` and `served_at`, since those cannot say who acted.
 - **The device token is the self-service guest credential.** The opaque token exists only in the
   browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
   an admin have no device credential until the guest scans a worker's QR code.
@@ -208,8 +226,8 @@ A few things the diagram can't show on its own:
   website re-consent clears both through Twilio's Consent Management API before restoring the
   `sms_subscriptions` row; an inbound START removes the opt-out row directly.
 - **Only `market_events → registration_questions`, `visits → push_subscriptions`,
-  `visits → notification_deliveries`, `guests → sms_subscriptions`, `guests → sms_opt_outs`, and
-  `guests → guest_claims` cascade on delete.**
+  `visits → notification_deliveries`, `visits → visit_events`, `guests → sms_subscriptions`,
+  `guests → sms_opt_outs`, and `guests → guest_claims` cascade on delete.**
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.
 

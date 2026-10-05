@@ -9,6 +9,7 @@ import { adminMarketRoutes } from './market.mjs';
 import { queueRoutes } from './queue.mjs';
 import { reportRoutes } from './reports.mjs';
 import { adminScheduleRoutes } from './schedule.mjs';
+import { visitEventRoutes } from './visit-events.mjs';
 
 export const adminApi = createRouter<AdminEnv>();
 
@@ -23,3 +24,4 @@ adminApi.route('/', reportRoutes);
 adminApi.route('/', adminScheduleRoutes);
 adminApi.route('/', demoRoutes);
 adminApi.route('/', kioskRoutes);
+adminApi.route('/', visitEventRoutes);

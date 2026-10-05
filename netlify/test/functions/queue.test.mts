@@ -3,6 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../dbStub.mjs';
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
+// History entries are an extra insert in each write's transaction; tested in visit-events.test.mts.
+vi.mock('../../services/visit-events.mjs', () => ({
+	recordVisitEvents: vi.fn(),
+	listVisitEvents: vi.fn(),
+	guestActor: { kind: 'guest' },
+	systemActor: { kind: 'system' },
+}));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 vi.mock('../../services/pushNotifications.mjs', () => ({
 	notificationsEnabled: vi.fn(() => false),
@@ -11,6 +18,7 @@ vi.mock('../../services/pushNotifications.mjs', () => ({
 
 import { requirePermission } from '../../lib/auth.mjs';
 import handler from '../../routes/admin/queue.mjs';
+import { recordVisitEvents } from '../../services/visit-events.mjs';
 
 function request(method: string, body?: unknown) {
 	return new Request('https://example.com/api/admin/queue', {
@@ -35,6 +43,7 @@ function activeEvent(status = 'service_started') {
 afterEach(() => {
 	resetDbStub();
 	vi.mocked(requirePermission).mockReset();
+	vi.mocked(recordVisitEvents).mockClear();
 });
 
 describe('queue handler routing', () => {
@@ -161,6 +170,13 @@ describe('queue handler serve_and_call_next', () => {
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toEqual({ served: visitId, called: ['visit-2'] });
 		expect(db.transaction).toHaveBeenCalledTimes(1);
+		// A standalone handler has no Auth0 middleware in front of it, so the worker is unnamed here.
+		const worker = { kind: 'worker', id: null, name: null };
+
+		expect(vi.mocked(recordVisitEvents).mock.calls.map(([, events]) => events)).toEqual([
+			[{ visitId, kind: 'served', toStatus: 'served', actor: worker }],
+			[{ visitId: 'visit-2', kind: 'called', toStatus: 'called', actor: worker }],
+		]);
 	});
 
 	it('still serves the guest when nobody is left to call', async () => {

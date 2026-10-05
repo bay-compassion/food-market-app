@@ -15,6 +15,11 @@ import {
 
 import type { AgeRange } from '../src/services/ageRanges.js';
 import type { SessionStatus } from '../src/services/sessionStateMachine.js';
+import type {
+	VisitEventActor,
+	VisitEventDetails,
+	VisitEventKind,
+} from '../src/services/visit-events.js';
 import type { VisitStatus } from '../src/services/visitStateMachine.js';
 
 /** Where a market happens. Its time zone is what every local date and time there is read in. */
@@ -189,6 +194,31 @@ export const visits = pgTable('visits', {
 	isFirstVisit: boolean('is_first_visit').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * A visit's history: one row per status change, written in the same transaction as the change
+ * itself, naming who made it. Append-only — nothing updates or deletes a row except the visit's
+ * own deletion. Visits from before this table existed simply have no rows.
+ */
+export const visitEvents = pgTable(
+	'visit_events',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		visitId: uuid('visit_id')
+			.notNull()
+			.references(() => visits.id, { onDelete: 'cascade' }),
+		kind: text('kind').$type<VisitEventKind>().notNull(),
+		toStatus: text('to_status').$type<VisitStatus>().notNull(),
+		actorKind: text('actor_kind').$type<VisitEventActor['kind']>().notNull(),
+		/** The worker's Auth0 subject. Null for a guest or the system, or a token without one. */
+		actorId: text('actor_id'),
+		/** The worker's name as their sign-in gave it at the time, not looked up later. */
+		actorName: text('actor_name'),
+		details: jsonb('details').$type<VisitEventDetails>().notNull().default({}),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [index('visit_events_visit_idx').on(table.visitId, table.createdAt)],
+);
 
 export const pushSubscriptions = pgTable(
 	'push_subscriptions',

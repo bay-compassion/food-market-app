@@ -14,6 +14,7 @@ import {
 import { tracedQuery } from '../../lib/sentry.mjs';
 import { hashVisitToken } from '../../services/guestCredentials.mjs';
 import { latestCalledPosition } from '../../services/queue-board.mjs';
+import { guestActor, recordVisitEvents } from '../../services/visit-events.mjs';
 
 /** Cancelling is the only change a guest can make to their own visit. */
 const visitActionSchema = z.object({ action: z.literal('cancel') });
@@ -127,12 +128,22 @@ visitRoutes.patch('/api/visit', async (context) => {
 	if (!action.success) {
 		return jsonError('Invalid visit action.');
 	}
-	const [cancelled] = await tracedQuery('visit.cancel', () =>
-		db
-			.update(visits)
-			.set({ status: 'cancelled' })
-			.where(and(eq(visits.id, visit.id), inArray(visits.status, ['registered', 'waiting'])))
-			.returning({ id: visits.id, status: visits.status }),
+	const cancelled = await tracedQuery('visit.cancel', () =>
+		db.transaction(async (tx) => {
+			const [row] = await tx
+				.update(visits)
+				.set({ status: 'cancelled' })
+				.where(and(eq(visits.id, visit.id), inArray(visits.status, ['registered', 'waiting'])))
+				.returning({ id: visits.id, status: visits.status });
+
+			if (row) {
+				await recordVisitEvents(tx, [
+					{ visitId: row.id, kind: 'cancelled', toStatus: row.status, actor: guestActor },
+				]);
+			}
+
+			return row ?? null;
+		}),
 	);
 
 	return cancelled

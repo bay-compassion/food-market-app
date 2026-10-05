@@ -4,6 +4,13 @@ import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 import { baseEvent } from '../test/marketEventFixture.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
+// History entries are an extra insert in each write's transaction; tested in visit-events.test.mts.
+vi.mock('./visit-events.mjs', () => ({
+	recordVisitEvents: vi.fn(),
+	listVisitEvents: vi.fn(),
+	guestActor: { kind: 'guest' },
+	systemActor: { kind: 'system' },
+}));
 vi.mock('./pushNotifications.mjs', () => ({ notificationsEnabled: vi.fn(() => true) }));
 vi.mock('./notificationDispatch.mjs', () => ({ requestNotificationDispatch: vi.fn() }));
 vi.mock('./sessionTimers.mjs', () => ({

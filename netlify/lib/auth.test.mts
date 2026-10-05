@@ -10,7 +10,7 @@ vi.mock('jose', () => ({
 	jwtVerify,
 }));
 
-import { requirePermission, verifyAuth0Token } from './auth.mjs';
+import { requirePermission, verifyAuth0Token, workerNameClaim, workerNameFrom } from './auth.mjs';
 
 function requestWithAuth(header: string | null) {
 	const headers = new Headers();
@@ -205,5 +205,25 @@ describe('requirePermission', () => {
 		);
 
 		expect(refused?.status).toBe(403);
+	});
+});
+
+describe('workerNameFrom', () => {
+	it('reads the name the Auth0 Action put on the token, trimmed', () => {
+		const name = workerNameFrom({ [workerNameClaim]: '  Matt  ' });
+
+		expect(name).toBe('Matt');
+	});
+
+	it('is null for a token without the claim, or with a blank or non-string one', () => {
+		const names = [{}, { [workerNameClaim]: '   ' }, { [workerNameClaim]: 42 }].map(workerNameFrom);
+
+		expect(names).toEqual([null, null, null]);
+	});
+
+	it('cuts an overlong name rather than rejecting the request', () => {
+		const name = workerNameFrom({ [workerNameClaim]: 'x'.repeat(200) });
+
+		expect(name).toHaveLength(80);
 	});
 });
