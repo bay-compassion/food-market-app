@@ -297,6 +297,8 @@ export interface QueueDeskTranslation {
 	actions: string;
 	called: string;
 	waiting: string;
+	noShows: string;
+	notPlaced: string;
 	done: string;
 	noneCalled: string;
 	noneWaiting: string;
@@ -663,6 +665,8 @@ export const adminTranslations = {
 			actions: 'Queue actions',
 			called: 'Called',
 			waiting: 'Waiting',
+			noShows: 'No-shows',
+			notPlaced: 'Not placed',
 			done: 'Done',
 			noneCalled: 'Nobody has been called yet.',
 			noneWaiting: 'Nobody is left in line.',
