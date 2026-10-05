@@ -1,7 +1,11 @@
 import { runInAction } from 'mobx';
 
 import type { QueueGuest } from '../services/admin-api.ts';
-import { manualAdmissionsFor, type ManualAdmission } from '../services/guestAdmission.ts';
+import {
+	manualAdmissionsFor,
+	type ManualAdmission,
+	type QueuePlacement,
+} from '../services/guestAdmission.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
 import { QueueRoster } from '../services/queue-roster.ts';
@@ -164,8 +168,21 @@ export class QueueDeskStore {
 		}
 	}
 
-	async run(guest: QueueGuest, command: VisitCommand): Promise<void> {
-		await this.admin.runGuestCommand(guest, command);
+	/**
+	 * Runs a visit command. A guest returned to the queue goes where `placement` says — behind
+	 * everyone unless the volunteer chose otherwise: a no-show has lost their turn, and a guest
+	 * called by mistake is the rarer case.
+	 */
+	async run(
+		guest: QueueGuest,
+		command: VisitCommand,
+		placement: QueuePlacement = 'end',
+	): Promise<void> {
+		await this.admin.runGuestCommand(
+			guest,
+			command,
+			command === 'return_to_queue' ? placement : undefined,
+		);
 	}
 
 	/** Ends the day's session. Whether to ask first is the screen's call, not the store's. */

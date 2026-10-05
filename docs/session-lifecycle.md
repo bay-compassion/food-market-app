@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=86b320d3af1b -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=de366c634ac7 -->
 
 # Session lifecycle
 
@@ -171,6 +171,11 @@ the only timing the database keeps, since no log of status changes exists. `retu
 recovery path — a guest marked no-show who turns up after all, or one called by mistake, goes back
 to `waiting` and is notified again when re-called — so it clears `called_at` on the way out.
 Nothing transitions out of `served`, so `served_at` is only ever written once.
+
+`return_to_queue` can also say where the guest goes: `placement: 'end'` behind everyone waiting, or
+`'next'` at the front, shifting the waiting guests down — the same placements as adding a guest by
+hand. The volunteer queue screen sends `end` unless the worker picks the front, since a no-show has
+lost their turn; without a placement the guest goes back to the place they had.
 
 Workers call guests in batches. `call_next` on `/api/admin/queue` takes the next N waiting guests in
 queue order and calls them in a single statement, so two workers running the queue at the same time

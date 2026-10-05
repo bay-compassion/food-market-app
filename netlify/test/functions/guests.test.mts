@@ -84,6 +84,33 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 		expect(response.status).toBe(400);
 	});
 
+	it('rejects a placement other than the front or the back of the line', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+
+		const response = await handler(
+			request('PATCH', {
+				body: { id: 'visit-1', command: 'return_to_queue', placement: 'middle' },
+			}),
+		);
+
+		expect(response.status).toBe(400);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+
+	it('returns a guest to the back of the line when asked to', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]); // current visit
+		queueResult([{ position: 9 }]); // the last place in line
+		queueResult([{ id: 'visit-1', status: 'waiting' }]); // the update
+
+		const response = await handler(
+			request('PATCH', { body: { id: 'visit-1', command: 'return_to_queue', placement: 'end' } }),
+		);
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ id: 'visit-1', status: 'waiting' });
+	});
+
 	it('applies a command that is legal from the current status', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([{ status: 'called' }]); // current visit status

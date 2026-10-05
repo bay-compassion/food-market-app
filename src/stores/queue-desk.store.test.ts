@@ -244,6 +244,24 @@ describe('QueueDeskStore', () => {
 		expect(desk.selected).toBeNull();
 	});
 
+	it('returns a guest to the back of the line unless told otherwise', async () => {
+		// Arrange
+		const { desk, admin } = deskWith();
+		const guest = guestWith({ status: 'no_show' });
+
+		// Act
+		await desk.run(guest, 'return_to_queue');
+		await desk.run(guest, 'return_to_queue', 'next');
+		await desk.run(guest, 'mark_no_show');
+
+		// Assert
+		expect(admin.runGuestCommand.mock.calls.map((call) => call.slice(1))).toEqual([
+			['return_to_queue', 'end'],
+			['return_to_queue', 'next'],
+			['mark_no_show', undefined],
+		]);
+	});
+
 	it('shares a read already in flight', async () => {
 		// Arrange
 		const { desk, admin } = deskWith();

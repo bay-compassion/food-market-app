@@ -6,6 +6,7 @@ import type { QueueGuest } from '../../services/admin-api';
 import { visitCommandsFrom, type VisitCommand } from '../../services/visitStateMachine';
 import { primaryVisitCommands, visitCommandLabels } from '../admin/VisitCommandButtons';
 import { useQueueDesk } from './queue-desk-context';
+import { ReturnToQueueButton } from './ReturnToQueueButton';
 
 const Actions = styled.div`
 	display: flex;
@@ -52,10 +53,15 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 	// The combined step takes the filled style when it is offered; there is only ever one.
 	const isPrimary = (command: VisitCommand) =>
 		!offersServeAndCallNext && primaryVisitCommands.includes(command);
-	const commands = visitCommandsFrom(guest.status).sort(
-		(first, second) =>
-			Number(primaryVisitCommands.includes(second)) - Number(primaryVisitCommands.includes(first)),
-	);
+	const available = visitCommandsFrom(guest.status);
+	// Returning to the queue asks where, so it gets a control of its own after the rest.
+	const commands = available
+		.filter((command) => command !== 'return_to_queue')
+		.sort(
+			(first, second) =>
+				Number(primaryVisitCommands.includes(second)) -
+				Number(primaryVisitCommands.includes(first)),
+		);
 
 	return (
 		<Actions className="ticket-actions">
@@ -83,6 +89,15 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 					{labels[command]}
 				</button>
 			))}
+			{available.includes('return_to_queue') ? (
+				<ReturnToQueueButton
+					disabled={desk.isBusy}
+					onReturn={(placement) => {
+						desk.dismiss();
+						void desk.run(guest, 'return_to_queue', placement);
+					}}
+				/>
+			) : null}
 			<a href={`tel:${guest.phone.replace(/[^\d+]/g, '')}`}>{t.phoneGuest}</a>
 		</Actions>
 	);
