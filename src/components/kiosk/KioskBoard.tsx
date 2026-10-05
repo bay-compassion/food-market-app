@@ -85,43 +85,35 @@ const NowCalling = styled.section`
 	}
 `;
 
-const Footer = styled.footer`
-	display: grid;
-	grid-template-areas: 'name languages count';
-	grid-template-columns: 1fr auto 1fr;
-	align-items: end;
-	gap: 2vmin 4vmin;
-	padding-top: 3vmin;
+const Header = styled.header`
+	display: flex;
+	justify-content: space-between;
+	align-items: start;
+	gap: 2vmin 5vmin;
+	padding-bottom: 3vmin;
 	font-size: clamp(1.25rem, 3.5vmin, 2.75rem);
 	font-weight: 500;
-
-	/* Too narrow for the language row between the two: it takes a row of its own. */
-	@media (orientation: portrait) {
-		grid-template-areas: 'languages languages' 'name count';
-		grid-template-columns: 1fr 1fr;
-	}
-
-	> :first-child {
-		grid-area: name;
-	}
 
 	> div > span {
 		display: block;
 	}
 
-	> ol {
-		grid-area: languages;
+	/* Explicit sides: dir="auto" on a right-to-left second line would otherwise flip it. */
+	> :first-child {
+		text-align: left;
 	}
 
-	/* Explicit sides: dir="auto" on a right-to-left second line would otherwise flip it. */
 	> :last-child {
-		grid-area: count;
 		text-align: right;
 	}
 
 	[role='status'] {
 		color: var(--color-focus);
 	}
+`;
+
+const Footer = styled.footer`
+	padding-top: 3vmin;
 `;
 
 export type KioskBoardProps = {
@@ -146,6 +138,23 @@ export function KioskBoard({ board, reconnecting }: KioskBoardProps) {
 
 	return (
 		<>
+			<Header>
+				<div>
+					<span>{primary.marketName}</span>
+					{reconnecting ? (
+						<span role="status">
+							<Bilingual text={(copy) => copy.reconnecting} />
+						</span>
+					) : null}
+				</div>
+				<div>
+					<Bilingual
+						text={(copy, numerals) =>
+							copy.waitingCount.replace('{count}', numerals.inline(board.waitingCount))
+						}
+					/>
+				</div>
+			</Header>
 			<Layout $split={stillWaitingFor.length > 0}>
 				<NowCalling aria-live="polite">
 					<h1>
@@ -170,22 +179,7 @@ export function KioskBoard({ board, reconnecting }: KioskBoardProps) {
 				) : null}
 			</Layout>
 			<Footer>
-				<div>
-					<span>{primary.marketName}</span>
-					{reconnecting ? (
-						<span role="status">
-							<Bilingual text={(copy) => copy.reconnecting} />
-						</span>
-					) : null}
-				</div>
 				<LanguageIndicator />
-				<div>
-					<Bilingual
-						text={(copy, numerals) =>
-							copy.waitingCount.replace('{count}', numerals.inline(board.waitingCount))
-						}
-					/>
-				</div>
 			</Footer>
 		</>
 	);
