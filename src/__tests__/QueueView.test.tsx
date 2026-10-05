@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
 import { adminTranslations } from '../adminLocales';
@@ -53,6 +54,8 @@ function renderQueue(guests: QueueGuest[], serviceStarted = true) {
 				onNavigateCurrentSession={vi.fn()}
 			/>
 		</RootStoreProvider>,
+		// The queue tab links out to the volunteer screen, which needs a router to resolve.
+		{ wrapper: MemoryRouter },
 	);
 
 	return { ...result, onCallNext, onCloseSession };
@@ -247,6 +250,7 @@ describe('QueueView', () => {
 					onNavigateCurrentSession={vi.fn()}
 				/>
 			</RootStoreProvider>,
+			{ wrapper: MemoryRouter },
 		);
 
 		await user.click(screen.getByRole('button', { name: /more actions/i }));

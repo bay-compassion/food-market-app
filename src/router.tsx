@@ -42,6 +42,13 @@ export const router = createInstrumentedBrowserRouter([
 			},
 		],
 	},
+	// Outside the app shell: a volunteer's phone gets the whole screen for the line.
+	{
+		path: '/queue',
+		lazy: async () => ({
+			Component: (await import('./components/queue/QueueRoute')).QueueRoute,
+		}),
+	},
 	// Outside the app shell: a room display shows no bar, menu, or footer for a passer-by to tap.
 	{
 		path: '/kiosk',

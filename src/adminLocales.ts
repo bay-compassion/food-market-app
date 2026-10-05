@@ -280,6 +280,41 @@ export interface AdminTranslation {
 	devProgressJustStarted: string;
 	devProgressHalfway: string;
 	devProgressNearlyDone: string;
+	queueDesk: QueueDeskTranslation;
+}
+
+/** The `/queue` screen a volunteer runs the line from on their own phone. */
+export interface QueueDeskTranslation {
+	title: string;
+	/** The line under the title while service is running. */
+	serving: string;
+	loading: string;
+	notPermitted: string;
+	ended: string;
+	openDashboard: string;
+	/** Links the dashboard's queue tab to the volunteer screen. */
+	openQueueDesk: string;
+	actions: string;
+	called: string;
+	waiting: string;
+	done: string;
+	noneCalled: string;
+	noneWaiting: string;
+	noneDone: string;
+	callNext: string;
+	addGuest: string;
+	/** `{number}` is the queue position, `{name}` the guest's full name. */
+	openTicket: string;
+	ticket: string;
+	unplaced: string;
+	closeTicket: string;
+	nameTag: string;
+	language: string;
+	/** `{count}` is the number of people in the household. */
+	household: string;
+	/** How long ago a guest was called, short enough for a chip. `{minutes}` is a whole number. */
+	elapsedMinutes: string;
+	elapsedJustNow: string;
 }
 
 /**
@@ -615,5 +650,32 @@ export const adminTranslations = {
 		devProgressJustStarted: 'Just started',
 		devProgressHalfway: 'Halfway',
 		devProgressNearlyDone: 'Nearly done',
+		queueDesk: {
+			title: 'Queue',
+			serving: 'Serving guests',
+			loading: 'Loading the queue…',
+			notPermitted: 'This account can’t run the queue. Ask an admin to give it the worker role.',
+			ended: 'Today’s session has ended.',
+			openDashboard: 'Open the admin dashboard',
+			openQueueDesk: 'Open the queue screen',
+			actions: 'Queue actions',
+			called: 'Called',
+			waiting: 'Waiting',
+			done: 'Done',
+			noneCalled: 'Nobody has been called yet.',
+			noneWaiting: 'Nobody is left in line.',
+			noneDone: 'Nobody has finished yet.',
+			callNext: 'Call next',
+			addGuest: 'Add guest',
+			openTicket: 'Open ticket {number}, {name}',
+			ticket: 'Ticket',
+			unplaced: 'Not placed',
+			closeTicket: 'Close ticket',
+			nameTag: 'Name tag',
+			language: 'Language',
+			household: 'Household of {count}',
+			elapsedMinutes: '{minutes}m',
+			elapsedJustNow: 'now',
+		},
 	},
 } satisfies Record<'en', AdminTranslation>;

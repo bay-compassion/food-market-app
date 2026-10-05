@@ -57,6 +57,8 @@ export type MarketSessionStoreOptions = {
 	pollIntervalMs?: number;
 	/** Supplies authentication or other request headers without coupling the store to Auth0. */
 	requestHeaders?: () => HeadersInit | Promise<HeadersInit>;
+	/** Sends the store's requests. Injected by a story or test so a fake never touches `window`. */
+	fetch?: typeof fetch;
 };
 
 const defaultPollIntervalMs = 5_000;
@@ -72,6 +74,7 @@ export class MarketSessionStore {
 	private requestRevision = 0;
 	private readonly pollIntervalMs: number;
 	private readonly requestHeaders: () => HeadersInit | Promise<HeadersInit>;
+	private readonly fetch: typeof fetch;
 
 	get currentState(): SessionOverview | null {
 		return this._currentState;
@@ -125,10 +128,13 @@ export class MarketSessionStore {
 	constructor(options: MarketSessionStoreOptions = {}) {
 		this.pollIntervalMs = options.pollIntervalMs ?? defaultPollIntervalMs;
 		this.requestHeaders = options.requestHeaders ?? (() => ({}));
+		// Bound, because a bare `fetch` called as a method throws "Illegal invocation".
+		this.fetch = options.fetch ?? ((...request) => fetch(...request));
 
 		return makeReactive(this, {
 			pollIntervalMs: false,
 			requestHeaders: false,
+			fetch: false,
 			pagePoller: false,
 			statusRequest: false,
 			requestRevision: false,
@@ -214,7 +220,7 @@ export class MarketSessionStore {
 
 			headers.set('Content-Type', 'application/json');
 
-			const response = await fetch('/api/admin/market', {
+			const response = await this.fetch('/api/admin/market', {
 				method: 'POST',
 				headers,
 				body: JSON.stringify(body),
@@ -265,7 +271,7 @@ export class MarketSessionStore {
 		try {
 			const headers = new Headers(await this.requestHeaders());
 			const endpoint = headers.has('Authorization') ? '/api/admin/market/overview' : '/api/market';
-			const response = await fetch(endpoint, { headers });
+			const response = await this.fetch(endpoint, { headers });
 
 			if (!response.ok) {
 				throw await responseError(response, 'Failed to fetch market status');

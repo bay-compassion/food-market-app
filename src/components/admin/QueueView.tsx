@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { Button, MenuItem } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 
 import { adminTranslations } from '../../adminLocales';
 import type { ManualAdmission } from '../../services/guestAdmission';
@@ -39,9 +40,18 @@ const Header = styled.div`
 `;
 
 const Summary = styled.p`
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 4px 12px;
 	margin: 10px 0 0;
 	color: var(--color-text-subtle);
 	font-size: 13px;
+
+	a {
+		color: var(--color-brand);
+		font-weight: 700;
+	}
 `;
 
 const Empty = styled.section`
@@ -177,7 +187,10 @@ export const QueueView = observer(function QueueView({
 					</>
 				)}
 			</Header>
-			<Summary className="queue-summary">{summary}</Summary>
+			<Summary className="queue-summary">
+				<span>{summary}</span>
+				<Link to="/queue">{t.queueDesk.openQueueDesk}</Link>
+			</Summary>
 
 			<QueueSection
 				title={t.calledNow}
