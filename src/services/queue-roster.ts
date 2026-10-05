@@ -37,6 +37,24 @@ export class QueueRoster {
 		return this.guests.filter((guest) => guest.status === 'waiting').sort(byQueuePosition);
 	}
 
+	/**
+	 * Called but never came to the table. In effect they have gone to the back of the line: a
+	 * worker can return one to the queue if they turn up, at their own discretion.
+	 */
+	get noShows(): QueueGuest[] {
+		return this.guests.filter((guest) => guest.status === 'no_show');
+	}
+
+	/** Entered the lottery and were not drawn. Kept apart from those served — they never had a turn. */
+	get notPlaced(): QueueGuest[] {
+		return this.guests.filter((guest) => guest.status === 'not_placed');
+	}
+
+	/** Through for the day: served, or cancelled by themselves or by the session ending. */
+	get done(): QueueGuest[] {
+		return this.guests.filter((guest) => guest.status === 'served' || guest.status === 'cancelled');
+	}
+
 	/** Done for the day, however they got there: served, skipped, a no show, or cancelled. */
 	get finished(): QueueGuest[] {
 		return this.guests.filter((guest) => finishedVisitStatuses.includes(guest.status));

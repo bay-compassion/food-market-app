@@ -73,7 +73,10 @@ const Card = styled.section`
 		color: var(--color-brand);
 	}
 
-	&[data-status='no_show'] .status,
+	&[data-status='no_show'] .status {
+		color: var(--color-error);
+	}
+
 	&[data-status='cancelled'] .status {
 		color: var(--color-warning);
 	}

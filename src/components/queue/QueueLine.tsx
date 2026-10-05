@@ -61,7 +61,8 @@ const CallBar = styled.div`
 `;
 
 /**
- * The queue while service runs: the called and waiting numbers, the finished ones below them, and
+ * The queue while service runs: the called and waiting numbers; then no-shows, guests the draw
+ * did not place, and the finished ones, each in their own section; and
  * one big button along the bottom edge to call the next guest — which opens their ticket and name
  * tag straight away. Once everyone is through, that button gives its place to closing the session.
  */
@@ -105,9 +106,12 @@ export const QueueLine = observer(function QueueLine() {
 					) : null
 				}
 			/>
+			{/* Called guests who never came up are, in effect, at the back of the line. */}
+			<TicketSection title={t.queueDesk.noShows} guests={roster.noShows} now={now} />
+			<TicketSection title={t.queueDesk.notPlaced} guests={roster.notPlaced} now={now} />
 			<TicketSection
 				title={t.queueDesk.done}
-				guests={roster.finished}
+				guests={roster.done}
 				emptyText={t.queueDesk.noneDone}
 				now={now}
 			/>

@@ -7,8 +7,12 @@ import { TicketChip } from './TicketChip';
 export type TicketSectionProps = {
 	title: string;
 	guests: QueueGuest[];
-	/** Shown in place of the list when there are no guests. */
-	emptyText: string;
+	/**
+	 * Shown in place of the list when there are no guests. Without one, an empty section is left
+	 * off the screen entirely — for the buckets that are usually empty and only worth a heading
+	 * once someone is in them.
+	 */
+	emptyText?: string;
 	now: number;
 	/** A control drawn on the heading line opposite the title, such as adding a guest. */
 	action?: ReactNode;
@@ -64,8 +68,12 @@ const Section = styled.section`
 	}
 `;
 
-/** One bucket of tickets on the queue screen — called, waiting, or done — as tappable numbers. */
+/** One bucket of tickets on the queue screen — called, waiting, and so on — as tappable rows. */
 export function TicketSection({ title, guests, emptyText, now, action }: TicketSectionProps) {
+	if (!guests.length && emptyText === undefined) {
+		return null;
+	}
+
 	return (
 		<Section aria-label={title}>
 			<header>

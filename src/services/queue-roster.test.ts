@@ -46,6 +46,31 @@ describe('QueueRoster', () => {
 		expect(new QueueRoster([]).mostRecentlyCalled).toBeNull();
 	});
 
+	it('keeps no-shows and guests the draw did not place apart from those done for the day', () => {
+		// Arrange
+		const roster = new QueueRoster([
+			guest('served', 'served'),
+			guest('cancelled', 'cancelled'),
+			guest('no-show', 'no_show'),
+			guest('not-placed', 'not_placed'),
+			guest('waiting', 'waiting'),
+		]);
+
+		// Act
+		const sections = {
+			noShows: roster.noShows.map((each) => each.id),
+			notPlaced: roster.notPlaced.map((each) => each.id),
+			done: roster.done.map((each) => each.id),
+		};
+
+		// Assert
+		expect(sections).toEqual({
+			noShows: ['no-show'],
+			notPlaced: ['not-placed'],
+			done: ['served', 'cancelled'],
+		});
+	});
+
 	it('orders waiting guests by queue position, with unplaced guests last', () => {
 		// Arrange
 		const guests = [

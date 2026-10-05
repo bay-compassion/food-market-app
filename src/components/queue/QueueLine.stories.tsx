@@ -9,7 +9,7 @@ import type { SessionOverview } from '../../stores/market-session.store';
 import { QueueDeskStore } from '../../stores/queue-desk.store';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
-import { busyQueue, finishedQueue } from '../admin/queueGuests.fixture';
+import { busyQueue, finishedQueue, queueGuest } from '../admin/queueGuests.fixture';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { NotificationToasts } from '../ui/NotificationToasts';
 import { QueueDeskProvider } from './queue-desk-context';
@@ -26,11 +26,25 @@ type QueueLineArgs = {
 };
 
 /** The fixture's people, each with a place in line, the way a drawn session numbers them. */
-const numberedQueue: AdminGuest[] = busyQueue.map((guest, index) => ({
-	...guest,
-	queuePosition: index + 1,
-	marketEventId: eventId,
-}));
+const numberedQueue: AdminGuest[] = [
+	...busyQueue.map((guest, index) => ({
+		...guest,
+		queuePosition: index + 1,
+		marketEventId: eventId,
+	})),
+	// Entered the lottery and was not drawn, so has no place in line.
+	{
+		...queueGuest({
+			id: 'guest-not-placed-1',
+			firstName: 'Tomás',
+			lastName: 'Rivera',
+			locale: 'es',
+			status: 'not_placed',
+			queuePosition: null,
+		}),
+		marketEventId: eventId,
+	},
+];
 
 /**
  * A root store whose admin API answers from `guests`, and a desk over it. Built here rather than by
@@ -137,7 +151,10 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Service under way: two guests called, three waiting, two finished. */
+/**
+ * Service under way: two guests called, three waiting, one no-show, one guest the draw did not
+ * place, and one served — each group in its own section.
+ */
 export const DuringService: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
@@ -148,6 +165,15 @@ export const DuringService: Story = {
 				name: t.openTicket.replace('{number}', '3').replace('{name}', 'Linh Nguyen'),
 			}),
 		).toBeVisible();
+
+		const noShows = within(await canvas.findByRole('region', { name: t.noShows }));
+		const notPlaced = within(canvas.getByRole('region', { name: t.notPlaced }));
+		const done = within(canvas.getByRole('region', { name: t.done }));
+
+		await expect(noShows.getByText('Amira Haddad')).toBeVisible();
+		await expect(notPlaced.getByText('Tomás Rivera')).toBeVisible();
+		await expect(done.getByText('James Okafor')).toBeVisible();
+		await expect(done.queryByText('Amira Haddad')).toBeNull();
 	},
 };
 

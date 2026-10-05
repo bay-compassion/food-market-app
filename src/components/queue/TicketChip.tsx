@@ -58,7 +58,16 @@ const Row = styled.li`
 		color: var(--color-success);
 	}
 
-	&[data-status='no_show'] .number,
+	/* Red, not struck through: a no-show can still be returned to the line. */
+	&[data-status='no_show'] .number {
+		color: var(--color-on-brand);
+		background: var(--color-error);
+	}
+
+	&[data-status='not_placed'] .number {
+		color: var(--color-text-subtle);
+	}
+
 	&[data-status='cancelled'] .number {
 		color: var(--color-text-subtle);
 		text-decoration: line-through;
