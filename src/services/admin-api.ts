@@ -195,6 +195,20 @@ export class AdminApi {
 		return called;
 	}
 
+	/**
+	 * Serves a called guest and calls the next one in line, in one transaction on the server.
+	 * Resolves to the visits called — empty when nobody was waiting.
+	 */
+	async serveAndCallNext(visitId: string): Promise<string[]> {
+		const response = await this.send('POST', '/api/admin/queue', {
+			action: 'serve_and_call_next',
+			visitId,
+		});
+		const { called } = await this.readJson<{ called: string[] }>(response, 'serve_and_call_next');
+
+		return called;
+	}
+
 	/** Sends a push and SMS broadcast. Resolves to how many recipients it was queued for. */
 	async sendBroadcast(message: { title: string; body: string }): Promise<number> {
 		const response = await this.send('POST', '/api/admin/broadcast', message);

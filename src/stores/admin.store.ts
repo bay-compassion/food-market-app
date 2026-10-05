@@ -21,7 +21,7 @@ import { admissionOffersPhoneClaim } from '../services/guestAdmission.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
 import type { SessionCommand } from '../services/sessionStateMachine.ts';
-import type { VisitCommand } from '../services/visitStateMachine.ts';
+import type { VisitCommand, VisitStatus } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
 import { DemoStore } from './demo.store';
 import type { MarketSessionStore } from './market-session.store.ts';
@@ -293,26 +293,61 @@ export class AdminStore {
 	 * must not sit on the previous status while the request is in flight.
 	 */
 	async runGuestCommand(guest: QueueGuest, command: VisitCommand): Promise<void> {
+		await this.changeGuestStatus(
+			guest,
+			visitCommandTarget(command),
+			() => this.api.runGuestCommand(guest.id, command),
+			undefined,
+		);
+	}
+
+	/**
+	 * Serves a called guest and calls the next one in line, in one step on the server so no other
+	 * worker can call that next guest in between. Shows the guest as served immediately, as
+	 * `runGuestCommand` does. Resolves to the visits called — empty when nobody was waiting, or
+	 * when the serve was refused.
+	 */
+	async serveAndCallNext(guest: QueueGuest): Promise<string[]> {
+		return this.changeGuestStatus(guest, 'served', () => this.api.serveAndCallNext(guest.id), []);
+	}
+
+	/**
+	 * Shows `guest` at `status` while `send` is in flight, then reloads what it changed. A guest-list
+	 * refresh that lands meanwhile is dropped, since it predates the change; if `send` fails, the old
+	 * status goes back and `onFailure` is what the caller gets.
+	 */
+	private async changeGuestStatus<T>(
+		guest: QueueGuest,
+		status: VisitStatus,
+		send: () => Promise<T>,
+		onFailure: T,
+	): Promise<T> {
 		const previous = guest.status;
 
 		runInAction(() => {
-			guest.status = visitCommandTarget(command);
+			guest.status = status;
 			this.pendingGuestCommands += 1;
 			this.sessionGuestsRevision += 1;
 		});
 
 		try {
+			let result: T;
+
 			try {
-				await this.api.runGuestCommand(guest.id, command);
+				result = await send();
 			} finally {
 				runInAction(() => (this.pendingGuestCommands -= 1));
 			}
 			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
+
+			return result;
 		} catch {
 			runInAction(() => {
 				guest.status = previous;
 				this.report({ kind: 'error' });
 			});
+
+			return onFailure;
 		}
 	}
 

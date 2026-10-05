@@ -302,6 +302,8 @@ export interface QueueDeskTranslation {
 	noneWaiting: string;
 	noneDone: string;
 	callNext: string;
+	/** Serves the open ticket's guest and calls the next one, in one tap. */
+	serveAndCallNext: string;
 	addGuest: string;
 	/** `{number}` is the queue position, `{name}` the guest's full name. */
 	openTicket: string;
@@ -666,6 +668,7 @@ export const adminTranslations = {
 			noneWaiting: 'Nobody is left in line.',
 			noneDone: 'Nobody has finished yet.',
 			callNext: 'Call next',
+			serveAndCallNext: 'Serve and call next',
 			addGuest: 'Add guest',
 			openTicket: 'Open ticket {number}, {name}',
 			ticket: 'Ticket',

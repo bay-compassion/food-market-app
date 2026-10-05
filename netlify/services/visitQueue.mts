@@ -121,38 +121,91 @@ export async function runVisitCommand(
 }
 
 /**
- * Calls the next `count` waiting guests in queue order. The selection and the update happen in one
- * statement so two workers calling at the same moment cannot claim the same guests.
+ * Moves the next `count` waiting guests to `called` inside `tx`, in queue order, and queues their
+ * notifications. The selection and the update are one statement so two workers calling at the same
+ * moment cannot claim the same guests.
  */
+async function callNextInTransaction(tx: Transaction, marketEventId: string, count: number) {
+	const rows = await tx
+		.update(visits)
+		.set({ status: 'called', calledAt: sql`now()` })
+		.where(
+			inArray(
+				visits.id,
+				tx
+					.select({ id: visits.id })
+					.from(visits)
+					.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'waiting')))
+					.orderBy(sql`${visits.queuePosition} ASC NULLS LAST`, asc(visits.createdAt))
+					.limit(count),
+			),
+		)
+		.returning({ id: visits.id });
+	const visitIds = rows.map((row) => row.id);
+
+	await queueCalledNotifications(tx, visitIds);
+
+	return visitIds;
+}
+
+/** Calls the next `count` waiting guests in queue order. */
 export async function callNextVisits(marketEventId: string, count: number) {
 	const called = await tracedQuery('visit.call_next', () =>
-		db.transaction(async (tx) => {
-			const rows = await tx
-				.update(visits)
-				.set({ status: 'called', calledAt: sql`now()` })
-				.where(
-					inArray(
-						visits.id,
-						tx
-							.select({ id: visits.id })
-							.from(visits)
-							.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'waiting')))
-							.orderBy(sql`${visits.queuePosition} ASC NULLS LAST`, asc(visits.createdAt))
-							.limit(count),
-					),
-				)
-				.returning({ id: visits.id });
-			const visitIds = rows.map((row) => row.id);
-
-			await queueCalledNotifications(tx, visitIds);
-
-			return visitIds;
-		}),
+		db.transaction((tx) => callNextInTransaction(tx, marketEventId, count)),
 	);
 
 	await deliverCalledNotifications(called);
 
 	return called;
+}
+
+export type ServeAndCallNextResult =
+	| { ok: true; served: string; called: string[] }
+	| { ok: false; status: number; error: string };
+
+/**
+ * Serves a called guest and calls the next one in line, as one transaction — the step a worker at
+ * the entrance repeats all day.
+ *
+ * The serve only applies to a visit of this session that is still `called`, so a guest another
+ * worker has already finished is refused rather than served twice, and in that case nobody is
+ * called either: the worker is looking at a stale ticket, and calling someone on the strength of
+ * it would surprise them. With nobody left waiting, the guest is still served and `called` is
+ * empty.
+ */
+export async function serveAndCallNext(
+	marketEventId: string,
+	visitId: string,
+): Promise<ServeAndCallNextResult> {
+	const result = await tracedQuery('visit.serve_and_call_next', () =>
+		db.transaction(async (tx) => {
+			const [served] = await tx
+				.update(visits)
+				.set(visitCommandChanges('serve'))
+				.where(
+					and(
+						eq(visits.id, visitId),
+						eq(visits.marketEventId, marketEventId),
+						eq(visits.status, 'called'),
+					),
+				)
+				.returning({ id: visits.id });
+
+			if (!served) {
+				return null;
+			}
+
+			return { served: served.id, called: await callNextInTransaction(tx, marketEventId, 1) };
+		}),
+	);
+
+	if (!result) {
+		return { ok: false, status: 409, error: 'That guest is no longer waiting to be served.' };
+	}
+
+	await deliverCalledNotifications(result.called);
+
+	return { ok: true, ...result };
 }
 
 /**

@@ -46,6 +46,7 @@ function deskWith({
 		loadPermissions: vi.fn().mockResolvedValue(undefined),
 		refreshSessionGuests: vi.fn().mockResolvedValue(undefined),
 		callNext: vi.fn().mockResolvedValue(called),
+		serveAndCallNext: vi.fn().mockResolvedValue(called),
 		runGuestCommand: vi.fn().mockResolvedValue(undefined),
 		runMarketAction: vi.fn().mockResolvedValue(undefined),
 	};
@@ -142,6 +143,56 @@ describe('QueueDeskStore', () => {
 		// Assert
 		expect(admin.callNext).toHaveBeenCalledWith(1);
 		expect(desk.selected?.id).toBe('visit-2');
+	});
+
+	it('opens the next guest’s ticket in place of the one just served', async () => {
+		// Arrange
+		const serving = guestWith({ status: 'called' });
+		const { desk, admin } = deskWith({
+			guests: [serving, guestWith({ id: 'visit-2', queuePosition: 2 })],
+			called: ['visit-2'],
+		});
+
+		desk.select(serving);
+
+		// Act
+		await desk.serveAndCallNext(serving);
+
+		// Assert
+		expect(admin.serveAndCallNext).toHaveBeenCalledWith(serving);
+		expect(desk.selected?.id).toBe('visit-2');
+	});
+
+	it('closes the ticket after serving when nobody was left to call', async () => {
+		// Arrange
+		const serving = guestWith({ status: 'called' });
+		const { desk } = deskWith({ guests: [serving], called: [] });
+
+		desk.select(serving);
+
+		// Act
+		await desk.serveAndCallNext(serving);
+
+		// Assert
+		expect(desk.selected).toBeNull();
+	});
+
+	it('offers serving and calling next only for a called guest with someone still waiting', () => {
+		// Arrange
+		const called = guestWith({ id: 'visit-1', status: 'called' });
+		const waiting = guestWith({ id: 'visit-2', status: 'waiting' });
+		const withLine = deskWith({ guests: [called, waiting] }).desk;
+		const withoutLine = deskWith({ guests: [called] }).desk;
+
+		// Act
+		const offers = [
+			withLine.canServeAndCallNext(called),
+			withLine.canServeAndCallNext(waiting),
+			withoutLine.canServeAndCallNext(called),
+		];
+
+		// Assert
+		expect(offers).toEqual([true, false, false]);
 	});
 
 	it('keeps no ticket open when nobody was left to call', async () => {
