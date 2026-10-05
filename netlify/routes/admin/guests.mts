@@ -1,10 +1,11 @@
 import { and, desc, eq, ilike, ne, or, sql } from 'drizzle-orm';
+import type { Context } from 'hono';
 import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { guests, marketEvents, visits } from '../../../db/schema.mjs';
 import { visitCommands } from '../../../src/services/visitStateMachine.js';
-import { withPermission } from '../../lib/http-auth.mjs';
+import { withPermission, workerActor, type AdminEnv } from '../../lib/http-auth.mjs';
 import {
 	createRouter,
 	jsonBody,
@@ -90,8 +91,8 @@ async function listGuests(request: Request) {
 	);
 }
 
-async function createGuest(request: Request) {
-	const body = await jsonBody(request);
+async function createGuest(context: Context<AdminEnv>) {
+	const body = await jsonBody(context.req.raw);
 
 	// Decided before the visit schema sees it, which would otherwise read `profile` as `queue`.
 	if (
@@ -113,33 +114,31 @@ async function createGuest(request: Request) {
 		return jsonError('Please provide a valid administrative guest registration.');
 	}
 
-	const result = await registerGuest(submission);
+	const result = await registerGuest(submission, workerActor(context));
 
 	return result.ok
 		? Response.json(result.body, { status: result.status })
 		: jsonError(result.error, result.status);
 }
 
-async function updateGuest(request: Request) {
-	const update = visitUpdateSchema.safeParse(await jsonBody(request));
+async function updateGuest(context: Context<AdminEnv>) {
+	const update = visitUpdateSchema.safeParse(await jsonBody(context.req.raw));
 
 	if (!update.success) {
 		return jsonError('Invalid guest update.');
 	}
 
 	const { id, command, placement } = update.data;
-	const result = await runVisitCommand(id, command, { placement });
+	const result = await runVisitCommand(id, command, { placement, actor: workerActor(context) });
 
 	return result.ok ? Response.json(result.visit) : jsonError(result.error, result.status);
 }
 
-export const guestRoutes = createRouter();
+export const guestRoutes = createRouter<AdminEnv>();
 
 guestRoutes.get('/guests', withPermission('run:queue'), (context) => listGuests(context.req.raw));
-guestRoutes.post('/guests', withPermission('run:queue'), (context) => createGuest(context.req.raw));
-guestRoutes.patch('/guests', withPermission('run:queue'), (context) =>
-	updateGuest(context.req.raw),
-);
+guestRoutes.post('/guests', withPermission('run:queue'), (context) => createGuest(context));
+guestRoutes.patch('/guests', withPermission('run:queue'), (context) => updateGuest(context));
 guestRoutes.all('/guests', methodNotAllowed);
 
-export default routeHandler(createRouter().route('/api/admin', guestRoutes));
+export default routeHandler(createRouter<AdminEnv>().route('/api/admin', guestRoutes));

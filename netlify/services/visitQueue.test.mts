@@ -7,8 +7,16 @@ vi.mock('./pushNotifications.mjs', () => ({
 	notificationsEnabled: () => false,
 	deliverPendingNotifications: vi.fn(),
 }));
+vi.mock('./visit-events.mjs', () => ({
+	recordVisitEvents: vi.fn(),
+	systemActor: { kind: 'system' },
+}));
 
+import type { VisitEventActor } from '../../src/services/visit-events.js';
+import { recordVisitEvents } from './visit-events.mjs';
 import { runVisitCommand } from './visitQueue.mjs';
+
+const actor: VisitEventActor = { kind: 'worker', id: 'auth0|worker', name: 'Matt' };
 
 /** The values the command handed to `update(...).set(...)`. */
 function lastUpdateValues() {
@@ -17,14 +25,17 @@ function lastUpdateValues() {
 	return chain.set.mock.calls.at(-1)?.[0] as Record<string, unknown>;
 }
 
-afterEach(resetDbStub);
+afterEach(() => {
+	resetDbStub();
+	vi.mocked(recordVisitEvents).mockClear();
+});
 
 describe('runVisitCommand timestamps', () => {
 	it('stamps served_at when a called guest is served', async () => {
 		queueResult([{ status: 'called' }]);
 		queueResult([{ id: 'visit-1', status: 'served' }]);
 
-		const result = await runVisitCommand('visit-1', 'serve');
+		const result = await runVisitCommand('visit-1', 'serve', { actor });
 
 		expect(result.ok).toBe(true);
 		expect(lastUpdateValues()).toEqual({ status: 'served', servedAt: expect.any(Date) });
@@ -34,7 +45,7 @@ describe('runVisitCommand timestamps', () => {
 		queueResult([{ status: 'waiting' }]);
 		queueResult([{ id: 'visit-1', status: 'called' }]);
 
-		await runVisitCommand('visit-1', 'call');
+		await runVisitCommand('visit-1', 'call', { actor });
 
 		expect(lastUpdateValues()).toEqual({ status: 'called', calledAt: expect.any(Date) });
 	});
@@ -43,7 +54,7 @@ describe('runVisitCommand timestamps', () => {
 		queueResult([{ status: 'called' }]);
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 
-		await runVisitCommand('visit-1', 'return_to_queue');
+		await runVisitCommand('visit-1', 'return_to_queue', { actor });
 
 		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null });
 	});
@@ -52,7 +63,7 @@ describe('runVisitCommand timestamps', () => {
 		queueResult([{ status: 'called' }]);
 		queueResult([{ id: 'visit-1', status: 'no_show' }]);
 
-		await runVisitCommand('visit-1', 'mark_no_show');
+		await runVisitCommand('visit-1', 'mark_no_show', { actor });
 
 		expect(lastUpdateValues()).toEqual({ status: 'no_show' });
 	});
@@ -64,7 +75,7 @@ describe('runVisitCommand return_to_queue placement', () => {
 		queueResult([{ position: 12 }]);
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 
-		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end' });
+		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
 
 		expect(result.ok).toBe(true);
 		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null, queuePosition: 13 });
@@ -77,7 +88,7 @@ describe('runVisitCommand return_to_queue placement', () => {
 		queueResult([]);
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 
-		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'next' });
+		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'next', actor });
 
 		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null, queuePosition: 5 });
 	});
@@ -86,7 +97,7 @@ describe('runVisitCommand return_to_queue placement', () => {
 		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 
-		await runVisitCommand('visit-1', 'return_to_queue');
+		await runVisitCommand('visit-1', 'return_to_queue', { actor });
 
 		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null });
 	});
@@ -98,7 +109,10 @@ describe('runVisitCommand return_to_queue placement', () => {
 		queueResult([]);
 		queueResult([]);
 
-		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'next' });
+		const result = await runVisitCommand('visit-1', 'return_to_queue', {
+			placement: 'next',
+			actor,
+		});
 
 		expect(result).toEqual({ ok: false, status: 409, error: expect.any(String) });
 		await expect(db.transaction.mock.results.at(-1)?.value).rejects.toThrow();
@@ -108,8 +122,48 @@ describe('runVisitCommand return_to_queue placement', () => {
 		queueResult([{ status: 'called', marketEventId: 'event-1' }]);
 		queueResult([{ id: 'visit-1', status: 'served' }]);
 
-		await runVisitCommand('visit-1', 'serve', { placement: 'end' });
+		await runVisitCommand('visit-1', 'serve', { placement: 'end', actor });
 
 		expect(lastUpdateValues()).toEqual({ status: 'served', servedAt: expect.any(Date) });
+	});
+});
+
+describe('runVisitCommand history', () => {
+	it('records who ran the command, in the same transaction as the change', async () => {
+		queueResult([{ status: 'called', marketEventId: 'event-1' }]);
+		queueResult([{ id: 'visit-1', status: 'served' }]);
+
+		await runVisitCommand('visit-1', 'serve', { actor });
+
+		expect(recordVisitEvents).toHaveBeenCalledWith(db, [
+			{ visitId: 'visit-1', kind: 'served', toStatus: 'served', actor, details: undefined },
+		]);
+	});
+
+	it('records where a returned guest was placed', async () => {
+		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
+		queueResult([{ position: 12 }]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
+
+		expect(vi.mocked(recordVisitEvents).mock.calls[0]?.[1]).toEqual([
+			{
+				visitId: 'visit-1',
+				kind: 'returned',
+				toStatus: 'waiting',
+				actor,
+				details: { placement: 'end', queuePosition: 13 },
+			},
+		]);
+	});
+
+	it('records nothing when another worker got there first', async () => {
+		queueResult([{ status: 'called', marketEventId: 'event-1' }]);
+		queueResult([]);
+
+		await runVisitCommand('visit-1', 'serve', { actor });
+
+		expect(recordVisitEvents).not.toHaveBeenCalled();
 	});
 });

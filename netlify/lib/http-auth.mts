@@ -1,7 +1,9 @@
+import type { Context } from 'hono';
 import { createMiddleware } from 'hono/factory';
 
 import { grantedPermissions, type Permission } from '../../src/services/permissions.js';
-import { requirePermission, verifyAuth0Token } from './auth.mjs';
+import type { VisitEventActor } from '../../src/services/visit-events.js';
+import { requirePermission, verifyAuth0Token, workerNameFrom } from './auth.mjs';
 import { authorizedGuest } from './deviceAuth.mjs';
 import { jsonError } from './http.mjs';
 import { authorizedVisit } from './visitAuth.mjs';
@@ -23,6 +25,8 @@ export type AdminEnv = {
 		permissions: Permission[];
 		/** The Auth0 subject of the signed-in worker, for audit records. Absent on a standalone route. */
 		actor?: string;
+		/** The signed-in worker's name, from the `workerNameClaim` on their token, when it has one. */
+		actorName?: string | null;
 	};
 };
 
@@ -33,6 +37,7 @@ export const withAuth0 = createMiddleware<AdminEnv>(async (context, next) => {
 
 		context.set('permissions', grantedPermissions(payload.permissions));
 		context.set('actor', payload.sub);
+		context.set('actorName', workerNameFrom(payload));
 	} catch {
 		return jsonError('Authorization required.', 401);
 	}
@@ -77,3 +82,12 @@ export const withVisit = createMiddleware<VisitAccessEnv>(async (context, next) 
 	context.set('visit', visit);
 	await next();
 });
+
+/** The signed-in worker as a visit history names them. Both parts are null on a standalone route. */
+export function workerActor(context: Context<AdminEnv>): VisitEventActor {
+	return {
+		kind: 'worker',
+		id: context.get('actor') ?? null,
+		name: context.get('actorName') ?? null,
+	};
+}

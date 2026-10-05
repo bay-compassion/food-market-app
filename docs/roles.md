@@ -53,6 +53,7 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET /api/admin/reports?view=export`     | `export:guest-data`                                     |
 | `GET`, `POST /api/admin/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
 | `GET /api/admin/kiosk`                   | `view:kiosk`                                            |
+| `GET /api/admin/visits/:id/events`       | `run:queue`                                             |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session
@@ -80,6 +81,33 @@ claim nothing reads yet, so you can confirm tokens look right and merge afterwar
    dev-mode data loader below.
 4. **Assign a role to every existing user**, then sign in and confirm a fresh access token carries
    the `permissions` claim before merging.
+
+### Worker names in visit history
+
+Each visit's history (`visit_events`) names the worker who made each change — "Called by Matt". An
+access token carries the worker's Auth0 subject but not their name, so a post-login **Action** adds
+it under a namespaced claim the server reads (`workerNameClaim` in `netlify/lib/auth.mts`):
+
+```js
+// Actions → Library → Create Action → "Login / Post Login", then add it to the Login flow.
+exports.onExecutePostLogin = async (event, api) => {
+	// Prefer a given name. Username/password users often have their email address in `name`,
+	// and an email is not what a volunteer should see on another volunteer's screen.
+	const name = [event.user.given_name, event.user.name].find(
+		(value) => typeof value === 'string' && value.trim() && !value.includes('@'),
+	);
+
+	if (name) {
+		api.accessToken.setCustomClaim('https://bay-compassion.org/claims/name', name.trim());
+	}
+};
+```
+
+Check a real volunteer's profile before deploying the Action to confirm which attribute holds the
+name you want shown. The code tolerates the claim being missing, so the order of deploying it and
+the Action doesn't matter: until a worker's token carries the claim, their entries are recorded
+with their subject and no name. A worker who was already signed in picks the name up when their
+access token next refreshes.
 
 ## How it is enforced
 

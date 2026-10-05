@@ -5,6 +5,13 @@ import { baseEvent } from '../test/marketEventFixture.mjs';
 import { hashDeviceToken, hashVisitToken } from './guestCredentials.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
+// History entries are an extra insert in each write's transaction; tested in visit-events.test.mts.
+vi.mock('./visit-events.mjs', () => ({
+	recordVisitEvents: vi.fn(),
+	listVisitEvents: vi.fn(),
+	guestActor: { kind: 'guest' },
+	systemActor: { kind: 'system' },
+}));
 
 import { demoDataToolsEnabled, loadScenario } from './demoScenario.mjs';
 

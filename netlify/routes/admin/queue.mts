@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { withPermission } from '../../lib/http-auth.mjs';
+import { withPermission, workerActor, type AdminEnv } from '../../lib/http-auth.mjs';
 import {
 	createRouter,
 	jsonBody,
@@ -29,7 +29,7 @@ const queueActionSchema = z.discriminatedUnion('action', [
 	}),
 ]);
 
-export const queueRoutes = createRouter();
+export const queueRoutes = createRouter<AdminEnv>();
 
 queueRoutes.post('/queue', withPermission('run:queue'), async (context) => {
 	const request = queueActionSchema.safeParse(await jsonBody(context.req.raw));
@@ -53,10 +53,12 @@ queueRoutes.post('/queue', withPermission('run:queue'), async (context) => {
 	}
 
 	if (request.data.action === 'call_next') {
-		return Response.json({ called: await callNextVisits(event.id, request.data.count) });
+		return Response.json({
+			called: await callNextVisits(event.id, request.data.count, workerActor(context)),
+		});
 	}
 
-	const result = await serveAndCallNext(event.id, request.data.visitId);
+	const result = await serveAndCallNext(event.id, request.data.visitId, workerActor(context));
 
 	return result.ok
 		? Response.json({ served: result.served, called: result.called })
@@ -64,4 +66,4 @@ queueRoutes.post('/queue', withPermission('run:queue'), async (context) => {
 });
 queueRoutes.all('/queue', methodNotAllowed);
 
-export default routeHandler(createRouter().route('/api/admin', queueRoutes));
+export default routeHandler(createRouter<AdminEnv>().route('/api/admin', queueRoutes));

@@ -13,6 +13,7 @@ import {
 	guestAdmissions,
 } from '../../src/services/guestAdmission.js';
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
+import type { VisitEventActor } from '../../src/services/visit-events.js';
 import type { VisitStatus } from '../../src/services/visitStateMachine.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import {
@@ -22,6 +23,7 @@ import {
 	persistGuestInformation,
 } from './guest-information.mjs';
 import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
+import { recordVisitEvents } from './visit-events.mjs';
 import { nextQueuePosition } from './visitQueue.mjs';
 
 /** How many people a visit can cover, matching the household columns' database constraints. */
@@ -102,7 +104,14 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
  * transaction. Assumes the caller has already gated admin-source submissions behind
  * `requirePermission` — this function only checks registration-window and question eligibility.
  */
-export async function registerGuest(submission: GuestSubmission): Promise<RegisterGuestResult> {
+/**
+ * `actor` is who is registering: the guest themselves, or the worker adding them by hand. It is
+ * recorded in the visit's history.
+ */
+export async function registerGuest(
+	submission: GuestSubmission,
+	actor: VisitEventActor,
+): Promise<RegisterGuestResult> {
 	if (submission.source === 'admin' && !submission.marketEventId) {
 		return { ok: false, status: 409, error: 'No market event has been configured.' };
 	}
@@ -284,6 +293,24 @@ export async function registerGuest(submission: GuestSubmission): Promise<Regist
 										: 1,
 							})
 							.returning({ id: visits.id, status: visits.status });
+
+				// A new visit starts its history; an existing one only gains an entry when a guest who
+				// had cancelled registers again. Updating the details of a live visit changes no status.
+				if (!existingVisit) {
+					await recordVisitEvents(tx, [
+						{
+							visitId: visit!.id,
+							kind: submission.source === 'admin' ? 'added' : 'registered',
+							toStatus: visit!.status,
+							actor,
+							details: queuePosition === null ? undefined : { queuePosition },
+						},
+					]);
+				} else if (existingVisit.status === 'cancelled') {
+					await recordVisitEvents(tx, [
+						{ visitId: visit!.id, kind: 'registered', toStatus: visit!.status, actor },
+					]);
+				}
 
 				return {
 					id: visit!.id,

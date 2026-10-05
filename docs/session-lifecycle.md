@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=de366c634ac7 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=7f08e0034d64 -->
 
 # Session lifecycle
 
@@ -166,8 +166,8 @@ Who owns each transition matters:
 
 Three of those also write a timestamp. `call` stamps `called_at`, which is what the queue screen
 counts up from to show how long a guest has been standing at the table — the signal for deciding a
-no-show. `serve` stamps `served_at`, which is what reporting measures service against; the pair is
-the only timing the database keeps, since no log of status changes exists. `return_to_queue` is the
+no-show. `serve` stamps `served_at`, which is what reporting measures service against. Who made each
+change, and when, is recorded separately in `visit_events`. `return_to_queue` is the
 recovery path — a guest marked no-show who turns up after all, or one called by mistake, goes back
 to `waiting` and is notified again when re-called — so it clears `called_at` on the way out.
 Nothing transitions out of `served`, so `served_at` is only ever written once.

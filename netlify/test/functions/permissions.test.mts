@@ -14,6 +14,7 @@ import marketHandler from '../../routes/admin/market.mjs';
 import queueHandler from '../../routes/admin/queue.mjs';
 import reportsHandler from '../../routes/admin/reports.mjs';
 import scheduleHandler from '../../routes/admin/schedule.mjs';
+import visitEventsHandler from '../../routes/admin/visit-events.mjs';
 import lotteryRegistrationHandler from '../../routes/guests/lottery-registration.mjs';
 import publicMarketHandler from '../../routes/market/market.mjs';
 
@@ -111,6 +112,12 @@ describe('endpoint permissions', () => {
 			'calling the next guests',
 			queueHandler,
 			json('https://x/api/admin/queue', 'POST', { action: 'call_next', count: 3 }),
+			'run:queue',
+		],
+		[
+			'reading a visit’s history',
+			visitEventsHandler,
+			json('https://x/api/admin/visits/6f1c2a4e-3b5d-4c7e-9f80-1a2b3c4d5e6f/events', 'GET'),
 			'run:queue',
 		],
 		[

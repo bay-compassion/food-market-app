@@ -3,6 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
+// History entries are an extra insert in each write's transaction; tested in visit-events.test.mts.
+vi.mock('./visit-events.mjs', () => ({
+	recordVisitEvents: vi.fn(),
+	listVisitEvents: vi.fn(),
+	guestActor: { kind: 'guest' },
+	systemActor: { kind: 'system' },
+}));
 
 import { parseGuestInformation, saveGuestInformation } from './guest-information.mjs';
 import { parseSubmission, registerGuest } from './guestRegistration.mjs';
@@ -102,7 +109,7 @@ describe('registerGuest eligibility', () => {
 	it('rejects an admin submission with no market event configured', async () => {
 		const submission = parseSubmission(selfSubmission({ source: 'admin', marketEventId: null }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({
 			ok: false,
@@ -115,7 +122,7 @@ describe('registerGuest eligibility', () => {
 		queueResult([]);
 		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({
 			ok: false,
@@ -137,7 +144,7 @@ describe('registerGuest eligibility', () => {
 			selfSubmission({ source: 'admin', admission: scenario.admission }),
 		)!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({
 			ok: false,
@@ -149,7 +156,7 @@ describe('registerGuest eligibility', () => {
 	it('rejects a self submission with no market event selected', async () => {
 		const submission = parseSubmission(selfSubmission({ marketEventId: null }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
@@ -158,7 +165,7 @@ describe('registerGuest eligibility', () => {
 		queueResult([]);
 		const submission = parseSubmission(selfSubmission())!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
@@ -176,7 +183,7 @@ describe('registerGuest eligibility', () => {
 			]);
 			const submission = parseSubmission(selfSubmission())!;
 
-			const result = await registerGuest(submission);
+			const result = await registerGuest(submission, { kind: 'guest' });
 
 			expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 		},
@@ -193,7 +200,7 @@ describe('registerGuest eligibility', () => {
 		]);
 		const submission = parseSubmission(selfSubmission())!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
@@ -209,7 +216,7 @@ describe('registerGuest eligibility', () => {
 		]);
 		const submission = parseSubmission(selfSubmission())!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
@@ -229,7 +236,7 @@ describe('registerGuest eligibility', () => {
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ id: 'visit-1', status: 'registered' }]);
 
-		const result = await registerGuest(parseSubmission(selfSubmission())!);
+		const result = await registerGuest(parseSubmission(selfSubmission())!, { kind: 'guest' });
 
 		expect(result).toMatchObject({ ok: true, status: 201 });
 	});
@@ -245,7 +252,7 @@ describe('registerGuest eligibility', () => {
 			},
 		]);
 
-		const result = await registerGuest(parseSubmission(selfSubmission())!);
+		const result = await registerGuest(parseSubmission(selfSubmission())!, { kind: 'guest' });
 
 		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
 	});
@@ -262,7 +269,7 @@ describe('registerGuest eligibility', () => {
 		queueResult([{ id: 'question-1', type: 'text', required: true }]);
 		const submission = parseSubmission(selfSubmission({ answers: {} }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({
 			ok: false,
@@ -283,7 +290,7 @@ describe('registerGuest eligibility', () => {
 		queueResult([{ id: 'question-1', type: 'scale', required: false }]);
 		const submission = parseSubmission(selfSubmission({ answers: { 'question-1': 99 } }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toEqual({
 			ok: false,
@@ -338,7 +345,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission())!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result.ok).toBe(true);
 		expect(result).toMatchObject({
@@ -363,7 +370,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ id: 'visit-2', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });
 
@@ -394,7 +401,7 @@ describe('registerGuest happy paths', () => {
 			}),
 		)!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toMatchObject({
 			ok: true,
@@ -440,7 +447,7 @@ describe('registerGuest happy paths', () => {
 			}),
 		)!;
 
-		await registerGuest(submission);
+		await registerGuest(submission, { kind: 'guest' });
 
 		expect(insertedVisit()).toMatchObject({
 			ageRange: '30-44',
@@ -458,7 +465,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'waiting' } });
 		expect((result as { body: { visitToken?: string } }).body.visitToken).toBeUndefined();
@@ -473,7 +480,7 @@ describe('registerGuest happy paths', () => {
 		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
 
 		expect(submission.queuePlacement).toBe('end');
-		await registerGuest(submission);
+		await registerGuest(submission, { kind: 'guest' });
 
 		expect(insertedVisit()?.queuePosition).toBe(7);
 	});
@@ -485,7 +492,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ source: 'admin', admission: 'lottery' }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'registered' } });
 		expect(insertedVisit()?.queuePosition).toBeNull();
@@ -500,7 +507,7 @@ describe('registerGuest happy paths', () => {
 			selfSubmission({ source: 'admin', admission: 'lottery', lotteryWeight: 5 }),
 		)!;
 
-		await registerGuest(submission);
+		await registerGuest(submission, { kind: 'guest' });
 
 		expect(insertedVisit()?.lotteryWeight).toBe(5);
 	});
@@ -515,7 +522,7 @@ describe('registerGuest happy paths', () => {
 			selfSubmission({ source: 'admin', admission: 'queue', lotteryWeight: 5 }),
 		)!;
 
-		await registerGuest(submission);
+		await registerGuest(submission, { kind: 'guest' });
 
 		// They already have a spot — weighting a draw they are not in would just be misleading data.
 		expect(insertedVisit()?.lotteryWeight).toBe(1);
@@ -529,7 +536,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ id: 'visit-1', status: 'registered' }]);
 		const submission = parseSubmission(selfSubmission({ lotteryWeight: 99 }))!;
 
-		await registerGuest(submission);
+		await registerGuest(submission, { kind: 'guest' });
 
 		// The weight is a worker's judgement call; a guest cannot award it to themselves.
 		expect(insertedVisit()?.lotteryWeight).toBe(1);
@@ -542,7 +549,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ source: 'admin', admission: 'served' }))!;
 
-		const result = await registerGuest(submission);
+		const result = await registerGuest(submission, { kind: 'guest' });
 
 		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'served' } });
 		// A record of someone already fed never joins a line.
@@ -562,7 +569,7 @@ describe('registerGuest happy paths', () => {
 		)!;
 
 		expect(submission.queuePlacement).toBe('next');
-		await registerGuest(submission);
+		await registerGuest(submission, { kind: 'guest' });
 
 		expect(insertedVisit()?.queuePosition).toBe(3);
 	});
