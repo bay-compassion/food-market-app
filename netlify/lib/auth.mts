@@ -26,7 +26,7 @@ function auth0Settings() {
  * The access-token claim carrying the signed-in worker's display name. Auth0 does not put a name in
  * an access token on its own; an Action adds it under this namespaced key (see `docs/roles.md`).
  */
-export const workerNameClaim = 'https://bay-compassion.org/claims/name';
+export const workerNameClaim = 'https://thebaycompassion.org/claims/name';
 
 /** Longest name kept from the claim; anything longer is cut, never rejected. */
 const workerNameMaxLength = 80;
