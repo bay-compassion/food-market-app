@@ -46,7 +46,8 @@ const Row = styled.ol`
 		font-weight: 700;
 	}
 
-	/* The time this language has left: a band that drains toward the start of the pill. A pale tint
+	/* The time this language has left: a band that drains toward the end of the pill — rightward,
+	   the way the carousel advances, so its edge moves toward the language that comes next. A pale tint
 	   of the brand teal, so it reads as a quiet countdown rather than competing with the amber
 	   number tiles, and the dark label keeps its contrast on the tint and the white alike. It
 	   starts as the pill appears, set back by however much of the turn had already gone. Left in
@@ -57,7 +58,7 @@ const Row = styled.ol`
 		inset: 0;
 		z-index: -1;
 		background: color-mix(in srgb, var(--color-brand) 22%, var(--color-on-brand));
-		transform-origin: left;
+		transform-origin: right;
 		animation: ${drain} var(--turn-ms) linear var(--turn-delay) forwards;
 	}
 `;
