@@ -64,9 +64,8 @@ type Story = StoryObj<typeof meta>;
 export const WithUnclaimedNumbers: Story = {
 	play: async ({ canvasElement }) => {
 		const unclaimed = within(
-			within(canvasElement).getByRole('region', {
-				name: translations.en.kiosk.stillWaitingFor,
-			}),
+			// By id: the region's name is the heading, which carries the second language too.
+			canvasElement.querySelector<HTMLElement>('[aria-labelledby="kiosk-still-waiting"]')!,
 		);
 
 		// Most recently called first.
@@ -86,9 +85,8 @@ export const MoreThanFit: Story = {
 	},
 	play: async ({ canvasElement }) => {
 		const items = within(
-			within(canvasElement).getByRole('region', {
-				name: translations.en.kiosk.stillWaitingFor,
-			}),
+			// By id: the region's name is the heading, which carries the second language too.
+			canvasElement.querySelector<HTMLElement>('[aria-labelledby="kiosk-still-waiting"]')!,
 		).getAllByRole('listitem');
 		const more = items.at(-1)!;
 		const numbers = items.slice(0, -1).map((item) => Number(item.textContent));
@@ -128,7 +126,7 @@ export const FarsiNumerals: Story = {
 	},
 };
 
-/** Everyone called has come to the table: the number being called fills the screen alone. */
+/** Everyone called has come to the table: the panel stays, empty, so the layout doesn't shift. */
 export const AllClaimed: Story = {
 	args: { called: [23] },
 };

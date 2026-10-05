@@ -499,7 +499,7 @@ export const translations = {
 		kiosk: {
 			nowCalling: 'Now calling',
 			nowCallingNone: 'No numbers called yet',
-			stillWaitingFor: 'Already called — please come to the table',
+			stillWaitingFor: 'Already Called',
 			waitingCount: 'In line: {count}',
 			moreCount: '+{count} more',
 			notStarted: 'Numbers will be called here once the market opens',
@@ -782,7 +782,7 @@ export const translations = {
 		kiosk: {
 			nowCalling: 'Llamando ahora',
 			nowCallingNone: 'Aún no se ha llamado ningún número',
-			stillWaitingFor: 'Ya llamados: pase a la mesa, por favor',
+			stillWaitingFor: 'Ya llamados',
 			waitingCount: 'En la fila: {count}',
 			moreCount: '+{count} más',
 			notStarted: 'Los números se llamarán aquí cuando abra el mercado',
@@ -1063,7 +1063,7 @@ export const translations = {
 		kiosk: {
 			nowCalling: 'در حال فراخوانی',
 			nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
-			stillWaitingFor: 'فراخوانده‌شده — لطفاً به میز مراجعه کنید',
+			stillWaitingFor: 'فراخوانده‌شده',
 			waitingCount: 'در صف: {count}',
 			moreCount: 'شماره‌های دیگر: {count}',
 			notStarted: 'پس از باز شدن بازار، شماره‌ها اینجا اعلام می‌شوند',
@@ -1349,7 +1349,7 @@ export const translations = {
 		kiosk: {
 			nowCalling: 'Tinatawag ngayon',
 			nowCallingNone: 'Wala pang tinatawag na numero',
-			stillWaitingFor: 'Natawag na — pakilapit sa mesa',
+			stillWaitingFor: 'Natawag na',
 			waitingCount: 'Nasa pila: {count}',
 			moreCount: '+{count} pa',
 			notStarted: 'Dito tatawagin ang mga numero kapag nagbukas na ang market',
@@ -1628,7 +1628,7 @@ export const translations = {
 		kiosk: {
 			nowCalling: 'Đang gọi số',
 			nowCallingNone: 'Chưa gọi số nào',
-			stillWaitingFor: 'Đã gọi — vui lòng đến bàn',
+			stillWaitingFor: 'Đã gọi',
 			waitingCount: 'Đang xếp hàng: {count}',
 			moreCount: '+{count} số khác',
 			notStarted: 'Các số sẽ được gọi tại đây khi chợ mở cửa',
@@ -1895,7 +1895,7 @@ export const translations = {
 		kiosk: {
 			nowCalling: '正在叫号',
 			nowCallingNone: '尚未叫号',
-			stillWaitingFor: '已叫号——请到桌前',
+			stillWaitingFor: '已叫号',
 			waitingCount: '排队中：{count}',
 			moreCount: '另有 {count} 个',
 			notStarted: '市场开放后将在此叫号',
@@ -2170,7 +2170,7 @@ export const translations = {
 		kiosk: {
 			nowCalling: 'الرقم الحالي',
 			nowCallingNone: 'لم يتم النداء على أي رقم بعد',
-			stillWaitingFor: 'تم النداء — يُرجى التوجه إلى الطاولة',
+			stillWaitingFor: 'تم النداء',
 			waitingCount: 'في الطابور: {count}',
 			moreCount: 'أرقام أخرى: {count}',
 			notStarted: 'ستُنادى الأرقام هنا عند افتتاح السوق',

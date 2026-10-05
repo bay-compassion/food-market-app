@@ -11,18 +11,19 @@ const announce = keyframes`
 	50% { color: var(--color-focus); transform: scale(1.06); }
 `;
 
-const Layout = styled.div<{ $split: boolean }>`
+/* The "Already Called" panel keeps its place even while empty, so the board doesn't jump sideways
+   the moment the first unclaimed number lands in it. */
+const Layout = styled.div`
 	display: grid;
 	flex: 1;
-	grid-template-columns: ${({ $split }) => ($split ? '3fr 2fr' : '1fr')};
+	grid-template-columns: 3fr 2fr;
 	grid-template-rows: minmax(0, 1fr);
 	gap: 5vmin;
 	min-height: 0;
 
 	@media (orientation: portrait) {
 		grid-template-columns: 1fr;
-		grid-template-rows: ${({ $split }) =>
-			$split ? 'minmax(0, 3fr) minmax(0, 2fr)' : 'minmax(0, 1fr)'};
+		grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
 	}
 `;
 
@@ -155,7 +156,7 @@ export function KioskBoard({ board, reconnecting }: KioskBoardProps) {
 					/>
 				</div>
 			</Header>
-			<Layout $split={stillWaitingFor.length > 0}>
+			<Layout>
 				<NowCalling aria-live="polite">
 					<h1>
 						<Bilingual text={(copy) => copy.nowCalling} />
@@ -173,10 +174,8 @@ export function KioskBoard({ board, reconnecting }: KioskBoardProps) {
 						</strong>
 					)}
 				</NowCalling>
-				{stillWaitingFor.length > 0 ? (
-					// A new language can change every tile's size, so start the fitting over.
-					<UnclaimedNumbers key={secondary?.locale ?? 'en'} numbers={stillWaitingFor} />
-				) : null}
+				{/* A new language can change every tile's size, so start the fitting over. */}
+				<UnclaimedNumbers key={secondary?.locale ?? 'en'} numbers={stillWaitingFor} />
 			</Layout>
 			<Footer>
 				<LanguageIndicator />

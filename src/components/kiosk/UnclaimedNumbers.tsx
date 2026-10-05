@@ -76,6 +76,7 @@ export type UnclaimedNumbersProps = {
 
 /**
  * The numbers called earlier that nobody has come up for, as many as fit, then a "+N more" tile.
+ * Shown even when there are none, as an empty panel, so the board's layout never shifts.
  *
  * How many fit depends on the screen, so it is measured rather than fixed: every number is laid
  * out, and while the last tile falls below the list's bottom edge, one more number is folded into
