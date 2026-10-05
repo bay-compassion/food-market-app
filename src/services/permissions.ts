@@ -32,6 +32,12 @@ export const permissions = [
 	 * granted, it does nothing unless the deploy also sets `ENABLE_DEMO_DATA_TOOLS`.
 	 */
 	'manage:demo-data',
+	/**
+	 * Show the room display at `/kiosk`: the number being called and those not yet claimed. Queue
+	 * numbers only, never a name. Held alone by the account a kiosk signs in as, so the screen in the
+	 * room carries nothing that can change the queue; staff roles hold it too, to check the display.
+	 */
+	'view:kiosk',
 ] as const;
 
 export type Permission = (typeof permissions)[number];

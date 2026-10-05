@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, lt, sql } from 'drizzle-orm';
+import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
 import { z } from 'zod';
 
@@ -13,6 +13,7 @@ import {
 } from '../../lib/http.mjs';
 import { tracedQuery } from '../../lib/sentry.mjs';
 import { hashVisitToken } from '../../services/guestCredentials.mjs';
+import { latestCalledPosition } from '../../services/queue-board.mjs';
 
 /** Cancelling is the only change a guest can make to their own visit. */
 const visitActionSchema = z.object({ action: z.literal('cancel') });
@@ -80,36 +81,9 @@ async function guestsAhead(visit: {
 	return ahead?.count ?? 0;
 }
 
-/**
- * The queue number most recently called for this visit's session — the "now calling" board a DMV
- * hangs over the counter. Only meaningful while waiting, like `guestsAhead`.
- *
- * Reads `called_at` rather than `status = 'called'`: serving or marking a guest a no-show keeps
- * their `called_at`, so the board doesn't drop back to an older number (or blank) the moment a
- * worker finishes with someone, while returning a guest to the queue clears it, so a number that
- * was un-called stops showing. `callNextVisits` stamps a whole batch with one `now()`, so the tie
- * falls to the highest position in that batch.
- */
+/** The "now calling" board, like `guestsAhead` only meaningful while waiting. */
 async function nowCalling(visit: { status: string; marketEventId: string }) {
-	if (visit.status !== 'waiting') {
-		return null;
-	}
-	const [latest] = await tracedQuery('visit.now_calling', () =>
-		db
-			.select({ queuePosition: visits.queuePosition })
-			.from(visits)
-			.where(
-				and(
-					eq(visits.marketEventId, visit.marketEventId),
-					isNotNull(visits.calledAt),
-					isNotNull(visits.queuePosition),
-				),
-			)
-			.orderBy(desc(visits.calledAt), desc(visits.queuePosition))
-			.limit(1),
-	);
-
-	return latest?.queuePosition ?? null;
+	return visit.status === 'waiting' ? latestCalledPosition(visit.marketEventId) : null;
 }
 
 type Visit = NonNullable<Awaited<ReturnType<typeof authorizedVisit>>>;

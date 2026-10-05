@@ -150,6 +150,27 @@ export interface ClaimViewTranslations {
 	missingCode: string;
 }
 
+/** The room display at `/kiosk`, read from across the room rather than on a phone. */
+export interface KioskTranslations {
+	nowCalling: string;
+	nowCallingNone: string;
+	/** Heads the numbers called earlier that nobody has come up for yet. */
+	stillWaitingFor: string;
+	/** `{count}` is how many guests are still in line, not yet called. */
+	waitingCount: string;
+	/** The tile standing in for unclaimed numbers that don't fit; `{count}` is how many. */
+	moreCount: string;
+	notStarted: string;
+	ended: string;
+	loading: string;
+	reconnecting: string;
+	/** The display's sign-in expired; a worker has to come and sign it in again. */
+	signInRequired: string;
+	signIn: string;
+	/** Signed in, but as an account without `view:kiosk`. */
+	notPermitted: string;
+}
+
 /** The Sentry feedback form's copy, keyed by the label names `feedbackIntegration` accepts. */
 export interface FeedbackFormTranslations {
 	formTitle: string;
@@ -222,6 +243,7 @@ export interface Translation {
 	guestView: GuestViewTranslations;
 	signupView: SignupViewTranslations;
 	claimView: ClaimViewTranslations;
+	kiosk: KioskTranslations;
 	admin: string;
 	adminDescription: string;
 	adminTitle: string;
@@ -473,6 +495,20 @@ export const translations = {
 			failed: 'This code has expired or was already used. Ask a staff member for a new one.',
 			missingCode:
 				'This link is missing its code. Ask a staff member to show you the QR code again.',
+		},
+		kiosk: {
+			nowCalling: 'Now calling',
+			nowCallingNone: 'No numbers called yet',
+			stillWaitingFor: 'Already Called',
+			waitingCount: 'In line: {count}',
+			moreCount: '+{count} more',
+			notStarted: 'Numbers will be called here once the market opens',
+			ended: 'Today’s market has ended. Thank you for coming!',
+			loading: 'Loading the line…',
+			reconnecting: 'Reconnecting…',
+			signInRequired: 'This display was signed out. A staff member needs to sign in again.',
+			signIn: 'Staff sign-in',
+			notPermitted: 'This account can’t show the line display.',
 		},
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
@@ -743,6 +779,21 @@ export const translations = {
 			missingCode:
 				'A este enlace le falta el código. Pida a un miembro del personal que le muestre el código QR de nuevo.',
 		},
+		kiosk: {
+			nowCalling: 'Llamando ahora',
+			nowCallingNone: 'Aún no se ha llamado ningún número',
+			stillWaitingFor: 'Ya llamados',
+			waitingCount: 'En la fila: {count}',
+			moreCount: '+{count} más',
+			notStarted: 'Los números se llamarán aquí cuando abra el mercado',
+			ended: 'El mercado de hoy ha terminado. ¡Gracias por venir!',
+			loading: 'Cargando la fila…',
+			reconnecting: 'Reconectando…',
+			signInRequired:
+				'Se cerró la sesión de esta pantalla. Un miembro del personal debe iniciar sesión de nuevo.',
+			signIn: 'Inicio de sesión del personal',
+			notPermitted: 'Esta cuenta no puede mostrar la pantalla de la fila.',
+		},
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
@@ -1008,6 +1059,20 @@ export const translations = {
 			submitting: 'در حال راه‌اندازی…',
 			failed: 'این کد منقضی شده یا قبلاً استفاده شده است. از یکی از کارکنان کد جدیدی بخواهید.',
 			missingCode: 'این پیوند کد ندارد. از یکی از کارکنان بخواهید دوباره کد QR را به شما نشان دهد.',
+		},
+		kiosk: {
+			nowCalling: 'در حال فراخوانی',
+			nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
+			stillWaitingFor: 'فراخوانده‌شده',
+			waitingCount: 'در صف: {count}',
+			moreCount: 'شماره‌های دیگر: {count}',
+			notStarted: 'پس از باز شدن بازار، شماره‌ها اینجا اعلام می‌شوند',
+			ended: 'بازار امروز به پایان رسید. از حضور شما سپاسگزاریم!',
+			loading: 'در حال بارگیری صف…',
+			reconnecting: 'در حال اتصال دوباره…',
+			signInRequired: 'این نمایشگر از حساب خارج شده است. یکی از کارکنان باید دوباره وارد شود.',
+			signIn: 'ورود کارکنان',
+			notPermitted: 'این حساب اجازهٔ نمایش صف را ندارد.',
 		},
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
@@ -1281,6 +1346,20 @@ export const translations = {
 			missingCode:
 				'Walang code ang link na ito. Hilingin sa isang staff na ipakita muli ang QR code.',
 		},
+		kiosk: {
+			nowCalling: 'Tinatawag ngayon',
+			nowCallingNone: 'Wala pang tinatawag na numero',
+			stillWaitingFor: 'Natawag na',
+			waitingCount: 'Nasa pila: {count}',
+			moreCount: '+{count} pa',
+			notStarted: 'Dito tatawagin ang mga numero kapag nagbukas na ang market',
+			ended: 'Tapos na ang market ngayong araw. Salamat sa pagpunta!',
+			loading: 'Nilo-load ang pila…',
+			reconnecting: 'Kumokonekta muli…',
+			signInRequired: 'Na-sign out ang display na ito. Kailangang mag-sign in muli ng isang staff.',
+			signIn: 'Pag-sign in ng staff',
+			notPermitted: 'Hindi maipapakita ng account na ito ang display ng pila.',
+		},
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
@@ -1546,6 +1625,20 @@ export const translations = {
 			failed: 'Mã này đã hết hạn hoặc đã được sử dụng. Hãy xin nhân viên một mã mới.',
 			missingCode: 'Liên kết này thiếu mã. Hãy nhờ nhân viên cho bạn xem lại mã QR.',
 		},
+		kiosk: {
+			nowCalling: 'Đang gọi số',
+			nowCallingNone: 'Chưa gọi số nào',
+			stillWaitingFor: 'Đã gọi',
+			waitingCount: 'Đang xếp hàng: {count}',
+			moreCount: '+{count} số khác',
+			notStarted: 'Các số sẽ được gọi tại đây khi chợ mở cửa',
+			ended: 'Chợ hôm nay đã kết thúc. Cảm ơn quý vị đã đến!',
+			loading: 'Đang tải hàng chờ…',
+			reconnecting: 'Đang kết nối lại…',
+			signInRequired: 'Màn hình này đã bị đăng xuất. Nhân viên cần đăng nhập lại.',
+			signIn: 'Nhân viên đăng nhập',
+			notPermitted: 'Tài khoản này không thể hiển thị màn hình hàng chờ.',
+		},
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
@@ -1798,6 +1891,20 @@ export const translations = {
 			submitting: '正在设置…',
 			failed: '此二维码已过期或已被使用。请向工作人员索取新的二维码。',
 			missingCode: '此链接缺少代码。请让工作人员再次向您出示二维码。',
+		},
+		kiosk: {
+			nowCalling: '正在叫号',
+			nowCallingNone: '尚未叫号',
+			stillWaitingFor: '已叫号',
+			waitingCount: '排队中：{count}',
+			moreCount: '另有 {count} 个',
+			notStarted: '市场开放后将在此叫号',
+			ended: '今天的市场已结束。感谢您的光临！',
+			loading: '正在加载队列…',
+			reconnecting: '正在重新连接…',
+			signInRequired: '此显示屏已退出登录，需要工作人员重新登录。',
+			signIn: '工作人员登录',
+			notPermitted: '此帐户无法显示排队屏幕。',
 		},
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
@@ -2059,6 +2166,20 @@ export const translations = {
 			submitting: 'جارٍ الإعداد…',
 			failed: 'انتهت صلاحية هذا الرمز أو تم استخدامه بالفعل. اطلب رمزًا جديدًا من أحد الموظفين.',
 			missingCode: 'هذا الرابط لا يحتوي على رمز. اطلب من أحد الموظفين أن يعرض عليك رمز QR مرة أخرى.',
+		},
+		kiosk: {
+			nowCalling: 'الرقم الحالي',
+			nowCallingNone: 'لم يتم النداء على أي رقم بعد',
+			stillWaitingFor: 'تم النداء',
+			waitingCount: 'في الطابور: {count}',
+			moreCount: 'أرقام أخرى: {count}',
+			notStarted: 'ستُنادى الأرقام هنا عند افتتاح السوق',
+			ended: 'انتهى سوق اليوم. شكرًا لحضوركم!',
+			loading: 'جارٍ تحميل الطابور…',
+			reconnecting: 'جارٍ إعادة الاتصال…',
+			signInRequired: 'تم تسجيل الخروج من هذه الشاشة. يجب أن يسجّل أحد الموظفين الدخول مرة أخرى.',
+			signIn: 'تسجيل دخول الموظفين',
+			notPermitted: 'لا يمكن لهذا الحساب عرض شاشة الطابور.',
 		},
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',

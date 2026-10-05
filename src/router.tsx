@@ -42,4 +42,11 @@ export const router = createInstrumentedBrowserRouter([
 			},
 		],
 	},
+	// Outside the app shell: a room display shows no bar, menu, or footer for a passer-by to tap.
+	{
+		path: '/kiosk',
+		lazy: async () => ({
+			Component: (await import('./components/kiosk/KioskView')).KioskView,
+		}),
+	},
 ]);
