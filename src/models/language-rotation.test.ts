@@ -42,14 +42,23 @@ describe('LanguageRotation', () => {
 		expect(later).toBe(rotation.localeAt(time));
 	});
 
-	it('counts down to the next change, never to zero', () => {
+	it('says how far through its turn a language is, counting down never to zero', () => {
 		// Act
-		const fromStart = rotation.msUntilNextChange(0);
-		const atBoundary = rotation.msUntilNextChange(8_000);
-		const justBefore = rotation.msUntilNextChange(23_999);
+		const turns = [0, 8_000, 11_000, 23_999].map((time) => rotation.turnAt(time));
 
 		// Assert
-		expect([fromStart, atBoundary, justBefore]).toEqual([8_000, 8_000, 1]);
+		expect(turns.map(({ elapsedMs, remainingMs }) => [elapsedMs, remainingMs])).toEqual([
+			[0, 8_000],
+			[0, 8_000],
+			[3_000, 5_000],
+			[7_999, 1],
+		]);
+		expect(turns.map(({ locale, durationMs }) => [locale, durationMs])).toEqual([
+			['es', 8_000],
+			['vi', 8_000],
+			['vi', 8_000],
+			['zh', 8_000],
+		]);
 	});
 
 	it('lists its languages in turn order', () => {

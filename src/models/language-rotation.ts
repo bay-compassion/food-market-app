@@ -1,6 +1,12 @@
 /** One language's turn in a rotation. */
 export type RotationSlot<Locale extends string> = { locale: Locale; durationMs: number };
 
+/** Where a rotation stands at one moment: whose turn it is, and how far through it. */
+export type RotationTurn<Locale extends string> = RotationSlot<Locale> & {
+	elapsedMs: number;
+	remainingMs: number;
+};
+
 /**
  * A repeating schedule of languages, each shown for its own length of time.
  *
@@ -36,27 +42,25 @@ export class LanguageRotation<Locale extends string> {
 		return this.slots.map(({ locale }) => locale);
 	}
 
-	/** The language showing at `timeMs` (epoch milliseconds). */
-	localeAt(timeMs: number): Locale {
-		return this.slotAt(timeMs).slot.locale;
-	}
-
-	/** How long from `timeMs` until the language changes. Always positive. */
-	msUntilNextChange(timeMs: number): number {
-		return this.slotAt(timeMs).remainingMs;
-	}
-
-	private slotAt(timeMs: number): { slot: RotationSlot<Locale>; remainingMs: number } {
+	/** The turn under way at `timeMs` (epoch milliseconds). `remainingMs` is always positive. */
+	turnAt(timeMs: number): RotationTurn<Locale> {
 		let offset = ((timeMs % this.cycleMs) + this.cycleMs) % this.cycleMs;
 
 		for (const slot of this.slots) {
 			if (offset < slot.durationMs) {
-				return { slot, remainingMs: slot.durationMs - offset };
+				return { ...slot, elapsedMs: offset, remainingMs: slot.durationMs - offset };
 			}
 			offset -= slot.durationMs;
 		}
 
 		// Unreachable: `offset` is below the cycle, which is the sum of every slot.
-		return { slot: this.slots[0]!, remainingMs: this.slots[0]!.durationMs };
+		const first = this.slots[0]!;
+
+		return { ...first, elapsedMs: 0, remainingMs: first.durationMs };
+	}
+
+	/** The language showing at `timeMs`. */
+	localeAt(timeMs: number): Locale {
+		return this.turnAt(timeMs).locale;
 	}
 }

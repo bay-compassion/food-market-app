@@ -1,7 +1,14 @@
+import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
+import type { CSSProperties } from 'react';
 
 import { languages } from '../../locales';
 import { useKioskLanguages } from './kiosk-languages';
+
+const drain = keyframes`
+	from { transform: scaleX(1); }
+	to { transform: scaleX(0); }
+`;
 
 const Row = styled.ol`
 	display: flex;
@@ -29,10 +36,29 @@ const Row = styled.ol`
 	}
 
 	li[data-active] {
+		position: relative;
+		/* Keeps the band below the label without escaping the pill. */
+		isolation: isolate;
+		overflow: hidden;
 		border-color: var(--color-on-brand);
 		background: var(--color-on-brand);
 		color: var(--color-brand-dark);
 		font-weight: 700;
+	}
+
+	/* The time this language has left: a band that drains toward the start of the pill. A pale tint
+	   of the brand teal, so it reads as a quiet countdown rather than competing with the amber
+	   number tiles, and the dark label keeps its contrast on the tint and the white alike. It
+	   starts as the pill appears, set back by however much of the turn had already gone. Left in
+	   under reduced motion: it is slow, linear, and the only sign of when the language will change. */
+	li[data-active]::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: color-mix(in srgb, var(--color-brand) 22%, var(--color-on-brand));
+		transform-origin: left;
+		animation: ${drain} var(--turn-ms) linear var(--turn-delay) forwards;
 	}
 `;
 
@@ -40,25 +66,41 @@ const names = new Map(languages.map(({ code, label }) => [code, label]));
 
 /**
  * The carousel dots for the rotating language: every language by its own name, in its own script,
- * with the one showing now filled in. Own names rather than flags — a flag names a country, and
- * Spanish, Arabic, Chinese, Farsi, and Vietnamese each map onto several, some of them contested.
+ * with the one showing now filled in and a band across it draining as its turn runs out. Own names
+ * rather than flags — a flag names a country, and Spanish, Arabic, Chinese, Farsi, and Vietnamese
+ * each map onto several, some of them contested.
  *
  * Hidden from screen readers: it repeats which language the copy is in, which `lang` already says.
  */
 export function LanguageIndicator() {
-	const { secondary, rotation } = useKioskLanguages();
+	const { secondary, rotation, turn } = useKioskLanguages();
 
 	if (rotation.length < 2) {
 		return null;
 	}
+	const countdown = turn
+		? ({
+				'--turn-ms': `${turn.durationMs}ms`,
+				'--turn-delay': `${-turn.elapsedMs}ms`,
+			} as CSSProperties)
+		: undefined;
 
 	return (
 		<Row aria-hidden="true">
-			{rotation.map((locale) => (
-				<li key={locale} lang={locale} data-active={locale === secondary?.locale || undefined}>
-					{names.get(locale)}
-				</li>
-			))}
+			{rotation.map((locale) => {
+				const active = locale === secondary?.locale;
+
+				return (
+					<li
+						key={locale}
+						lang={locale}
+						data-active={active || undefined}
+						style={active ? countdown : undefined}
+					>
+						{names.get(locale)}
+					</li>
+				);
+			})}
 		</Row>
 	);
 }

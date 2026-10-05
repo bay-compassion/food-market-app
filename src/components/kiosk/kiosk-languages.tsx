@@ -26,12 +26,15 @@ export type KioskLanguages = {
 	secondary: KioskLanguage | null;
 	/** Every secondary language in turn order, for the indicator. Empty when one is pinned. */
 	rotation: readonly Locale[];
+	/** How long the current turn lasts and how much of it had passed when it was read. */
+	turn: { durationMs: number; elapsedMs: number } | null;
 };
 
 const KioskLanguagesContext = createContext<KioskLanguages>({
 	primary: new KioskLanguage('en'),
 	secondary: null,
 	rotation: [],
+	turn: null,
 });
 
 /**

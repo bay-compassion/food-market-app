@@ -10,7 +10,7 @@ import { KioskApi } from '../../services/kiosk-api';
 import { KioskStore } from '../../stores/kiosk.store';
 import { useRootStore } from '../../stores/react/store-context';
 import { isLanguage } from '../../stores/translation.store';
-import { useRotatingLocale } from '../hooks/use-rotating-locale';
+import { useRotationTurn } from '../hooks/use-rotation-turn';
 import { useScreenWakeLock } from '../hooks/use-screen-wake-lock';
 import { RequireAuth } from '../RequireAuth';
 import { KioskLanguage, KioskLanguagesProvider, type KioskLanguages } from './kiosk-languages';
@@ -58,14 +58,16 @@ const KioskScreen = observer(function KioskScreen() {
 		() => (isLanguage(lang) ? LanguageRotation.fixed<Locale>(lang) : rotation),
 		[lang],
 	);
-	const secondaryLocale = useRotatingLocale(activeRotation);
+	const { locale: secondaryLocale, durationMs, elapsedMs } = useRotationTurn(activeRotation);
+	const rotating = activeRotation.locales.length > 1;
 	const languagesShown = useMemo<KioskLanguages>(
 		() => ({
 			primary: english,
 			secondary: secondaryLocale === 'en' ? null : new KioskLanguage(secondaryLocale),
-			rotation: activeRotation.locales.length > 1 ? activeRotation.locales : [],
+			rotation: rotating ? activeRotation.locales : [],
+			turn: rotating ? { durationMs, elapsedMs } : null,
 		}),
-		[activeRotation, secondaryLocale],
+		[activeRotation, rotating, secondaryLocale, durationMs, elapsedMs],
 	);
 	const [store] = useState(
 		() =>

@@ -20,6 +20,8 @@ function Display({ locale, children }: { locale: Locale; children: ReactNode }) 
 				primary: new KioskLanguage('en'),
 				secondary: locale === 'en' ? null : new KioskLanguage(locale),
 				rotation: locale === 'en' ? [] : rotation,
+				// Partway through, so the countdown band shows mid-drain.
+				turn: locale === 'en' ? null : { durationMs: 8_000, elapsedMs: 3_000 },
 			}}
 		>
 			<KioskFrame dir="ltr" lang="en">
@@ -157,6 +159,7 @@ export const LanguageIndicator: Story = {
 		const active = canvasElement.querySelector('ol [data-active]');
 
 		await expect(active).toHaveTextContent(languages.find(({ code }) => code === 'vi')!.label);
+		await expect(active).toHaveStyle({ '--turn-ms': '8000ms', '--turn-delay': '-3000ms' });
 		// English is always on screen, so it is not one of the turns.
 		await expect(canvasElement.querySelectorAll('ol li')).toHaveLength(languages.length - 1);
 	},
