@@ -319,6 +319,7 @@ export interface QueueDeskTranslation {
 	unplaced: string;
 	closeTicket: string;
 	nameTag: string;
+	printNameTag: string;
 	language: string;
 	/** `{count}` is the number of people in the household. */
 	household: string;
@@ -707,6 +708,7 @@ export const adminTranslations = {
 			unplaced: 'Not placed',
 			closeTicket: 'Close ticket',
 			nameTag: 'Name tag',
+			printNameTag: 'Print name tag',
 			language: 'Language',
 			household: 'Household of {count}',
 			elapsedMinutes: '{minutes}m',

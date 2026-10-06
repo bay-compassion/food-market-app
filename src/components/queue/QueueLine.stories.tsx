@@ -258,6 +258,14 @@ export const DuringService: Story = {
 };
 
 /**
+ * The open ticket's sheet. Queries go through it rather than the whole page, because the page also
+ * holds the label-sized copy of the name tag that only shows when printing.
+ */
+async function openTicket() {
+	return within(await within(document.body).findByLabelText(t.ticket));
+}
+
+/**
  * A called guest's ticket, open: the clock since they were called, the name tag to write out,
  * what to do once they reach the table, and the history of how they got there.
  */
@@ -265,7 +273,7 @@ export const TicketOpen: Story = {
 	args: { openVisitId: 'guest-called-1' },
 	play: async () => {
 		// The list behind the sheet carries the name and language too, so read the tag itself.
-		const name = await within(document.body).findByText('Maria S.');
+		const name = await (await openTicket()).findByText('Maria S.');
 		const tag = within(name.closest<HTMLElement>('.name-tag')!);
 
 		await expect(name).toBeVisible();
@@ -292,7 +300,7 @@ export const ServingAndCallingNext: Story = {
 
 		await userEvent.click(await page.findByRole('button', { name: t.serveAndCallNext }));
 
-		await expect(await page.findByText('Linh N.')).toBeVisible();
+		await expect(await (await openTicket()).findByText('Linh N.')).toBeVisible();
 	},
 };
 
@@ -342,7 +350,7 @@ export const CallingNext: Story = {
 
 		await userEvent.click(await canvas.findByRole('button', { name: t.callNext }));
 
-		await expect(await within(document.body).findByText('Linh N.')).toBeVisible();
+		await expect(await (await openTicket()).findByText('Linh N.')).toBeVisible();
 	},
 };
 
