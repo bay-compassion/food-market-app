@@ -43,6 +43,18 @@ describe('NameTag', () => {
 		expect(name).toBe('Ana Lucia D.');
 	});
 
+	it('sets a long name smaller so it still fits the label', () => {
+		// Arrange
+		const short = new NameTag(maria);
+		const long = new NameTag({ ...maria, firstName: 'Maximiliana' });
+
+		// Act
+		const sizes = [short.isLongName, long.isLongName];
+
+		// Assert
+		expect(sizes).toEqual([false, true]);
+	});
+
 	it('carries the place in line, or none for a visit the draw has not placed', () => {
 		// Arrange
 		const placed = new NameTag(maria);

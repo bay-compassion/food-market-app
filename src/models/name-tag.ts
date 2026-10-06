@@ -12,10 +12,20 @@ export type NameTagSource = {
  * What goes on the sticker a check-in volunteer writes out for a guest they have just called: the
  * first name with a last initial, their place in line, and the language they registered in.
  *
- * A value object built from the visit, so the screen that shows it and — later — a label printer
- * that prints it agree on exactly the same text.
+ * A value object built from the visit, so the screen that shows it and the label printer that
+ * prints it agree on exactly the same text.
  */
 export class NameTag {
+	/**
+	 * The label a tag prints on: Brother DK-2205 62 mm continuous tape, cut 100 mm long, with the
+	 * text running along the tape. The one place the size is set — the screen draws the tag at
+	 * these proportions too, so what a volunteer sees is what prints.
+	 */
+	static readonly label = { widthMm: 100, heightMm: 62 } as const;
+
+	/** Names longer than this are set smaller, so they still fit across the label. */
+	private static readonly longNameLength = 12;
+
 	constructor(private readonly source: NameTagSource) {}
 
 	/**
@@ -27,6 +37,11 @@ export class NameTag {
 		const initial = this.source.lastName.trim().charAt(0).toLocaleUpperCase();
 
 		return initial ? `${first} ${initial}.` : first;
+	}
+
+	/** Whether the name needs the smaller type to fit the label. */
+	get isLongName(): boolean {
+		return this.name.length > NameTag.longNameLength;
 	}
 
 	/** The place in line, or `null` for a visit the draw has not placed. */

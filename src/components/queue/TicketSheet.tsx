@@ -4,12 +4,11 @@ import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
 import { languages } from '../../locales';
-import { NameTag } from '../../models/name-tag';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
-import { NameTagCard } from './NameTagCard';
 import { useQueueDesk } from './queue-desk-context';
 import { TicketActions } from './TicketActions';
 import { TicketHistory } from './TicketHistory';
+import { TicketNameTag } from './TicketNameTag';
 import { TicketSummary } from './TicketSummary';
 
 // The sheet renders in a portal, outside the queue screen's frame, so it carries its own styles.
@@ -84,7 +83,7 @@ export const TicketSheet = observer(function TicketSheet() {
 						onClick={() => desk.dismiss()}
 					/>
 					<TicketSummary guest={guest} statusLabel={statusLabels[guest.status]} />
-					<NameTagCard tag={new NameTag(guest)} />
+					<TicketNameTag guest={guest} />
 					<p className="guest-details">
 						<span>{t.household.replace('{count}', String(guest.householdSize))}</span>
 						{language ? <span>{language}</span> : null}
