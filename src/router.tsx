@@ -49,6 +49,13 @@ export const router = createInstrumentedBrowserRouter([
 			Component: (await import('./components/queue/QueueRoute')).QueueRoute,
 		}),
 	},
+	// Outside the app shell: a desktop that prints the name tags volunteers send from their phones.
+	{
+		path: '/printing-station',
+		lazy: async () => ({
+			Component: (await import('./components/print-station/PrintStation')).PrintStationRoute,
+		}),
+	},
 	// Outside the app shell: a room display shows no bar, menu, or footer for a passer-by to tap.
 	{
 		path: '/kiosk',

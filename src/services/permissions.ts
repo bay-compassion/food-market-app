@@ -38,6 +38,13 @@ export const permissions = [
 	 * room carries nothing that can change the queue; staff roles hold it too, to check the display.
 	 */
 	'view:kiosk',
+	/**
+	 * Run the `/printing-station` page: take the name tags volunteers send from their phones and print
+	 * them on the label printer. Held by staff roles, and alone by the account an unattended print
+	 * desktop signs in as — like `view:kiosk`, so that machine carries nothing that can change the
+	 * queue. The tags it receives carry a first name and last initial, nothing more.
+	 */
+	'print:name-tags',
 ] as const;
 
 export type Permission = (typeof permissions)[number];

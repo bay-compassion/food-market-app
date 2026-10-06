@@ -320,6 +320,13 @@ export interface QueueDeskTranslation {
 	closeTicket: string;
 	nameTag: string;
 	printNameTag: string;
+	/** Under the print button: where the tag will come out. */
+	printsAtStation: string;
+	printsFromPhone: string;
+	printSent: string;
+	printStationOffline: string;
+	printFailed: string;
+	printStation: PrintStationTranslation;
 	language: string;
 	/** `{count}` is the number of people in the household. */
 	household: string;
@@ -327,6 +334,24 @@ export interface QueueDeskTranslation {
 	elapsedMinutes: string;
 	elapsedJustNow: string;
 	history: VisitHistoryTranslation;
+}
+
+/** The `/printing-station` page an unattended desktop runs to print tags sent from phones. */
+export interface PrintStationTranslation {
+	title: string;
+	loading: string;
+	ready: string;
+	/** `{time}` is when the station last reached the server. */
+	checkedAt: string;
+	reconnecting: string;
+	signInRequired: string;
+	signIn: string;
+	notPermitted: string;
+	recent: string;
+	noneYet: string;
+	keepOpen: string;
+	setupTitle: string;
+	setup: string;
 }
 
 /** The History panel on an open ticket: what happened to the visit, by whom, and when. */
@@ -709,6 +734,30 @@ export const adminTranslations = {
 			closeTicket: 'Close ticket',
 			nameTag: 'Name tag',
 			printNameTag: 'Print name tag',
+			printsAtStation: 'Prints at the print station',
+			printsFromPhone: 'Opens this phone’s print dialog',
+			printSent: 'Name tag sent to the printer.',
+			printStationOffline:
+				'The print station is offline. Tap Print again to use this phone’s print dialog.',
+			printFailed: 'The name tag couldn’t be sent. Try again.',
+			printStation: {
+				title: 'Print station',
+				loading: 'Starting the print station…',
+				ready: 'Ready. Name tags sent from volunteers’ phones print here.',
+				checkedAt: 'Last checked {time}',
+				reconnecting: 'Can’t reach the server. Retrying…',
+				signInRequired: 'This print station needs to sign in again.',
+				signIn: 'Sign in',
+				notPermitted:
+					'This account can’t run the print station. Sign in with the print-station account.',
+				recent: 'Printed recently',
+				noneYet: 'Nothing printed yet.',
+				keepOpen:
+					'Keep this window open and visible. Volunteers can only send tags here while it is.',
+				setupTitle: 'Printing without a dialog',
+				setup:
+					'Each tag prints without a dialog only when this browser was started for it. Quit the browser completely, then start it with:',
+			},
 			language: 'Language',
 			household: 'Household of {count}',
 			elapsedMinutes: '{minutes}m',

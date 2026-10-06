@@ -52,7 +52,12 @@ const Message = styled.section`
 export const QueueDesk = observer(function QueueDesk({ getAccessToken }: QueueDeskProps) {
 	const t = adminTranslations.en;
 	const rootStore = useRootStore();
-	const [desk] = useState(() => new QueueDeskStore(rootStore.admin, rootStore.session));
+	const [desk] = useState(
+		() =>
+			new QueueDeskStore(rootStore.admin, rootStore.session, {
+				notifications: rootStore.notifications,
+			}),
+	);
 
 	useEffect(() => {
 		rootStore.setAccessTokenProvider(getAccessToken);

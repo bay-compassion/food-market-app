@@ -20,6 +20,7 @@ import { viewsFor, type AdminView } from '../services/admin-views.ts';
 import { admissionOffersPhoneClaim, type QueuePlacement } from '../services/guestAdmission.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
+import type { PrintJobSubmission } from '../services/print-jobs.ts';
 import type { SessionCommand } from '../services/sessionStateMachine.ts';
 import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine.ts';
@@ -211,6 +212,16 @@ export class AdminStore {
 				this._sessionGuests = guests;
 			}
 		});
+	}
+
+	/** Whether a print station is online to take name tags. */
+	async isPrintStationOnline(): Promise<boolean> {
+		return this.api.isPrintStationOnline();
+	}
+
+	/** Sends a visit's name tag to the print station. */
+	async sendNameTag(visitId: string): Promise<PrintJobSubmission> {
+		return this.api.sendNameTag(visitId);
 	}
 
 	/** One visit's history. Read on demand rather than held, since only an open ticket shows it. */

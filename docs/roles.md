@@ -6,11 +6,12 @@ explanation and nothing else.
 
 ## The roles
 
-| Role     | Who it is for                                      | Holds                                    |
-| -------- | -------------------------------------------------- | ---------------------------------------- |
-| `worker` | Volunteers running the market                      | `run:queue`, `view:kiosk`                |
-| `admin`  | Whoever is responsible for the market and its data | the first five permissions, `view:kiosk` |
-| `kiosk`  | The account a room display signs in as             | `view:kiosk` only                        |
+| Role            | Who it is for                                      | Holds                                                       |
+| --------------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| `worker`        | Volunteers running the market                      | `run:queue`, `view:kiosk`, `print:name-tags`                |
+| `admin`         | Whoever is responsible for the market and its data | the first five permissions, `view:kiosk`, `print:name-tags` |
+| `kiosk`         | The account a room display signs in as             | `view:kiosk` only                                           |
+| `print-station` | The account a print-station desktop signs in as    | `print:name-tags` only                                      |
 
 Two roles rather than three because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
@@ -27,6 +28,7 @@ or download the whole guest database in one click.
 | `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
 | `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
 | `view:kiosk`          | The `/kiosk` room display — queue numbers being called, never a guest's name                             |
+| `print:name-tags`     | The `/printing-station` page — prints the name tags volunteers send: first name and last initial only    |
 
 The first five sit behind two roles on purpose. Splitting out a third role later — a board member
 or grant writer who should read reports but never see a name, holding `read:reports` alone — is
@@ -54,6 +56,10 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET`, `POST /api/admin/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
 | `GET /api/admin/kiosk`                   | `view:kiosk`                                            |
 | `GET /api/admin/visits/:id/events`       | `run:queue`                                             |
+| `POST /api/admin/print-jobs`             | `run:queue`                                             |
+| `GET /api/admin/print-station`           | `run:queue`                                             |
+| `GET /api/admin/print-jobs`              | `print:name-tags`                                       |
+| `DELETE /api/admin/print-jobs/:id`       | `print:name-tags`                                       |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session
@@ -71,7 +77,7 @@ a token with no permissions, and the moment the server starts checking, they are
 admin area. The reverse order is safe: turning RBAC on with no enforcement deployed just adds a
 claim nothing reads yet, so you can confirm tokens look right and merge afterwards.
 
-1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the seven
+1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the eight
    permissions above.
 2. **Same API → Settings → RBAC Settings.** Turn on _Enable RBAC_ **and** _Add Permissions in the
    Access Token_. The second one is what puts the `permissions` claim in the token; without it
@@ -195,6 +201,28 @@ for a worker.
 
 Push `infrastructure/auth0/tenant/tenant.yaml` to Auth0 before merging the code that checks
 `view:kiosk`; until then the display is refused with a 403 and nothing else changes.
+
+## The print station
+
+`/printing-station` runs on a desktop at the market with the label printer attached, and prints the
+name tags volunteers send from `/queue` on their phones — with no print dialog, when its browser is
+started for it (see [`name-tag-printing.md`](name-tag-printing.md)). It is set up like the room
+display, and for the same reason: an unattended machine should be able to do its one job and
+nothing else.
+
+1. **Create one Auth0 user for the station**, e.g. `print-station@…`, with a long generated
+   password, and give it the `print-station` role and nothing else.
+2. **On the desktop, open `/printing-station` and sign in as that user.**
+
+`print:name-tags` grants only collecting waiting tags and removing printed ones. A tag carries the
+guest's first name, last initial, place in line, and language — what the label shows — and nothing
+else. Sending a tag and asking whether a station is online are `run:queue`, since that is what a
+volunteer on `/queue` holds. `worker` and `admin` hold `print:name-tags` as well, so a staff member
+can run the station signed in as themselves.
+
+Push `infrastructure/auth0/tenant/tenant.yaml` to Auth0 before relying on the station. Until then
+it is refused with a 403 and says the account can't run it, and every phone keeps using its own
+print dialog, since no station ever reports in.
 
 ## What this does not do
 

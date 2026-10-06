@@ -11,6 +11,7 @@ import guestClaimsHandler from '../../routes/admin/guest-claims.mjs';
 import guestsHandler from '../../routes/admin/guests.mjs';
 import kioskHandler from '../../routes/admin/kiosk.mjs';
 import marketHandler from '../../routes/admin/market.mjs';
+import printJobsHandler from '../../routes/admin/print-jobs.mjs';
 import queueHandler from '../../routes/admin/queue.mjs';
 import reportsHandler from '../../routes/admin/reports.mjs';
 import scheduleHandler from '../../routes/admin/schedule.mjs';
@@ -119,6 +120,35 @@ describe('endpoint permissions', () => {
 			visitEventsHandler,
 			json('https://x/api/admin/visits/6f1c2a4e-3b5d-4c7e-9f80-1a2b3c4d5e6f/events', 'GET'),
 			'run:queue',
+		],
+		[
+			'sending a name tag to the print station',
+			printJobsHandler,
+			json('https://x/api/admin/print-jobs', 'POST', {
+				visitId: '6f1c2a4e-3b5d-4c7e-9f80-1a2b3c4d5e6f',
+			}),
+			'run:queue',
+		],
+		[
+			'asking whether a print station is online',
+			printJobsHandler,
+			json('https://x/api/admin/print-station', 'GET'),
+			'run:queue',
+		],
+		[
+			'collecting name tags at the print station',
+			printJobsHandler,
+			json('https://x/api/admin/print-jobs', 'GET'),
+			'print:name-tags',
+		],
+		[
+			'removing a printed name tag',
+			printJobsHandler,
+			json(
+				'https://x/api/admin/print-jobs/001791230000000-6f1c2a4e-3b5d-4c7e-9f80-1a2b3c4d5e6f',
+				'DELETE',
+			),
+			'print:name-tags',
 		],
 		[
 			'reading session history',
