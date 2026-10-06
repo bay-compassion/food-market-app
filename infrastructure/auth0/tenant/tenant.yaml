@@ -16,14 +16,18 @@ resourceServers:
         description: The reports screen — aggregates, no names
       - value: export:guest-data
         description: The visit export, with names and phone numbers
+      - value: manage:demo-data
+        description: Add demo datasets
       - value: manage:guest-access
         description: >-
           Put any guest on a phone with a QR code, replacing a phone they
           already use
-      - value: manage:demo-data
-        description: Add demo datasets
       - value: view:kiosk
         description: The room display — queue numbers being called, no names
+      - value: print:name-tags
+        description: >-
+          The print station — prints the name tags volunteers send, first name
+          and last initial only
     signing_alg: RS256
     skip_consent_for_verifiable_first_party_clients: true
     subject_type_authorization:
@@ -201,15 +205,23 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: view:kiosk
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: developer
     description: Developer role with superuser like permissions
     permissions:
       - permission_name: manage:demo-data
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: view:kiosk
+        resource_server_identifier: https://thebaycompassion.org
     type: tenant
+  - name: print-station
+    description: >-
+      The account a print-station desktop signs in as — prints name tags,
+      nothing else
   - name: kiosk
-    description: The account a room display signs in as — shows the queue, nothing else
+    description: Kiosk User
     permissions:
       - permission_name: view:kiosk
         resource_server_identifier: https://thebaycompassion.org
@@ -221,4 +233,23 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: view:kiosk
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
     type: tenant
+
+actions:
+  - name: Add worker name to access token
+    id: ab8f547b-00cf-4e39-8ecc-9c7ac477fdd9
+    code: ./actions/Add worker name to access token/code.js
+    dependencies: []
+    deployed: true
+    runtime: node22
+    secrets: []
+    status: built
+    supported_triggers:
+      - id: post-login
+        version: v3
+triggers:
+  post-login:
+    - action_name: Add worker name to access token
+      display_name: Add worker name to access token

@@ -20,6 +20,10 @@ export const languages = [
 
 export type Locale = (typeof languages)[number]['code'];
 
+export function isLocale(value: unknown): value is Locale {
+	return languages.some(({ code }) => code === value);
+}
+
 export interface VisitStatusTranslations {
 	labels: {
 		registered: string;

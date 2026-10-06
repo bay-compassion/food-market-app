@@ -7,6 +7,7 @@ import { SessionStatusEnum } from '../services/sessionStateMachine';
 import type { VisitEvent } from '../services/visit-events';
 import type { AdminStore } from './admin.store';
 import type { MarketSessionStore } from './market-session.store';
+import { NotificationStore } from './notification.store';
 import { QueueDeskStore } from './queue-desk.store';
 
 function guestWith(overrides: Partial<AdminGuest> = {}): AdminGuest {
@@ -52,6 +53,8 @@ function deskWith({
 			callNext: vi.fn().mockResolvedValue(called),
 			serveAndCallNext: vi.fn().mockResolvedValue(called),
 			listVisitEvents: vi.fn().mockResolvedValue([] as VisitEvent[]),
+			isPrintStationOnline: vi.fn().mockResolvedValue(false),
+			sendNameTag: vi.fn().mockResolvedValue({ queued: true }),
 			runGuestCommand: vi.fn().mockResolvedValue(undefined),
 			runMarketAction: vi.fn().mockResolvedValue(undefined),
 		},
@@ -62,6 +65,8 @@ function deskWith({
 			callNext: false,
 			serveAndCallNext: false,
 			listVisitEvents: false,
+			isPrintStationOnline: false,
+			sendNameTag: false,
 			runGuestCommand: false,
 			runMarketAction: false,
 		},
@@ -72,13 +77,14 @@ function deskWith({
 		currentState: status ? { event: { id: 'event-1', status } } : null,
 		getStatus: vi.fn().mockResolvedValue(undefined),
 	};
+	const notifications = new NotificationStore();
 	const desk = new QueueDeskStore(
 		admin as unknown as AdminStore,
 		session as unknown as MarketSessionStore,
-		{ pollIntervalMs: 60_000 },
+		{ pollIntervalMs: 60_000, notifications },
 	);
 
-	return { desk, admin, session };
+	return { desk, admin, session, notifications };
 }
 
 describe('QueueDeskStore', () => {
@@ -358,6 +364,53 @@ describe('QueueDeskStore', () => {
 		// Assert
 		await vi.waitFor(() => expect(desk.history).toEqual([]));
 		desk[Symbol.dispose]();
+	});
+
+	it('learns whether a print station is online with each refresh', async () => {
+		// Arrange
+		const { desk, admin } = deskWith();
+
+		admin.isPrintStationOnline.mockResolvedValueOnce(true);
+
+		// Act
+		await desk.refresh();
+
+		// Assert
+		expect(desk.printStationOnline).toBe(true);
+	});
+
+	it('confirms a name tag sent to the print station', async () => {
+		// Arrange
+		const { desk, admin, notifications } = deskWith();
+		const guest = admin.sessionGuests[0]!;
+
+		// Act
+		const sending = desk.sendNameTag(guest);
+		const whileSending = desk.isSendingNameTag(guest);
+
+		await sending;
+
+		// Assert
+		expect(whileSending).toBe(true);
+		expect(desk.isSendingNameTag(guest)).toBe(false);
+		expect(admin.sendNameTag).toHaveBeenCalledWith('visit-1');
+		expect(notifications.pending.at(-1)).toMatchObject({ severity: 'success' });
+	});
+
+	it('falls back to the phone’s dialog after the station turns out to be offline', async () => {
+		// Arrange
+		const { desk, admin, notifications } = deskWith();
+
+		admin.isPrintStationOnline.mockResolvedValueOnce(true);
+		admin.sendNameTag.mockResolvedValueOnce({ queued: false, reason: 'station_offline' });
+		await desk.refresh();
+
+		// Act
+		await desk.sendNameTag(admin.sessionGuests[0]!);
+
+		// Assert
+		expect(desk.printStationOnline).toBe(false);
+		expect(notifications.pending.at(-1)).toMatchObject({ severity: 'error' });
 	});
 
 	it('shares a read already in flight', async () => {

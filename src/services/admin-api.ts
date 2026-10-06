@@ -5,6 +5,7 @@ import type { DemoRoster } from './demo-preview';
 import type { ServiceProgress } from './demoScenario.ts';
 import type { ManualAdmission, QueuePlacement } from './guestAdmission.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
+import type { PrintJobSubmission } from './print-jobs.ts';
 import type { SessionStatus } from './sessionStateMachine.ts';
 import type { VisitEvent } from './visit-events.ts';
 import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
@@ -139,6 +140,24 @@ export class AdminApi {
 	}
 
 	/** Sessions that have finished, for the history screen. */
+	/** Sends a visit's name tag to the print station. Says so when no station is online to print it. */
+	async sendNameTag(visitId: string): Promise<PrintJobSubmission> {
+		return this.readJson<PrintJobSubmission>(
+			await this.send('POST', '/api/admin/print-jobs', { visitId }),
+			'print_job',
+		);
+	}
+
+	/** Whether a print station is online to take name tags. */
+	async isPrintStationOnline(): Promise<boolean> {
+		const { online } = await this.readJson<{ online: boolean }>(
+			await this.get('/api/admin/print-station'),
+			'print_station',
+		);
+
+		return online;
+	}
+
 	/** One visit's history, oldest first. */
 	async listVisitEvents(visitId: string): Promise<VisitEvent[]> {
 		const { events } = await this.readJson<{ events: VisitEvent[] }>(

@@ -1,5 +1,6 @@
 import { reaction, runInAction, type IReactionDisposer } from 'mobx';
 
+import { adminTranslations } from '../adminLocales.ts';
 import type { QueueGuest } from '../services/admin-api.ts';
 import {
 	manualAdmissionsFor,
@@ -14,9 +15,12 @@ import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand } from '../services/visitStateMachine.ts';
 import type { AdminStore } from './admin.store.ts';
 import type { MarketSessionStore } from './market-session.store.ts';
+import { NotificationStore } from './notification.store.ts';
 
 export type QueueDeskStoreOptions = {
 	pollIntervalMs?: number;
+	/** Where the outcome of sending a name tag is raised. `QueueDesk` passes the app's own. */
+	notifications?: NotificationStore;
 };
 
 /** Which screen the queue desk shows. */
@@ -40,6 +44,10 @@ export class QueueDeskStore {
 	/** The open ticket's history, and which visit it belongs to — it outlives a switch of ticket. */
 	private _history: { visitId: string; events: VisitEvent[] } | null = null;
 	private readonly stopHistory: IReactionDisposer;
+	private readonly notifications: NotificationStore;
+	private _printStationOnline = false;
+	/** The visit whose name tag is on its way to the print station, so a second tap waits. */
+	private _sendingTagFor: string | null = null;
 
 	constructor(
 		private readonly admin: AdminStore,
@@ -52,7 +60,10 @@ export class QueueDeskStore {
 			() => {},
 		);
 
+		this.notifications = options.notifications ?? new NotificationStore();
+
 		makeReactive(this, {
+			notifications: false,
 			admin: false,
 			session: false,
 			poller: false,
@@ -161,12 +172,57 @@ export class QueueDeskStore {
 
 	/** Reads the line once. A read already in flight is shared rather than doubled up. */
 	refresh(): Promise<void> {
-		this.request ??= this.admin
-			.refreshSessionGuests()
-			.catch(() => {})
+		this.request ??= Promise.all([
+			this.admin.refreshSessionGuests().catch(() => {}),
+			this.refreshPrintStation(),
+		])
+			.then(() => {})
 			.finally(() => (this.request = null));
 
 		return this.request;
+	}
+
+	/**
+	 * Whether a print station is online. Known before a tap rather than asked on it: a phone's print
+	 * dialog must open in the tap itself, and an iPhone refuses one that opens after a request.
+	 */
+	get printStationOnline(): boolean {
+		return this._printStationOnline;
+	}
+
+	isSendingNameTag(guest: QueueGuest): boolean {
+		return this._sendingTagFor === guest.id;
+	}
+
+	private async refreshPrintStation(): Promise<void> {
+		const online = await this.admin.isPrintStationOnline().catch(() => false);
+
+		runInAction(() => (this._printStationOnline = online));
+	}
+
+	/**
+	 * Sends a guest's name tag to the print station. If the station went quiet since the last check,
+	 * nothing is queued; the volunteer is told, and their next tap uses the phone's own dialog.
+	 */
+	async sendNameTag(guest: QueueGuest): Promise<void> {
+		this._sendingTagFor = guest.id;
+
+		try {
+			const result = await this.admin.sendNameTag(guest.id);
+
+			runInAction(() => {
+				if (result.queued) {
+					this.notifications.success(adminTranslations.en.queueDesk.printSent);
+				} else {
+					this._printStationOnline = false;
+					this.notifications.error(adminTranslations.en.queueDesk.printStationOffline);
+				}
+			});
+		} catch {
+			runInAction(() => this.notifications.error(adminTranslations.en.queueDesk.printFailed));
+		} finally {
+			runInAction(() => (this._sendingTagFor = null));
+		}
 	}
 
 	select(guest: QueueGuest): void {
