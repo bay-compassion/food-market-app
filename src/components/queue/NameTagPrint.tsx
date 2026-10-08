@@ -7,9 +7,9 @@ import { NameTagCard } from './NameTagCard';
 const { widthMm, heightMm } = NameTag.label;
 
 /**
- * While a ticket is open, printing the page prints its name tag and nothing else: the page is the
- * label's size with no margins, and everything on it but the label is hidden. Mounted only with an
- * open ticket, so these rules never apply to any other screen.
+ * While the print station has a tag to print, printing the page prints that tag and nothing else:
+ * the page is the label's size with no margins, and everything on it but the label is hidden.
+ * Mounted only while a tag is waiting, so these rules never apply to any other screen.
  */
 const printOnlyTheLabel = css`
 	@page {
@@ -38,8 +38,8 @@ const printOnlyTheLabel = css`
 `;
 
 /**
- * The open ticket's name tag at its real size, laid out for the label printer. It sits directly in
- * `<body>`, outside the sheet's portal, so the print rules can hide every other part of the page.
+ * A name tag at its real size, laid out for the label printer. It sits directly in `<body>` so the
+ * print rules can hide every other part of the page.
  */
 export function NameTagPrint({ tag }: { tag: NameTag }) {
 	return createPortal(

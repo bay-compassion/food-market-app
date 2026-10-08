@@ -258,8 +258,8 @@ export const DuringService: Story = {
 };
 
 /**
- * The open ticket's sheet. Queries go through it rather than the whole page, because the page also
- * holds the label-sized copy of the name tag that only shows when printing.
+ * The open ticket's sheet. Queries go through it rather than the whole page, because the list
+ * behind the sheet carries the same names.
  */
 async function openTicket() {
 	return within(await within(document.body).findByLabelText(t.ticket));

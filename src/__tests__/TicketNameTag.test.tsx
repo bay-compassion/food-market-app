@@ -45,25 +45,9 @@ function renderTag({ stationOnline = false } = {}) {
 }
 
 describe('TicketNameTag', () => {
-	it('opens the phone’s print dialog when no print station is online', async () => {
+	it('sends the tag to the print station when one is online', async () => {
 		// Arrange
 		const user = userEvent.setup();
-		const print = vi.spyOn(window, 'print').mockImplementation(() => {});
-
-		renderTag();
-
-		// Act
-		await user.click(screen.getByRole('button', { name: t.printNameTag }));
-
-		// Assert
-		expect(print).toHaveBeenCalledOnce();
-		expect(screen.getByText(t.printsFromPhone)).toBeTruthy();
-	});
-
-	it('sends the tag to the print station, with no dialog, when one is online', async () => {
-		// Arrange
-		const user = userEvent.setup();
-		const print = vi.spyOn(window, 'print').mockImplementation(() => {});
 		const desk = renderTag({ stationOnline: true });
 
 		// Act
@@ -71,20 +55,35 @@ describe('TicketNameTag', () => {
 
 		// Assert
 		expect(desk.sendNameTag).toHaveBeenCalledWith(guest);
-		expect(print).not.toHaveBeenCalled();
 		expect(screen.getByText(t.printsAtStation)).toBeTruthy();
 	});
 
-	it('keeps a label-sized copy directly in the page body for the print rules to show', () => {
+	it('disables printing, and says why, when no print station is online', () => {
 		// Arrange
 		renderTag();
 
 		// Act
-		const label = document.body.querySelector(':scope > .name-tag-print .name-tag');
+		const button = screen.getByRole<HTMLButtonElement>('button', { name: t.printNameTag });
 
 		// Assert
-		expect(label?.getAttribute('data-printed')).toBe('true');
-		expect(label?.textContent).toContain('Maria S.');
-		expect(label?.textContent).toContain('#14');
+		expect(button.disabled).toBe(true);
+		expect(button.getAttribute('aria-describedby')).toBe(
+			screen.getByText(t.printStationIsOffline).id,
+		);
+	});
+
+	it('never opens the phone’s own print dialog, which can’t reach the label printer', async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const print = vi.spyOn(window, 'print').mockImplementation(() => {});
+
+		renderTag({ stationOnline: true });
+
+		// Act
+		await user.click(screen.getByRole('button', { name: t.printNameTag }));
+
+		// Assert
+		expect(print).not.toHaveBeenCalled();
+		expect(document.body.querySelector(':scope > .name-tag-print')).toBeNull();
 	});
 });

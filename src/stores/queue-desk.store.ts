@@ -183,8 +183,8 @@ export class QueueDeskStore {
 	}
 
 	/**
-	 * Whether a print station is online. Known before a tap rather than asked on it: a phone's print
-	 * dialog must open in the tap itself, and an iPhone refuses one that opens after a request.
+	 * Whether a print station is online. The label printer is wired to the station, so with none
+	 * online there is nowhere to print and the ticket's print button is disabled.
 	 */
 	get printStationOnline(): boolean {
 		return this._printStationOnline;
@@ -202,7 +202,7 @@ export class QueueDeskStore {
 
 	/**
 	 * Sends a guest's name tag to the print station. If the station went quiet since the last check,
-	 * nothing is queued; the volunteer is told, and their next tap uses the phone's own dialog.
+	 * nothing is queued; the volunteer is told, and the print button is disabled until it's back.
 	 */
 	async sendNameTag(guest: QueueGuest): Promise<void> {
 		this._sendingTagFor = guest.id;

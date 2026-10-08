@@ -17,11 +17,12 @@ export type NameTagSource = {
  */
 export class NameTag {
 	/**
-	 * The label a tag prints on: Brother DK-2205 62 mm continuous tape, cut 100 mm long, with the
-	 * text running along the tape. The one place the size is set — the screen draws the tag at
-	 * these proportions too, so what a volunteer sees is what prints.
+	 * The label a tag prints on: a Dymo 30857 name badge, 4 × 2¼ in, die-cut on a roll for the
+	 * LabelWriter 450 Twin Turbo, with the text running along its length. The one place the size is
+	 * set — the screen draws the tag at these proportions too, so what a volunteer sees is what
+	 * prints.
 	 */
-	static readonly label = { widthMm: 100, heightMm: 62 } as const;
+	static readonly label = { widthMm: 101.6, heightMm: 57.15 } as const;
 
 	/** Names longer than this are set smaller, so they still fit across the label. */
 	private static readonly longNameLength = 12;

@@ -397,7 +397,7 @@ describe('QueueDeskStore', () => {
 		expect(notifications.pending.at(-1)).toMatchObject({ severity: 'success' });
 	});
 
-	it('falls back to the phone’s dialog after the station turns out to be offline', async () => {
+	it('marks the station offline when a tag sent to it turns out not to be queued', async () => {
 		// Arrange
 		const { desk, admin, notifications } = deskWith();
 

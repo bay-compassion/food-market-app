@@ -1,11 +1,11 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
+import { useId } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import { NameTag } from '../../models/name-tag';
 import type { QueueGuest } from '../../services/admin-api';
 import { NameTagCard } from './NameTagCard';
-import { NameTagPrint } from './NameTagPrint';
 import { useQueueDesk } from './queue-desk-context';
 
 const Print = styled.div`
@@ -33,42 +33,34 @@ const PrintButton = styled.button`
 `;
 
 /**
- * The open ticket's name tag: shown to copy by hand, and printed on the label printer at a tap.
+ * The open ticket's name tag: shown to copy by hand, and printed at a tap on the print station.
  *
- * With a print station online the tag goes there and prints with no dialog. Without one, the
- * phone's own print dialog does it — AirPrint on an iPhone, Mopria on Android — so a volunteer's
- * own phone needs no app or pairing either way. The choice is made in the tap from the last known
- * state, because a phone only opens a print dialog as the direct result of a tap.
+ * The label printer (a Dymo LabelWriter 450 Twin Turbo) connects to the station's computer over
+ * USB, so the station is the only way to it — a phone's own print dialog can't reach it. While no
+ * station is online the button is disabled and says why, rather than opening a dialog that offers
+ * no label printer.
  */
 export const TicketNameTag = observer(function TicketNameTag({ guest }: { guest: QueueGuest }) {
 	const t = adminTranslations.en.queueDesk;
 	const desk = useQueueDesk();
-	const tag = new NameTag(guest);
-	const viaStation = desk.printStationOnline;
-
-	function print() {
-		if (viaStation) {
-			void desk.sendNameTag(guest);
-		} else {
-			window.print();
-		}
-	}
+	const online = desk.printStationOnline;
+	const statusId = useId();
 
 	return (
 		<div className="ticket-name-tag">
-			<NameTagCard tag={tag} />
+			<NameTagCard tag={new NameTag(guest)} />
 			<Print>
 				<PrintButton
 					type="button"
 					className="print-name-tag"
-					disabled={desk.isSendingNameTag(guest)}
-					onClick={print}
+					aria-describedby={statusId}
+					disabled={!online || desk.isSendingNameTag(guest)}
+					onClick={() => void desk.sendNameTag(guest)}
 				>
 					{t.printNameTag}
 				</PrintButton>
-				<p>{viaStation ? t.printsAtStation : t.printsFromPhone}</p>
+				<p id={statusId}>{online ? t.printsAtStation : t.printStationIsOffline}</p>
 			</Print>
-			<NameTagPrint tag={tag} />
 		</div>
 	);
 });
