@@ -322,7 +322,7 @@ export interface QueueDeskTranslation {
 	printNameTag: string;
 	/** Under the print button: where the tag will come out. */
 	printsAtStation: string;
-	printsFromPhone: string;
+	printStationIsOffline: string;
 	printSent: string;
 	printStationOffline: string;
 	printFailed: string;
@@ -735,10 +735,10 @@ export const adminTranslations = {
 			nameTag: 'Name tag',
 			printNameTag: 'Print name tag',
 			printsAtStation: 'Prints at the print station',
-			printsFromPhone: 'Opens this phone’s print dialog',
+			printStationIsOffline: 'The print station is offline',
 			printSent: 'Name tag sent to the printer.',
 			printStationOffline:
-				'The print station is offline. Tap Print again to use this phone’s print dialog.',
+				'The print station went offline, so the tag wasn’t printed. Check the market’s computer.',
 			printFailed: 'The name tag couldn’t be sent. Try again.',
 			printStation: {
 				title: 'Print station',
