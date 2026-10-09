@@ -32,6 +32,17 @@ status = 200
 force = true
 
 [[redirects]]
+from = "/flyers"
+to = "/flyers/"
+status = 301
+
+[[redirects]]
+from = "/flyers/"
+to = "/flyers/index.html"
+status = 200
+force = true
+
+[[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200
