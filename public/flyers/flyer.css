@@ -1,0 +1,274 @@
+/*
+ * The printable market sign-up flyer, one letter-size page per language.
+ *
+ * Every language shares this stylesheet; only the copy differs between the pages. The page is a
+ * fixed 8.5 × 11 in sheet (816 × 1056 CSS px) and nothing may run past it, so a longer translation
+ * is cut down to fit rather than shrunk. Colors are the app's tokens from `src/styles/base.css`,
+ * copied rather than imported because this page is served as a plain file, outside the app build.
+ */
+:root {
+	--brand: #023940;
+	--accent: #ffb545;
+	--text: #101010;
+	--text-muted: #3d453f;
+	--surface-soft: #f1f5f3;
+	--font-body: Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
+	--font-heading: 'Roboto Condensed', 'Noto Sans Arabic', 'Noto Sans SC', Impact, sans-serif;
+	--tracking-heading: 0.03em;
+	--tracking-label: 0.04em;
+}
+
+/* Tracking pulls Arabic-script letters apart, breaking the joins between them. */
+:root[dir='rtl'] {
+	--tracking-heading: 0;
+	--tracking-label: 0;
+}
+
+@page {
+	size: letter;
+	margin: 0;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	background: #fff;
+	/* Browsers drop background colors when printing unless told the page depends on them. */
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+@media screen {
+	body {
+		background: var(--surface-soft);
+		padding: 24px 0;
+	}
+
+	.sheet {
+		margin: 0 auto;
+		box-shadow: 0 2px 12px rgb(0 0 0 / 0.15);
+	}
+}
+
+.sheet {
+	width: 816px;
+	height: 1056px;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: #fff;
+	color: var(--text);
+	font-family: var(--font-body);
+}
+
+.masthead {
+	padding: 24px 48px 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.masthead img {
+	display: block;
+	height: 52px;
+	width: auto;
+}
+
+.masthead-label,
+.section-heading {
+	font-family: var(--font-heading);
+	font-weight: 700;
+	text-transform: uppercase;
+	color: var(--brand);
+}
+
+.masthead-label {
+	font-size: 18px;
+	letter-spacing: var(--tracking-label);
+}
+
+.hero {
+	padding: 24px 48px;
+	display: flex;
+	gap: 40px;
+	align-items: center;
+	background: var(--brand);
+	color: #fff;
+}
+
+.hero-copy {
+	flex: 1 1 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.pill {
+	align-self: flex-start;
+	margin: 0;
+	padding: 8px 16px;
+	border-radius: 999px;
+	background: var(--accent);
+	color: var(--text);
+	font-family: var(--font-heading);
+	font-size: 20px;
+	font-weight: 700;
+	letter-spacing: var(--tracking-heading);
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.hero h1 {
+	margin: 0;
+	font-family: var(--font-heading);
+	font-size: 72px;
+	font-weight: 700;
+	line-height: 0.95;
+	letter-spacing: -0.01em;
+	text-transform: uppercase;
+	text-wrap: balance;
+}
+
+:root[dir='rtl'] .hero h1 {
+	font-size: 64px;
+	letter-spacing: 0;
+	line-height: 1.1;
+}
+
+.lead {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 500;
+	line-height: 1.35;
+}
+
+.lead strong {
+	display: block;
+	font-weight: 700;
+}
+
+/* The QR file carries its own white quiet zone, so the card adds none. */
+.qr {
+	flex: 0 0 280px;
+	overflow: hidden;
+	border-radius: 24px;
+	background: #fff;
+}
+
+.qr img {
+	display: block;
+	width: 280px;
+	height: 280px;
+}
+
+.steps {
+	flex: 1 1 auto;
+	padding: 20px 48px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.section-heading {
+	margin: 0;
+	font-size: 24px;
+	letter-spacing: var(--tracking-heading);
+}
+
+/* Two independent columns, read down the first and then the second. */
+.step-columns {
+	display: flex;
+	gap: 28px;
+	align-items: flex-start;
+}
+
+.step-columns ol {
+	flex: 1 1 0;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: var(--step-gap, 20px);
+}
+
+.step {
+	display: flex;
+	gap: 12px;
+}
+
+.step-number {
+	flex: 0 0 44px;
+	height: 44px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	background: var(--brand);
+	color: #fff;
+	font-family: var(--font-heading);
+	font-size: 24px;
+	font-weight: 700;
+}
+
+.step-text {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.step-time {
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: var(--tracking-label);
+	color: var(--text-muted);
+}
+
+.step-title {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.step-body {
+	margin: 0;
+	font-size: 16px;
+	line-height: 1.4;
+	color: var(--text-muted);
+}
+
+.notice {
+	margin: 24px 48px 16px;
+	padding: 14px 20px;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	border: 2px solid var(--brand);
+	border-radius: 16px;
+	font-size: 18px;
+	line-height: 1.35;
+}
+
+.notice svg {
+	flex: 0 0 28px;
+}
+
+.notice p {
+	margin: 0;
+}
+
+.help {
+	margin: 0;
+	padding: 16px 48px 20px;
+	background: var(--surface-soft);
+	text-align: center;
+	font-size: 20px;
+	line-height: 1.35;
+}
