@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=bb0caa6a92a0, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=7fbf78c4dbb5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=19092f65c690, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=deac0d1cd59c -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=bb0caa6a92a0, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=7fbf78c4dbb5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=19092f65c690, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=4b7bae62a511 -->
 
 # Guest journey
 
@@ -57,6 +57,7 @@ flowchart TD
     confirmForget -- yes --> forgetIdentity[Remove local profile,<br/>device token, and saved<br/>household composition;<br/>reset the in-progress form]
     forgetIdentity --> hasIdentity
     identityShown -. "Show Device ID" in top nav menu .-> showDeviceId[Show device ID dialog<br/>with copy action]
+    saved -. "How it works" in the menu or footer .-> helpPage([Help page at /help:<br/>the Saturday steps,<br/>as on the printed flyer])
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
     deviceAuth --> notificationRequest{Status retrieval}
     notificationRequest -- pending --> notificationLoading[Show loading indicator]
@@ -196,6 +197,11 @@ flowchart TD
   (`GuestLotteryForm`) plus the identity fields unless the device already has a cached local
   identity. Both are zero-prop store consumers and read and write the in-progress fields through
   the shared `RegistrationStore`.
+- **`/help` explains a market Saturday step by step.** `HelpPage` is lazily loaded, like the
+  legal pages, and linked as "How it works" from the app bar menu and the footer on every screen.
+  It carries the same steps as the printed flyers in `public/flyers/`: sign up from anywhere at
+  10:30 for 15 minutes, the lottery at 10:45, shopping at 11:30, and bringing the phone used to sign
+  up. Its copy is the `help` translation group; change the flyers alongside it.
 - **Signing up and entering the lottery are visually one screen but two components.**
   `GuestCombinedForm` composes `GuestInformationForm` (name, phone) and `GuestLotteryForm` (age
   range, household size, children/seniors, per-session questions) inside a single `<form>`, while

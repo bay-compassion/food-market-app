@@ -23,6 +23,12 @@ export const router = createInstrumentedBrowserRouter([
 			{ path: '/claim', element: <ClaimView /> },
 			{ path: '/qr-code', element: <QrCodeView /> },
 			{
+				path: '/help',
+				lazy: async () => ({
+					Component: (await import('./components/help/HelpPage')).HelpPage,
+				}),
+			},
+			{
 				path: '/privacy',
 				lazy: async () => ({
 					Component: (await import('./components/legal/PrivacyPage')).PrivacyPage,
