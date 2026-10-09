@@ -22,6 +22,7 @@ suite all have none, so they never spend quota and never talk to Sentry.
 | Server tracing          | `netlify/lib/sentry.mts`, one span per request                 | spans            |
 | Database spans          | `tracedQuery` at each query site                               | spans            |
 | Server logs             | Winston transport in `netlify/lib/logging.mts`                 | logs             |
+| Campaign attribution    | `src/campaign-arrival.ts`, as tags on every browser event      | nothing extra    |
 | Source maps             | `@sentry/vite-plugin` in `vite.config.ts`                      | nothing billable |
 
 A guest's page load and the API request it makes are the **same trace**: the browser sends a
@@ -115,6 +116,30 @@ guest registers or forgets the device mid-session. Each event carries:
 The replay masking is unchanged: the identity card's name and phone stay masked in a recording.
 IP addresses stay off as well, since `dataCollection.userInfo` only controls what the SDK infers on
 its own and has no effect on a user set explicitly.
+
+## Campaign attribution
+
+The `go.thebaycompassion.org` redirector (the `bay-compassion/redirector` repository) tags each
+printed link with UTM parameters — `utm_source=printed_card`, `utm_source=printed_flyer`, and so on
+— and records nothing itself. This app reads them on arrival and puts them on Sentry's initial
+scope as tags, so the pageload transaction and every later event in that tab carry them. Since the
+browser samples every trace, counting pageload transactions by the `utm_source` tag in Sentry's
+trace explorer answers "how many people arrived from the printed cards."
+
+`takeArrivalAttribution` runs before the router is created, and does two things:
+
+- **Records only campaign tags.** `CampaignAttribution` (`src/models/campaign-attribution.ts`)
+  keeps `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, and `utm_term`, and drops any
+  value that is not a short run of letters, digits, `_`, `.`, or `-`. Anyone can type a link by
+  hand, and this is what stops `?utm_source=<phone number>` from putting something that identifies
+  a guest into Sentry.
+- **Removes the parameters from the address bar** with `history.replaceState`, keeping every other
+  parameter. A tagged pageload therefore means an arrival: reloading during the market, or opening a
+  bookmark, does not count the same card twice.
+
+Sentry is the only place attribution goes. With no DSN it goes nowhere, though the address bar is
+still cleaned. What this cannot answer is how many _registrations_ came from each source — that
+needs the attribution sent with the registration and stored on the visit, which is a migration.
 
 ## Uptime monitoring
 
