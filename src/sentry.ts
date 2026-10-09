@@ -9,6 +9,7 @@ import {
 	useNavigationType,
 } from 'react-router';
 
+import { takeArrivalAttribution } from './campaign-arrival.ts';
 import { launchDarklySettings } from './launchdarkly-settings.ts';
 import { sentrySettings } from './sentry-settings.ts';
 
@@ -28,6 +29,14 @@ const ldSettings = launchDarklySettings(import.meta.env);
  * to `false` — a flag key LaunchDarkly can't resolve evaluates to that `false` forever, which
  * looks identical to "off on purpose." */
 const REPLAY_FLAG_KEY = 'sentry-replay-enabled';
+
+/**
+ * The campaign this page load arrived from, recorded as tags on every event and transaction so a
+ * pageload can be counted by `utm_source`. Sentry is the only sink for now; with no DSN, the
+ * attribution goes nowhere — but the URL is cleaned either way, so a build without Sentry does not
+ * behave differently from one with it. See "Campaign attribution" in `docs/observability.md`.
+ */
+const arrivalAttribution = takeArrivalAttribution();
 
 function initializeSentry() {
 	if (!settings) {
@@ -56,6 +65,9 @@ function initializeSentry() {
 		// omitted field takes the SDK's default, which infers the IP address. It has no effect on the
 		// user `SentryUserReporter` sets explicitly in a beta build.
 		dataCollection: { userInfo: false },
+		// Set as the initial scope, rather than after `init`, so the pageload transaction the router
+		// integration starts during `init` carries the tags too.
+		initialScope: { tags: arrivalAttribution?.tags },
 	});
 
 	// With a LaunchDarkly project configured, `enableReplayWhenFlagged` decides this instead —
