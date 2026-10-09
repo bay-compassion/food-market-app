@@ -72,7 +72,7 @@
   `src/styles/base.css` are plain CSS custom properties and keep working unchanged; shared
   stylesheets in `src/styles/` are still plain CSS, imported once from `src/main.tsx`.
 - Guest-facing screens are in the initial chunk and everything else is lazily routed. A guest
-  registers on a phone inside a one-hour window, so the admin dashboard and the legal documents
+  registers on a phone inside a fifteen-minute window, so the admin dashboard and the legal documents
   must not be in the download that stands between them and the queue.
 
 ## Style Conventions

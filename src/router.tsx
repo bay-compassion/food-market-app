@@ -9,7 +9,7 @@ import { createInstrumentedBrowserRouter } from './sentry';
  * Everything a guest does lives in the initial chunk; everything else is loaded on demand.
  *
  * This is not a micro-optimization. A guest registers on a phone, often on a slow connection,
- * inside a one-hour window — the admin dashboard, the reporting tables, and the printable QR
+ * inside a fifteen-minute window — the admin dashboard, the reporting tables, and the printable QR
  * poster are all screens a worker opens on a desk, and none of them should be in the download
  * that stands between a guest and the queue.
  */
