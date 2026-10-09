@@ -386,11 +386,11 @@ export const translations = {
 			notOpenState: {
 				heading: 'The Market Is Closed',
 				subheading:
-					'Registration will open again next Saturday at 10:30 AM and remain open until 11:30 AM.',
+					'Registration will open again next Saturday at 10:30 AM and stay open for 15 minutes, until 10:45 AM.',
 				lotteryDescription:
-					'Because supplies are limited, the market uses a lottery system to randomly select shoppers each week. You may register for the lottery at any time during the one-hour window from 10:30 AM to 11:30 AM on Saturday. Registering early does not affect your chances of being selected, so there is no need to register early.',
+					'Because supplies are limited, the market uses a lottery system to randomly select shoppers each week. You may register for the lottery from anywhere, at any time during the 15 minutes from 10:30 AM to 10:45 AM on Saturday. Registering early does not affect your chances of being selected, so there is no need to rush.',
 				selectionDescription:
-					'The lottery will run at 11:30 AM. If you are selected to shop, you will receive a number here in the app. If you consent to receiving text messages, you will also be notified by text message.',
+					'The lottery will run at 10:45 AM, which leaves time to travel to the market if you are selected. If you are selected to shop, you will receive a number here in the app, and shopping begins at 11:30 AM. If you consent to receiving text messages, you will also be notified by text message.',
 			},
 			registrationClosedState: {
 				heading: 'Registration has closed',
@@ -668,11 +668,11 @@ export const translations = {
 			notOpenState: {
 				heading: 'El mercado está cerrado',
 				subheading:
-					'La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta hasta las 11:30 a. m.',
+					'La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta 15 minutos, hasta las 10:45 a. m.',
 				lotteryDescription:
-					'Debido a que los suministros son limitados, el mercado utiliza un sistema de lotería para seleccionar al azar a las personas que podrán comprar cada semana. Puede inscribirse en la lotería en cualquier momento durante el período de una hora entre las 10:30 a. m. y las 11:30 a. m. del sábado. Inscribirse temprano no afecta sus probabilidades de ser seleccionado, por lo que no es necesario hacerlo con anticipación.',
+					'Debido a que los suministros son limitados, el mercado utiliza un sistema de lotería para seleccionar al azar a las personas que podrán comprar cada semana. Puede inscribirse en la lotería desde cualquier lugar, en cualquier momento durante los 15 minutos entre las 10:30 a. m. y las 10:45 a. m. del sábado. Inscribirse temprano no afecta sus probabilidades de ser seleccionado, por lo que no hay prisa.',
 				selectionDescription:
-					'La lotería se realizará a las 11:30 a. m. Si es seleccionado para comprar, recibirá un número aquí en la aplicación. Si acepta recibir mensajes de texto, también recibirá una notificación por mensaje de texto.',
+					'La lotería se realizará a las 10:45 a. m., lo que le da tiempo de llegar al mercado si es seleccionado. Si es seleccionado para comprar, recibirá un número aquí en la aplicación, y las compras comienzan a las 11:30 a. m. Si acepta recibir mensajes de texto, también recibirá una notificación por mensaje de texto.',
 			},
 			registrationClosedState: {
 				heading: 'El registro ha cerrado',
@@ -951,11 +951,11 @@ export const translations = {
 			notOpenState: {
 				heading: 'بازار بسته است',
 				subheading:
-					'ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و تا ساعت ۱۱:۳۰ صبح ادامه خواهد داشت.',
+					'ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و ۱۵ دقیقه، تا ساعت ۱۰:۴۵ صبح، باز می‌ماند.',
 				lotteryDescription:
-					'به دلیل محدود بودن اقلام، بازار برای انتخاب تصادفی خریداران هر هفته از سیستم قرعه‌کشی استفاده می‌کند. می‌توانید در هر زمانی از بازه یک‌ساعته روز شنبه، از ساعت ۱۰:۳۰ تا ۱۱:۳۰ صبح، برای قرعه‌کشی ثبت‌نام کنید. ثبت‌نام زودتر تأثیری بر شانس انتخاب شدن شما ندارد، بنابراین نیازی نیست زود ثبت‌نام کنید.',
+					'به دلیل محدود بودن اقلام، بازار برای انتخاب تصادفی خریداران هر هفته از سیستم قرعه‌کشی استفاده می‌کند. می‌توانید از هر جایی و در هر زمانی از بازه ۱۵ دقیقه‌ای روز شنبه، از ساعت ۱۰:۳۰ تا ۱۰:۴۵ صبح، برای قرعه‌کشی ثبت‌نام کنید. ثبت‌نام زودتر تأثیری بر شانس انتخاب شدن شما ندارد، بنابراین نیازی به عجله نیست.',
 				selectionDescription:
-					'قرعه‌کشی ساعت ۱۱:۳۰ صبح انجام می‌شود. اگر برای خرید انتخاب شوید، در همین برنامه یک شماره دریافت خواهید کرد. اگر با دریافت پیامک موافقت کرده باشید، از طریق پیامک نیز به شما اطلاع داده می‌شود.',
+					'قرعه‌کشی ساعت ۱۰:۴۵ صبح انجام می‌شود تا اگر انتخاب شدید، فرصت رسیدن به بازار را داشته باشید. اگر برای خرید انتخاب شوید، در همین برنامه یک شماره دریافت خواهید کرد و خرید از ساعت ۱۱:۳۰ صبح آغاز می‌شود. اگر با دریافت پیامک موافقت کرده باشید، از طریق پیامک نیز به شما اطلاع داده می‌شود.',
 			},
 			registrationClosedState: {
 				heading: 'ثبت‌نام بسته شده است',
@@ -1232,11 +1232,11 @@ export const translations = {
 			notOpenState: {
 				heading: 'Sarado ang Pamilihan',
 				subheading:
-					'Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas hanggang 11:30 AM.',
+					'Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas nang 15 minuto, hanggang 10:45 AM.',
 				lotteryDescription:
-					'Dahil limitado ang mga supply, gumagamit ang pamilihan ng sistema ng lottery upang random na pumili ng mga mamimili bawat linggo. Maaari kang magparehistro sa lottery anumang oras sa loob ng isang oras na pagitan ng 10:30 AM at 11:30 AM tuwing Sabado. Hindi naaapektuhan ng maagang pagpaparehistro ang iyong pagkakataong mapili, kaya hindi kailangang magparehistro nang maaga.',
+					'Dahil limitado ang mga supply, gumagamit ang pamilihan ng sistema ng lottery upang random na pumili ng mga mamimili bawat linggo. Maaari kang magparehistro sa lottery kahit saan, anumang oras sa loob ng 15 minuto mula 10:30 AM hanggang 10:45 AM tuwing Sabado. Hindi naaapektuhan ng maagang pagpaparehistro ang iyong pagkakataong mapili, kaya hindi kailangang magmadali.',
 				selectionDescription:
-					'Gaganapin ang lottery nang 11:30 AM. Kung mapipili kang mamili, bibigyan ka ng numero dito sa app. Kung pumayag kang tumanggap ng mga text message, aabisuhan ka rin sa pamamagitan ng text message.',
+					'Gaganapin ang lottery nang 10:45 AM, kaya may oras kang pumunta sa pamilihan kung mapipili ka. Kung mapipili kang mamili, bibigyan ka ng numero dito sa app, at magsisimula ang pamimili nang 11:30 AM. Kung pumayag kang tumanggap ng mga text message, aabisuhan ka rin sa pamamagitan ng text message.',
 			},
 			registrationClosedState: {
 				heading: 'Sarado na ang pagpaparehistro',
@@ -1516,11 +1516,12 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'Chợ hiện đang đóng cửa',
-				subheading: 'Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài đến 11:30 sáng.',
+				subheading:
+					'Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài 15 phút, đến 10:45 sáng.',
 				lotteryDescription:
-					'Do nguồn cung có hạn, chợ sử dụng hệ thống xổ số để chọn ngẫu nhiên người mua sắm mỗi tuần. Bạn có thể đăng ký tham gia xổ số vào bất kỳ lúc nào trong khung thời gian một giờ từ 10:30 đến 11:30 sáng thứ Bảy. Đăng ký sớm không làm tăng cơ hội được chọn, vì vậy bạn không cần đăng ký sớm.',
+					'Do nguồn cung có hạn, chợ sử dụng hệ thống xổ số để chọn ngẫu nhiên người mua sắm mỗi tuần. Bạn có thể đăng ký tham gia xổ số từ bất cứ đâu, vào bất kỳ lúc nào trong 15 phút từ 10:30 đến 10:45 sáng thứ Bảy. Đăng ký sớm không làm tăng cơ hội được chọn, vì vậy bạn không cần vội.',
 				selectionDescription:
-					'Xổ số sẽ diễn ra lúc 11:30 sáng. Nếu được chọn để mua sắm, bạn sẽ nhận được một số thứ tự ngay trong ứng dụng. Nếu đồng ý nhận tin nhắn văn bản, bạn cũng sẽ được thông báo qua tin nhắn.',
+					'Xổ số sẽ diễn ra lúc 10:45 sáng, để bạn có thời gian đến chợ nếu được chọn. Nếu được chọn để mua sắm, bạn sẽ nhận được một số thứ tự ngay trong ứng dụng, và giờ mua sắm bắt đầu lúc 11:30 sáng. Nếu đồng ý nhận tin nhắn văn bản, bạn cũng sẽ được thông báo qua tin nhắn.',
 			},
 			registrationClosedState: {
 				heading: 'Đăng ký đã đóng',
@@ -1793,11 +1794,11 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: '市场已关闭',
-				subheading: '登记将于下周六上午 10:30 再次开放，并持续至上午 11:30。',
+				subheading: '登记将于下周六上午 10:30 再次开放，持续 15 分钟，至上午 10:45。',
 				lotteryDescription:
-					'由于物资有限，市场每周通过抽签随机选出购物者。您可以在周六上午 10:30 至 11:30 的一小时窗口内随时登记参加抽签。提前登记不会增加被选中的机会，因此无需提早登记。',
+					'由于物资有限，市场每周通过抽签随机选出购物者。您可以在周六上午 10:30 至 10:45 的 15 分钟内，随时随地登记参加抽签。提前登记不会增加被选中的机会，因此无需着急。',
 				selectionDescription:
-					'抽签将于上午 11:30 进行。如果您获选购物，应用中会显示您的号码。如果您同意接收短信，也会收到短信通知。',
+					'抽签将于上午 10:45 进行，如果您获选，还有时间前往市场。如果您获选购物，应用中会显示您的号码，购物从上午 11:30 开始。如果您同意接收短信，也会收到短信通知。',
 			},
 			registrationClosedState: {
 				heading: '登记已结束',
@@ -2058,11 +2059,11 @@ export const translations = {
 			notOpenState: {
 				heading: 'السوق مغلق',
 				subheading:
-					'سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر حتى الساعة 11:30 صباحًا.',
+					'سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر 15 دقيقة، حتى الساعة 10:45 صباحًا.',
 				lotteryDescription:
-					'نظرًا لمحدودية الإمدادات، يستخدم السوق نظام القرعة لاختيار المتسوقين عشوائيًا كل أسبوع. يمكنك التسجيل في القرعة في أي وقت خلال فترة الساعة الواحدة من 10:30 إلى 11:30 صباحًا يوم السبت. لا يؤثر التسجيل المبكر في فرص اختيارك، لذلك لا حاجة إلى التسجيل مبكرًا.',
+					'نظرًا لمحدودية الإمدادات، يستخدم السوق نظام القرعة لاختيار المتسوقين عشوائيًا كل أسبوع. يمكنك التسجيل في القرعة من أي مكان وفي أي وقت خلال الدقائق الخمس عشرة من 10:30 إلى 10:45 صباحًا يوم السبت. لا يؤثر التسجيل المبكر في فرص اختيارك، لذلك لا داعي للعجلة.',
 				selectionDescription:
-					'ستُجرى القرعة الساعة 11:30 صباحًا. إذا تم اختيارك للتسوق، فسيظهر لك رقم هنا في التطبيق. وإذا وافقت على تلقي الرسائل النصية، فسيتم إخطارك أيضًا برسالة نصية.',
+					'ستُجرى القرعة الساعة 10:45 صباحًا، ليتسنى لك الوقت للوصول إلى السوق إذا تم اختيارك. إذا تم اختيارك للتسوق، فسيظهر لك رقم هنا في التطبيق، ويبدأ التسوق الساعة 11:30 صباحًا. وإذا وافقت على تلقي الرسائل النصية، فسيتم إخطارك أيضًا برسالة نصية.',
 			},
 			registrationClosedState: {
 				heading: 'أُغلق التسجيل',
@@ -2337,11 +2338,11 @@ export const translations = {
 			notOpenState: {
 				heading: 'Le marché est fermé',
 				subheading:
-					'Les inscriptions rouvriront samedi prochain à 10 h 30 et resteront ouvertes jusqu’à 11 h 30.',
+					'Les inscriptions rouvriront samedi prochain à 10 h 30 et resteront ouvertes 15 minutes, jusqu’à 10 h 45.',
 				lotteryDescription:
-					'Les provisions étant limitées, le marché utilise un tirage au sort pour choisir les personnes qui peuvent faire leurs courses chaque semaine. Vous pouvez vous inscrire au tirage au sort à tout moment pendant le créneau d’une heure, de 10 h 30 à 11 h 30, le samedi. S’inscrire tôt n’augmente pas vos chances d’être choisi, il n’est donc pas nécessaire de vous inscrire en avance.',
+					'Les provisions étant limitées, le marché utilise un tirage au sort pour choisir les personnes qui peuvent faire leurs courses chaque semaine. Vous pouvez vous inscrire au tirage au sort d’où vous voulez, à tout moment pendant les 15 minutes de 10 h 30 à 10 h 45, le samedi. S’inscrire tôt n’augmente pas vos chances d’être choisi, il n’est donc pas nécessaire de vous presser.',
 				selectionDescription:
-					'Le tirage au sort aura lieu à 11 h 30. Si vous êtes choisi, vous recevrez un numéro ici, dans l’application. Si vous acceptez de recevoir des SMS, vous serez également prévenu par SMS.',
+					'Le tirage au sort aura lieu à 10 h 45, ce qui vous laisse le temps de venir au marché si vous êtes choisi. Si vous êtes choisi, vous recevrez un numéro ici, dans l’application, et les courses commencent à 11 h 30. Si vous acceptez de recevoir des SMS, vous serez également prévenu par SMS.',
 			},
 			registrationClosedState: {
 				heading: 'Les inscriptions sont closes',
