@@ -35,6 +35,7 @@ import { authReturnUrl } from '../auth';
 import { AdminAuthView } from '../components/AdminAuthView';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { GuestView } from '../components/guest-view/GuestView';
+import { HelpPage } from '../components/help/HelpPage';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../components/hooks/use-line-position-indicator';
 import { PrivacyPage } from '../components/legal/PrivacyPage';
 import { TermsPage } from '../components/legal/TermsPage';
@@ -72,6 +73,7 @@ async function renderApp(initialPath = '/', flags: Record<string, StaticFlagValu
 				element: <App />,
 				children: [
 					{ path: '/', element: <GuestView /> },
+					{ path: '/help', element: <HelpPage /> },
 					{ path: '/privacy', element: <PrivacyPage /> },
 					{ path: '/terms', element: <TermsPage /> },
 					{ path: '/signup', element: <SignupView /> },
@@ -161,6 +163,22 @@ describe('App', () => {
 			expect(container.textContent).toContain('Number of people in your household'),
 		);
 		expect(container.textContent).toContain('Welcome to the community food market');
+	});
+
+	it('opens the help page from the footer', async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const help = translations.en.help;
+		const { container } = await renderWithMarketStatus('registration_open');
+
+		// Act
+		await user.click(within(container).getByRole('link', { name: help.title }));
+
+		// Assert
+		const heading = await within(container).findByRole('heading', { level: 1 });
+
+		expect(heading.textContent).toBe(help.title);
+		expect(within(container).getAllByRole('listitem')).toHaveLength(help.steps.length);
 	});
 
 	it('uses the exact root URL Auth0 expects for redirects', () => {

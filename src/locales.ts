@@ -179,6 +179,25 @@ export interface KioskTranslations {
 	notPermitted: string;
 }
 
+/** The `/help` page: how a market Saturday works, step by step, matching the printed flyer. */
+export interface HelpTranslations {
+	/** The page heading, and the label of every link that leads to the page. */
+	title: string;
+	introHeading: string;
+	introBody: string;
+	stepsHeading: string;
+	/** In order; a step with a `time` is one the guest should do at that time. */
+	steps: HelpStepTranslations[];
+	phoneNotice: { heading: string; body: string };
+	needHelp: { heading: string; body: string };
+}
+
+export interface HelpStepTranslations {
+	time?: string;
+	title: string;
+	body: string;
+}
+
 /** The Sentry feedback form's copy, keyed by the label names `feedbackIntegration` accepts. */
 export interface FeedbackFormTranslations {
 	formTitle: string;
@@ -252,6 +271,7 @@ export interface Translation {
 	signupView: SignupViewTranslations;
 	claimView: ClaimViewTranslations;
 	kiosk: KioskTranslations;
+	help: HelpTranslations;
 	admin: string;
 	adminDescription: string;
 	adminTitle: string;
@@ -517,6 +537,43 @@ export const translations = {
 			signInRequired: 'This display was signed out. A staff member needs to sign in again.',
 			signIn: 'Staff sign-in',
 			notPermitted: 'This account can’t show the line display.',
+		},
+		help: {
+			title: 'How it works',
+			introHeading: 'It’s a lottery now, not a race.',
+			introBody: 'Sign up from anywhere. Everyone has the same chance.',
+			stepsHeading: 'Every Saturday',
+			steps: [
+				{
+					time: '10:30 AM',
+					title: 'Scan the code',
+					body: 'Scan from anywhere, even at home. You have 15 minutes, and the screen shows how much time is left.',
+				},
+				{ title: 'Choose your language', body: 'The app remembers it for next time.' },
+				{
+					title: 'Fill in the form',
+					body: 'Enter your first and last name (please, not just initials), cell phone, and a few questions about your household. There’s no rush, so take your time. Then tap the button to enter the lottery.',
+				},
+				{
+					title: 'Tap “Text Me About Updates”',
+					body: 'Optional, but without it you won’t get any texts.',
+				},
+				{
+					time: '10:45 AM',
+					title: 'See if you got a number',
+					body: 'The lottery draws and your screen shows the result and your place in line. If you got a number, head to the market. Not everyone gets a number each week.',
+				},
+				{
+					time: '11:30 AM',
+					title: 'Shopping begins',
+					body: 'When it’s your turn, we’ll text you (if you did step 4) and your screen will say so. Come to the front door.',
+				},
+			],
+			phoneNotice: {
+				heading: 'Please bring the phone you signed up on.',
+				body: 'We can’t accept screenshots.',
+			},
+			needHelp: { heading: 'Need help?', body: 'Ask any volunteer.' },
 		},
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
@@ -802,6 +859,43 @@ export const translations = {
 			signIn: 'Inicio de sesión del personal',
 			notPermitted: 'Esta cuenta no puede mostrar la pantalla de la fila.',
 		},
+		help: {
+			title: 'Cómo funciona',
+			introHeading: 'Ahora es un sorteo, no una carrera.',
+			introBody: 'Inscríbase desde cualquier lugar. Todos tienen la misma oportunidad.',
+			stepsHeading: 'Todos los sábados',
+			steps: [
+				{
+					time: '10:30 a. m.',
+					title: 'Escanee el código',
+					body: 'Hágalo desde cualquier lugar, incluso desde casa. Tiene 15 minutos y la pantalla muestra cuánto tiempo queda.',
+				},
+				{ title: 'Elija su idioma', body: 'La app lo recordará la próxima vez.' },
+				{
+					title: 'Llene el formulario',
+					body: 'Escriba su nombre y apellido (por favor, no solo iniciales), su celular y unas preguntas sobre su hogar. No hay prisa, tómese su tiempo. Luego toque el botón para participar en el sorteo.',
+				},
+				{
+					title: 'Toque “Enviarme novedades por SMS”',
+					body: 'Es opcional, pero sin esto no recibirá mensajes de texto.',
+				},
+				{
+					time: '10:45 a. m.',
+					title: 'Vea si obtuvo un número',
+					body: 'Su pantalla muestra el resultado y su lugar en la fila. Si obtuvo un número, venga al mercado. No todos obtienen número cada semana.',
+				},
+				{
+					time: '11:30 a. m.',
+					title: 'Empiezan las compras',
+					body: 'Cuando sea su turno, le avisaremos por texto (si hizo el paso 4) y en su pantalla. Acérquese a la entrada.',
+				},
+			],
+			phoneNotice: {
+				heading: 'Por favor, traiga el teléfono con el que se inscribió.',
+				body: 'No aceptamos capturas de pantalla.',
+			},
+			needHelp: { heading: '¿Necesita ayuda?', body: 'Pregunte a cualquier voluntario.' },
+		},
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
@@ -1081,6 +1175,43 @@ export const translations = {
 			signInRequired: 'این نمایشگر از حساب خارج شده است. یکی از کارکنان باید دوباره وارد شود.',
 			signIn: 'ورود کارکنان',
 			notPermitted: 'این حساب اجازهٔ نمایش صف را ندارد.',
+		},
+		help: {
+			title: 'چطور کار می‌کند',
+			introHeading: 'حالا قرعه‌کشی است، نه مسابقه.',
+			introBody: 'از هر جایی ثبت‌نام کنید. شانس همه برابر است.',
+			stepsHeading: 'هر شنبه',
+			steps: [
+				{
+					time: '۱۰:۳۰ صبح',
+					title: 'کد را اسکن کنید',
+					body: 'از هر جایی، حتی خانه. ۱۵ دقیقه وقت دارید و صفحه زمان باقی‌مانده را نشان می‌دهد.',
+				},
+				{ title: 'زبان خود را انتخاب کنید', body: 'اپ آن را برای دفعه بعد به خاطر می‌سپارد.' },
+				{
+					title: 'فرم را پر کنید',
+					body: 'نام و نام خانوادگی کامل (لطفاً نه فقط حروف اول)، تلفن همراه و پاسخ چند سؤال درباره خانوار را وارد کنید. عجله نکنید. سپس دکمه را بزنید تا در قرعه‌کشی شرکت کنید.',
+				},
+				{
+					title: 'روی «به‌روزرسانی‌ها را برایم پیامک کنید» بزنید',
+					body: 'اختیاری است، اما بدون آن پیامکی نمی‌گیرید.',
+				},
+				{
+					time: '۱۰:۴۵ صبح',
+					title: 'ببینید شماره گرفته‌اید یا نه',
+					body: 'صفحه نتیجه و جایگاهتان در صف را نشان می‌دهد. اگر شماره گرفتید، به بازار بیایید. هر هفته همه شماره نمی‌گیرند.',
+				},
+				{
+					time: '۱۱:۳۰ صبح',
+					title: 'شروع خرید',
+					body: 'وقتی نوبتتان شد، پیامک می‌فرستیم (اگر مرحله ۴ را انجام داده‌اید) و صفحه هم نشان می‌دهد. به ورودی بیایید.',
+				},
+			],
+			phoneNotice: {
+				heading: 'لطفاً همان تلفنی را که با آن ثبت‌نام کردید بیاورید.',
+				body: 'اسکرین‌شات پذیرفته نمی‌شود.',
+			},
+			needHelp: { heading: 'کمک لازم دارید؟', body: 'از هر داوطلبی بپرسید.' },
 		},
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
@@ -1368,6 +1499,43 @@ export const translations = {
 			signIn: 'Pag-sign in ng staff',
 			notPermitted: 'Hindi maipapakita ng account na ito ang display ng pila.',
 		},
+		help: {
+			title: 'Paano ito gumagana',
+			introHeading: 'Lottery na ito, hindi paunahan.',
+			introBody: 'Mag-sign up kahit saan. Pareho ang tsansa ng lahat.',
+			stepsHeading: 'Tuwing Sabado',
+			steps: [
+				{
+					time: '10:30 AM',
+					title: 'I-scan ang code',
+					body: 'Kahit saan, kahit sa bahay. May 15 minuto kayo, at ipinapakita ng screen kung gaano katagal pa.',
+				},
+				{ title: 'Piliin ang iyong wika', body: 'Tatandaan ito ng app sa susunod.' },
+				{
+					title: 'Sagutan ang form',
+					body: 'Ilagay ang pangalan at apelyido (hindi lang initials, pakiusap), cell phone, at ilang tanong tungkol sa sambahayan. Walang pagmamadali. Pagkatapos, pindutin ang button para sumali sa lottery.',
+				},
+				{
+					title: 'Pindutin ang “I-text sa Akin ang mga Update”',
+					body: 'Opsyonal, pero kung wala ito, hindi kayo makakatanggap ng text.',
+				},
+				{
+					time: '10:45 AM',
+					title: 'Alamin kung may numero kayo',
+					body: 'Ipapakita ng screen ang resulta at ang puwesto ninyo sa pila. Kung may numero, pumunta na sa market. Hindi lahat may numero bawat linggo.',
+				},
+				{
+					time: '11:30 AM',
+					title: 'Simula ng pamimili',
+					body: 'Kapag turno na ninyo, ite-text namin kayo (kung ginawa ang hakbang 4) at sasabihin ng screen. Pumunta sa harapang pinto.',
+				},
+			],
+			phoneNotice: {
+				heading: 'Pakidala ang phone na ginamit ninyo sa pag-sign up.',
+				body: 'Hindi tinatanggap ang screenshot.',
+			},
+			needHelp: { heading: 'Kailangan ng tulong?', body: 'Magtanong sa kahit sinong volunteer.' },
+		},
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
@@ -1648,6 +1816,43 @@ export const translations = {
 			signIn: 'Nhân viên đăng nhập',
 			notPermitted: 'Tài khoản này không thể hiển thị màn hình hàng chờ.',
 		},
+		help: {
+			title: 'Cách thức hoạt động',
+			introHeading: 'Giờ là xổ số, không phải chạy đua.',
+			introBody: 'Đăng ký từ bất cứ đâu. Ai cũng có cơ hội như nhau.',
+			stepsHeading: 'Mỗi thứ Bảy',
+			steps: [
+				{
+					time: '10:30 sáng',
+					title: 'Quét mã',
+					body: 'Ở đâu cũng được, kể cả ở nhà. Bạn có 15 phút, và màn hình cho biết còn bao nhiêu thời gian.',
+				},
+				{ title: 'Chọn ngôn ngữ của bạn', body: 'Ứng dụng sẽ nhớ cho lần sau.' },
+				{
+					title: 'Điền vào mẫu đơn',
+					body: 'Nhập đầy đủ họ và tên (xin đừng chỉ ghi chữ viết tắt), số điện thoại di động và trả lời vài câu hỏi về hộ gia đình. Không cần vội, cứ từ từ. Sau đó bấm nút để tham gia xổ số.',
+				},
+				{
+					title: 'Bấm “Gửi cập nhật cho tôi qua SMS”',
+					body: 'Không bắt buộc, nhưng nếu không bấm, bạn sẽ không nhận được tin nhắn nào.',
+				},
+				{
+					time: '10:45 sáng',
+					title: 'Xem bạn có số không',
+					body: 'Màn hình cho biết kết quả xổ số và vị trí của bạn trong hàng. Nếu có số, hãy đến chợ. Không phải ai cũng có số mỗi tuần.',
+				},
+				{
+					time: '11:30 sáng',
+					title: 'Bắt đầu mua sắm',
+					body: 'Khi đến lượt bạn, chúng tôi sẽ nhắn tin (nếu bạn đã làm bước 4) và màn hình cũng sẽ báo. Hãy đến cửa chính.',
+				},
+			],
+			phoneNotice: {
+				heading: 'Vui lòng mang theo điện thoại bạn đã dùng để đăng ký.',
+				body: 'Chúng tôi không nhận ảnh chụp màn hình.',
+			},
+			needHelp: { heading: 'Cần giúp đỡ?', body: 'Hãy hỏi bất kỳ tình nguyện viên nào.' },
+		},
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
@@ -1914,6 +2119,40 @@ export const translations = {
 			signInRequired: '此显示屏已退出登录，需要工作人员重新登录。',
 			signIn: '工作人员登录',
 			notPermitted: '此帐户无法显示排队屏幕。',
+		},
+		help: {
+			title: '使用说明',
+			introHeading: '现在是抽签，不是抢先。',
+			introBody: '随时随地都能登记，每个人机会均等。',
+			stepsHeading: '每周六',
+			steps: [
+				{
+					time: '上午 10:30',
+					title: '扫描二维码',
+					body: '在任何地方都可以，在家也行。您有 15 分钟，屏幕会显示剩余时间。',
+				},
+				{ title: '选择您的语言', body: '应用会记住，下次无需再选。' },
+				{
+					title: '填写表格',
+					body: '请填写您的完整姓名（不要只写首字母）、手机号码，并回答几个关于您家庭的问题。不用着急，慢慢填写。然后点击按钮参加抽签。',
+				},
+				{
+					title: '点击“通过短信通知我最新消息”',
+					body: '可选，但如果不点击，您将不会收到任何短信。',
+				},
+				{
+					time: '上午 10:45',
+					title: '查看是否抽中号码',
+					body: '抽签结束后，屏幕会显示结果和您的排队位置。如果抽中号码，请前往市场。并非每个人每周都能抽中。',
+				},
+				{
+					time: '上午 11:30',
+					title: '开始购物',
+					body: '轮到您时，我们会发短信通知您（如果您完成了第 4 步），屏幕也会显示。请到正门来。',
+				},
+			],
+			phoneNotice: { heading: '请携带您登记时使用的手机。', body: '不接受截图。' },
+			needHelp: { heading: '需要帮助？', body: '请询问任何一位志愿者。' },
 		},
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
@@ -2189,6 +2428,40 @@ export const translations = {
 			signInRequired: 'تم تسجيل الخروج من هذه الشاشة. يجب أن يسجّل أحد الموظفين الدخول مرة أخرى.',
 			signIn: 'تسجيل دخول الموظفين',
 			notPermitted: 'لا يمكن لهذا الحساب عرض شاشة الطابور.',
+		},
+		help: {
+			title: 'كيف يعمل',
+			introHeading: 'أصبحت قرعة، لا سباقًا.',
+			introBody: 'سجّل من أي مكان. للجميع الفرصة نفسها.',
+			stepsHeading: 'كل يوم سبت',
+			steps: [
+				{
+					time: '10:30 صباحًا',
+					title: 'امسح الرمز',
+					body: 'من أي مكان، حتى من المنزل. لديك 15 دقيقة، وتعرض الشاشة الوقت المتبقي.',
+				},
+				{ title: 'اختر لغتك', body: 'سيتذكرها التطبيق في المرة القادمة.' },
+				{
+					title: 'املأ النموذج',
+					body: 'أدخل اسمك الأول واسم العائلة (من فضلك، لا الأحرف الأولى فقط)، ورقم هاتفك المحمول، وأجب عن بعض الأسئلة حول أسرتك. لا داعي للعجلة، خذ وقتك. ثم اضغط الزر للمشاركة في القرعة.',
+				},
+				{
+					title: 'اضغط «أرسل لي التحديثات برسائل نصية»',
+					body: 'اختياري، لكن بدونه لن تصلك أي رسائل نصية.',
+				},
+				{
+					time: '10:45 صباحًا',
+					title: 'اعرف إن حصلت على رقم',
+					body: 'تعرض شاشتك نتيجة القرعة ومكانك في الطابور. إن حصلت على رقم، توجّه إلى السوق. لا يحصل الجميع على رقم كل أسبوع.',
+				},
+				{
+					time: '11:30 صباحًا',
+					title: 'بدء التسوق',
+					body: 'عندما يحين دورك، سنرسل لك رسالة نصية (إن أكملت الخطوة 4) وستخبرك شاشتك. توجّه إلى المدخل.',
+				},
+			],
+			phoneNotice: { heading: 'من فضلك، أحضر الهاتف الذي سجّلت به.', body: 'لا نقبل لقطات الشاشة.' },
+			needHelp: { heading: 'تحتاج مساعدة؟', body: 'اسأل أي متطوع.' },
 		},
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
@@ -2476,6 +2749,43 @@ export const translations = {
 			signInRequired: 'Cet écran a été déconnecté. Un membre du personnel doit se reconnecter.',
 			signIn: 'Connexion du personnel',
 			notPermitted: 'Ce compte ne peut pas afficher l’écran de la file.',
+		},
+		help: {
+			title: 'Comment ça marche',
+			introHeading: 'C’est un tirage au sort, pas une course.',
+			introBody: 'Inscrivez-vous d’où vous voulez. Chacun a la même chance.',
+			stepsHeading: 'Tous les samedis',
+			steps: [
+				{
+					time: '10 h 30',
+					title: 'Scannez le code',
+					body: 'D’où vous voulez, même de chez vous. Vous avez 15 minutes et l’écran affiche le temps restant.',
+				},
+				{ title: 'Choisissez votre langue', body: 'L’app s’en souviendra la prochaine fois.' },
+				{
+					title: 'Remplissez le formulaire',
+					body: 'Indiquez vos prénom et nom (pas seulement les initiales, s’il vous plaît), votre portable et quelques questions sur votre foyer. Rien ne presse, prenez votre temps. Puis touchez le bouton pour participer au tirage.',
+				},
+				{
+					title: 'Touchez « M’envoyer les mises à jour par SMS »',
+					body: 'Facultatif, mais sans cela vous ne recevrez aucun SMS.',
+				},
+				{
+					time: '10 h 45',
+					title: 'Voyez si vous avez un numéro',
+					body: 'Votre écran affiche le résultat et votre place. Avec un numéro, venez au marché. Tout le monde n’en a pas chaque semaine.',
+				},
+				{
+					time: '11 h 30',
+					title: 'Début des courses',
+					body: 'À votre tour, nous vous enverrons un SMS (si vous avez fait l’étape 4) et votre écran l’indiquera. Présentez-vous à l’entrée.',
+				},
+			],
+			phoneNotice: {
+				heading: 'Merci d’apporter le téléphone utilisé pour l’inscription.',
+				body: 'Les captures d’écran ne sont pas acceptées.',
+			},
+			needHelp: { heading: 'Besoin d’aide ?', body: 'Demandez à un bénévole.' },
 		},
 		firstName: 'Prénom',
 		formDescription: 'Quelques informations nous aident à préparer votre visite.',

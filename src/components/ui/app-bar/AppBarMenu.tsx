@@ -35,7 +35,7 @@ const DeviceId = styled.code`
 /** Secondary navigation and the authenticated staff account, tucked behind one menu. */
 export const AppBarMenu = observer(function AppBarMenu() {
 	const { isAuthenticated, user, logout } = useAuth0();
-	const { appBar: t, marketName } = useTranslation();
+	const { appBar: t, help, marketName } = useTranslation();
 	const { guest, notifications, translations } = useRootStore();
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 	const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
@@ -129,6 +129,9 @@ export const AppBarMenu = observer(function AppBarMenu() {
 					<OpenExternalIcon fontSize="small" sx={{ marginInlineStart: 'auto' }} />
 				</MenuItem>
 				<Divider />
+				<MenuItem component={Link} to="/help" onClick={close}>
+					{help.title}
+				</MenuItem>
 				<MenuItem component={Link} to="/qr-code" onClick={close}>
 					{t.qrCode}
 				</MenuItem>
