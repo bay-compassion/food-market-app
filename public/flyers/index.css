@@ -1,0 +1,101 @@
+/* The list of printable flyers at /flyers/, for volunteers choosing which ones to print. */
+:root {
+	--brand: #023940;
+	--text: #101010;
+	--text-muted: #3d453f;
+	--border: #5c655f;
+	--surface-soft: #f1f5f3;
+	color: var(--text);
+	background: var(--surface-soft);
+	font-family: Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
+	font-synthesis: none;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	line-height: 1.5;
+}
+
+a:focus-visible {
+	outline: 3px solid #ffb545;
+	outline-offset: 3px;
+}
+
+main {
+	width: min(100% - 32px, 720px);
+	margin: 0 auto;
+	padding: 32px 0 48px;
+}
+
+.wordmark {
+	display: block;
+	height: 44px;
+	width: auto;
+	margin-bottom: 28px;
+}
+
+h1 {
+	margin: 0 0 8px;
+	color: var(--brand);
+	font-family: 'Roboto Condensed', Impact, sans-serif;
+	font-size: 34px;
+	line-height: 1.1;
+	text-transform: uppercase;
+}
+
+.lede {
+	margin: 0 0 24px;
+	color: var(--text-muted);
+}
+
+.flyers {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.flyers a {
+	display: grid;
+	gap: 2px;
+	min-height: 44px;
+	padding: 16px 18px;
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	color: inherit;
+	background: #fff;
+	text-decoration: none;
+}
+
+.flyers a:hover {
+	border-color: var(--brand);
+	box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+/* Sized to its text, so a right-to-left name still lines up with the label beneath it. */
+.native {
+	justify-self: start;
+	color: var(--brand);
+	font-size: 20px;
+	font-weight: 700;
+}
+
+.english {
+	color: var(--text-muted);
+	font-size: 14px;
+}
+
+.printing {
+	margin: 28px 0 0;
+	padding: 16px 18px;
+	border-radius: 16px;
+	background: #fff;
+	color: var(--text-muted);
+	font-size: 15px;
+}
