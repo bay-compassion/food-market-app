@@ -8,6 +8,13 @@ const meta = {
 	title: 'Guest/Holding Page',
 	component: HoldingPage,
 	parameters: { shell: 'bare' },
+	decorators: [
+		(Story) => (
+			<div style={{ margin: -24 }}>
+				<Story />
+			</div>
+		),
+	],
 } satisfies Meta<typeof HoldingPage>;
 
 export default meta;
@@ -19,20 +26,46 @@ export const ComingSoon: Story = {
 
 		await expect(canvas.getByRole('heading', { name: copy.heading })).toBeInTheDocument();
 		await expect(canvas.getByText(copy.instructions)).toBeInTheDocument();
-		await expect(canvas.queryByRole('link')).not.toBeInTheDocument();
-		await expect(canvas.queryByRole('button')).not.toBeInTheDocument();
-		await expect(canvas.getAllByRole('option')).toHaveLength(languages.length);
+		await expect(canvas.getByRole('link', { name: copy.currentAppLink })).toHaveAttribute(
+			'href',
+			'https://qrq.app/107352',
+		);
+		await expect(
+			canvas.getAllByRole('link', { name: translations.en.help.title })[0],
+		).toHaveAttribute('href', '/help');
+		await expect(canvas.getByRole('link', { name: translations.en.marketName })).toHaveAttribute(
+			'href',
+			'/holding',
+		);
+		await expect(canvas.queryByRole('combobox')).not.toBeInTheDocument();
+
+		for (const { code, label } of languages) {
+			await expect(canvas.getByRole('button', { name: label })).toHaveAttribute(
+				'aria-pressed',
+				String(code === 'en'),
+			);
+		}
 	},
 };
 
 export const ChangeLanguage: Story = {
 	play: async ({ canvas }) => {
-		await userEvent.selectOptions(canvas.getByRole('combobox'), 'es');
+		for (const { code, label } of languages) {
+			await userEvent.click(canvas.getByRole('button', { name: label }));
+			const copy = translations[code].holdingPage;
 
-		await expect(
-			canvas.getByRole('heading', { name: translations.es.holdingPage.heading }),
-		).toBeInTheDocument();
-		await expect(canvas.getByText(translations.es.holdingPage.instructions)).toBeInTheDocument();
+			await expect(canvas.getByRole('heading', { name: copy.heading })).toBeInTheDocument();
+			await expect(canvas.getByText(copy.instructions)).toBeInTheDocument();
+			await expect(canvas.getByRole('button', { name: label })).toHaveAttribute(
+				'aria-pressed',
+				'true',
+			);
+			await expect(canvas.getByRole('main')).toHaveAttribute('lang', code);
+			await expect(canvas.getByRole('main')).toHaveAttribute(
+				'dir',
+				code === 'ar' || code === 'fa' ? 'rtl' : 'ltr',
+			);
+		}
 	},
 };
 
