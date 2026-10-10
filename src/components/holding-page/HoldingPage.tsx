@@ -1,34 +1,32 @@
 import styled from '@emotion/styled';
+import Button from '@mui/material/Button';
 import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
+import { Link } from 'react-router';
 
-import { isLocale, languages } from '../../locales';
+import { languages } from '../../locales';
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
+import { AppFooter } from '../AppFooter';
 import { EyebrowLabel } from '../EyebrowLabel';
+import { AppBar } from '../ui/app-bar/AppBar';
+import { NotificationToasts } from '../ui/NotificationToasts';
 
-const Page = styled.main`
+const Page = styled.div`
 	min-height: 100svh;
-	padding: 40px 18px;
-	background: var(--color-surface-soft);
+	background: var(--color-background);
 `;
 
-const Content = styled.div`
-	width: 100%;
-	max-width: 480px;
+const Content = styled.main`
+	display: grid;
+	gap: 24px;
+	width: min(100% - 36px, 560px);
 	margin: 0 auto;
-
-	> img {
-		display: block;
-		width: 72px;
-		height: 72px;
-		margin-bottom: 24px;
-		border-radius: var(--radius-md);
-	}
+	padding-top: 24px;
 `;
 
 const Notice = styled.section`
-	padding: 32px 24px;
+	padding: 32px 22px;
 	border-radius: var(--radius-lg);
 	color: var(--color-on-brand);
 	background: var(--color-brand);
@@ -40,28 +38,62 @@ const Notice = styled.section`
 	}
 `;
 
-const LanguagePicker = styled.div`
-	display: grid;
-	gap: 12px;
-	margin-top: 28px;
+const LanguagePicker = styled.section`
 	color: var(--color-brand);
 
-	label {
+	> p {
+		margin-bottom: 12px;
 		font-weight: 700;
-	}
-
-	select {
-		width: 100%;
-		min-height: 48px;
-		padding: 12px;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-sm);
-		color: var(--color-text);
-		background: var(--color-background);
 	}
 `;
 
-/** The flyer destination before launch, with no navigation into guest registration. */
+const Pills = styled.div`
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+`;
+
+const LanguagePill = styled.button`
+	min-height: 44px;
+	padding: 10px 16px;
+	border: 1px solid var(--color-brand);
+	border-radius: var(--radius-pill);
+	color: var(--color-brand);
+	background: var(--color-background);
+	font-weight: 700;
+
+	&:hover {
+		background: var(--color-surface-soft);
+	}
+
+	&[aria-pressed='true'] {
+		color: var(--color-on-brand);
+		background: var(--color-brand);
+	}
+`;
+
+const CurrentApp = styled.section`
+	display: grid;
+	gap: 16px;
+	padding: 24px 22px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-lg);
+	background: var(--color-surface-soft);
+
+	h2 {
+		color: var(--color-brand);
+		font-family: var(--font-heading);
+		font-size: 26px;
+		line-height: 1.2;
+	}
+
+	p {
+		font-size: 17px;
+		line-height: 1.6;
+	}
+`;
+
+/** The flyer destination before launch, with a clear path to the current app. */
 export const HoldingPage = observer(function HoldingPage() {
 	const t = useTranslation();
 	const { translations } = useRootStore();
@@ -70,33 +102,48 @@ export const HoldingPage = observer(function HoldingPage() {
 
 	return (
 		<Page dir={translations.dir} lang={translations.locale}>
-			<Content>
-				<img src="/bay-compassion-logo.png" alt="" />
+			<AppBar brandTo="/holding" showLanguagePicker={false} />
+			<Content dir={translations.dir} lang={translations.locale}>
+				<LanguagePicker aria-labelledby={languageId}>
+					<p id={languageId}>{t.languagePrompt}</p>
+					<Pills>
+						{languages.map(({ code, label }) => (
+							<LanguagePill
+								key={code}
+								type="button"
+								lang={code}
+								dir="auto"
+								aria-pressed={translations.locale === code}
+								onClick={() => translations.setLanguage(code)}
+							>
+								{label}
+							</LanguagePill>
+						))}
+					</Pills>
+				</LanguagePicker>
 				<Notice aria-labelledby="holding-heading">
 					<EyebrowLabel label={t.marketName} />
 					<h1 id="holding-heading">{copy.heading}</h1>
-					<p>{copy.description}</p>
 					<p>{copy.instructions}</p>
 				</Notice>
-				<LanguagePicker>
-					<label htmlFor={languageId}>{t.languagePrompt}</label>
-					<select
-						id={languageId}
-						value={translations.locale}
-						onChange={(event) => {
-							if (isLocale(event.target.value)) {
-								translations.setLanguage(event.target.value);
-							}
-						}}
+				<CurrentApp aria-labelledby="current-app-heading">
+					<h2 id="current-app-heading">{copy.currentAppHeading}</h2>
+					<p>{copy.currentAppDescription}</p>
+					<Button
+						variant="contained"
+						href="https://qrq.app/107352"
+						size="large"
+						sx={{ minHeight: 48 }}
 					>
-						{languages.map(({ code, label }) => (
-							<option key={code} value={code} lang={code}>
-								{label}
-							</option>
-						))}
-					</select>
-				</LanguagePicker>
+						{copy.currentAppLink}
+					</Button>
+				</CurrentApp>
+				<Button component={Link} to="/help" variant="outlined" size="large" sx={{ minHeight: 48 }}>
+					{t.help.title}
+				</Button>
 			</Content>
+			<AppFooter />
+			<NotificationToasts />
 		</Page>
 	);
 });

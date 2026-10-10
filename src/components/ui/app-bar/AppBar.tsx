@@ -72,7 +72,13 @@ const Actions = styled.div`
 `;
 
 /** Shared branding, guest language selection, and secondary navigation. */
-export const AppBar = observer(function AppBar() {
+export const AppBar = observer(function AppBar({
+	brandTo = '/',
+	showLanguagePicker = true,
+}: {
+	brandTo?: string;
+	showLanguagePicker?: boolean;
+}) {
 	const t = useTranslation();
 	const { guest, translations } = useRootStore();
 
@@ -91,12 +97,12 @@ export const AppBar = observer(function AppBar() {
 				disableGutters
 				sx={{ minHeight: { xs: 60, sm: 60 }, px: '20px', gap: 1, justifyContent: 'space-between' }}
 			>
-				<Brand to="/">
+				<Brand to={brandTo}>
 					<img src="/bay-compassion-logo.png" alt="" />
 					<span>{t.marketName}</span>
 				</Brand>
 				<Actions>
-					{guest.isReturningVisitor ? (
+					{showLanguagePicker && guest.isReturningVisitor ? (
 						<LanguagePicker
 							native
 							variant="standard"

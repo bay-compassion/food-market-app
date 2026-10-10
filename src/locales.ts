@@ -267,8 +267,10 @@ export interface NotificationTranslations {
 
 export interface HoldingPageTranslations {
 	heading: string;
-	description: string;
 	instructions: string;
+	currentAppHeading: string;
+	currentAppDescription: string;
+	currentAppLink: string;
 }
 
 export interface Translation {
@@ -333,10 +335,12 @@ export interface Translation {
 export const translations = {
 	en: {
 		holdingPage: {
-			heading: 'Coming soon',
-			description: 'Our new food market app is on its way.',
-			instructions:
-				'For now, please follow the current food market process. Scan this QR code again when the app launches.',
+			heading: 'New app launches October 31',
+			instructions: 'Keep this QR code and scan it again on October 31.',
+			currentAppHeading: 'Looking for today’s food market?',
+			currentAppDescription:
+				'Use the current app until October 31. This QR code is for the new app.',
+			currentAppLink: 'Open the current app',
 		},
 		appBar: {
 			openMenu: 'Open menu',
@@ -657,10 +661,12 @@ export const translations = {
 	},
 	es: {
 		holdingPage: {
-			heading: 'Próximamente',
-			description: 'Nuestra nueva aplicación del mercado de alimentos está en camino.',
-			instructions:
-				'Por ahora, siga el proceso actual del mercado de alimentos. Vuelva a escanear este código QR cuando se lance la aplicación.',
+			heading: 'La nueva aplicación se lanza el 31 de octubre',
+			instructions: 'Guarde este código QR y vuelva a escanearlo el 31 de octubre.',
+			currentAppHeading: '¿Busca el mercado de alimentos de hoy?',
+			currentAppDescription:
+				'Use la aplicación actual hasta el 31 de octubre. Este código QR es para la nueva aplicación.',
+			currentAppLink: 'Abrir la aplicación actual',
 		},
 		appBar: {
 			openMenu: 'Abrir menú',
@@ -985,10 +991,12 @@ export const translations = {
 	},
 	fa: {
 		holdingPage: {
-			heading: 'به‌زودی',
-			description: 'برنامهٔ جدید بازار مواد غذایی ما به‌زودی آماده می‌شود.',
-			instructions:
-				'فعلاً لطفاً طبق روال فعلی بازار مواد غذایی عمل کنید. پس از راه‌اندازی برنامه، این کد QR را دوباره اسکن کنید.',
+			heading: 'برنامهٔ جدید در ۳۱ اکتبر راه‌اندازی می‌شود',
+			instructions: 'این کد QR را نگه دارید و در ۳۱ اکتبر دوباره اسکن کنید.',
+			currentAppHeading: 'دنبال بازار مواد غذایی امروز هستید؟',
+			currentAppDescription:
+				'تا ۳۱ اکتبر از برنامهٔ فعلی استفاده کنید. این کد QR برای برنامهٔ جدید است.',
+			currentAppLink: 'باز کردن برنامهٔ فعلی',
 		},
 		appBar: {
 			openMenu: 'باز کردن منو',
@@ -1307,10 +1315,12 @@ export const translations = {
 	},
 	tl: {
 		holdingPage: {
-			heading: 'Malapit na',
-			description: 'Malapit nang ilunsad ang aming bagong app para sa food market.',
-			instructions:
-				'Sa ngayon, sundin muna ang kasalukuyang proseso ng food market. I-scan muli ang QR code na ito kapag inilunsad na ang app.',
+			heading: 'Ilulunsad ang bagong app sa Oktubre 31',
+			instructions: 'Itago ang QR code na ito at i-scan itong muli sa Oktubre 31.',
+			currentAppHeading: 'Hinahanap ang food market ngayong araw?',
+			currentAppDescription:
+				'Gamitin ang kasalukuyang app hanggang Oktubre 31. Ang QR code na ito ay para sa bagong app.',
+			currentAppLink: 'Buksan ang kasalukuyang app',
 		},
 		appBar: {
 			openMenu: 'Buksan ang menu',
@@ -1637,10 +1647,12 @@ export const translations = {
 	},
 	vi: {
 		holdingPage: {
-			heading: 'Sắp ra mắt',
-			description: 'Ứng dụng chợ thực phẩm mới của chúng tôi sắp ra mắt.',
-			instructions:
-				'Hiện tại, vui lòng làm theo quy trình hiện hành của chợ thực phẩm. Quét lại mã QR này khi ứng dụng ra mắt.',
+			heading: 'Ứng dụng mới ra mắt ngày 31 tháng 10',
+			instructions: 'Giữ mã QR này và quét lại vào ngày 31 tháng 10.',
+			currentAppHeading: 'Bạn đang tìm chợ thực phẩm hôm nay?',
+			currentAppDescription:
+				'Dùng ứng dụng hiện tại cho đến ngày 31 tháng 10. Mã QR này dành cho ứng dụng mới.',
+			currentAppLink: 'Mở ứng dụng hiện tại',
 		},
 		appBar: {
 			openMenu: 'Mở trình đơn',
@@ -1960,9 +1972,11 @@ export const translations = {
 	},
 	zh: {
 		holdingPage: {
-			heading: '即将推出',
-			description: '我们的新食品市场应用即将推出。',
-			instructions: '目前，请继续按照食品市场现有的流程参与。应用推出后，请再次扫描此二维码。',
+			heading: '新应用将于10月31日上线',
+			instructions: '请保留此二维码，并于10月31日再次扫描。',
+			currentAppHeading: '想参加今天的食品市场？',
+			currentAppDescription: '在10月31日之前，请使用现有应用。此二维码用于新应用。',
+			currentAppLink: '打开现有应用',
 		},
 		appBar: {
 			openMenu: '打开菜单',
@@ -2262,10 +2276,11 @@ export const translations = {
 	},
 	ar: {
 		holdingPage: {
-			heading: 'قريبًا',
-			description: 'تطبيق سوق المواد الغذائية الجديد لدينا قادم قريبًا.',
-			instructions:
-				'في الوقت الحالي، يُرجى اتباع الإجراءات الحالية لسوق المواد الغذائية. امسح رمز QR هذا مرة أخرى عند إطلاق التطبيق.',
+			heading: 'إطلاق التطبيق الجديد في ٣١ أكتوبر',
+			instructions: 'احتفظ برمز QR هذا وامسحه مرة أخرى في ٣١ أكتوبر.',
+			currentAppHeading: 'هل تبحث عن سوق المواد الغذائية اليوم؟',
+			currentAppDescription: 'استخدم التطبيق الحالي حتى ٣١ أكتوبر. رمز QR هذا مخصص للتطبيق الجديد.',
+			currentAppLink: 'فتح التطبيق الحالي',
 		},
 		appBar: {
 			openMenu: 'فتح القائمة',
@@ -2578,10 +2593,12 @@ export const translations = {
 	},
 	fr: {
 		holdingPage: {
-			heading: 'Bientôt disponible',
-			description: 'Notre nouvelle application du marché alimentaire arrive bientôt.',
-			instructions:
-				'Pour le moment, veuillez suivre la procédure actuelle du marché alimentaire. Scannez à nouveau ce code QR lorsque l’application sera disponible.',
+			heading: 'La nouvelle application arrive le 31 octobre',
+			instructions: 'Gardez ce code QR et scannez-le à nouveau le 31 octobre.',
+			currentAppHeading: 'Vous cherchez le marché alimentaire d’aujourd’hui ?',
+			currentAppDescription:
+				'Utilisez l’application actuelle jusqu’au 31 octobre. Ce code QR est destiné à la nouvelle application.',
+			currentAppLink: 'Ouvrir l’application actuelle',
 		},
 		appBar: {
 			openMenu: 'Ouvrir le menu',
