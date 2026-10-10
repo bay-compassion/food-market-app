@@ -265,7 +265,14 @@ export interface NotificationTranslations {
 	};
 }
 
+export interface HoldingPageTranslations {
+	heading: string;
+	description: string;
+	instructions: string;
+}
+
 export interface Translation {
+	holdingPage: HoldingPageTranslations;
 	appBar: AppBarTranslations;
 	guestView: GuestViewTranslations;
 	signupView: SignupViewTranslations;
@@ -325,6 +332,12 @@ export interface Translation {
 
 export const translations = {
 	en: {
+		holdingPage: {
+			heading: 'Coming soon',
+			description: 'Our new food market app is on its way.',
+			instructions:
+				'For now, please follow the current food market process. Scan this QR code again when the app launches.',
+		},
 		appBar: {
 			openMenu: 'Open menu',
 			accountMenu: 'Account menu',
@@ -643,6 +656,12 @@ export const translations = {
 		welcome: 'Welcome to the community food market',
 	},
 	es: {
+		holdingPage: {
+			heading: 'Próximamente',
+			description: 'Nuestra nueva aplicación del mercado de alimentos está en camino.',
+			instructions:
+				'Por ahora, siga el proceso actual del mercado de alimentos. Vuelva a escanear este código QR cuando se lance la aplicación.',
+		},
 		appBar: {
 			openMenu: 'Abrir menú',
 			accountMenu: 'Menú de la cuenta',
@@ -965,6 +984,12 @@ export const translations = {
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
 	},
 	fa: {
+		holdingPage: {
+			heading: 'به‌زودی',
+			description: 'برنامهٔ جدید بازار مواد غذایی ما به‌زودی آماده می‌شود.',
+			instructions:
+				'فعلاً لطفاً طبق روال فعلی بازار مواد غذایی عمل کنید. پس از راه‌اندازی برنامه، این کد QR را دوباره اسکن کنید.',
+		},
 		appBar: {
 			openMenu: 'باز کردن منو',
 			accountMenu: 'منوی حساب کاربری',
@@ -1281,6 +1306,12 @@ export const translations = {
 		welcome: 'به بازار غذای جامعه خوش آمدید',
 	},
 	tl: {
+		holdingPage: {
+			heading: 'Malapit na',
+			description: 'Malapit nang ilunsad ang aming bagong app para sa food market.',
+			instructions:
+				'Sa ngayon, sundin muna ang kasalukuyang proseso ng food market. I-scan muli ang QR code na ito kapag inilunsad na ang app.',
+		},
 		appBar: {
 			openMenu: 'Buksan ang menu',
 			accountMenu: 'Menu ng account',
@@ -1605,6 +1636,12 @@ export const translations = {
 		welcome: 'Maligayang pagdating sa pamilihan ng pagkaing pangkomunidad',
 	},
 	vi: {
+		holdingPage: {
+			heading: 'Sắp ra mắt',
+			description: 'Ứng dụng chợ thực phẩm mới của chúng tôi sắp ra mắt.',
+			instructions:
+				'Hiện tại, vui lòng làm theo quy trình hiện hành của chợ thực phẩm. Quét lại mã QR này khi ứng dụng ra mắt.',
+		},
 		appBar: {
 			openMenu: 'Mở trình đơn',
 			accountMenu: 'Trình đơn tài khoản',
@@ -1922,6 +1959,11 @@ export const translations = {
 		welcome: 'Chào mừng đến với chợ thực phẩm cộng đồng',
 	},
 	zh: {
+		holdingPage: {
+			heading: '即将推出',
+			description: '我们的新食品市场应用即将推出。',
+			instructions: '目前，请继续按照食品市场现有的流程参与。应用推出后，请再次扫描此二维码。',
+		},
 		appBar: {
 			openMenu: '打开菜单',
 			accountMenu: '账户菜单',
@@ -2219,6 +2261,12 @@ export const translations = {
 		welcome: '欢迎来到社区食品市场',
 	},
 	ar: {
+		holdingPage: {
+			heading: 'قريبًا',
+			description: 'تطبيق سوق المواد الغذائية الجديد لدينا قادم قريبًا.',
+			instructions:
+				'في الوقت الحالي، يُرجى اتباع الإجراءات الحالية لسوق المواد الغذائية. امسح رمز QR هذا مرة أخرى عند إطلاق التطبيق.',
+		},
 		appBar: {
 			openMenu: 'فتح القائمة',
 			accountMenu: 'قائمة الحساب',
@@ -2529,6 +2577,12 @@ export const translations = {
 		welcome: 'مرحبًا بكم في سوق الطعام المجتمعي',
 	},
 	fr: {
+		holdingPage: {
+			heading: 'Bientôt disponible',
+			description: 'Notre nouvelle application du marché alimentaire arrive bientôt.',
+			instructions:
+				'Pour le moment, veuillez suivre la procédure actuelle du marché alimentaire. Scannez à nouveau ce code QR lorsque l’application sera disponible.',
+		},
 		appBar: {
 			openMenu: 'Ouvrir le menu',
 			accountMenu: 'Menu du compte',
