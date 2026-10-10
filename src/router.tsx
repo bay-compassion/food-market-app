@@ -15,6 +15,12 @@ import { createInstrumentedBrowserRouter } from './sentry';
  */
 export const router = createInstrumentedBrowserRouter([
 	{
+		path: '/holding',
+		lazy: async () => ({
+			Component: (await import('./components/holding-page/HoldingPage')).HoldingPage,
+		}),
+	},
+	{
 		element: <App />,
 		children: [
 			{ path: '/', element: <GuestView /> },
