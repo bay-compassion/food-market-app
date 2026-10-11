@@ -23,6 +23,7 @@ suite all have none, so they never spend quota and never talk to Sentry.
 | Database spans          | `tracedQuery` at each query site                               | spans            |
 | Server logs             | Winston transport in `netlify/lib/logging.mts`                 | logs             |
 | Campaign attribution    | `src/campaign-arrival.ts`, as tags on every browser event      | nothing extra    |
+| Install ID              | `src/install-id.ts`; a tag in both SDKs and a server log field | nothing extra    |
 | Source maps             | `@sentry/vite-plugin` in `vite.config.ts`                      | nothing billable |
 
 A guest's page load and the API request it makes are the **same trace**: the browser sends a
@@ -158,6 +159,29 @@ whose phone lists an unsupported language first but English second is served Eng
 pageload says `true` — group by `browser_language` across all pageloads to see them too. Values that
 are not language tags are dropped, as with the campaign tags.
 
+## Install ID
+
+Every browser gets an install ID, a random UUID created the first time it opens the app and kept
+in local storage (`src/install-id.ts`). It is how one phone's activity is found across both sides:
+
+- **Browser events** carry it as the `install_id` tag, from Sentry's initial scope, so the pageload
+  transaction has it too.
+- **API requests** carry it in an `X-Install-Id` header. A wrapper `main.tsx` installs over
+  `window.fetch` adds it to same-origin `/api/` requests only — not at each call site, which live in
+  the server-shared `src/services/` — so Auth0, LaunchDarkly, and Sentry's own ingest never see it.
+- **The server** puts it on the request's transaction and any error captured during it as the same
+  `install_id` tag, and on every log record the request writes as `installId`. The header is
+  untrusted, so anything that is not a UUID is dropped (`isInstallId` in
+  `src/services/install-id.ts`).
+
+Unlike the beta-only user `SentryUserReporter` sets, it is always on: it names a device, not a
+guest, and is not a credential. It exists before a guest has registered, and is the "Device ID" the
+app bar's **Device details** dialog shows; the dialog's "Guest token" is the device token, which is
+a credential and appears only once a guest has registered on the device. It is also deliberately **kept across "Forget me"**,
+so it follows the device through any number of guests: on a shared phone, events from before and
+after someone forgets their information carry the same install ID. Clearing the browser's site data
+is the only thing that replaces it.
+
 ## Uptime monitoring
 
 The free plan's single uptime monitor is configured in Sentry rather than in this repository:
@@ -248,4 +272,5 @@ considerably smaller.
 Sentry has no local mode worth running. To confirm a deploy is reporting, throw from a component
 or a route handler on a deploy preview and look for the issue in Sentry; the response's
 `X-Request-Id` header and the log record's `requestId` field are the same value the server tagged
-the invocation with, so a Netlify function log line and a Sentry issue can be matched up by hand.
+the invocation with, so a Netlify function log line and a Sentry issue can be matched up by hand. To follow one phone instead, search for its `install_id` tag in Sentry or its `installId` field in
+the function log.

@@ -10,6 +10,7 @@ import {
 } from 'react-router';
 
 import { takeArrivalAttribution } from './campaign-arrival.ts';
+import { installId } from './install-id.ts';
 import { launchDarklySettings } from './launchdarkly-settings.ts';
 import { languages } from './locales.ts';
 import { LanguagePreference } from './models/language-preference.ts';
@@ -79,7 +80,15 @@ function initializeSentry() {
 		dataCollection: { userInfo: false },
 		// Set as the initial scope, rather than after `init`, so the pageload transaction the router
 		// integration starts during `init` carries the tags too.
-		initialScope: { tags: { ...arrivalAttribution?.tags, ...languagePreference.tags } },
+		// `install_id` names the device rather than the guest, so unlike the beta-only user it is
+		// always on; see "Install ID" in `docs/observability.md`.
+		initialScope: {
+			tags: {
+				...arrivalAttribution?.tags,
+				...languagePreference.tags,
+				install_id: installId(),
+			},
+		},
 	});
 
 	// With a LaunchDarkly project configured, `enableReplayWhenFlagged` decides this instead —

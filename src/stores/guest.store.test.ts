@@ -549,6 +549,22 @@ describe('GuestStore.forget', () => {
 		expect(storage.get(StorageKey.GUEST_IDENTITY)).toBeNull();
 		expect(storage.get(StorageKey.GUEST_HOUSEHOLD)).toBeNull();
 	});
+
+	it('keeps the install ID, which names the device rather than the guest', async () => {
+		// Arrange
+		const storage = new StorageService();
+		const installId = '1b4e28ba-2fa1-41d2-883f-0016d3cca427';
+
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'device-token');
+		storage.set(StorageKey.INSTALL_ID, installId);
+		const store = new GuestStore({ storage });
+
+		// Act
+		await store.forget();
+
+		// Assert
+		expect(storage.get(StorageKey.INSTALL_ID)).toBe(installId);
+	});
 });
 
 describe('GuestStore.adopt on a shared phone', () => {

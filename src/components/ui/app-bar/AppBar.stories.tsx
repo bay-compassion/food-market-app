@@ -67,6 +67,27 @@ export const Guest: Story = {
 	},
 };
 
+/**
+ * Opened from the menu. Every device has its install ID to show; the guest token appears beside it
+ * only once a guest has registered on the device, which this story does not arrange.
+ */
+export const DeviceDetails: Story = {
+	play: async ({ canvas, userEvent, globals }) => {
+		const t = translations[globals.locale as Locale].appBar;
+
+		await userEvent.click(canvas.getByRole('button', { name: t.openMenu }));
+		const menu = within(await within(document.body).findByRole('menu'));
+
+		await userEvent.click(menu.getByRole('menuitem', { name: t.deviceDetails.title }));
+		const dialog = within(await within(document.body).findByRole('dialog'));
+
+		await expect(
+			dialog.getByRole('region', { name: t.deviceDetails.installIdLabel }),
+		).toBeVisible();
+		await expect(dialog.getByRole('button', { name: t.deviceDetails.copyInstallId })).toBeVisible();
+	},
+};
+
 export const SignedIn: Story = {
 	parameters: { signedIn: true, picture: '/bay-compassion-logo.png' },
 	play: async ({ canvas, userEvent, globals }) => {

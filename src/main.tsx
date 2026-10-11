@@ -11,6 +11,7 @@ import { RouterProvider } from 'react-router';
 import { auth0Settings, returnToPath } from './auth';
 import { AppThemeProvider } from './components/AppThemeProvider';
 import { StaticLDProvider } from './components/StaticLDProvider';
+import { installId, withInstallIdHeader } from './install-id';
 import { launchDarklySettings, MISSING_LAUNCHDARKLY_MESSAGE } from './launchdarkly-settings';
 import { router } from './router';
 import { enableReplayWhenFlagged, reactErrorHandler } from './sentry';
@@ -24,6 +25,14 @@ import './styles/app-shell.css';
 import './styles/admin.css';
 
 async function bootstrap() {
+	// Before anything that makes a request is constructed. Sentry has already wrapped `fetch` for
+	// tracing by now, and this wraps its wrapper, so API requests carry both.
+	window.fetch = withInstallIdHeader(
+		window.fetch.bind(window),
+		installId(),
+		window.location.origin,
+	);
+
 	const previewName = window.sessionStorage.getItem('bay-compassion.demo-preview') ?? undefined;
 	const browserStorage = previewName
 		? new (await import('./stores/demo-preview-session')).DemoPreviewSession()

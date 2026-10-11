@@ -3,6 +3,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { HTTPException } from 'hono/http-exception';
 import { secureHeaders } from 'hono/secure-headers';
 
+import { INSTALL_ID_HEADER, isInstallId } from '../../src/services/install-id.js';
 import { invocationLogger, withLogger, type InvocationContext } from './logging.mjs';
 import { flushSentry, tracedRequest } from './sentry.mjs';
 
@@ -76,7 +77,10 @@ export function routeHandler<E extends Env>(app: Hono<E>, functionName = 'api') 
 	const paths = new Set(app.routes.map((route) => route.path));
 
 	return async (request: Request, invocation?: InvocationContext) => {
-		const { log, requestId } = invocationLogger(functionName, invocation);
+		// Anyone can send the header, so only a well-formed install ID is kept; see `isInstallId`.
+		const sentInstallId = request.headers.get(INSTALL_ID_HEADER);
+		const installId = isInstallId(sentInstallId) ? sentInstallId : null;
+		const { log, requestId } = invocationLogger(functionName, invocation, installId);
 		const started = performance.now();
 		const path = new URL(request.url).pathname;
 		const fields = { method: request.method, path: paths.has(path) ? path : '[unmatched]' };
@@ -85,21 +89,27 @@ export function routeHandler<E extends Env>(app: Hono<E>, functionName = 'api') 
 			log.info({ message: 'http.received', ...fields });
 
 			try {
-				return await tracedRequest(request, `${fields.method} ${fields.path}`, async () => {
-					const response = await boundary.fetch(request);
+				return await tracedRequest(
+					request,
+					`${fields.method} ${fields.path}`,
+					installId,
+					async () => {
+						const response = await boundary.fetch(request);
 
-					response.headers.set('X-Request-Id', requestId);
-					const level = response.status >= 500 ? 'error' : response.status >= 400 ? 'warn' : 'info';
+						response.headers.set('X-Request-Id', requestId);
+						const level =
+							response.status >= 500 ? 'error' : response.status >= 400 ? 'warn' : 'info';
 
-					log[level]({
-						message: 'http.completed',
-						...fields,
-						status: response.status,
-						durationMs: performance.now() - started,
-					});
+						log[level]({
+							message: 'http.completed',
+							...fields,
+							status: response.status,
+							durationMs: performance.now() - started,
+						});
 
-					return response;
-				});
+						return response;
+					},
+				);
 			} catch (err) {
 				log.error({
 					message: 'http.failed',

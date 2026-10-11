@@ -1,5 +1,6 @@
 import { runInAction } from 'mobx';
 
+import { installId } from '../install-id.ts';
 import {
 	submitGuestRegistration,
 	submitGuestSignup,
@@ -14,6 +15,8 @@ import { StorageKey, StorageService } from '../services/storage.service.ts';
 export type GuestIdentity = Pick<GuestRegistrationInput, 'firstName' | 'lastName' | 'phone'>;
 
 export type GuestStoreOptions = {
+	/** This browser's install ID; defaults to the one `src/install-id.ts` keeps in storage. */
+	installId?: string;
 	request?: typeof fetch;
 	storage?: Pick<StorageService, 'get' | 'set' | 'remove'> | null;
 	register?: (
@@ -55,6 +58,7 @@ export class GuestStore {
 	private _smsState: 'idle' | 'enabling' | 'enabled' | 'error' = 'idle';
 	private _smsOptOutSender: string | null = null;
 
+	private readonly _installId: string;
 	private readonly request: typeof fetch;
 	private readonly storage: Pick<StorageService, 'get' | 'set' | 'remove'> | null;
 	private readonly submitRegistration: NonNullable<GuestStoreOptions['register']>;
@@ -70,6 +74,14 @@ export class GuestStore {
 	/** The opaque identifier saved by this browser for guest-authenticated requests. */
 	get deviceId(): string | null {
 		return this._deviceToken;
+	}
+
+	/**
+	 * This browser's install ID, which names the device rather than the guest: it exists from the
+	 * first launch and outlives `forget()`. See `src/services/install-id.ts`.
+	 */
+	get installId(): string {
+		return this._installId;
 	}
 
 	/**
@@ -157,6 +169,7 @@ export class GuestStore {
 
 	constructor(options: GuestStoreOptions = {}) {
 		this.storage = options.storage === undefined ? new StorageService() : options.storage;
+		this._installId = options.installId ?? installId();
 		this.request = options.request ?? ((input, init) => fetch(input, init));
 		this._deviceToken = this.storage?.get(StorageKey.GUEST_DEVICE_TOKEN) ?? null;
 		this._identity = this.readIdentity();
@@ -166,6 +179,7 @@ export class GuestStore {
 
 		return makeReactive(this, {
 			_notificationSettingsPromise: false,
+			_installId: false,
 			request: false,
 			storage: false,
 			submitRegistration: false,
