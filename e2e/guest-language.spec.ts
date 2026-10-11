@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('first-time guest can choose a language', async ({ page }) => {
+test('first-time guest can choose a language', { tag: '@small' }, async ({ page }) => {
 	await page.goto('/');
 
 	await expect(

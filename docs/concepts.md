@@ -132,13 +132,16 @@ the live app.
 
 **GitHub Actions** is automation that runs scripts in response to something happening in the
 repository — a push, a pull request, or a manual click — instead of someone having to run those
-scripts by hand every time. This repo has two:
+scripts by hand every time. This repo has three:
 
 - **`.github/workflows/ci.yml`** runs automatically on every push and every pull request. It
   installs the project and runs the same lint/format/test checks described in
   [`docs/testing.md`](testing.md) and the README's "Checks" section, then reports pass or fail
-  directly on the PR. Treat a failing check here as a hard stop, not a suggestion — regardless of
-  whether the change came from you or an agent.
+  directly on the PR. A second job runs the small and medium browser tests (see
+  [`e2e/README.md`](../e2e/README.md)). Treat a failing check here as a hard stop, not a
+  suggestion — regardless of whether the change came from you or an agent.
+- **`.github/workflows/e2e-large.yml`** is a manual button (**Actions → Large E2E → Run workflow**)
+  that runs the slow, full-stack queue tests. Run it before merging a change to the queue.
 - **`.github/workflows/deploy-production.yml`** is a manual button (**Actions → Deploy production
   → Run workflow** on GitHub) that triggers a production deploy. It does not run automatically —
   nothing reaches the live app without someone deliberately clicking it. See the README's

@@ -2,7 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Lightweight browser coverage; API-dependent scenarios supply their own responses.
- * The isolated full-stack queue rig uses playwright.queue.config.ts — see e2e/README.md.
+ * The isolated full-stack queue rig uses playwright.queue.config.ts — see e2e/README.md, which also
+ * explains the `@small` / `@medium` / `@large` size tags.
  */
 export default defineConfig({
 	testDir: './e2e',
@@ -10,7 +11,10 @@ export default defineConfig({
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	reporter: 'list',
+	// CI annotates failures on the PR and keeps an HTML report for the uploaded artifact.
+	reporter: process.env.CI
+		? [['github'], ['list'], ['html', { outputFolder: 'playwright-report/browser', open: 'never' }]]
+		: 'list',
 	use: {
 		baseURL: 'http://localhost:5173',
 		trace: 'on-first-retry',
