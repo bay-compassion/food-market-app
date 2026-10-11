@@ -1,14 +1,18 @@
 import styled from '@emotion/styled';
 import MuiAppBar from '@mui/material/AppBar';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
+import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import { observer } from 'mobx-react-lite';
+import type { ChangeEvent } from 'react';
 import { Link } from 'react-router';
 
 import { languages } from '../../../locales';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import type { Language } from '../../../stores/translation.store';
+import { appBarLanguagePickerId, useLanguageChoice } from '../../hooks/use-language-choice';
+import { HelpIcon } from '../icons/HelpIcon';
+import { TranslateIcon } from '../icons/TranslateIcon';
 import { AppBarMenu } from './AppBarMenu';
 
 const Brand = styled(Link)`
@@ -32,35 +36,41 @@ const Brand = styled(Link)`
 	}
 `;
 
-const LanguagePicker = styled(Select)`
+/**
+ * The language picker is an icon, not the current language's name: a guest who can read the
+ * current language doesn't need it named, and one who can't needs a mark they recognize. The real
+ * control is a transparent native select stretched over the icon, so a tap opens the phone's own
+ * picker and assistive technology meets an ordinary labelled select.
+ */
+const LanguagePicker = styled.div`
+	position: relative;
+	display: inline-flex;
 	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
 	color: var(--color-on-brand);
-	font-size: 15px;
-	font-weight: 600;
 
-	/* Override MUI's native select padding so the chevron follows the writing direction. */
-	&&& .MuiNativeSelect-select {
-		min-height: 46px;
-		padding: 0;
-		padding-inline: 8px 24px;
-		border-radius: var(--radius-sm);
-		background: transparent;
-
-		&:focus-visible {
-			outline: 3px solid var(--color-focus);
-			outline-offset: 2px;
-		}
+	&:hover {
+		background: rgb(255 255 255 / 0.08);
 	}
 
-	.MuiNativeSelect-icon {
-		right: auto;
-		inset-inline-end: 0;
-		color: inherit;
+	&:has(select:focus-visible) {
+		outline: 3px solid var(--color-focus);
+		outline-offset: 2px;
 	}
 
-	option {
-		color: var(--color-brand);
-		background: var(--color-background);
+	select {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0;
+		cursor: pointer;
+		/* Below 16px, iOS zooms the page when the select takes focus. */
+		font-size: 16px;
 	}
 `;
 
@@ -80,10 +90,12 @@ export const AppBar = observer(function AppBar({
 	showLanguagePicker?: boolean;
 }) {
 	const t = useTranslation();
+	const { help } = t;
 	const { guest, translations } = useRootStore();
+	const chooseLanguage = useLanguageChoice();
 
-	function setLocale(event: SelectChangeEvent<unknown>) {
-		translations.setLanguage(event.target.value as Language);
+	function setLocale(event: ChangeEvent<HTMLSelectElement>) {
+		chooseLanguage(event.target.value as Language);
 	}
 
 	return (
@@ -102,20 +114,31 @@ export const AppBar = observer(function AppBar({
 					<span>{t.marketName}</span>
 				</Brand>
 				<Actions>
-					{showLanguagePicker && guest.isReturningVisitor ? (
+					<IconButton component={Link} to="/help" color="inherit" aria-label={help.title}>
+						<HelpIcon />
+					</IconButton>
+					{showLanguagePicker ? (
 						<LanguagePicker
-							native
-							variant="standard"
-							disableUnderline
-							value={translations.locale}
-							inputProps={{ 'aria-label': t.language, 'data-sentry-unmask': true }}
-							onChange={setLocale}
+							// The first-visit introduction holds this name until it is dismissed; two
+							// elements sharing it would cancel the transition that folds one into the other.
+							style={{
+								viewTransitionName: guest.isReturningVisitor ? 'language-picker' : undefined,
+							}}
 						>
-							{languages.map((language) => (
-								<option key={language.code} value={language.code}>
-									{language.label}
-								</option>
-							))}
+							<TranslateIcon aria-hidden="true" />
+							<select
+								id={appBarLanguagePickerId}
+								aria-label={t.language}
+								data-sentry-unmask
+								value={translations.locale}
+								onChange={setLocale}
+							>
+								{languages.map((language) => (
+									<option key={language.code} value={language.code}>
+										{language.label}
+									</option>
+								))}
+							</select>
 						</LanguagePicker>
 					) : null}
 					<AppBarMenu />

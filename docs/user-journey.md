@@ -1,10 +1,11 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=b87928f8854a, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=f788eba47a90, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=bb0caa6a92a0, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=7fbf78c4dbb5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=19092f65c690, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=4b7bae62a511 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=aeab58a91528, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=d78ec8ed7a2c, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=9968d19401b1, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=7fbf78c4dbb5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=19092f65c690, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=4b7bae62a511 -->
 
 # Guest journey
 
 The path a guest takes from opening the app to being served, and the state their visit is in at each
-step. Language selection (`GuestLanguageHero`, shown until a returning visitor has picked one) lives
-in `GuestView`, backed by the root's shared `TranslationStore`; the registration form, status
+step. Language selection lives in the app bar on every visit; a first-time visitor also sees
+`GuestLanguageHero`, a one-time introduction in `GuestView` that `RootStore.chooseLanguage` retires
+on their first choice from either picker, backed by the root's shared `TranslationStore`; the registration form, status
 screen, and countdown are in
 [`src/components/guest-view/GuestView.tsx`](../src/components/guest-view/GuestView.tsx) (route `/`),
 with the identity-only sign-up screen in its own
@@ -57,7 +58,7 @@ flowchart TD
     confirmForget -- yes --> forgetIdentity[Remove local profile,<br/>device token, and saved<br/>household composition;<br/>reset the in-progress form]
     forgetIdentity --> hasIdentity
     identityShown -. "Show Device ID" in top nav menu .-> showDeviceId[Show device ID dialog<br/>with copy action]
-    saved -. "How it works" in the menu or footer .-> helpPage([Help page at /help:<br/>the Saturday steps,<br/>as on the printed flyer])
+    saved -. "How it works": app bar ? icon,<br/>status cards, menu, or footer .-> helpPage([Help page at /help:<br/>the Saturday steps,<br/>as on the printed flyer])
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
     deviceAuth --> notificationRequest{Status retrieval}
     notificationRequest -- pending --> notificationLoading[Show loading indicator]
@@ -198,7 +199,10 @@ flowchart TD
   identity. Both are zero-prop store consumers and read and write the in-progress fields through
   the shared `RegistrationStore`.
 - **`/help` explains a market Saturday step by step.** `HelpPage` is lazily loaded, like the
-  legal pages, and linked as "How it works" from the app bar menu and the footer on every screen.
+  legal pages. It is the escape hatch for a guest the home screen leaves unsure, so it is reachable
+  from the app bar's ? icon, the app bar menu, and the footer on every screen, and from a
+  "Not sure what to do?" link (`GuestHelpLink`) in every market and visit card
+  (`GuestStatusCard`), at the top of the registration form's card.
   It carries the same steps as the printed flyers in `public/flyers/`: sign up from anywhere at
   10:30 for 15 minutes, the lottery at 10:45, shopping at 11:30, and bringing the phone used to sign
   up. Its copy is the `help` translation group; change the flyers alongside it.

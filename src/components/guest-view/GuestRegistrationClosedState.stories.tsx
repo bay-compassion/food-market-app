@@ -2,13 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 
 import { translations } from '../../locales';
-import { Card } from '../ui/layout/Card';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
+import { GuestStatusCard } from './GuestStatusCard';
 
 /**
  * Shown once registration has closed for the day, through both `registration_closed` and
  * `lottery_pending` — a guest only reaches either phase without a visit by missing the window.
- * Wrapped in `Card` for the frame this screen normally sits inside.
+ * Wrapped in `GuestStatusCard` for the frame this screen normally sits inside.
  */
 const meta = {
 	title: 'Guest/Session States/Registration Closed',
@@ -16,9 +16,9 @@ const meta = {
 	parameters: { shell: 'guest' },
 	decorators: [
 		(Story) => (
-			<Card aria-live="polite">
+			<GuestStatusCard>
 				<Story />
-			</Card>
+			</GuestStatusCard>
 		),
 	],
 } satisfies Meta<typeof GuestRegistrationClosedState>;

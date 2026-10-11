@@ -8,17 +8,17 @@ import { visitStatuses, type VisitStatus } from '../../services/visitStateMachin
 import { guestVisitStatusLabel } from '../../services/visitStatusLabels';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
-import { Card } from '../ui/layout/Card';
 import { CancelVisitAction } from './CancelVisitAction';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
 import { GuestServiceState } from './GuestServiceState';
+import { GuestStatusCard } from './GuestStatusCard';
 import { GuestVisitStatus } from './GuestVisitStatus';
 
 /**
  * `GuestView` is a container: it owns `localStorage`, polling timers, and a router, none of which
  * can be made to hold several different states at once inside one page. This catalogs every
- * market-level state card and `GuestVisitStatus` inside `Card`'s shell for every named
+ * market-level state card and `GuestVisitStatus` inside `GuestStatusCard` for every named
  * `VisitStatus`; `GuestView` presents one only after matching the visit to the displayed market,
  * and lets `cancelled` fall back to market status. The story renders statuses side by side, the same way
  * `QueueGuestRow.stories.tsx`'s `EachStatus` story does for the admin queue row. See
@@ -83,7 +83,7 @@ function MarketStateRow({ status, locale }: { status: MarketCardStatus; locale: 
 				{marketCardHeading(locale, status)}
 			</h2>
 			<section className="guest-layout" style={{ width: 'auto', padding: 0 }}>
-				<Card aria-live="polite">{content}</Card>
+				<GuestStatusCard>{content}</GuestStatusCard>
 			</section>
 		</div>
 	);
@@ -139,9 +139,9 @@ function VisitStatusRow({
 				data-visit-status={status}
 				style={{ width: 'auto', padding: 0 }}
 			>
-				<Card aria-live="polite">
+				<GuestStatusCard>
 					<GuestVisitStatus />
-				</Card>
+				</GuestStatusCard>
 				<CancelVisitAction />
 			</section>
 		</RootStoreProvider>

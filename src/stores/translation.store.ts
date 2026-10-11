@@ -1,5 +1,6 @@
 import { adminTranslations } from '@/adminLocales.ts';
 import { type Translation, translations } from '@/locales.ts';
+import { LanguagePreference } from '@/models/language-preference.ts';
 import { makeReactive } from '@/services/make-reactive.ts';
 import { StorageKey } from '@/services/storage.service.ts';
 
@@ -54,13 +55,8 @@ export class TranslationStore {
 		return saved && supportedLanguages.includes(saved as Language) ? (saved as Language) : null;
 	}
 
+	/** The supported language the browser ranks highest, or English when it asks for none. */
 	private detectLanguage(): Language {
-		const language = navigator.language.split('-')[0] as Language;
-
-		if (supportedLanguages.includes(language)) {
-			return language;
-		}
-
-		return 'en';
+		return LanguagePreference.fromNavigator(navigator, supportedLanguages).match ?? 'en';
 	}
 }

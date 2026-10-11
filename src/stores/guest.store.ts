@@ -223,8 +223,8 @@ export class GuestStore {
 		void this.refreshNotificationSettings().catch(() => undefined);
 	}
 
-	/** Called once a guest has picked a language, so future visits skip the language hero in
-	 *  favor of the compact picker in `AppBar`. */
+	/** Called once a guest has picked a language, which retires the first-visit introduction; the
+	 *  app bar's picker remains for changing it later. */
 	markAsReturningVisitor(): void {
 		this._isReturningVisitor = true;
 		this.storage?.set(StorageKey.RETURNING_VISITOR, true);

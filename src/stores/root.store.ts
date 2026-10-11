@@ -1,3 +1,5 @@
+import { runInAction } from 'mobx';
+
 import { AdminApi } from '../services/admin-api.ts';
 import type { Permission } from '../services/permissions.ts';
 import { StorageService } from '../services/storage.service.ts';
@@ -8,7 +10,7 @@ import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore, type MarketSessionStoreOptions } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
 import { RegistrationStore } from './registration.store.ts';
-import { TranslationStore } from './translation.store.ts';
+import { TranslationStore, type Language } from './translation.store.ts';
 import { VisitStore, type VisitStoreOptions } from './visit.store.ts';
 
 export type RootStoreOptions = {
@@ -85,6 +87,18 @@ export class RootStore {
 		}
 
 		return { Authorization: `Bearer ${await this.getAccessToken()}` };
+	}
+
+	/**
+	 * A guest's language choice, from either the first-visit introduction or the app bar. Any
+	 * explicit choice retires the introduction, so it never stays up after its one question is
+	 * answered elsewhere.
+	 */
+	chooseLanguage(language: Language): void {
+		runInAction(() => {
+			this.translations.setLanguage(language);
+			this.guest.markAsReturningVisitor();
+		});
 	}
 
 	start(): void {
