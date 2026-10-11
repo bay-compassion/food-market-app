@@ -182,7 +182,7 @@ const NotificationStatus = observer(function NotificationStatus({
 					{copy.notificationsEnabled}
 				</p>
 			) : (
-				<Button className="app-button" onClick={onOpenDialog}>
+				<Button className="app-button" data-tour="text-updates" onClick={onOpenDialog}>
 					{copy.notificationsAction}
 				</Button>
 			)}

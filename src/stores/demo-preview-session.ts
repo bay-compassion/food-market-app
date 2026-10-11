@@ -43,6 +43,8 @@ export class DemoPreviewSession implements Storage {
 			phone: guest.phone,
 		});
 		storage.set(StorageKey.RETURNING_VISITOR, true);
+		// A worker previewing a guest's screen wants that screen, not the first-visit tour over it.
+		storage.set(StorageKey.GUEST_TOUR_SEEN, true);
 
 		if (guest.household) {
 			storage.set(StorageKey.GUEST_HOUSEHOLD, guest.household);

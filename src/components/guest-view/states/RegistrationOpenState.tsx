@@ -8,7 +8,7 @@ export function RegistrationOpenState() {
 	return (
 		<>
 			<RegistrationCountdown />
-			<Card>
+			<Card data-tour="registration-form">
 				<CardContent>
 					{/* At the top rather than the end, where it would sit below the submit button. */}
 					<GuestHelpLink />

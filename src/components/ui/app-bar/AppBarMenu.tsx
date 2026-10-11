@@ -9,12 +9,13 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { observer } from 'mobx-react-lite';
 import { useId, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { authReturnUrl } from '../../../auth';
 import { isFeedbackEnabled, openFeedbackForm } from '../../../sentry-feedback-trigger';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
+import { useGuestTourEnabled } from '../../hooks/use-guest-tour-enabled';
 import { Dialog } from '../Dialog';
 import { MoreVertIcon } from '../icons/MoreVertIcon';
 import { OpenExternalIcon } from '../icons/OpenExternalIcon';
@@ -36,8 +37,11 @@ const DeviceId = styled.code`
 export const AppBarMenu = observer(function AppBarMenu() {
 	const { isAuthenticated, user, logout } = useAuth0();
 	const { appBar: t, help, marketName } = useTranslation();
-	const { guest, notifications, translations } = useRootStore();
+	const { guest, notifications, tour, translations } = useRootStore();
+	const navigate = useNavigate();
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+	const [tourRequested, setTourRequested] = useState(false);
+	const tourEnabled = useGuestTourEnabled();
 	const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 	const id = useId();
@@ -46,6 +50,24 @@ export const AppBarMenu = observer(function AppBarMenu() {
 
 	function close() {
 		setAnchorEl(null);
+	}
+
+	/** The tour is of the home screen, so a guest elsewhere is taken there first. */
+	function takeTour() {
+		close();
+		setTourRequested(true);
+		void navigate('/');
+	}
+
+	/**
+	 * The tour starts once the menu has finished closing: until then the menu still holds focus, and
+	 * returns it to its button on the way out, which would pull it from the tour's first step.
+	 */
+	function startRequestedTour() {
+		if (tourRequested) {
+			setTourRequested(false);
+			tour.start();
+		}
 	}
 
 	function sendFeedback() {
@@ -91,6 +113,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				aria-haspopup="menu"
 				aria-expanded={open}
 				onClick={(event) => setAnchorEl(event.currentTarget)}
+				data-tour="menu"
 				sx={{ width: 44, height: 44, flexShrink: 0 }}
 			>
 				{isAuthenticated ? (
@@ -114,6 +137,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 						'aria-describedby': isAuthenticated ? `${id}-account` : undefined,
 					},
 					paper: { dir: translations.dir, sx: { minWidth: 220 } },
+					transition: { onExited: startRequestedTour },
 				}}
 			>
 				<MenuItem
@@ -132,6 +156,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				<MenuItem component={Link} to="/help" onClick={close}>
 					{help.title}
 				</MenuItem>
+				{tourEnabled ? <MenuItem onClick={takeTour}>{t.takeTour}</MenuItem> : null}
 				<MenuItem component={Link} to="/qr-code" onClick={close}>
 					{t.qrCode}
 				</MenuItem>

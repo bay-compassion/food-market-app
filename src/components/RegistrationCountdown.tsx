@@ -115,7 +115,7 @@ const ActiveCountdown = observer(function ActiveCountdown({ closesAt }: { closes
 	);
 
 	return (
-		<Countdown className="registration-countdown">
+		<Countdown className="registration-countdown" data-tour="registration-countdown">
 			<Clock
 				className="registration-countdown-clock"
 				style={{ '--registration-countdown-progress': progress } as CSSProperties}

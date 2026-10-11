@@ -117,11 +117,18 @@ export const AppBar = observer(function AppBar({
 					<span>{t.marketName}</span>
 				</Brand>
 				<Actions>
-					<IconButton component={Link} to="/help" color="inherit" aria-label={help.title}>
+					<IconButton
+						component={Link}
+						to="/help"
+						color="inherit"
+						aria-label={help.title}
+						data-tour="help"
+					>
 						<HelpIcon />
 					</IconButton>
 					{showLanguagePicker ? (
 						<LanguagePicker
+							data-tour="language"
 							data-pointer={pickedByPointer || undefined}
 							onPointerDown={() => setPickedByPointer(true)}
 							// The first-visit introduction holds this name until it is dismissed; two

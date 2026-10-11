@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 
 import { useRootStore } from '../../stores/react/store-context';
 import type { Language } from '../../stores/translation.store';
+import { useGuestTourEnabled } from './use-guest-tour-enabled';
 
 /** The id of the app bar's language select, which the first-visit introduction folds into. */
 export const appBarLanguagePickerId = 'app-bar-language-picker';
@@ -11,10 +12,20 @@ export const appBarLanguagePickerId = 'app-bar-language-picker';
  * Chooses a guest's language. The first choice also dismisses the first-visit introduction, and
  * where the browser supports it, the introduction visibly folds into the app bar's language picker
  * (they share the `language-picker` view-transition name), so the guest sees where the choice now
- * lives instead of the screen silently changing under them.
+ * lives instead of the screen silently changing under them. Once it has, the guided tour is offered,
+ * where the `guest-tour` flag is on.
  */
 export function useLanguageChoice(): (language: Language) => void {
 	const rootStore = useRootStore();
+	const tourEnabled = useGuestTourEnabled();
+
+	// Not offered at all while the flag is off: an offer would leave the tour running unseen, to
+	// appear over the screen the moment the flag turned on.
+	const offerTour = useCallback(() => {
+		if (tourEnabled) {
+			rootStore.tour.offer();
+		}
+	}, [rootStore, tourEnabled]);
 
 	return useCallback(
 		(language: Language) => {
@@ -41,6 +52,8 @@ export function useLanguageChoice(): (language: Language) => void {
 					focusAppBarPicker();
 				}
 
+				offerTour();
+
 				return;
 			}
 
@@ -57,9 +70,13 @@ export function useLanguageChoice(): (language: Language) => void {
 					[{ backgroundColor: 'rgb(255 255 255 / 0.35)' }, { backgroundColor: 'transparent' }],
 					{ duration: 900, easing: 'ease-out' },
 				);
+
+				// Only now: started inside the transition, the tour's overlay would be captured in its
+				// snapshot and positioned against the layout the introduction is about to vacate.
+				offerTour();
 			});
 		},
-		[rootStore],
+		[rootStore, offerTour],
 	);
 }
 

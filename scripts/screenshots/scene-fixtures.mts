@@ -67,6 +67,8 @@ export class SceneFixtures {
 		const entries: Record<string, string> = {
 			[StorageKey.LOCALE]: this.locale,
 			[StorageKey.RETURNING_VISITOR]: JSON.stringify(true),
+			// Otherwise the first-visit tour would sit over every screenshot.
+			[StorageKey.GUEST_TOUR_SEEN]: JSON.stringify(true),
 		};
 
 		if (guest === 'identified') {
