@@ -1,0 +1,30 @@
+name: Install Chromium
+description: >
+  Installs Playwright's Chromium and its system dependencies, caching the browser by Playwright
+  version. Run it after `npm ci`, since the version is read from the installed Playwright.
+
+runs:
+  using: composite
+  steps:
+    - name: Read Playwright version
+      id: playwright
+      shell: bash
+      run: echo "version=$(npx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+
+    # Chromium is the slow part of the setup; it only changes when Playwright does.
+    - name: Cache Playwright browsers
+      id: browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+    - name: Install Chromium
+      if: steps.browsers.outputs.cache-hit != 'true'
+      shell: bash
+      run: npx playwright install --with-deps chromium
+
+    - name: Install Chromium system dependencies
+      if: steps.browsers.outputs.cache-hit == 'true'
+      shell: bash
+      run: npx playwright install-deps chromium
