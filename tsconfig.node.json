@@ -4,6 +4,7 @@
   "include": [
     "vite.config.*",
     "vitest.config.*",
+    "vitest.unit.config.*",
     "cypress.config.*",
     "playwright.config.*",
     "playwright.queue.config.ts",

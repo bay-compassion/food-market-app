@@ -5,12 +5,7 @@
   // Override to cover only the Storybook plumbing. The stories themselves live under `src/` and
   // are already type-checked by `tsconfig.app.json`. `env.d.ts` is what makes the side-effect
   // CSS imports in `preview.ts` resolve, via its `vite/client` reference.
-  "include": [
-    ".storybook/**/*.ts",
-    ".storybook/**/*.tsx",
-    "vitest.storybook.config.ts",
-    "env.d.ts"
-  ],
+  "include": [".storybook/**/*.ts", ".storybook/**/*.tsx", "env.d.ts"],
   "exclude": [],
 
   // The preview imports application modules; referencing the app project is what lets a composite
