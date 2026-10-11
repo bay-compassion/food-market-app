@@ -86,7 +86,7 @@ function Layout({ activeView }: AdminDashboardLayoutArgs) {
 }
 
 const meta = {
-	title: 'Admin/Shared/AdminDashboardLayout',
+	title: 'Admin/Shared/Dashboard Layout',
 	component: Layout,
 	parameters: { shell: 'bare' },
 	decorators: [withSeededStore],

@@ -91,7 +91,7 @@ function Fixture({ token }: GuestClaimCardArgs) {
 }
 
 const meta = {
-	title: 'Guest/GuestClaimCard',
+	title: 'Guest/Identity/Claim on a New Phone',
 	component: Fixture,
 	parameters: { shell: 'guest' },
 	decorators: [withPhone],

@@ -14,7 +14,7 @@ import termsMarkdown from './terms.md?raw';
  * derive it, which also lets the toolbar's locale picker drive the right-to-left layouts.
  */
 const meta = {
-	title: 'Guest/LegalDocumentView',
+	title: 'Guest/Other Pages/Legal Documents',
 	component: LegalDocumentView,
 	parameters: { shell: 'guest' },
 	args: { locale: 'en' as Locale },

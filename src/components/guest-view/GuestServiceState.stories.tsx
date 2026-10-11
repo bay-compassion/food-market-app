@@ -10,7 +10,7 @@ import { GuestStatusCard } from './GuestStatusCard';
  * `GuestStatusCard` for the frame this screen normally sits inside.
  */
 const meta = {
-	title: 'Guest/GuestServiceState',
+	title: 'Guest/Market Page/Service in Progress',
 	component: GuestServiceState,
 	parameters: { shell: 'guest' },
 	decorators: [

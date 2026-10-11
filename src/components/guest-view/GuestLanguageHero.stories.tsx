@@ -10,7 +10,7 @@ import { GuestLanguageHero } from './GuestLanguageHero';
  * the language. Turn on the toolbar's **App frame** to see the app bar picker it folds into.
  */
 const meta = {
-	title: 'Guest/Language Introduction',
+	title: 'Guest/First Visit/Language Introduction',
 	component: GuestLanguageHero,
 	parameters: { shell: 'guest' },
 } satisfies Meta<typeof GuestLanguageHero>;

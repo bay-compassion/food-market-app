@@ -41,7 +41,7 @@ function Display({ locale, children }: { locale: Locale; children: ReactNode }) 
  * own control rather than the toolbar's locale, which the preview feeds into any `locale` arg.
  */
 const meta = {
-	title: 'Kiosk/KioskBoard',
+	title: 'Staff/Kiosk/Board',
 	parameters: { shell: 'bare', layout: 'fullscreen' },
 	argTypes: { secondary: { control: 'select', options: languages.map(({ code }) => code) } },
 	args: {

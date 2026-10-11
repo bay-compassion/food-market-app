@@ -10,7 +10,7 @@ import { EyebrowLabel } from './EyebrowLabel';
  * the background its tone is meant for — `on-brand` shown on white would be invisible.
  */
 const meta = {
-	title: 'Primitives/EyebrowLabel',
+	title: 'Primitives/Eyebrow Label',
 	component: EyebrowLabel,
 	argTypes: {
 		tone: { control: 'inline-radio', options: ['on-brand', 'brand'] },

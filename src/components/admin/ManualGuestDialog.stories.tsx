@@ -13,7 +13,7 @@ import { ManualGuestDialog } from './ManualGuestDialog';
  * follow-up question — draw odds or queue placement — comes with the answer.
  */
 const meta = {
-	title: 'Admin/Shared/ManualGuestDialog',
+	title: 'Admin/Shared/Add Guest Dialog',
 	component: ManualGuestDialog,
 	parameters: { shell: 'admin' },
 	args: {

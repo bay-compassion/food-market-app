@@ -16,7 +16,7 @@ function Fixture({ name }: { name: string }) {
 }
 
 const meta = {
-	title: 'Admin/Dev Mode/Demo preview banner',
+	title: 'Admin/Dev Mode/Demo Preview Banner',
 	component: Fixture,
 	parameters: { shell: 'bare' },
 } satisfies Meta<typeof Fixture>;

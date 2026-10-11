@@ -13,7 +13,7 @@ import { GuestInformationForm } from './GuestInformationForm';
  * The language comes from that same store, which the toolbar's locale picker drives.
  */
 const meta = {
-	title: 'Guest/Forms/Information Form',
+	title: 'Guest/Registration/Information Form',
 	component: GuestInformationForm,
 	parameters: { shell: 'guest' },
 	decorators: [

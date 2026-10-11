@@ -217,7 +217,7 @@ function SeededQueueLine(args: QueueLineArgs) {
  * Check these at the default mobile viewport — that is the device this screen is for.
  */
 const meta = {
-	title: 'Queue/QueueLine',
+	title: 'Staff/Queue Desk/Line',
 	component: SeededQueueLine,
 	parameters: { shell: 'bare' },
 	render: (args) => <SeededQueueLine key={JSON.stringify(args)} {...args} />,

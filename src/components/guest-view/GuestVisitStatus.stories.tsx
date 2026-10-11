@@ -143,7 +143,7 @@ function SeededVisitStatus(args: GuestVisitStatusArgs) {
 }
 
 const meta = {
-	title: 'Guest/Session States/GuestVisitStatus',
+	title: 'Guest/Visit/Status',
 	component: SeededVisitStatus,
 	parameters: { shell: 'guest' },
 	argTypes: {

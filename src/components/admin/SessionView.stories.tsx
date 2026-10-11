@@ -23,7 +23,7 @@ const event: AdminMarketEvent = {
 };
 
 const meta = {
-	title: 'Admin/Current Session/SessionView',
+	title: 'Admin/Current Session/Session Overview',
 	component: SessionView,
 	parameters: { shell: 'admin' },
 	args: {

@@ -4,7 +4,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import { UnderlineButton } from './UnderlineButton';
 
 const meta = {
-	title: 'Components/UnderlineButton',
+	title: 'Primitives/Underline Button',
 	component: UnderlineButton,
 	parameters: { shell: 'bare' },
 	args: { children: 'View as guest', onClick: fn() },

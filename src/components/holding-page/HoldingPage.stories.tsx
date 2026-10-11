@@ -5,7 +5,7 @@ import { languages, translations } from '../../locales';
 import { HoldingPage } from './HoldingPage';
 
 const meta = {
-	title: 'Guest/Holding Page',
+	title: 'Guest/Other Pages/Holding Page',
 	component: HoldingPage,
 	parameters: { shell: 'bare' },
 	decorators: [

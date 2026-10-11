@@ -11,7 +11,7 @@ import { GuestStatusCard } from './GuestStatusCard';
  * normally sits inside.
  */
 const meta = {
-	title: 'Guest/Session States/Inactive',
+	title: 'Guest/Market Page/Not Open',
 	component: GuestNotOpenState,
 	parameters: { shell: 'guest' },
 	decorators: [

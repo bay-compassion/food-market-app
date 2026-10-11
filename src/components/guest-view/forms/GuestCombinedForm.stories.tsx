@@ -80,7 +80,7 @@ function SeededForm({ locale, ...seed }: RegistrationFormArgs) {
 }
 
 const meta = {
-	title: 'Guest/Forms/Combined Form',
+	title: 'Guest/Registration/Combined Form',
 	component: SeededForm,
 	parameters: { shell: 'guest' },
 	args: {

@@ -23,7 +23,7 @@ Every word in the document is written in MDX, in Storybook, next to the componen
 page joins the document by tagging itself in its `<Meta>`:
 
 ```mdx
-<Meta title="Guest/Forms" tags={['review']} />
+<Meta title="Guest Review/Forms" tags={['review']} />
 ```
 
 | Tag            | What it is                                                                      |
@@ -32,7 +32,7 @@ page joins the document by tagging itself in its `<Meta>`:
 | `review-front` | **Front matter**: the title page and contents. Printed first, and not numbered. |
 
 **Order is the sidebar's.** Storybook's story index is sorted by the preview's `storySort`, and the
-document prints its sections in that order, so the outline is the `Guest` list in
+document prints its sections in that order, so the outline is the `Guest Review` list in
 [`.storybook/preview.tsx`](../.storybook/preview.tsx). Put a new page in that list to place it.
 
 Nothing about a page is listed in a script. A page that exists and is tagged is in the document.
