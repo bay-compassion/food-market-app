@@ -172,7 +172,9 @@ describe('App', () => {
 		const { container } = await renderWithMarketStatus('registration_open');
 
 		// Act
-		await user.click(within(container).getByRole('link', { name: help.title }));
+		await user.click(
+			within(container.querySelector('footer')!).getByRole('link', { name: help.title }),
+		);
 
 		// Assert
 		const heading = await within(container).findByRole('heading', { level: 1 });
@@ -198,6 +200,20 @@ describe('App', () => {
 		expect(container.querySelector('.hero')).toBeNull();
 	});
 
+	it('offers the app bar language picker on the first visit, and retires the introduction once used', async () => {
+		const user = userEvent.setup();
+		const { container } = await renderWithMarketStatus('registration_open');
+
+		await waitFor(() => expect(container.querySelector('.hero')).not.toBeNull());
+		const picker = container.querySelector<HTMLSelectElement>('#app-bar-language-picker')!;
+
+		await user.selectOptions(picker, 'vi');
+
+		expect(window.localStorage.getItem('bay-compassion.locale')).toBe('vi');
+		expect(container.querySelector('.hero')).toBeNull();
+		expect(document.activeElement).toBe(picker);
+	});
+
 	it('uses saved settings for returning visitors', async () => {
 		window.localStorage.setItem('bay-compassion.locale', 'es');
 		window.localStorage.setItem('bay-compassion.returning-visitor', 'true');
@@ -207,7 +223,9 @@ describe('App', () => {
 		await waitFor(() => expect(container.textContent).toContain('Cuéntenos sobre usted'));
 
 		expect(container.querySelector('.hero')).toBeNull();
-		expect(container.querySelector<HTMLSelectElement>('select')!.value).toBe('es');
+		expect(container.querySelector<HTMLSelectElement>('#app-bar-language-picker')!.value).toBe(
+			'es',
+		);
 	});
 
 	it('offers the requested language options on the guest page', async () => {
@@ -246,7 +264,8 @@ describe('App', () => {
 		await user.type(container.querySelector('input[autocomplete="given-name"]')!, 'Ada');
 		await user.type(container.querySelector('input[autocomplete="family-name"]')!, 'Lovelace');
 		await user.type(container.querySelector('input[type="tel"]')!, '5551234567');
-		await user.selectOptions(container.querySelector('select')!, '18-29');
+		// Scoped to the page, since the app bar's language picker is also a select.
+		await user.selectOptions(container.querySelector('.guest-layout select')!, '18-29');
 
 		// Household, children, then seniors — `GuestLotteryForm`'s stable relative order.
 		const countInputs = container.querySelectorAll<HTMLInputElement>('.number-spinner-input input');

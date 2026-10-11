@@ -11,6 +11,8 @@ import {
 
 import { takeArrivalAttribution } from './campaign-arrival.ts';
 import { launchDarklySettings } from './launchdarkly-settings.ts';
+import { languages } from './locales.ts';
+import { LanguagePreference } from './models/language-preference.ts';
 import { sentrySettings } from './sentry-settings.ts';
 
 /**
@@ -37,6 +39,16 @@ const REPLAY_FLAG_KEY = 'sentry-replay-enabled';
  * behave differently from one with it. See "Campaign attribution" in `docs/observability.md`.
  */
 const arrivalAttribution = takeArrivalAttribution();
+
+/**
+ * The languages this browser asks for, and whether the app has any of them, recorded as tags the
+ * same way — so a language guests keep asking for shows up as a count in Sentry. See "Browser
+ * languages" in `docs/observability.md`.
+ */
+const languagePreference = LanguagePreference.fromNavigator(
+	navigator,
+	languages.map(({ code }) => code),
+);
 
 function initializeSentry() {
 	if (!settings) {
@@ -67,7 +79,7 @@ function initializeSentry() {
 		dataCollection: { userInfo: false },
 		// Set as the initial scope, rather than after `init`, so the pageload transaction the router
 		// integration starts during `init` carries the tags too.
-		initialScope: { tags: arrivalAttribution?.tags },
+		initialScope: { tags: { ...arrivalAttribution?.tags, ...languagePreference.tags } },
 	});
 
 	// With a LaunchDarkly project configured, `enableReplayWhenFlagged` decides this instead —

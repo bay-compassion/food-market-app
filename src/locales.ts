@@ -77,6 +77,10 @@ export interface VisitStatusTranslations {
 }
 
 export interface GuestViewTranslations {
+	/** Under the first-visit language picker: the choice is not final, and where to change it. */
+	languageHint: string;
+	/** Leads into the link to the help page, for a guest the home screen leaves unsure. */
+	helpPrompt: string;
 	forms: {
 		informationLegend: string;
 		lotteryLegend: string;
@@ -298,7 +302,6 @@ export interface Translation {
 	authLoading: string;
 	backToGuest: string;
 	childrenCount: string;
-	compassionFood: string;
 	countDecrementLabel: string;
 	countIncrementLabel: string;
 	chooseAnswer: string;
@@ -306,7 +309,6 @@ export interface Translation {
 	formDescription: string;
 	formTitle: string;
 	guest: string;
-	heroCopy: string;
 	household: string;
 	householdHint: string;
 	lastName: string;
@@ -374,6 +376,8 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint: 'You can change your language anytime at the top of the screen.',
+			helpPrompt: 'Not sure what to do?',
 			forms: {
 				informationLegend: 'Your information',
 				lotteryLegend: 'Lottery entry details',
@@ -514,7 +518,6 @@ export const translations = {
 		authLoading: 'Verifying your admin session…',
 		backToGuest: 'Back to guest check-in',
 		childrenCount: 'Number of children you’re shopping for',
-		compassionFood: 'Compassion Food',
 		countDecrementLabel: 'Decrease count',
 		countIncrementLabel: 'Increase count',
 		chooseAnswer: 'Choose an answer',
@@ -596,7 +599,6 @@ export const translations = {
 		formDescription: 'A few details help us prepare your visit.',
 		formTitle: 'Tell us about you',
 		guest: 'Guest',
-		heroCopy: 'Together we flourish. Check in below, and our team will take care of the rest.',
 		household: 'Number of people in your household',
 		householdHint: 'Include yourself',
 		lastName: 'Last name',
@@ -700,6 +702,9 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint:
+				'Puede cambiar el idioma en cualquier momento en la parte superior de la pantalla.',
+			helpPrompt: '¿No sabe qué hacer?',
 			forms: {
 				informationLegend: 'Su información',
 				lotteryLegend: 'Datos de inscripción al sorteo',
@@ -842,7 +847,6 @@ export const translations = {
 		authLoading: 'Verificando su sesión de administración…',
 		backToGuest: 'Volver al registro',
 		childrenCount: 'Número de niños para quienes está comprando',
-		compassionFood: 'Alimentos con Compasión',
 		countDecrementLabel: 'Disminuir el número',
 		countIncrementLabel: 'Aumentar el número',
 		chooseAnswer: 'Elija una respuesta',
@@ -925,7 +929,6 @@ export const translations = {
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
 		formTitle: 'Cuéntenos sobre usted',
 		guest: 'Invitado',
-		heroCopy: 'Juntos florecemos. Regístrese abajo y nuestro equipo se encargará del resto.',
 		household: 'Número de personas en su hogar',
 		householdHint: 'Inclúyase',
 		lastName: 'Apellido',
@@ -1030,6 +1033,8 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint: 'هر زمان بخواهید می‌توانید زبان را از بالای صفحه تغییر دهید.',
+			helpPrompt: 'نمی‌دانید چه کار کنید؟',
 			forms: {
 				informationLegend: 'اطلاعات شما',
 				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
@@ -1169,7 +1174,6 @@ export const translations = {
 		authLoading: 'در حال تأیید نشست مدیریت…',
 		backToGuest: 'بازگشت به ثبت‌نام مهمان',
 		childrenCount: 'تعداد کودکانی که برای آن‌ها خرید می‌کنید',
-		compassionFood: 'غذای دلسوزانه',
 		countDecrementLabel: 'کاهش تعداد',
 		countIncrementLabel: 'افزایش تعداد',
 		chooseAnswer: 'یک پاسخ انتخاب کنید',
@@ -1250,7 +1254,6 @@ export const translations = {
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
 		formTitle: 'درباره خودتان بگویید',
 		guest: 'مهمان',
-		heroCopy: 'با هم شکوفا می‌شویم. در پایین ثبت‌نام کنید و تیم ما بقیه کارها را انجام می‌دهد.',
 		household: 'تعداد افراد خانواده شما',
 		householdHint: 'خودتان را هم حساب کنید',
 		lastName: 'نام خانوادگی',
@@ -1354,6 +1357,8 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint: 'Maaari mong palitan ang wika anumang oras sa itaas ng screen.',
+			helpPrompt: 'Hindi sigurado kung ano ang gagawin?',
 			forms: {
 				informationLegend: 'Iyong impormasyon',
 				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
@@ -1499,7 +1504,6 @@ export const translations = {
 		authLoading: 'Vine-verify ang iyong admin session…',
 		backToGuest: 'Bumalik sa pag-check in ng bisita',
 		childrenCount: 'Bilang ng mga batang binibilhan mo',
-		compassionFood: 'Pagkaing May Malasakit',
 		countDecrementLabel: 'Bawasan ang bilang',
 		countIncrementLabel: 'Dagdagan ang bilang',
 		chooseAnswer: 'Pumili ng sagot',
@@ -1581,8 +1585,6 @@ export const translations = {
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
 		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
 		guest: 'Bisita',
-		heroCopy:
-			'Sama-sama tayong uunlad. Mag-check in sa ibaba at ang aming pangkat na ang bahala sa iba.',
 		household: 'Bilang ng mga tao sa inyong sambahayan',
 		householdHint: 'Isama ang sarili',
 		lastName: 'Apelyido',
@@ -1686,6 +1688,8 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint: 'Bạn có thể đổi ngôn ngữ bất cứ lúc nào ở phía trên màn hình.',
+			helpPrompt: 'Chưa biết phải làm gì?',
 			forms: {
 				informationLegend: 'Thông tin của bạn',
 				lotteryLegend: 'Thông tin tham gia xổ số',
@@ -1825,7 +1829,6 @@ export const translations = {
 		authLoading: 'Đang xác minh phiên quản trị…',
 		backToGuest: 'Quay lại đăng ký khách',
 		childrenCount: 'Số trẻ em bạn đang mua sắm cho',
-		compassionFood: 'Thực Phẩm Nhân Ái',
 		countDecrementLabel: 'Giảm số lượng',
 		countIncrementLabel: 'Tăng số lượng',
 		chooseAnswer: 'Chọn câu trả lời',
@@ -1906,8 +1909,6 @@ export const translations = {
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
 		formTitle: 'Hãy cho chúng tôi biết về bạn',
 		guest: 'Khách',
-		heroCopy:
-			'Cùng nhau chúng ta phát triển. Hãy đăng ký bên dưới và đội ngũ của chúng tôi sẽ lo phần còn lại.',
 		household: 'Số người trong hộ gia đình của bạn',
 		householdHint: 'Bao gồm cả bạn',
 		lastName: 'Họ',
@@ -2009,6 +2010,8 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint: '您可以随时在屏幕顶部更改语言。',
+			helpPrompt: '不知道该怎么做？',
 			forms: {
 				informationLegend: '您的信息',
 				lotteryLegend: '抽签登记信息',
@@ -2139,7 +2142,6 @@ export const translations = {
 		authLoading: '正在验证管理员会话…',
 		backToGuest: '返回访客登记',
 		childrenCount: '您为多少儿童采购',
-		compassionFood: '关爱食品',
 		countDecrementLabel: '减少数量',
 		countIncrementLabel: '增加数量',
 		chooseAnswer: '请选择答案',
@@ -2214,7 +2216,6 @@ export const translations = {
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
 		formTitle: '请告诉我们您的信息',
 		guest: '访客',
-		heroCopy: '我们一起蓬勃发展。在下方登记，剩下的交给我们的团队。',
 		household: '您家庭中的人数',
 		householdHint: '包括您自己',
 		lastName: '姓氏',
@@ -2314,6 +2315,8 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint: 'يمكنك تغيير اللغة في أي وقت من أعلى الشاشة.',
+			helpPrompt: 'لست متأكدًا مما عليك فعله؟',
 			forms: {
 				informationLegend: 'معلوماتك',
 				lotteryLegend: 'تفاصيل التسجيل في القرعة',
@@ -2452,7 +2455,6 @@ export const translations = {
 		authLoading: 'جارٍ التحقق من جلسة الإدارة…',
 		backToGuest: 'العودة إلى تسجيل الضيف',
 		childrenCount: 'عدد الأطفال الذين تتسوق من أجلهم',
-		compassionFood: 'طعام الرحمة',
 		countDecrementLabel: 'إنقاص العدد',
 		countIncrementLabel: 'زيادة العدد',
 		chooseAnswer: 'اختر إجابة',
@@ -2530,7 +2532,6 @@ export const translations = {
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
 		formTitle: 'أخبرنا عنك',
 		guest: 'ضيف',
-		heroCopy: 'معًا نزدهر. سجّل في الأسفل وسيتولى فريقنا بقية الأمور.',
 		household: 'عدد الأشخاص في أسرتك',
 		householdHint: 'بما في ذلك أنت',
 		lastName: 'اسم العائلة',
@@ -2633,6 +2634,8 @@ export const translations = {
 			},
 		},
 		guestView: {
+			languageHint: 'Vous pouvez changer de langue à tout moment en haut de l’écran.',
+			helpPrompt: 'Vous ne savez pas quoi faire ?',
 			forms: {
 				informationLegend: 'Vos informations',
 				lotteryLegend: 'Détails de l’inscription au tirage au sort',
@@ -2779,7 +2782,6 @@ export const translations = {
 		authLoading: 'Vérification de votre session administrateur…',
 		backToGuest: 'Retour à l’inscription',
 		childrenCount: 'Nombre d’enfants pour qui vous faites les courses',
-		compassionFood: 'Aliments solidaires',
 		countDecrementLabel: 'Diminuer le nombre',
 		countIncrementLabel: 'Augmenter le nombre',
 		chooseAnswer: 'Choisissez une réponse',
@@ -2862,8 +2864,6 @@ export const translations = {
 		formDescription: 'Quelques informations nous aident à préparer votre visite.',
 		formTitle: 'Parlez-nous de vous',
 		guest: 'Invité',
-		heroCopy:
-			'Ensemble, nous nous épanouissons. Inscrivez-vous ci-dessous, et notre équipe s’occupe du reste.',
 		household: 'Nombre de personnes dans votre foyer',
 		householdHint: 'Comptez-vous aussi',
 		lastName: 'Nom de famille',

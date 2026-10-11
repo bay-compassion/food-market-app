@@ -2,13 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 
 import { translations } from '../../locales';
-import { Card } from '../ui/layout/Card';
 import { GuestNotOpenState } from './GuestNotOpenState';
+import { GuestStatusCard } from './GuestStatusCard';
 
 /**
  * Shown before a `draft` or `scheduled` session's registration window has opened — including when
- * no event has been configured at all. Wrapped in `Card` for the frame this screen normally sits
- * inside.
+ * no event has been configured at all. Wrapped in `GuestStatusCard` for the frame this screen
+ * normally sits inside.
  */
 const meta = {
 	title: 'Guest/Session States/Inactive',
@@ -16,9 +16,9 @@ const meta = {
 	parameters: { shell: 'guest' },
 	decorators: [
 		(Story) => (
-			<Card aria-live="polite">
+			<GuestStatusCard>
 				<Story />
-			</Card>
+			</GuestStatusCard>
 		),
 	],
 } satisfies Meta<typeof GuestNotOpenState>;
@@ -39,7 +39,8 @@ export const NotOpen: Story = {
 		await expect(canvas.getByText(copy.subheading)).toBeInTheDocument();
 		await expect(canvas.getByText(copy.lotteryDescription)).toBeInTheDocument();
 		await expect(canvas.getByText(copy.selectionDescription)).toBeInTheDocument();
-		await expect(canvas.queryByRole('link')).not.toBeInTheDocument();
+		// Nothing to act on before the window opens — the card's only link is its help link.
+		await expect(canvas.getByRole('link')).toHaveAccessibleName(translations.en.help.title);
 		await expect(canvas.queryByRole('button')).not.toBeInTheDocument();
 		await expect(canvas.getByRole('separator')).toBeInTheDocument();
 	},

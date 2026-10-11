@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { translations } from '../locales.ts';
 import { StorageKey } from '../services/storage.service.ts';
@@ -16,6 +16,18 @@ describe('TranslationStore', () => {
 
 	afterEach(() => {
 		window.localStorage.clear();
+		vi.unstubAllGlobals();
+	});
+
+	it('starts a first-time visitor in the first supported language their browser lists', () => {
+		// Arrange
+		vi.stubGlobal('navigator', { language: 'de-DE', languages: ['de-DE', 'fil-PH', 'en-US'] });
+
+		// Act
+		const detected = new TranslationStore(window.localStorage);
+
+		// Assert
+		expect(detected.locale).toBe('tl');
 	});
 
 	it('should have default locale', () => {

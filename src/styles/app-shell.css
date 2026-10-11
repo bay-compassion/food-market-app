@@ -41,40 +41,38 @@
 	text-align: center;
 }
 .hero {
-	margin-bottom: 24px;
-	padding: 32px 22px;
+	margin-bottom: 20px;
+	padding: 22px 20px;
 	color: var(--color-on-brand);
 	background: var(--color-brand);
 	border-radius: var(--radius-lg);
 }
-.hero-copy {
-	margin-bottom: 28px;
-	color: var(--color-on-brand);
-	font-size: 17px;
-	line-height: 1.65;
+.hero h1 {
+	margin-bottom: 16px;
+	font-size: 28px;
 }
 .language-selector {
-	padding-top: 24px;
+	padding-top: 16px;
 	border-top: 2px solid rgba(255, 255, 255, 0.4);
 }
-.language-selector > p {
-	margin-bottom: 14px;
+.language-prompt {
+	margin-bottom: 10px;
 	font-family: var(--font-heading);
-	font-size: 15px;
+	font-size: 14px;
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
 }
 .language-list {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 12px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 .language-option {
-	min-height: 60px;
-	padding: 8px;
+	min-height: 44px;
+	padding: 0 16px;
 	border: 2px solid var(--color-on-brand);
-	border-radius: var(--radius-md);
+	border-radius: 999px;
 	color: var(--color-on-brand);
 	background: transparent;
 	font-size: 15px;
@@ -88,6 +86,66 @@
 .language-option.active {
 	color: var(--color-brand);
 	background: var(--color-background);
+}
+.language-hint {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin-top: 12px;
+	color: var(--color-on-brand);
+	font-size: 14px;
+	line-height: 1.45;
+}
+.language-hint svg {
+	flex-shrink: 0;
+	font-size: 20px;
+}
+.guest-content {
+	view-transition-name: guest-content;
+}
+/* The first-visit introduction folding into the app bar's language picker (see
+   `use-language-choice.ts`). Only those two elements carry the name, never at the same time. */
+::view-transition-group(language-picker),
+::view-transition-group(guest-content) {
+	animation-duration: 420ms;
+	animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+/* The card stays solid while it shrinks and only gives way to the picker at the very end; the
+   default cross-fade washes it out against the white page on the way up. */
+::view-transition-old(language-picker),
+::view-transition-new(language-picker) {
+	height: 100%;
+	object-fit: cover;
+	object-position: top;
+	animation-duration: 420ms;
+}
+::view-transition-old(language-picker) {
+	animation-name: language-picker-out;
+}
+::view-transition-new(language-picker) {
+	animation-name: language-picker-in;
+}
+@keyframes language-picker-out {
+	70% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes language-picker-in {
+	0%,
+	60% {
+		opacity: 0;
+	}
+}
+/* Everything else simply moves; a cross-fade of the whole page would double the footer and the
+   app bar for the length of the transition. */
+::view-transition-old(root) {
+	display: none;
+}
+::view-transition-new(root) {
+	animation: none;
 }
 .admin-view {
 	width: min(100% - 36px, 560px);

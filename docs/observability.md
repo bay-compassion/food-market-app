@@ -141,6 +141,23 @@ Sentry is the only place attribution goes. With no DSN it goes nowhere, though t
 still cleaned. What this cannot answer is how many _registrations_ came from each source — that
 needs the attribution sent with the registration and stored on the visit, which is a migration.
 
+## Browser languages
+
+The app starts a first-time visitor in the first language their browser lists that it has a
+translation for, matching on the primary subtag (`es-MX` gets Spanish) and treating Filipino
+(`fil`) as Tagalog. `LanguagePreference` (`src/models/language-preference.ts`) does that matching,
+and its tags go on Sentry's initial scope beside the campaign tags:
+
+- `browser_language` — the browser's first-choice language, as it reports it (`ko-KR`).
+- `browser_languages` — its first five, comma-separated (`ko-KR,ko,en-US`).
+- `browser_language_supported` — `true` when any of them has a translation here.
+
+To find a language worth adding, count pageload transactions in the trace explorer where
+`browser_language_supported` is `false`, grouped by `browser_language`. That undercounts: a guest
+whose phone lists an unsupported language first but English second is served English, so their
+pageload says `true` — group by `browser_language` across all pageloads to see them too. Values that
+are not language tags are dropped, as with the campaign tags.
+
 ## Uptime monitoring
 
 The free plan's single uptime monitor is configured in Sentry rather than in this repository:

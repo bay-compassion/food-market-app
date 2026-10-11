@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
 
 import { translations } from '../../locales';
-import { Card } from '../ui/layout/Card';
 import { GuestServiceState } from './GuestServiceState';
+import { GuestStatusCard } from './GuestStatusCard';
 
 /**
  * Shown when there is no current-market visit to present and the market is underway. Wrapped in
- * `Card` for the frame this screen normally sits inside.
+ * `GuestStatusCard` for the frame this screen normally sits inside.
  */
 const meta = {
 	title: 'Guest/GuestServiceState',
@@ -15,9 +15,9 @@ const meta = {
 	parameters: { shell: 'guest' },
 	decorators: [
 		(Story) => (
-			<Card aria-live="polite">
+			<GuestStatusCard>
 				<Story />
-			</Card>
+			</GuestStatusCard>
 		),
 	],
 } satisfies Meta<typeof GuestServiceState>;

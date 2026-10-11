@@ -4,6 +4,7 @@ import { StorageKey, StorageService } from '../services/storage.service';
 import { RootStore } from './root.store';
 
 afterEach(() => {
+	window.localStorage.clear();
 	vi.useRealTimers();
 	vi.restoreAllMocks();
 });
@@ -95,5 +96,17 @@ describe('RootStore', () => {
 
 		// Assert
 		expect(disposeVisit).toHaveBeenCalledOnce();
+	});
+
+	it('retires the first-visit introduction when a guest chooses a language', () => {
+		// Arrange
+		const store = new RootStore({ storage: new StorageService(window.localStorage) });
+
+		// Act
+		store.chooseLanguage('fa');
+
+		// Assert
+		expect(store.translations.locale).toBe('fa');
+		expect(store.guest.isReturningVisitor).toBe(true);
 	});
 });
