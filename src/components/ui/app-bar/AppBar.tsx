@@ -3,7 +3,7 @@ import MuiAppBar from '@mui/material/AppBar';
 import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import { observer } from 'mobx-react-lite';
-import type { ChangeEvent } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { Link } from 'react-router';
 
 import { languages } from '../../../locales';
@@ -57,7 +57,9 @@ const LanguagePicker = styled.div`
 		background: rgb(255 255 255 / 0.08);
 	}
 
-	&:has(select:focus-visible) {
+	/* Chrome counts a select as keyboard-focused even after a click or tap, so :focus-visible
+	   alone would leave the ring on; data-pointer marks a picker reached by pointer instead. */
+	&:not([data-pointer]):has(select:focus-visible) {
 		outline: 3px solid var(--color-focus);
 		outline-offset: 2px;
 	}
@@ -93,6 +95,7 @@ export const AppBar = observer(function AppBar({
 	const { help } = t;
 	const { guest, translations } = useRootStore();
 	const chooseLanguage = useLanguageChoice();
+	const [pickedByPointer, setPickedByPointer] = useState(false);
 
 	function setLocale(event: ChangeEvent<HTMLSelectElement>) {
 		chooseLanguage(event.target.value as Language);
@@ -119,6 +122,8 @@ export const AppBar = observer(function AppBar({
 					</IconButton>
 					{showLanguagePicker ? (
 						<LanguagePicker
+							data-pointer={pickedByPointer || undefined}
+							onPointerDown={() => setPickedByPointer(true)}
 							// The first-visit introduction holds this name until it is dismissed; two
 							// elements sharing it would cancel the transition that folds one into the other.
 							style={{
@@ -132,6 +137,7 @@ export const AppBar = observer(function AppBar({
 								data-sentry-unmask
 								value={translations.locale}
 								onChange={setLocale}
+								onBlur={() => setPickedByPointer(false)}
 							>
 								{languages.map((language) => (
 									<option key={language.code} value={language.code}>
