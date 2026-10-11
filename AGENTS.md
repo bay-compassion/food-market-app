@@ -25,6 +25,7 @@
 - `npm run test:e2e` runs Playwright specs from `e2e/` against `npm run dev`, driving a real browser through the running app. Like `npm run test:storybook`, it needs `npx playwright install chromium` once and is kept out of `npm run checks` on purpose so a fresh clone does not need browser binaries.
 - These specs run against the Vite dev server only — no Netlify Functions, database, or Auth0 — so they're limited to guest-facing behavior that works without a backend. See `e2e/README.md` for what that covers and why.
 - `playwright.config.ts` emulates a phone by default, matching this app's mobile-first priority.
+- Every Playwright test carries a size tag — `@small`, `@medium`, or `@large` — passed as `test('…', { tag: '@small' }, …)`. CI runs everything but `@large` on each pull request; `@large` (the full-stack queue rig in `e2e-queue/`) runs only from the manual **Large E2E** workflow. Tag a new test by what it costs to run, and see `e2e/README.md` for the definitions.
 
 ## Localization
 

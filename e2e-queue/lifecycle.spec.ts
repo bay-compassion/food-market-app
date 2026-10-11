@@ -5,128 +5,135 @@ import { confirm, test, expect, type GuestBrowser } from './fixtures';
 const adminCopy = adminTranslations.en;
 const copy = translations.en.guestView.visitStatus;
 
-test('guests register, enter the lottery, and follow the live queue through service and cancellation', async ({
-	admin,
-	database,
-	guestBrowser,
-}) => {
-	const guests = new Map<string, GuestBrowser>();
+test(
+	'guests register, enter the lottery, and follow the live queue through service and cancellation',
+	{ tag: '@large' },
+	async ({ admin, database, guestBrowser }) => {
+		const guests = new Map<string, GuestBrowser>();
 
-	await test.step('Four guests register for three places', async () => {
-		for (const [index, name] of ['Ada', 'Bea', 'Cam', 'Dan'].entries()) {
-			const guest = await guestBrowser(name);
+		await test.step('Four guests register for three places', async () => {
+			for (const [index, name] of ['Ada', 'Bea', 'Cam', 'Dan'].entries()) {
+				const guest = await guestBrowser(name);
 
-			guests.set(name, guest);
-			await guest.register(`202555010${index}`);
-		}
-		await expect
-			.poll(async () => (await database.visits()).map((visit) => visit.status))
-			.toEqual(Array(4).fill('registered'));
-	});
-	await test.step('Admin closes registration and waits for the real grace period', async () => {
-		await admin.getByRole('button', { name: adminCopy.closeRegistration, exact: true }).click();
-		await confirm(admin);
-		await expect(
-			admin.getByRole('button', { name: adminCopy.runLottery, exact: true }),
-		).toBeVisible({ timeout: 50_000 });
-	});
-	await test.step('Admin runs the lottery; guests see their actual results', async () => {
-		await admin.getByRole('button', { name: adminCopy.runLottery, exact: true }).click();
-		await confirm(admin);
-		await expect
-			.poll(
-				async () => (await database.visits()).filter((visit) => visit.status === 'waiting').length,
-			)
-			.toBe(3);
-		const visits = await database.visits();
-
-		expect(
-			visits.filter((visit) => visit.status === 'waiting').map((visit) => visit.queue_position),
-		).toEqual([1, 2, 3]);
-		expect(visits.filter((visit) => visit.status === 'not_placed')).toHaveLength(1);
-
-		for (const visit of visits) {
-			const page = guests.get(visit.first_name)!.page;
-
-			await page.bringToFront();
-
-			if (visit.status === 'waiting') {
-				await expect(page.locator('.queue-position strong')).toHaveText(
-					String(visit.queue_position),
-				);
-			} else {
-				await expect(
-					page.getByRole('heading', { name: copy.not_placed.header, exact: true }),
-				).toBeVisible();
+				guests.set(name, guest);
+				await guest.register(`202555010${index}`);
 			}
-		}
-	});
-	const [first, second, third] = (await database.visits()).filter(
-		(visit) => visit.status === 'waiting',
-	);
-	const firstGuest = guests.get(first!.first_name)!;
-	const secondGuest = guests.get(second!.first_name)!;
-	const thirdGuest = guests.get(third!.first_name)!;
+			await expect
+				.poll(async () => (await database.visits()).map((visit) => visit.status))
+				.toEqual(Array(4).fill('registered'));
+		});
+		await test.step('Admin closes registration and waits for the real grace period', async () => {
+			await admin.getByRole('button', { name: adminCopy.closeRegistration, exact: true }).click();
+			await confirm(admin);
+			await expect(
+				admin.getByRole('button', { name: adminCopy.runLottery, exact: true }),
+			).toBeVisible({ timeout: 50_000 });
+		});
+		await test.step('Admin runs the lottery; guests see their actual results', async () => {
+			await admin.getByRole('button', { name: adminCopy.runLottery, exact: true }).click();
+			await confirm(admin);
+			await expect
+				.poll(
+					async () =>
+						(await database.visits()).filter((visit) => visit.status === 'waiting').length,
+				)
+				.toBe(3);
+			const visits = await database.visits();
 
-	await test.step('Admin calls the next guest; their browser updates without a reload', async () => {
-		await admin.getByRole('button', { name: adminCopy.goToQueue, exact: true }).click();
-		const responsePromise = admin.waitForResponse(
-			(response) =>
-				new URL(response.url()).pathname === '/api/admin/queue' &&
-				response.request().method() === 'POST',
+			expect(
+				visits.filter((visit) => visit.status === 'waiting').map((visit) => visit.queue_position),
+			).toEqual([1, 2, 3]);
+			expect(visits.filter((visit) => visit.status === 'not_placed')).toHaveLength(1);
+
+			for (const visit of visits) {
+				const page = guests.get(visit.first_name)!.page;
+
+				await page.bringToFront();
+
+				if (visit.status === 'waiting') {
+					await expect(page.locator('.queue-position strong')).toHaveText(
+						String(visit.queue_position),
+					);
+				} else {
+					await expect(
+						page.getByRole('heading', { name: copy.not_placed.header, exact: true }),
+					).toBeVisible();
+				}
+			}
+		});
+		const [first, second, third] = (await database.visits()).filter(
+			(visit) => visit.status === 'waiting',
 		);
+		const firstGuest = guests.get(first!.first_name)!;
+		const secondGuest = guests.get(second!.first_name)!;
+		const thirdGuest = guests.get(third!.first_name)!;
 
-		await admin.getByRole('button', { name: adminCopy.callNext, exact: true }).click();
-		expect((await responsePromise).status()).toBe(200);
-		await firstGuest.page.bringToFront();
-		await expect(firstGuest.page.getByRole('heading', { name: copy.called.header })).toBeVisible();
-		const visit = (await database.visits()).find((visit) => visit.id === first!.id)!;
+		await test.step('Admin calls the next guest; their browser updates without a reload', async () => {
+			await admin.getByRole('button', { name: adminCopy.goToQueue, exact: true }).click();
+			const responsePromise = admin.waitForResponse(
+				(response) =>
+					new URL(response.url()).pathname === '/api/admin/queue' &&
+					response.request().method() === 'POST',
+			);
 
-		expect(visit.status).toBe('called');
-		expect(visit.called_at).not.toBeNull();
-	});
-	await test.step('Admin serves the called guest; remaining guests advance', async () => {
-		await admin
-			.getByRole('button', {
-				name: `${adminCopy.markServed}: ${first!.first_name} QueueTest`,
-				exact: true,
-			})
-			.click();
-		await firstGuest.page.bringToFront();
-		await expect(
-			firstGuest.page.getByRole('heading', { name: copy.served.header, exact: true }),
-		).toBeVisible();
-		// The rig runs with LaunchDarkly disabled, so `line-position-indicator` is at its
-		// `now-calling` default and there is no guests-ahead count on screen to watch fall. Only the queue position
-		// is shown whatever the flag says; the next step's "You are next" covers the guest's screen
-		// following the queue as it advances.
-		await thirdGuest.page.bringToFront();
-		await expect(thirdGuest.page.locator('.queue-position strong')).toHaveText(
-			String(third!.queue_position),
-		);
-		const visit = (await database.visits()).find((visit) => visit.id === first!.id)!;
+			await admin.getByRole('button', { name: adminCopy.callNext, exact: true }).click();
+			expect((await responsePromise).status()).toBe(200);
+			await firstGuest.page.bringToFront();
+			await expect(
+				firstGuest.page.getByRole('heading', { name: copy.called.header }),
+			).toBeVisible();
+			const visit = (await database.visits()).find((visit) => visit.id === first!.id)!;
 
-		expect(visit.status).toBe('served');
-		expect(visit.served_at).not.toBeNull();
-	});
-	await test.step('A waiting guest cancels; the next guest sees nobody ahead', async () => {
-		await secondGuest.page.getByRole('button', { name: copy.cancelAction, exact: true }).click();
-		await confirm(secondGuest.page);
-		await expect(
-			secondGuest.page.getByRole('button', { name: copy.cancelAction, exact: true }),
-		).toHaveCount(0);
-		await expect
-			.poll(async () => (await database.visits()).find((visit) => visit.id === second!.id)?.status)
-			.toBe('cancelled');
-		await expect(
-			secondGuest.page.getByRole('heading', { name: copy.cancelled.header, exact: true }),
-		).toBeVisible();
-		await thirdGuest.page.bringToFront();
-		await expect(thirdGuest.page.getByText(copy.waiting.youAreNext, { exact: true })).toBeVisible();
-	});
-});
+			expect(visit.status).toBe('called');
+			expect(visit.called_at).not.toBeNull();
+		});
+		await test.step('Admin serves the called guest; remaining guests advance', async () => {
+			await admin
+				.getByRole('button', {
+					name: `${adminCopy.markServed}: ${first!.first_name} QueueTest`,
+					exact: true,
+				})
+				.click();
+			await firstGuest.page.bringToFront();
+			await expect(
+				firstGuest.page.getByRole('heading', { name: copy.served.header, exact: true }),
+			).toBeVisible();
+			// The rig runs with LaunchDarkly disabled, so `line-position-indicator` is at its
+			// `now-calling` default and there is no guests-ahead count on screen to watch fall. Only the queue position
+			// is shown whatever the flag says; the next step's "You are next" covers the guest's screen
+			// following the queue as it advances.
+			await thirdGuest.page.bringToFront();
+			await expect(thirdGuest.page.locator('.queue-position strong')).toHaveText(
+				String(third!.queue_position),
+			);
+			const visit = (await database.visits()).find((visit) => visit.id === first!.id)!;
 
-test('admin API rejects missing and invalid tokens', async ({ request }) => {
+			expect(visit.status).toBe('served');
+			expect(visit.served_at).not.toBeNull();
+		});
+		await test.step('A waiting guest cancels; the next guest sees nobody ahead', async () => {
+			await secondGuest.page.getByRole('button', { name: copy.cancelAction, exact: true }).click();
+			await confirm(secondGuest.page);
+			await expect(
+				secondGuest.page.getByRole('button', { name: copy.cancelAction, exact: true }),
+			).toHaveCount(0);
+			await expect
+				.poll(
+					async () => (await database.visits()).find((visit) => visit.id === second!.id)?.status,
+				)
+				.toBe('cancelled');
+			await expect(
+				secondGuest.page.getByRole('heading', { name: copy.cancelled.header, exact: true }),
+			).toBeVisible();
+			await thirdGuest.page.bringToFront();
+			await expect(
+				thirdGuest.page.getByText(copy.waiting.youAreNext, { exact: true }),
+			).toBeVisible();
+		});
+	},
+);
+
+test('admin API rejects missing and invalid tokens', { tag: '@large' }, async ({ request }) => {
 	for (const headers of [{}, { Authorization: 'Bearer invalid-token' }] as Record<
 		string,
 		string

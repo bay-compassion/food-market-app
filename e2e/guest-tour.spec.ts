@@ -61,75 +61,85 @@ test.beforeEach(async ({ page }) => {
 	await openRegistration(page);
 });
 
-test('a first-time guest is offered the tour once, and can replay it from the menu', async ({
-	page,
-}) => {
-	await page.goto('/');
+test(
+	'a first-time guest is offered the tour once, and can replay it from the menu',
+	{ tag: '@small' },
+	async ({ page }) => {
+		await page.goto('/');
 
-	await page
-		.getByRole('group', { name: 'Choose your language' })
-		.getByRole('button', { name: 'English' })
-		.click();
+		await page
+			.getByRole('group', { name: 'Choose your language' })
+			.getByRole('button', { name: 'English' })
+			.click();
 
-	// Offered once the introduction has folded into the app bar — see `use-language-choice.ts`.
-	const welcome = page.getByRole('alertdialog', { name: 'Welcome! Here’s how it works' });
+		// Offered once the introduction has folded into the app bar — see `use-language-choice.ts`.
+		const welcome = page.getByRole('alertdialog', { name: 'Welcome! Here’s how it works' });
 
-	await expect(welcome).toBeVisible();
-	await welcome.getByRole('button', { name: 'Skip tour' }).click();
-	await expect(welcome).not.toBeVisible();
+		await expect(welcome).toBeVisible();
+		await welcome.getByRole('button', { name: 'Skip tour' }).click();
+		await expect(welcome).not.toBeVisible();
 
-	// Skipping counts as having seen it, so it is not offered again.
-	await page.reload();
-	await expect(page.getByRole('button', { name: 'Join the lottery' })).toBeVisible();
-	await expect(page.getByRole('alertdialog')).not.toBeVisible();
+		// Skipping counts as having seen it, so it is not offered again.
+		await page.reload();
+		await expect(page.getByRole('button', { name: 'Join the lottery' })).toBeVisible();
+		await expect(page.getByRole('alertdialog')).not.toBeVisible();
 
-	await page.getByRole('button', { name: 'Open menu' }).click();
-	await page.getByRole('menuitem', { name: 'Take the tour' }).click();
+		await page.getByRole('button', { name: 'Open menu' }).click();
+		await page.getByRole('menuitem', { name: 'Take the tour' }).click();
 
-	await expect(welcome).toBeVisible();
-});
+		await expect(welcome).toBeVisible();
+	},
+);
 
-test('the tour points at the registration screen, clear of the app bar', async ({ page }) => {
-	await page.goto('/');
-	await page
-		.getByRole('group', { name: 'Choose your language' })
-		.getByRole('button', { name: 'English' })
-		.click();
-	await page.getByRole('button', { name: 'Show me' }).click();
+test(
+	'the tour points at the registration screen, clear of the app bar',
+	{ tag: '@small' },
+	async ({ page }) => {
+		await page.goto('/');
+		await page
+			.getByRole('group', { name: 'Choose your language' })
+			.getByRole('button', { name: 'English' })
+			.click();
+		await page.getByRole('button', { name: 'Show me' }).click();
 
-	const appBarBottom = (await page.locator('.topbar').boundingBox())?.height ?? 0;
+		const appBarBottom = (await page.locator('.topbar').boundingBox())?.height ?? 0;
 
-	for (const [title, anchor] of [
-		['Sign-up opens', '[data-tour="registration-countdown"]'],
-		['Fill in the form', '[data-tour="registration-form"] .form-heading'],
-	] as const) {
-		await page.getByRole('button', { name: 'Next' }).click();
+		for (const [title, anchor] of [
+			['Sign-up opens', '[data-tour="registration-countdown"]'],
+			['Fill in the form', '[data-tour="registration-form"] .form-heading'],
+		] as const) {
+			await page.getByRole('button', { name: 'Next' }).click();
 
-		const step = page.getByRole('alertdialog', { name: title });
+			const step = page.getByRole('alertdialog', { name: title });
 
-		await expect(step).toBeVisible();
-		await expect(step).toBeInViewport();
+			await expect(step).toBeVisible();
+			await expect(step).toBeInViewport();
 
-		// Scrolled to, and not left tucked under the sticky app bar.
-		const target = await page.locator(anchor).boundingBox();
+			// Scrolled to, and not left tucked under the sticky app bar.
+			const target = await page.locator(anchor).boundingBox();
 
-		expect(target?.y).toBeGreaterThanOrEqual(appBarBottom);
-		await expect(page.locator(anchor)).toBeInViewport();
-	}
-});
+			expect(target?.y).toBeGreaterThanOrEqual(appBarBottom);
+			await expect(page.locator(anchor)).toBeInViewport();
+		}
+	},
+);
 
-test('with the flag off, the tour is neither offered nor in the menu', async ({ page }) => {
-	await pinTourFlag(page, false);
-	await page.goto('/');
-	await page
-		.getByRole('group', { name: 'Choose your language' })
-		.getByRole('button', { name: 'English' })
-		.click();
+test(
+	'with the flag off, the tour is neither offered nor in the menu',
+	{ tag: '@small' },
+	async ({ page }) => {
+		await pinTourFlag(page, false);
+		await page.goto('/');
+		await page
+			.getByRole('group', { name: 'Choose your language' })
+			.getByRole('button', { name: 'English' })
+			.click();
 
-	await expect(page.getByRole('button', { name: 'Join the lottery' })).toBeVisible();
-	await expect(page.getByRole('alertdialog')).not.toBeVisible();
+		await expect(page.getByRole('button', { name: 'Join the lottery' })).toBeVisible();
+		await expect(page.getByRole('alertdialog')).not.toBeVisible();
 
-	await page.getByRole('button', { name: 'Open menu' }).click();
-	await expect(page.getByRole('menuitem', { name: 'How it works' })).toBeVisible();
-	await expect(page.getByRole('menuitem', { name: 'Take the tour' })).toHaveCount(0);
-});
+		await page.getByRole('button', { name: 'Open menu' }).click();
+		await expect(page.getByRole('menuitem', { name: 'How it works' })).toBeVisible();
+		await expect(page.getByRole('menuitem', { name: 'Take the tour' })).toHaveCount(0);
+	},
+);

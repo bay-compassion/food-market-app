@@ -65,9 +65,10 @@ or deployment-platform testing.
 
 ## Failures
 
-The rig does not run in CI: it is slow, and running it on every pull request cost more Actions
-minutes than it was worth. Run it by hand before merging a change to the queue. A failed run leaves
-its diagnostics here:
+Every test here is tagged `@large`. The rig is too slow to run on every pull request, so it runs by
+hand — locally, or on GitHub from **Actions → Large E2E → Run workflow** (`e2e-large.yml`) — before
+merging a change to the queue. That workflow uploads the diagnostics for seven days; locally a run
+leaves them here:
 
 - `test-results/queue-server.log`: Netlify startup and function logs.
 - `test-results/queue/`: failure screenshots and traces, including each guest context.

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('static SMS consent evidence is publicly reviewable', async ({ page }) => {
+test('static SMS consent evidence is publicly reviewable', { tag: '@small' }, async ({ page }) => {
 	await page.goto('/sms-consent/index.html');
 
 	await expect(page).toHaveTitle('SMS Consent Evidence | The Bay Compassion');
