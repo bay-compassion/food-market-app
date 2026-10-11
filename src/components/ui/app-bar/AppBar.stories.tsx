@@ -9,7 +9,7 @@ import { AppBar } from './AppBar';
 const logout = fn().mockResolvedValue(undefined);
 
 const meta = {
-	title: 'Primitives/AppBar',
+	title: 'Primitives/App Bar',
 	component: AppBar,
 	parameters: { shell: 'bare' },
 	decorators: [

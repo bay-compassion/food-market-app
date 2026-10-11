@@ -8,7 +8,7 @@ import { QueuePositionDots } from './QueuePositionDots';
  * emphasized once reached, and the right-to-left mirroring, without waiting in a real queue.
  */
 const meta = {
-	title: 'Guest/Session States/QueuePositionDots',
+	title: 'Guest/Visit/Line Position Dots',
 	component: QueuePositionDots,
 	parameters: { shell: 'guest' },
 	args: { linePosition: 3 },

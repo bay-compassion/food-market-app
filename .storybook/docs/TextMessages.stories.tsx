@@ -28,7 +28,7 @@ function TextMessageSpecimen({ locale, type, queuePosition, custom }: SpecimenAr
  * components of the app, so they stay out of the sidebar, as the design tokens' do.
  */
 const meta = {
-	title: 'Guest/Text Message Specimens',
+	title: 'Guest/Text Messages',
 	component: TextMessageSpecimen,
 	tags: ['!dev'],
 	parameters: { shell: 'bare' },

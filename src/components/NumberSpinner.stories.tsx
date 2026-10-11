@@ -36,7 +36,7 @@ function Controlled({ value: initial, onChange, ...props }: ControlledProps) {
 }
 
 const meta = {
-	title: 'Primitives/NumberSpinner',
+	title: 'Primitives/Number Spinner',
 	component: Controlled,
 	parameters: { shell: 'guest' },
 	argTypes: { onChange: { action: 'change' } },

@@ -149,7 +149,7 @@ function VisitStatusRow({
 }
 
 const meta = {
-	title: 'Guest/Session States/All',
+	title: 'Guest/Market Page/All States',
 	parameters: {
 		shell: 'guest',
 		viewport: {

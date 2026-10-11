@@ -26,7 +26,7 @@ function Tag({ printed, ...source }: NameTagArgs & { printed: boolean }) {
  * label's proportions, so the card on screen and the label that prints match.
  */
 const meta = {
-	title: 'Queue/NameTagCard',
+	title: 'Staff/Queue Desk/Name Tag Card',
 	component: Tag,
 	parameters: { shell: 'bare' },
 	argTypes: {

@@ -17,7 +17,7 @@ import GuestTour from './GuestTour';
  * **App frame** to see the app bar steps point at it.
  */
 const meta = {
-	title: 'Guest/Tour',
+	title: 'Guest/First Visit/Tour',
 	component: GuestTour,
 	parameters: { shell: 'guest' },
 } satisfies Meta<typeof GuestTour>;

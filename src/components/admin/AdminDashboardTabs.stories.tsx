@@ -20,7 +20,7 @@ const items: { id: AdminView; label: string }[] = [
 const idFor = (view: AdminView) => ({ tab: `${view}-tab`, panel: `${view}-panel` });
 
 const meta = {
-	title: 'Admin/Shared/AdminDashboardTabs',
+	title: 'Admin/Shared/Dashboard Tabs',
 	component: AdminDashboardTabs,
 	parameters: { shell: 'admin' },
 	decorators: [

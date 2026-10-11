@@ -11,7 +11,7 @@ import { GuestStatusCard } from './GuestStatusCard';
  * Wrapped in `GuestStatusCard` for the frame this screen normally sits inside.
  */
 const meta = {
-	title: 'Guest/Session States/Registration Closed',
+	title: 'Guest/Market Page/Registration Closed',
 	component: GuestRegistrationClosedState,
 	parameters: { shell: 'guest' },
 	decorators: [

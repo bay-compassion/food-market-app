@@ -21,7 +21,7 @@ function Controlled({ value: initial, onChange, ...props }: TextFieldProps) {
 }
 
 const meta = {
-	title: 'Primitives/TextField',
+	title: 'Primitives/Text Field',
 	component: Controlled,
 	parameters: { shell: 'guest' },
 	argTypes: {

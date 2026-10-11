@@ -31,7 +31,7 @@ function Controlled({ value: initial, onChange, ...props }: ControlledProps) {
 }
 
 const meta = {
-	title: 'Primitives/PhoneField',
+	title: 'Primitives/Phone Field',
 	component: Controlled,
 	parameters: { shell: 'guest' },
 	argTypes: { onChange: { action: 'change' } },

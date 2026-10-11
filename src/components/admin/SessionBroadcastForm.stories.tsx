@@ -11,7 +11,7 @@ import { SessionBroadcastForm } from './SessionBroadcastForm';
 const t = adminTranslations.en;
 
 const meta = {
-	title: 'Admin/Broadcast/SessionBroadcastForm',
+	title: 'Admin/Broadcast/Broadcast Form',
 	component: SessionBroadcastForm,
 	parameters: { shell: 'admin' },
 	args: {

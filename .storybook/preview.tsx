@@ -74,8 +74,22 @@ const preview: Preview = {
 				order: [
 					'Design System',
 					'Primitives',
-					'Guest',
-					// The review document prints its sections in this order, so it is the document's outline.
+					[
+						'Alert',
+						'App Bar',
+						'Button',
+						'Card',
+						'Confirmation Drawer',
+						'Dialog',
+						'Eyebrow Label',
+						'Number Spinner',
+						'Phone Field',
+						'Text Field',
+						'Underline Button',
+					],
+					// The review document's pages. It prints its sections in this order, so this list is
+					// the document's outline.
+					'Guest Review',
 					[
 						'Introduction',
 						'Forms',
@@ -86,16 +100,38 @@ const preview: Preview = {
 						'Identity Menu',
 						'QR Codes',
 					],
-					'Components',
+					// Guest component stories, in the order a guest meets each screen.
+					'Guest',
+					[
+						'Market Page',
+						[
+							'All States',
+							'Not Open',
+							'Registration Countdown',
+							'Registration Closed',
+							'Service in Progress',
+						],
+						'First Visit',
+						'Registration',
+						'Visit',
+						'Identity',
+						'Text Messages',
+						'Other Pages',
+					],
+					// Staff-facing screens outside the dashboard: the kiosk board and the queue desk.
+					'Staff',
+					['Kiosk', ['Board', 'Language Pill'], 'Queue Desk', ['Line', 'Name Tag Card']],
 					'Admin',
 					// Match adminViews in src/services/admin-views.ts, with shared components last.
 					[
 						'Current Session',
 						'Schedule',
 						'Queue',
+						['Queue', 'Guest Row'],
 						'Broadcast',
 						'Question Bank',
 						'Guest Database',
+						['Database View', 'Guest Grid'],
 						'Session History',
 						'Reports',
 						'Dev Mode',

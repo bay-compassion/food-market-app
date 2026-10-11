@@ -42,7 +42,7 @@ function OneRow({ status, showWaitingTime, busy }: QueueGuestRowArgs) {
 }
 
 const meta = {
-	title: 'Admin/Queue/QueueGuestRow',
+	title: 'Admin/Queue/Guest Row',
 	component: OneRow,
 	parameters: { shell: 'admin' },
 	argTypes: {

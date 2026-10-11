@@ -24,7 +24,7 @@ const withScheduleEndpoint: Decorator = (Story, context) => {
 
 /** The question bank, now editing the recurrence pattern's questions. */
 const meta = {
-	title: 'Admin/Question Bank/PatternQuestionBank',
+	title: 'Admin/Question Bank/Pattern Questions',
 	component: PatternQuestionBank,
 	parameters: { shell: 'admin' },
 	decorators: [withScheduleEndpoint],

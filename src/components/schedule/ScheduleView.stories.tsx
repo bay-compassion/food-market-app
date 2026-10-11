@@ -74,7 +74,7 @@ const withScheduleEndpoint: Decorator = (Story, context) => {
 };
 
 const meta = {
-	title: 'Admin/Schedule/ScheduleView',
+	title: 'Admin/Schedule/Schedule',
 	component: ScheduleView,
 	parameters: { shell: 'admin' },
 	decorators: [withScheduleEndpoint],

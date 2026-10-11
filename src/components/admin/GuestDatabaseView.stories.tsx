@@ -33,7 +33,7 @@ function View({ locale, admissions }: GuestDatabaseViewArgs) {
 }
 
 const meta = {
-	title: 'Admin/Guest Database/GuestDatabaseView',
+	title: 'Admin/Guest Database/Database View',
 	component: View,
 	parameters: { shell: 'admin' },
 	args: { locale: 'en', admissions: manualAdmissionsFor('service_started') },

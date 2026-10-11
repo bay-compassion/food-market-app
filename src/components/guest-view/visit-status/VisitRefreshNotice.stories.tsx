@@ -73,7 +73,7 @@ function SeededRefreshNotice({
 }
 
 const meta = {
-	title: 'Guest/Session States/VisitRefreshNotice',
+	title: 'Guest/Visit/Refresh Notice',
 	component: SeededRefreshNotice,
 	parameters: { shell: 'guest' },
 	argTypes: {

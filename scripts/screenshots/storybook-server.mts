@@ -5,7 +5,7 @@ import { isStoryIndex, reviewPages, type ReviewPage } from '../../.storybook/doc
 
 /**
  * The docs pages that make up the review document, read from Storybook's own index. A page joins by
- * tagging itself — `<Meta title="Guest/Forms" tags={['review']} />` — and the words on it are the
+ * tagging itself — `<Meta title="Guest Review/Forms" tags={['review']} />` — and the words on it are the
  * document's words; this is the whole of what the capture needs to know about them. See
  * `.storybook/docs/review-index.ts`, which the contents page uses too.
  */

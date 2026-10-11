@@ -25,7 +25,7 @@ const sampleQuestions: SessionQuestion[] = [
 ];
 
 const meta = {
-	title: 'Guest/Forms/Lottery Form',
+	title: 'Guest/Registration/Lottery Form',
 	component: GuestLotteryForm,
 	parameters: { shell: 'guest' },
 	args: { registrationQuestions: [] },

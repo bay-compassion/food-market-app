@@ -44,7 +44,7 @@ async function openSheet(
 }
 
 const meta = {
-	title: 'Primitives/ConfirmationDrawer',
+	title: 'Primitives/Confirmation Drawer',
 	component: ConfirmationHost,
 	tags: ['autodocs'],
 	parameters: { shell: 'bare' },

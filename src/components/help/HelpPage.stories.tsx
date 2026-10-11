@@ -9,7 +9,7 @@ import { HelpPage } from './HelpPage';
  * the printed flyer in `public/flyers/`, so the two should change together.
  */
 const meta = {
-	title: 'Guest/Help',
+	title: 'Guest/Other Pages/Help',
 	component: HelpPage,
 	parameters: { shell: 'guest' },
 } satisfies Meta<typeof HelpPage>;

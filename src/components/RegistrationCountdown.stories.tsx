@@ -74,7 +74,7 @@ function RemainingTime({
 }
 
 const meta = {
-	title: 'Guest/Market Status/Countdown',
+	title: 'Guest/Market Page/Registration Countdown',
 	component: RemainingTime,
 	parameters: { shell: 'guest' },
 	args: {

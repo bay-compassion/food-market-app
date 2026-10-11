@@ -13,7 +13,7 @@ type Args = Omit<LanguagePillProps, 'locale'> & { language: Locale };
  * the time its language has left, draining rightward with the carousel.
  */
 const meta = {
-	title: 'Kiosk/LanguagePill',
+	title: 'Staff/Kiosk/Language Pill',
 	parameters: { shell: 'bare' },
 	argTypes: { language: { control: 'select', options: languages.map(({ code }) => code) } },
 	args: { language: 'vi' },
