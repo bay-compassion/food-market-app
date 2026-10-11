@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 
 import { translations } from '../src/locales';
 
+// This scenario opens and refreshes a second tab, then waits for real polling.
+test.setTimeout(60_000);
+
 const copy = translations.en.guestView.visitStatus;
 
 // Exercises the real tab handoff and guest UI with API responses supplied by Playwright.
@@ -75,6 +78,8 @@ test(
 
 		await page.getByRole('button', { name: 'Launch demo guest' }).click();
 		const guest = await popupPromise;
+
+		await guest.waitForURL(new URL('/', page.url()).href, { waitUntil: 'domcontentloaded' });
 
 		await expect(guest.getByRole('complementary', { name: 'Demo guest preview' })).toContainText(
 			'Ada Example',

@@ -58,7 +58,8 @@ export default defineConfig({
 	plugins: [
 		requireLaunchDarklyOnNetlify(),
 		react(),
-		netlify(),
+		// This app uses Netlify Functions; no Edge Functions runtime is needed.
+		netlify({ edgeFunctions: { enabled: false } }),
 		...(uploadsSourceMaps
 			? [
 					sentryVitePlugin({
