@@ -81,6 +81,30 @@ describe('structured logging', () => {
 	});
 
 	it.each([
+		['a well-formed install ID', '1b4e28ba-2fa1-41d2-883f-0016d3cca427', true],
+		['anything else', '510-555-0123', false],
+	])('logs the X-Install-Id header when it is %s', async (_label, sent, kept) => {
+		// Arrange
+		const { records, logger } = capture();
+		const app = createRouter().get('/example', () => new Response(null, { status: 204 }));
+		const request = new Request('https://example.com/example', {
+			headers: { 'X-Install-Id': sent },
+		});
+
+		// Act
+		await withLogger(logger, () => routeHandler(app)(request));
+
+		// Assert
+		expect(records).toHaveLength(2);
+
+		for (const record of records) {
+			expect(record.installId).toBe(kept ? sent : undefined);
+		}
+
+		expect(JSON.stringify(records).includes(sent)).toBe(kept);
+	});
+
+	it.each([
 		[200, 'info'],
 		[401, 'warn'],
 		[503, 'error'],

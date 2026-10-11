@@ -129,10 +129,21 @@ export function withLogger<T>(logger: Logger, callback: () => T): T {
 
 export type InvocationContext = Pick<Context, 'requestId'>;
 
-export function invocationLogger(functionName: string, invocation?: InvocationContext) {
+/**
+ * The logger for one invocation, carrying its request ID and — for a request from the app, which
+ * sends one — the browser's install ID, so every record a request writes can be found by either.
+ */
+export function invocationLogger(
+	functionName: string,
+	invocation?: InvocationContext,
+	installId: string | null = null,
+) {
 	const requestId = invocation?.requestId ?? randomUUID();
+	const fields = installId
+		? { function: functionName, requestId, installId }
+		: { function: functionName, requestId };
 
-	return { log: getLogger().child({ function: functionName, requestId }), requestId };
+	return { log: getLogger().child(fields), requestId };
 }
 
 export function loggedJob(name: string, job: () => Promise<void>) {

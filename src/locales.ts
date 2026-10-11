@@ -257,6 +257,23 @@ export interface FeedbackFormTranslations {
 	errorGenericText: string;
 }
 
+export interface DeviceDetailsTranslations {
+	/** The menu item, and the dialog's heading. */
+	title: string;
+	close: string;
+	/** The install ID: random, made on first launch, and naming the device rather than the guest. */
+	installIdLabel: string;
+	/** The device token: the credential saved once a guest registers on this device. */
+	deviceTokenLabel: string;
+	deviceTokenHint: string;
+	/** Each Copy button's visible text; its accessible name is `copyInstallId`/`copyDeviceToken`. */
+	copy: string;
+	copied: string;
+	copyInstallId: string;
+	copyDeviceToken: string;
+	copyError: string;
+}
+
 export interface AppBarTranslations {
 	openMenu: string;
 	accountMenu: string;
@@ -266,12 +283,8 @@ export interface AppBarTranslations {
 	adminPanel: string;
 	signOut: string;
 	sendFeedback: string;
-	closeDeviceIdDialog: string;
-	copyDeviceId: string;
-	copyDeviceIdError: string;
-	deviceIdCopied: string;
-	deviceIdDialogTitle: string;
-	showDeviceId: string;
+	/** The menu item and dialog that show this device's identifiers to read out to staff. */
+	deviceDetails: DeviceDetailsTranslations;
 	/** The menu item that replays the guided tour. */
 	takeTour: string;
 	feedbackForm: FeedbackFormTranslations;
@@ -394,12 +407,18 @@ export const translations = {
 			adminPanel: 'Admin Panel',
 			signOut: 'Sign Out',
 			sendFeedback: 'Send feedback',
-			closeDeviceIdDialog: 'Close device ID',
-			copyDeviceId: 'Copy',
-			copyDeviceIdError: 'We could not copy the device ID. Please try again.',
-			deviceIdCopied: 'Copied',
-			deviceIdDialogTitle: 'Device ID',
-			showDeviceId: 'Show Device ID',
+			deviceDetails: {
+				title: 'Device details',
+				close: 'Close device details',
+				installIdLabel: 'Device ID',
+				deviceTokenLabel: 'Guest token',
+				deviceTokenHint: 'Share this only with a staff member.',
+				copy: 'Copy',
+				copied: 'Copied',
+				copyInstallId: 'Copy device ID',
+				copyDeviceToken: 'Copy guest token',
+				copyError: 'We could not copy that. Please try again.',
+			},
 			takeTour: 'Take the tour',
 			feedbackForm: {
 				formTitle: 'Send feedback',
@@ -775,12 +794,18 @@ export const translations = {
 			adminPanel: 'Panel de administración',
 			signOut: 'Cerrar sesión',
 			sendFeedback: 'Enviar comentarios',
-			closeDeviceIdDialog: 'Cerrar ID del dispositivo',
-			copyDeviceId: 'Copiar',
-			copyDeviceIdError: 'No pudimos copiar el ID del dispositivo. Inténtelo de nuevo.',
-			deviceIdCopied: 'Copiado',
-			deviceIdDialogTitle: 'ID del dispositivo',
-			showDeviceId: 'Mostrar ID del dispositivo',
+			deviceDetails: {
+				title: 'Detalles del dispositivo',
+				close: 'Cerrar detalles del dispositivo',
+				installIdLabel: 'ID del dispositivo',
+				deviceTokenLabel: 'Token de invitado',
+				deviceTokenHint: 'Compártalo solo con un miembro del personal.',
+				copy: 'Copiar',
+				copied: 'Copiado',
+				copyInstallId: 'Copiar ID del dispositivo',
+				copyDeviceToken: 'Copiar token de invitado',
+				copyError: 'No pudimos copiarlo. Inténtelo de nuevo.',
+			},
 			takeTour: 'Ver el recorrido',
 			feedbackForm: {
 				formTitle: 'Enviar comentarios',
@@ -1161,12 +1186,18 @@ export const translations = {
 			adminPanel: 'پنل مدیریت',
 			signOut: 'خروج',
 			sendFeedback: 'ارسال بازخورد',
-			closeDeviceIdDialog: 'بستن شناسه دستگاه',
-			copyDeviceId: 'کپی',
-			copyDeviceIdError: 'شناسه دستگاه کپی نشد. لطفاً دوباره تلاش کنید.',
-			deviceIdCopied: 'کپی شد',
-			deviceIdDialogTitle: 'شناسه دستگاه',
-			showDeviceId: 'نمایش شناسه دستگاه',
+			deviceDetails: {
+				title: 'جزئیات دستگاه',
+				close: 'بستن جزئیات دستگاه',
+				installIdLabel: 'شناسه دستگاه',
+				deviceTokenLabel: 'توکن مهمان',
+				deviceTokenHint: 'این را فقط با یکی از کارکنان به اشتراک بگذارید.',
+				copy: 'کپی',
+				copied: 'کپی شد',
+				copyInstallId: 'کپی شناسه دستگاه',
+				copyDeviceToken: 'کپی توکن مهمان',
+				copyError: 'کپی نشد. لطفاً دوباره تلاش کنید.',
+			},
 			takeTour: 'دیدن راهنمای گام‌به‌گام',
 			feedbackForm: {
 				formTitle: 'ارسال بازخورد',
@@ -1540,12 +1571,18 @@ export const translations = {
 			adminPanel: 'Panel ng admin',
 			signOut: 'Mag-sign out',
 			sendFeedback: 'Magpadala ng puna',
-			closeDeviceIdDialog: 'Isara ang device ID',
-			copyDeviceId: 'Kopyahin',
-			copyDeviceIdError: 'Hindi namin makopya ang device ID. Pakisubukang muli.',
-			deviceIdCopied: 'Nakopya',
-			deviceIdDialogTitle: 'ID ng Device',
-			showDeviceId: 'Ipakita ang Device ID',
+			deviceDetails: {
+				title: 'Mga detalye ng device',
+				close: 'Isara ang mga detalye ng device',
+				installIdLabel: 'ID ng Device',
+				deviceTokenLabel: 'Token ng bisita',
+				deviceTokenHint: 'Ibahagi lamang ito sa isang staff.',
+				copy: 'Kopyahin',
+				copied: 'Nakopya',
+				copyInstallId: 'Kopyahin ang device ID',
+				copyDeviceToken: 'Kopyahin ang token ng bisita',
+				copyError: 'Hindi namin ito makopya. Pakisubukang muli.',
+			},
 			takeTour: 'Panoorin ang tour',
 			feedbackForm: {
 				formTitle: 'Magpadala ng puna',
@@ -1926,12 +1963,18 @@ export const translations = {
 			adminPanel: 'Bảng quản trị',
 			signOut: 'Đăng xuất',
 			sendFeedback: 'Gửi góp ý',
-			closeDeviceIdDialog: 'Đóng mã thiết bị',
-			copyDeviceId: 'Sao chép',
-			copyDeviceIdError: 'Không thể sao chép mã thiết bị. Vui lòng thử lại.',
-			deviceIdCopied: 'Đã sao chép',
-			deviceIdDialogTitle: 'Mã thiết bị',
-			showDeviceId: 'Hiển thị mã thiết bị',
+			deviceDetails: {
+				title: 'Thông tin thiết bị',
+				close: 'Đóng thông tin thiết bị',
+				installIdLabel: 'Mã thiết bị',
+				deviceTokenLabel: 'Mã khách',
+				deviceTokenHint: 'Chỉ chia sẻ mã này với nhân viên.',
+				copy: 'Sao chép',
+				copied: 'Đã sao chép',
+				copyInstallId: 'Sao chép mã thiết bị',
+				copyDeviceToken: 'Sao chép mã khách',
+				copyError: 'Không thể sao chép. Vui lòng thử lại.',
+			},
 			takeTour: 'Xem hướng dẫn',
 			feedbackForm: {
 				formTitle: 'Gửi góp ý',
@@ -2304,12 +2347,18 @@ export const translations = {
 			adminPanel: '管理面板',
 			signOut: '退出登录',
 			sendFeedback: '发送反馈',
-			closeDeviceIdDialog: '关闭设备 ID',
-			copyDeviceId: '复制',
-			copyDeviceIdError: '无法复制设备 ID。请重试。',
-			deviceIdCopied: '已复制',
-			deviceIdDialogTitle: '设备 ID',
-			showDeviceId: '显示设备 ID',
+			deviceDetails: {
+				title: '设备详情',
+				close: '关闭设备详情',
+				installIdLabel: '设备 ID',
+				deviceTokenLabel: '访客令牌',
+				deviceTokenHint: '请只提供给工作人员。',
+				copy: '复制',
+				copied: '已复制',
+				copyInstallId: '复制设备 ID',
+				copyDeviceToken: '复制访客令牌',
+				copyError: '无法复制。请重试。',
+			},
 			takeTour: '查看使用导览',
 			feedbackForm: {
 				formTitle: '发送反馈',
@@ -2663,12 +2712,18 @@ export const translations = {
 			adminPanel: 'لوحة الإدارة',
 			signOut: 'تسجيل الخروج',
 			sendFeedback: 'إرسال ملاحظات',
-			closeDeviceIdDialog: 'إغلاق معرّف الجهاز',
-			copyDeviceId: 'نسخ',
-			copyDeviceIdError: 'تعذر نسخ معرّف الجهاز. يرجى المحاولة مرة أخرى.',
-			deviceIdCopied: 'تم النسخ',
-			deviceIdDialogTitle: 'معرّف الجهاز',
-			showDeviceId: 'عرض معرّف الجهاز',
+			deviceDetails: {
+				title: 'تفاصيل الجهاز',
+				close: 'إغلاق تفاصيل الجهاز',
+				installIdLabel: 'معرّف الجهاز',
+				deviceTokenLabel: 'رمز الضيف',
+				deviceTokenHint: 'لا تشاركه إلا مع أحد الموظفين.',
+				copy: 'نسخ',
+				copied: 'تم النسخ',
+				copyInstallId: 'نسخ معرّف الجهاز',
+				copyDeviceToken: 'نسخ رمز الضيف',
+				copyError: 'تعذر النسخ. يرجى المحاولة مرة أخرى.',
+			},
 			takeTour: 'شاهد الجولة التعريفية',
 			feedbackForm: {
 				formTitle: 'إرسال ملاحظات',
@@ -3036,13 +3091,18 @@ export const translations = {
 			adminPanel: 'Panneau d’administration',
 			signOut: 'Se déconnecter',
 			sendFeedback: 'Envoyer un commentaire',
-			closeDeviceIdDialog: 'Fermer l’identifiant de l’appareil',
-			copyDeviceId: 'Copier',
-			copyDeviceIdError:
-				'Nous n’avons pas pu copier l’identifiant de l’appareil. Veuillez réessayer.',
-			deviceIdCopied: 'Copié',
-			deviceIdDialogTitle: 'Identifiant de l’appareil',
-			showDeviceId: 'Afficher l’identifiant de l’appareil',
+			deviceDetails: {
+				title: 'Détails de l’appareil',
+				close: 'Fermer les détails de l’appareil',
+				installIdLabel: 'Identifiant de l’appareil',
+				deviceTokenLabel: 'Jeton invité',
+				deviceTokenHint: 'Ne le communiquez qu’à un membre du personnel.',
+				copy: 'Copier',
+				copied: 'Copié',
+				copyInstallId: 'Copier l’identifiant de l’appareil',
+				copyDeviceToken: 'Copier le jeton invité',
+				copyError: 'La copie a échoué. Veuillez réessayer.',
+			},
 			takeTour: 'Voir la visite guidée',
 			feedbackForm: {
 				formTitle: 'Envoyer un commentaire',

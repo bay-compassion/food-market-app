@@ -27,13 +27,13 @@ import { MoreVertIcon } from '../icons/MoreVertIcon';
 import { OpenExternalIcon } from '../icons/OpenExternalIcon';
 import { QrCodeIcon } from '../icons/QrCodeIcon';
 import { SmartphoneIcon } from '../icons/SmartphoneIcon';
-import { DeviceIdDialog } from './DeviceIdDialog';
+import { DeviceDetailsDialog } from './DeviceDetailsDialog';
 
 /** Secondary navigation and the authenticated staff account, tucked behind one menu. */
 export const AppBarMenu = observer(function AppBarMenu() {
 	const { isAuthenticated, user, logout } = useAuth0();
 	const { appBar: t, help, marketName } = useTranslation();
-	const { guest, tour, translations } = useRootStore();
+	const { tour, translations } = useRootStore();
 	const navigate = useNavigate();
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 	const [tourRequested, setTourRequested] = useState(false);
@@ -42,7 +42,6 @@ export const AppBarMenu = observer(function AppBarMenu() {
 	const id = useId();
 	const open = Boolean(anchorEl);
 	const horizontal = translations.dir === 'rtl' ? 'left' : 'right';
-	const showSupport = Boolean(guest.deviceId) || isFeedbackEnabled;
 
 	function close() {
 		setAnchorEl(null);
@@ -157,16 +156,14 @@ export const AppBarMenu = observer(function AppBarMenu() {
 					</ListItemIcon>
 					{t.qrCode}
 				</MenuItem>
-				{showSupport ? <Divider /> : null}
-				{/* Only a device that has saved an identity has one to show. */}
-				{guest.deviceId ? (
-					<MenuItem onClick={openDeviceDialog}>
-						<ListItemIcon>
-							<SmartphoneIcon fontSize="small" />
-						</ListItemIcon>
-						{t.showDeviceId}
-					</MenuItem>
-				) : null}
+				<Divider />
+				{/* Every device has details to show: its install ID exists from the first launch. */}
+				<MenuItem onClick={openDeviceDialog}>
+					<ListItemIcon>
+						<SmartphoneIcon fontSize="small" />
+					</ListItemIcon>
+					{t.deviceDetails.title}
+				</MenuItem>
 				{isFeedbackEnabled ? (
 					<MenuItem onClick={sendFeedback}>
 						<ListItemIcon>
@@ -215,7 +212,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 				) : null}
 			</Menu>
 
-			<DeviceIdDialog open={deviceDialogOpen} onClose={() => setDeviceDialogOpen(false)} />
+			<DeviceDetailsDialog open={deviceDialogOpen} onClose={() => setDeviceDialogOpen(false)} />
 		</>
 	);
 });

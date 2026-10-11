@@ -230,8 +230,8 @@ export const screenshots: ScreenshotStep[] = [
 		overlay: true,
 		interact: async (page, copy) => {
 			await openAppBarMenu(page, copy);
-			await page.getByRole('menuitem', { name: copy.appBar.showDeviceId }).click();
-			await page.getByRole('dialog', { name: copy.appBar.deviceIdDialogTitle }).waitFor();
+			await page.getByRole('menuitem', { name: copy.appBar.deviceDetails.title }).click();
+			await page.getByRole('dialog', { name: copy.appBar.deviceDetails.title }).waitFor();
 		},
 		anchor: (copy) => copy.formTitle,
 	},

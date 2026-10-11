@@ -8,6 +8,9 @@ export enum StorageKey {
 	RETURNING_VISITOR = 'bay-compassion.returning-visitor',
 	/** Set once a guest has finished or skipped the guided tour, so it is offered only once. */
 	GUEST_TOUR_SEEN = 'bay-compassion.guest-tour-seen',
+	/** This browser's install ID (`src/install-id.ts`). It names the device rather than the guest,
+	 *  so `GuestStore.forget()` deliberately leaves it in place. */
+	INSTALL_ID = 'bay-compassion.install-id',
 }
 
 interface StorageKeyMap {
@@ -17,6 +20,7 @@ interface StorageKeyMap {
 	[StorageKey.LOCALE]: string;
 	[StorageKey.RETURNING_VISITOR]: boolean;
 	[StorageKey.GUEST_TOUR_SEEN]: boolean;
+	[StorageKey.INSTALL_ID]: string;
 }
 
 export class StorageService {

@@ -6,48 +6,56 @@ import { AppBarMenu } from '../components/ui/app-bar/AppBarMenu';
 import { StorageKey } from '../services/storage.service';
 import { renderWithApp } from './render-with-app';
 
-const deviceId = 'test-device-token'.padEnd(32, 'x');
+const deviceToken = 'test-device-token'.padEnd(32, 'x');
 
 beforeEach(() => {
 	window.localStorage.clear();
 });
 
 describe('AppBarMenu', () => {
-	it('does not offer a device ID before a device has one', async () => {
+	it('shows the install ID before a guest has registered on the device', async () => {
 		// Arrange
 		const user = userEvent.setup();
-
-		renderWithApp(<AppBarMenu />);
+		const { store } = renderWithApp(<AppBarMenu />);
 
 		// Act
 		await user.click(screen.getByRole('button', { name: 'Open menu' }));
+		await user.click(screen.getByRole('menuitem', { name: 'Device details' }));
 
 		// Assert
-		expect(screen.queryByRole('menuitem', { name: 'Show Device ID' })).toBeNull();
+		expect(screen.getByRole('heading', { name: 'Device details' })).toBeTruthy();
+		expect(screen.getByRole('region', { name: 'Device ID' }).textContent).toContain(
+			store.guest.installId,
+		);
+		expect(screen.queryByRole('region', { name: 'Guest token' })).toBeNull();
 	});
 
 	describe('with an identified device', () => {
 		beforeEach(() => {
-			window.localStorage.setItem(StorageKey.GUEST_DEVICE_TOKEN, JSON.stringify(deviceId));
+			window.localStorage.setItem(StorageKey.GUEST_DEVICE_TOKEN, JSON.stringify(deviceToken));
 		});
 
-		it('shows and copies the device ID', async () => {
+		it('shows and copies both the install ID and the device token', async () => {
 			// Arrange
 			const user = userEvent.setup();
-
-			renderWithApp(<AppBarMenu />);
+			const { store } = renderWithApp(<AppBarMenu />);
 
 			// Act
 			await user.click(screen.getByRole('button', { name: 'Open menu' }));
-			await user.click(screen.getByRole('menuitem', { name: 'Show Device ID' }));
+			await user.click(screen.getByRole('menuitem', { name: 'Device details' }));
 
 			// Assert
-			expect(screen.getByRole('heading', { name: 'Device ID' })).toBeTruthy();
-			expect(screen.getByText(deviceId)).toBeTruthy();
+			expect(screen.getByRole('region', { name: 'Guest token' }).textContent).toContain(
+				deviceToken,
+			);
 
-			await user.click(screen.getByRole('button', { name: 'Copy' }));
-			expect(await navigator.clipboard.readText()).toBe(deviceId);
+			await user.click(screen.getByRole('button', { name: 'Copy device ID' }));
+			expect(await navigator.clipboard.readText()).toBe(store.guest.installId);
 			expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy();
+
+			await user.click(screen.getByRole('button', { name: 'Copy guest token' }));
+			expect(await navigator.clipboard.readText()).toBe(deviceToken);
+			expect(screen.getAllByRole('button', { name: 'Copied' })).toHaveLength(2);
 		});
 	});
 });

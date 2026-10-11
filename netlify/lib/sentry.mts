@@ -111,35 +111,47 @@ export async function flushSentry(timeoutMs = 2000): Promise<void> {
  *
  * `name` is the transaction name, so it must be the matched route rather than the raw URL — the
  * same reason `routeHandler` only logs registered paths.
+ *
+ * `installId` is the browser's install ID, already validated, and is tagged on the transaction and
+ * on any error captured during it, matching the `install_id` tag the browser puts on its own events.
+ * It goes on a forked scope: a warm function instance serves many requests, and a tag set on a
+ * shared scope would follow the next request from a different device.
  */
 export async function tracedRequest(
 	request: Request,
 	name: string,
+	installId: string | null,
 	handle: () => Promise<Response>,
 ): Promise<Response> {
 	if (!settings) {
 		return handle();
 	}
 
-	return Sentry.continueTrace(
-		{
-			sentryTrace: request.headers.get('sentry-trace') ?? undefined,
-			baggage: request.headers.get('baggage'),
-		},
-		async () =>
-			Sentry.startSpan({ name, op: 'http.server' }, async (span) => {
-				try {
-					const response = await handle();
+	return Sentry.withScope((scope) => {
+		if (installId) {
+			scope.setTag('install_id', installId);
+		}
 
-					Sentry.setHttpStatus(span, response.status);
+		return Sentry.continueTrace(
+			{
+				sentryTrace: request.headers.get('sentry-trace') ?? undefined,
+				baggage: request.headers.get('baggage'),
+			},
+			async () =>
+				Sentry.startSpan({ name, op: 'http.server' }, async (span) => {
+					try {
+						const response = await handle();
 
-					return response;
-				} catch (error) {
-					Sentry.captureException(error);
-					throw error;
-				}
-			}),
-	);
+						Sentry.setHttpStatus(span, response.status);
+
+						return response;
+					} catch (error) {
+						Sentry.captureException(error);
+						throw error;
+					}
+				}),
+		);
+	});
 }
 
 /**
