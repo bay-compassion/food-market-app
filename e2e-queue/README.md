@@ -63,10 +63,11 @@ shares one Postgres session. Fixture commands use a private Unix socket, not app
 PGlite exercises real SQL and transactions, but does not replace production-Postgres concurrency
 or deployment-platform testing.
 
-## Failures and CI
+## Failures
 
-The separate `queue-e2e` GitHub Actions job runs the same command. Diagnostics are uploaded for
-seven days:
+The rig does not run in CI: it is slow, and running it on every pull request cost more Actions
+minutes than it was worth. Run it by hand before merging a change to the queue. A failed run leaves
+its diagnostics here:
 
 - `test-results/queue-server.log`: Netlify startup and function logs.
 - `test-results/queue/`: failure screenshots and traces, including each guest context.
