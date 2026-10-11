@@ -1,11 +1,14 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=aeab58a91528, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=d78ec8ed7a2c, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=9968d19401b1, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=7fbf78c4dbb5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=19092f65c690, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=4b7bae62a511 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=0bc61c69f8ea, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=d78ec8ed7a2c, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=130e8d055419, src/stores/visit.store.ts=6d008e0477cd, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=7fbf78c4dbb5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=19092f65c690, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=ab6ad0a5a3f9 -->
 
 # Guest journey
 
 The path a guest takes from opening the app to being served, and the state their visit is in at each
 step. Language selection lives in the app bar on every visit; a first-time visitor also sees
 `GuestLanguageHero`, a one-time introduction in `GuestView` that `RootStore.chooseLanguage` retires
-on their first choice from either picker, backed by the root's shared `TranslationStore`; the registration form, status
+on their first choice from either picker, backed by the root's shared `TranslationStore`. That first
+choice also offers the guided tour (`GuestTourStore`), which points at whatever the home screen is
+showing and tells the market-day steps it cannot show; the app bar menu replays it. The tour and its
+menu item exist only while the `guest-tour` LaunchDarkly flag is on, which it is not by default. The registration form, status
 screen, and countdown are in
 [`src/components/guest-view/GuestView.tsx`](../src/components/guest-view/GuestView.tsx) (route `/`),
 with the identity-only sign-up screen in its own
@@ -44,7 +47,11 @@ flowchart TD
     open([Guest opens the app]) --> seen{Been here before?}
     seen -- no --> pick[Choose a language]
     seen -- yes --> saved[Opens in the saved language]
-    pick --> saved
+    pick --> tourFlag{guest-tour<br/>flag on?}
+    tourFlag -- no --> saved
+    tourFlag -- yes --> tour[Guided tour of the home screen<br/>and the market day; skip anytime.<br/>Finishing or skipping retires it]
+    tour --> saved
+    saved -. "Take the tour" in top nav menu .-> tour
 
     saved --> hasIdentity{Saved device token<br/>and local profile?}
     hasIdentity -- no device token --> activeSession

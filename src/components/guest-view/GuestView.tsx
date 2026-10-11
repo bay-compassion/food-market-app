@@ -1,6 +1,6 @@
 import { CircularProgress } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { Suspense, use, useState } from 'react';
+import { lazy, Suspense, use, useEffect, useState } from 'react';
 
 import { RegistrationOpenState } from '@/components/guest-view/states/RegistrationOpenState.tsx';
 import { visitTakesPrecedence } from '@/services/guest-visit-presentation.ts';
@@ -8,6 +8,7 @@ import { SessionStatusEnum } from '@/services/sessionStateMachine.ts';
 
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
+import { useGuestTourEnabled } from '../hooks/use-guest-tour-enabled';
 import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
@@ -15,6 +16,8 @@ import { GuestServiceState } from './GuestServiceState';
 import { GuestStatusCard } from './GuestStatusCard';
 import { GuestVisitState } from './GuestVisitState';
 import { GuestIdentityCard } from './identity/GuestIdentityCard';
+
+const GuestTour = lazy(() => import('./tour/GuestTour'));
 
 /** The guest home screen (`/`): identity, language, and whichever card the market status calls for. */
 export const GuestView = observer(function GuestView() {
@@ -51,7 +54,17 @@ export const GuestView = observer(function GuestView() {
 const MarketStatus = observer(function MarketStatus({ status }: { status: Promise<void> }) {
 	use(status);
 
-	const { guest, session, visit } = useRootStore();
+	const rootStore = useRootStore();
+	const { guest, session, tour, visit } = rootStore;
+	const tourEnabled = useGuestTourEnabled();
+
+	// Also re-run when the flag resolves on after LaunchDarkly loads, which may follow the first
+	// render.
+	useEffect(() => {
+		if (tourEnabled) {
+			rootStore.resumeTour();
+		}
+	}, [rootStore, tourEnabled]);
 
 	/**
 	 * An identified guest needs the card to establish whose lottery-only form is shown. When market
@@ -104,6 +117,12 @@ const MarketStatus = observer(function MarketStatus({ status }: { status: Promis
 		<>
 			{showIdentityCard ? <GuestIdentityCard /> : null}
 			{render()}
+			{/* Mounted only once the market status is in, so the cards the tour points at are too. */}
+			{tourEnabled && tour.isRunning ? (
+				<Suspense fallback={null}>
+					<GuestTour />
+				</Suspense>
+			) : null}
 		</>
 	);
 });

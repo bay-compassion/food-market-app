@@ -76,11 +76,50 @@ export interface VisitStatusTranslations {
 	updateError: string;
 }
 
+/** One step of the guided tour: an optional time of day, what happens, and what to do. */
+export interface GuestTourStepTranslations {
+	time?: string;
+	title: string;
+	body: string;
+}
+
+/**
+ * The guided tour a first-time guest is offered after choosing a language, replayable from the
+ * menu. A step's `body` may name another control by its own label: `{submit}` is the form's submit
+ * button, `{action}` the text-updates button, and `{help}` the help page.
+ */
+export interface GuestTourTranslations {
+	/** `{current}` and `{total}` are step numbers. */
+	progress: string;
+	/** The first step's button, which starts the tour proper. */
+	start: string;
+	next: string;
+	back: string;
+	skip: string;
+	/** The last step's button. */
+	done: string;
+	/** Accessible name of the tour dialog's close button, which ends the tour. */
+	close: string;
+	steps: {
+		welcome: GuestTourStepTranslations;
+		language: GuestTourStepTranslations;
+		countdown: GuestTourStepTranslations;
+		form: GuestTourStepTranslations;
+		textUpdates: GuestTourStepTranslations;
+		lottery: GuestTourStepTranslations;
+		line: GuestTourStepTranslations;
+		turn: GuestTourStepTranslations;
+		help: GuestTourStepTranslations;
+		replay: GuestTourStepTranslations;
+	};
+}
+
 export interface GuestViewTranslations {
 	/** Under the first-visit language picker: the choice is not final, and where to change it. */
 	languageHint: string;
 	/** Leads into the link to the help page, for a guest the home screen leaves unsure. */
 	helpPrompt: string;
+	tour: GuestTourTranslations;
 	forms: {
 		informationLegend: string;
 		lotteryLegend: string;
@@ -233,6 +272,8 @@ export interface AppBarTranslations {
 	deviceIdCopied: string;
 	deviceIdDialogTitle: string;
 	showDeviceId: string;
+	/** The menu item that replays the guided tour. */
+	takeTour: string;
 	feedbackForm: FeedbackFormTranslations;
 }
 
@@ -359,6 +400,7 @@ export const translations = {
 			deviceIdCopied: 'Copied',
 			deviceIdDialogTitle: 'Device ID',
 			showDeviceId: 'Show Device ID',
+			takeTour: 'Take the tour',
 			feedbackForm: {
 				formTitle: 'Send feedback',
 				nameLabel: 'Name (optional)',
@@ -378,6 +420,60 @@ export const translations = {
 		guestView: {
 			languageHint: 'You can change your language anytime at the top of the screen.',
 			helpPrompt: 'Not sure what to do?',
+			tour: {
+				progress: '{current} of {total}',
+				start: 'Show me',
+				next: 'Next',
+				back: 'Back',
+				skip: 'Skip tour',
+				done: 'Done',
+				close: 'Close tour',
+				steps: {
+					welcome: {
+						title: 'Welcome! Here’s how it works',
+						body: 'There’s no rush. Sign-up stays open for 15 minutes, and signing up early doesn’t change your chances. You can skip this tour and come back to it anytime from the menu.',
+					},
+					language: {
+						title: 'Your language',
+						body: 'Tap here to change your language anytime. The app remembers it for next time.',
+					},
+					countdown: {
+						time: '10:30 AM',
+						title: 'Sign-up opens',
+						body: 'Every Saturday at 10:30 AM, sign-up opens for 15 minutes. You can sign up from anywhere, even at home. While it’s open, a timer on this screen shows how much time is left.',
+					},
+					form: {
+						title: 'Fill in the form',
+						body: 'Enter your first and last name (please, not just initials), your cell phone, and a few questions about your household. Then tap “{submit}”.',
+					},
+					textUpdates: {
+						title: 'Get text updates',
+						body: 'Once you’re signed up, tap “{action}” on this screen. It’s optional, but without it you won’t get any texts.',
+					},
+					lottery: {
+						time: '10:45 AM',
+						title: 'The lottery draws',
+						body: 'Everyone has the same chance. This screen shows whether you got a number. Not everyone gets a number each week.',
+					},
+					line: {
+						title: 'Your place in line',
+						body: 'If you got a number, head to the market. This screen shows your place in line, like this, and updates on its own.',
+					},
+					turn: {
+						time: '11:30 AM',
+						title: 'Shopping begins',
+						body: 'When it’s your turn, this screen will say so, and we’ll text you if you signed up for texts. Come to the front door, and bring the phone you signed up on — we can’t accept screenshots.',
+					},
+					help: {
+						title: 'Need a reminder?',
+						body: '“{help}” has every step. You can also ask any volunteer.',
+					},
+					replay: {
+						title: 'See this again',
+						body: 'You can take this tour again anytime from this menu.',
+					},
+				},
+			},
 			forms: {
 				informationLegend: 'Your information',
 				lotteryLegend: 'Lottery entry details',
@@ -685,6 +781,7 @@ export const translations = {
 			deviceIdCopied: 'Copiado',
 			deviceIdDialogTitle: 'ID del dispositivo',
 			showDeviceId: 'Mostrar ID del dispositivo',
+			takeTour: 'Ver el recorrido',
 			feedbackForm: {
 				formTitle: 'Enviar comentarios',
 				nameLabel: 'Nombre (opcional)',
@@ -705,6 +802,60 @@ export const translations = {
 			languageHint:
 				'Puede cambiar el idioma en cualquier momento en la parte superior de la pantalla.',
 			helpPrompt: '¿No sabe qué hacer?',
+			tour: {
+				progress: '{current} de {total}',
+				start: 'Muéstreme',
+				next: 'Siguiente',
+				back: 'Atrás',
+				skip: 'Saltar recorrido',
+				done: 'Listo',
+				close: 'Cerrar recorrido',
+				steps: {
+					welcome: {
+						title: '¡Bienvenido! Así funciona',
+						body: 'No hay prisa. La inscripción está abierta 15 minutos, e inscribirse temprano no cambia sus posibilidades. Puede saltar este recorrido y volver a verlo cuando quiera desde el menú.',
+					},
+					language: {
+						title: 'Su idioma',
+						body: 'Toque aquí para cambiar su idioma cuando quiera. La app lo recordará la próxima vez.',
+					},
+					countdown: {
+						time: '10:30 a. m.',
+						title: 'Abre la inscripción',
+						body: 'Todos los sábados a las 10:30 a. m., la inscripción abre por 15 minutos. Puede inscribirse desde cualquier lugar, incluso desde casa. Mientras está abierta, un reloj en esta pantalla muestra cuánto tiempo queda.',
+					},
+					form: {
+						title: 'Llene el formulario',
+						body: 'Escriba su nombre y apellido (por favor, no solo iniciales), su celular y unas preguntas sobre su hogar. Luego toque “{submit}”.',
+					},
+					textUpdates: {
+						title: 'Reciba mensajes de texto',
+						body: 'Después de inscribirse, toque “{action}” en esta pantalla. Es opcional, pero sin esto no recibirá mensajes de texto.',
+					},
+					lottery: {
+						time: '10:45 a. m.',
+						title: 'Se hace el sorteo',
+						body: 'Todos tienen la misma oportunidad. Esta pantalla muestra si obtuvo un número. No todos obtienen número cada semana.',
+					},
+					line: {
+						title: 'Su lugar en la fila',
+						body: 'Si obtuvo un número, venga al mercado. Esta pantalla muestra su lugar en la fila, así, y se actualiza sola.',
+					},
+					turn: {
+						time: '11:30 a. m.',
+						title: 'Empiezan las compras',
+						body: 'Cuando sea su turno, esta pantalla se lo dirá, y le enviaremos un texto si se inscribió para recibirlos. Acérquese a la entrada y traiga el teléfono con el que se inscribió; no aceptamos capturas de pantalla.',
+					},
+					help: {
+						title: '¿Necesita recordarlo?',
+						body: '“{help}” tiene todos los pasos. También puede preguntar a cualquier voluntario.',
+					},
+					replay: {
+						title: 'Véalo de nuevo',
+						body: 'Puede volver a ver este recorrido cuando quiera desde este menú.',
+					},
+				},
+			},
 			forms: {
 				informationLegend: 'Su información',
 				lotteryLegend: 'Datos de inscripción al sorteo',
@@ -1016,6 +1167,7 @@ export const translations = {
 			deviceIdCopied: 'کپی شد',
 			deviceIdDialogTitle: 'شناسه دستگاه',
 			showDeviceId: 'نمایش شناسه دستگاه',
+			takeTour: 'دیدن راهنمای گام‌به‌گام',
 			feedbackForm: {
 				formTitle: 'ارسال بازخورد',
 				nameLabel: 'نام (اختیاری)',
@@ -1035,6 +1187,60 @@ export const translations = {
 		guestView: {
 			languageHint: 'هر زمان بخواهید می‌توانید زبان را از بالای صفحه تغییر دهید.',
 			helpPrompt: 'نمی‌دانید چه کار کنید؟',
+			tour: {
+				progress: '{current} از {total}',
+				start: 'نشانم بده',
+				next: 'بعدی',
+				back: 'قبلی',
+				skip: 'رد شدن از راهنما',
+				done: 'تمام',
+				close: 'بستن راهنما',
+				steps: {
+					welcome: {
+						title: 'خوش آمدید! این‌طور کار می‌کند',
+						body: 'عجله نکنید. ثبت‌نام ۱۵ دقیقه باز است و ثبت‌نام زودتر شانس شما را تغییر نمی‌دهد. می‌توانید از این راهنما رد شوید و هر زمان از منو دوباره آن را ببینید.',
+					},
+					language: {
+						title: 'زبان شما',
+						body: 'هر زمان خواستید برای تغییر زبان اینجا بزنید. اپ آن را برای دفعه بعد به خاطر می‌سپارد.',
+					},
+					countdown: {
+						time: '۱۰:۳۰ صبح',
+						title: 'ثبت‌نام باز می‌شود',
+						body: 'هر شنبه ساعت ۱۰:۳۰ صبح، ثبت‌نام برای ۱۵ دقیقه باز می‌شود. از هر جایی، حتی خانه، می‌توانید ثبت‌نام کنید. تا وقتی باز است، یک زمان‌سنج در این صفحه زمان باقی‌مانده را نشان می‌دهد.',
+					},
+					form: {
+						title: 'فرم را پر کنید',
+						body: 'نام و نام خانوادگی کامل (لطفاً نه فقط حروف اول)، تلفن همراه و پاسخ چند سؤال درباره خانوار را وارد کنید. سپس روی «{submit}» بزنید.',
+					},
+					textUpdates: {
+						title: 'دریافت پیامک',
+						body: 'بعد از ثبت‌نام، در این صفحه روی «{action}» بزنید. اختیاری است، اما بدون آن پیامکی نمی‌گیرید.',
+					},
+					lottery: {
+						time: '۱۰:۴۵ صبح',
+						title: 'قرعه‌کشی انجام می‌شود',
+						body: 'شانس همه برابر است. این صفحه نشان می‌دهد شماره گرفته‌اید یا نه. هر هفته همه شماره نمی‌گیرند.',
+					},
+					line: {
+						title: 'جایگاه شما در صف',
+						body: 'اگر شماره گرفتید، به بازار بیایید. این صفحه جایگاهتان در صف را این‌طور نشان می‌دهد و خودش به‌روز می‌شود.',
+					},
+					turn: {
+						time: '۱۱:۳۰ صبح',
+						title: 'شروع خرید',
+						body: 'وقتی نوبتتان شد، این صفحه نشان می‌دهد و اگر برای پیامک ثبت‌نام کرده باشید، پیامک هم می‌فرستیم. به ورودی بیایید و همان تلفنی را که با آن ثبت‌نام کردید بیاورید — اسکرین‌شات پذیرفته نمی‌شود.',
+					},
+					help: {
+						title: 'یادآوری لازم دارید؟',
+						body: 'همه مراحل در «{help}» هست. می‌توانید از هر داوطلبی هم بپرسید.',
+					},
+					replay: {
+						title: 'دوباره ببینید',
+						body: 'هر زمان خواستید می‌توانید این راهنما را از همین منو دوباره ببینید.',
+					},
+				},
+			},
 			forms: {
 				informationLegend: 'اطلاعات شما',
 				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
@@ -1340,6 +1546,7 @@ export const translations = {
 			deviceIdCopied: 'Nakopya',
 			deviceIdDialogTitle: 'ID ng Device',
 			showDeviceId: 'Ipakita ang Device ID',
+			takeTour: 'Panoorin ang tour',
 			feedbackForm: {
 				formTitle: 'Magpadala ng puna',
 				nameLabel: 'Pangalan (opsyonal)',
@@ -1359,6 +1566,60 @@ export const translations = {
 		guestView: {
 			languageHint: 'Maaari mong palitan ang wika anumang oras sa itaas ng screen.',
 			helpPrompt: 'Hindi sigurado kung ano ang gagawin?',
+			tour: {
+				progress: '{current} sa {total}',
+				start: 'Ipakita',
+				next: 'Susunod',
+				back: 'Bumalik',
+				skip: 'Laktawan ang tour',
+				done: 'Tapos na',
+				close: 'Isara ang tour',
+				steps: {
+					welcome: {
+						title: 'Maligayang pagdating! Ganito ito gumagana',
+						body: 'Walang pagmamadali. Bukas ang sign-up nang 15 minuto, at hindi nagbabago ang tsansa ninyo kung maaga kayong mag-sign up. Maaari ninyong laktawan ang tour na ito at balikan anumang oras mula sa menu.',
+					},
+					language: {
+						title: 'Ang inyong wika',
+						body: 'Pindutin dito para palitan ang wika anumang oras. Tatandaan ito ng app sa susunod.',
+					},
+					countdown: {
+						time: '10:30 AM',
+						title: 'Bukas na ang sign-up',
+						body: 'Tuwing Sabado nang 10:30 AM, bukas ang sign-up nang 15 minuto. Maaari kayong mag-sign up kahit saan, kahit sa bahay. Habang bukas ito, ipinapakita ng timer sa screen na ito kung gaano katagal pa.',
+					},
+					form: {
+						title: 'Sagutan ang form',
+						body: 'Ilagay ang pangalan at apelyido (hindi lang initials, pakiusap), cell phone, at ilang tanong tungkol sa sambahayan. Pagkatapos, pindutin ang “{submit}”.',
+					},
+					textUpdates: {
+						title: 'Tumanggap ng text',
+						body: 'Pagkatapos mag-sign up, pindutin ang “{action}” sa screen na ito. Opsyonal ito, pero kung wala ito, hindi kayo makakatanggap ng text.',
+					},
+					lottery: {
+						time: '10:45 AM',
+						title: 'Bubunutin ang lottery',
+						body: 'Pareho ang tsansa ng lahat. Ipapakita ng screen na ito kung may numero kayo. Hindi lahat may numero bawat linggo.',
+					},
+					line: {
+						title: 'Ang puwesto ninyo sa pila',
+						body: 'Kung may numero kayo, pumunta na sa market. Ipinapakita ng screen na ito ang puwesto ninyo sa pila, gaya nito, at kusa itong nag-a-update.',
+					},
+					turn: {
+						time: '11:30 AM',
+						title: 'Simula ng pamimili',
+						body: 'Kapag turno na ninyo, sasabihin ito ng screen, at ite-text namin kayo kung nag-sign up kayo sa text. Pumunta sa harapang pinto at dalhin ang phone na ginamit ninyo sa pag-sign up — hindi tinatanggap ang screenshot.',
+					},
+					help: {
+						title: 'Kailangan ng paalala?',
+						body: 'Nasa “{help}” ang bawat hakbang. Maaari rin kayong magtanong sa kahit sinong volunteer.',
+					},
+					replay: {
+						title: 'Panoorin muli',
+						body: 'Maaari ninyong panoorin muli ang tour na ito anumang oras mula sa menu na ito.',
+					},
+				},
+			},
 			forms: {
 				informationLegend: 'Iyong impormasyon',
 				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
@@ -1671,6 +1932,7 @@ export const translations = {
 			deviceIdCopied: 'Đã sao chép',
 			deviceIdDialogTitle: 'Mã thiết bị',
 			showDeviceId: 'Hiển thị mã thiết bị',
+			takeTour: 'Xem hướng dẫn',
 			feedbackForm: {
 				formTitle: 'Gửi góp ý',
 				nameLabel: 'Tên (không bắt buộc)',
@@ -1690,6 +1952,60 @@ export const translations = {
 		guestView: {
 			languageHint: 'Bạn có thể đổi ngôn ngữ bất cứ lúc nào ở phía trên màn hình.',
 			helpPrompt: 'Chưa biết phải làm gì?',
+			tour: {
+				progress: '{current} / {total}',
+				start: 'Xem ngay',
+				next: 'Tiếp',
+				back: 'Quay lại',
+				skip: 'Bỏ qua hướng dẫn',
+				done: 'Xong',
+				close: 'Đóng hướng dẫn',
+				steps: {
+					welcome: {
+						title: 'Chào mừng! Cách thức hoạt động',
+						body: 'Không cần vội. Đăng ký mở trong 15 phút, và đăng ký sớm không thay đổi cơ hội của bạn. Bạn có thể bỏ qua hướng dẫn này và xem lại bất cứ lúc nào từ trình đơn.',
+					},
+					language: {
+						title: 'Ngôn ngữ của bạn',
+						body: 'Bấm vào đây để đổi ngôn ngữ bất cứ lúc nào. Ứng dụng sẽ nhớ cho lần sau.',
+					},
+					countdown: {
+						time: '10:30 sáng',
+						title: 'Mở đăng ký',
+						body: 'Mỗi thứ Bảy lúc 10:30 sáng, đăng ký mở trong 15 phút. Bạn có thể đăng ký từ bất cứ đâu, kể cả ở nhà. Trong lúc mở, đồng hồ trên màn hình này cho biết còn bao nhiêu thời gian.',
+					},
+					form: {
+						title: 'Điền vào mẫu đơn',
+						body: 'Nhập đầy đủ họ và tên (xin đừng chỉ ghi chữ viết tắt), số điện thoại di động và trả lời vài câu hỏi về hộ gia đình. Sau đó bấm “{submit}”.',
+					},
+					textUpdates: {
+						title: 'Nhận tin nhắn cập nhật',
+						body: 'Sau khi đăng ký, bấm “{action}” trên màn hình này. Không bắt buộc, nhưng nếu không bấm, bạn sẽ không nhận được tin nhắn nào.',
+					},
+					lottery: {
+						time: '10:45 sáng',
+						title: 'Xổ số',
+						body: 'Ai cũng có cơ hội như nhau. Màn hình này cho biết bạn có số hay không. Không phải ai cũng có số mỗi tuần.',
+					},
+					line: {
+						title: 'Vị trí của bạn trong hàng',
+						body: 'Nếu có số, hãy đến chợ. Màn hình này cho biết vị trí của bạn trong hàng như thế này, và tự cập nhật.',
+					},
+					turn: {
+						time: '11:30 sáng',
+						title: 'Bắt đầu mua sắm',
+						body: 'Khi đến lượt bạn, màn hình này sẽ báo, và chúng tôi sẽ nhắn tin nếu bạn đã đăng ký nhận tin nhắn. Hãy đến cửa chính và mang theo điện thoại bạn đã dùng để đăng ký — chúng tôi không nhận ảnh chụp màn hình.',
+					},
+					help: {
+						title: 'Cần nhắc lại?',
+						body: '“{help}” có đầy đủ các bước. Bạn cũng có thể hỏi bất kỳ tình nguyện viên nào.',
+					},
+					replay: {
+						title: 'Xem lại',
+						body: 'Bạn có thể xem lại hướng dẫn này bất cứ lúc nào từ trình đơn này.',
+					},
+				},
+			},
 			forms: {
 				informationLegend: 'Thông tin của bạn',
 				lotteryLegend: 'Thông tin tham gia xổ số',
@@ -1994,6 +2310,7 @@ export const translations = {
 			deviceIdCopied: '已复制',
 			deviceIdDialogTitle: '设备 ID',
 			showDeviceId: '显示设备 ID',
+			takeTour: '查看使用导览',
 			feedbackForm: {
 				formTitle: '发送反馈',
 				nameLabel: '姓名（选填）',
@@ -2012,6 +2329,60 @@ export const translations = {
 		guestView: {
 			languageHint: '您可以随时在屏幕顶部更改语言。',
 			helpPrompt: '不知道该怎么做？',
+			tour: {
+				progress: '第 {current} 步，共 {total} 步',
+				start: '开始',
+				next: '下一步',
+				back: '上一步',
+				skip: '跳过导览',
+				done: '完成',
+				close: '关闭导览',
+				steps: {
+					welcome: {
+						title: '欢迎！使用方法如下',
+						body: '不用着急。登记开放 15 分钟，早登记不会提高您的机会。您可以跳过本导览，之后随时从菜单再次查看。',
+					},
+					language: {
+						title: '您的语言',
+						body: '随时点击这里更改语言。应用会记住，下次无需再选。',
+					},
+					countdown: {
+						time: '上午 10:30',
+						title: '登记开始',
+						body: '每周六上午 10:30 开放登记，持续 15 分钟。您在任何地方都能登记，在家也行。登记开放期间，屏幕上的计时器会显示剩余时间。',
+					},
+					form: {
+						title: '填写表格',
+						body: '请填写您的完整姓名（不要只写首字母）、手机号码，并回答几个关于您家庭的问题。然后点击“{submit}”。',
+					},
+					textUpdates: {
+						title: '接收短信通知',
+						body: '登记后，请在此屏幕上点击“{action}”。这是可选的，但如果不点击，您将不会收到任何短信。',
+					},
+					lottery: {
+						time: '上午 10:45',
+						title: '抽签开始',
+						body: '每个人机会均等。此屏幕会显示您是否抽中号码。并非每个人每周都能抽中。',
+					},
+					line: {
+						title: '您的排队位置',
+						body: '如果抽中号码，请前往市场。此屏幕会像这样显示您的排队位置，并会自动更新。',
+					},
+					turn: {
+						time: '上午 11:30',
+						title: '开始购物',
+						body: '轮到您时，此屏幕会显示，如果您登记了短信通知，我们也会发短信给您。请到正门来，并携带您登记时使用的手机——不接受截图。',
+					},
+					help: {
+						title: '需要回顾？',
+						body: '“{help}”里有每一个步骤。您也可以询问任何一位志愿者。',
+					},
+					replay: {
+						title: '再看一次',
+						body: '您随时可以从这个菜单再次查看本导览。',
+					},
+				},
+			},
 			forms: {
 				informationLegend: '您的信息',
 				lotteryLegend: '抽签登记信息',
@@ -2298,6 +2669,7 @@ export const translations = {
 			deviceIdCopied: 'تم النسخ',
 			deviceIdDialogTitle: 'معرّف الجهاز',
 			showDeviceId: 'عرض معرّف الجهاز',
+			takeTour: 'شاهد الجولة التعريفية',
 			feedbackForm: {
 				formTitle: 'إرسال ملاحظات',
 				nameLabel: 'الاسم (اختياري)',
@@ -2317,6 +2689,60 @@ export const translations = {
 		guestView: {
 			languageHint: 'يمكنك تغيير اللغة في أي وقت من أعلى الشاشة.',
 			helpPrompt: 'لست متأكدًا مما عليك فعله؟',
+			tour: {
+				progress: '{current} من {total}',
+				start: 'أرني',
+				next: 'التالي',
+				back: 'السابق',
+				skip: 'تخطَّ الجولة',
+				done: 'تم',
+				close: 'أغلق الجولة',
+				steps: {
+					welcome: {
+						title: 'مرحبًا! هكذا يعمل',
+						body: 'لا داعي للعجلة. يبقى التسجيل مفتوحًا 15 دقيقة، والتسجيل المبكر لا يغيّر فرصتك. يمكنك تخطي هذه الجولة والعودة إليها في أي وقت من القائمة.',
+					},
+					language: {
+						title: 'لغتك',
+						body: 'اضغط هنا لتغيير لغتك في أي وقت. سيتذكرها التطبيق في المرة القادمة.',
+					},
+					countdown: {
+						time: '10:30 صباحًا',
+						title: 'يبدأ التسجيل',
+						body: 'كل يوم سبت الساعة 10:30 صباحًا، يُفتح التسجيل لمدة 15 دقيقة. يمكنك التسجيل من أي مكان، حتى من المنزل. أثناء فتحه، يعرض مؤقت على هذه الشاشة الوقت المتبقي.',
+					},
+					form: {
+						title: 'املأ النموذج',
+						body: 'أدخل اسمك الأول واسم العائلة (من فضلك، لا الأحرف الأولى فقط)، ورقم هاتفك المحمول، وأجب عن بعض الأسئلة حول أسرتك. ثم اضغط «{submit}».',
+					},
+					textUpdates: {
+						title: 'تلقَّ الرسائل النصية',
+						body: 'بعد التسجيل، اضغط «{action}» على هذه الشاشة. هذا اختياري، لكن بدونه لن تصلك أي رسائل نصية.',
+					},
+					lottery: {
+						time: '10:45 صباحًا',
+						title: 'تُجرى القرعة',
+						body: 'للجميع الفرصة نفسها. تعرض هذه الشاشة إن حصلت على رقم. لا يحصل الجميع على رقم كل أسبوع.',
+					},
+					line: {
+						title: 'مكانك في الطابور',
+						body: 'إن حصلت على رقم، توجّه إلى السوق. تعرض هذه الشاشة مكانك في الطابور هكذا، وتتحدّث من تلقاء نفسها.',
+					},
+					turn: {
+						time: '11:30 صباحًا',
+						title: 'بدء التسوق',
+						body: 'عندما يحين دورك، ستخبرك هذه الشاشة، وسنرسل لك رسالة نصية إن سجّلت لتلقيها. توجّه إلى المدخل وأحضر الهاتف الذي سجّلت به — لا نقبل لقطات الشاشة.',
+					},
+					help: {
+						title: 'تحتاج إلى تذكير؟',
+						body: 'في «{help}» كل الخطوات. يمكنك أيضًا سؤال أي متطوع.',
+					},
+					replay: {
+						title: 'شاهدها مرة أخرى',
+						body: 'يمكنك مشاهدة هذه الجولة مرة أخرى في أي وقت من هذه القائمة.',
+					},
+				},
+			},
 			forms: {
 				informationLegend: 'معلوماتك',
 				lotteryLegend: 'تفاصيل التسجيل في القرعة',
@@ -2617,6 +3043,7 @@ export const translations = {
 			deviceIdCopied: 'Copié',
 			deviceIdDialogTitle: 'Identifiant de l’appareil',
 			showDeviceId: 'Afficher l’identifiant de l’appareil',
+			takeTour: 'Voir la visite guidée',
 			feedbackForm: {
 				formTitle: 'Envoyer un commentaire',
 				nameLabel: 'Nom (facultatif)',
@@ -2636,6 +3063,60 @@ export const translations = {
 		guestView: {
 			languageHint: 'Vous pouvez changer de langue à tout moment en haut de l’écran.',
 			helpPrompt: 'Vous ne savez pas quoi faire ?',
+			tour: {
+				progress: '{current} sur {total}',
+				start: 'Montrez-moi',
+				next: 'Suivant',
+				back: 'Retour',
+				skip: 'Passer la visite',
+				done: 'Terminé',
+				close: 'Fermer la visite',
+				steps: {
+					welcome: {
+						title: 'Bienvenue ! Voici comment ça marche',
+						body: 'Rien ne presse. L’inscription reste ouverte 15 minutes, et s’inscrire tôt ne change pas vos chances. Vous pouvez passer cette visite et la revoir à tout moment depuis le menu.',
+					},
+					language: {
+						title: 'Votre langue',
+						body: 'Touchez ici pour changer de langue à tout moment. L’app s’en souviendra la prochaine fois.',
+					},
+					countdown: {
+						time: '10 h 30',
+						title: 'L’inscription ouvre',
+						body: 'Chaque samedi à 10 h 30, l’inscription ouvre pendant 15 minutes. Vous pouvez vous inscrire d’où vous voulez, même de chez vous. Pendant ce temps, un minuteur sur cet écran affiche le temps restant.',
+					},
+					form: {
+						title: 'Remplissez le formulaire',
+						body: 'Indiquez vos prénom et nom (pas seulement les initiales, s’il vous plaît), votre portable et quelques questions sur votre foyer. Puis touchez « {submit} ».',
+					},
+					textUpdates: {
+						title: 'Recevez des SMS',
+						body: 'Une fois inscrit, touchez « {action} » sur cet écran. C’est facultatif, mais sans cela vous ne recevrez aucun SMS.',
+					},
+					lottery: {
+						time: '10 h 45',
+						title: 'Le tirage au sort',
+						body: 'Chacun a la même chance. Cet écran indique si vous avez obtenu un numéro. Tout le monde n’en a pas chaque semaine.',
+					},
+					line: {
+						title: 'Votre place dans la file',
+						body: 'Si vous avez un numéro, venez au marché. Cet écran affiche votre place dans la file, comme ceci, et se met à jour tout seul.',
+					},
+					turn: {
+						time: '11 h 30',
+						title: 'Début des courses',
+						body: 'À votre tour, cet écran l’indiquera, et nous vous enverrons un SMS si vous vous êtes inscrit aux SMS. Présentez-vous à l’entrée avec le téléphone utilisé pour l’inscription — les captures d’écran ne sont pas acceptées.',
+					},
+					help: {
+						title: 'Besoin d’un rappel ?',
+						body: '« {help} » reprend toutes les étapes. Vous pouvez aussi demander à un bénévole.',
+					},
+					replay: {
+						title: 'Revoir la visite',
+						body: 'Vous pouvez revoir cette visite à tout moment depuis ce menu.',
+					},
+				},
+			},
 			forms: {
 				informationLegend: 'Vos informations',
 				lotteryLegend: 'Détails de l’inscription au tirage au sort',

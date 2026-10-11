@@ -6,6 +6,7 @@ import { StorageService } from '../services/storage.service.ts';
 import { AdminStore, type AdminStoreOptions } from './admin.store.ts';
 import { ConfirmationStore } from './confirmation.store.ts';
 import { GuestClaimStore, type GuestClaimStoreOptions } from './guest-claim.store.ts';
+import { GuestTourStore } from './guest-tour.store.ts';
 import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore, type MarketSessionStoreOptions } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
@@ -37,6 +38,7 @@ export class RootStore {
 	readonly notifications: NotificationStore;
 	readonly registration: RegistrationStore;
 	readonly session: MarketSessionStore;
+	readonly tour: GuestTourStore;
 	readonly visit: VisitStore;
 	readonly translations: TranslationStore;
 	readonly previewName: string | undefined;
@@ -52,6 +54,7 @@ export class RootStore {
 		this.guest = new GuestStore({ storage: this.storage });
 		this.guest.notificationsDisabled = !!options.previewName;
 		this.registration = new RegistrationStore(this.guest, { storage: this.storage });
+		this.tour = new GuestTourStore(this.storage);
 		this.session = new MarketSessionStore({
 			requestHeaders: () => this.requestHeaders(),
 			...options.session,
@@ -99,6 +102,17 @@ export class RootStore {
 			this.translations.setLanguage(language);
 			this.guest.markAsReturningVisitor();
 		});
+	}
+
+	/**
+	 * Picks the guided tour up again for a guest who chose a language but left before finishing or
+	 * skipping it. A first-time guest is offered it by their language choice instead, once the
+	 * introduction has folded away (see `use-language-choice.ts`).
+	 */
+	resumeTour(): void {
+		if (this.guest.isReturningVisitor) {
+			this.tour.offer();
+		}
 	}
 
 	start(): void {

@@ -6,6 +6,8 @@ export enum StorageKey {
 	GUEST_HOUSEHOLD = 'bay-compassion.guest-household',
 	LOCALE = 'bay-compassion.locale',
 	RETURNING_VISITOR = 'bay-compassion.returning-visitor',
+	/** Set once a guest has finished or skipped the guided tour, so it is offered only once. */
+	GUEST_TOUR_SEEN = 'bay-compassion.guest-tour-seen',
 }
 
 interface StorageKeyMap {
@@ -14,6 +16,7 @@ interface StorageKeyMap {
 	[StorageKey.GUEST_HOUSEHOLD]: unknown;
 	[StorageKey.LOCALE]: string;
 	[StorageKey.RETURNING_VISITOR]: boolean;
+	[StorageKey.GUEST_TOUR_SEEN]: boolean;
 }
 
 export class StorageService {

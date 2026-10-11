@@ -109,4 +109,50 @@ describe('RootStore', () => {
 		expect(store.translations.locale).toBe('fa');
 		expect(store.guest.isReturningVisitor).toBe(true);
 	});
+
+	it('resumes an unfinished tour for a returning visitor', () => {
+		// Arrange
+		const storage = new StorageService(window.localStorage);
+
+		storage.set(StorageKey.RETURNING_VISITOR, true);
+		const store = new RootStore({ storage });
+
+		// Act
+		store.resumeTour();
+
+		// Assert
+		expect(store.tour.isRunning).toBe(true);
+	});
+
+	it('leaves the tour for a first-time visitor until they choose a language', () => {
+		// Arrange
+		const store = new RootStore({ storage: new StorageService(window.localStorage) });
+
+		// Act
+		store.resumeTour();
+
+		// Assert
+		expect(store.tour.isRunning).toBe(false);
+	});
+
+	it('does not run the tour by starting the app, which leaves that to the flag-aware screen', () => {
+		// Arrange
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+			Response.json({ event: null, questions: [], counts: {} }),
+		);
+		const storage = new StorageService(window.localStorage);
+
+		storage.set(StorageKey.RETURNING_VISITOR, true);
+		const store = new RootStore({ storage });
+
+		vi.spyOn(store.visit, 'refresh').mockResolvedValue();
+
+		// Act
+		store.start();
+
+		// Assert
+		expect(store.tour.isRunning).toBe(false);
+
+		store[Symbol.dispose]();
+	});
 });

@@ -22,6 +22,7 @@ const storageKeys = {
 	identity: 'bay-compassion.guest-identity',
 	locale: 'bay-compassion.locale',
 	returningVisitor: 'bay-compassion.returning-visitor',
+	tourSeen: 'bay-compassion.guest-tour-seen',
 } as const;
 
 const fictionalIdentity = {
@@ -76,6 +77,7 @@ async function newMobileContext(options: { identified?: boolean } = {}) {
 		({ identified, identity, keys }) => {
 			localStorage.setItem(keys.locale, JSON.stringify('en'));
 			localStorage.setItem(keys.returningVisitor, JSON.stringify(true));
+			localStorage.setItem(keys.tourSeen, JSON.stringify(true));
 
 			if (identified) {
 				localStorage.setItem(keys.deviceToken, JSON.stringify('screenshot-device-token'));
