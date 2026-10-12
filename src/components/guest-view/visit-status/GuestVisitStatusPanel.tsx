@@ -20,8 +20,11 @@ export type GuestVisitStatusPanelProps = {
 	iconClassName?: string;
 };
 
+/* One column the width of the card, so a full-width piece of `details` — the number board — is the
+   same width whatever else the state shows, rather than as wide as its widest sibling. */
 const Panel = styled.div`
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	min-height: 340px;
 	place-content: center;
 	text-align: center;

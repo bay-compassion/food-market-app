@@ -71,7 +71,8 @@ arrives.
 
 ### <StatePip state="waiting" /> Waiting
 
-The guest was selected. The card shows their current place in line and how many guests are ahead.
+The guest was selected. The card leads with their number, which never changes once given, and
+shows how the line is moving under it.
 Like a deli ticket, it is stamped with the guest's name and today's date beside a slowly blinking
 dot, so a check-in worker can tell a live screen for today from a screenshot.
 
@@ -94,7 +95,8 @@ When the guest reaches the front of the line, the card says they are next.
 ### <StatePip state="called" /> Called
 
 A team member has called the guest. The card asks them to come to the entrance, and carries the same
-name, date, and dot as the waiting card.
+name, date, and dot as the waiting card — and the same number, on a green board, for the worker at
+the entrance to check.
 
 <Story of={GuestStates.Called} />
 

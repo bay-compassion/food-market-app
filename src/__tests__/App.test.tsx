@@ -531,7 +531,9 @@ describe('App', () => {
 		await waitFor(() => expect(container.textContent).toContain('It’s your turn'));
 
 		expect(container.textContent).toContain('Please come to the entrance now.');
-		expect(container.textContent).not.toContain('Your number');
+		expect(container.textContent).not.toContain('You’re on the list!');
+		// The number stays, for the worker at the entrance to check.
+		expect(container.querySelector('.queue-number-board')?.textContent).toBe('Your number2');
 		// A called guest has nothing left to cancel.
 		expect(container.textContent).not.toContain('Cancel this visit');
 	});
