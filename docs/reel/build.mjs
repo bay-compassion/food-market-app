@@ -1,22 +1,38 @@
 /**
- * Builds the reel page from `reel.src.html`: the guest copy straight from `src/locales.ts`, the logo
- * and wordmark from `public/`, and the soundtrack, all inlined so the page is a single file.
+ * Builds a video's page from its source: the shared stage (`stage.css`, `stage.js`), the guest copy
+ * straight from `src/locales.ts`, the queue desk's copy from `src/adminLocales.ts`, the logo and
+ * wordmark from `public/`, the voiceover's timings, and the soundtrack, all inlined so the page is a
+ * single file.
  *
- * Every placeholder is replaced on its own line, so line numbers in the built page match the source
- * — which is what lets the `#dev` beat list point at lines in `reel.src.html`.
+ * Every placeholder is replaced on its own line — the stylesheet collapsed onto one, the stage
+ * script after the page's own — so line numbers in the built page match the source, which is what
+ * lets the `#dev` beat list point at lines in it.
  *
- *   node docs/reel/build.mjs
+ *   node docs/reel/build.mjs                 # the market day reel
+ *   node docs/reel/build.mjs queue-desk      # the queue desk training video
  *
- * Writes `out/market-day-reel.html` (open it in a browser) and `out/market-day-reel.artifact.html`
- * (the same page without its document shell, for publishing as a claude.ai Artifact).
+ * Writes `out/<name>.html` (open it in a browser) and `out/<name>.artifact.html` (the same page
+ * without its document shell, for publishing as a claude.ai Artifact).
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
-const here = (path) => new URL(path, import.meta.url);
-const { translations } = await import(here('../../src/locales.ts'));
+import { videoFromArgs } from './videos.mjs';
 
-/** Only the copy the reel's three screens show, per language. */
-function reelStrings(t) {
+const here = (path) => new URL(path, import.meta.url);
+const video = videoFromArgs();
+const strict = process.argv.includes('--strict');
+
+if (strict && !existsSync(here('./' + video.soundtrack))) {
+	throw new Error(
+		`Missing ${video.soundtrack}; render and commit the soundtrack before publishing.`,
+	);
+}
+
+const { translations } = await import(here('../../src/locales.ts'));
+const { adminTranslations } = await import(here('../../src/adminLocales.ts'));
+
+/** Only the copy the guest phones and the room display show, per language. */
+function guestStrings(t) {
 	const visit = t.guestView.visitStatus;
 
 	return {
@@ -53,29 +69,130 @@ function reelStrings(t) {
 	};
 }
 
+/** The queue desk's copy. Staff screens are English only. */
+function deskStrings(t, guest) {
+	return {
+		...t.queueDesk,
+		history: undefined,
+		printStation: undefined,
+		historyTitle: t.queueDesk.history.title,
+		historyKinds: t.queueDesk.history.kinds,
+		closeSession: t.closeSession,
+		confirmCloseSession: t.confirmCloseSession,
+		confirmCloseSessionOutstanding: t.confirmCloseSessionOutstanding,
+		confirmContinue: t.confirmContinue,
+		cancel: t.cancel,
+		phoneGuest: t.phoneGuest,
+		markServed: t.markServed,
+		markNoShow: t.markNoShow,
+		queueNotStarted: t.queueNotStarted,
+		manualGuestTitle: t.manualGuestTitle,
+		admissionLabel: t.admissionLabel,
+		admitToQueue: t.admitToQueue,
+		admitProfileOnly: t.admitProfileOnly,
+		queuePlacement: t.queuePlacement,
+		placeNext: t.placeNext,
+		placeEnd: t.placeEnd,
+		saveGuest: t.saveGuest,
+		guestAdded: t.guestAdded,
+		guestClaimShow: t.guestClaimShow,
+		guestClaimTitle: t.guestClaimTitle,
+		guestClaimInstructions: t.guestClaimInstructions,
+		guestClaimDone: t.guestClaimDone,
+		firstName: guest.firstName,
+		lastName: guest.lastName,
+		phone: guest.phone,
+		statuses: {
+			waiting: t.waiting,
+			called: guest.guestView.visitStatus.labels.called,
+			served: t.served,
+			no_show: t.noShow,
+			not_placed: t.notPlaced,
+		},
+	};
+}
+
+/**
+ * The voiceover's lines with the length of each recording. A line reworded since it was recorded
+ * keeps the page building, on an estimate, until `voice.mjs` records it again.
+ */
+async function narration() {
+	if (!video.narration) {
+		return [];
+	}
+
+	const { lines, voice } = await import(here('./' + video.narration));
+	const timings = existsSync(here('./' + video.timings))
+		? JSON.parse(readFileSync(here('./' + video.timings), 'utf8'))
+		: { lines: {} };
+
+	if (strict && !Object.entries(voice).every(([key, value]) => timings.voice?.[key] === value)) {
+		throw new Error(
+			`The recorded voice differs from ${video.narration}; render and commit the audio first.`,
+		);
+	}
+
+	const stale = [];
+	const result = lines.map((line) => {
+		const recorded = timings.lines[line.id];
+
+		if (
+			recorded?.text === line.text &&
+			Number.isFinite(recorded.duration) &&
+			recorded.duration > 0
+		) {
+			return { ...line, duration: recorded.duration };
+		}
+
+		stale.push(line.id);
+
+		return { ...line, duration: line.text.split(/\s+/).length / 2.6 };
+	});
+
+	if (stale.length) {
+		if (strict) {
+			throw new Error(
+				`Narration needs recording for: ${stale.join(', ')}. Render and commit the audio first.`,
+			);
+		}
+
+		console.warn(`Not yet recorded, so timed on an estimate: ${stale.join(', ')}.`);
+		console.warn(`Run: node docs/reel/voice.mjs ${video.name}`);
+	}
+
+	return result;
+}
+
 const strings = Object.fromEntries(
-	Object.entries(translations).map(([locale, t]) => [locale, reelStrings(t)]),
+	Object.entries(translations).map(([locale, t]) => [locale, guestStrings(t)]),
 );
 const png = (path) => 'data:image/png;base64,' + readFileSync(here(path)).toString('base64');
-const soundtrack = existsSync(here('./soundtrack.m4a'))
-	? readFileSync(here('./soundtrack.m4a')).toString('base64')
+const soundtrack = existsSync(here('./' + video.soundtrack))
+	? readFileSync(here('./' + video.soundtrack)).toString('base64')
 	: '';
+const stageScript = readFileSync(here('./stage.js'), 'utf8')
+	.replace('__STRINGS__', JSON.stringify(strings))
+	.replace('__DESK__', JSON.stringify(deskStrings(adminTranslations.en, translations.en)))
+	.replace('__LOGO__', png('../../public/bay-compassion-logo.png'))
+	.replace('__SOUNDTRACK__', soundtrack);
+// Collapsed onto one line, so the stylesheet takes the single line its placeholder held.
+const stageStyles = readFileSync(here('./stage.css'), 'utf8').replace(/\s*\n\s*/g, ' ');
 
-const page = readFileSync(here('./reel.src.html'), 'utf8')
+const page = readFileSync(here('./' + video.source), 'utf8')
+	.replace('__STAGE_CSS__', () => stageStyles)
 	.replaceAll('__WORDMARK__', png('../../public/wordmark.png'))
-	.replaceAll('__LOGO__', png('../../public/bay-compassion-logo.png'))
-	.replace('__SOUNDTRACK__', soundtrack)
-	.replace('__STRINGS__', JSON.stringify(strings));
+	.replace('__NARRATION__', JSON.stringify(await narration()))
+	.replace('__STAGE_JS__', () => stageScript);
 
 mkdirSync(here('./out'), { recursive: true });
-writeFileSync(here('./out/market-day-reel.artifact.html'), page);
+writeFileSync(here(`./out/${video.name}.artifact.html`), page);
 // The shell goes on the page's first line, so the source's line numbers still hold.
 writeFileSync(
-	here('./out/market-day-reel.html'),
+	here(`./out/${video.name}.html`),
 	'<!doctype html><html lang="en"><head><meta charset="utf-8">' +
 		'<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
 		'</head><body>' +
 		page +
 		'</body></html>',
 );
-console.log(`Built out/market-day-reel.html (${Math.round(page.length / 1024)} KB)`);
+console.log(`Built out/${video.name}.html (${Math.round(page.length / 1024)} KB)`);

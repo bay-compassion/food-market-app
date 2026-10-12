@@ -1,0 +1,130 @@
+{
+  "voice": {
+    "source": "kokoro",
+    "name": "af_heart",
+    "speed": 0.96,
+    "language": "en-us"
+  },
+  "lines": {
+    "welcome": {
+      "text": "This is a short guide to the queue desk: the screen volunteers use to call guests up on market day.",
+      "duration": 5.866
+    },
+    "open": {
+      "text": "On your phone, open the queue screen and sign in with your volunteer account.",
+      "duration": 4.65
+    },
+    "before": {
+      "text": "Guests register from their own phones, then the lottery is drawn. Until then, the screen waits.",
+      "duration": 6.085
+    },
+    "tour": {
+      "text": "When service starts, the line appears. Waiting lists everyone in line, in the order they’ll be called.",
+      "duration": 5.822
+    },
+    "row": {
+      "text": "Each row shows the guest’s number, their name, and the language they speak, so you can greet them in it.",
+      "duration": 5.727
+    },
+    "sections": {
+      "text": "Further down, Not placed lists guests who weren’t drawn today, and Done fills up as you serve people.",
+      "duration": 5.876
+    },
+    "display": {
+      "text": "The room display shows the same line, but only numbers, never names.",
+      "duration": 4.316
+    },
+    "call": {
+      "text": "When you’re ready for the next guest, tap Call next.",
+      "duration": 2.807
+    },
+    "called": {
+      "text": "Their number goes up on the room display, and their phone tells them it’s their turn.",
+      "duration": 4.469
+    },
+    "ticket": {
+      "text": "Their ticket opens on your screen, with a clock counting from the moment you called them.",
+      "duration": 4.865
+    },
+    "tag": {
+      "text": "The name tag shows their first name and last initial, their number, and their language.",
+      "duration": 5.205
+    },
+    "print": {
+      "text": "Tap Print name tag, and it prints at the print station, on the market’s computer.",
+      "duration": 4.609
+    },
+    "offline": {
+      "text": "If the print station is offline, the button says so. Write the tag by hand instead.",
+      "duration": 5.101
+    },
+    "serve": {
+      "text": "When the guest has checked in, tap Serve and call next. That finishes their visit and calls the next guest, in one step.",
+      "duration": 7.145
+    },
+    "rhythm": {
+      "text": "The next ticket opens in its place, so the line moves with one tap per guest.",
+      "duration": 4.735
+    },
+    "together": {
+      "text": "If two volunteers are calling at once, each tap calls a different guest. Nobody is called twice.",
+      "duration": 6.079
+    },
+    "late": {
+      "text": "Sometimes a guest isn’t there yet. Don’t hold up the line. Close their ticket, and call the next guest.",
+      "duration": 6.165
+    },
+    "lateWaits": {
+      "text": "They stay in Called, showing the minutes since you called them. On their phone, the number slowly turns yellow, asking them to come to the check-in desk.",
+      "duration": 8.935
+    },
+    "lateServe": {
+      "text": "When they arrive, tap their row, and choose Mark served. That doesn’t call anyone new, so the line stays where it is.",
+      "duration": 6.911
+    },
+    "noShow": {
+      "text": "If someone you called a while ago still hasn’t come, you can mark them as a no-show. They move to a list of their own.",
+      "duration": 6.847
+    },
+    "returnBack": {
+      "text": "If they turn up later, open their ticket and tap Return to back of line. They keep their number.",
+      "duration": 5.495
+    },
+    "returnFront": {
+      "text": "The arrow beside it puts them at the front instead, for a guest you called by mistake.",
+      "duration": 4.916
+    },
+    "add": {
+      "text": "To put someone in line yourself, tap Add guest, beside Waiting.",
+      "duration": 3.681
+    },
+    "addForm": {
+      "text": "Enter their details, choose Give them a spot, and pick where they go: the end of the queue, or next up.",
+      "duration": 6.125
+    },
+    "addPriority": {
+      "text": "Someone you put next up gets a P number, like P1, so nobody else’s number changes.",
+      "duration": 5.681
+    },
+    "qr": {
+      "text": "Then tap Show QR code for their phone. When they scan it with their camera, their phone follows their place in line.",
+      "duration": 6.847
+    },
+    "phone": {
+      "text": "Need to reach a guest? Phone, on their ticket, calls them. And History shows who called and served them, and when.",
+      "duration": 6.734
+    },
+    "finish": {
+      "text": "When everyone has been through, Call next turns into Close session.",
+      "duration": 3.765
+    },
+    "close": {
+      "text": "Tap it and confirm to end the day. The menu at the top can close the session early, too: if anyone is still waiting or called, it says how many, because closing marks them as no-shows.",
+      "duration": 12.097
+    },
+    "thanks": {
+      "text": "That’s the queue desk. Thank you for helping every neighbor get served.",
+      "duration": 3.821
+    }
+  }
+}
