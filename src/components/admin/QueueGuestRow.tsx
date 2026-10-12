@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
 import { languages } from '../../locales';
+import { QueueNumber } from '../../models/queue-number';
 import type { VisitCommand } from '../../services/visitStateMachine';
 import { GuestTableRow } from './GuestTableRow';
 import { QueueGuestActions } from './QueueGuestActions';
@@ -32,6 +33,7 @@ export const QueueGuestRow = observer(function QueueGuestRow({
 	onRun,
 }: QueueGuestRowProps) {
 	const t = adminTranslations.en;
+	const number = QueueNumber.of(guest);
 	const guestLanguage =
 		languages.find((language) => language.code === guest.locale)?.englishLabel ?? guest.locale;
 
@@ -55,9 +57,7 @@ export const QueueGuestRow = observer(function QueueGuestRow({
 			<TableCell className="identity-cell">
 				<div className="identity">
 					<div className="name">
-						{guest.queuePosition ? (
-							<span className="queue-number">{guest.queuePosition}</span>
-						) : null}
+						{number ? <span className="queue-number">{number.label}</span> : null}
 						<span>
 							{guest.firstName} {guest.lastName}
 						</span>

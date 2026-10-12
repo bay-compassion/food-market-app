@@ -1,4 +1,4 @@
-import { and, eq, inArray, lt, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
 import { z } from 'zod';
 
@@ -13,7 +13,7 @@ import {
 } from '../../lib/http.mjs';
 import { tracedQuery } from '../../lib/sentry.mjs';
 import { hashVisitToken } from '../../services/guestCredentials.mjs';
-import { latestCalledPosition } from '../../services/queue-board.mjs';
+import { highestCalledNumber } from '../../services/queue-board.mjs';
 import { guestActor, recordVisitEvents } from '../../services/visit-events.mjs';
 
 /** Cancelling is the only change a guest can make to their own visit. */
@@ -38,6 +38,9 @@ async function authorizedVisit(request: Request) {
 				status: visits.status,
 				marketEventId: visits.marketEventId,
 				queuePosition: visits.queuePosition,
+				priorityNumber: visits.priorityNumber,
+				queueFront: visits.queueFront,
+				queueOrder: visits.queueOrder,
 				calledAt: visits.calledAt,
 				sessionStatus: marketEvents.status,
 			})
@@ -57,13 +60,14 @@ async function authorizedVisit(request: Request) {
 async function guestsAhead(visit: {
 	status: string;
 	marketEventId: string;
-	queuePosition: number | null;
+	queueFront: boolean;
+	queueOrder: number | null;
 }) {
 	// Destructured so the null check narrows a const: a property read loses its narrowing inside
 	// the query closure below.
-	const { queuePosition } = visit;
+	const { queueFront, queueOrder } = visit;
 
-	if (visit.status !== 'waiting' || queuePosition === null) {
+	if (visit.status !== 'waiting' || queueOrder === null) {
 		return null;
 	}
 	const [ahead] = await tracedQuery('visit.count_ahead', () =>
@@ -74,7 +78,8 @@ async function guestsAhead(visit: {
 				and(
 					eq(visits.marketEventId, visit.marketEventId),
 					eq(visits.status, 'waiting'),
-					lt(visits.queuePosition, queuePosition),
+					// `LineOrder.compare`: everyone put at the front, then the rest in order.
+					sql`((${visits.queueFront} AND NOT ${queueFront}) OR (${visits.queueFront} = ${queueFront} AND ${visits.queueOrder} < ${queueOrder}))`,
 				),
 			),
 	);
@@ -84,7 +89,7 @@ async function guestsAhead(visit: {
 
 /** The "now calling" board, like `guestsAhead` only meaningful while waiting. */
 async function nowCalling(visit: { status: string; marketEventId: string }) {
-	return visit.status === 'waiting' ? latestCalledPosition(visit.marketEventId) : null;
+	return visit.status === 'waiting' ? highestCalledNumber(visit.marketEventId) : null;
 }
 
 type Visit = NonNullable<Awaited<ReturnType<typeof authorizedVisit>>>;
@@ -111,8 +116,11 @@ visitRoutes.get('/api/visit', async (context) => {
 		return jsonError('This visit belongs to an ended session.', 410);
 	}
 
+	// The line order is the server's business: a guest sees their number, never how it was placed.
+	const { queueFront: _front, queueOrder: _order, ...shown } = visit;
+
 	return Response.json({
-		...visit,
+		...shown,
 		aheadOfYou: await guestsAhead(visit),
 		nowCalling: await nowCalling(visit),
 	});

@@ -49,6 +49,7 @@ const meta = {
 		sessionStatus: 'service_started',
 		nowCalling: 23,
 		called: [23, 21, 17, 14],
+		calledPriority: [],
 		waitingCount: 31,
 		reconnecting: false,
 	},
@@ -75,6 +76,26 @@ export const WithUnclaimedNumbers: Story = {
 			'21',
 			'17',
 			'14',
+		]);
+	},
+};
+
+/**
+ * A guest a worker put at the front is called with a priority number. It waits beside the main
+ * numbers rather than taking the main board, which keeps counting up for everyone comparing theirs.
+ */
+export const WithPriorityNumber: Story = {
+	args: { calledPriority: [1] },
+	play: async ({ canvasElement }) => {
+		const unclaimed = within(
+			canvasElement.querySelector<HTMLElement>('[aria-labelledby="kiosk-still-waiting"]')!,
+		);
+
+		await expect(unclaimed.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+			'21',
+			'17',
+			'14',
+			'P1',
 		]);
 	},
 };

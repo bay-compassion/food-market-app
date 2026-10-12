@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
+import { QueueNumber } from '../../src/models/queue-number.js';
 import { SessionTimeline } from '../../src/models/session-timeline.js';
 import { ageRanges } from '../../src/services/ageRanges.js';
 import {
@@ -24,7 +25,7 @@ import {
 } from './guest-information.mjs';
 import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
 import { recordVisitEvents } from './visit-events.mjs';
-import { nextQueuePosition } from './visitQueue.mjs';
+import { placeInLine } from './visitQueue.mjs';
 
 /** How many people a visit can cover, matching the household columns' database constraints. */
 const shopperCountSchema = z.coerce.number().int().min(0).max(30);
@@ -246,12 +247,15 @@ export async function registerGuest(
 					information: submission,
 					deviceTokenHash: deviceCredential?.tokenHash ?? null,
 				});
-				// Only a guest going straight into the line needs a position now. Everyone else is either
+				// Only a guest going straight into the line needs a number now. Everyone else is either
 				// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
-				const queuePosition =
-					submission.source === 'admin' && admissionNeedsQueuePosition(submission.admission)
-						? await nextQueuePosition(tx, submission.marketEventId!, submission.queuePlacement)
+				const slot =
+					!existingVisit &&
+					submission.source === 'admin' &&
+					admissionNeedsQueuePosition(submission.admission)
+						? await placeInLine(tx, submission.marketEventId!, submission.queuePlacement)
 						: null;
+				const number = slot ? QueueNumber.of(slot) : null;
 				const [visit] = existingVisit
 					? await tx
 							.update(visits)
@@ -276,7 +280,7 @@ export async function registerGuest(
 									submission.source === 'admin'
 										? admissionVisitStatus(submission.admission)
 										: 'registered',
-								queuePosition,
+								...slot,
 								answers: submission.answers,
 								source: submission.source,
 								accessTokenHash: visitCredential.tokenHash,
@@ -303,7 +307,7 @@ export async function registerGuest(
 							kind: submission.source === 'admin' ? 'added' : 'registered',
 							toStatus: visit!.status,
 							actor,
-							details: queuePosition === null ? undefined : { queuePosition },
+							details: number ? number.toDetails() : undefined,
 						},
 					]);
 				} else if (existingVisit.status === 'cancelled') {

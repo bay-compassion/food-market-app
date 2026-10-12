@@ -6,6 +6,7 @@ import { type KeyboardEvent, useId } from 'react';
 import type { TooltipRenderProps } from 'react-joyride';
 
 import type { Locale } from '../../../locales';
+import { QueueNumber } from '../../../models/queue-number';
 import { QueueNumerals } from '../../../services/queue-numerals';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
@@ -83,7 +84,7 @@ const Preview = styled.div`
 `;
 
 /** A plausible line for the preview: number 12, with 9 being called and two guests between. */
-const previewLine = { queuePosition: 12, guestsAhead: 2, nowCalling: 9 } as const;
+const previewLine = { queueNumber: QueueNumber.main(12), guestsAhead: 2, nowCalling: 9 } as const;
 
 const Footer = styled.div`
 	display: flex;

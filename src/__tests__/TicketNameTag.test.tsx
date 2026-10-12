@@ -19,6 +19,9 @@ const guest: QueueGuest = {
 	householdSize: 4,
 	locale: 'es',
 	queuePosition: 14,
+	priorityNumber: null,
+	queueFront: false,
+	queueOrder: 14,
 	calledAt: null,
 	status: 'called',
 };

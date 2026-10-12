@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 
 import { adminTranslations } from '../../adminLocales';
+import { QueueNumber } from '../../models/queue-number';
 import type { QueueGuest } from '../../services/admin-api';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { useNow } from '../hooks/use-now';
@@ -115,7 +116,7 @@ export function TicketSummary({ guest, statusLabel }: TicketSummaryProps) {
 		<Card className="ticket-summary" data-status={guest.status}>
 			<div className="ticket">
 				<p className="label">{t.ticket}</p>
-				<p className="number">{guest.queuePosition ?? t.unplaced}</p>
+				<p className="number">{QueueNumber.of(guest)?.label ?? t.unplaced}</p>
 			</div>
 			<p className="status">
 				<span className="status-label">{statusLabel}</span>

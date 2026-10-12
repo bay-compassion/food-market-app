@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useState } from 'react';
 
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
+import { LineOrder } from '../models/line-order';
 import type { ServiceProgress } from '../services/demoScenario';
 import { manualAdmissionsFor } from '../services/guestAdmission';
 import { currentSessionState, type SessionStatus } from '../services/sessionStateMachine';
@@ -91,11 +92,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 	const sessionAdmissions = currentState ? manualAdmissionsFor(event?.status ?? null) : [];
 	const currentSessionGuests = admin.sessionGuests
 		.filter((guest) => guest.marketEventId === event?.id)
-		.sort(
-			(first, second) =>
-				(first.queuePosition ?? Number.MAX_SAFE_INTEGER) -
-				(second.queuePosition ?? Number.MAX_SAFE_INTEGER),
-		);
+		.sort(LineOrder.compare);
 
 	const outstandingCount = (counts.waiting ?? 0) + (counts.called ?? 0);
 	const prompts = new MarketActionPrompts(t, outstandingCount);

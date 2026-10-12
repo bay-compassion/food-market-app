@@ -8,6 +8,7 @@ type NameTagArgs = {
 	firstName: string;
 	lastName: string;
 	queuePosition: number | null;
+	priorityNumber: number | null;
 	locale: Locale;
 };
 
@@ -32,7 +33,14 @@ const meta = {
 	argTypes: {
 		locale: { control: 'select', options: ['en', 'es', 'tl', 'zh', 'fa', 'ar', 'vi', 'fr'] },
 	},
-	args: { firstName: 'Maria', lastName: 'Santos', queuePosition: 14, locale: 'es', printed: false },
+	args: {
+		firstName: 'Maria',
+		lastName: 'Santos',
+		queuePosition: 14,
+		priorityNumber: null,
+		locale: 'es',
+		printed: false,
+	},
 } satisfies Meta<typeof Tag>;
 
 export default meta;
@@ -49,6 +57,11 @@ export const FirstNameOnly: Story = {
 /** A long name has to wrap inside the label rather than run off it. */
 export const LongName: Story = {
 	args: { firstName: 'Maximiliana Guadalupe', lastName: 'de la Cruz', queuePosition: 128 },
+};
+
+/** A guest a worker put at the front ahead of others: a priority number, so nobody else's moves. */
+export const PriorityNumber: Story = {
+	args: { queuePosition: null, priorityNumber: 2 },
 };
 
 /** A guest added by hand outside the draw has no place in line yet. */

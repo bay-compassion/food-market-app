@@ -1,13 +1,19 @@
 import type { SessionStatus } from '../services/sessionStateMachine.ts';
+import { QueueNumber } from './queue-number.ts';
 
 /** What `GET /api/admin/kiosk` returns: the session's queue as a room display shows it. */
 export type QueueBoardState = {
 	/** The current session's status, or `null` when no session is configured. */
 	sessionStatus: SessionStatus | null;
-	/** The queue number most recently called, or `null` before anyone has been called. */
+	/** The highest main-series number called, or `null` before anyone has been called. */
 	nowCalling: number | null;
-	/** Every number called but not yet served or marked a no-show, most recently called first. */
+	/** Every main number called but not yet served or marked a no-show, most recently called first. */
 	called: number[];
+	/**
+	 * The same for the priority series (`P1`, …). A field of its own rather than a change to
+	 * `called`, so a kiosk still running the previous build keeps reading plain numbers.
+	 */
+	calledPriority: number[];
 	/** How many guests are still in line, not yet called. */
 	waitingCount: number;
 };
@@ -36,16 +42,33 @@ export class QueueBoard {
 		}
 	}
 
-	get nowCalling(): number | null {
-		return this.state.nowCalling;
+	/**
+	 * The number on the main board: the highest main number called. Until one has been, a priority
+	 * number at the entrance stands in, so a session that starts with a guest put at the front does
+	 * not show "no numbers called yet" while they are being called.
+	 */
+	get nowCalling(): QueueNumber | null {
+		if (this.state.nowCalling !== null) {
+			return QueueNumber.main(this.state.nowCalling);
+		}
+
+		const priority = this.state.calledPriority[0];
+
+		return priority === undefined ? null : QueueNumber.priority(priority);
 	}
 
 	/**
-	 * Numbers called earlier that still have not come to the table. The number on the main board
-	 * is left out — it was only just called, and repeating it beside itself reads as a mistake.
+	 * Numbers called earlier that still have not come to the table, most recently called first and
+	 * the priority series after the main one. The number on the main board is left out — it was only
+	 * just called, and repeating it beside itself reads as a mistake.
 	 */
-	get stillWaitingFor(): number[] {
-		return this.state.called.filter((position) => position !== this.state.nowCalling);
+	get stillWaitingFor(): QueueNumber[] {
+		const nowCalling = this.nowCalling;
+
+		return [
+			...this.state.called.map((value) => QueueNumber.main(value)),
+			...this.state.calledPriority.map((value) => QueueNumber.priority(value)),
+		].filter((number) => !number.equals(nowCalling));
 	}
 
 	get waitingCount(): number {

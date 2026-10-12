@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
+import { QueueNumber } from '../../models/queue-number';
 import { usePrintStation } from './print-station-context';
 
 const List = styled.section`
@@ -63,7 +64,7 @@ export const PrintStationLog = observer(function PrintStationLog() {
 				<ol>
 					{recent.map(({ job, printedAt }) => (
 						<li key={job.id}>
-							<span className="position">{job.queuePosition ?? '—'}</span>
+							<span className="position">{QueueNumber.of(job)?.label ?? '—'}</span>
 							<span>
 								{job.firstName} {job.lastInitial ? `${job.lastInitial}.` : ''}
 							</span>

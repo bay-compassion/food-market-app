@@ -10,9 +10,11 @@ export type CurrentVisit = {
 	id: string;
 	marketEventId: string;
 	status: VisitStatus;
+	/** With `priorityNumber`, the guest's number — read it through `QueueNumber.of`. */
 	queuePosition: number | null;
+	priorityNumber: number | null;
 	aheadOfYou: number | null;
-	/** The queue number most recently called in this session; only reported while waiting. */
+	/** The highest main-series number called in this session; only reported while waiting. */
 	nowCalling: number | null;
 };
 

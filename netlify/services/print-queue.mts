@@ -41,6 +41,8 @@ const jobSchema = z.object({
 	firstName: z.string(),
 	lastInitial: z.string(),
 	queuePosition: z.number().int().nullable(),
+	// Defaulted for a tag a phone sent before priority numbers existed, still in the store.
+	priorityNumber: z.number().int().nullable().default(null),
 	locale: z.custom<Locale>(isLocale),
 	requestedAt: z.iso.datetime(),
 });
@@ -147,6 +149,7 @@ export async function nameTagFor(
 				firstName: guests.firstName,
 				lastName: guests.lastName,
 				queuePosition: visits.queuePosition,
+				priorityNumber: visits.priorityNumber,
 				locale: guests.locale,
 			})
 			.from(visits)
@@ -164,6 +167,7 @@ export async function nameTagFor(
 		firstName: row.firstName.trim(),
 		lastInitial: row.lastName.trim().charAt(0).toLocaleUpperCase(),
 		queuePosition: row.queuePosition,
+		priorityNumber: row.priorityNumber,
 		locale: isLocale(row.locale) ? row.locale : 'en',
 	};
 }

@@ -6,8 +6,11 @@ const calling: QueueBoardState = {
 	sessionStatus: 'service_started',
 	nowCalling: 9,
 	called: [9, 7, 4],
+	calledPriority: [],
 	waitingCount: 20,
 };
+
+const labels = (numbers: { label: string }[]) => numbers.map((number) => number.label);
 
 describe('QueueBoard', () => {
 	it('calls numbers only once service has started', () => {
@@ -31,7 +34,7 @@ describe('QueueBoard', () => {
 		const stillWaitingFor = board.stillWaitingFor;
 
 		// Assert
-		expect(stillWaitingFor).toEqual([7, 4]);
+		expect(labels(stillWaitingFor)).toEqual(['7', '4']);
 	});
 
 	it('keeps every called number when the latest has already been served', () => {
@@ -42,6 +45,42 @@ describe('QueueBoard', () => {
 		const stillWaitingFor = board.stillWaitingFor;
 
 		// Assert
-		expect(stillWaitingFor).toEqual([7, 4]);
+		expect(labels(stillWaitingFor)).toEqual(['7', '4']);
+	});
+
+	it('lists priority numbers after the main ones, leaving the main board to the main series', () => {
+		// Arrange
+		const board = new QueueBoard({ ...calling, calledPriority: [2, 1] });
+
+		// Act
+		const shown = {
+			nowCalling: board.nowCalling?.label,
+			stillWaitingFor: labels(board.stillWaitingFor),
+		};
+
+		// Assert
+		expect(shown).toEqual({
+			nowCalling: '9',
+			stillWaitingFor: ['7', '4', 'P2', 'P1'],
+		});
+	});
+
+	it('puts a priority number on the main board until a main number has been called', () => {
+		// Arrange
+		const board = new QueueBoard({
+			...calling,
+			nowCalling: null,
+			called: [],
+			calledPriority: [2, 1],
+		});
+
+		// Act
+		const shown = {
+			nowCalling: board.nowCalling?.label,
+			stillWaitingFor: labels(board.stillWaitingFor),
+		};
+
+		// Assert
+		expect(shown).toEqual({ nowCalling: 'P2', stillWaitingFor: ['P1'] });
 	});
 });

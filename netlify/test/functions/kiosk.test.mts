@@ -61,6 +61,7 @@ describe('kiosk handler', () => {
 			sessionStatus: null,
 			nowCalling: null,
 			called: [],
+			calledPriority: [],
 			waitingCount: 0,
 		});
 	});
@@ -77,15 +78,21 @@ describe('kiosk handler', () => {
 			sessionStatus: 'lottery_pending',
 			nowCalling: null,
 			called: [],
+			calledPriority: [],
 			waitingCount: 0,
 		});
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
-	it('returns the number being called, those not yet claimed, and the line behind them', async () => {
+	it('returns the number being called, those not yet claimed in either series, and the line behind them', async () => {
 		// Arrange
 		currentEvent('service_started');
-		queueResult([{ queuePosition: 8 }, { queuePosition: 7 }, { queuePosition: 3 }]);
+		queueResult([
+			{ queuePosition: 8, priorityNumber: null },
+			{ queuePosition: null, priorityNumber: 1 },
+			{ queuePosition: 7, priorityNumber: null },
+			{ queuePosition: 3, priorityNumber: null },
+		]);
 		queueResult([{ count: 12 }]);
 		queueResult([{ queuePosition: 8 }]);
 
@@ -98,6 +105,7 @@ describe('kiosk handler', () => {
 			sessionStatus: 'service_started',
 			nowCalling: 8,
 			called: [8, 7, 3],
+			calledPriority: [1],
 			waitingCount: 12,
 		});
 	});

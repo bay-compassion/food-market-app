@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
 import { NameTag } from '../../models/name-tag';
+import { QueueNumber } from '../../models/queue-number';
 import type { QueueGuest } from '../../services/admin-api';
 import { useQueueDesk } from './queue-desk-context';
 
@@ -110,7 +111,7 @@ const Row = styled.li`
 export const TicketChip = observer(function TicketChip({ guest, now }: TicketChipProps) {
 	const t = adminTranslations.en.queueDesk;
 	const desk = useQueueDesk();
-	const number = guest.queuePosition === null ? '—' : String(guest.queuePosition);
+	const number = QueueNumber.of(guest)?.label ?? '—';
 	const name = `${guest.firstName} ${guest.lastName}`.trim();
 	const minutes =
 		guest.status === 'called' && guest.calledAt

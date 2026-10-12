@@ -20,6 +20,9 @@ const guest: QueueGuest = {
 	householdSize: 2,
 	locale: 'en',
 	queuePosition: 3,
+	priorityNumber: null,
+	queueFront: false,
+	queueOrder: 3,
 	calledAt: null,
 	status: 'waiting',
 };

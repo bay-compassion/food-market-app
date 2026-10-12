@@ -7,32 +7,28 @@ import { tracedQuery } from '../lib/sentry.mjs';
 import { getCurrentEvent } from './marketSession.mjs';
 
 /**
- * The queue number most recently called in a session — the "now calling" board a DMV hangs over
- * the counter.
+ * The main-series number the "now calling" board shows: the highest one called this session — the
+ * board a DMV hangs over the counter.
  *
- * Reads `called_at` rather than `status = 'called'`: serving or marking a guest a no-show keeps
- * their `called_at`, so the board doesn't drop back to an older number (or blank) the moment a
- * worker finishes with someone, while returning a guest to the queue clears it, so a number that
- * was un-called stops showing. `callNextVisits` stamps a whole batch with one `now()`, so the tie
- * falls to the highest position in that batch.
+ * Highest rather than most recent, so the board only ever counts up: a guest returned to the queue
+ * keeps their number, and calling them later must not send the board back from 50 to 38 in front
+ * of everyone comparing their own number with it. A batch resolves to its highest number the same
+ * way. Reads `called_at` rather than `status = 'called'`: serving or marking a guest a no-show keeps
+ * their `called_at`, so the board doesn't drop back the moment a worker finishes with someone, while
+ * returning a guest to the queue clears it, so a number that was un-called stops showing.
+ *
+ * Priority numbers (`P1`, …) are not on it: they count on their own, and a guest cannot compare
+ * theirs with one. `queueBoard().calledPriority` lists the ones at the entrance.
  */
-export async function latestCalledPosition(marketEventId: string): Promise<number | null> {
-	const [latest] = await tracedQuery('visit.now_calling', () =>
+export async function highestCalledNumber(marketEventId: string): Promise<number | null> {
+	const [highest] = await tracedQuery('visit.now_calling', () =>
 		db
-			.select({ queuePosition: visits.queuePosition })
+			.select({ queuePosition: sql<number | null>`max(${visits.queuePosition})` })
 			.from(visits)
-			.where(
-				and(
-					eq(visits.marketEventId, marketEventId),
-					isNotNull(visits.calledAt),
-					isNotNull(visits.queuePosition),
-				),
-			)
-			.orderBy(desc(visits.calledAt), desc(visits.queuePosition))
-			.limit(1),
+			.where(and(eq(visits.marketEventId, marketEventId), isNotNull(visits.calledAt))),
 	);
 
-	return latest?.queuePosition ?? null;
+	return highest?.queuePosition ?? null;
 }
 
 /**
@@ -43,7 +39,7 @@ export async function latestCalledPosition(marketEventId: string): Promise<numbe
  */
 export async function queueBoard(): Promise<QueueBoardState> {
 	const event = await getCurrentEvent();
-	const empty = { nowCalling: null, called: [], waitingCount: 0 };
+	const empty = { nowCalling: null, called: [], calledPriority: [], waitingCount: 0 };
 
 	if (!event) {
 		return { sessionStatus: null, ...empty };
@@ -55,18 +51,11 @@ export async function queueBoard(): Promise<QueueBoardState> {
 
 	const called = await tracedQuery('queue_board.called', () =>
 		db
-			.select({ queuePosition: visits.queuePosition })
+			.select({ queuePosition: visits.queuePosition, priorityNumber: visits.priorityNumber })
 			.from(visits)
-			.where(
-				and(
-					eq(visits.marketEventId, event.id),
-					eq(visits.status, 'called'),
-					isNotNull(visits.queuePosition),
-				),
-			)
-			// Newest first, matching `latestCalledPosition`'s tie-break within a batch, so the
-			// display drops the oldest when it runs out of room.
-			.orderBy(desc(visits.calledAt), desc(visits.queuePosition)),
+			.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'called')))
+			// Newest first, so the display drops the oldest when it runs out of room.
+			.orderBy(desc(visits.calledAt), desc(visits.queuePosition), desc(visits.priorityNumber)),
 	);
 	const [waiting] = await tracedQuery('queue_board.waiting_count', () =>
 		db
@@ -77,8 +66,11 @@ export async function queueBoard(): Promise<QueueBoardState> {
 
 	return {
 		sessionStatus: event.status,
-		nowCalling: await latestCalledPosition(event.id),
+		nowCalling: await highestCalledNumber(event.id),
 		called: called.flatMap(({ queuePosition }) => (queuePosition === null ? [] : [queuePosition])),
+		calledPriority: called.flatMap(({ priorityNumber }) =>
+			priorityNumber === null ? [] : [priorityNumber],
+		),
 		waitingCount: waiting?.count ?? 0,
 	};
 }

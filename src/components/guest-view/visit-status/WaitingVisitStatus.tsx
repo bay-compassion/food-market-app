@@ -1,26 +1,27 @@
 import type { VisitStatusTranslations } from '@/locales.ts';
 
+import type { QueueNumber } from '../../../models/queue-number';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 import { QueueStanding } from './QueueStanding';
 import { VisitTicketStamp } from './VisitTicketStamp';
 
 export type WaitingVisitStatusProps = {
 	copy: VisitStatusTranslations;
-	queuePosition: number | null;
+	queueNumber: QueueNumber | null;
 	guestsAhead: number | null;
 	nowCalling: number | null;
 };
 
 export function WaitingVisitStatus({
 	copy,
-	queuePosition,
+	queueNumber,
 	guestsAhead,
 	nowCalling,
 }: WaitingVisitStatusProps) {
-	const queueDetails = queuePosition ? (
+	const queueDetails = queueNumber ? (
 		<QueueStanding
 			copy={copy}
-			queuePosition={queuePosition}
+			queueNumber={queueNumber}
 			guestsAhead={guestsAhead}
 			nowCalling={nowCalling}
 		/>

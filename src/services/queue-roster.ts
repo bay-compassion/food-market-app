@@ -1,12 +1,6 @@
+import { LineOrder } from '../models/line-order.ts';
 import type { QueueGuest } from './admin-api.ts';
 import { finishedVisitStatuses } from './visitStateMachine.ts';
-
-function byQueuePosition(first: QueueGuest, second: QueueGuest) {
-	return (
-		(first.queuePosition ?? Number.MAX_SAFE_INTEGER) -
-		(second.queuePosition ?? Number.MAX_SAFE_INTEGER)
-	);
-}
 
 /**
  * One session's guests, grouped the way the queue screen works through them.
@@ -32,9 +26,9 @@ export class QueueRoster {
 		return this.called.at(-1) ?? null;
 	}
 
-	/** Still in line, in the order the draw put them in. */
+	/** Still in line, in the order they will be called. */
 	get waiting(): QueueGuest[] {
-		return this.guests.filter((guest) => guest.status === 'waiting').sort(byQueuePosition);
+		return this.guests.filter((guest) => guest.status === 'waiting').sort(LineOrder.compare);
 	}
 
 	/**

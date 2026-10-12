@@ -69,28 +69,57 @@ describe('runVisitCommand timestamps', () => {
 	});
 });
 
+/** The session's line as `placeInLine` reads it, after taking the session lock. */
+function queueLine(line: {
+	highestNumber: number | null;
+	highestPriorityNumber?: number | null;
+	highestOrder: number | null;
+	othersWaiting: number;
+}) {
+	queueResult([{ id: 'event-1' }]);
+	queueResult([{ highestPriorityNumber: null, ...line }]);
+}
+
 describe('runVisitCommand return_to_queue placement', () => {
-	it('puts a returning guest behind everyone when asked for the back of the line', async () => {
-		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
-		queueResult([{ position: 12 }]);
+	it('puts a returning guest behind everyone, keeping their number', async () => {
+		queueResult([
+			{ status: 'no_show', marketEventId: 'event-1', queuePosition: 4, priorityNumber: null },
+		]);
+		queueLine({ highestNumber: 12, highestOrder: 12, othersWaiting: 5 });
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 
 		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
 
 		expect(result.ok).toBe(true);
-		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null, queuePosition: 13 });
+		expect(lastUpdateValues()).toEqual({
+			status: 'waiting',
+			calledAt: null,
+			queuePosition: 4,
+			priorityNumber: null,
+			queueFront: false,
+			queueOrder: 13,
+		});
 	});
 
-	it('puts a returning guest at the front, shifting the waiting guests down', async () => {
-		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
-		queueResult([{ position: 12 }]);
-		queueResult([{ position: 5 }]);
-		queueResult([]);
+	it('puts a returning guest at the front without renumbering anyone', async () => {
+		queueResult([
+			{ status: 'no_show', marketEventId: 'event-1', queuePosition: 4, priorityNumber: null },
+		]);
+		queueLine({ highestNumber: 12, highestOrder: 12, othersWaiting: 5 });
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 
 		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'next', actor });
 
-		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null, queuePosition: 5 });
+		expect(lastUpdateValues()).toEqual({
+			status: 'waiting',
+			calledAt: null,
+			queuePosition: 4,
+			priorityNumber: null,
+			queueFront: true,
+			queueOrder: 13,
+		});
+		// The guest's own row is the only one written.
+		expect(db.update).toHaveBeenCalledTimes(1);
 	});
 
 	it('keeps the guest’s old place when no placement is given', async () => {
@@ -102,11 +131,11 @@ describe('runVisitCommand return_to_queue placement', () => {
 		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null });
 	});
 
-	it('rolls the line back when another worker moved the guest first', async () => {
-		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
-		queueResult([{ position: 12 }]);
-		queueResult([{ position: 5 }]);
-		queueResult([]);
+	it('refuses when another worker moved the guest first', async () => {
+		queueResult([
+			{ status: 'no_show', marketEventId: 'event-1', queuePosition: 4, priorityNumber: null },
+		]);
+		queueLine({ highestNumber: 12, highestOrder: 12, othersWaiting: 5 });
 		queueResult([]);
 
 		const result = await runVisitCommand('visit-1', 'return_to_queue', {
@@ -141,8 +170,10 @@ describe('runVisitCommand history', () => {
 	});
 
 	it('records where a returned guest was placed', async () => {
-		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]);
-		queueResult([{ position: 12 }]);
+		queueResult([
+			{ status: 'no_show', marketEventId: 'event-1', queuePosition: 4, priorityNumber: null },
+		]);
+		queueLine({ highestNumber: 12, highestOrder: 12, othersWaiting: 5 });
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 
 		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
@@ -153,7 +184,7 @@ describe('runVisitCommand history', () => {
 				kind: 'returned',
 				toStatus: 'waiting',
 				actor,
-				details: { placement: 'end', queuePosition: 13 },
+				details: { placement: 'end' },
 			},
 		]);
 	});

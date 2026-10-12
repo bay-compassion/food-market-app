@@ -123,6 +123,7 @@ export class SceneFixtures {
 					marketEventId: 'screenshots-market',
 					status: visit.status,
 					queuePosition: visit.queuePosition ?? null,
+					priorityNumber: null,
 					aheadOfYou: visit.aheadOfYou ?? null,
 					nowCalling: null,
 				}

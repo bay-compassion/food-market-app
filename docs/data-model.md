@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=18999929173e -->
+<!-- diagram-sources: db/schema.mts=2433064cf7f3 -->
 
 # Database structure
 
@@ -99,7 +99,10 @@ erDiagram
         uuid market_event_id FK
         uuid guest_id FK
         text status "see session-lifecycle.md"
-        integer queue_position "lottery order; walk-ins placed on arrival"
+        integer queue_position "the guest's number; never changes once given"
+        integer priority_number "P1, P2, ... for a guest a worker put at the front"
+        boolean queue_front "put at the front: called before everyone else"
+        integer queue_order "call order within queue_front; never shown"
         integer lottery_weight "relative odds in the draw; 1 unless a worker raised them"
         text age_range "nullable; 0-17 | 18-29 | ... | 75+, entered at this visit"
         integer household_size "entered at this visit"
@@ -124,7 +127,7 @@ erDiagram
         text actor_kind "guest | worker | system"
         text actor_id "nullable; the worker's Auth0 subject"
         text actor_name "nullable; the worker's name as their sign-in gave it then"
-        jsonb details "placement, queue position, or why it was cancelled"
+        jsonb details "placement, the number given, or why it was cancelled"
         timestamptz created_at
     }
 

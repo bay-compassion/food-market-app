@@ -2,6 +2,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, visits } from '../../db/schema.mjs';
+import { LineOrder } from '../../src/models/line-order.js';
 import { SessionTimeline } from '../../src/models/session-timeline.js';
 import {
 	canRunSessionCommand,
@@ -83,17 +84,23 @@ export async function runLottery(
 				const shuffled = shuffleFn(registrations);
 				// A worker can place a guest straight into the line before the draw. Those guests are
 				// already `waiting`, so they use capacity and the winners queue behind them.
-				const [placed] = await tx
+				const [line] = await tx
 					.select({
-						count: sql<number>`count(*)::int`,
-						highestPosition: sql<number | null>`max(${visits.queuePosition})`,
+						waiting: sql<number>`count(*) FILTER (WHERE ${visits.status} = 'waiting')::int`,
+						highestNumber: sql<number | null>`max(${visits.queuePosition})`,
+						highestOrder: sql<number | null>`max(${visits.queueOrder})`,
 					})
 					.from(visits)
-					.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'waiting')));
-				const reservedCount = placed?.count ?? 0;
-				const positionOffset = placed?.highestPosition ?? 0;
+					.where(eq(visits.marketEventId, event.id));
+				const reservedCount = line?.waiting ?? 0;
 				const remainingCapacity = Math.max(0, lockedEvent.capacity - reservedCount);
 				const selectedRegistrations = shuffled.slice(0, remainingCapacity);
+				const placements = new LineOrder({
+					highestNumber: line?.highestNumber ?? null,
+					highestPriorityNumber: null,
+					highestOrder: line?.highestOrder ?? null,
+					othersWaiting: reservedCount,
+				}).draw(selectedRegistrations.length);
 				const selected = selectedRegistrations.map(({ id }) => id);
 				const notPlaced = shuffled.slice(remainingCapacity).map(({ id }) => id);
 
@@ -110,13 +117,13 @@ export async function runLottery(
 				if (selected.length) {
 					const positions = selectedRegistrations.map(
 						(registration, index) =>
-							sql`(${registration.id}::uuid, ${index + 1 + positionOffset}::integer)`,
+							sql`(${registration.id}::uuid, ${placements[index]!.queuePosition}::integer, ${placements[index]!.queueOrder}::integer)`,
 					);
 
 					await tx.execute(sql`
 					UPDATE ${visits} AS visit
-					SET status = 'waiting', queue_position = positions.position
-					FROM (VALUES ${sql.join(positions, sql`, `)}) AS positions(id, position)
+					SET status = 'waiting', queue_position = positions.position, queue_order = positions.line_order
+					FROM (VALUES ${sql.join(positions, sql`, `)}) AS positions(id, position, line_order)
 					WHERE visit.id = positions.id
 				`);
 
@@ -143,7 +150,7 @@ export async function runLottery(
 						kind: 'drawn' as const,
 						toStatus: 'waiting' as const,
 						actor: systemActor,
-						details: { queuePosition: index + 1 + positionOffset },
+						details: { queuePosition: placements[index]!.queuePosition! },
 					})),
 					...notPlaced.map((visitId) => ({
 						visitId,

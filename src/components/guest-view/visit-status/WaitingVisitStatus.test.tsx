@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { translations } from '@/locales.ts';
 
+import { QueueNumber } from '../../../models/queue-number';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../../hooks/use-line-position-indicator';
@@ -13,8 +14,8 @@ const copy = translations.en.guestView.visitStatus;
 
 function renderWithIndicator(
 	indicator: string | undefined,
-	visit: { queuePosition: number; guestsAhead: number; nowCalling: number | null } = {
-		queuePosition: 7,
+	visit: { queueNumber: QueueNumber; guestsAhead: number; nowCalling: number | null } = {
+		queueNumber: QueueNumber.main(7),
 		guestsAhead: 6,
 		nowCalling: 3,
 	},
@@ -65,7 +66,7 @@ describe('WaitingVisitStatus', () => {
 	it('says no number has been called before anyone is called', () => {
 		// Arrange & Act
 		const { getByRole } = renderWithIndicator('now-calling', {
-			queuePosition: 1,
+			queueNumber: QueueNumber.main(1),
 			guestsAhead: 0,
 			nowCalling: null,
 		});

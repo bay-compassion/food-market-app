@@ -108,7 +108,9 @@ export function NameTagCard({ tag, printed = false }: NameTagCardProps) {
 			<figcaption>{t.nameTag}</figcaption>
 			<p className="name">{tag.name}</p>
 			<p className="details">
-				<span className="position">{tag.position === null ? t.unplaced : `#${tag.position}`}</span>
+				<span className="position">
+					{tag.number === null ? t.unplaced : `#${tag.number.label}`}
+				</span>
 				<span className="language" title={t.language}>
 					{tag.languageCode}
 				</span>

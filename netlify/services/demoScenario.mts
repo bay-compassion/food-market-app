@@ -118,6 +118,8 @@ export async function loadScenario(input: DemoScenarioInput): Promise<DemoRoster
 			await tx.insert(visits).values(
 				data.visits.map((visit) => ({
 					...visit,
+					// Generated lines have nobody put at the front, so each number is its place in line.
+					queueOrder: visit.queuePosition,
 					accessTokenHash: visitCredentials.get(visit.id)!.tokenHash,
 				})),
 			);

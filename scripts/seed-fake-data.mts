@@ -205,9 +205,14 @@ async function main() {
 	}
 
 	for (const rows of chunk(data.visits, 500)) {
-		await db
-			.insert(visits)
-			.values(rows.map((visit) => ({ ...visit, accessTokenHash: issueVisitToken().tokenHash })));
+		await db.insert(visits).values(
+			rows.map((visit) => ({
+				...visit,
+				// Generated lines have nobody put at the front, so each number is its place in line.
+				queueOrder: visit.queuePosition,
+				accessTokenHash: issueVisitToken().tokenHash,
+			})),
+		);
 	}
 
 	summarize(data);

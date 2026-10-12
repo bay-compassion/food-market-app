@@ -108,6 +108,7 @@ function VisitStatusRow({
 			marketEventId: 'story-market',
 			status,
 			queuePosition,
+			priorityNumber: null,
 			aheadOfYou,
 			nowCalling: null,
 		};
