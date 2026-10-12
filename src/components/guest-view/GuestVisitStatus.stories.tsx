@@ -36,8 +36,10 @@ type GuestVisitStatusArgs = {
 	locale: Locale;
 	visitStatus: VisitStatus;
 	queuePosition: number | null;
+	priorityNumber: number | null;
 	aheadOfYou: number | null;
 	nowCalling: number | null;
+	calledPriority: number[];
 	isCancelling: boolean;
 	submissionError: boolean;
 };
@@ -47,8 +49,10 @@ function seededStore({
 	locale,
 	visitStatus,
 	queuePosition,
+	priorityNumber,
 	aheadOfYou,
 	nowCalling,
+	calledPriority,
 	isCancelling,
 	submissionError,
 }: GuestVisitStatusArgs) {
@@ -81,9 +85,10 @@ function seededStore({
 					marketEventId: 'story-market',
 					status: visitStatus,
 					queuePosition,
-					priorityNumber: null,
+					priorityNumber,
 					aheadOfYou,
 					nowCalling,
+					calledPriority,
 				},
 			}),
 			cancelVisit: () => {
@@ -157,8 +162,10 @@ const meta = {
 		locale: 'en',
 		visitStatus: 'registered',
 		queuePosition: null,
+		priorityNumber: null,
 		aheadOfYou: null,
 		nowCalling: null,
+		calledPriority: [],
 		isCancelling: false,
 		submissionError: false,
 	},
@@ -257,8 +264,8 @@ export const CalledLinePositionIndicatorNone: Story = {
 	decorators: withIndicator('none'),
 };
 
-/** `line-position-indicator: now-calling`, the default — a "now calling" board, like a DMV's, in place of the
- *  dots and the guests-ahead count. */
+/** `line-position-indicator: now-calling`, the default — the guest's number on the board, and under
+ *  it the number being called, like a DMV's, in place of the dots and the guests-ahead count. */
 export const WaitingNowCalling: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6, nowCalling: 1 },
 	decorators: withIndicator('now-calling'),
@@ -269,6 +276,43 @@ export const WaitingNowCalling: Story = {
 			board.getByText(translations.en.guestView.visitStatus.waiting.nowCallingLabel),
 		).toBeInTheDocument();
 		await expect(board.getByText('1')).toBeInTheDocument();
+	},
+};
+
+/** A guest a worker put at the front is being called: their priority number sits beside the main
+ *  one, which keeps counting up for everyone comparing theirs with it. */
+export const WaitingNowCallingPriority: Story = {
+	args: {
+		visitStatus: 'waiting',
+		queuePosition: 42,
+		aheadOfYou: 4,
+		nowCalling: 38,
+		calledPriority: [1],
+	},
+	decorators: withIndicator('now-calling'),
+	play: async ({ canvas }) => {
+		const board = within(await canvas.findByRole('status'));
+
+		await expect(board.getByText('38')).toBeInTheDocument();
+		await expect(board.getByText('P1')).toBeInTheDocument();
+	},
+};
+
+/** The guest a worker put at the front: their number is in the priority series. */
+export const WaitingWithPriorityNumber: Story = {
+	args: {
+		visitStatus: 'waiting',
+		queuePosition: null,
+		priorityNumber: 1,
+		aheadOfYou: 0,
+		nowCalling: 38,
+	},
+	decorators: withIndicator('now-calling'),
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(translations.en.guestView.visitStatus.yourNumberLabel),
+		).toBeInTheDocument();
+		await expect(canvas.getByText('P1')).toBeInTheDocument();
 	},
 };
 

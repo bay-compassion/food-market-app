@@ -221,7 +221,7 @@ describe('GuestView', () => {
 		const { container } = await renderLoadedGuestView();
 
 		// Assert
-		await waitFor(() => expect(container.textContent).toContain('Your place in line'));
+		await waitFor(() => expect(container.textContent).toContain('Your number'));
 		expect(container.textContent).toContain('3');
 	});
 

@@ -111,6 +111,7 @@ function VisitStatusRow({
 			priorityNumber: null,
 			aheadOfYou,
 			nowCalling: null,
+			calledPriority: [],
 		};
 
 		return new RootStore({

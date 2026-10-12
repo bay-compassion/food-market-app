@@ -80,6 +80,7 @@ describe('visit handler GET', () => {
 			...visit,
 			aheadOfYou: null,
 			nowCalling: null,
+			calledPriority: [],
 		});
 	});
 
@@ -96,13 +97,22 @@ describe('visit handler GET', () => {
 
 		queueResult([{ ...visit, queueFront: false, queueOrder: 4 }]);
 		queueResult([{ count: 3 }]);
-		queueResult([{ queuePosition: 1 }]);
+		queueResult([{ queuePosition: 1 }]); // the highest main number called
+		queueResult([
+			{ queuePosition: 1, priorityNumber: null },
+			{ queuePosition: null, priorityNumber: 1 },
+		]); // who is at the entrance now
 
 		const response = await handler(request('GET', { token: validToken }));
 
 		expect(response.status).toBe(200);
 		// The line order stays on the server: a guest sees their number, not how it was placed.
-		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: 3, nowCalling: 1 });
+		await expect(response.json()).resolves.toEqual({
+			...visit,
+			aheadOfYou: 3,
+			nowCalling: 1,
+			calledPriority: [1],
+		});
 	});
 
 	it('reports no number being called before anyone has been called', async () => {
@@ -118,11 +128,17 @@ describe('visit handler GET', () => {
 		queueResult([visit]);
 		queueResult([{ count: 0 }]);
 		queueResult([]);
+		queueResult([]);
 
 		const response = await handler(request('GET', { token: validToken }));
 
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: 0, nowCalling: null });
+		await expect(response.json()).resolves.toEqual({
+			...visit,
+			aheadOfYou: 0,
+			nowCalling: null,
+			calledPriority: [],
+		});
 	});
 
 	it('reports no queue position once the guest has been called', async () => {
@@ -144,6 +160,7 @@ describe('visit handler GET', () => {
 			...visit,
 			aheadOfYou: null,
 			nowCalling: null,
+			calledPriority: [],
 		});
 	});
 

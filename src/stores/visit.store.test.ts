@@ -78,6 +78,7 @@ describe('VisitStore', () => {
 				priorityNumber: null,
 				aheadOfYou: null,
 				nowCalling: null,
+				calledPriority: [],
 			});
 		});
 

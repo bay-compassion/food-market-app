@@ -1,5 +1,6 @@
 import type { VisitStatusTranslations } from '@/locales.ts';
 
+import type { NowCalling } from '../../../models/now-calling';
 import type { QueueNumber } from '../../../models/queue-number';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 import { QueueStanding } from './QueueStanding';
@@ -9,7 +10,7 @@ export type WaitingVisitStatusProps = {
 	copy: VisitStatusTranslations;
 	queueNumber: QueueNumber | null;
 	guestsAhead: number | null;
-	nowCalling: number | null;
+	nowCalling: NowCalling | null;
 };
 
 export function WaitingVisitStatus({

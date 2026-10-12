@@ -126,6 +126,7 @@ export class SceneFixtures {
 					priorityNumber: null,
 					aheadOfYou: visit.aheadOfYou ?? null,
 					nowCalling: null,
+					calledPriority: [],
 				}
 			: null;
 	}

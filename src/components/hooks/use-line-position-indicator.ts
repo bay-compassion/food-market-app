@@ -12,7 +12,7 @@ export const LINE_POSITION_INDICATOR_FLAG_KEY = 'line-position-indicator';
  * - `guests-ahead` — `QueuePositionDots`, the row of figures ending in a cart, with the "N guests
  *   ahead of you" count beside it. The two describe the same fact, so they come and go together.
  *   A called guest sees the dots too, with the cart emphasized.
- * - `now-calling` — `NowCallingIndicator`, a DMV-style board with the number most recently called,
+ * - `now-calling` — `NowCallingIndicator`, a DMV-style row with the highest main number called,
  *   for the guest to compare against their own.
  * - `none` — the queue-position number alone.
  */

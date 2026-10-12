@@ -3,6 +3,7 @@ import { type IReactionDisposer, reaction, runInAction } from 'mobx';
 import type { VisitStatus } from '@/services/visitStateMachine.ts';
 import type { SessionOverview } from '@/stores/market-session.store.ts';
 
+import { NowCalling } from '../models/now-calling';
 import { QueueNumber } from '../models/queue-number';
 import {
 	cancelCurrentVisit,
@@ -82,9 +83,9 @@ export class VisitStore {
 		return this._currentVisit?.status === 'waiting' ? this._currentVisit.aheadOfYou : null;
 	}
 
-	/** The queue number the market is calling right now, or `null` before anyone has been called. */
-	get nowCalling(): number | null {
-		return this._currentVisit?.status === 'waiting' ? this._currentVisit.nowCalling : null;
+	/** The numbers the market is calling right now, while the guest waits. */
+	get nowCalling(): NowCalling | null {
+		return this._currentVisit?.status === 'waiting' ? new NowCalling(this._currentVisit) : null;
 	}
 
 	/**
@@ -184,6 +185,7 @@ export class VisitStore {
 			priorityNumber: null,
 			aheadOfYou: null,
 			nowCalling: null,
+			calledPriority: [],
 		};
 		this.scheduleRefresh();
 	}
