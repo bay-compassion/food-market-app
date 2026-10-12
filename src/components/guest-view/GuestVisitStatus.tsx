@@ -31,7 +31,13 @@ export const GuestVisitStatus = observer(function GuestVisitStatus() {
 				/>
 			);
 		case 'called':
-			return <CalledVisitStatus copy={copy} queueNumber={visit.queueNumber} />;
+			return (
+				<CalledVisitStatus
+					copy={copy}
+					queueNumber={visit.queueNumber}
+					nowCalling={visit.nowCalling}
+				/>
+			);
 		case 'served':
 		case 'not_placed':
 		case 'no_show':

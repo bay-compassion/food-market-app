@@ -14,14 +14,14 @@ export type CurrentVisit = {
 	queuePosition: number | null;
 	priorityNumber: number | null;
 	aheadOfYou: number | null;
-	/** The highest main-series number called in this session; only reported while waiting. */
+	/** The highest main-series number called in this session; reported while waiting or called. */
 	nowCalling: number | null;
 	/**
-	 * The main numbers called and not yet at the table, most recently called first; only reported
-	 * while waiting. Several at once when a worker calls a batch.
+	 * The main numbers called and not yet at the table, most recently called first; reported while
+	 * waiting or called. Several at once when a worker calls a batch.
 	 */
 	called: number[];
-	/** The priority numbers (`P1`, …) called and not yet at the table; only reported while waiting. */
+	/** The priority numbers (`P1`, …) called and not yet at the table; reported while waiting or called. */
 	calledPriority: number[];
 };
 

@@ -69,12 +69,30 @@ export const WaitingNoneCalledYet: Story = {
  *  The stamp under the heading — a blinking dot, the guest's name, and today's date — is what
  *  the check-in worker reads to tell a live screen for today from a screenshot. */
 export const Called: Story = {
-	args: { visitStatus: 'called', queuePosition: 42 },
+	args: { visitStatus: 'called', queuePosition: 42, nowCalling: 42, called: [42] },
 	play: async ({ canvas }) => {
 		await expect(await canvas.findByText('Ada L')).toBeInTheDocument();
 		// The number stays on the card, for the worker at the entrance to check.
-		await expect(canvas.getByText('42')).toBeInTheDocument();
+		await expect(canvas.getAllByText('42')).toHaveLength(2);
 	},
+};
+
+/** Called a little while ago: the market has called on, and the card counts the numbers since
+ *  theirs in amber. */
+export const CalledRunningLate: Story = {
+	args: { visitStatus: 'called', queuePosition: 42, nowCalling: 45, called: [45, 44, 42] },
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(
+				translations.en.guestView.visitStatus.called.sinceYoursOther.replace('{count}', '3'),
+			),
+		).toBeInTheDocument();
+	},
+};
+
+/** Well behind: the count turns red, and past eight pips the rest are a number. */
+export const CalledWellBehind: Story = {
+	args: { visitStatus: 'called', queuePosition: 42, nowCalling: 53, called: [53, 52, 51, 42] },
 };
 
 /** Cancelling is in flight, so the cancel button is disabled. */

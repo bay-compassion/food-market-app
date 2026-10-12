@@ -10,6 +10,9 @@ export type NowCallingState = {
 	calledPriority: number[];
 };
 
+/** How far the line has moved past a called guest; see `NowCalling.urgencySince`. */
+export type NowCallingUrgency = 'none' | 'recent' | 'behind' | 'wellBehind';
+
 /**
  * The "now calling" row on a waiting guest's card, a small version of the room display: the main
  * number the market has reached, for the guest to compare with their own; the earlier numbers still
@@ -24,6 +27,12 @@ export class NowCalling {
 	 * batch; a longer list is the room display's job, and the oldest are the least useful.
 	 */
 	static readonly earlierLimit = 3;
+
+	/** From this many numbers past theirs, a called guest is falling behind. */
+	static readonly behindFrom = 3;
+
+	/** From this many, well behind. */
+	static readonly wellBehindFrom = 6;
 
 	constructor(private readonly state: NowCallingState) {}
 
@@ -49,6 +58,41 @@ export class NowCalling {
 		return this.state.calledPriority
 			.map((value) => QueueNumber.priority(value))
 			.toSorted(QueueNumber.compare);
+	}
+
+	/**
+	 * How many main numbers the market has called past `number` — how far the line has moved on
+	 * since a called guest's turn, for one who is late or taking their time. `null` for a priority
+	 * number, which counts on its own and so cannot be measured against the main series, and
+	 * before any main number has been called.
+	 */
+	numbersSince(number: QueueNumber): number | null {
+		const main = this.main;
+
+		if (number.isPriority || main === null) {
+			return null;
+		}
+
+		return Math.max(0, main.value - number.value);
+	}
+
+	/**
+	 * How pressing `numbersSince` has become: `none` while the guest's own number is the one being
+	 * called, `recent` for the first few, then `behind`, then `wellBehind`. The bands only colour the
+	 * indicator — the market decides what happens to a late guest, not the card.
+	 */
+	urgencySince(number: QueueNumber): NowCallingUrgency {
+		const since = this.numbersSince(number) ?? 0;
+
+		if (since >= NowCalling.wellBehindFrom) {
+			return 'wellBehind';
+		}
+
+		if (since >= NowCalling.behindFrom) {
+			return 'behind';
+		}
+
+		return since > 0 ? 'recent' : 'none';
 	}
 
 	/** Nobody has been called yet, in either series. */

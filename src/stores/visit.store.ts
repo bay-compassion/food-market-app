@@ -88,9 +88,11 @@ export class VisitStore {
 		return this._currentVisit?.status === 'waiting' ? this._currentVisit.aheadOfYou : null;
 	}
 
-	/** The numbers the market is calling right now, while the guest waits. */
+	/** The numbers the market is calling right now, while the guest waits and once they are called. */
 	get nowCalling(): NowCalling | null {
-		return this._currentVisit?.status === 'waiting' ? new NowCalling(this._currentVisit) : null;
+		const visit = this._currentVisit;
+
+		return visit?.status === 'waiting' || visit?.status === 'called' ? new NowCalling(visit) : null;
 	}
 
 	/**

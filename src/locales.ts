@@ -51,6 +51,10 @@ export interface VisitStatusTranslations {
 	called: {
 		header: string;
 		details: string;
+		/** How far the line has moved past a called guest's number, when it is exactly one. */
+		sinceYoursOne: string;
+		/** The same for any other count; `{count}` is how many numbers. */
+		sinceYoursOther: string;
 	};
 	served: {
 		header: string;
@@ -588,7 +592,12 @@ export const translations = {
 					nowCallingLabel: 'Now calling',
 					nowCallingNone: 'No numbers called yet',
 				},
-				called: { header: 'It’s your turn', details: 'Please come to the entrance now.' },
+				called: {
+					header: 'It’s your turn',
+					details: 'Please come to the entrance now.',
+					sinceYoursOne: '1 number called since yours',
+					sinceYoursOther: '{count} numbers called since yours',
+				},
 				served: {
 					header: 'Thank you for coming',
 					details:
@@ -977,7 +986,12 @@ export const translations = {
 					nowCallingLabel: 'Llamando ahora',
 					nowCallingNone: 'Aún no se ha llamado ningún número',
 				},
-				called: { header: 'Es su turno', details: 'Por favor, acérquese a la entrada ahora.' },
+				called: {
+					header: 'Es su turno',
+					details: 'Por favor, acérquese a la entrada ahora.',
+					sinceYoursOne: 'Se llamó 1 número después del suyo',
+					sinceYoursOther: 'Se llamaron {count} números después del suyo',
+				},
 				served: {
 					header: 'Gracias por venir',
 					details:
@@ -1364,7 +1378,12 @@ export const translations = {
 					nowCallingLabel: 'در حال فراخوانی',
 					nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
 				},
-				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به ورودی مراجعه کنید.' },
+				called: {
+					header: 'نوبت شماست',
+					details: 'لطفاً همین حالا به ورودی مراجعه کنید.',
+					sinceYoursOne: 'پس از شمارهٔ شما ۱ شماره فراخوانده شد',
+					sinceYoursOther: 'پس از شمارهٔ شما {count} شماره فراخوانده شد',
+				},
 				served: {
 					header: 'از حضورتان سپاسگزاریم',
 					details:
@@ -1754,6 +1773,8 @@ export const translations = {
 				called: {
 					header: 'Kayo na po ang susunod',
 					details: 'Pumunta na po kayo sa pasukan ngayon.',
+					sinceYoursOne: '1 numero na ang natawag pagkatapos ng sa inyo',
+					sinceYoursOther: '{count} numero na ang natawag pagkatapos ng sa inyo',
 				},
 				served: {
 					header: 'Salamat po sa pagpunta',
@@ -2140,7 +2161,12 @@ export const translations = {
 					nowCallingLabel: 'Đang gọi số',
 					nowCallingNone: 'Chưa gọi số nào',
 				},
-				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến lối vào ngay bây giờ.' },
+				called: {
+					header: 'Đã đến lượt bạn',
+					details: 'Vui lòng đến lối vào ngay bây giờ.',
+					sinceYoursOne: 'Đã gọi 1 số sau số của bạn',
+					sinceYoursOther: 'Đã gọi {count} số sau số của bạn',
+				},
 				served: {
 					header: 'Cảm ơn bạn đã đến',
 					details:
@@ -2516,7 +2542,12 @@ export const translations = {
 					nowCallingLabel: '正在叫号',
 					nowCallingNone: '尚未叫号',
 				},
-				called: { header: '轮到您了', details: '请现在到入口来。' },
+				called: {
+					header: '轮到您了',
+					details: '请现在到入口来。',
+					sinceYoursOne: '在您之后已叫了 1 个号',
+					sinceYoursOther: '在您之后已叫了 {count} 个号',
+				},
 				served: {
 					header: '感谢您的到来',
 					details: '您今天的到访已完成。登记将于下周六上午 10:30 重新开放。',
@@ -2887,7 +2918,12 @@ export const translations = {
 					nowCallingLabel: 'الرقم الحالي',
 					nowCallingNone: 'لم يتم النداء على أي رقم بعد',
 				},
-				called: { header: 'حان دورك', details: 'يرجى التوجه إلى المدخل الآن.' },
+				called: {
+					header: 'حان دورك',
+					details: 'يرجى التوجه إلى المدخل الآن.',
+					sinceYoursOne: 'تم استدعاء رقم واحد بعد رقمك',
+					sinceYoursOther: 'تم استدعاء {count} من الأرقام بعد رقمك',
+				},
 				served: {
 					header: 'شكرًا لحضورك',
 					details:
@@ -3272,6 +3308,8 @@ export const translations = {
 				called: {
 					header: 'C’est votre tour',
 					details: 'Veuillez vous présenter à l’entrée maintenant.',
+					sinceYoursOne: '1 numéro appelé après le vôtre',
+					sinceYoursOther: '{count} numéros appelés après le vôtre',
 				},
 				served: {
 					header: 'Merci d’être venu',

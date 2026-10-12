@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { NowCalling } from './now-calling';
+import { QueueNumber } from './queue-number';
 
 describe('NowCalling', () => {
 	it('keeps the main number apart from the priority numbers beside it', () => {
@@ -64,5 +65,40 @@ describe('NowCalling', () => {
 
 		// Assert
 		expect(shown).toEqual({ main: '38', earlier: ['37'] });
+	});
+
+	it('counts the main numbers called past a called guest’s own', () => {
+		// Arrange
+		const calling = new NowCalling({ nowCalling: 46, called: [46], calledPriority: [] });
+
+		// Act
+		const since = [42, 46, 50].map((value) => calling.numbersSince(QueueNumber.main(value)));
+
+		// Assert
+		expect(since).toEqual([4, 0, 0]);
+	});
+
+	it('cannot measure a priority number against the main series', () => {
+		// Arrange
+		const calling = new NowCalling({ nowCalling: 46, called: [46], calledPriority: [1] });
+
+		// Act
+		const since = calling.numbersSince(QueueNumber.priority(1));
+
+		// Assert
+		expect(since).toBeNull();
+	});
+
+	it('grows more pressing the further the line has moved past', () => {
+		// Arrange
+		const calling = new NowCalling({ nowCalling: 50, called: [50], calledPriority: [] });
+
+		// Act
+		const urgency = [50, 49, 47, 45, 44].map((value) =>
+			calling.urgencySince(QueueNumber.main(value)),
+		);
+
+		// Assert
+		expect(urgency).toEqual(['none', 'recent', 'behind', 'behind', 'wellBehind']);
 	});
 });
