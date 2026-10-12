@@ -64,6 +64,8 @@ Task {
     try composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)!.insertTimeRange(range, of: vTrack, at: .zero)
     try composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)!.insertTimeRange(range, of: aTrack, at: .zero)
     let export = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetPassthrough)!
+    // "Fast start": the index goes at the front, so a browser can begin playing before the end arrives.
+    export.shouldOptimizeForNetworkUse = true
     try await export.export(to: outURL, as: .mp4)
     print("wrote", outURL.path, CMTimeGetSeconds(vDur), "s")
   } catch { print("mux error:", error) }

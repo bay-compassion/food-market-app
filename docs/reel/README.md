@@ -63,6 +63,22 @@ docs/reel/out/encode docs/reel/out/frames docs/reel/soundtrack.m4a docs/reel/out
 argument to `encode` for a smaller copy — `2900000` comes in under 25 MB. The scripts need
 `npx playwright install chromium` once, and encoding needs macOS.
 
+## Publishing
+
+The reel is hosted on GitHub Pages at <https://bay-compassion.github.io/food-market-app/>: a
+landing page (`site.html`) with the video, the interactive page at `reel.html`, and a poster
+frame. After rendering, encode the web copy and publish:
+
+```bash
+docs/reel/out/encode docs/reel/out/frames docs/reel/soundtrack.m4a docs/reel/out/market-day-reel-web.mp4 2900000
+node docs/reel/publish.mjs --dry-run
+node docs/reel/publish.mjs
+```
+
+`--dry-run` assembles the site in `out/site/` to look at first. A real publish force-pushes it as
+a single commit to the `gh-pages` branch, which shares no history with `main` and is replaced each
+time, so old renders never accumulate. Pages deploys it within a minute or two. The site is public.
+
 ## The soundtrack
 
 The music is arranged from GarageBand's Apple Loops: the _Moving Pictures_ kit (acoustic guitar,
