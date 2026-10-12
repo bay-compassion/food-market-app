@@ -74,9 +74,14 @@ export class VisitStore {
 		return this._currentVisit?.status === 'registered' || this._currentVisit?.status === 'waiting';
 	}
 
-	/** The guest's number while they wait in line. */
+	/**
+	 * The guest's number while they wait and once they are called — when a worker at the entrance
+	 * checks it against the line.
+	 */
 	get queueNumber(): QueueNumber | null {
-		return this._currentVisit?.status === 'waiting' ? QueueNumber.of(this._currentVisit) : null;
+		const visit = this._currentVisit;
+
+		return visit?.status === 'waiting' || visit?.status === 'called' ? QueueNumber.of(visit) : null;
 	}
 
 	get guestsAhead(): number | null {

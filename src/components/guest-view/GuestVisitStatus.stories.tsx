@@ -213,10 +213,12 @@ export const WaitingNext: Story = {
  *  The stamp under the heading — a blinking dot, the guest's name, and today's date — is what
  *  the check-in worker reads to tell a live screen for today from a screenshot. */
 export const Called: Story = {
-	args: { visitStatus: 'called' },
+	args: { visitStatus: 'called', queuePosition: 42 },
 	decorators: withIndicator('guests-ahead'),
 	play: async ({ canvas }) => {
 		await expect(await canvas.findByText('Ada L')).toBeInTheDocument();
+		// The number stays on the card, for the worker at the entrance to check.
+		await expect(canvas.getByText('42')).toBeInTheDocument();
 	},
 };
 
@@ -260,7 +262,7 @@ export const WaitingLinePositionIndicatorNone: Story = {
 /** The called state with anything but `guests-ahead`, including the `now-calling` default — the panel reads fine with nothing standing
  *  in for the cart line. */
 export const CalledLinePositionIndicatorNone: Story = {
-	args: { visitStatus: 'called' },
+	args: { visitStatus: 'called', queuePosition: 42 },
 	decorators: withIndicator('none'),
 };
 
