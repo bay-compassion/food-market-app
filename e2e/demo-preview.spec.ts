@@ -96,8 +96,8 @@ test(
 		await guest.waitForResponse((response) => response.url().endsWith('/api/visit'), {
 			timeout: 20_000,
 		});
-		// The queue position renders whichever `line-position-indicator` the dev server resolves.
-		await expect(guest.locator('.queue-position strong')).toHaveText('2', { timeout: 20_000 });
+		// The guest's number renders whichever `line-position-indicator` the dev server resolves.
+		await expect(guest.locator('.queue-number-board strong')).toHaveText('2', { timeout: 20_000 });
 		await guest.getByRole('button', { name: copy.cancelAction }).click();
 		await guest
 			.getByRole('alertdialog', { name: copy.cancelConfirmation })

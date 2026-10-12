@@ -25,6 +25,8 @@ export function isLocale(value: unknown): value is Locale {
 }
 
 export interface VisitStatusTranslations {
+	/** Heads the guest's queue number on the waiting and called cards. A number, not a position. */
+	yourNumberLabel: string;
 	labels: {
 		registered: string;
 		waiting: string;
@@ -41,7 +43,6 @@ export interface VisitStatusTranslations {
 	waiting: {
 		header: string;
 		details: string;
-		queuePositionLabel: string;
 		guestsAheadLabel: string;
 		youAreNext: string;
 		nowCallingLabel: string;
@@ -565,6 +566,7 @@ export const translations = {
 				accessibleDescription: 'This page updates automatically. You do not need to refresh it.',
 			},
 			visitStatus: {
+				yourNumberLabel: 'Your number',
 				labels: {
 					registered: 'Registered',
 					waiting: 'Waiting',
@@ -581,7 +583,6 @@ export const translations = {
 				waiting: {
 					header: 'You’re on the list!',
 					details: 'We’ll let you know when it’s your turn. Thank you for being here.',
-					queuePositionLabel: 'Your place in line',
 					guestsAheadLabel: 'Guests ahead of you',
 					youAreNext: 'You are next',
 					nowCallingLabel: 'Now calling',
@@ -955,6 +956,7 @@ export const translations = {
 					'Esta página se actualiza automáticamente. No es necesario que la actualice.',
 			},
 			visitStatus: {
+				yourNumberLabel: 'Su número',
 				labels: {
 					registered: 'Registrado',
 					waiting: 'En espera',
@@ -971,7 +973,6 @@ export const translations = {
 				waiting: {
 					header: '¡Ya está en la lista!',
 					details: 'Le avisaremos cuando sea su turno. Gracias por estar aquí.',
-					queuePositionLabel: 'Su lugar en la fila',
 					guestsAheadLabel: 'Invitados delante de usted',
 					youAreNext: 'Usted es el siguiente',
 					nowCallingLabel: 'Llamando ahora',
@@ -1343,6 +1344,7 @@ export const translations = {
 				accessibleDescription: 'این صفحه به‌طور خودکار به‌روز می‌شود. لازم نیست آن را تازه‌سازی کنید.',
 			},
 			visitStatus: {
+				yourNumberLabel: 'شمارهٔ شما',
 				labels: {
 					registered: 'ثبت‌شده',
 					waiting: 'در انتظار',
@@ -1359,7 +1361,6 @@ export const translations = {
 				waiting: {
 					header: 'شما در لیست هستید!',
 					details: 'وقتی نوبت شما شد اطلاع می‌دهیم. از حضورتان سپاسگزاریم.',
-					queuePositionLabel: 'جایگاه شما در صف',
 					guestsAheadLabel: 'مهمانان جلوتر از شما',
 					youAreNext: 'شما نفر بعدی هستید',
 					nowCallingLabel: 'در حال فراخوانی',
@@ -1731,6 +1732,7 @@ export const translations = {
 					'Awtomatikong nag-a-update ang pahinang ito. Hindi mo na kailangang i-refresh.',
 			},
 			visitStatus: {
+				yourNumberLabel: 'Ang inyong numero',
 				labels: {
 					registered: 'Nakarehistro',
 					waiting: 'Naghihintay',
@@ -1747,7 +1749,6 @@ export const translations = {
 				waiting: {
 					header: 'Nasa listahan na kayo!',
 					details: 'Ipaaalam namin kapag oras na ninyo. Salamat sa pagpunta.',
-					queuePositionLabel: 'Ang inyong puwesto sa pila',
 					guestsAheadLabel: 'Mga bisita bago kayo',
 					youAreNext: 'Kayo na ang susunod',
 					nowCallingLabel: 'Tinatawag ngayon',
@@ -2120,6 +2121,7 @@ export const translations = {
 				accessibleDescription: 'Trang này tự động cập nhật. Bạn không cần tải lại trang.',
 			},
 			visitStatus: {
+				yourNumberLabel: 'Số của bạn',
 				labels: {
 					registered: 'Đã đăng ký',
 					waiting: 'Đang chờ',
@@ -2136,7 +2138,6 @@ export const translations = {
 				waiting: {
 					header: 'Bạn đã có tên trong danh sách!',
 					details: 'Chúng tôi sẽ báo cho bạn khi đến lượt. Cảm ơn bạn đã đến.',
-					queuePositionLabel: 'Vị trí của bạn trong hàng',
 					guestsAheadLabel: 'Số khách trước bạn',
 					youAreNext: 'Bạn là người tiếp theo',
 					nowCallingLabel: 'Đang gọi số',
@@ -2500,6 +2501,7 @@ export const translations = {
 				accessibleDescription: '本页面会自动更新，您无需刷新。',
 			},
 			visitStatus: {
+				yourNumberLabel: '您的号码',
 				labels: {
 					registered: '已登记',
 					waiting: '等待中',
@@ -2513,7 +2515,6 @@ export const translations = {
 				waiting: {
 					header: '您已加入名单！',
 					details: '轮到您时我们会通知您。感谢您的到来。',
-					queuePositionLabel: '您的排队位置',
 					guestsAheadLabel: '您前面的访客',
 					youAreNext: '下一位就是您',
 					nowCallingLabel: '正在叫号',
@@ -2868,6 +2869,7 @@ export const translations = {
 				accessibleDescription: 'تُحدَّث هذه الصفحة تلقائيًا. لا حاجة إلى إعادة تحميلها.',
 			},
 			visitStatus: {
+				yourNumberLabel: 'رقمك',
 				labels: {
 					registered: 'مسجل',
 					waiting: 'قيد الانتظار',
@@ -2884,7 +2886,6 @@ export const translations = {
 				waiting: {
 					header: 'أنت الآن في قائمة الانتظار!',
 					details: 'سنخبرك عندما يحين دورك. شكرًا لوجودك معنا.',
-					queuePositionLabel: 'مكانك في الصف',
 					guestsAheadLabel: 'الضيوف الذين أمامك',
 					youAreNext: 'أنت التالي',
 					nowCallingLabel: 'الرقم الحالي',
@@ -3250,6 +3251,7 @@ export const translations = {
 					'Cette page se met à jour automatiquement. Vous n’avez pas besoin de l’actualiser.',
 			},
 			visitStatus: {
+				yourNumberLabel: 'Votre numéro',
 				labels: {
 					registered: 'Inscrit',
 					waiting: 'En attente',
@@ -3266,7 +3268,6 @@ export const translations = {
 				waiting: {
 					header: 'Vous êtes sur la liste !',
 					details: 'Nous vous préviendrons quand ce sera votre tour. Merci d’être venu.',
-					queuePositionLabel: 'Votre place dans la file',
 					guestsAheadLabel: 'Personnes devant vous',
 					youAreNext: 'Vous êtes le prochain',
 					nowCallingLabel: 'Numéro appelé',

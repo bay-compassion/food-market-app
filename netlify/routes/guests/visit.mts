@@ -13,7 +13,7 @@ import {
 } from '../../lib/http.mjs';
 import { tracedQuery } from '../../lib/sentry.mjs';
 import { hashVisitToken } from '../../services/guestCredentials.mjs';
-import { highestCalledNumber } from '../../services/queue-board.mjs';
+import { calledNumbers, highestCalledNumber } from '../../services/queue-board.mjs';
 import { guestActor, recordVisitEvents } from '../../services/visit-events.mjs';
 
 /** Cancelling is the only change a guest can make to their own visit. */
@@ -87,9 +87,19 @@ async function guestsAhead(visit: {
 	return ahead?.count ?? 0;
 }
 
-/** The "now calling" board, like `guestsAhead` only meaningful while waiting. */
+/**
+ * The "now calling" board, like `guestsAhead` only meaningful while waiting: the highest main number
+ * called, and the priority numbers (`P1`, …) at the entrance now, which a guest sees beside it.
+ */
 async function nowCalling(visit: { status: string; marketEventId: string }) {
-	return visit.status === 'waiting' ? highestCalledNumber(visit.marketEventId) : null;
+	if (visit.status !== 'waiting') {
+		return { nowCalling: null, calledPriority: [] };
+	}
+
+	const highest = await highestCalledNumber(visit.marketEventId);
+	const { calledPriority } = await calledNumbers(visit.marketEventId);
+
+	return { nowCalling: highest, calledPriority };
 }
 
 type Visit = NonNullable<Awaited<ReturnType<typeof authorizedVisit>>>;
@@ -122,7 +132,7 @@ visitRoutes.get('/api/visit', async (context) => {
 	return Response.json({
 		...shown,
 		aheadOfYou: await guestsAhead(visit),
-		nowCalling: await nowCalling(visit),
+		...(await nowCalling(visit)),
 	});
 });
 visitRoutes.patch('/api/visit', async (context) => {

@@ -16,6 +16,8 @@ export type CurrentVisit = {
 	aheadOfYou: number | null;
 	/** The highest main-series number called in this session; only reported while waiting. */
 	nowCalling: number | null;
+	/** The priority numbers (`P1`, …) called and not yet at the table; only reported while waiting. */
+	calledPriority: number[];
 };
 
 export type GuestRegistrationInput = GuestFormState & {
@@ -123,7 +125,15 @@ export async function fetchCurrentVisit(token: string): Promise<CurrentVisitLook
 			return { found: false, reason: 'expired' };
 		}
 
-		return { found: true, visit: (await response.json()) as CurrentVisit };
+		const visit = (await response.json()) as Omit<
+			CurrentVisit,
+			'priorityNumber' | 'calledPriority'
+		> &
+			Partial<Pick<CurrentVisit, 'priorityNumber' | 'calledPriority'>>;
+
+		// Defaults for the fields the priority series added, so a response that predates them (a
+		// rollback, or a deploy still finishing) reads as "none" rather than as `undefined`.
+		return { found: true, visit: { priorityNumber: null, calledPriority: [], ...visit } };
 	} catch {
 		return { found: false, reason: 'unreachable' };
 	}

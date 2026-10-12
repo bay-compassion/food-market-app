@@ -32,6 +32,31 @@ export async function highestCalledNumber(marketEventId: string): Promise<number
 }
 
 /**
+ * Every number called but not yet served or marked a no-show, most recently called first, by
+ * series — the people expected at the entrance. Shared by the room display and a waiting guest's
+ * phone, so the two list the same numbers.
+ */
+export async function calledNumbers(
+	marketEventId: string,
+): Promise<Pick<QueueBoardState, 'called' | 'calledPriority'>> {
+	const rows = await tracedQuery('queue_board.called', () =>
+		db
+			.select({ queuePosition: visits.queuePosition, priorityNumber: visits.priorityNumber })
+			.from(visits)
+			.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'called')))
+			// Newest first, so a display that runs out of room drops the oldest.
+			.orderBy(desc(visits.calledAt), desc(visits.queuePosition), desc(visits.priorityNumber)),
+	);
+
+	return {
+		called: rows.flatMap(({ queuePosition }) => (queuePosition === null ? [] : [queuePosition])),
+		calledPriority: rows.flatMap(({ priorityNumber }) =>
+			priorityNumber === null ? [] : [priorityNumber],
+		),
+	};
+}
+
+/**
  * The current session's queue as the room display shows it. Queue numbers only — the display sits
  * where anyone can read it, so nothing here names a guest.
  *
@@ -49,14 +74,7 @@ export async function queueBoard(): Promise<QueueBoardState> {
 		return { sessionStatus: event.status, ...empty };
 	}
 
-	const called = await tracedQuery('queue_board.called', () =>
-		db
-			.select({ queuePosition: visits.queuePosition, priorityNumber: visits.priorityNumber })
-			.from(visits)
-			.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'called')))
-			// Newest first, so the display drops the oldest when it runs out of room.
-			.orderBy(desc(visits.calledAt), desc(visits.queuePosition), desc(visits.priorityNumber)),
-	);
+	const called = await calledNumbers(event.id);
 	const [waiting] = await tracedQuery('queue_board.waiting_count', () =>
 		db
 			.select({ count: sql<number>`count(*)::int` })
@@ -67,10 +85,7 @@ export async function queueBoard(): Promise<QueueBoardState> {
 	return {
 		sessionStatus: event.status,
 		nowCalling: await highestCalledNumber(event.id),
-		called: called.flatMap(({ queuePosition }) => (queuePosition === null ? [] : [queuePosition])),
-		calledPriority: called.flatMap(({ priorityNumber }) =>
-			priorityNumber === null ? [] : [priorityNumber],
-		),
+		...called,
 		waitingCount: waiting?.count ?? 0,
 	};
 }

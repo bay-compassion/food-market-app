@@ -464,7 +464,7 @@ describe('App', () => {
 		expect(container.querySelector('input[autocomplete="family-name"]')).not.toBeNull();
 		expect(container.querySelector('input[type="tel"]')).not.toBeNull();
 		expect(container.querySelector('.number-spinner-input input')).toBeNull();
-		expect(container.textContent).not.toContain('Your place in line');
+		expect(container.textContent).not.toContain('Your number');
 	});
 
 	async function renderWithVisit(
@@ -502,7 +502,7 @@ describe('App', () => {
 			guestsAheadFlags,
 		);
 
-		await waitFor(() => expect(container.textContent).toContain('Your place in line'));
+		await waitFor(() => expect(container.textContent).toContain('Your number'));
 
 		expect(container.textContent).toContain('7');
 		expect(container.textContent).toContain('Guests ahead of you');
@@ -531,7 +531,7 @@ describe('App', () => {
 		await waitFor(() => expect(container.textContent).toContain('It’s your turn'));
 
 		expect(container.textContent).toContain('Please come to the entrance now.');
-		expect(container.textContent).not.toContain('Your place in line');
+		expect(container.textContent).not.toContain('Your number');
 		// A called guest has nothing left to cancel.
 		expect(container.textContent).not.toContain('Cancel this visit');
 	});
@@ -581,7 +581,7 @@ describe('App', () => {
 			name: translations.en.guestView.serviceState.inProgressHeading,
 		});
 
-		expect(container.textContent).not.toContain('Your place in line');
+		expect(container.textContent).not.toContain('Your number');
 	});
 
 	it('keeps refreshing after a guest has been called', async () => {

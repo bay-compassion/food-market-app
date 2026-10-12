@@ -2,43 +2,21 @@ import styled from '@emotion/styled';
 
 import type { VisitStatusTranslations } from '@/locales.ts';
 
+import type { NowCalling } from '../../../models/now-calling';
 import type { QueueNumber } from '../../../models/queue-number';
 import { useLinePositionIndicator } from '../../hooks/use-line-position-indicator';
 import { NowCallingIndicator } from './NowCallingIndicator';
+import { QueueNumberBoard } from './QueueNumberBoard';
 import { QueuePositionDots } from './QueuePositionDots';
 
+/* The board's colour runs to the card's edge; `overflow` keeps it inside the rounded corners. */
 const Standing = styled.div`
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	gap: 16px;
 	margin-bottom: 27px;
-	padding: 24px 20px;
 	border-radius: var(--radius-md);
+	overflow: hidden;
 	background: var(--color-surface-soft);
-`;
-
-const QueuePosition = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 4px;
-
-	span {
-		font-size: 13px;
-		font-weight: 600;
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-		color: var(--color-text-muted);
-	}
-
-	strong {
-		font-family: var(--font-heading);
-		font-weight: 700;
-		font-size: 76px;
-		line-height: 1;
-		color: var(--color-brand);
-	}
 `;
 
 const GuestsAhead = styled.div`
@@ -46,6 +24,7 @@ const GuestsAhead = styled.div`
 	flex-direction: column;
 	align-items: center;
 	gap: 12px;
+	padding: 20px;
 `;
 
 const GuestsAheadCount = styled.div`
@@ -72,22 +51,19 @@ const GuestsAheadCount = styled.div`
 	}
 `;
 
-const QueueNext = styled.p`
-	font-weight: 700;
-`;
-
 export type QueueStandingProps = {
 	copy: VisitStatusTranslations;
 	queueNumber: QueueNumber;
 	guestsAhead: number | null;
-	nowCalling: number | null;
+	nowCalling: NowCalling | null;
 	className?: string;
 };
 
 /**
- * A waiting guest's place in line: their number, and whichever line position indicator the
- * `line-position-indicator` flag selects. Shared by the waiting card and the guided tour's preview
- * of it, so the tour shows a guest the same display their screen will.
+ * A waiting guest's place in line: their number on the board, the loudest thing on the card, and
+ * under it whichever line position indicator the `line-position-indicator` flag selects. Shared by
+ * the waiting card and the guided tour's preview of it, so the tour shows a guest the same display
+ * their screen will.
  */
 export function QueueStanding({
 	copy,
@@ -100,20 +76,18 @@ export function QueueStanding({
 
 	return (
 		<Standing className={['queue-standing', className].filter(Boolean).join(' ')}>
-			{indicator === 'now-calling' ? (
+			<QueueNumberBoard
+				label={copy.yourNumberLabel}
+				number={queueNumber}
+				note={guestsAhead === 0 ? copy.waiting.youAreNext : null}
+			/>
+			{indicator === 'now-calling' && nowCalling ? (
 				<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />
 			) : null}
-			<QueuePosition className="queue-position">
-				<span>{copy.waiting.queuePositionLabel}</span>
-				<strong>{queueNumber.label}</strong>
-			</QueuePosition>
-			{guestsAhead === 0 ? (
-				<QueueNext className="queue-next">{copy.waiting.youAreNext}</QueueNext>
-			) : guestsAhead !== null && indicator === 'guests-ahead' ? (
+			{guestsAhead !== null && guestsAhead > 0 && indicator === 'guests-ahead' ? (
 				<GuestsAhead className="guests-ahead">
-					{/* `guestsAhead` here is always at least 1 (the `=== 0` branch above claims that
-					    case), and `linePosition` counts outward from the cart starting at 1 for the
-					    pip right next to it — one slot further out than the number of guests ahead. */}
+					{/* `linePosition` counts outward from the cart starting at 1 for the pip right next
+					    to it — one slot further out than the number of guests ahead. */}
 					<QueuePositionDots linePosition={guestsAhead + 1} />
 					<GuestsAheadCount>
 						<strong>{guestsAhead}</strong>

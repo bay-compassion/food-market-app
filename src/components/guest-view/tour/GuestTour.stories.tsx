@@ -101,7 +101,8 @@ function linePreview(indicator: LinePositionIndicator): Story {
 		],
 		play: async ({ globals, userEvent }) => {
 			const locale = globals.locale as Locale;
-			const waiting = translations[locale].guestView.visitStatus.waiting;
+			const visitStatus = translations[locale].guestView.visitStatus;
+			const waiting = visitStatus.waiting;
 			const standing = (await advanceToLineStep(locale, userEvent)).querySelector<HTMLElement>(
 				'.queue-standing',
 			);
@@ -111,7 +112,7 @@ function linePreview(indicator: LinePositionIndicator): Story {
 
 			const preview = within(standing!);
 
-			await expect(preview.getByText(waiting.queuePositionLabel)).toBeInTheDocument();
+			await expect(preview.getByText(visitStatus.yourNumberLabel)).toBeInTheDocument();
 			await expect(preview.queryByText(waiting.guestsAheadLabel) !== null).toBe(
 				indicator === 'guests-ahead',
 			);

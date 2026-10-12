@@ -51,7 +51,7 @@ test(
 				await page.bringToFront();
 
 				if (visit.status === 'waiting') {
-					await expect(page.locator('.queue-position strong')).toHaveText(
+					await expect(page.locator('.queue-number-board strong')).toHaveText(
 						String(visit.queue_position),
 					);
 				} else {
@@ -99,11 +99,11 @@ test(
 				firstGuest.page.getByRole('heading', { name: copy.served.header, exact: true }),
 			).toBeVisible();
 			// The rig runs with LaunchDarkly disabled, so `line-position-indicator` is at its
-			// `now-calling` default and there is no guests-ahead count on screen to watch fall. Only the queue position
+			// `now-calling` default and there is no guests-ahead count on screen to watch fall. Only the guest's number
 			// is shown whatever the flag says; the next step's "You are next" covers the guest's screen
 			// following the queue as it advances.
 			await thirdGuest.page.bringToFront();
-			await expect(thirdGuest.page.locator('.queue-position strong')).toHaveText(
+			await expect(thirdGuest.page.locator('.queue-number-board strong')).toHaveText(
 				String(third!.queue_position),
 			);
 			const visit = (await database.visits()).find((visit) => visit.id === first!.id)!;

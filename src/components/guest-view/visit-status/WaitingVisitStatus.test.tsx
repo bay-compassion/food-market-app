@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { translations } from '@/locales.ts';
 
+import { NowCalling } from '../../../models/now-calling';
 import { QueueNumber } from '../../../models/queue-number';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
@@ -12,12 +13,15 @@ import { WaitingVisitStatus } from './WaitingVisitStatus';
 
 const copy = translations.en.guestView.visitStatus;
 
+const calling = (nowCalling: number | null, calledPriority: number[] = []) =>
+	new NowCalling({ nowCalling, calledPriority });
+
 function renderWithIndicator(
 	indicator: string | undefined,
-	visit: { queueNumber: QueueNumber; guestsAhead: number; nowCalling: number | null } = {
+	visit: { queueNumber: QueueNumber; guestsAhead: number; nowCalling: NowCalling } = {
 		queueNumber: QueueNumber.main(7),
 		guestsAhead: 6,
-		nowCalling: 3,
+		nowCalling: calling(3),
 	},
 ) {
 	return render(
@@ -39,7 +43,7 @@ describe('WaitingVisitStatus', () => {
 			const { container } = renderWithIndicator(indicator);
 
 			// Assert
-			expect(container.querySelector('.queue-position')).not.toBeNull();
+			expect(container.querySelector('.queue-number-board')).not.toBeNull();
 			expect(container.querySelector('.now-calling')).not.toBeNull();
 			expect(container.querySelector('.guests-ahead')).toBeNull();
 		},
@@ -68,19 +72,45 @@ describe('WaitingVisitStatus', () => {
 		const { getByRole } = renderWithIndicator('now-calling', {
 			queueNumber: QueueNumber.main(1),
 			guestsAhead: 0,
-			nowCalling: null,
+			nowCalling: calling(null),
 		});
 
 		// Assert
 		expect(getByRole('status').textContent).toContain(copy.waiting.nowCallingNone);
 	});
 
-	it('shows only the queue position for none', () => {
+	it('shows a priority number being called beside the main one', () => {
+		// Arrange & Act
+		const { getByRole } = renderWithIndicator('now-calling', {
+			queueNumber: QueueNumber.main(42),
+			guestsAhead: 4,
+			nowCalling: calling(38, [1]),
+		});
+
+		// Assert
+		expect(getByRole('status').textContent).toBe(`${copy.waiting.nowCallingLabel}38P1`);
+	});
+
+	it('heads the board with the guest’s number, in either series', () => {
+		// Arrange & Act
+		const { container } = renderWithIndicator('now-calling', {
+			queueNumber: QueueNumber.priority(2),
+			guestsAhead: 1,
+			nowCalling: calling(38),
+		});
+
+		// Assert
+		expect(container.querySelector('.queue-number-board')?.textContent).toBe(
+			`${copy.yourNumberLabel}P2`,
+		);
+	});
+
+	it('shows only the queue number for none', () => {
 		// Arrange & Act
 		const { container } = renderWithIndicator('none');
 
 		// Assert
-		expect(container.querySelector('.queue-position')).not.toBeNull();
+		expect(container.querySelector('.queue-number-board')).not.toBeNull();
 		expect(container.querySelector('.guests-ahead')).toBeNull();
 		expect(container.querySelector('.now-calling')).toBeNull();
 	});
