@@ -52,15 +52,15 @@ describe('smsMessage', () => {
 		);
 	});
 
-	it('includes the guest queue position in a localized lottery-selection message', () => {
+	it('includes the guest’s queue number in a localized lottery-selection message', () => {
 		expect(smsMessage('es', 'lottery_selected', 12)).toBe(
-			'The Bay Compassion: ¡Fue seleccionado! Su lugar en la fila es 12. Espere hasta que le llamemos. ' +
+			'The Bay Compassion: ¡Fue seleccionado! Su número es el 12. Espere hasta que le llamemos. ' +
 				'Reply STOP to unsubscribe',
 		);
 	});
 
-	it('refuses a lottery-selection message with no queue position', () => {
-		expect(() => smsMessage('en', 'lottery_selected', null)).toThrow(/queue position/);
+	it('refuses a lottery-selection message with no queue number', () => {
+		expect(() => smsMessage('en', 'lottery_selected', null)).toThrow(/queue number/);
 	});
 
 	it('joins a broadcast’s title and body', () => {

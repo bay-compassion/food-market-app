@@ -7,14 +7,15 @@ import { useStringVariation } from '@launchdarkly/react-sdk';
 export const LINE_POSITION_INDICATOR_FLAG_KEY = 'line-position-indicator';
 
 /**
- * How a waiting guest's place in line is shown beyond the raw queue-position number:
+ * What sits under a waiting guest's number on their card:
  *
- * - `guests-ahead` — `QueuePositionDots`, the row of figures ending in a cart, with the "N guests
- *   ahead of you" count beside it. The two describe the same fact, so they come and go together.
- *   A called guest sees the dots too, with the cart emphasized.
- * - `now-calling` — `NowCallingIndicator`, a DMV-style row with the highest main number called,
- *   for the guest to compare against their own.
- * - `none` — the queue-position number alone.
+ * - `now-calling` — the design, and the default: `NowCallingIndicator`, a DMV-style row with the
+ *   highest main number called, for the guest to compare against their own.
+ * - `guests-ahead` — a fallback: `QueuePositionDots`, the row of figures ending in a cart, with the
+ *   "N guests ahead of you" count beside it. The two describe the same fact, so they come and go
+ *   together. A called guest sees the dots too, with the cart emphasized. A stakeholder asked that
+ *   guests not see how many are ahead of them, so this stays behind the flag.
+ * - `none` — the guest's number alone.
  */
 export type LinePositionIndicator = 'guests-ahead' | 'now-calling' | 'none';
 

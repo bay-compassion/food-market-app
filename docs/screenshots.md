@@ -76,7 +76,7 @@ A docs page renders every story it embeds in one window. A story that changes so
 `window.fetch`, `localStorage` — changes it for all of them, and whichever rendered last wins. The
 visit store refreshes itself every fifteen seconds, and a fake `fetch` made every card on the "Guest
 States" page turn into the last story's status. Hand a fake to the store instead (`RootStore` takes
-per-store options), as `GuestVisitStatus.stories.tsx` does.
+per-store options), as `SeededVisitStatus.fixture.tsx` does.
 
 ## Screenshots
 

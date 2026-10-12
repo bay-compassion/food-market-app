@@ -1,194 +1,35 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
 import { expect, within } from 'storybook/test';
 
-import { translations, type Locale } from '../../locales';
-import { SessionStatusEnum } from '../../services/sessionStateMachine';
-import { StorageKey, StorageService } from '../../services/storage.service';
-import type { VisitStatus } from '../../services/visitStateMachine';
-import { RootStoreProvider } from '../../stores/react/store-context';
-import { RootStore } from '../../stores/root.store';
+import { translations } from '../../locales';
 import {
-	LINE_POSITION_INDICATOR_FLAG_KEY,
-	type LinePositionIndicator,
-} from '../hooks/use-line-position-indicator';
-import { StaticLDProvider } from '../StaticLDProvider';
-import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
-import { GuestVisitState } from './GuestVisitState';
+	defaultVisitStatusArgs,
+	SeededVisitStatus,
+	visitStatusArgTypes,
+	withIndicator,
+} from './SeededVisitStatus.fixture';
 
 /**
- * What a guest sees once they have a current visit, in every status it can be in. Rendered through
- * `GuestVisitState`, the same composition the guest screen mounts, so the card, the refresh
- * countdown, and the cancel action stay in the arrangement they actually ship in.
+ * What a guest sees once they have a current visit, in every status it can be in, with the
+ * `line-position-indicator` flag at `now-calling` — the guest's number on the board, and the number
+ * being called under it. That is the design; the flag's other options are kept as fallbacks and
+ * have their own section, `Guest/Visit/Guests Ahead (Flagged)`.
  *
- * `GuestVisitStatus` reads the current visit from the root store rather than taking it as props,
- * so each story seeds a fresh store whose own visit lookup answers for it.
- *
- * That lookup is handed to the store rather than faked on `window.fetch`, and the visit token lives
- * in the store's own storage rather than `localStorage`. A docs page renders every one of these
- * stories in one window, and the visit store refreshes itself every fifteen seconds: with a shared
- * `fetch`, whichever story rendered last answered for all of them, and every card eventually turned
- * into that story's status.
+ * See `SeededVisitStatus.fixture.tsx` for how each story seeds its own store.
  */
-const visitTokenStorageKey = 'bay-compassion.visit-token';
-
-type GuestVisitStatusArgs = {
-	locale: Locale;
-	visitStatus: VisitStatus;
-	queuePosition: number | null;
-	priorityNumber: number | null;
-	aheadOfYou: number | null;
-	nowCalling: number | null;
-	called: number[];
-	calledPriority: number[];
-	isCancelling: boolean;
-	submissionError: boolean;
-};
-
-/** A store whose visit is this story's, and which touches no state outside itself. */
-function seededStore({
-	locale,
-	visitStatus,
-	queuePosition,
-	priorityNumber,
-	aheadOfYou,
-	nowCalling,
-	called,
-	calledPriority,
-	isCancelling,
-	submissionError,
-}: GuestVisitStatusArgs) {
-	const saved = new Map([[visitTokenStorageKey, 'story-visit-token']]);
-	// The guest the waiting and called cards stamp by name. Kept in the store's own storage too, so
-	// no story on a docs page reads another's identity out of `localStorage`.
-	const guestSaved = new Map<string, string>([
-		[StorageKey.GUEST_DEVICE_TOKEN, JSON.stringify('story-device-token')],
-		[
-			StorageKey.GUEST_IDENTITY,
-			JSON.stringify({ firstName: 'Ada', lastName: 'Lovelace', phone: '510-555-0123' }),
-		],
-	]);
-	const store = new RootStore({
-		storage: new StorageService({
-			getItem: (key) => guestSaved.get(key) ?? null,
-			setItem: (key, value) => void guestSaved.set(key, value),
-			removeItem: (key) => void guestSaved.delete(key),
-		} as Storage),
-		visit: {
-			storage: {
-				getItem: (key) => saved.get(key) ?? null,
-				setItem: (key, value) => void saved.set(key, value),
-				removeItem: (key) => void saved.delete(key),
-			},
-			lookupCurrentVisit: async () => ({
-				found: true,
-				visit: {
-					id: 'story-visit',
-					marketEventId: 'story-market',
-					status: visitStatus,
-					queuePosition,
-					priorityNumber,
-					aheadOfYou,
-					nowCalling,
-					called,
-					calledPriority,
-				},
-			}),
-			cancelVisit: () => {
-				if (isCancelling) {
-					return new Promise(() => {});
-				}
-
-				return submissionError
-					? Promise.reject(new Error('cancel'))
-					: Promise.resolve({ id: 'story-visit', status: 'cancelled' as const });
-			},
-		},
-	});
-	const now = Date.now();
-
-	store.translations.setLanguage(locale);
-	store.session.applyServerState({
-		event: {
-			id: 'story-market',
-			status: SessionStatusEnum.REGISTRATION_OPEN,
-			capacity: 100,
-			registrationOpensAt: new Date(now - 60_000).toISOString(),
-			registrationClosesAt: new Date(now + 15 * 60_000).toISOString(),
-		},
-		questions: [],
-		counts: {},
-	});
-	void store.visit.refresh().then(() => {
-		if (isCancelling || submissionError) {
-			void store.visit.cancel();
-		}
-	});
-
-	return store;
-}
-
-function VisitStatusPanel(args: GuestVisitStatusArgs) {
-	// Built once per set of args: a store made on every render would be thrown away, refresh and
-	// all, each time the page around it re-rendered.
-	const [store] = useState(() => seededStore(args));
-
-	return (
-		<RootStoreProvider store={store}>
-			<GuestVisitState />
-			{/*
-			 * The preview's own sheet hangs off the decorator's store, not this seeded one, so the
-			 * cancel action would await an answer from a sheet that never opens. A nested provider
-			 * has to carry its own.
-			 */}
-			<ConfirmationDrawer />
-		</RootStoreProvider>
-	);
-}
-
-/** Seeds a store for this story's visit, and starts over when the toolbar or a control changes it. */
-function SeededVisitStatus(args: GuestVisitStatusArgs) {
-	return <VisitStatusPanel key={JSON.stringify(args)} {...args} />;
-}
-
 const meta = {
 	title: 'Guest/Visit/Status',
 	component: SeededVisitStatus,
 	parameters: { shell: 'guest' },
-	argTypes: {
-		visitStatus: {
-			control: 'select',
-			options: ['registered', 'waiting', 'called', 'served', 'not_placed', 'no_show', 'cancelled'],
-		},
-	},
-	args: {
-		locale: 'en',
-		visitStatus: 'registered',
-		queuePosition: null,
-		priorityNumber: null,
-		aheadOfYou: null,
-		nowCalling: null,
-		called: [],
-		calledPriority: [],
-		isCancelling: false,
-		submissionError: false,
-	},
+	// Pinned rather than left to the flag's default, so these stay the primary design if it changes.
+	decorators: withIndicator('now-calling'),
+	argTypes: visitStatusArgTypes,
+	args: defaultVisitStatusArgs,
 } satisfies Meta<typeof SeededVisitStatus>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
-
-/** Pins the `line-position-indicator` flag for one story. */
-function withIndicator(indicator: LinePositionIndicator): NonNullable<Story['decorators']> {
-	return [
-		(Story) => (
-			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}>
-				<Story />
-			</StaticLDProvider>
-		),
-	];
-}
 
 /** Registered for today, before the lottery or queue has placed the guest. */
 export const Registered: Story = {
@@ -200,17 +41,33 @@ export const Registered: Story = {
 	},
 };
 
-/** In line, with a place in the queue and a count of the guests ahead
- *  (`line-position-indicator: guests-ahead`). */
+/** In line: the guest's number on the board, and under it the number the market is calling, for
+ *  them to compare with their own. */
 export const Waiting: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
-	decorators: withIndicator('guests-ahead'),
+	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 4, nowCalling: 3 },
+	play: async ({ canvas }) => {
+		const board = within(await canvas.findByRole('status'));
+
+		await expect(
+			board.getByText(translations.en.guestView.visitStatus.waiting.nowCallingLabel),
+		).toBeInTheDocument();
+		await expect(board.getByText('3')).toBeInTheDocument();
+	},
 };
 
-/** Next up. `aheadOfYou: 0` swaps the count for the "you're next" line. */
+/** Next up: the board says so under the number. */
 export const WaitingNext: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 1, aheadOfYou: 0 },
-	decorators: withIndicator('guests-ahead'),
+	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 0, nowCalling: 6 },
+};
+
+/** Before anyone has been called, the row says so rather than showing a blank. */
+export const WaitingNoneCalledYet: Story = {
+	args: { visitStatus: 'waiting', queuePosition: 2, aheadOfYou: 1, nowCalling: null },
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(translations.en.guestView.visitStatus.waiting.nowCallingNone),
+		).toBeInTheDocument();
+	},
 };
 
 /** Called to the entrance — the one state that turns the panel into an "it's your turn" message.
@@ -218,7 +75,6 @@ export const WaitingNext: Story = {
  *  the check-in worker reads to tell a live screen for today from a screenshot. */
 export const Called: Story = {
 	args: { visitStatus: 'called', queuePosition: 42 },
-	decorators: withIndicator('guests-ahead'),
 	play: async ({ canvas }) => {
 		await expect(await canvas.findByText('Ada L')).toBeInTheDocument();
 		// The number stays on the card, for the worker at the entrance to check.
@@ -228,7 +84,13 @@ export const Called: Story = {
 
 /** Cancelling is in flight, so the cancel button is disabled. */
 export const Cancelling: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 3, aheadOfYou: 2, isCancelling: true },
+	args: {
+		visitStatus: 'waiting',
+		queuePosition: 3,
+		aheadOfYou: 2,
+		nowCalling: 1,
+		isCancelling: true,
+	},
 };
 
 /** The visit is over. There is nothing left to cancel. */
@@ -253,41 +115,18 @@ export const Cancelled: Story = {
 
 /** A failed cancel request. The error sits above the cancel button. */
 export const CancelFailed: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 3, aheadOfYou: 2, submissionError: true },
-};
-
-/** `line-position-indicator: none` — the row of figures, the cart, and the "guests ahead of you"
- *  count all disappear together, leaving the queue position number to stand alone. */
-export const WaitingLinePositionIndicatorNone: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
-	decorators: withIndicator('none'),
-};
-
-/** The called state with anything but `guests-ahead`, including the `now-calling` default — the panel reads fine with nothing standing
- *  in for the cart line. */
-export const CalledLinePositionIndicatorNone: Story = {
-	args: { visitStatus: 'called', queuePosition: 42 },
-	decorators: withIndicator('none'),
-};
-
-/** `line-position-indicator: now-calling`, the default — the guest's number on the board, and under
- *  it the number being called, like a DMV's, in place of the dots and the guests-ahead count. */
-export const WaitingNowCalling: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6, nowCalling: 1 },
-	decorators: withIndicator('now-calling'),
-	play: async ({ canvas }) => {
-		const board = within(await canvas.findByRole('status'));
-
-		await expect(
-			board.getByText(translations.en.guestView.visitStatus.waiting.nowCallingLabel),
-		).toBeInTheDocument();
-		await expect(board.getByText('1')).toBeInTheDocument();
+	args: {
+		visitStatus: 'waiting',
+		queuePosition: 3,
+		aheadOfYou: 2,
+		nowCalling: 1,
+		submissionError: true,
 	},
 };
 
 /** A worker called a batch: the rest of it sits outlined beside the number the market has reached,
  *  which is the one to compare against. */
-export const WaitingNowCallingBatch: Story = {
+export const WaitingBatchCalled: Story = {
 	args: {
 		visitStatus: 'waiting',
 		queuePosition: 42,
@@ -295,7 +134,6 @@ export const WaitingNowCallingBatch: Story = {
 		nowCalling: 38,
 		called: [38, 37, 36],
 	},
-	decorators: withIndicator('now-calling'),
 	play: async ({ canvas }) => {
 		const board = within(await canvas.findByRole('status'));
 
@@ -307,7 +145,7 @@ export const WaitingNowCallingBatch: Story = {
 
 /** A guest a worker put at the front is being called: their priority number sits beside the main
  *  one, which keeps counting up for everyone comparing theirs with it. */
-export const WaitingNowCallingPriority: Story = {
+export const WaitingPriorityCalled: Story = {
 	args: {
 		visitStatus: 'waiting',
 		queuePosition: 42,
@@ -316,7 +154,6 @@ export const WaitingNowCallingPriority: Story = {
 		called: [38],
 		calledPriority: [1],
 	},
-	decorators: withIndicator('now-calling'),
 	play: async ({ canvas }) => {
 		const board = within(await canvas.findByRole('status'));
 
@@ -334,7 +171,6 @@ export const WaitingWithPriorityNumber: Story = {
 		aheadOfYou: 0,
 		nowCalling: 38,
 	},
-	decorators: withIndicator('now-calling'),
 	play: async ({ canvas }) => {
 		await expect(
 			await canvas.findByText(translations.en.guestView.visitStatus.yourNumberLabel),
@@ -343,20 +179,9 @@ export const WaitingWithPriorityNumber: Story = {
 	},
 };
 
-/** The same board before anyone has been called: it says so rather than showing a blank. */
-export const WaitingNowCallingNoneYet: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 2, aheadOfYou: 1, nowCalling: null },
-	decorators: withIndicator('now-calling'),
-	play: async ({ canvas }) => {
-		await expect(
-			await canvas.findByText(translations.en.guestView.visitStatus.waiting.nowCallingNone),
-		).toBeInTheDocument();
-	},
-};
-
 /** Right-to-left rendering, which the Arabic and Farsi locales need. */
 export const RightToLeft: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 6 },
+	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 4, nowCalling: 3 },
 	globals: { locale: 'ar' },
 	/**
 	 * Opens the cancel confirmation and leaves the visit alone. This covers the sheet reaching the
