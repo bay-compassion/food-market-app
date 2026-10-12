@@ -99,9 +99,8 @@ test(
 				firstGuest.page.getByRole('heading', { name: copy.served.header, exact: true }),
 			).toBeVisible();
 			// The rig runs with LaunchDarkly disabled, so `line-position-indicator` is at its
-			// `now-calling` default and there is no guests-ahead count on screen to watch fall. Only the guest's number
-			// is shown whatever the flag says; the next step's "You are next" covers the guest's screen
-			// following the queue as it advances.
+			// `now-calling` default: the guest's number and the number being called, with no count of
+			// guests ahead to watch fall. The next step reads that count from what the phone is sent.
 			await thirdGuest.page.bringToFront();
 			await expect(thirdGuest.page.locator('.queue-number-board strong')).toHaveText(
 				String(third!.queue_position),
@@ -111,7 +110,7 @@ test(
 			expect(visit.status).toBe('served');
 			expect(visit.served_at).not.toBeNull();
 		});
-		await test.step('A waiting guest cancels; the next guest sees nobody ahead', async () => {
+		await test.step('A waiting guest cancels; the next guest is told nobody is ahead', async () => {
 			await secondGuest.page.getByRole('button', { name: copy.cancelAction, exact: true }).click();
 			await confirm(secondGuest.page);
 			await expect(
@@ -126,9 +125,23 @@ test(
 				secondGuest.page.getByRole('heading', { name: copy.cancelled.header, exact: true }),
 			).toBeVisible();
 			await thirdGuest.page.bringToFront();
-			await expect(
-				thirdGuest.page.getByText(copy.waiting.youAreNext, { exact: true }),
-			).toBeVisible();
+			// The phone's own refresh, not a reload: it keeps following the line on its own.
+			await expect
+				.poll(
+					async () => {
+						const response = await thirdGuest.page.waitForResponse((candidate) =>
+							candidate.url().endsWith('/api/visit'),
+						);
+
+						return ((await response.json()) as { aheadOfYou: number | null }).aheadOfYou;
+					},
+					{ timeout: 45_000 },
+				)
+				.toBe(0);
+			// The default layout leaves "You are next" to the guests-ahead fallback.
+			await expect(thirdGuest.page.getByText(copy.waiting.youAreNext, { exact: true })).toHaveCount(
+				0,
+			);
 		});
 	},
 );

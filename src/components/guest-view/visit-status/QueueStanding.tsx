@@ -79,7 +79,9 @@ export function QueueStanding({
 			<QueueNumberBoard
 				label={copy.yourNumberLabel}
 				number={queueNumber}
-				note={guestsAhead === 0 ? copy.waiting.youAreNext : null}
+				// Part of the guests-ahead fallback: it tells the guest how many are ahead of them, if
+				// only that none are, which the default layout leaves out.
+				note={indicator === 'guests-ahead' && guestsAhead === 0 ? copy.waiting.youAreNext : null}
 			/>
 			{indicator === 'now-calling' && nowCalling ? (
 				<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />

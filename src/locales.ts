@@ -308,7 +308,7 @@ export interface NotificationTranslations {
 	sms: {
 		/** Sent when a guest consents to texts, so it stands alone. */
 		welcome: string;
-		/** `{position}` is the guest's place in line. */
+		/** `{number}` is the guest's queue number, which never changes once given. */
 		selected: string;
 		notSelected: string;
 		called: string;
@@ -744,8 +744,7 @@ export const translations = {
 			},
 			sms: {
 				welcome: 'Welcome! You are now set up to receive text updates.',
-				selected:
-					'You were selected! Your position is {position}. Please wait until you are called.',
+				selected: 'You were selected! Your number is {number}. Please wait until you are called.',
 				notSelected: 'You were not selected for today’s service.',
 				called: 'It’s your turn. Please come to the entrance now.',
 			},
@@ -1135,8 +1134,7 @@ export const translations = {
 			},
 			sms: {
 				welcome: '¡Le damos la bienvenida! Ya recibirá actualizaciones por mensaje de texto.',
-				selected:
-					'¡Fue seleccionado! Su lugar en la fila es {position}. Espere hasta que le llamemos.',
+				selected: '¡Fue seleccionado! Su número es el {number}. Espere hasta que le llamemos.',
 				notSelected: 'No fue seleccionado para el servicio de hoy.',
 				called: 'Es su turno. Por favor, acérquese a la entrada ahora.',
 			},
@@ -1521,8 +1519,7 @@ export const translations = {
 			},
 			sms: {
 				welcome: 'خوش آمدید! از این پس به‌روزرسانی‌ها را با پیامک دریافت می‌کنید.',
-				selected:
-					'شما انتخاب شدید! جایگاه شما در صف {position} است. لطفاً تا زمان فراخوان منتظر بمانید.',
+				selected: 'شما انتخاب شدید! شمارهٔ شما {number} است. لطفاً تا زمان فراخوان منتظر بمانید.',
 				notSelected: 'شما برای خدمات امروز انتخاب نشدید.',
 				called: 'نوبت شماست. لطفاً همین حالا به ورودی مراجعه کنید.',
 			},
@@ -1914,7 +1911,7 @@ export const translations = {
 			sms: {
 				welcome: 'Maligayang pagdating! Makakatanggap ka na ng mga update sa text.',
 				selected:
-					'Napili ka! Ang iyong puwesto sa pila ay {position}. Mangyaring maghintay hanggang tawagin ka.',
+					'Napili ka! Ang iyong numero ay {number}. Mangyaring maghintay hanggang tawagin ka.',
 				notSelected: 'Hindi ka napili para sa serbisyo ngayong araw.',
 				called: 'Oras mo na. Pumunta na po kayo sa pasukan ngayon.',
 			},
@@ -2298,8 +2295,7 @@ export const translations = {
 			},
 			sms: {
 				welcome: 'Chào mừng bạn! Bạn sẽ nhận được cập nhật qua tin nhắn.',
-				selected:
-					'Bạn đã được chọn! Vị trí của bạn trong hàng là {position}. Vui lòng chờ đến khi được gọi.',
+				selected: 'Bạn đã được chọn! Số của bạn là {number}. Vui lòng chờ đến khi được gọi.',
 				notSelected: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
 				called: 'Đến lượt bạn. Vui lòng đến lối vào ngay bây giờ.',
 			},
@@ -2666,7 +2662,7 @@ export const translations = {
 			},
 			sms: {
 				welcome: '欢迎！您现在可以通过短信接收更新了。',
-				selected: '您已被选中！您的排队位置是 {position}。请等待叫号。',
+				selected: '您已被选中！您的号码是 {number}。请等待叫号。',
 				notSelected: '您未被选中参加今天的服务。',
 				called: '轮到您了。请现在到入口来。',
 			},
@@ -3043,7 +3039,7 @@ export const translations = {
 			},
 			sms: {
 				welcome: 'مرحبًا! أصبحت الآن جاهزًا لتلقي التحديثات عبر الرسائل النصية.',
-				selected: 'تم اختيارك! مكانك في الصف هو {position}. يرجى الانتظار حتى يتم استدعاؤك.',
+				selected: 'تم اختيارك! رقمك هو {number}. يرجى الانتظار حتى يتم استدعاؤك.',
 				notSelected: 'لم يتم اختيارك لخدمة اليوم.',
 				called: 'حان دورك. يرجى التوجه إلى المدخل الآن.',
 			},
@@ -3436,7 +3432,7 @@ export const translations = {
 			sms: {
 				welcome: 'Bienvenue ! Vous recevrez désormais les mises à jour par SMS.',
 				selected:
-					'Vous avez été choisi ! Votre place est la {position}. Veuillez attendre d’être appelé.',
+					'Vous avez été choisi ! Votre numéro est le {number}. Veuillez attendre d’être appelé.',
 				notSelected: 'Vous n’avez pas été choisi pour le service d’aujourd’hui.',
 				called: 'C’est votre tour. Veuillez vous présenter à l’entrée maintenant.',
 			},

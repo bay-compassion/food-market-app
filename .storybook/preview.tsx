@@ -114,6 +114,13 @@ const preview: Preview = {
 						'First Visit',
 						'Registration',
 						'Visit',
+						// The design first; the flag's fallbacks after it.
+						[
+							'Status',
+							'Refresh Notice',
+							'Guests Ahead (Flagged)',
+							['Status', 'Line Position Dots'],
+						],
 						'Identity',
 						'Text Messages',
 						'Other Pages',

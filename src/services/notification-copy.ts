@@ -81,10 +81,10 @@ function smsText(
 			return sms.welcome;
 		case 'lottery_selected':
 			if (queuePosition === null) {
-				throw new Error('A lottery selection text needs the guest’s queue position.');
+				throw new Error('A lottery selection text needs the guest’s queue number.');
 			}
 
-			return sms.selected.replace('{position}', String(queuePosition));
+			return sms.selected.replace('{number}', String(queuePosition));
 		case 'lottery_not_selected':
 			return sms.notSelected;
 		case 'called':

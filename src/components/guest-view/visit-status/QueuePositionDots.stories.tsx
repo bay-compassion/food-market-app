@@ -3,12 +3,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { QueuePositionDots } from './QueuePositionDots';
 
 /**
- * The decorative fixed-length line shared by `WaitingVisitStatus` and `CalledVisitStatus`, on its
- * own — the practical way to see where `linePosition` lands along the line, the cart itself
+ * The decorative fixed-length line the `guests-ahead` flag puts on the waiting and called cards, on
+ * its own — the practical way to see where `linePosition` lands along the line, the cart itself
  * emphasized once reached, and the right-to-left mirroring, without waiting in a real queue.
  */
 const meta = {
-	title: 'Guest/Visit/Line Position Dots',
+	title: 'Guest/Visit/Guests Ahead (Flagged)/Line Position Dots',
 	component: QueuePositionDots,
 	parameters: { shell: 'guest' },
 	args: { linePosition: 3 },
