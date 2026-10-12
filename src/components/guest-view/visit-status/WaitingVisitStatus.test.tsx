@@ -13,8 +13,8 @@ import { WaitingVisitStatus } from './WaitingVisitStatus';
 
 const copy = translations.en.guestView.visitStatus;
 
-const calling = (nowCalling: number | null, calledPriority: number[] = []) =>
-	new NowCalling({ nowCalling, calledPriority });
+const calling = (nowCalling: number | null, calledPriority: number[] = [], called: number[] = []) =>
+	new NowCalling({ nowCalling, called, calledPriority });
 
 function renderWithIndicator(
 	indicator: string | undefined,

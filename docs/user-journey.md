@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=0bc61c69f8ea, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=0b1b3fca016f, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=e589a72ee375, src/stores/visit.store.ts=d94fa17bad89, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=d22a5312a73e, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=d10786f8464f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=0bc61c69f8ea, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=0b1b3fca016f, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=5df899deab37, src/stores/visit.store.ts=3690b9c6f563, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=d22a5312a73e, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=51fb638941b7, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
 
 # Guest journey
 
@@ -257,11 +257,12 @@ flowchart TD
 - **A waiting guest is told where they stand.** `/api/visit` returns their number — `queue_position`,
   or `priority_number` (`P1`, …) for a guest a worker put at the front — and how many waiting guests
   are ahead of them, so they can judge whether to stay by the door or sit down. It also returns
-  `nowCalling`, the highest main number called so far, which only ever counts up, and
-  `calledPriority`, any `P` numbers at the entrance now. The guest's own number heads their card
-  on a dark board, and the `line-position-indicator` flag picks what sits under it: the
-  guests-ahead count with its row of figures (`guests-ahead`), a DMV-style "now calling" row with
-  any `P` numbers beside the main one (`now-calling`, the default), or nothing (`none`). The same number heads the `/kiosk` room
+  `nowCalling`, the highest main number called so far, which only ever counts up, and `called`
+  and `calledPriority`, every number at the entrance now in each series. The guest's own number
+  heads their card on a dark board, and the `line-position-indicator` flag picks what sits under
+  it: the guests-ahead count with its row of figures (`guests-ahead`), a "now calling" row that is
+  the room display in miniature — the main number filled, the rest of a batch outlined beside it,
+  and any `P` numbers as pills (`now-calling`, the default) — or nothing (`none`). The same number heads the `/kiosk` room
   display (`highestCalledNumber` in `netlify/services/queue-board.mts`), so a guest's phone and
   the screen on the wall never disagree.
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status

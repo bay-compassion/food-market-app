@@ -190,6 +190,7 @@ export class VisitStore {
 			priorityNumber: null,
 			aheadOfYou: null,
 			nowCalling: null,
+			called: [],
 			calledPriority: [],
 		};
 		this.scheduleRefresh();
