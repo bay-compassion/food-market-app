@@ -38,7 +38,8 @@ export const Waiting: Story = {
 	},
 };
 
-/** `guests-ahead`, next up: the count gives way to the "you're next" line. */
+/** `guests-ahead`, next up: the count gives way to the "you're next" line, which only this
+ *  fallback shows. */
 export const WaitingNext: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 1, aheadOfYou: 0 },
 };

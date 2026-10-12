@@ -55,11 +55,6 @@ export const Waiting: Story = {
 	},
 };
 
-/** Next up: the board says so under the number. */
-export const WaitingNext: Story = {
-	args: { visitStatus: 'waiting', queuePosition: 7, aheadOfYou: 0, nowCalling: 6 },
-};
-
 /** Before anyone has been called, the row says so rather than showing a blank. */
 export const WaitingNoneCalledYet: Story = {
 	args: { visitStatus: 'waiting', queuePosition: 2, aheadOfYou: 1, nowCalling: null },
