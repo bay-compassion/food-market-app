@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import type { QueueNumber } from '../../../models/queue-number';
 
@@ -11,20 +11,39 @@ const toneBackgrounds: Record<QueueNumberBoardTone, string> = {
 	action: 'var(--color-success)',
 };
 
-const Board = styled.div<{ $tone: QueueNumberBoardTone }>`
+/**
+ * Blends toward yellow by `--queue-number-board-warmth`, as the registration countdown blends
+ * toward its warning colour: `color-mix()` computes it, rather than snapping between swatches. White
+ * text fails contrast on any of the yellow, so once the board has started to warm its text turns
+ * dark.
+ */
+const Board = styled.div<{ $tone: QueueNumberBoardTone; $warm: boolean }>`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 6px;
 	padding: 22px 20px 24px;
-	background: ${({ $tone }) => toneBackgrounds[$tone]};
-	color: var(--color-on-brand);
+	background: color-mix(
+		in oklch,
+		${({ $tone }) => toneBackgrounds[$tone]},
+		var(--color-focus) calc(var(--queue-number-board-warmth, 0) * 100%)
+	);
+	color: ${({ $warm }) => ($warm ? 'var(--color-text)' : 'var(--color-on-brand)')};
 
-	span {
+	> span {
+		display: flex;
+		align-items: center;
+		gap: 4px;
 		font-size: 13px;
 		font-weight: 600;
 		letter-spacing: 0.03em;
 		text-transform: uppercase;
+	}
+
+	svg {
+		flex: 0 0 auto;
+		width: 14px;
+		height: 14px;
 	}
 
 	strong {
@@ -50,6 +69,11 @@ export type QueueNumberBoardProps = {
 	tone?: QueueNumberBoardTone;
 	/** A line under the number, such as "You are next". */
 	note?: ReactNode;
+	/**
+	 * How far the board has warmed toward yellow, `0`–`1` — for a called guest the market has moved
+	 * on from (`NowCalling.warmthSince`).
+	 */
+	warmth?: number;
 	className?: string;
 };
 
@@ -63,11 +87,37 @@ export function QueueNumberBoard({
 	number,
 	tone = 'brand',
 	note,
+	warmth = 0,
 	className,
 }: QueueNumberBoardProps) {
+	const warm = warmth > 0;
+
 	return (
-		<Board className={['queue-number-board', className].filter(Boolean).join(' ')} $tone={tone}>
-			<span>{label}</span>
+		<Board
+			className={['queue-number-board', className].filter(Boolean).join(' ')}
+			data-warmth={warmth}
+			$tone={tone}
+			$warm={warm}
+			style={{ '--queue-number-board-warmth': warmth } as CSSProperties}
+		>
+			<span>
+				{/* Colour alone does not reliably read as "the line has moved on" for every guest, so the
+				    countdown's warning mark goes with it, as a signal that is not colour. */}
+				{warm ? (
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						aria-hidden="true"
+					>
+						<path d="M12 3 2 20h20L12 3Z" strokeLinejoin="round" strokeLinecap="round" />
+						<path d="M12 10v4" strokeLinecap="round" />
+						<path d="M12 17h.01" strokeLinecap="round" />
+					</svg>
+				) : null}
+				{label}
+			</span>
 			<strong>{number.label}</strong>
 			{note ? <div>{note}</div> : null}
 		</Board>

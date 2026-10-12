@@ -269,8 +269,9 @@ flowchart TD
   word — a guest glancing at their phone from across the room has to catch it. It keeps the
   guest's number on the same board, in green, for the worker at the entrance to check, and the
   same "now calling" row under it — `/api/visit` keeps sending the called numbers once a guest has
-  been called. For a guest who is late or taking their time, the card counts the main numbers
-  called since theirs, in a colour that warms from the brand's to amber to red as it grows.
+  been called. For a guest who is late or taking their time, the board warms toward yellow as the
+  market calls on past their number — like the registration countdown — fully yellow five numbers
+  on; a screen reader hears the count instead.
 - **An admin can add a guest directly, at any stage of the session.** The worker fills in the same
   identity and household form components a guest uses, inside a dialog, so the two never drift
   apart; those components write to the shared `RegistrationStore`, which the dialog empties each

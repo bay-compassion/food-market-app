@@ -89,16 +89,27 @@ describe('NowCalling', () => {
 		expect(since).toBeNull();
 	});
 
-	it('grows more pressing the further the line has moved past', () => {
+	it('warms evenly to full over five numbers past, then holds', () => {
 		// Arrange
 		const calling = new NowCalling({ nowCalling: 50, called: [50], calledPriority: [] });
 
 		// Act
-		const urgency = [50, 49, 47, 45, 44].map((value) =>
-			calling.urgencySince(QueueNumber.main(value)),
+		const warmth = [50, 49, 47, 45, 40].map((value) =>
+			calling.warmthSince(QueueNumber.main(value)),
 		);
 
 		// Assert
-		expect(urgency).toEqual(['none', 'recent', 'behind', 'behind', 'wellBehind']);
+		expect(warmth).toEqual([0, 0.2, 0.6, 1, 1]);
+	});
+
+	it('never warms a priority number’s board', () => {
+		// Arrange
+		const calling = new NowCalling({ nowCalling: 50, called: [50], calledPriority: [1] });
+
+		// Act
+		const warmth = calling.warmthSince(QueueNumber.priority(1));
+
+		// Assert
+		expect(warmth).toBe(0);
 	});
 });

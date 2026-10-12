@@ -107,39 +107,51 @@ describe('CalledVisitStatus', () => {
 		expect(getByRole('status').textContent).toBe(`${copy.waiting.nowCallingLabel}42`);
 	});
 
-	it('shows nothing about lateness while the guest’s own number is the one being called', () => {
+	it('keeps the board green while the guest’s own number is the one being called', () => {
 		// Arrange & Act
 		const { container } = renderCalled(QueueNumber.main(42), 42, [42]);
 
 		// Assert
-		expect(container.querySelector('.since-yours')).toBeNull();
+		expect(container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth).toBe('0');
+		expect(container.querySelector('.sr-only')).toBeNull();
 	});
 
-	it('says how far the line has moved past a late guest, more pressingly as it grows', () => {
+	it('warms the board toward yellow as the line moves past a late guest, full at five', () => {
 		// Arrange
-		const late = [43, 45, 49].map((nowCalling) => renderCalled(QueueNumber.main(42), nowCalling));
+		const late = [43, 45, 47, 52].map((nowCalling) =>
+			renderCalled(QueueNumber.main(42), nowCalling),
+		);
 
 		// Act
-		const shown = late.map(({ container }) => {
-			const indicator = container.querySelector<HTMLElement>('.since-yours');
-
-			return [indicator?.dataset.urgency, indicator?.textContent];
-		});
+		const warmth = late.map(
+			({ container }) =>
+				container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth,
+		);
 
 		// Assert
-		expect(shown).toEqual([
-			['recent', copy.called.sinceYoursOne],
-			['behind', copy.called.sinceYoursOther.replace('{count}', '3')],
-			['wellBehind', copy.called.sinceYoursOther.replace('{count}', '7')],
+		expect(warmth).toEqual(['0.2', '0.6', '1', '1']);
+	});
+
+	it('tells a screen reader how far the line has moved, since the colour cannot', () => {
+		// Arrange
+		const late = [43, 45].map((nowCalling) => renderCalled(QueueNumber.main(42), nowCalling));
+
+		// Act
+		const read = late.map(({ container }) => container.querySelector('.sr-only')?.textContent);
+
+		// Assert
+		expect(read).toEqual([
+			copy.called.sinceYoursOne,
+			copy.called.sinceYoursOther.replace('{count}', '3'),
 		]);
 	});
 
-	it('cannot say how late a priority number is, so it shows only the row', () => {
+	it('cannot say how late a priority number is, so its board stays green', () => {
 		// Arrange & Act
 		const { container } = renderCalled(QueueNumber.priority(1), 49);
 
 		// Assert
 		expect(container.querySelector('.now-calling')).not.toBeNull();
-		expect(container.querySelector('.since-yours')).toBeNull();
+		expect(container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth).toBe('0');
 	});
 });

@@ -51,7 +51,10 @@ export interface VisitStatusTranslations {
 	called: {
 		header: string;
 		details: string;
-		/** How far the line has moved past a called guest's number, when it is exactly one. */
+		/**
+		 * How far the line has moved past a called guest's number, when it is exactly one — read to a
+		 * screen reader in place of the board warming toward yellow.
+		 */
 		sinceYoursOne: string;
 		/** The same for any other count; `{count}` is how many numbers. */
 		sinceYoursOther: string;

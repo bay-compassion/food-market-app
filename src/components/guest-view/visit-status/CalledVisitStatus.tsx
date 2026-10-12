@@ -9,7 +9,6 @@ import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 import { NowCallingIndicator } from './NowCallingIndicator';
 import { QueueNumberBoard } from './QueueNumberBoard';
 import { QueuePositionDots } from './QueuePositionDots';
-import { SinceYoursIndicator } from './SinceYoursIndicator';
 import { StandingCard } from './StandingCard';
 import { VisitTicketStamp } from './VisitTicketStamp';
 
@@ -29,13 +28,17 @@ export type CalledVisitStatusProps = {
  * "It's your turn": the guest's number on the same board they watched while waiting, in the "go"
  * colour — what they hold up at the entrance, and what the worker checks against the line.
  *
- * Under it, with the `now-calling` indicator, the same "now calling" row as the waiting card, and
- * how far the line has moved past their number: some guests come late or take their time, and the
- * card grows more pressing as the market calls on without them.
+ * Under it, with the `now-calling` indicator, the same "now calling" row as the waiting card. Some
+ * guests come late or take their time: as the market calls on past their number, the board warms
+ * toward yellow, like the registration countdown running out, until it is fully yellow
+ * `NowCalling.lateAttack` numbers on. A screen reader hears the count instead.
  */
 export function CalledVisitStatus({ copy, queueNumber, nowCalling }: CalledVisitStatusProps) {
 	const indicator = useLinePositionIndicator();
 	const showNowCalling = indicator === 'now-calling' && nowCalling !== null;
+	const numbersSince =
+		showNowCalling && queueNumber ? (nowCalling.numbersSince(queueNumber) ?? 0) : 0;
+	const warmth = showNowCalling && queueNumber ? nowCalling.warmthSince(queueNumber) : 0;
 
 	return (
 		<GuestVisitStatusPanel
@@ -49,16 +52,22 @@ export function CalledVisitStatus({ copy, queueNumber, nowCalling }: CalledVisit
 					<VisitTicketStamp />
 					{queueNumber ? (
 						<StandingCard className="called-standing">
-							<QueueNumberBoard label={copy.yourNumberLabel} number={queueNumber} tone="action" />
+							<QueueNumberBoard
+								label={copy.yourNumberLabel}
+								number={queueNumber}
+								tone="action"
+								warmth={warmth}
+							/>
 							{showNowCalling ? (
-								<>
-									<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />
-									<SinceYoursIndicator
-										copy={copy.called}
-										numbersSince={nowCalling.numbersSince(queueNumber) ?? 0}
-										urgency={nowCalling.urgencySince(queueNumber)}
-									/>
-								</>
+								<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />
+							) : null}
+							{numbersSince > 0 ? (
+								<span className="sr-only">
+									{(numbersSince === 1
+										? copy.called.sinceYoursOne
+										: copy.called.sinceYoursOther
+									).replace('{count}', String(numbersSince))}
+								</span>
 							) : null}
 						</StandingCard>
 					) : null}
