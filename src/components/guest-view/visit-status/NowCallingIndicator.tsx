@@ -6,10 +6,10 @@ import type { NowCalling } from '../../../models/now-calling';
 
 const Row = styled.div`
 	display: flex;
+	flex-direction: column;
 	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 14px 20px;
+	gap: 10px;
+	padding: 16px 20px 18px;
 `;
 
 const Label = styled.span`
@@ -18,7 +18,6 @@ const Label = styled.span`
 	letter-spacing: 0.03em;
 	text-transform: uppercase;
 	color: var(--color-text-muted);
-	text-align: start;
 `;
 
 /* A div, not a p: GuestVisitStatusPanel styles every paragraph inside it as muted body copy. */
@@ -26,32 +25,52 @@ const NoneCalled = styled.div`
 	font-size: 15px;
 	font-weight: 500;
 	color: var(--color-text-muted);
-	text-align: end;
 `;
 
 const Numbers = styled.div`
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: flex-end;
+	justify-content: center;
 	align-items: center;
 	gap: 8px;
-	color: var(--color-brand);
 	font-family: var(--font-heading);
 	font-weight: 700;
 	line-height: 1;
 	font-variant-numeric: tabular-nums;
-
-	strong {
-		font-size: 30px;
-	}
 `;
 
-/** A priority number: outlined, so it reads as a line of its own rather than a skipped main number. */
-const PriorityNumber = styled.span`
-	padding: 3px 9px;
-	border: 1.5px solid currentColor;
+const Tile = styled.span`
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 52px;
+	box-sizing: border-box;
+	padding: 7px 12px;
+	border-radius: 12px;
+`;
+
+/** The number the market has reached: the one to compare with your own. */
+const Latest = styled(Tile)`
+	background: var(--color-brand);
+	color: var(--color-on-brand);
+	font-size: 30px;
+`;
+
+/** Called before it and still expected at the entrance — the rest of a batch, or a late arrival. */
+const Earlier = styled(Tile)`
+	border: 1.5px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+	background: var(--color-background);
+	color: var(--color-brand);
+	font-size: 24px;
+`;
+
+/** A priority number: a pill, so it reads as a line of its own rather than a skipped main number. */
+const Priority = styled.span`
+	padding: 7px 12px;
+	border: 2px solid var(--color-brand);
 	border-radius: var(--radius-pill);
-	font-size: 18px;
+	color: var(--color-brand);
+	font-size: 22px;
 `;
 
 export type NowCallingIndicatorProps = {
@@ -60,13 +79,16 @@ export type NowCallingIndicatorProps = {
 };
 
 /**
- * The "now calling" row under a waiting guest's number: the main number the market has reached,
- * for them to compare with their own, and any priority number being called beside it. A polite
- * live region, so a screen reader hears the numbers change as the queue refreshes without being
- * interrupted.
+ * The "now calling" row under a waiting guest's number — the room display in miniature. The main
+ * number the market has reached is filled, for the guest to compare with their own; numbers called
+ * before it that are still expected at the entrance sit outlined beside it, which is how a batch
+ * called at once reads; a priority number being called is a pill after them.
+ *
+ * A polite live region, so a screen reader hears the numbers change as the queue refreshes without
+ * being interrupted.
  */
 export function NowCallingIndicator({ copy, nowCalling }: NowCallingIndicatorProps) {
-	const { main, priority } = nowCalling;
+	const { main, earlier, priority } = nowCalling;
 
 	return (
 		<Row className="now-calling" role="status" aria-live="polite">
@@ -75,9 +97,12 @@ export function NowCallingIndicator({ copy, nowCalling }: NowCallingIndicatorPro
 				<NoneCalled>{copy.nowCallingNone}</NoneCalled>
 			) : (
 				<Numbers>
-					{main ? <strong>{main.label}</strong> : null}
+					{earlier.map((number) => (
+						<Earlier key={number.label}>{number.label}</Earlier>
+					))}
+					{main ? <Latest>{main.label}</Latest> : null}
 					{priority.map((number) => (
-						<PriorityNumber key={number.label}>{number.label}</PriorityNumber>
+						<Priority key={number.label}>{number.label}</Priority>
 					))}
 				</Numbers>
 			)}

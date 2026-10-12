@@ -80,6 +80,7 @@ describe('visit handler GET', () => {
 			...visit,
 			aheadOfYou: null,
 			nowCalling: null,
+			called: [],
 			calledPriority: [],
 		});
 	});
@@ -111,6 +112,7 @@ describe('visit handler GET', () => {
 			...visit,
 			aheadOfYou: 3,
 			nowCalling: 1,
+			called: [1],
 			calledPriority: [1],
 		});
 	});
@@ -137,6 +139,7 @@ describe('visit handler GET', () => {
 			...visit,
 			aheadOfYou: 0,
 			nowCalling: null,
+			called: [],
 			calledPriority: [],
 		});
 	});
@@ -160,6 +163,7 @@ describe('visit handler GET', () => {
 			...visit,
 			aheadOfYou: null,
 			nowCalling: null,
+			called: [],
 			calledPriority: [],
 		});
 	});

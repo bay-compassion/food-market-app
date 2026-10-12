@@ -89,17 +89,17 @@ async function guestsAhead(visit: {
 
 /**
  * The "now calling" board, like `guestsAhead` only meaningful while waiting: the highest main number
- * called, and the priority numbers (`P1`, …) at the entrance now, which a guest sees beside it.
+ * called, and every number at the entrance now in either series — a batch, and any `P` numbers —
+ * which a guest sees beside it.
  */
 async function nowCalling(visit: { status: string; marketEventId: string }) {
 	if (visit.status !== 'waiting') {
-		return { nowCalling: null, calledPriority: [] };
+		return { nowCalling: null, called: [], calledPriority: [] };
 	}
 
 	const highest = await highestCalledNumber(visit.marketEventId);
-	const { calledPriority } = await calledNumbers(visit.marketEventId);
 
-	return { nowCalling: highest, calledPriority };
+	return { nowCalling: highest, ...(await calledNumbers(visit.marketEventId)) };
 }
 
 type Visit = NonNullable<Awaited<ReturnType<typeof authorizedVisit>>>;

@@ -88,7 +88,7 @@ const Preview = styled.div`
 const previewLine = {
 	queueNumber: QueueNumber.main(12),
 	guestsAhead: 2,
-	nowCalling: new NowCalling({ nowCalling: 9, calledPriority: [] }),
+	nowCalling: new NowCalling({ nowCalling: 9, called: [9], calledPriority: [] }),
 };
 
 const Footer = styled.div`

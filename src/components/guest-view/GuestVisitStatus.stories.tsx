@@ -39,6 +39,7 @@ type GuestVisitStatusArgs = {
 	priorityNumber: number | null;
 	aheadOfYou: number | null;
 	nowCalling: number | null;
+	called: number[];
 	calledPriority: number[];
 	isCancelling: boolean;
 	submissionError: boolean;
@@ -52,6 +53,7 @@ function seededStore({
 	priorityNumber,
 	aheadOfYou,
 	nowCalling,
+	called,
 	calledPriority,
 	isCancelling,
 	submissionError,
@@ -88,6 +90,7 @@ function seededStore({
 					priorityNumber,
 					aheadOfYou,
 					nowCalling,
+					called,
 					calledPriority,
 				},
 			}),
@@ -165,6 +168,7 @@ const meta = {
 		priorityNumber: null,
 		aheadOfYou: null,
 		nowCalling: null,
+		called: [],
 		calledPriority: [],
 		isCancelling: false,
 		submissionError: false,
@@ -281,6 +285,26 @@ export const WaitingNowCalling: Story = {
 	},
 };
 
+/** A worker called a batch: the rest of it sits outlined beside the number the market has reached,
+ *  which is the one to compare against. */
+export const WaitingNowCallingBatch: Story = {
+	args: {
+		visitStatus: 'waiting',
+		queuePosition: 42,
+		aheadOfYou: 4,
+		nowCalling: 38,
+		called: [38, 37, 36],
+	},
+	decorators: withIndicator('now-calling'),
+	play: async ({ canvas }) => {
+		const board = within(await canvas.findByRole('status'));
+
+		await expect(board.getByText('38')).toBeInTheDocument();
+		await expect(board.getByText('36')).toBeInTheDocument();
+		await expect(board.getByText('37')).toBeInTheDocument();
+	},
+};
+
 /** A guest a worker put at the front is being called: their priority number sits beside the main
  *  one, which keeps counting up for everyone comparing theirs with it. */
 export const WaitingNowCallingPriority: Story = {
@@ -289,6 +313,7 @@ export const WaitingNowCallingPriority: Story = {
 		queuePosition: 42,
 		aheadOfYou: 4,
 		nowCalling: 38,
+		called: [38],
 		calledPriority: [1],
 	},
 	decorators: withIndicator('now-calling'),
