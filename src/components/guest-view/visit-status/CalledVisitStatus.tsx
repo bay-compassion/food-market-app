@@ -29,9 +29,9 @@ export type CalledVisitStatusProps = {
  * colour — what they hold up at the entrance, and what the worker checks against the line.
  *
  * Under it, with the `now-calling` indicator, the same "now calling" row as the waiting card. Some
- * guests come late or take their time: as the market calls on past their number, the board warms
- * toward yellow, like the registration countdown running out, until it is fully yellow
- * `NowCalling.lateAttack` numbers on. A screen reader hears the count instead.
+ * guests come late or take their time: once the market has called `NowCalling.lateThreshold`
+ * numbers past theirs, the board starts to warm toward yellow, like the registration countdown
+ * running out, faster with every number after. A screen reader hears the count instead.
  */
 export function CalledVisitStatus({ copy, queueNumber, nowCalling }: CalledVisitStatusProps) {
 	const indicator = useLinePositionIndicator();
@@ -61,7 +61,9 @@ export function CalledVisitStatus({ copy, queueNumber, nowCalling }: CalledVisit
 							{showNowCalling ? (
 								<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />
 							) : null}
-							{numbersSince > 0 ? (
+							{/* Only once the board has started to warm: before then a sighted guest sees
+							    nothing, so a screen reader hears nothing either. */}
+							{warmth > 0 ? (
 								<span className="sr-only">
 									{(numbersSince === 1
 										? copy.called.sinceYoursOne

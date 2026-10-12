@@ -89,17 +89,33 @@ describe('NowCalling', () => {
 		expect(since).toBeNull();
 	});
 
-	it('warms evenly to full over five numbers past, then holds', () => {
+	it('stays green until five numbers past, then warms faster with each one, full at ten', () => {
 		// Arrange
-		const calling = new NowCalling({ nowCalling: 50, called: [50], calledPriority: [] });
+		const calling = new NowCalling({ nowCalling: 60, called: [60], calledPriority: [] });
 
 		// Act
-		const warmth = [50, 49, 47, 45, 40].map((value) =>
+		const warmth = [60, 56, 55, 54, 53, 52, 51, 50, 40].map((value) =>
 			calling.warmthSince(QueueNumber.main(value)),
 		);
 
 		// Assert
-		expect(warmth).toEqual([0, 0.2, 0.6, 1, 1]);
+		[0, 0, 0, 0.04, 0.16, 0.36, 0.64, 1, 1].forEach((expected, index) =>
+			expect(warmth[index]).toBeCloseTo(expected),
+		);
+	});
+
+	it('gains more with each number past the threshold than with the one before', () => {
+		// Arrange
+		const calling = new NowCalling({ nowCalling: 60, called: [60], calledPriority: [] });
+		const warmth = [55, 54, 53, 52, 51, 50].map((value) =>
+			calling.warmthSince(QueueNumber.main(value)),
+		);
+
+		// Act
+		const steps = warmth.slice(1).map((value, index) => value - warmth[index]!);
+
+		// Assert
+		steps.slice(1).forEach((step, index) => expect(step).toBeGreaterThan(steps[index]!));
 	});
 
 	it('never warms a priority number’s board', () => {

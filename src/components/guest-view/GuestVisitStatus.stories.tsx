@@ -77,22 +77,22 @@ export const Called: Story = {
 	},
 };
 
-/** Called a little while ago: the market has called on two numbers past theirs, and the board is
- *  part way to yellow. A screen reader hears the count instead. */
+/** Seven numbers past theirs: two past the threshold, so the board has started, slowly, toward
+ *  yellow. A screen reader hears the count instead. */
 export const CalledRunningLate: Story = {
-	args: { visitStatus: 'called', queuePosition: 42, nowCalling: 44, called: [44, 43, 42] },
+	args: { visitStatus: 'called', queuePosition: 42, nowCalling: 49, called: [49, 48, 42] },
 	play: async ({ canvas }) => {
 		await expect(
 			await canvas.findByText(
-				translations.en.guestView.visitStatus.called.sinceYoursOther.replace('{count}', '2'),
+				translations.en.guestView.visitStatus.called.sinceYoursOther.replace('{count}', '7'),
 			),
 		).toBeInTheDocument();
 	},
 };
 
-/** Five or more numbers past theirs: the board is fully yellow, and stays so. */
+/** Ten or more past theirs: the board is fully yellow, and stays so. */
 export const CalledWellBehind: Story = {
-	args: { visitStatus: 'called', queuePosition: 42, nowCalling: 47, called: [47, 46, 45, 42] },
+	args: { visitStatus: 'called', queuePosition: 42, nowCalling: 52, called: [52, 51, 50, 42] },
 };
 
 /** Cancelling is in flight, so the cancel button is disabled. */

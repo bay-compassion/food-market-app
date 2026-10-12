@@ -12,12 +12,17 @@ const toneBackgrounds: Record<QueueNumberBoardTone, string> = {
 };
 
 /**
- * Blends toward yellow by `--queue-number-board-warmth`, as the registration countdown blends
- * toward its warning colour: `color-mix()` computes it, rather than snapping between swatches. White
- * text fails contrast on any of the yellow, so once the board has started to warm its text turns
- * dark.
+ * From this much warmth the board's text turns dark. Measured on the green-to-yellow blend: white
+ * holds 4.5:1 up to about a quarter of the way, dark text from just past it.
  */
-const Board = styled.div<{ $tone: QueueNumberBoardTone; $warm: boolean }>`
+const darkTextFrom = 0.28;
+
+/**
+ * Blends toward yellow by `--queue-number-board-warmth`, as the registration countdown blends
+ * toward its warning colour: `color-mix()` computes it, rather than snapping between swatches. The
+ * text switches from white to dark where each stops passing contrast (`darkTextFrom`).
+ */
+const Board = styled.div<{ $tone: QueueNumberBoardTone; $darkText: boolean }>`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -28,7 +33,7 @@ const Board = styled.div<{ $tone: QueueNumberBoardTone; $warm: boolean }>`
 		${({ $tone }) => toneBackgrounds[$tone]},
 		var(--color-focus) calc(var(--queue-number-board-warmth, 0) * 100%)
 	);
-	color: ${({ $warm }) => ($warm ? 'var(--color-text)' : 'var(--color-on-brand)')};
+	color: ${({ $darkText }) => ($darkText ? 'var(--color-text)' : 'var(--color-on-brand)')};
 
 	> span {
 		display: flex;
@@ -97,7 +102,7 @@ export function QueueNumberBoard({
 			className={['queue-number-board', className].filter(Boolean).join(' ')}
 			data-warmth={warmth}
 			$tone={tone}
-			$warm={warm}
+			$darkText={warmth >= darkTextFrom}
 			style={{ '--queue-number-board-warmth': warmth } as CSSProperties}
 		>
 			<span>

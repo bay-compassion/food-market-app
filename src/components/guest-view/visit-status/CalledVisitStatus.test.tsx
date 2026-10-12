@@ -116,34 +116,34 @@ describe('CalledVisitStatus', () => {
 		expect(container.querySelector('.sr-only')).toBeNull();
 	});
 
-	it('warms the board toward yellow as the line moves past a late guest, full at five', () => {
+	it('warms the board only past five numbers, then faster with each, full at ten', () => {
 		// Arrange
-		const late = [43, 45, 47, 52].map((nowCalling) =>
+		const late = [45, 47, 48, 50, 52, 60].map((nowCalling) =>
 			renderCalled(QueueNumber.main(42), nowCalling),
 		);
 
 		// Act
-		const warmth = late.map(
-			({ container }) =>
-				container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth,
+		const warmth = late.map(({ container }) =>
+			Number(container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth),
 		);
 
 		// Assert
-		expect(warmth).toEqual(['0.2', '0.6', '1', '1']);
+		[0, 0, 0.04, 0.36, 1, 1].forEach((expected, index) =>
+			expect(warmth[index]).toBeCloseTo(expected),
+		);
 	});
 
-	it('tells a screen reader how far the line has moved, since the colour cannot', () => {
+	it('tells a screen reader how far the line has moved once the board warms', () => {
 		// Arrange
-		const late = [43, 45].map((nowCalling) => renderCalled(QueueNumber.main(42), nowCalling));
+		const late = [47, 48].map((nowCalling) => renderCalled(QueueNumber.main(42), nowCalling));
 
 		// Act
-		const read = late.map(({ container }) => container.querySelector('.sr-only')?.textContent);
+		const read = late.map(
+			({ container }) => container.querySelector('.sr-only')?.textContent ?? null,
+		);
 
 		// Assert
-		expect(read).toEqual([
-			copy.called.sinceYoursOne,
-			copy.called.sinceYoursOther.replace('{count}', '3'),
-		]);
+		expect(read).toEqual([null, copy.called.sinceYoursOther.replace('{count}', '6')]);
 	});
 
 	it('cannot say how late a priority number is, so its board stays green', () => {
