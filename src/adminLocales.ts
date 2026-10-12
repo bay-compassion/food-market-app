@@ -557,7 +557,7 @@ export const adminTranslations = {
 		callNext: 'Call next',
 		callNextCount: 'How many to call',
 		waitingQueue: 'Waiting',
-		calledNow: 'At the entrance',
+		calledNow: 'At check-in',
 		resolvedGuests: 'Finished',
 		noResolvedGuests: 'Nobody has finished yet.',
 		calledMinutesAgo: 'Called {minutes} min ago',

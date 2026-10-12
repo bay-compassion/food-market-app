@@ -77,7 +77,7 @@ describe('QueueView', () => {
 		const text = container.textContent!;
 
 		// The whole point of the view: a worker on a phone sees these without scrolling.
-		expect(text).toContain('2 Waiting · 1 At the entrance · 4 Served');
+		expect(text).toContain('2 Waiting · 1 At check-in · 4 Served');
 		expect(text.indexOf(adminTranslations.en.callNext)).toBeLessThan(text.indexOf('Ari Guest'));
 	});
 

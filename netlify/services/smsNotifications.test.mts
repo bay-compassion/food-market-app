@@ -176,7 +176,7 @@ describe('deliverPendingSmsNotifications', () => {
 			expect.objectContaining({
 				messagingServiceSid: 'messaging-service-sid',
 				to: '+15551234567',
-				body: 'The Bay Compassion: It’s your turn. Please come to the entrance now. Reply STOP to unsubscribe',
+				body: 'The Bay Compassion: It’s your turn. Please come to the check-in desk now. Reply STOP to unsubscribe',
 			}),
 		);
 	});

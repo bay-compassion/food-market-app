@@ -51,6 +51,15 @@ export interface VisitStatusTranslations {
 	called: {
 		header: string;
 		details: string;
+		/**
+		 * Replaces `details` once the guest's board is fully yellow (`LateArrival.isLateAt`): their
+		 * turn never expires, but others are waiting behind them.
+		 */
+		detailsLate: string;
+		/** Read to a screen reader in place of the board warming toward yellow, when exactly one. */
+		calledMinutesAgoOne: string;
+		/** The same for any other count; `{minutes}` is how many. */
+		calledMinutesAgoOther: string;
 	};
 	served: {
 		header: string;
@@ -482,7 +491,7 @@ export const translations = {
 					turn: {
 						time: '11:30 AM',
 						title: 'Shopping begins',
-						body: 'When it’s your turn, this screen will say so, and we’ll text you if you signed up for texts. Come to the front door, and bring the phone you signed up on — we can’t accept screenshots.',
+						body: 'When it’s your turn, this screen will say so, and we’ll text you if you signed up for texts. Come to the check-in desk, and bring the phone you signed up on — we can’t accept screenshots.',
 					},
 					help: {
 						title: 'Need a reminder?',
@@ -588,7 +597,13 @@ export const translations = {
 					nowCallingLabel: 'Now calling',
 					nowCallingNone: 'No numbers called yet',
 				},
-				called: { header: 'It’s your turn', details: 'Please come to the entrance now.' },
+				called: {
+					header: 'It’s your turn',
+					details: 'Please come to the check-in desk now.',
+					detailsLate: 'Others are waiting behind you. Please come to the check-in desk now.',
+					calledMinutesAgoOne: 'Called 1 minute ago',
+					calledMinutesAgoOther: 'Called {minutes} minutes ago',
+				},
 				served: {
 					header: 'Thank you for coming',
 					details:
@@ -602,7 +617,7 @@ export const translations = {
 				no_show: {
 					header: 'We missed you',
 					details:
-						'We called your number but couldn’t find you. If you’re still here, please speak with a market team member at the entrance.',
+						'We called your number but couldn’t find you. If you’re still here, please speak with a market team member at the check-in desk.',
 				},
 				cancelled: {
 					header: 'Visit cancelled',
@@ -702,7 +717,7 @@ export const translations = {
 				{
 					time: '11:30 AM',
 					title: 'Shopping begins',
-					body: 'When it’s your turn, we’ll text you (if you did step 4) and your screen will say so. Come to the front door.',
+					body: 'When it’s your turn, we’ll text you (if you did step 4) and your screen will say so. Come to the check-in desk.',
 				},
 			],
 			phoneNotice: {
@@ -740,13 +755,13 @@ export const translations = {
 			},
 			called: {
 				title: 'It’s your turn',
-				body: 'Please come to the entrance now.',
+				body: 'Please come to the check-in desk now.',
 			},
 			sms: {
 				welcome: 'Welcome! You are now set up to receive text updates.',
 				selected: 'You were selected! Your number is {number}. Please wait until you are called.',
 				notSelected: 'You were not selected for today’s service.',
-				called: 'It’s your turn. Please come to the entrance now.',
+				called: 'It’s your turn. Please come to the check-in desk now.',
 			},
 			pushOptIn: {
 				enable: 'Notify me about this visit',
@@ -869,7 +884,7 @@ export const translations = {
 					turn: {
 						time: '11:30 a. m.',
 						title: 'Empiezan las compras',
-						body: 'Cuando sea su turno, esta pantalla se lo dirá, y le enviaremos un texto si se inscribió para recibirlos. Acérquese a la entrada y traiga el teléfono con el que se inscribió; no aceptamos capturas de pantalla.',
+						body: 'Cuando sea su turno, esta pantalla se lo dirá, y le enviaremos un texto si se inscribió para recibirlos. Acérquese a la mesa de registro y traiga el teléfono con el que se inscribió; no aceptamos capturas de pantalla.',
 					},
 					help: {
 						title: '¿Necesita recordarlo?',
@@ -977,7 +992,14 @@ export const translations = {
 					nowCallingLabel: 'Llamando ahora',
 					nowCallingNone: 'Aún no se ha llamado ningún número',
 				},
-				called: { header: 'Es su turno', details: 'Por favor, acérquese a la entrada ahora.' },
+				called: {
+					header: 'Es su turno',
+					details: 'Por favor, acérquese a la mesa de registro ahora.',
+					detailsLate:
+						'Otras personas esperan detrás de usted. Por favor, acérquese a la mesa de registro ahora.',
+					calledMinutesAgoOne: 'Le llamamos hace 1 minuto',
+					calledMinutesAgoOther: 'Le llamamos hace {minutes} minutos',
+				},
 				served: {
 					header: 'Gracias por venir',
 					details:
@@ -991,7 +1013,7 @@ export const translations = {
 				no_show: {
 					header: 'No lo encontramos',
 					details:
-						'Llamamos su número, pero no pudimos encontrarlo. Si todavía está aquí, hable con un miembro del equipo del mercado en la entrada.',
+						'Llamamos su número, pero no pudimos encontrarlo. Si todavía está aquí, hable con un miembro del equipo del mercado en la mesa de registro.',
 				},
 				cancelled: {
 					header: 'Visita cancelada',
@@ -1092,7 +1114,7 @@ export const translations = {
 				{
 					time: '11:30 a. m.',
 					title: 'Empiezan las compras',
-					body: 'Cuando sea su turno, le avisaremos por texto (si hizo el paso 4) y en su pantalla. Acérquese a la entrada.',
+					body: 'Cuando sea su turno, le avisaremos por texto (si hizo el paso 4) y en su pantalla. Acérquese a la mesa de registro.',
 				},
 			],
 			phoneNotice: {
@@ -1130,13 +1152,13 @@ export const translations = {
 			},
 			called: {
 				title: 'Es su turno',
-				body: 'Por favor, acérquese a la entrada ahora.',
+				body: 'Por favor, acérquese a la mesa de registro ahora.',
 			},
 			sms: {
 				welcome: '¡Le damos la bienvenida! Ya recibirá actualizaciones por mensaje de texto.',
 				selected: '¡Fue seleccionado! Su número es el {number}. Espere hasta que le llamemos.',
 				notSelected: 'No fue seleccionado para el servicio de hoy.',
-				called: 'Es su turno. Por favor, acérquese a la entrada ahora.',
+				called: 'Es su turno. Por favor, acérquese a la mesa de registro ahora.',
 			},
 			pushOptIn: {
 				enable: 'Notificarme sobre esta visita',
@@ -1259,7 +1281,7 @@ export const translations = {
 					turn: {
 						time: '۱۱:۳۰ صبح',
 						title: 'شروع خرید',
-						body: 'وقتی نوبتتان شد، این صفحه نشان می‌دهد و اگر برای پیامک ثبت‌نام کرده باشید، پیامک هم می‌فرستیم. به ورودی بیایید و همان تلفنی را که با آن ثبت‌نام کردید بیاورید — اسکرین‌شات پذیرفته نمی‌شود.',
+						body: 'وقتی نوبتتان شد، این صفحه نشان می‌دهد و اگر برای پیامک ثبت‌نام کرده باشید، پیامک هم می‌فرستیم. به میز پذیرش بیایید و همان تلفنی را که با آن ثبت‌نام کردید بیاورید — اسکرین‌شات پذیرفته نمی‌شود.',
 					},
 					help: {
 						title: 'یادآوری لازم دارید؟',
@@ -1364,7 +1386,13 @@ export const translations = {
 					nowCallingLabel: 'در حال فراخوانی',
 					nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
 				},
-				called: { header: 'نوبت شماست', details: 'لطفاً همین حالا به ورودی مراجعه کنید.' },
+				called: {
+					header: 'نوبت شماست',
+					details: 'لطفاً همین حالا به میز پذیرش مراجعه کنید.',
+					detailsLate: 'دیگران پشت سر شما منتظرند. لطفاً همین حالا به میز پذیرش مراجعه کنید.',
+					calledMinutesAgoOne: 'یک دقیقه پیش فراخوانده شدید',
+					calledMinutesAgoOther: '{minutes} دقیقه پیش فراخوانده شدید',
+				},
 				served: {
 					header: 'از حضورتان سپاسگزاریم',
 					details:
@@ -1378,7 +1406,7 @@ export const translations = {
 				no_show: {
 					header: 'شما را پیدا نکردیم',
 					details:
-						'شماره شما را صدا زدیم اما شما را پیدا نکردیم. اگر هنوز اینجا هستید، لطفاً در ورودی با یکی از اعضای تیم بازار صحبت کنید.',
+						'شماره شما را صدا زدیم اما شما را پیدا نکردیم. اگر هنوز اینجا هستید، لطفاً در میز پذیرش با یکی از اعضای تیم بازار صحبت کنید.',
 				},
 				cancelled: {
 					header: 'بازدید لغو شد',
@@ -1477,7 +1505,7 @@ export const translations = {
 				{
 					time: '۱۱:۳۰ صبح',
 					title: 'شروع خرید',
-					body: 'وقتی نوبتتان شد، پیامک می‌فرستیم (اگر مرحله ۴ را انجام داده‌اید) و صفحه هم نشان می‌دهد. به ورودی بیایید.',
+					body: 'وقتی نوبتتان شد، پیامک می‌فرستیم (اگر مرحله ۴ را انجام داده‌اید) و صفحه هم نشان می‌دهد. به میز پذیرش بیایید.',
 				},
 			],
 			phoneNotice: {
@@ -1515,13 +1543,13 @@ export const translations = {
 			},
 			called: {
 				title: 'نوبت شماست',
-				body: 'لطفاً همین حالا به ورودی مراجعه کنید.',
+				body: 'لطفاً همین حالا به میز پذیرش مراجعه کنید.',
 			},
 			sms: {
 				welcome: 'خوش آمدید! از این پس به‌روزرسانی‌ها را با پیامک دریافت می‌کنید.',
 				selected: 'شما انتخاب شدید! شمارهٔ شما {number} است. لطفاً تا زمان فراخوان منتظر بمانید.',
 				notSelected: 'شما برای خدمات امروز انتخاب نشدید.',
-				called: 'نوبت شماست. لطفاً همین حالا به ورودی مراجعه کنید.',
+				called: 'نوبت شماست. لطفاً همین حالا به میز پذیرش مراجعه کنید.',
 			},
 			pushOptIn: {
 				enable: 'درباره این مراجعه به من اطلاع دهید',
@@ -1643,7 +1671,7 @@ export const translations = {
 					turn: {
 						time: '11:30 AM',
 						title: 'Simula ng pamimili',
-						body: 'Kapag turno na ninyo, sasabihin ito ng screen, at ite-text namin kayo kung nag-sign up kayo sa text. Pumunta sa harapang pinto at dalhin ang phone na ginamit ninyo sa pag-sign up — hindi tinatanggap ang screenshot.',
+						body: 'Kapag turno na ninyo, sasabihin ito ng screen, at ite-text namin kayo kung nag-sign up kayo sa text. Pumunta sa mesa ng check-in at dalhin ang phone na ginamit ninyo sa pag-sign up — hindi tinatanggap ang screenshot.',
 					},
 					help: {
 						title: 'Kailangan ng paalala?',
@@ -1753,7 +1781,11 @@ export const translations = {
 				},
 				called: {
 					header: 'Kayo na po ang susunod',
-					details: 'Pumunta na po kayo sa pasukan ngayon.',
+					details: 'Pumunta na po kayo sa mesa ng check-in ngayon.',
+					detailsLate:
+						'May mga naghihintay sa likod ninyo. Pumunta na po kayo sa mesa ng check-in ngayon.',
+					calledMinutesAgoOne: 'Tinawag kayo 1 minuto na ang nakalipas',
+					calledMinutesAgoOther: 'Tinawag kayo {minutes} minuto na ang nakalipas',
 				},
 				served: {
 					header: 'Salamat po sa pagpunta',
@@ -1768,7 +1800,7 @@ export const translations = {
 				no_show: {
 					header: 'Hindi po namin kayo natagpuan',
 					details:
-						'Tinawag po namin ang inyong numero ngunit hindi kayo natagpuan. Kung nandito pa po kayo, makipag-usap sa isang miyembro ng pangkat ng pamilihan sa pasukan.',
+						'Tinawag po namin ang inyong numero ngunit hindi kayo natagpuan. Kung nandito pa po kayo, makipag-usap sa isang miyembro ng pangkat ng pamilihan sa mesa ng check-in.',
 				},
 				cancelled: {
 					header: 'Kinansela ang pagbisita',
@@ -1868,7 +1900,7 @@ export const translations = {
 				{
 					time: '11:30 AM',
 					title: 'Simula ng pamimili',
-					body: 'Kapag turno na ninyo, ite-text namin kayo (kung ginawa ang hakbang 4) at sasabihin ng screen. Pumunta sa harapang pinto.',
+					body: 'Kapag turno na ninyo, ite-text namin kayo (kung ginawa ang hakbang 4) at sasabihin ng screen. Pumunta sa mesa ng check-in.',
 				},
 			],
 			phoneNotice: {
@@ -1906,14 +1938,14 @@ export const translations = {
 			},
 			called: {
 				title: 'Oras mo na',
-				body: 'Pumunta na po kayo sa pasukan ngayon.',
+				body: 'Pumunta na po kayo sa mesa ng check-in ngayon.',
 			},
 			sms: {
 				welcome: 'Maligayang pagdating! Makakatanggap ka na ng mga update sa text.',
 				selected:
 					'Napili ka! Ang iyong numero ay {number}. Mangyaring maghintay hanggang tawagin ka.',
 				notSelected: 'Hindi ka napili para sa serbisyo ngayong araw.',
-				called: 'Oras mo na. Pumunta na po kayo sa pasukan ngayon.',
+				called: 'Oras mo na. Pumunta na po kayo sa mesa ng check-in ngayon.',
 			},
 			pushOptIn: {
 				enable: 'Abisuhan ako tungkol sa pagbisitang ito',
@@ -2035,7 +2067,7 @@ export const translations = {
 					turn: {
 						time: '11:30 sáng',
 						title: 'Bắt đầu mua sắm',
-						body: 'Khi đến lượt bạn, màn hình này sẽ báo, và chúng tôi sẽ nhắn tin nếu bạn đã đăng ký nhận tin nhắn. Hãy đến cửa chính và mang theo điện thoại bạn đã dùng để đăng ký — chúng tôi không nhận ảnh chụp màn hình.',
+						body: 'Khi đến lượt bạn, màn hình này sẽ báo, và chúng tôi sẽ nhắn tin nếu bạn đã đăng ký nhận tin nhắn. Hãy đến bàn tiếp nhận và mang theo điện thoại bạn đã dùng để đăng ký — chúng tôi không nhận ảnh chụp màn hình.',
 					},
 					help: {
 						title: 'Cần nhắc lại?',
@@ -2140,7 +2172,14 @@ export const translations = {
 					nowCallingLabel: 'Đang gọi số',
 					nowCallingNone: 'Chưa gọi số nào',
 				},
-				called: { header: 'Đã đến lượt bạn', details: 'Vui lòng đến lối vào ngay bây giờ.' },
+				called: {
+					header: 'Đã đến lượt bạn',
+					details: 'Vui lòng đến bàn tiếp nhận ngay bây giờ.',
+					detailsLate:
+						'Những người khác đang chờ sau bạn. Vui lòng đến bàn tiếp nhận ngay bây giờ.',
+					calledMinutesAgoOne: 'Đã gọi bạn 1 phút trước',
+					calledMinutesAgoOther: 'Đã gọi bạn {minutes} phút trước',
+				},
 				served: {
 					header: 'Cảm ơn bạn đã đến',
 					details:
@@ -2154,7 +2193,7 @@ export const translations = {
 				no_show: {
 					header: 'Chúng tôi không tìm thấy bạn',
 					details:
-						'Chúng tôi đã gọi số của bạn nhưng không tìm thấy bạn. Nếu bạn vẫn còn ở đây, vui lòng trao đổi với nhân viên chợ tại lối vào.',
+						'Chúng tôi đã gọi số của bạn nhưng không tìm thấy bạn. Nếu bạn vẫn còn ở đây, vui lòng trao đổi với nhân viên chợ tại bàn tiếp nhận.',
 				},
 				cancelled: {
 					header: 'Đã hủy lượt',
@@ -2253,7 +2292,7 @@ export const translations = {
 				{
 					time: '11:30 sáng',
 					title: 'Bắt đầu mua sắm',
-					body: 'Khi đến lượt bạn, chúng tôi sẽ nhắn tin (nếu bạn đã làm bước 4) và màn hình cũng sẽ báo. Hãy đến cửa chính.',
+					body: 'Khi đến lượt bạn, chúng tôi sẽ nhắn tin (nếu bạn đã làm bước 4) và màn hình cũng sẽ báo. Hãy đến bàn tiếp nhận.',
 				},
 			],
 			phoneNotice: {
@@ -2291,13 +2330,13 @@ export const translations = {
 			},
 			called: {
 				title: 'Đến lượt bạn',
-				body: 'Vui lòng đến lối vào ngay bây giờ.',
+				body: 'Vui lòng đến bàn tiếp nhận ngay bây giờ.',
 			},
 			sms: {
 				welcome: 'Chào mừng bạn! Bạn sẽ nhận được cập nhật qua tin nhắn.',
 				selected: 'Bạn đã được chọn! Số của bạn là {number}. Vui lòng chờ đến khi được gọi.',
 				notSelected: 'Bạn không được chọn cho buổi phục vụ hôm nay.',
-				called: 'Đến lượt bạn. Vui lòng đến lối vào ngay bây giờ.',
+				called: 'Đến lượt bạn. Vui lòng đến bàn tiếp nhận ngay bây giờ.',
 			},
 			pushOptIn: {
 				enable: 'Thông báo cho tôi về lượt ghé này',
@@ -2417,7 +2456,7 @@ export const translations = {
 					turn: {
 						time: '上午 11:30',
 						title: '开始购物',
-						body: '轮到您时，此屏幕会显示，如果您登记了短信通知，我们也会发短信给您。请到正门来，并携带您登记时使用的手机——不接受截图。',
+						body: '轮到您时，此屏幕会显示，如果您登记了短信通知，我们也会发短信给您。请到签到台来，并携带您登记时使用的手机——不接受截图。',
 					},
 					help: {
 						title: '需要回顾？',
@@ -2516,7 +2555,13 @@ export const translations = {
 					nowCallingLabel: '正在叫号',
 					nowCallingNone: '尚未叫号',
 				},
-				called: { header: '轮到您了', details: '请现在到入口来。' },
+				called: {
+					header: '轮到您了',
+					details: '请现在到签到台来。',
+					detailsLate: '后面还有其他人在等候。请现在到签到台来。',
+					calledMinutesAgoOne: '1 分钟前已叫到您',
+					calledMinutesAgoOther: '{minutes} 分钟前已叫到您',
+				},
 				served: {
 					header: '感谢您的到来',
 					details: '您今天的到访已完成。登记将于下周六上午 10:30 重新开放。',
@@ -2528,7 +2573,7 @@ export const translations = {
 				},
 				no_show: {
 					header: '没有找到您',
-					details: '我们叫了您的号码，但没有找到您。如果您还在现场，请到入口联系市场工作人员。',
+					details: '我们叫了您的号码，但没有找到您。如果您还在现场，请到签到台联系市场工作人员。',
 				},
 				cancelled: {
 					header: '已取消到访',
@@ -2623,7 +2668,7 @@ export const translations = {
 				{
 					time: '上午 11:30',
 					title: '开始购物',
-					body: '轮到您时，我们会发短信通知您（如果您完成了第 4 步），屏幕也会显示。请到正门来。',
+					body: '轮到您时，我们会发短信通知您（如果您完成了第 4 步），屏幕也会显示。请到签到台来。',
 				},
 			],
 			phoneNotice: { heading: '请携带您登记时使用的手机。', body: '不接受截图。' },
@@ -2658,13 +2703,13 @@ export const translations = {
 			},
 			called: {
 				title: '轮到您了',
-				body: '请现在到入口来。',
+				body: '请现在到签到台来。',
 			},
 			sms: {
 				welcome: '欢迎！您现在可以通过短信接收更新了。',
 				selected: '您已被选中！您的号码是 {number}。请等待叫号。',
 				notSelected: '您未被选中参加今天的服务。',
-				called: '轮到您了。请现在到入口来。',
+				called: '轮到您了。请现在到签到台来。',
 			},
 			pushOptIn: {
 				enable: '通知我此次到访的状态',
@@ -2783,7 +2828,7 @@ export const translations = {
 					turn: {
 						time: '11:30 صباحًا',
 						title: 'بدء التسوق',
-						body: 'عندما يحين دورك، ستخبرك هذه الشاشة، وسنرسل لك رسالة نصية إن سجّلت لتلقيها. توجّه إلى المدخل وأحضر الهاتف الذي سجّلت به — لا نقبل لقطات الشاشة.',
+						body: 'عندما يحين دورك، ستخبرك هذه الشاشة، وسنرسل لك رسالة نصية إن سجّلت لتلقيها. توجّه إلى مكتب تسجيل الوصول وأحضر الهاتف الذي سجّلت به — لا نقبل لقطات الشاشة.',
 					},
 					help: {
 						title: 'تحتاج إلى تذكير؟',
@@ -2887,7 +2932,13 @@ export const translations = {
 					nowCallingLabel: 'الرقم الحالي',
 					nowCallingNone: 'لم يتم النداء على أي رقم بعد',
 				},
-				called: { header: 'حان دورك', details: 'يرجى التوجه إلى المدخل الآن.' },
+				called: {
+					header: 'حان دورك',
+					details: 'يرجى التوجه إلى مكتب تسجيل الوصول الآن.',
+					detailsLate: 'هناك آخرون ينتظرون خلفك. يرجى التوجه إلى مكتب تسجيل الوصول الآن.',
+					calledMinutesAgoOne: 'تم استدعاؤك قبل دقيقة واحدة',
+					calledMinutesAgoOther: 'تم استدعاؤك قبل {minutes} دقيقة',
+				},
 				served: {
 					header: 'شكرًا لحضورك',
 					details:
@@ -2901,7 +2952,7 @@ export const translations = {
 				no_show: {
 					header: 'لم نتمكن من العثور عليك',
 					details:
-						'ناديْنا على رقمك لكننا لم نجدك. إذا كنت لا تزال هنا، يرجى التحدث مع أحد أعضاء فريق السوق عند المدخل.',
+						'ناديْنا على رقمك لكننا لم نجدك. إذا كنت لا تزال هنا، يرجى التحدث مع أحد أعضاء فريق السوق عند مكتب تسجيل الوصول.',
 				},
 				cancelled: {
 					header: 'أُلغيت الزيارة',
@@ -3000,7 +3051,7 @@ export const translations = {
 				{
 					time: '11:30 صباحًا',
 					title: 'بدء التسوق',
-					body: 'عندما يحين دورك، سنرسل لك رسالة نصية (إن أكملت الخطوة 4) وستخبرك شاشتك. توجّه إلى المدخل.',
+					body: 'عندما يحين دورك، سنرسل لك رسالة نصية (إن أكملت الخطوة 4) وستخبرك شاشتك. توجّه إلى مكتب تسجيل الوصول.',
 				},
 			],
 			phoneNotice: { heading: 'من فضلك، أحضر الهاتف الذي سجّلت به.', body: 'لا نقبل لقطات الشاشة.' },
@@ -3035,13 +3086,13 @@ export const translations = {
 			},
 			called: {
 				title: 'حان دورك',
-				body: 'يرجى التوجه إلى المدخل الآن.',
+				body: 'يرجى التوجه إلى مكتب تسجيل الوصول الآن.',
 			},
 			sms: {
 				welcome: 'مرحبًا! أصبحت الآن جاهزًا لتلقي التحديثات عبر الرسائل النصية.',
 				selected: 'تم اختيارك! رقمك هو {number}. يرجى الانتظار حتى يتم استدعاؤك.',
 				notSelected: 'لم يتم اختيارك لخدمة اليوم.',
-				called: 'حان دورك. يرجى التوجه إلى المدخل الآن.',
+				called: 'حان دورك. يرجى التوجه إلى مكتب تسجيل الوصول الآن.',
 			},
 			pushOptIn: {
 				enable: 'أبلغني بمستجدات هذه الزيارة',
@@ -3162,7 +3213,7 @@ export const translations = {
 					turn: {
 						time: '11 h 30',
 						title: 'Début des courses',
-						body: 'À votre tour, cet écran l’indiquera, et nous vous enverrons un SMS si vous vous êtes inscrit aux SMS. Présentez-vous à l’entrée avec le téléphone utilisé pour l’inscription — les captures d’écran ne sont pas acceptées.',
+						body: 'À votre tour, cet écran l’indiquera, et nous vous enverrons un SMS si vous vous êtes inscrit aux SMS. Présentez-vous à l’accueil avec le téléphone utilisé pour l’inscription — les captures d’écran ne sont pas acceptées.',
 					},
 					help: {
 						title: 'Besoin d’un rappel ?',
@@ -3271,7 +3322,11 @@ export const translations = {
 				},
 				called: {
 					header: 'C’est votre tour',
-					details: 'Veuillez vous présenter à l’entrée maintenant.',
+					details: 'Veuillez vous présenter à l’accueil maintenant.',
+					detailsLate:
+						'D’autres personnes attendent après vous. Veuillez vous présenter à l’accueil maintenant.',
+					calledMinutesAgoOne: 'Appelé il y a 1 minute',
+					calledMinutesAgoOther: 'Appelé il y a {minutes} minutes',
 				},
 				served: {
 					header: 'Merci d’être venu',
@@ -3286,7 +3341,7 @@ export const translations = {
 				no_show: {
 					header: 'Nous vous avons manqué',
 					details:
-						'Nous avons appelé votre numéro, mais nous ne vous avons pas trouvé. Si vous êtes encore là, veuillez vous adresser à un membre de l’équipe du marché à l’entrée.',
+						'Nous avons appelé votre numéro, mais nous ne vous avons pas trouvé. Si vous êtes encore là, veuillez vous adresser à un membre de l’équipe du marché à l’accueil.',
 				},
 				cancelled: {
 					header: 'Visite annulée',
@@ -3389,7 +3444,7 @@ export const translations = {
 				{
 					time: '11 h 30',
 					title: 'Début des courses',
-					body: 'À votre tour, nous vous enverrons un SMS (si vous avez fait l’étape 4) et votre écran l’indiquera. Présentez-vous à l’entrée.',
+					body: 'À votre tour, nous vous enverrons un SMS (si vous avez fait l’étape 4) et votre écran l’indiquera. Présentez-vous à l’accueil.',
 				},
 			],
 			phoneNotice: {
@@ -3427,14 +3482,14 @@ export const translations = {
 			},
 			called: {
 				title: 'C’est votre tour',
-				body: 'Veuillez vous présenter à l’entrée maintenant.',
+				body: 'Veuillez vous présenter à l’accueil maintenant.',
 			},
 			sms: {
 				welcome: 'Bienvenue ! Vous recevrez désormais les mises à jour par SMS.',
 				selected:
 					'Vous avez été choisi ! Votre numéro est le {number}. Veuillez attendre d’être appelé.',
 				notSelected: 'Vous n’avez pas été choisi pour le service d’aujourd’hui.',
-				called: 'C’est votre tour. Veuillez vous présenter à l’entrée maintenant.',
+				called: 'C’est votre tour. Veuillez vous présenter à l’accueil maintenant.',
 			},
 			pushOptIn: {
 				enable: 'M’avertir pour cette visite',

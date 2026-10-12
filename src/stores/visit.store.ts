@@ -3,6 +3,7 @@ import { type IReactionDisposer, reaction, runInAction } from 'mobx';
 import type { VisitStatus } from '@/services/visitStateMachine.ts';
 import type { SessionOverview } from '@/stores/market-session.store.ts';
 
+import { LateArrival } from '../models/late-arrival';
 import { NowCalling } from '../models/now-calling';
 import { QueueNumber } from '../models/queue-number';
 import {
@@ -88,9 +89,20 @@ export class VisitStore {
 		return this._currentVisit?.status === 'waiting' ? this._currentVisit.aheadOfYou : null;
 	}
 
-	/** The numbers the market is calling right now, while the guest waits. */
+	/** How long a called guest has kept the check-in desk waiting, once they are called. */
+	get lateArrival(): LateArrival | null {
+		const visit = this._currentVisit;
+
+		return visit?.status === 'called' && visit.calledAt
+			? new LateArrival(new Date(visit.calledAt))
+			: null;
+	}
+
+	/** The numbers the market is calling right now, while the guest waits and once they are called. */
 	get nowCalling(): NowCalling | null {
-		return this._currentVisit?.status === 'waiting' ? new NowCalling(this._currentVisit) : null;
+		const visit = this._currentVisit;
+
+		return visit?.status === 'waiting' || visit?.status === 'called' ? new NowCalling(visit) : null;
 	}
 
 	/**
@@ -189,6 +201,7 @@ export class VisitStore {
 			queuePosition: null,
 			priorityNumber: null,
 			aheadOfYou: null,
+			calledAt: null,
 			nowCalling: null,
 			called: [],
 			calledPriority: [],

@@ -37,6 +37,8 @@ export type GuestVisitStatusArgs = {
 	queuePosition: number | null;
 	priorityNumber: number | null;
 	aheadOfYou: number | null;
+	/** How long ago a called guest was called, in minutes; `null` for not called. */
+	calledMinutesAgo: number | null;
 	nowCalling: number | null;
 	called: number[];
 	calledPriority: number[];
@@ -51,6 +53,7 @@ function seededStore({
 	queuePosition,
 	priorityNumber,
 	aheadOfYou,
+	calledMinutesAgo,
 	nowCalling,
 	called,
 	calledPriority,
@@ -88,6 +91,10 @@ function seededStore({
 					queuePosition,
 					priorityNumber,
 					aheadOfYou,
+					calledAt:
+						calledMinutesAgo === null
+							? null
+							: new Date(Date.now() - calledMinutesAgo * 60_000).toISOString(),
 					nowCalling,
 					called,
 					calledPriority,
@@ -165,6 +172,7 @@ export const defaultVisitStatusArgs: GuestVisitStatusArgs = {
 	queuePosition: null,
 	priorityNumber: null,
 	aheadOfYou: null,
+	calledMinutesAgo: null,
 	nowCalling: null,
 	called: [],
 	calledPriority: [],

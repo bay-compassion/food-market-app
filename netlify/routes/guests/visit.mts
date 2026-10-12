@@ -88,12 +88,12 @@ async function guestsAhead(visit: {
 }
 
 /**
- * The "now calling" board, like `guestsAhead` only meaningful while waiting: the highest main number
- * called, and every number at the entrance now in either series — a batch, and any `P` numbers —
- * which a guest sees beside it.
+ * The "now calling" board: the highest main number called, and every number at the entrance now in
+ * either series — a batch, and any `P` numbers — which a guest sees beside it. Sent while the guest
+ * waits, and once they are called, so a guest who is late can see how far the line has moved on.
  */
 async function nowCalling(visit: { status: string; marketEventId: string }) {
-	if (visit.status !== 'waiting') {
+	if (visit.status !== 'waiting' && visit.status !== 'called') {
 		return { nowCalling: null, called: [], calledPriority: [] };
 	}
 

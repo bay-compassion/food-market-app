@@ -8,16 +8,7 @@ import { useLinePositionIndicator } from '../../hooks/use-line-position-indicato
 import { NowCallingIndicator } from './NowCallingIndicator';
 import { QueueNumberBoard } from './QueueNumberBoard';
 import { QueuePositionDots } from './QueuePositionDots';
-
-/* The board's colour runs to the card's edge; `overflow` keeps it inside the rounded corners. */
-const Standing = styled.div`
-	display: flex;
-	flex-direction: column;
-	margin-bottom: 27px;
-	border-radius: var(--radius-md);
-	overflow: hidden;
-	background: var(--color-surface-soft);
-`;
+import { StandingCard } from './StandingCard';
 
 const GuestsAhead = styled.div`
 	display: flex;
@@ -75,7 +66,7 @@ export function QueueStanding({
 	const indicator = useLinePositionIndicator();
 
 	return (
-		<Standing className={['queue-standing', className].filter(Boolean).join(' ')}>
+		<StandingCard className={['queue-standing', className].filter(Boolean).join(' ')}>
 			<QueueNumberBoard
 				label={copy.yourNumberLabel}
 				number={queueNumber}
@@ -97,6 +88,6 @@ export function QueueStanding({
 					</GuestsAheadCount>
 				</GuestsAhead>
 			) : null}
-		</Standing>
+		</StandingCard>
 	);
 }

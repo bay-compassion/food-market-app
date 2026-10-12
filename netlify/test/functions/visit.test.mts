@@ -144,7 +144,7 @@ describe('visit handler GET', () => {
 		});
 	});
 
-	it('reports no queue position once the guest has been called', async () => {
+	it('keeps reporting the line once the guest has been called, with nobody ahead to count', async () => {
 		const visit = {
 			id: 'visit-1',
 			status: 'called',
@@ -155,15 +155,21 @@ describe('visit handler GET', () => {
 		};
 
 		queueResult([visit]);
+		queueResult([{ queuePosition: 7 }]); // the highest main number called
+		queueResult([
+			{ queuePosition: 7, priorityNumber: null },
+			{ queuePosition: 4, priorityNumber: null },
+		]); // who is at the entrance now
 
 		const response = await handler(request('GET', { token: validToken }));
 
 		expect(response.status).toBe(200);
+		// The number stays, and so does "now calling": a late guest sees how far the line has moved.
 		await expect(response.json()).resolves.toEqual({
 			...visit,
 			aheadOfYou: null,
-			nowCalling: null,
-			called: [],
+			nowCalling: 7,
+			called: [7, 4],
 			calledPriority: [],
 		});
 	});

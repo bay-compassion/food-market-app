@@ -14,14 +14,16 @@ export type CurrentVisit = {
 	queuePosition: number | null;
 	priorityNumber: number | null;
 	aheadOfYou: number | null;
-	/** The highest main-series number called in this session; only reported while waiting. */
+	/** When the guest was called, as an ISO timestamp; `null` until then, and after a return to the queue. */
+	calledAt: string | null;
+	/** The highest main-series number called in this session; reported while waiting or called. */
 	nowCalling: number | null;
 	/**
-	 * The main numbers called and not yet at the table, most recently called first; only reported
-	 * while waiting. Several at once when a worker calls a batch.
+	 * The main numbers called and not yet at the table, most recently called first; reported while
+	 * waiting or called. Several at once when a worker calls a batch.
 	 */
 	called: number[];
-	/** The priority numbers (`P1`, …) called and not yet at the table; only reported while waiting. */
+	/** The priority numbers (`P1`, …) called and not yet at the table; reported while waiting or called. */
 	calledPriority: number[];
 };
 
@@ -132,15 +134,15 @@ export async function fetchCurrentVisit(token: string): Promise<CurrentVisitLook
 
 		const visit = (await response.json()) as Omit<
 			CurrentVisit,
-			'priorityNumber' | 'called' | 'calledPriority'
+			'priorityNumber' | 'calledAt' | 'called' | 'calledPriority'
 		> &
-			Partial<Pick<CurrentVisit, 'priorityNumber' | 'called' | 'calledPriority'>>;
+			Partial<Pick<CurrentVisit, 'priorityNumber' | 'calledAt' | 'called' | 'calledPriority'>>;
 
-		// Defaults for the fields the priority series added, so a response that predates them (a
-		// rollback, or a deploy still finishing) reads as "none" rather than as `undefined`.
+		// Defaults for the newer fields, so a response that predates them (a rollback, or a deploy
+		// still finishing) reads as "none" rather than as `undefined`.
 		return {
 			found: true,
-			visit: { priorityNumber: null, called: [], calledPriority: [], ...visit },
+			visit: { priorityNumber: null, calledAt: null, called: [], calledPriority: [], ...visit },
 		};
 	} catch {
 		return { found: false, reason: 'unreachable' };

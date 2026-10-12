@@ -69,11 +69,55 @@ export const WaitingNoneCalledYet: Story = {
  *  The stamp under the heading — a blinking dot, the guest's name, and today's date — is what
  *  the check-in worker reads to tell a live screen for today from a screenshot. */
 export const Called: Story = {
-	args: { visitStatus: 'called', queuePosition: 42 },
+	args: {
+		visitStatus: 'called',
+		queuePosition: 42,
+		calledMinutesAgo: 0,
+		nowCalling: 42,
+		called: [42],
+	},
 	play: async ({ canvas }) => {
 		await expect(await canvas.findByText('Ada L')).toBeInTheDocument();
-		// The number stays on the card, for the worker at the entrance to check.
-		await expect(canvas.getByText('42')).toBeInTheDocument();
+		// The number stays on the card, for the worker at the check-in desk to check.
+		await expect(canvas.getAllByText('42')).toHaveLength(2);
+	},
+};
+
+/** Called six minutes ago: past the three-minute grace, so the board has started toward yellow.
+ *  A screen reader hears how long ago instead. */
+export const CalledRunningLate: Story = {
+	args: {
+		visitStatus: 'called',
+		queuePosition: 42,
+		calledMinutesAgo: 6,
+		nowCalling: 49,
+		called: [49, 48, 42],
+	},
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(
+				translations.en.guestView.visitStatus.called.calledMinutesAgoOther.replace(
+					'{minutes}',
+					'6',
+				),
+			),
+		).toBeInTheDocument();
+	},
+};
+
+/** Ten minutes or more: the board is fully yellow, and the card says others are waiting. */
+export const CalledWellBehind: Story = {
+	args: {
+		visitStatus: 'called',
+		queuePosition: 42,
+		calledMinutesAgo: 12,
+		nowCalling: 52,
+		called: [52, 51, 50, 42],
+	},
+	play: async ({ canvas }) => {
+		await expect(
+			await canvas.findByText(translations.en.guestView.visitStatus.called.detailsLate),
+		).toBeInTheDocument();
 	},
 };
 
