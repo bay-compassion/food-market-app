@@ -25,12 +25,6 @@ export class NowCalling {
 	 */
 	static readonly earlierLimit = 3;
 
-	/** How many numbers past a called guest's own the market can call before their board warms. */
-	static readonly lateThreshold = 5;
-
-	/** How many more, past the threshold, until it is fully yellow. */
-	static readonly lateRamp = 5;
-
 	constructor(private readonly state: NowCallingState) {}
 
 	/** The main number being called, or `null` before any has been. */
@@ -55,36 +49,6 @@ export class NowCalling {
 		return this.state.calledPriority
 			.map((value) => QueueNumber.priority(value))
 			.toSorted(QueueNumber.compare);
-	}
-
-	/**
-	 * How many main numbers the market has called past `number` — how far the line has moved on
-	 * since a called guest's turn, for one who is late or taking their time. `null` for a priority
-	 * number, which counts on its own and so cannot be measured against the main series, and
-	 * before any main number has been called.
-	 */
-	numbersSince(number: QueueNumber): number | null {
-		const main = this.main;
-
-		if (number.isPriority || main === null) {
-			return null;
-		}
-
-		return Math.max(0, main.value - number.value);
-	}
-
-	/**
-	 * How far a called guest's board has warmed toward yellow, `0`–`1`. It stays `0` until the market
-	 * has called `lateThreshold` numbers past theirs — a guest taking a minute is not late — and then
-	 * eases in: slowly at first, faster with every number after, fully yellow `lateRamp` numbers on,
-	 * and holding there. Squared progress, so the change gathers pace the longer they are gone.
-	 * `0` for a priority number, which `numbersSince` cannot measure.
-	 */
-	warmthSince(number: QueueNumber): number {
-		const past = (this.numbersSince(number) ?? 0) - NowCalling.lateThreshold;
-		const progress = Math.min(1, Math.max(0, past / NowCalling.lateRamp));
-
-		return progress ** 2;
 	}
 
 	/** Nobody has been called yet, in either series. */

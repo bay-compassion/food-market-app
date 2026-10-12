@@ -14,6 +14,8 @@ export type CurrentVisit = {
 	queuePosition: number | null;
 	priorityNumber: number | null;
 	aheadOfYou: number | null;
+	/** When the guest was called, as an ISO timestamp; `null` until then, and after a return to the queue. */
+	calledAt: string | null;
 	/** The highest main-series number called in this session; reported while waiting or called. */
 	nowCalling: number | null;
 	/**
@@ -132,15 +134,15 @@ export async function fetchCurrentVisit(token: string): Promise<CurrentVisitLook
 
 		const visit = (await response.json()) as Omit<
 			CurrentVisit,
-			'priorityNumber' | 'called' | 'calledPriority'
+			'priorityNumber' | 'calledAt' | 'called' | 'calledPriority'
 		> &
-			Partial<Pick<CurrentVisit, 'priorityNumber' | 'called' | 'calledPriority'>>;
+			Partial<Pick<CurrentVisit, 'priorityNumber' | 'calledAt' | 'called' | 'calledPriority'>>;
 
-		// Defaults for the fields the priority series added, so a response that predates them (a
-		// rollback, or a deploy still finishing) reads as "none" rather than as `undefined`.
+		// Defaults for the newer fields, so a response that predates them (a rollback, or a deploy
+		// still finishing) reads as "none" rather than as `undefined`.
 		return {
 			found: true,
-			visit: { priorityNumber: null, called: [], calledPriority: [], ...visit },
+			visit: { priorityNumber: null, calledAt: null, called: [], calledPriority: [], ...visit },
 		};
 	} catch {
 		return { found: false, reason: 'unreachable' };

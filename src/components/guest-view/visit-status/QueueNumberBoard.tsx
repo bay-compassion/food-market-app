@@ -33,6 +33,12 @@ const Board = styled.div<{ $tone: QueueNumberBoardTone; $darkText: boolean }>`
 		${({ $tone }) => toneBackgrounds[$tone]},
 		var(--color-focus) calc(var(--queue-number-board-warmth, 0) * 100%)
 	);
+	/* Glides between a late guest's warmth ticks rather than stepping every few seconds. */
+	transition: background-color 5s linear;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
 	color: ${({ $darkText }) => ($darkText ? 'var(--color-text)' : 'var(--color-on-brand)')};
 
 	> span {

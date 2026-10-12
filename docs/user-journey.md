@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=0bc61c69f8ea, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=0b1b3fca016f, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=a0beb242a6d6, src/stores/visit.store.ts=86dc137a2071, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=d22a5312a73e, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=0bc61c69f8ea, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=0b1b3fca016f, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=84409e12238d, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=d22a5312a73e, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
 
 # Guest journey
 
@@ -269,9 +269,10 @@ flowchart TD
   word — a guest glancing at their phone from across the room has to catch it. It keeps the
   guest's number on the same board, in green, for the worker at the entrance to check, and the
   same "now calling" row under it — `/api/visit` keeps sending the called numbers once a guest has
-  been called. For a guest who is late or taking their time, once the market has called five numbers
-  past theirs the board starts to warm toward yellow — like the registration countdown — faster
-  with every number after; a screen reader hears the count instead.
+  been called. A turn never expires, but for a guest who is late or taking their time, the board
+  starts to warm toward yellow three minutes after the call (`calledAt`, the clock the queue desk
+  shows) — like the registration countdown — faster with every minute, and at ten minutes the card
+  says that others are waiting behind them. A screen reader hears how long ago they were called.
 - **An admin can add a guest directly, at any stage of the session.** The worker fills in the same
   identity and household form components a guest uses, inside a dialog, so the two never drift
   apart; those components write to the shared `RegistrationStore`, which the dialog empties each

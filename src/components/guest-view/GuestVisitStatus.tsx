@@ -36,6 +36,7 @@ export const GuestVisitStatus = observer(function GuestVisitStatus() {
 					copy={copy}
 					queueNumber={visit.queueNumber}
 					nowCalling={visit.nowCalling}
+					lateArrival={visit.lateArrival}
 				/>
 			);
 		case 'served':

@@ -84,11 +84,12 @@ dot, so a check-in worker can tell a live screen for today from a screenshot.
 
 ### <StatePip state="called" /> Called
 
-A team member has called the guest. The card asks them to come to the entrance, and carries the same
+A team member has called the guest. The card asks them to come to the check-in desk, and carries the same
 name, date, and dot as the waiting card — and the same number, on a green board, for the worker at
-the entrance to check. The "now calling" row stays under it, and if the market calls on without
-the guest, once five numbers have gone by the board starts to warm toward yellow, like the
-registration countdown, faster with every number after.
+the check-in desk to check. The "now calling" row stays under it. A turn never expires, but others are
+waiting: three minutes after the call the board starts to warm toward yellow, like the registration
+countdown, faster with every minute, and at ten minutes the card says that others are waiting
+behind them.
 
 <Story of={GuestStates.Called} />
 

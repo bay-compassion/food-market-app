@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { translations } from '@/locales.ts';
 
+import { LateArrival } from '../../../models/late-arrival';
 import { NowCalling } from '../../../models/now-calling';
 import { QueueNumber } from '../../../models/queue-number';
 import { RootStoreProvider } from '../../../stores/react/store-context';
@@ -19,7 +20,12 @@ describe('CalledVisitStatus', () => {
 		const { container } = render(
 			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: 'guests-ahead' }}>
 				<RootStoreProvider store={new RootStore()}>
-					<CalledVisitStatus copy={copy} queueNumber={QueueNumber.main(42)} nowCalling={null} />
+					<CalledVisitStatus
+						copy={copy}
+						queueNumber={QueueNumber.main(42)}
+						nowCalling={null}
+						lateArrival={null}
+					/>
 				</RootStoreProvider>
 			</StaticLDProvider>,
 		);
@@ -37,7 +43,12 @@ describe('CalledVisitStatus', () => {
 					flags={indicator === undefined ? {} : { [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}
 				>
 					<RootStoreProvider store={new RootStore()}>
-						<CalledVisitStatus copy={copy} queueNumber={QueueNumber.main(42)} nowCalling={null} />
+						<CalledVisitStatus
+							copy={copy}
+							queueNumber={QueueNumber.main(42)}
+							nowCalling={null}
+							lateArrival={null}
+						/>
 					</RootStoreProvider>
 				</StaticLDProvider>,
 			);
@@ -56,7 +67,12 @@ describe('CalledVisitStatus', () => {
 			const { container, unmount } = render(
 				<StaticLDProvider flags={{}}>
 					<RootStoreProvider store={new RootStore()}>
-						<CalledVisitStatus copy={copy} queueNumber={queueNumber} nowCalling={null} />
+						<CalledVisitStatus
+							copy={copy}
+							queueNumber={queueNumber}
+							nowCalling={null}
+							lateArrival={null}
+						/>
 					</RootStoreProvider>
 				</StaticLDProvider>,
 			);
@@ -76,7 +92,7 @@ describe('CalledVisitStatus', () => {
 		const { container } = render(
 			<StaticLDProvider flags={{}}>
 				<RootStoreProvider store={new RootStore()}>
-					<CalledVisitStatus copy={copy} queueNumber={null} nowCalling={null} />
+					<CalledVisitStatus copy={copy} queueNumber={null} nowCalling={null} lateArrival={null} />
 				</RootStoreProvider>
 			</StaticLDProvider>,
 		);
@@ -85,73 +101,90 @@ describe('CalledVisitStatus', () => {
 		expect(container.querySelector('.queue-number-board')).toBeNull();
 	});
 
-	function renderCalled(queueNumber: QueueNumber, nowCalling: number, called: number[] = []) {
+	const minutesAgo = (minutes: number) => new LateArrival(new Date(Date.now() - minutes * 60_000));
+
+	function renderCalled(
+		queueNumber: QueueNumber,
+		{ minutes = 0, nowCalling = 42 }: { minutes?: number; nowCalling?: number } = {},
+	) {
 		return render(
 			<StaticLDProvider flags={{}}>
 				<RootStoreProvider store={new RootStore()}>
 					<CalledVisitStatus
 						copy={copy}
 						queueNumber={queueNumber}
-						nowCalling={new NowCalling({ nowCalling, called, calledPriority: [] })}
+						nowCalling={new NowCalling({ nowCalling, called: [nowCalling], calledPriority: [] })}
+						lateArrival={minutesAgo(minutes)}
 					/>
 				</RootStoreProvider>
 			</StaticLDProvider>,
 		);
 	}
 
+	const warmthOf = (container: HTMLElement) =>
+		Number(container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth);
+
 	it('keeps the now-calling row under the number', () => {
 		// Arrange & Act
-		const { getByRole } = renderCalled(QueueNumber.main(42), 42, [42]);
+		const { getByRole } = renderCalled(QueueNumber.main(42));
 
 		// Assert
 		expect(getByRole('status').textContent).toBe(`${copy.waiting.nowCallingLabel}42`);
 	});
 
-	it('keeps the board green while the guest’s own number is the one being called', () => {
+	it('keeps the board green through the first three minutes after the call', () => {
 		// Arrange & Act
-		const { container } = renderCalled(QueueNumber.main(42), 42, [42]);
+		const boards = [0, 2.9].map((minutes) => renderCalled(QueueNumber.main(42), { minutes }));
 
 		// Assert
-		expect(container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth).toBe('0');
-		expect(container.querySelector('.sr-only')).toBeNull();
+		expect(boards.map(({ container }) => warmthOf(container))).toEqual([0, 0]);
+		expect(boards.map(({ container }) => container.querySelector('.sr-only'))).toEqual([
+			null,
+			null,
+		]);
 	});
 
-	it('warms the board only past five numbers, then faster with each, full at ten', () => {
+	it('warms the board toward yellow after the grace, full at ten minutes', () => {
 		// Arrange
-		const late = [45, 47, 48, 50, 52, 60].map((nowCalling) =>
-			renderCalled(QueueNumber.main(42), nowCalling),
+		const boards = [6.5, 10.5, 30].map((minutes) =>
+			renderCalled(QueueNumber.main(42), { minutes }),
 		);
 
 		// Act
-		const warmth = late.map(({ container }) =>
-			Number(container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth),
-		);
+		const warmth = boards.map(({ container }) => warmthOf(container));
 
 		// Assert
-		[0, 0, 0.04, 0.36, 1, 1].forEach((expected, index) =>
-			expect(warmth[index]).toBeCloseTo(expected),
-		);
+		[0.25, 1, 1].forEach((expected, index) => expect(warmth[index]).toBeCloseTo(expected, 1));
 	});
 
-	it('tells a screen reader how far the line has moved once the board warms', () => {
+	it('says others are waiting only once the board is fully yellow', () => {
 		// Arrange
-		const late = [47, 48].map((nowCalling) => renderCalled(QueueNumber.main(42), nowCalling));
+		const cards = [6.5, 10.5].map((minutes) => renderCalled(QueueNumber.main(42), { minutes }));
 
 		// Act
-		const read = late.map(
-			({ container }) => container.querySelector('.sr-only')?.textContent ?? null,
-		);
+		const said = cards.map(({ container }) => container.textContent ?? '');
 
 		// Assert
-		expect(read).toEqual([null, copy.called.sinceYoursOther.replace('{count}', '6')]);
+		expect(said[0]).toContain(copy.called.details);
+		expect(said[0]).not.toContain(copy.called.detailsLate);
+		expect(said[1]).toContain(copy.called.detailsLate);
 	});
 
-	it('cannot say how late a priority number is, so its board stays green', () => {
+	it('tells a screen reader how long ago the guest was called, once the board warms', () => {
 		// Arrange & Act
-		const { container } = renderCalled(QueueNumber.priority(1), 49);
+		const { container } = renderCalled(QueueNumber.main(42), { minutes: 6.5 });
 
 		// Assert
-		expect(container.querySelector('.now-calling')).not.toBeNull();
-		expect(container.querySelector<HTMLElement>('.queue-number-board')?.dataset.warmth).toBe('0');
+		expect(container.querySelector('.sr-only')?.textContent).toBe(
+			copy.called.calledMinutesAgoOther.replace('{minutes}', '6'),
+		);
+	});
+
+	it('warms a priority number’s board too: lateness is time, not the main series', () => {
+		// Arrange & Act
+		const { container } = renderCalled(QueueNumber.priority(1), { minutes: 10.5, nowCalling: 49 });
+
+		// Assert
+		expect(warmthOf(container)).toBe(1);
 	});
 });

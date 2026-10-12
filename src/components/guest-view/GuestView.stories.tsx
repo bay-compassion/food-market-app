@@ -110,6 +110,7 @@ function VisitStatusRow({
 			queuePosition,
 			priorityNumber: null,
 			aheadOfYou,
+			calledAt: null,
 			nowCalling: null,
 			called: [],
 			calledPriority: [],

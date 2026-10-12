@@ -55,6 +55,7 @@ function SeededRefreshNotice({
 						queuePosition: 7,
 						priorityNumber: null,
 						aheadOfYou: 6,
+						calledAt: null,
 						nowCalling: 1,
 						called: [],
 						calledPriority: [],

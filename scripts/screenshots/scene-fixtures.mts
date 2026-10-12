@@ -125,6 +125,7 @@ export class SceneFixtures {
 					queuePosition: visit.queuePosition ?? null,
 					priorityNumber: null,
 					aheadOfYou: visit.aheadOfYou ?? null,
+					calledAt: null,
 					nowCalling: null,
 					called: [],
 					calledPriority: [],
