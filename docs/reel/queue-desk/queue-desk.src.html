@@ -1,0 +1,1741 @@
+<title>Queue Desk Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap"
+/>
+<style>
+	__STAGE_CSS__
+</style>
+<style>
+	/* The queue desk front and centre, the room display and one guest's phone beside it, and the
+	   caption above them. The desk follows src/components/queue/ more closely than the reel's does. */
+	#cap {
+		left: 70px;
+		top: 64px;
+		width: 680px;
+	}
+	#cap .head {
+		font-size: 44px;
+	}
+	#kiosk {
+		left: 0;
+		top: 0;
+		transform-origin: 0 0;
+	}
+	#kiosk,
+	#guestPhone {
+		transition: filter 0.6s;
+	}
+	.dim {
+		filter: brightness(0.45) saturate(0.6);
+	}
+	.card-center .sub {
+		font-size: 26px;
+		color: var(--reel-ink-soft);
+	}
+
+	/* ---------- the desk ---------- */
+	#desk .desk-body {
+		position: relative;
+		display: block;
+		height: 704px;
+		padding: 0;
+	}
+	.desk-scroll {
+		display: grid;
+		gap: 12px;
+		padding: 8px 12px 120px;
+		transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.dh {
+		position: relative;
+	}
+	.dh .kebab {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+	}
+	.message {
+		display: grid;
+		gap: 16px;
+		justify-items: start;
+		padding: 32px 8px;
+	}
+	.message p {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 17px;
+		line-height: 1.5;
+	}
+	.outlined {
+		position: relative;
+		padding: 8px 16px;
+		border: 1px solid rgb(2 57 64 / 50%);
+		border-radius: 6px;
+		color: var(--color-brand);
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+	.banner {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 16px;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 14px;
+		border-radius: var(--radius-md);
+		color: var(--color-brand);
+		background: var(--color-surface-soft);
+		font-size: 15px;
+		animation: fade 0.4s ease-out;
+	}
+	.banner p {
+		margin: 0;
+	}
+	.banner .outlined {
+		padding: 5px 10px;
+		font-size: 12.5px;
+	}
+	.chip[data-status='no_show'] .number {
+		color: #fff;
+		background: var(--color-error);
+	}
+	.chip[data-status='not_placed'] .number {
+		color: var(--color-text-subtle);
+	}
+	.tsection .add {
+		position: relative;
+	}
+	.mui-btn.danger {
+		background: var(--color-error);
+	}
+	.mui-btn {
+		transition: background 0.4s;
+	}
+
+	/* ---------- the open ticket ---------- */
+	.sheet {
+		max-height: 704px;
+		padding: 0;
+		overflow: hidden;
+	}
+	.sheet-scroll {
+		display: grid;
+		gap: 14px;
+		padding: 10px 16px 24px;
+		transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.summary .st {
+		justify-content: space-between;
+	}
+	.summary .st[data-status='waiting'] {
+		color: var(--color-brand);
+	}
+	.summary .st[data-status='no_show'] {
+		color: var(--color-error);
+	}
+	.summary .st .timer {
+		flex: none;
+		font-variant-numeric: tabular-nums;
+	}
+	.nametag .nm {
+		font-size: 46px;
+	}
+	.print {
+		display: grid;
+		gap: 4px;
+		justify-items: stretch;
+		margin-top: -4px;
+	}
+	.print p {
+		margin: 0;
+		color: var(--color-text-subtle);
+		font-size: 13px;
+		text-align: center;
+	}
+	.printbtn {
+		position: relative;
+		height: 44px;
+		font-size: 15px;
+		transition: opacity 0.3s;
+	}
+	.printbtn.disabled {
+		opacity: 0.4;
+	}
+	.actions {
+		position: relative;
+	}
+	.actions span {
+		min-height: 44px;
+		font-size: 15px;
+	}
+	.actions .split {
+		display: inline-flex;
+		gap: 2px;
+		padding: 0;
+		background: none;
+	}
+	.actions .split span:first-child {
+		border-start-end-radius: 0;
+		border-end-end-radius: 0;
+	}
+	.actions .split span:last-child {
+		padding: 0 12px;
+		border-start-start-radius: 0;
+		border-end-start-radius: 0;
+	}
+	.history {
+		display: grid;
+		gap: 8px;
+		padding: 14px 16px;
+		border-radius: var(--radius-lg);
+		background: var(--color-surface-soft);
+	}
+	.history h2 {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 17px;
+	}
+	.history ol {
+		display: grid;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.history li {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		font-size: 14px;
+	}
+	.history .title {
+		font-weight: 700;
+	}
+	.history .byline {
+		grid-row: 2;
+		color: var(--color-text-subtle);
+		font-size: 13px;
+	}
+	.history time {
+		grid-row: 1 / span 2;
+		grid-column: 2;
+		align-self: center;
+		color: var(--color-text-muted);
+	}
+
+	/* ---------- menus, dialogs, sheets, toasts ---------- */
+	.menu {
+		position: absolute;
+		z-index: 6;
+		display: grid;
+		min-width: 230px;
+		padding: 8px 0;
+		border-radius: 4px;
+		background: var(--color-background);
+		box-shadow:
+			0 5px 5px -3px rgb(0 0 0 / 20%),
+			0 8px 10px 1px rgb(0 0 0 / 14%),
+			0 3px 14px 2px rgb(0 0 0 / 12%);
+		animation: menuIn 0.25s ease-out;
+	}
+	.menu span {
+		position: relative;
+		padding: 10px 16px;
+		font-size: 15px;
+	}
+	.actions .menu span {
+		display: block;
+		min-height: 0;
+		border-radius: 0;
+		background: none;
+		font-weight: 400;
+	}
+	.menu .danger {
+		color: var(--color-error);
+		font-weight: 700;
+	}
+	.menu-kebab {
+		top: 48px;
+		right: 8px;
+	}
+	.menu-return {
+		right: 0;
+		bottom: calc(100% + 6px);
+	}
+	@keyframes menuIn {
+		from {
+			opacity: 0;
+			transform: scale(0.9);
+		}
+	}
+	.overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 8;
+		display: grid;
+		align-items: center;
+		padding: 0 14px;
+		background: rgb(0 0 0 / 50%);
+		opacity: 0;
+		transition: opacity 0.3s;
+	}
+	.overlay.open {
+		opacity: 1;
+	}
+	.dialog {
+		display: grid;
+		gap: 14px;
+		padding: 20px 18px 14px;
+		border-radius: 4px;
+		background: var(--color-background);
+		box-shadow: 0 11px 15px -7px rgb(0 0 0 / 20%);
+		transform: translateY(16px);
+		transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.overlay.open .dialog {
+		transform: none;
+	}
+	.dialog h2 {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 21px;
+	}
+	.field {
+		position: relative;
+		display: grid;
+		gap: 2px;
+		padding: 6px 12px 7px;
+		border: 1px solid rgb(0 0 0 / 30%);
+		border-radius: 4px;
+		font-size: 16px;
+		min-height: 52px;
+	}
+	.field label {
+		color: var(--color-text-subtle);
+		font-size: 12px;
+	}
+	.field.focus {
+		border: 2px solid var(--color-brand);
+		padding: 5px 11px 6px;
+	}
+	.field.focus label {
+		color: var(--color-brand);
+	}
+	.field.focus span::after {
+		content: '';
+		display: inline-block;
+		width: 1.5px;
+		height: 1.1em;
+		margin-inline-start: 1px;
+		vertical-align: text-bottom;
+		background: var(--color-brand);
+		animation: blink 1s steps(1) infinite;
+	}
+	.field.select span::after {
+		content: '▾';
+		float: right;
+		color: var(--color-text-muted);
+	}
+	@keyframes blink {
+		50% {
+			opacity: 0;
+		}
+	}
+	.help {
+		margin: -8px 2px 0;
+		color: var(--color-text-subtle);
+		font-size: 12.5px;
+		line-height: 1.4;
+	}
+	.dialog-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+	}
+	.dialog-actions span {
+		position: relative;
+		padding: 8px 12px;
+		border-radius: 4px;
+		color: var(--color-brand);
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+	.dialog-actions .contained {
+		color: #fff;
+		background: var(--color-brand);
+	}
+	.dialog .qr {
+		justify-self: center;
+		width: 220px;
+		padding: 12px;
+		border: 2px solid var(--color-brand);
+		border-radius: var(--radius-lg);
+		background: #fff;
+	}
+	.dialog .qr svg {
+		display: block;
+		width: 100%;
+	}
+	.dialog p {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 14.5px;
+		line-height: 1.5;
+		text-align: center;
+	}
+	.confirm {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 9;
+		display: grid;
+		gap: 12px;
+		padding: 20px 18px 28px;
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		background: var(--color-background);
+		transform: translateY(105%);
+		transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	#desk.confirm-open .confirm,
+	#callout .confirm {
+		transform: none;
+	}
+	#desk.confirm-open .backdrop {
+		opacity: 1;
+	}
+	.confirm h2 {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 21px;
+	}
+	.confirm p {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 15px;
+		line-height: 1.5;
+	}
+	.confirm .buttons {
+		display: grid;
+		gap: 8px;
+	}
+	.confirm .buttons span {
+		position: relative;
+		display: grid;
+		place-items: center;
+		height: 46px;
+		border-radius: 6px;
+		color: var(--color-brand);
+		font-size: 15px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+	.confirm .buttons .go {
+		color: #fff;
+		background: var(--color-error);
+	}
+	.toast {
+		position: absolute;
+		left: 14px;
+		right: 14px;
+		bottom: 92px;
+		z-index: 10;
+		padding: 14px 16px;
+		border-radius: 4px;
+		color: #fff;
+		background: var(--color-success);
+		font-size: 14.5px;
+		box-shadow: 0 3px 5px rgb(0 0 0 / 20%);
+		animation: toastIn 0.35s ease-out;
+	}
+	@keyframes toastIn {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+	}
+
+	/* ---------- what the narration points at ---------- */
+	.spot {
+		position: relative;
+		z-index: 2;
+		border-radius: var(--radius-md);
+		box-shadow:
+			0 0 0 3px var(--color-focus),
+			0 0 0 9px rgb(255 181 69 / 30%);
+		animation: spot 1.6s ease-in-out infinite;
+	}
+	@keyframes spot {
+		50% {
+			box-shadow:
+				0 0 0 3px var(--color-focus),
+				0 0 0 14px rgb(255 181 69 / 12%);
+		}
+	}
+
+	/* ---------- the close-early prompt, beside the desk ---------- */
+	#callout {
+		position: absolute;
+		left: 70px;
+		top: 560px;
+		width: 600px;
+		opacity: 0;
+		transform: translateY(20px);
+		transition:
+			opacity 0.6s,
+			transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	#callout.on {
+		opacity: 1;
+		transform: none;
+	}
+	#callout .confirm {
+		position: static;
+		border-radius: var(--radius-lg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		box-shadow: 0 30px 70px rgb(0 0 0 / 45%);
+	}
+	#callout .from {
+		margin-bottom: 12px;
+		font-family: var(--font-heading);
+		font-size: 17px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--reel-ink-soft);
+	}
+</style>
+
+<div id="viewport">
+	<div id="stage" data-phase="title">
+		<div id="cap" aria-live="polite"></div>
+
+		<div class="card-center" id="title">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line">Running the queue desk</div>
+			<div class="sub">A guide for market-day volunteers</div>
+		</div>
+
+		<div id="kiosk"></div>
+		<div class="zone-label" id="zKiosk" style="left: 72px; top: 552px">Room display</div>
+		<div class="zone-label" id="zDesk" style="left: 834px; top: 30px">Queue desk · your phone</div>
+		<div class="zone-label" id="zGuest" style="left: 1404px; top: 196px">A guest’s phone</div>
+
+		<div id="callout"></div>
+
+		<div class="phone" id="desk">
+			<div class="screen">
+				<div class="statusbar light">
+					<span>11:32</span><i><s></s><b></b></i>
+				</div>
+				<div class="desk-body"><div class="desk-scroll" id="deskBody"></div></div>
+				<div class="callbar"><div class="mui-btn" id="callNext"></div></div>
+				<div class="backdrop"></div>
+				<div class="sheet"><div class="sheet-scroll" id="sheet"></div></div>
+				<div class="overlay" id="overlay"></div>
+				<div class="confirm" id="confirm"></div>
+				<div id="toast"></div>
+			</div>
+		</div>
+
+		<div class="card-center" id="outro" style="opacity: 0">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line">Thank you for running the desk.</div>
+			<div class="tags">
+				<span>Call next</span><span>Serve and call next</span><span>Close session</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script>
+	// Waits for stage.js, which the build inlines after this script so line numbers here hold.
+	document.addEventListener('DOMContentLoaded', () => {
+		const { DESK: T, ENGLISH, esc, label, beatScript, cap, put } = window.stage;
+		const { statusHtml, guestApp, phoneFrame, renderGuestPhone, renderKiosk, renderCaption } =
+			window.stage;
+
+		/* ================= narration ================= */
+
+		// Each line starts its `pause` after the one before it ends; `duration` is its recording's
+		// length, measured by voice.mjs. Beats hang off the lines, so a reworded line retimes them.
+		const NARRATION = __NARRATION__;
+		const CUES = new Map();
+		let clock = 0;
+		for (const line of NARRATION) {
+			clock += line.pause;
+			CUES.set(line.id, { id: line.id, t: clock, duration: line.duration, text: line.text });
+			clock += line.duration;
+		}
+		/** A moment in a line of narration: its start, or a fraction of the way through it. */
+		const C = (id, at = 0) => {
+			const cue = CUES.get(id);
+			if (!cue) throw new Error('No narration line "' + id + '"');
+			return cue.t + at * cue.duration;
+		};
+		/** The end of a line of narration, plus a little. */
+		const E = (id, plus = 0) => C(id, 1) + plus;
+
+		/* ================= the line ================= */
+
+		// Fictional guests. Numbers 1–14 were drawn; two registrants were not; Rosa is added by hand.
+		const PEOPLE = [
+			['Luis', 'Herrera', 'es', 3],
+			['Mai', 'Nguyen', 'vi', 2],
+			['Wei', 'Chen', 'zh', 4],
+			['Grace', 'Okafor', 'en', 1],
+			['Amal', 'Haddad', 'ar', 5],
+			['Josefina', 'Reyes', 'tl', 2],
+			['Claire', 'Dubois', 'fr', 3],
+			['Reza', 'Karimi', 'fa', 2],
+			['Ana', 'Morales', 'es', 4],
+			['Daniel', 'Brooks', 'en', 1],
+			['Linh', 'Tran', 'vi', 3],
+			['Carmen', 'Ruiz', 'es', 2],
+			['Hassan', 'Nouri', 'fa', 5],
+			['Mei', 'Lin', 'zh', 2],
+			['Samuel', 'Ortega', 'es', 3],
+			['Huong', 'Vo', 'vi', 2],
+			['Rosa', 'Mendoza', 'es', 3],
+		];
+		const DRAWN = 14;
+		const WALK_IN = 17;
+		const TYPED = { first: 'Rosa', last: 'Mendoza', phone: '(510) 555-0187' };
+
+		const initial = {
+			phase: 'title',
+			title: true,
+			outro: false,
+			desk: false,
+			kiosk: false,
+			guestPhone: false,
+			deskPhase: 'not_started',
+			guests: PEOPLE.map(([first, last, loc, household], i) => ({
+				n: i + 1,
+				label: i < DRAWN ? String(i + 1) : i + 1 === WALK_IN ? 'P1' : '—',
+				first,
+				last,
+				loc,
+				household,
+				status: i < DRAWN ? 'waiting' : i + 1 === WALK_IN ? 'waiting' : 'not_placed',
+				place: i + 1 === WALK_IN ? 'hidden' : 'shown',
+				front: false,
+				order: i + 1,
+				calledT: null,
+				lag: 0,
+				minutes: 0,
+				warmth: 0,
+				history: i < DRAWN ? [['drawn', T.historyKinds.drawn, 'Lottery draw', '10:45 AM']] : [],
+			})),
+			nowCalling: null,
+			featured: 1,
+			lit: [],
+			sheet: null,
+			sheetTo: null,
+			scrollTo: null,
+			tap: null,
+			spot: null,
+			menu: null,
+			dialog: null,
+			form: { first: '', last: '', phone: '', focus: null, placement: 'end' },
+			banner: false,
+			toast: null,
+			confirm: false,
+			callout: false,
+			printOnline: true,
+			cap: null,
+		};
+		const { at, snapshots } = beatScript(initial);
+		const g = (s, n) => s.guests[n - 1];
+		/** Calls a guest at time `t`; `lag` pretends they were called that many seconds earlier. */
+		const call = (s, n, t, lag = 0) => {
+			Object.assign(g(s, n), { status: 'called', calledT: t, lag, minutes: Math.floor(lag / 60) });
+			g(s, n).history.push(['called', T.historyKinds.called, 'By Jordan', '11:32 AM']);
+			s.nowCalling = n;
+		};
+		const serve = (s, n) => {
+			g(s, n).status = 'served';
+			g(s, n).history.push(['served', T.historyKinds.served, 'By Jordan', '11:34 AM']);
+		};
+		/** Moves the clock on for every called guest, as if `minutes` had passed. */
+		const later = (s, minutes) => {
+			for (const x of s.guests) {
+				if (x.status !== 'called') continue;
+				x.lag += minutes * 60;
+				x.minutes += minutes;
+				// LateArrival: three minutes' grace, then a squared ease to full yellow at ten.
+				x.warmth = Math.min(1, Math.max(0, (x.minutes - 3) / 7)) ** 2;
+			}
+		};
+		/** A tap: the finger lands at `t`, and `then` happens just after it lifts. */
+		// These schedule beats on their caller's behalf, so #dev lists the caller's line (`via: 1`).
+		const tap = (t, key, then) => {
+			at(
+				t,
+				(s) => {
+					s.tap = key;
+				},
+				{ via: 1 },
+			);
+			at(
+				t + 0.4,
+				(s) => {
+					s.tap = null;
+					then?.(s);
+				},
+				{ via: 1 },
+			);
+		};
+		const spot = (t, key) =>
+			at(
+				t,
+				(s) => {
+					s.spot = key;
+				},
+				{ via: 1 },
+			);
+		const type = (t, field, text) => {
+			at(
+				t,
+				(s) => {
+					s.form.focus = field;
+				},
+				{ via: 1 },
+			);
+			for (let i = 1; i <= text.length; i++) {
+				at(
+					t + i * 0.06,
+					(s) => {
+						s.form[field] = text.slice(0, i);
+					},
+					{ via: 1 },
+				);
+			}
+			return t + text.length * 0.06 + 0.2;
+		};
+
+		/* ================= beat script ================= */
+
+		// Title.
+		at(E('welcome', 0.3), (s) => {
+			s.title = false;
+		});
+
+		// Before service.
+		at(C('open'), (s) => {
+			s.phase = 'desk';
+			s.desk = true;
+			cap(
+				'Before service',
+				'Open the queue screen on your phone.',
+				'Sign in with your volunteer account.',
+			)(s);
+		});
+		at(C('before'), (s) => {
+			s.spot = 'message';
+			cap(
+				'Before service',
+				'It waits for the lottery.',
+				'Guests register from their own phones first; then the draw sets the line.',
+			)(s);
+		});
+
+		// A tour of the line.
+		at(C('tour'), (s) => {
+			s.deskPhase = 'serving';
+			s.kiosk = true;
+			s.spot = 'waiting';
+			cap(
+				'The line',
+				'Waiting is everyone in line.',
+				'In the order they’ll be called, top first.',
+			)(s);
+		});
+		spot(C('row'), 'row-1');
+		at(C('row', 0.3), (s) => {
+			s.spot = 'row-1';
+			cap(
+				'The line',
+				'Number, name, and language.',
+				'Greet each guest in the language they chose.',
+			)(s);
+		});
+		spot(C('row', 0.62), 'lang-1');
+		at(C('sections'), (s) => {
+			s.spot = null;
+			s.scrollTo = 'notplaced';
+			cap(
+				'The line',
+				'Further down: Not placed, and Done.',
+				'Guests who weren’t drawn today, and everyone you’ve served.',
+			)(s);
+		});
+		spot(C('sections', 0.25), 'notplaced');
+		at(C('sections', 0.62), (s) => {
+			s.spot = 'done';
+			s.scrollTo = 'done';
+		});
+		at(C('display'), (s) => {
+			s.spot = null;
+			s.scrollTo = null;
+			s.lit = ['kiosk'];
+			cap(
+				'Room display',
+				'The room sees numbers, never names.',
+				'The same line as your screen, in English and a second language.',
+			)(s);
+		});
+
+		// Calling a guest.
+		at(C('call'), (s) => {
+			s.lit = [];
+			s.spot = 'callNext';
+			cap('Calling', 'Tap Call next.', 'The next guest in line is called.')(s);
+		});
+		tap(E('call', -0.6), 'callNext', (s) => {
+			s.spot = null;
+			call(s, 1, E('call', -0.2));
+			s.sheet = 1;
+		});
+		at(C('called'), (s) => {
+			s.guestPhone = true;
+			s.lit = ['kiosk', 'guest'];
+			cap(
+				'Calling',
+				'Their number goes up, and their phone tells them.',
+				'On the room display, and on their phone, in their language.',
+			)(s);
+		});
+		at(C('ticket'), (s) => {
+			s.lit = [];
+			s.spot = 'timer';
+			cap(
+				'The ticket',
+				'Their ticket opens straight away.',
+				'The clock counts up from the moment you called.',
+			)(s);
+		});
+
+		// The name tag.
+		at(C('tag'), (s) => {
+			s.spot = 'nametag';
+			cap(
+				'Name tag',
+				'First name, last initial, number, language.',
+				'The same tag for every guest.',
+			)(s);
+		});
+		at(C('print'), (s) => {
+			s.spot = 'print';
+			cap(
+				'Name tag',
+				'Tap Print name tag.',
+				'It prints at the print station on the market’s computer.',
+			)(s);
+		});
+		tap(C('print', 0.45), 'print', (s) => {
+			s.toast = T.printSent;
+		});
+		at(C('offline'), (s) => {
+			s.toast = null;
+			s.printOnline = false;
+			cap(
+				'Name tag',
+				'Station offline? Write it by hand.',
+				'The button says so, and stays off.',
+			)(s);
+		});
+		at(E('offline', 0.3), (s) => {
+			s.printOnline = true;
+			s.spot = null;
+		});
+
+		// Serve and call next.
+		at(C('serve'), (s) => {
+			s.sheetTo = 'actions';
+			s.spot = 'serveNext';
+			cap(
+				'Serve and call next',
+				'Checked in? Serve and call next.',
+				'It finishes their visit and calls the next guest, in one tap.',
+			)(s);
+		});
+		tap(C('serve', 0.62), 'serveNext', (s) => {
+			serve(s, 1);
+			call(s, 2, C('serve', 0.66));
+			s.sheet = 2;
+			s.sheetTo = 'actions';
+			s.spot = null;
+		});
+		at(C('rhythm'), (s) => {
+			cap('Serve and call next', 'One tap per guest.', 'The next ticket opens in its place.')(s);
+		});
+		tap(C('rhythm', 0.5), 'serveNext', (s) => {
+			serve(s, 2);
+			call(s, 3, C('rhythm', 0.55));
+			s.sheet = 3;
+			s.sheetTo = 'actions';
+		});
+		at(C('together'), (s) => {
+			s.spot = 'callNext';
+			s.sheet = null;
+			cap(
+				'Two phones, one line',
+				'Each tap calls a different guest.',
+				'Several volunteers can run the desk at once. Nobody is called twice.',
+			)(s);
+		});
+
+		// Late arrivals.
+		at(C('late'), (s) => {
+			s.spot = null;
+			s.sheet = 3;
+			s.sheetTo = null;
+			s.featured = 3;
+			s.lit = ['guest'];
+			cap(
+				'Late arrivals',
+				'Not here yet? Don’t hold up the line.',
+				'Close their ticket, and call the next guest.',
+			)(s);
+		});
+		tap(C('late', 0.55), 'handle', (s) => {
+			s.sheet = null;
+		});
+		tap(C('late', 0.85), 'callNext', (s) => {
+			call(s, 4, C('late', 0.9));
+		});
+		at(C('lateWaits'), (s) => {
+			s.spot = 'called';
+			s.lit = ['guest', 'kiosk'];
+			later(s, 2);
+			cap(
+				'Late arrivals',
+				'They stay in Called, with the minutes since.',
+				'Their phone warms to yellow and asks them to come to the check-in desk.',
+			)(s);
+		});
+		// A few minutes pass while the line moves on: #4 is served, #5 is called and doesn't come.
+		at(C('lateWaits', 0.25), (s) => {
+			serve(s, 4);
+			call(s, 5, C('lateWaits', 0.25));
+			later(s, 2);
+		});
+		at(C('lateWaits', 0.5), (s) => {
+			call(s, 6, C('lateWaits', 0.5));
+			later(s, 2);
+		});
+		at(C('lateWaits', 0.75), (s) => {
+			serve(s, 6);
+			call(s, 7, C('lateWaits', 0.75));
+			later(s, 4);
+		});
+		at(C('lateServe'), (s) => {
+			s.lit = ['guest'];
+			s.spot = 'row-3';
+			cap(
+				'Late arrivals',
+				'When they arrive: Mark served.',
+				'It doesn’t call anyone new, so the line stays where it is.',
+			)(s);
+		});
+		tap(C('lateServe', 0.25), 'row-3', (s) => {
+			s.spot = 'markServed';
+			s.sheet = 3;
+			s.sheetTo = 'actions';
+		});
+		tap(C('lateServe', 0.62), 'markServed', (s) => {
+			serve(s, 3);
+			s.sheet = null;
+			s.spot = null;
+		});
+
+		// No-shows.
+		at(C('noShow'), (s) => {
+			s.lit = [];
+			s.guestPhone = false;
+			s.spot = 'row-5';
+			cap(
+				'No-shows',
+				'Still not here? Mark no show.',
+				'They move to a No-shows list of their own.',
+			)(s);
+		});
+		tap(C('noShow', 0.25), 'row-5', (s) => {
+			s.sheet = 5;
+			s.sheetTo = 'actions';
+			s.spot = 'noShowBtn';
+		});
+		tap(C('noShow', 0.55), 'noShowBtn', (s) => {
+			g(s, 5).status = 'no_show';
+			g(s, 5).history.push(['no_show', T.historyKinds.no_show, 'By Jordan', '11:46 AM']);
+			s.sheet = null;
+			s.spot = null;
+		});
+		at(C('noShow', 0.7), (s) => {
+			s.scrollTo = 'noshows';
+			s.spot = 'noshows';
+		});
+		at(C('returnBack'), (s) => {
+			s.spot = 'row-5';
+			cap('No-shows', 'Turned up after all? Return to back of line.', 'They keep their number.')(s);
+		});
+		tap(C('returnBack', 0.3), 'row-5', (s) => {
+			s.sheet = 5;
+			s.sheetTo = 'actions';
+			s.spot = 'returnBack';
+		});
+		at(C('returnFront'), (s) => {
+			s.spot = 'returnArrow';
+			cap('No-shows', 'The arrow offers the front.', 'For a guest you called by mistake.')(s);
+		});
+		tap(C('returnFront', 0.3), 'returnArrow', (s) => {
+			s.menu = 'return';
+			s.spot = 'returnFrontItem';
+		});
+		tap(E('returnFront', 0.2), 'returnBackItem', (s) => {
+			const x = g(s, 5);
+			x.status = 'waiting';
+			x.order = 100;
+			x.history.push([
+				'returned',
+				T.historyKinds.returned + ' to the back',
+				'By Jordan',
+				'11:51 AM',
+			]);
+			s.menu = null;
+			s.sheet = null;
+			s.scrollTo = null;
+			s.spot = null;
+		});
+
+		// Adding a guest by hand.
+		at(C('add'), (s) => {
+			s.spot = 'add';
+			cap(
+				'Adding a guest',
+				'Tap Add guest, beside Waiting.',
+				'To put someone in line yourself.',
+			)(s);
+		});
+		tap(C('add', 0.7), 'add', (s) => {
+			s.spot = null;
+			s.dialog = 'add';
+		});
+		at(C('addForm'), (s) => {
+			cap(
+				'Adding a guest',
+				'Their details, and Give them a spot.',
+				'Then where they go: the end of the queue, or next up.',
+			)(s);
+		});
+		let typed = type(C('addForm', 0.04), 'first', TYPED.first);
+		typed = type(typed, 'last', TYPED.last);
+		type(typed, 'phone', TYPED.phone);
+		at(C('addForm', 0.62), (s) => {
+			s.form.focus = null;
+			s.spot = 'admission';
+		});
+		at(C('addForm', 0.82), (s) => {
+			s.spot = 'placement';
+		});
+		at(C('addPriority'), (s) => {
+			cap(
+				'Adding a guest',
+				'Next up gets a P number.',
+				'P1, P2… so nobody else’s number changes.',
+			)(s);
+		});
+		tap(C('addPriority', 0.2), 'placement', (s) => {
+			s.form.placement = 'next';
+		});
+		tap(C('addPriority', 0.55), 'save', (s) => {
+			const x = g(s, WALK_IN);
+			s.dialog = null;
+			s.spot = 'row-' + WALK_IN;
+			s.banner = true;
+			Object.assign(x, { place: 'shown', front: true, order: 0 });
+			x.history.push(['added', T.historyKinds.added, 'By Jordan', '11:52 AM']);
+		});
+		at(C('qr'), (s) => {
+			s.spot = 'qrButton';
+			cap(
+				'Adding a guest',
+				'Show QR code for their phone.',
+				'They scan it with their camera, and their phone follows their place in line.',
+			)(s);
+		});
+		tap(C('qr', 0.3), 'qrButton', (s) => {
+			s.spot = null;
+			s.dialog = 'qr';
+		});
+		tap(E('qr', 0.1), 'qrDone', (s) => {
+			s.dialog = null;
+			s.banner = false;
+		});
+
+		// Reaching a guest, and what happened so far.
+		at(C('phone'), (s) => {
+			s.sheet = 7;
+			s.sheetTo = 'actions';
+			s.spot = 'phone';
+			cap(
+				'On every ticket',
+				'Phone calls the guest.',
+				'History shows who called and served them, and when.',
+			)(s);
+		});
+		at(C('phone', 0.55), (s) => {
+			s.sheetTo = 'history';
+			s.spot = 'history';
+		});
+
+		// Ending the day: the rest of the line goes through quickly.
+		at(C('finish'), (s) => {
+			s.sheet = null;
+			s.spot = null;
+			s.kiosk = false;
+			cap(
+				'End of the day',
+				'Everyone through? Close session.',
+				'Call next turns into Close session once nobody is left.',
+			)(s);
+		});
+		const rest = [WALK_IN, ...Array.from({ length: DRAWN - 7 }, (_, i) => i + 8), 5];
+		rest.forEach((n, i) =>
+			at(C('finish', 0.08 + (i * 0.6) / rest.length), (s) => {
+				for (const x of s.guests) if (x.status === 'called') serve(s, x.n);
+				call(s, n, C('finish', 0.1));
+			}),
+		);
+		at(C('finish', 0.72), (s) => {
+			for (const x of s.guests) if (x.status === 'called') serve(s, x.n);
+			s.spot = 'callNext';
+		});
+		at(C('close'), (s) => {
+			cap(
+				'End of the day',
+				'Tap it, and confirm.',
+				'The menu at the top can close the session early, too.',
+			)(s);
+		});
+		tap(C('close', 0.12), 'callNext', (s) => {
+			s.spot = null;
+			s.confirm = true;
+		});
+		tap(C('close', 0.3), 'confirmGo', (s) => {
+			s.confirm = false;
+			s.deskPhase = 'ended';
+		});
+		at(C('close', 0.42), (s) => {
+			s.callout = true;
+			cap(
+				'End of the day',
+				'Closing early marks the rest as no-shows.',
+				'The confirmation says how many first.',
+			)(s);
+		});
+		at(C('thanks'), (s) => {
+			s.callout = false;
+			s.desk = false;
+			s.cap = null;
+			s.phase = 'outro';
+			s.outro = true;
+		});
+
+		const END = E('thanks', 4);
+		const snaps = snapshots();
+
+		/* ================= views ================= */
+
+		/** Class names for an element the narration taps or points at. */
+		const marks = (s, key) => (s.tap === key ? ' tapping' : '') + (s.spot === key ? ' spot' : '');
+		/** `11h 5m 8s`, dropping leading units that are zero, as TicketSummary shows it. */
+		const formatElapsed = (seconds) => {
+			const total = Math.max(0, Math.floor(seconds));
+			const m = Math.floor(total / 60);
+			return m ? m + 'm ' + (total % 60) + 's' : total + 's';
+		};
+		const fullName = (x) => x.first + ' ' + x.last;
+		const roster = (s) => {
+			const shown = s.guests.filter((x) => x.place === 'shown');
+			const called = shown
+				.filter((x) => x.status === 'called')
+				.sort((a, b) => a.calledT - a.lag - (b.calledT - b.lag));
+			return {
+				called,
+				waiting: shown
+					.filter((x) => x.status === 'waiting')
+					.sort((a, b) => Number(b.front) - Number(a.front) || a.order - b.order),
+				noShows: shown.filter((x) => x.status === 'no_show'),
+				notPlaced: shown.filter((x) => x.status === 'not_placed'),
+				done: shown.filter((x) => x.status === 'served'),
+				mostRecent: called.length ? called[called.length - 1] : null,
+			};
+		};
+
+		function chip(s, x) {
+			const elapsed =
+				x.status === 'called'
+					? x.minutes
+						? T.elapsedMinutes.replace('{minutes}', x.minutes)
+						: T.elapsedJustNow
+					: '';
+			return (
+				'<li class="chip' +
+				marks(s, 'row-' + x.n) +
+				'" data-status="' +
+				x.status +
+				'"><span class="number">' +
+				esc(label(x)) +
+				'</span><span class="name">' +
+				esc(fullName(x)) +
+				'</span><span class="lang' +
+				marks(s, 'lang-' + x.n) +
+				'">' +
+				x.loc.toUpperCase() +
+				'</span><span class="el">' +
+				esc(elapsed) +
+				'</span></li>'
+			);
+		}
+		function section(s, key, title, list, empty, action = '') {
+			if (!list.length && empty === undefined) return '';
+			return (
+				'<section class="tsection' +
+				marks(s, key) +
+				'" data-section="' +
+				key +
+				'"><header><h2>' +
+				esc(title) +
+				' <span class="count">' +
+				list.length +
+				'</span></h2>' +
+				action +
+				'</header>' +
+				(list.length
+					? '<ul>' + list.map((x) => chip(s, x)).join('') + '</ul>'
+					: '<p class="empty">' + esc(empty) + '</p>') +
+				'</section>'
+			);
+		}
+		function header(s) {
+			return (
+				'<header class="dh"><div><h1>' +
+				esc(T.title) +
+				'</h1><p class="status">' +
+				esc(T.serving) +
+				'</p></div><span class="kebab">⋮</span>' +
+				(s.menu === 'kebab'
+					? '<div class="menu menu-kebab"><span>' +
+						esc(T.openDashboard) +
+						'</span><span class="danger">' +
+						esc(T.closeSession) +
+						'</span></div>'
+					: '') +
+				'</header>'
+			);
+		}
+		function deskBodyHtml(s) {
+			if (s.deskPhase === 'not_started' || s.deskPhase === 'ended') {
+				const text = s.deskPhase === 'ended' ? T.ended : T.queueNotStarted;
+				return (
+					'<section class="message' +
+					marks(s, 'message') +
+					'"><p>' +
+					esc(text) +
+					'</p><span class="outlined">' +
+					esc(T.openDashboard) +
+					'</span></section>'
+				);
+			}
+			const r = roster(s);
+			const walkIn = g(s, WALK_IN);
+			return (
+				header(s) +
+				(s.banner
+					? '<div class="banner"><p>' +
+						esc(T.guestAdded.replace('{name}', fullName(walkIn))) +
+						'</p><span class="outlined' +
+						marks(s, 'qrButton') +
+						'">' +
+						esc(T.guestClaimShow) +
+						'</span></div>'
+					: '') +
+				section(s, 'called', T.called, r.called, T.noneCalled) +
+				section(
+					s,
+					'waiting',
+					T.waiting,
+					r.waiting,
+					T.noneWaiting,
+					'<span class="add' + marks(s, 'add') + '">+ ' + esc(T.addGuest) + '</span>',
+				) +
+				section(s, 'noshows', T.noShows, r.noShows) +
+				section(s, 'notplaced', T.notPlaced, r.notPlaced) +
+				section(s, 'done', T.done, [...r.done].reverse(), T.noneDone)
+			);
+		}
+
+		function actionsHtml(s, x) {
+			const r = roster(s);
+			const offersServeAndCallNext = r.mostRecent?.n === x.n && r.waiting.length > 0;
+			const button = (key, text, primary) =>
+				'<span class="' + (primary ? 'primary' : '') + marks(s, key) + '">' + esc(text) + '</span>';
+			const parts = [];
+			if (offersServeAndCallNext) parts.push(button('serveNext', T.serveAndCallNext, true));
+			if (x.status === 'called')
+				parts.push(button('markServed', T.markServed, !offersServeAndCallNext));
+			if (x.status === 'waiting') parts.push(button('callGuest', 'Call guest', true));
+			if (x.status === 'called' || x.status === 'waiting')
+				parts.push(button('noShowBtn', T.markNoShow, false));
+			if (x.status === 'called' || x.status === 'no_show') {
+				parts.push(
+					'<span class="split">' +
+						button('returnBack', T.returnToBack, false) +
+						button('returnArrow', '▾', false) +
+						'</span>',
+				);
+			}
+			parts.push(button('phone', T.phoneGuest, false));
+			const menu =
+				s.menu === 'return'
+					? '<div class="menu menu-return"><span class="' +
+						marks(s, 'returnBackItem').trim() +
+						'">' +
+						esc(T.returnToBack) +
+						'</span><span class="' +
+						marks(s, 'returnFrontItem').trim() +
+						'">' +
+						esc(T.returnToFront) +
+						'</span></div>'
+					: '';
+			return '<div class="actions" data-anchor="actions">' + parts.join('') + menu + '</div>';
+		}
+
+		function sheetHtml(s, x) {
+			const called = x.status === 'called';
+			const tagName = x.first + ' ' + x.last.charAt(0) + '.';
+			const history = x.history
+				.map(
+					([, title, byline, time]) =>
+						'<li><span class="title">' +
+						esc(title) +
+						'</span><span class="byline">' +
+						esc(byline) +
+						'</span><time>' +
+						esc(time) +
+						'</time></li>',
+				)
+				.join('');
+			return (
+				'<span class="handle' +
+				marks(s, 'handle') +
+				'"></span>' +
+				'<section class="summary"><div class="ticket"><p class="label">' +
+				esc(T.ticket) +
+				'</p><p class="num">' +
+				esc(label(x)) +
+				'</p></div><p class="st" data-status="' +
+				x.status +
+				'"><span>' +
+				esc(T.statuses[x.status]) +
+				'</span>' +
+				(called
+					? '<span class="timer' + marks(s, 'timer') + '" data-timer="' + x.n + '"></span>'
+					: '') +
+				'</p></section>' +
+				'<figure class="nametag' +
+				marks(s, 'nametag') +
+				'"><figcaption>' +
+				esc(T.nameTag) +
+				'</figcaption><p class="nm">' +
+				esc(tagName) +
+				'</p><p class="dt"><span class="pos">#' +
+				esc(label(x)) +
+				'</span><span class="lg">' +
+				x.loc.toUpperCase() +
+				'</span></p></figure>' +
+				'<div class="print"><div class="printbtn' +
+				(s.printOnline ? '' : ' disabled') +
+				marks(s, 'print') +
+				'">' +
+				esc(T.printNameTag) +
+				'</div><p>' +
+				esc(s.printOnline ? T.printsAtStation : T.printStationIsOffline) +
+				'</p></div>' +
+				'<p class="gdetails"><span>' +
+				esc(T.household.replace('{count}', x.household)) +
+				'</span><span>' +
+				ENGLISH[x.loc] +
+				'</span></p>' +
+				actionsHtml(s, x) +
+				'<section class="history' +
+				marks(s, 'history') +
+				'" data-anchor="history"><h2>' +
+				esc(T.historyTitle) +
+				'</h2><ol>' +
+				history +
+				'</ol></section>'
+			);
+		}
+
+		function field(s, key, labelText, value, extra = '') {
+			return (
+				'<div class="field' +
+				(s.form.focus === key ? ' focus' : '') +
+				extra +
+				marks(s, key) +
+				'"><label>' +
+				esc(labelText) +
+				'</label><span>' +
+				esc(value) +
+				'</span></div>'
+			);
+		}
+		function overlayHtml(s, which) {
+			if (which === 'add') {
+				return (
+					'<div class="dialog"><h2>' +
+					esc(T.manualGuestTitle) +
+					'</h2>' +
+					field(s, 'first', T.firstName + ' *', s.form.first) +
+					field(s, 'last', T.lastName + ' *', s.form.last) +
+					field(s, 'phone', T.phone + ' *', s.form.phone) +
+					field(s, 'admission', T.admissionLabel, T.admitToQueue, ' select') +
+					field(
+						s,
+						'placement',
+						T.queuePlacement,
+						s.form.placement === 'next' ? T.placeNext : T.placeEnd,
+						' select',
+					) +
+					'<div class="dialog-actions"><span>' +
+					esc(T.cancel) +
+					'</span><span class="contained' +
+					marks(s, 'save') +
+					'">' +
+					esc(T.saveGuest) +
+					'</span></div></div>'
+				);
+			}
+			const walkIn = g(s, WALK_IN);
+			return (
+				'<div class="dialog"><h2>' +
+				esc(T.guestClaimTitle) +
+				'</h2><div class="qr">' +
+				QR +
+				'</div><p>' +
+				esc(
+					T.guestClaimInstructions
+						.replace('{name}', fullName(walkIn))
+						.replace('{time}', '12:07 PM'),
+				) +
+				'</p><div class="dialog-actions"><span class="contained' +
+				marks(s, 'qrDone') +
+				'">' +
+				esc(T.guestClaimDone) +
+				'</span></div></div>'
+			);
+		}
+		function confirmHtml(s, outstanding) {
+			return (
+				'<h2>' +
+				esc(T.confirmCloseSession) +
+				'</h2>' +
+				(outstanding
+					? '<p>' + esc(T.confirmCloseSessionOutstanding.replace('{count}', outstanding)) + '</p>'
+					: '') +
+				'<div class="buttons"><span class="go' +
+				marks(s, 'confirmGo') +
+				'">' +
+				esc(T.confirmContinue) +
+				'</span><span>' +
+				esc(T.cancel) +
+				'</span></div>'
+			);
+		}
+
+		/** A stand-in QR code: the three finder squares and a fixed scatter. It encodes nothing. */
+		const QR = (() => {
+			const n = 25;
+			let seed = 7;
+			const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+			let cells = '';
+			const finder = (x, y) =>
+				'<rect x="' +
+				x +
+				'" y="' +
+				y +
+				'" width="7" height="7"/>' +
+				'<rect x="' +
+				(x + 1) +
+				'" y="' +
+				(y + 1) +
+				'" width="5" height="5" fill="#fff"/>' +
+				'<rect x="' +
+				(x + 2) +
+				'" y="' +
+				(y + 2) +
+				'" width="3" height="3"/>';
+			const inFinder = (x, y) => (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9);
+			for (let y = 0; y < n; y++)
+				for (let x = 0; x < n; x++)
+					if (!inFinder(x, y) && rnd() < 0.48)
+						cells += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+			return (
+				'<svg viewBox="0 0 ' +
+				n +
+				' ' +
+				n +
+				'" fill="#023940" shape-rendering="crispEdges">' +
+				finder(0, 0) +
+				finder(n - 7, 0) +
+				finder(0, n - 7) +
+				cells +
+				'</svg>'
+			);
+		})();
+
+		/* ================= rendering ================= */
+
+		const deskEl = document.getElementById('desk');
+		const deskBody = document.getElementById('deskBody');
+		const sheetEl = document.getElementById('sheet');
+		const overlayEl = document.getElementById('overlay');
+		const confirmEl = document.getElementById('confirm');
+		const toastEl = document.getElementById('toast');
+		const callNextEl = document.getElementById('callNext');
+		const calloutEl = document.getElementById('callout');
+		const guestEl = document.getElementById('stage').appendChild(phoneFrame('11:32'));
+		guestEl.id = 'guestPhone';
+
+		/** Scrolls a list so that the element `anchor` names sits near the top of what shows. */
+		function scrollTo(inner, anchor, visible) {
+			const target =
+				anchor &&
+				inner.querySelector('[data-section="' + anchor + '"], [data-anchor="' + anchor + '"]');
+			const most = Math.max(0, inner.scrollHeight - visible);
+			const y = target ? Math.min(most, Math.max(0, target.offsetTop - 24)) : 0;
+			inner.style.transform = 'translateY(' + -y + 'px)';
+		}
+
+		function renderDesk(s) {
+			put(deskBody, deskBodyHtml(s));
+			scrollTo(deskBody, s.scrollTo, 704);
+
+			const r = roster(s);
+			const complete =
+				s.deskPhase === 'serving' && !r.called.length && !r.waiting.length && r.done.length > 0;
+			callNextEl.parentElement.hidden = s.deskPhase !== 'serving';
+			put(callNextEl, esc(complete ? T.closeSession : T.callNext));
+			callNextEl.className = 'mui-btn' + (complete ? ' danger' : '') + marks(s, 'callNext');
+
+			deskEl.classList.toggle('sheet-open', s.sheet !== null);
+			if (s.sheet !== null) {
+				put(sheetEl, sheetHtml(s, g(s, s.sheet)));
+				scrollTo(sheetEl, s.sheetTo, 700);
+			}
+			overlayEl.classList.toggle('open', s.dialog !== null);
+			if (s.dialog !== null) put(overlayEl, overlayHtml(s, s.dialog));
+			deskEl.classList.toggle('confirm-open', s.confirm);
+			put(confirmEl, confirmHtml(s, 0));
+			put(toastEl, s.toast ? '<div class="toast">' + esc(s.toast) + '</div>' : '');
+			calloutEl.classList.toggle('on', s.callout);
+			put(
+				calloutEl,
+				'<div class="from">From the ⋮ menu, with guests left</div><div class="confirm">' +
+					confirmHtml({}, 3) +
+					'</div>',
+			);
+		}
+
+		function renderGuest(s) {
+			const x = g(s, s.featured);
+			renderGuestPhone(guestEl, guestApp(x.loc, statusHtml(s, x)), x.status);
+			guestEl.classList.toggle('dim', !s.lit.includes('guest'));
+			document.getElementById('kiosk').classList.toggle('dim', !s.lit.includes('kiosk'));
+		}
+
+		const stage = document.getElementById('stage');
+		let lastIndex = -1;
+		const kioskIn = snaps.find((snap) => snap.s.kiosk)?.t ?? 0;
+		function renderAt(time) {
+			let i = 0;
+			while (i + 1 < snaps.length && snaps[i + 1].t <= time) i++;
+			const s = snaps[i].s;
+			if (i !== lastIndex) {
+				lastIndex = i;
+				stage.dataset.phase = s.phase;
+				renderDesk(s);
+				renderGuest(s);
+				renderCaption(s);
+			}
+			// The second language on the room display moves on every few seconds.
+			renderKiosk(s, Math.max(0, Math.floor((time - kioskIn) / 3.4)));
+			// The open ticket's clock ticks every frame; the rest only changes on a beat.
+			for (const el of sheetEl.querySelectorAll('[data-timer]')) {
+				const x = g(s, Number(el.dataset.timer));
+				const seconds = x.calledT === null ? 0 : time - x.calledT + x.lag;
+				el.textContent = formatElapsed(seconds);
+			}
+		}
+
+		/* ================= timeline ================= */
+
+		const tl = gsap.timeline({
+			id: 'Queue Desk Training',
+			paused: true,
+			onUpdate: () => renderAt(tl.time()),
+		});
+
+		tl.fromTo(
+			'#title .wordmark',
+			{ opacity: 0, y: 30, scale: 0.94 },
+			{ opacity: 1, y: 0, scale: 1, duration: 1.1, ease: 'power3.out' },
+			0.2,
+		);
+		tl.fromTo(
+			'#title .line, #title .sub',
+			{ opacity: 0, y: 24 },
+			{
+				opacity: 1,
+				y: 0,
+				duration: 0.9,
+				stagger: 0.25,
+				ease: 'power3.out',
+			},
+			0.9,
+		);
+
+		// Where each screen sits on the 1920×1080 stage, and how it slides in.
+		const place = {
+			desk: { el: '#desk', label: '#zDesk', x: 834, y: 70, scale: 1.2, from: { y: 160 } },
+			kiosk: { el: '#kiosk', label: '#zKiosk', x: 70, y: 590, scale: 0.66, from: { x: -300 } },
+			guestPhone: {
+				el: '#guestPhone',
+				label: '#zGuest',
+				x: 1404,
+				y: 236,
+				scale: 0.8,
+				from: { x: 1700 },
+			},
+		};
+		for (const { el, x, y, scale } of Object.values(place)) {
+			gsap.set(el, { x, y, scale, transformOrigin: '0 0', opacity: 0 });
+		}
+		gsap.set('#title', { opacity: 1 });
+		for (let b = 1; b < snaps.length; b++) {
+			const prev = snaps[b - 1].s,
+				cur = snaps[b].s,
+				t = snaps[b].t;
+			for (const [key, { el, label: labelEl, x, y, from }] of Object.entries(place)) {
+				if (prev[key] === cur[key]) continue;
+				const shown = { x, y, opacity: 1 };
+				const hidden = { x, y, ...from, opacity: 0 };
+				tl.fromTo(
+					el,
+					cur[key] ? hidden : shown,
+					{
+						...(cur[key] ? shown : hidden),
+						duration: 1.1,
+						ease: 'power3.out',
+						immediateRender: false,
+					},
+					t,
+				);
+				tl.fromTo(
+					labelEl,
+					{ opacity: cur[key] ? 0 : 1 },
+					{ opacity: cur[key] ? 1 : 0, duration: 0.6, immediateRender: false },
+					t + (cur[key] ? 0.8 : 0),
+				);
+			}
+			if (prev.title && !cur.title) {
+				tl.to('#title', { opacity: 0, scale: 1.04, duration: 0.6, ease: 'power2.in' }, t);
+			}
+			if (!prev.outro && cur.outro) {
+				tl.fromTo(
+					'#outro',
+					{ opacity: 0, scale: 0.96 },
+					{ opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out', immediateRender: false },
+					t + 0.7,
+				);
+				tl.fromTo(
+					'#outro .tags span',
+					{ opacity: 0, y: 16 },
+					{
+						opacity: 1,
+						y: 0,
+						duration: 0.5,
+						stagger: 0.18,
+						ease: 'power2.out',
+						immediateRender: false,
+					},
+					t + 1.6,
+				);
+			}
+		}
+
+		window.stage.mountPlayer({
+			tl,
+			END,
+			snaps,
+			describeBeat,
+			source: 'queue-desk/queue-desk.src.html',
+			cues: [...CUES.values()],
+		});
+
+		/** What a beat changed, for the #dev beat list. */
+		function describeBeat(prev, cur) {
+			const items = [];
+			let minor = null;
+			for (const key of [
+				'title',
+				'desk',
+				'kiosk',
+				'guestPhone',
+				'outro',
+				'callout',
+				'banner',
+				'confirm',
+			]) {
+				if (prev[key] !== cur[key]) items.push(key + (cur[key] ? ' in' : ' out'));
+			}
+			if (prev.deskPhase !== cur.deskPhase) items.push('Desk: ' + cur.deskPhase);
+			if (cur.cap && prev.cap?.head !== cur.cap.head) items.push('Caption: “' + cur.cap.head + '”');
+			if (prev.tap !== cur.tap && cur.tap) items.push('Tap: ' + cur.tap);
+			if (prev.spot !== cur.spot && cur.spot) items.push('Point at ' + cur.spot);
+			if (prev.sheet !== cur.sheet)
+				items.push(
+					cur.sheet === null
+						? 'Ticket closes'
+						: 'Ticket #' + label(cur.guests[cur.sheet - 1]) + ' opens',
+				);
+			if (prev.dialog !== cur.dialog)
+				items.push(cur.dialog ? 'Dialog: ' + cur.dialog : 'Dialog closes');
+			if (prev.menu !== cur.menu) items.push(cur.menu ? 'Menu: ' + cur.menu : 'Menu closes');
+			if (prev.featured !== cur.featured) items.push('Guest phone shows #' + cur.featured);
+			cur.guests.forEach((x, i) => {
+				const was = prev.guests[i];
+				if (was.status !== x.status) items.push('#' + label(x) + ' → ' + x.status);
+			});
+			if (!items.length && JSON.stringify(prev.form) !== JSON.stringify(cur.form)) minor = 'Typing';
+			return { items, minor };
+		}
+	});
+</script>
+<script>
+	__STAGE_JS__;
+</script>

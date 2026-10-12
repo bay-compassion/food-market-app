@@ -1,20 +1,24 @@
 /**
- * Renders every frame of the built reel to `out/frames/` at 30 fps, for `encode.swift` to turn into
+ * Renders every frame of a built video to `out/<name>/frames/` at 30 fps, for `encode.swift` to turn into
  * a video. Rather than recording in real time, it moves the GSAP playhead one frame at a time and
  * steps every CSS animation and transition to the same clock, so each run is identical and smooth.
  *
  *   node docs/reel/capture.cjs
+ *   node docs/reel/capture.cjs queue-desk
  *
- * About five minutes for the whole reel. Needs `npx playwright install chromium` once.
+ * About five minutes a minute of video. Needs `npx playwright install chromium` once.
  */
 const { mkdirSync, rmSync } = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
 
 const fps = 30;
-const frames = path.join(__dirname, 'out', 'frames');
 
 void (async () => {
+	const { videoFromArgs } = await import('./videos.mjs');
+	const { name } = videoFromArgs();
+	const frames = path.join(__dirname, 'out', name, 'frames');
+
 	rmSync(frames, { recursive: true, force: true });
 	mkdirSync(frames, { recursive: true });
 	const browser = await chromium.launch();
@@ -22,7 +26,7 @@ void (async () => {
 	const errors = [];
 
 	tab.on('pageerror', (error) => errors.push(error.message));
-	await tab.goto('file://' + path.join(__dirname, 'out', 'market-day-reel.html') + '#record');
+	await tab.goto('file://' + path.join(__dirname, 'out', name + '.html') + '#record');
 	await tab.waitForFunction(() => window.reel);
 	await tab.evaluate(() => document.fonts.ready);
 	await tab.evaluate(() => {
@@ -57,6 +61,6 @@ void (async () => {
 	}
 
 	await browser.close();
-	console.log(`${total + 1} frames in out/frames, errors: ${errors.length}`);
+	console.log(`${total + 1} frames in out/${name}/frames, errors: ${errors.length}`);
 	errors.forEach((error) => console.log('  ' + error));
 })();

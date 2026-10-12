@@ -25,7 +25,9 @@ const git = (args, cwd = here('../..')) =>
 const inputs = {
 	page: here('./out/market-day-reel.html'),
 	video: here('./out/market-day-reel-web.mp4'),
-	frame: here(`./out/frames/${String(Math.round(posterSeconds * fps)).padStart(5, '0')}.jpg`),
+	frame: here(
+		`./out/market-day-reel/frames/${String(Math.round(posterSeconds * fps)).padStart(5, '0')}.jpg`,
+	),
 };
 
 for (const [name, path] of Object.entries(inputs)) {

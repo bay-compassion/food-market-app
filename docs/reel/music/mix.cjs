@@ -1,8 +1,13 @@
 /**
- * Mixes the soundtrack from GarageBand's Apple Loops, following `arrangement.cjs`, and writes it
- * to `docs/reel/soundtrack.m4a` for the build to embed.
+ * Mixes a video's soundtrack from GarageBand's Apple Loops and its voiceover, following the video's
+ * arrangement (see `videos.mjs`), and writes it where the build looks for it to embed.
  *
- *   node docs/reel/music/mix.cjs
+ *   node docs/reel/music/mix.cjs                # the market day reel, from `arrangement.cjs`
+ *   node docs/reel/music/mix.cjs queue-desk     # the queue desk video, with its narration
+ *
+ * An arrangement is a function of the video's length and its narration cues (when each line starts
+ * and how long it runs, read from the built page), returning parts: a `loop` by name, or a `voice`
+ * line by id, recorded by `voice.mjs`. A part with `duck` drops by that many dB under every line.
  *
  * Needs GarageBand's loop library installed (`/Library/Audio/Apple Loops`), macOS's `afconvert`,
  * a built page (for the reel's length), and `npx playwright install chromium` once. The mixing
@@ -15,7 +20,6 @@ const { execFileSync } = require('node:child_process');
 const { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('playwright');
-const arrangement = require('./arrangement.cjs');
 
 const library = '/Library/Audio/Apple Loops';
 const out = path.join(__dirname, '..', 'out');
@@ -37,19 +41,35 @@ function findLoops(dir, found = new Map()) {
 }
 
 void (async () => {
+	const { videoFromArgs } = await import('../videos.mjs');
+	const video = videoFromArgs();
+	const arrangement = require(path.join(__dirname, '..', video.arrangement));
 	const browser = await chromium.launch();
 	const tab = await browser.newPage();
 
-	await tab.goto('file://' + path.join(out, 'market-day-reel.html') + '#record');
+	await tab.goto('file://' + path.join(out, video.name + '.html') + '#record');
 	await tab.waitForFunction(() => window.reel);
-	const end = await tab.evaluate(() => window.reel.END);
-	const parts = arrangement(end);
+	const { end, cues } = await tab.evaluate(() => ({
+		end: window.reel.END,
+		cues: window.reel.cues,
+	}));
+	const parts = arrangement(end, cues);
 	const available = findLoops(library);
 	const loops = {};
 
 	mkdirSync(decoded, { recursive: true });
 
-	for (const name of new Set(parts.map((part) => part.loop))) {
+	for (const id of new Set(parts.filter((part) => part.voice).map((part) => part.voice))) {
+		const wav = path.join(out, video.name, 'voice', id + '.wav');
+
+		if (!existsSync(wav)) {
+			throw new Error(`No recording of "${id}"; run: node docs/reel/voice.mjs ${video.name}`);
+		}
+
+		loops['voice:' + id] = readFileSync(wav).toString('base64');
+	}
+
+	for (const name of new Set(parts.filter((part) => part.loop).map((part) => part.loop))) {
 		const source = available.get(name);
 
 		if (!source) {
@@ -67,7 +87,7 @@ void (async () => {
 
 	await tab.goto('about:blank');
 	const wav = await tab.evaluate(
-		async ({ loops, end, parts }) => {
+		async ({ loops, end, parts, cues }) => {
 			const rate = 44100;
 			const ctx = new OfflineAudioContext(2, Math.ceil(end * rate), rate);
 			const buffers = {};
@@ -108,7 +128,7 @@ void (async () => {
 			room.connect(roomLevel).connect(master);
 
 			for (const part of parts) {
-				const buffer = buffers[part.loop];
+				const buffer = buffers[part.loop ?? 'voice:' + part.voice];
 				const speed = part.rate ?? 1;
 				const length = buffer.duration / speed;
 				const level = Math.pow(10, part.db / 20);
@@ -122,12 +142,27 @@ void (async () => {
 				gain.gain.linearRampToValueAtTime(0, part.end);
 				let node = gain;
 
+				// Under each line of narration the part dips, and comes back up slowly after it, so the
+				// short pauses between lines don't pump; it is only back to full in a longer break.
+				if (part.duck) {
+					const duck = ctx.createGain();
+					const low = Math.pow(10, -part.duck / 20);
+
+					for (const cue of cues) {
+						duck.gain.setTargetAtTime(low, cue.t - 0.3, 0.12);
+						duck.gain.setTargetAtTime(1, cue.t + cue.duration + 0.2, 1.1);
+					}
+
+					gain.connect(duck);
+					node = duck;
+				}
+
 				if (part.lowpass) {
 					const filter = ctx.createBiquadFilter();
 
 					filter.frequency.setValueAtTime(part.lowpass[0], part.start);
 					filter.frequency.exponentialRampToValueAtTime(part.lowpass[1], part.end);
-					gain.connect(filter);
+					node.connect(filter);
 					node = filter;
 				}
 
@@ -139,7 +174,10 @@ void (async () => {
 				node.connect(pan).connect(master);
 				pan.connect(send).connect(room);
 
-				for (let t = part.start - (part.offset ?? 0); t < part.end; t += length) {
+				// A line of narration plays once; a loop repeats to fill its part.
+				const repeat = part.voice ? Infinity : length;
+
+				for (let t = part.start - (part.offset ?? 0); t < part.end; t += repeat) {
 					const source = ctx.createBufferSource();
 					const from = Math.max(t, part.start);
 
@@ -194,12 +232,13 @@ void (async () => {
 
 			return btoa(binary);
 		},
-		{ loops, end, parts },
+		{ loops, end, parts, cues },
 	);
 
 	await browser.close();
-	const wavPath = path.join(out, 'soundtrack.wav');
+	const wavPath = path.join(out, video.name, 'soundtrack.wav');
 
+	mkdirSync(path.dirname(wavPath), { recursive: true });
 	writeFileSync(wavPath, Buffer.from(wav, 'base64'));
 	execFileSync('afconvert', [
 		'-f',
@@ -209,7 +248,7 @@ void (async () => {
 		'-b',
 		'192000',
 		wavPath,
-		path.join(__dirname, '..', 'soundtrack.m4a'),
+		path.join(__dirname, '..', video.soundtrack),
 	]);
-	console.log('Wrote out/soundtrack.wav and soundtrack.m4a; rebuild the page to embed it.');
+	console.log(`Wrote ${video.soundtrack}; rebuild the page to embed it.`);
 })();
