@@ -127,7 +127,7 @@ describe('runLottery', () => {
 
 		queueResult([event]); // locked market event
 		queueResult([{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }]); // registered visits
-		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
+		queueResult([{ waiting: 0, highestNumber: null, highestOrder: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
 		queueResult(undefined); // tx.execute (bulk queue-position update for selected)
 		queueResult(undefined); // tx.insert notificationDeliveries (selected)
@@ -144,7 +144,7 @@ describe('runLottery', () => {
 
 		queueResult([event]); // locked market event
 		queueResult([]); // no registered visits
-		queueResult([{ count: 0, highestPosition: null }]); // nobody placed ahead of the draw
+		queueResult([{ waiting: 0, highestNumber: null, highestOrder: null }]); // nobody placed ahead of the draw
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning
 
 		const result = await runLottery(event, identity);
@@ -160,7 +160,7 @@ describe('runLottery', () => {
 
 		queueResult([event]); // locked market event
 		queueResult([{ id: 'v1' }, { id: 'v2' }]); // registered visits
-		queueResult([{ count: 2, highestPosition: 2 }]); // two guests already waiting
+		queueResult([{ waiting: 2, highestNumber: 2, highestOrder: 2 }]); // two guests already waiting
 		queueResult([{ id: 'event-1' }]); // tx.update marketEvents ... returning (started)
 		queueResult(undefined); // tx.execute (bulk queue-position update for the single winner)
 		queueResult(undefined); // tx.insert notificationDeliveries (selected)
@@ -175,7 +175,7 @@ describe('runLottery', () => {
 		// The stub declares `execute` as taking no arguments, so reach past its call signature.
 		const [positionUpdate] = db.execute.mock.calls[0] as unknown as [unknown];
 
-		expect(sqlParameters(positionUpdate)).toEqual(['v1', 3]);
+		expect(sqlParameters(positionUpdate)).toEqual(['v1', 3, 3]);
 	});
 
 	it('returns 409 when a concurrent process already moved the session before the lottery started', async () => {

@@ -14,6 +14,9 @@ function guest(id: string, status: VisitStatus, overrides: Partial<QueueGuest> =
 		householdSize: 2,
 		locale: 'en',
 		queuePosition: null,
+		priorityNumber: null,
+		queueFront: false,
+		queueOrder: null,
 		calledAt: null,
 		status,
 		...overrides,
@@ -23,8 +26,12 @@ function guest(id: string, status: VisitStatus, overrides: Partial<QueueGuest> =
 describe('QueueRoster', () => {
 	it('orders called guests by how long they have been waiting at the entrance', () => {
 		// Arrange
-		const recent = guest('recent', 'called', { calledAt: '2026-08-08T18:05:00.000Z' });
-		const earliest = guest('earliest', 'called', { calledAt: '2026-08-08T18:00:00.000Z' });
+		const recent = guest('recent', 'called', {
+			calledAt: '2026-08-08T18:05:00.000Z',
+		});
+		const earliest = guest('earliest', 'called', {
+			calledAt: '2026-08-08T18:00:00.000Z',
+		});
 
 		// Act
 		const roster = new QueueRoster([recent, earliest]);
@@ -35,8 +42,12 @@ describe('QueueRoster', () => {
 
 	it('names the guest called last as the one the line is waiting on', () => {
 		// Arrange
-		const recent = guest('recent', 'called', { calledAt: '2026-08-08T18:05:00.000Z' });
-		const earliest = guest('earliest', 'called', { calledAt: '2026-08-08T18:00:00.000Z' });
+		const recent = guest('recent', 'called', {
+			calledAt: '2026-08-08T18:05:00.000Z',
+		});
+		const earliest = guest('earliest', 'called', {
+			calledAt: '2026-08-08T18:00:00.000Z',
+		});
 
 		// Act
 		const roster = new QueueRoster([recent, earliest]);
@@ -71,12 +82,15 @@ describe('QueueRoster', () => {
 		});
 	});
 
-	it('orders waiting guests by queue position, with unplaced guests last', () => {
+	it('orders waiting guests by line order, with unplaced guests last', () => {
 		// Arrange
 		const guests = [
-			guest('third', 'waiting', { queuePosition: 3 }),
-			guest('unplaced', 'waiting'),
-			guest('first', 'waiting', { queuePosition: 1 }),
+			guest('third', 'waiting', { queuePosition: 3, queueOrder: 3 }),
+			guest('unplaced', 'waiting', {
+				queuePosition: null,
+				queueOrder: null,
+			}),
+			guest('first', 'waiting', { queuePosition: 1, queueOrder: 1 }),
 		];
 
 		// Act
@@ -84,6 +98,31 @@ describe('QueueRoster', () => {
 
 		// Assert
 		expect(roster.waiting.map((each) => each.id)).toEqual(['first', 'third', 'unplaced']);
+	});
+
+	it('puts guests a worker placed at the front ahead of the rest, first come first served', () => {
+		// Arrange
+		const guests = [
+			guest('main', 'waiting', { queuePosition: 4, queueOrder: 4 }),
+			guest('second-front', 'waiting', {
+				queuePosition: null,
+				priorityNumber: 2,
+				queueFront: true,
+				queueOrder: 9,
+			}),
+			guest('first-front', 'waiting', {
+				queuePosition: null,
+				priorityNumber: 1,
+				queueFront: true,
+				queueOrder: 8,
+			}),
+		];
+
+		// Act
+		const roster = new QueueRoster(guests);
+
+		// Assert
+		expect(roster.waiting.map((each) => each.id)).toEqual(['first-front', 'second-front', 'main']);
 	});
 
 	it('collects every way a visit can end into the finished list', () => {

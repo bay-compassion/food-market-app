@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import type { QueueNumber } from '../../models/queue-number';
 import { Bilingual, useKioskLanguages } from './kiosk-languages';
 
 const Panel = styled.section`
@@ -71,7 +72,7 @@ const Panel = styled.section`
 
 export type UnclaimedNumbersProps = {
 	/** Most recently called first, so the ones that drop off are the oldest. */
-	numbers: number[];
+	numbers: QueueNumber[];
 };
 
 /**
@@ -89,7 +90,7 @@ export function UnclaimedNumbers({ numbers }: UnclaimedNumbersProps) {
 	const native = secondary?.numerals.hasNativeDigits ? secondary : null;
 	const listRef = useRef<HTMLUListElement>(null);
 	const [limit, setLimit] = useState(Number.POSITIVE_INFINITY);
-	const signature = numbers.join(',');
+	const signature = numbers.map((number) => number.label).join(',');
 	const [measuredSignature, setMeasuredSignature] = useState(signature);
 
 	if (measuredSignature !== signature) {
@@ -130,10 +131,14 @@ export function UnclaimedNumbers({ numbers }: UnclaimedNumbersProps) {
 				<Bilingual text={(copy) => copy.stillWaitingFor} />
 			</h2>
 			<ul ref={listRef}>
-				{numbers.slice(0, shown).map((position) => (
-					<li key={position}>
-						<span>{position}</span>
-						{native ? <span lang={native.locale}>{native.numerals.nativeOf(position)}</span> : null}
+				{numbers.slice(0, shown).map((number) => (
+					<li key={number.label}>
+						<span>{number.label}</span>
+						{native ? (
+							<span lang={native.locale}>
+								{number.format((value) => native.numerals.nativeOf(value) ?? String(value))}
+							</span>
+						) : null}
 					</li>
 				))}
 				{hidden > 0 ? (

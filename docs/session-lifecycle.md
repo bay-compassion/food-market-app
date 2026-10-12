@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=7f08e0034d64 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=00be73bf6624 -->
 
 # Session lifecycle
 
@@ -152,7 +152,7 @@ Who owns each transition matters:
 - **The lottery** owns `select` and `skip`. `run_lottery` shuffles the `registered` visits, gives the
   first `capacity` of them a `queue_position`, and marks the rest `not_placed`. Any guest a worker
   already placed in the line is `waiting` before the draw runs, so those spots come out of
-  `capacity` first and the winners are numbered behind them. The shuffle is weighted by each
+  `capacity` first and the winners are numbered and ordered behind them. The shuffle is weighted by each
   visit's `lottery_weight` (`weightedShuffle`): a visit weighted 2 is twice as likely as a 1 to
   land near the front, but nothing is guaranteed — every weight defaults to 1, which makes the
   draw a plain even shuffle unless a worker deliberately raised someone's odds.
@@ -173,9 +173,17 @@ to `waiting` and is notified again when re-called — so it clears `called_at` o
 Nothing transitions out of `served`, so `served_at` is only ever written once.
 
 `return_to_queue` can also say where the guest goes: `placement: 'end'` behind everyone waiting, or
-`'next'` at the front, shifting the waiting guests down — the same placements as adding a guest by
-hand. The volunteer queue screen sends `end` unless the worker picks the front, since a no-show has
-lost their turn; without a placement the guest goes back to the place they had.
+`'next'` at the front — the same placements as adding a guest by hand. The volunteer queue screen
+sends `end` unless the worker picks the front, since a no-show has lost their turn; without a
+placement the guest goes back to the place they had.
+
+A guest's number never changes once given: it is on their phone, their text, their name tag, and any
+screenshot they bring. Where they stand is held apart from it, in `queue_front` and `queue_order`
+(`LineOrder` in [`src/models/line-order.ts`](../src/models/line-order.ts)), so placing a guest only
+ever writes their own row. A returned guest keeps their number. A guest a worker adds at the front
+ahead of others gets the next number in a priority series of its own — `P1`, `P2`, … — rather than
+taking someone else's, and guests put at the front are called first come first served among
+themselves.
 
 Workers call guests in batches. `call_next` on `/api/admin/queue` takes the next N waiting guests in
 queue order and calls them in a single statement, so two workers running the queue at the same time

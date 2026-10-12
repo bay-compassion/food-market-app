@@ -27,6 +27,7 @@ const tag = {
 	firstName: 'Maria',
 	lastInitial: 'S',
 	queuePosition: 14,
+	priorityNumber: null,
 	locale: 'es' as const,
 };
 

@@ -24,7 +24,12 @@ export type QueueGuest = {
 	phone: string;
 	householdSize: number;
 	locale: Locale;
+	/** With `priorityNumber`, the guest's number — read it through `QueueNumber.of`. */
 	queuePosition: number | null;
+	priorityNumber: number | null;
+	/** Where the guest stands in line — sort with `LineOrder.compare`. */
+	queueFront: boolean;
+	queueOrder: number | null;
 	calledAt: string | null;
 	status: VisitStatus;
 };
@@ -64,13 +69,24 @@ export type AddedGuest = { id: string | null; guestId: string };
  */
 export type UnvisitedGuest = Omit<
 	AdminGuest,
-	'id' | 'status' | 'householdSize' | 'queuePosition' | 'calledAt' | 'marketEventId'
+	| 'id'
+	| 'status'
+	| 'householdSize'
+	| 'queuePosition'
+	| 'priorityNumber'
+	| 'queueFront'
+	| 'queueOrder'
+	| 'calledAt'
+	| 'marketEventId'
 > & {
 	id: null;
 	guestId: string;
 	status: null;
 	householdSize: null;
 	queuePosition: null;
+	priorityNumber: null;
+	queueFront: null;
+	queueOrder: null;
 	calledAt: null;
 	marketEventId: null;
 };

@@ -8,6 +8,7 @@ const state: QueueBoardState = {
 	sessionStatus: 'service_started',
 	nowCalling: 5,
 	called: [2, 5],
+	calledPriority: [],
 	waitingCount: 8,
 };
 
@@ -44,8 +45,8 @@ describe('KioskStore', () => {
 
 		// Assert
 		expect(store.isLoading).toBe(false);
-		expect(store.board?.nowCalling).toBe(5);
-		expect(store.board?.stillWaitingFor).toEqual([2]);
+		expect(store.board?.nowCalling?.label).toBe('5');
+		expect(store.board?.stillWaitingFor.map((number) => number.label)).toEqual(['2']);
 		expect(store.failure).toBeNull();
 	});
 
@@ -60,14 +61,14 @@ describe('KioskStore', () => {
 		// Act
 		await store.refresh();
 		await store.refresh();
-		const duringOutage = { failure: store.failure, nowCalling: store.board?.nowCalling };
+		const duringOutage = { failure: store.failure, nowCalling: store.board?.nowCalling?.label };
 
 		await store.refresh();
 
 		// Assert
-		expect(duringOutage).toEqual({ failure: 'connection', nowCalling: 5 });
+		expect(duringOutage).toEqual({ failure: 'connection', nowCalling: '5' });
 		expect(store.failure).toBeNull();
-		expect(store.board?.nowCalling).toBe(6);
+		expect(store.board?.nowCalling?.label).toBe('6');
 	});
 
 	it('shares a read already in flight', async () => {

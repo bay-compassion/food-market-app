@@ -172,7 +172,18 @@ export const visits = pgTable('visits', {
 		.notNull()
 		.references(() => guests.id),
 	status: text('status').$type<VisitStatus>().notNull().default('registered'),
+	/**
+	 * The guest's queue number in the main series — what the draw or a worker gave them, and what
+	 * their phone, text, and name tag show. Never changes once given; the line's order is
+	 * `queueFront` and `queueOrder`. Null before the draw, and for a guest with a `priorityNumber`.
+	 */
 	queuePosition: integer('queue_position'),
+	/** The number of a guest a worker put at the front ahead of others, shown as `P1`, `P2`, …. */
+	priorityNumber: integer('priority_number'),
+	/** Whether a worker put this guest at the front: called before everyone else, in `queueOrder`. */
+	queueFront: boolean('queue_front').notNull().default(false),
+	/** The order the line is called in, within `queueFront`. Null for a visit not in the line. */
+	queueOrder: integer('queue_order'),
 	/** Relative odds in the lottery: a visit weighted 2 is twice as likely to be drawn as a 1. */
 	lotteryWeight: integer('lottery_weight').notNull().default(1),
 	ageRange: text('age_range').$type<AgeRange>(),

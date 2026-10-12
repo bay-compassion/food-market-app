@@ -71,6 +71,7 @@ export class PrintStationStore {
 					firstName: job.firstName,
 					lastName: job.lastInitial,
 					queuePosition: job.queuePosition,
+					priorityNumber: job.priorityNumber,
 					locale: job.locale,
 				})
 			: null;

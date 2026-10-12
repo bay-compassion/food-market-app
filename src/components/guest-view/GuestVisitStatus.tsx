@@ -25,7 +25,7 @@ export const GuestVisitStatus = observer(function GuestVisitStatus() {
 			return (
 				<WaitingVisitStatus
 					copy={copy}
-					queuePosition={visit.queuePosition}
+					queueNumber={visit.queueNumber}
 					guestsAhead={visit.guestsAhead}
 					nowCalling={visit.nowCalling}
 				/>

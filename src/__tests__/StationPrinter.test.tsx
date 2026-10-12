@@ -12,6 +12,7 @@ const maria: NameTagPrintJob = {
 	firstName: 'Maria',
 	lastInitial: 'S',
 	queuePosition: 14,
+	priorityNumber: null,
 	locale: 'es',
 	requestedAt: '2026-10-05T18:00:00.000Z',
 };

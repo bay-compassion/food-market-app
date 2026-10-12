@@ -1,16 +1,16 @@
 import type { Locale } from '../locales.ts';
+import { QueueNumber, type QueueNumberSource } from './queue-number.ts';
 
 /** The parts of a visit a name tag is made from. */
-export type NameTagSource = {
+export type NameTagSource = QueueNumberSource & {
 	firstName: string;
 	lastName: string;
-	queuePosition: number | null;
 	locale: Locale;
 };
 
 /**
  * What goes on the sticker a check-in volunteer writes out for a guest they have just called: the
- * first name with a last initial, their place in line, and the language they registered in.
+ * first name with a last initial, their queue number, and the language they registered in.
  *
  * A value object built from the visit, so the screen that shows it and the label printer that
  * prints it agree on exactly the same text.
@@ -45,9 +45,9 @@ export class NameTag {
 		return this.name.length > NameTag.longNameLength;
 	}
 
-	/** The place in line, or `null` for a visit the draw has not placed. */
-	get position(): number | null {
-		return this.source.queuePosition;
+	/** The guest's queue number, or `null` for a visit the draw has not placed. */
+	get number(): QueueNumber | null {
+		return QueueNumber.of(this.source);
 	}
 
 	/** The registration language as a short code a volunteer can copy, e.g. `ES`. */

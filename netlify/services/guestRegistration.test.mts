@@ -95,7 +95,13 @@ describe('parseSubmission', () => {
 
 	it('rejects shopper counts that add up to more than the household size', () => {
 		expect(
-			parseSubmission(selfSubmission({ householdSize: 2, childrenCount: 2, seniorsCount: 1 })),
+			parseSubmission(
+				selfSubmission({
+					householdSize: 2,
+					childrenCount: 2,
+					seniorsCount: 1,
+				}),
+			),
 		).toBeNull();
 	});
 
@@ -141,7 +147,10 @@ describe('registerGuest eligibility', () => {
 	])('rejects a $admission admission while the session is $status', async (scenario) => {
 		queueResult([{ status: scenario.status }]);
 		const submission = parseSubmission(
-			selfSubmission({ source: 'admin', admission: scenario.admission }),
+			selfSubmission({
+				source: 'admin',
+				admission: scenario.admission,
+			}),
 		)!;
 
 		const result = await registerGuest(submission, { kind: 'guest' });
@@ -158,7 +167,11 @@ describe('registerGuest eligibility', () => {
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+		expect(result).toEqual({
+			ok: false,
+			status: 409,
+			error: 'Registration is not open.',
+		});
 	});
 
 	it('rejects a self submission when the market event does not exist', async () => {
@@ -167,7 +180,11 @@ describe('registerGuest eligibility', () => {
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+		expect(result).toEqual({
+			ok: false,
+			status: 409,
+			error: 'Registration is not open.',
+		});
 	});
 
 	it.each(['lottery_pending', 'service_started', 'ended'])(
@@ -185,7 +202,11 @@ describe('registerGuest eligibility', () => {
 
 			const result = await registerGuest(submission, { kind: 'guest' });
 
-			expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+			expect(result).toEqual({
+				ok: false,
+				status: 409,
+				error: 'Registration is not open.',
+			});
 		},
 	);
 
@@ -202,7 +223,11 @@ describe('registerGuest eligibility', () => {
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+		expect(result).toEqual({
+			ok: false,
+			status: 409,
+			error: 'Registration is not open.',
+		});
 	});
 
 	it('rejects a self submission once the session is scheduled but not open yet', async () => {
@@ -218,7 +243,11 @@ describe('registerGuest eligibility', () => {
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+		expect(result).toEqual({
+			ok: false,
+			status: 409,
+			error: 'Registration is not open.',
+		});
 	});
 
 	it('accepts an in-flight self submission during the post-close grace period', async () => {
@@ -236,7 +265,9 @@ describe('registerGuest eligibility', () => {
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ id: 'visit-1', status: 'registered' }]);
 
-		const result = await registerGuest(parseSubmission(selfSubmission())!, { kind: 'guest' });
+		const result = await registerGuest(parseSubmission(selfSubmission())!, {
+			kind: 'guest',
+		});
 
 		expect(result).toMatchObject({ ok: true, status: 201 });
 	});
@@ -252,9 +283,15 @@ describe('registerGuest eligibility', () => {
 			},
 		]);
 
-		const result = await registerGuest(parseSubmission(selfSubmission())!, { kind: 'guest' });
+		const result = await registerGuest(parseSubmission(selfSubmission())!, {
+			kind: 'guest',
+		});
 
-		expect(result).toEqual({ ok: false, status: 409, error: 'Registration is not open.' });
+		expect(result).toEqual({
+			ok: false,
+			status: 409,
+			error: 'Registration is not open.',
+		});
 	});
 
 	it('rejects a self submission missing a required registration answer', async () => {
@@ -372,7 +409,11 @@ describe('registerGuest happy paths', () => {
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });
+		expect(result).toMatchObject({
+			ok: true,
+			status: 201,
+			body: { guestId: 'guest-2' },
+		});
 
 		if (!result.ok) {
 			throw new Error('Expected registration to succeed');
@@ -461,13 +502,25 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ status: 'service_started' }]); // admin event status check
 		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
-		queueResult([{ position: 6 }]); // nextQueuePosition — highest position so far
+		queueResult([{ id: 'event-1' }]); // placeInLine — the session lock
+		queueResult([
+			{
+				highestNumber: 6,
+				highestPriorityNumber: null,
+				highestOrder: 6,
+				othersWaiting: 4,
+			},
+		]); // the line so far
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // insert visits
 		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'waiting' } });
+		expect(result).toMatchObject({
+			ok: true,
+			status: 201,
+			body: { status: 'waiting' },
+		});
 		expect((result as { body: { visitToken?: string } }).body.visitToken).toBeUndefined();
 	});
 
@@ -475,14 +528,26 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ status: 'service_started' }]);
 		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
-		queueResult([{ position: 6 }]);
+		queueResult([{ id: 'event-1' }]); // placeInLine — the session lock
+		queueResult([
+			{
+				highestNumber: 6,
+				highestPriorityNumber: null,
+				highestOrder: 6,
+				othersWaiting: 4,
+			},
+		]); // the line so far
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 		const submission = parseSubmission(selfSubmission({ source: 'admin' }))!;
 
 		expect(submission.queuePlacement).toBe('end');
 		await registerGuest(submission, { kind: 'guest' });
 
-		expect(insertedVisit()?.queuePosition).toBe(7);
+		expect(insertedVisit()).toMatchObject({
+			queuePosition: 7,
+			queueFront: false,
+			queueOrder: 7,
+		});
 	});
 
 	it('enters a pre-lottery guest into the draw with no queue position', async () => {
@@ -494,8 +559,12 @@ describe('registerGuest happy paths', () => {
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'registered' } });
-		expect(insertedVisit()?.queuePosition).toBeNull();
+		expect(result).toMatchObject({
+			ok: true,
+			status: 201,
+			body: { status: 'registered' },
+		});
+		expect(insertedVisit()?.queuePosition ?? null).toBeNull();
 	});
 
 	it('stores the weight a worker chose for a guest entering the draw', async () => {
@@ -504,7 +573,11 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
 		queueResult([{ id: 'visit-1', status: 'registered' }]);
 		const submission = parseSubmission(
-			selfSubmission({ source: 'admin', admission: 'lottery', lotteryWeight: 5 }),
+			selfSubmission({
+				source: 'admin',
+				admission: 'lottery',
+				lotteryWeight: 5,
+			}),
 		)!;
 
 		await registerGuest(submission, { kind: 'guest' });
@@ -516,10 +589,22 @@ describe('registerGuest happy paths', () => {
 		queueResult([{ status: 'service_started' }]);
 		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
-		queueResult([{ position: 6 }]);
+		queueResult([{ id: 'event-1' }]); // placeInLine — the session lock
+		queueResult([
+			{
+				highestNumber: 6,
+				highestPriorityNumber: null,
+				highestOrder: 6,
+				othersWaiting: 4,
+			},
+		]); // the line so far
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 		const submission = parseSubmission(
-			selfSubmission({ source: 'admin', admission: 'queue', lotteryWeight: 5 }),
+			selfSubmission({
+				source: 'admin',
+				admission: 'queue',
+				lotteryWeight: 5,
+			}),
 		)!;
 
 		await registerGuest(submission, { kind: 'guest' });
@@ -551,18 +636,28 @@ describe('registerGuest happy paths', () => {
 
 		const result = await registerGuest(submission, { kind: 'guest' });
 
-		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'served' } });
+		expect(result).toMatchObject({
+			ok: true,
+			status: 201,
+			body: { status: 'served' },
+		});
 		// A record of someone already fed never joins a line.
-		expect(insertedVisit()?.queuePosition).toBeNull();
+		expect(insertedVisit()?.queuePosition ?? null).toBeNull();
 	});
 
 	it('puts a walk-in at the front of the queue when the worker asks for next up', async () => {
 		queueResult([{ status: 'service_started' }]);
 		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
-		queueResult([{ position: 6 }]); // highest position so far
-		queueResult([{ position: 3 }]); // front of the waiting guests
-		queueResult([]); // shift the waiting guests down by one
+		queueResult([{ id: 'event-1' }]); // placeInLine — the session lock
+		queueResult([
+			{
+				highestNumber: 6,
+				highestPriorityNumber: null,
+				highestOrder: 6,
+				othersWaiting: 4,
+			},
+		]); // the line so far
 		queueResult([{ id: 'visit-1', status: 'waiting' }]);
 		const submission = parseSubmission(
 			selfSubmission({ source: 'admin', queuePlacement: 'next' }),
@@ -571,7 +666,39 @@ describe('registerGuest happy paths', () => {
 		expect(submission.queuePlacement).toBe('next');
 		await registerGuest(submission, { kind: 'guest' });
 
-		expect(insertedVisit()?.queuePosition).toBe(3);
+		// A priority number of its own, so nobody already waiting is renumbered.
+		expect(insertedVisit()).toMatchObject({
+			priorityNumber: 1,
+			queueFront: true,
+			queueOrder: 7,
+		});
+		expect(insertedVisit()?.queuePosition).toBeNull();
+	});
+
+	it('gives a walk-in put at the front a main number when nobody is waiting', async () => {
+		queueResult([{ status: 'service_started' }]);
+		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]);
+		queueResult([{ id: 'event-1' }]); // placeInLine — the session lock
+		queueResult([
+			{
+				highestNumber: 6,
+				highestPriorityNumber: null,
+				highestOrder: 6,
+				othersWaiting: 0,
+			},
+		]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+		const submission = parseSubmission(
+			selfSubmission({ source: 'admin', queuePlacement: 'next' }),
+		)!;
+
+		await registerGuest(submission, { kind: 'guest' });
+
+		expect(insertedVisit()).toMatchObject({
+			queuePosition: 7,
+			priorityNumber: null,
+		});
 	});
 });
 
@@ -649,7 +776,10 @@ describe('saveGuestInformation', () => {
 		const result = await saveGuestInformation(parseGuestInformation(signupSubmission())!);
 
 		expect(result.ok).toBe(true);
-		expect(result).toMatchObject({ status: 201, body: { guestId: 'guest-1' } });
+		expect(result).toMatchObject({
+			status: 201,
+			body: { guestId: 'guest-1' },
+		});
 
 		if (!result.ok) {
 			throw new Error('Expected sign-up to succeed');
@@ -673,11 +803,18 @@ describe('saveGuestInformation', () => {
 
 		const result = await saveGuestInformation(
 			parseGuestInformation(
-				signupSubmission({ deviceToken: savedDeviceToken, firstName: 'Renewed' }),
+				signupSubmission({
+					deviceToken: savedDeviceToken,
+					firstName: 'Renewed',
+				}),
 			)!,
 		);
 
-		expect(result).toMatchObject({ ok: true, status: 200, body: { guestId: 'guest-1' } });
+		expect(result).toMatchObject({
+			ok: true,
+			status: 200,
+			body: { guestId: 'guest-1' },
+		});
 
 		if (!result.ok) {
 			throw new Error('Expected sign-up to succeed');
@@ -695,7 +832,11 @@ describe('saveGuestInformation', () => {
 			parseGuestInformation(signupSubmission({ deviceToken: savedDeviceToken }))!,
 		);
 
-		expect(result).toMatchObject({ ok: true, status: 201, body: { guestId: 'guest-2' } });
+		expect(result).toMatchObject({
+			ok: true,
+			status: 201,
+			body: { guestId: 'guest-2' },
+		});
 
 		if (!result.ok) {
 			throw new Error('Expected sign-up to succeed');

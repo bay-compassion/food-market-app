@@ -1,7 +1,9 @@
-import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { visits } from '../../db/schema.mjs';
+import { marketEvents, visits } from '../../db/schema.mjs';
+import { LineOrder } from '../../src/models/line-order.js';
+import { QueueNumber } from '../../src/models/queue-number.js';
 import type { QueuePlacement } from '../../src/services/guestAdmission.js';
 import { visitCommandEvents, type VisitEventActor } from '../../src/services/visit-events.js';
 import {
@@ -17,6 +19,16 @@ import { notificationsEnabled } from './pushNotifications.mjs';
 import { recordVisitEvents, systemActor } from './visit-events.mjs';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * The order a session's line is called in — `LineOrder.compare`, as SQL. The trailing `created_at`
+ * only breaks a tie no placement should produce.
+ */
+export const lineOrder = [
+	desc(visits.queueFront),
+	sql`${visits.queueOrder} ASC NULLS LAST`,
+	asc(visits.createdAt),
+] as const;
 
 /** Visits a session's ending resolves: anyone the market still owes a draw or a turn. */
 const stillInLineStatuses: VisitStatus[] = ['registered', ...outstandingVisitStatuses];
@@ -96,7 +108,12 @@ export async function runVisitCommand(
 ): Promise<VisitCommandResult> {
 	const [current] = await tracedQuery('visit.read_status', () =>
 		db
-			.select({ status: visits.status, marketEventId: visits.marketEventId })
+			.select({
+				status: visits.status,
+				marketEventId: visits.marketEventId,
+				queuePosition: visits.queuePosition,
+				priorityNumber: visits.priorityNumber,
+			})
 			.from(visits)
 			.where(eq(visits.id, visitId))
 			.limit(1),
@@ -117,13 +134,17 @@ export async function runVisitCommand(
 	try {
 		updated = await tracedQuery('visit.apply_command', () =>
 			db.transaction(async (tx) => {
-				const queuePosition = placement
-					? await nextQueuePosition(tx, current.marketEventId, placement)
+				// A returned guest keeps their number; only their place in the line moves.
+				const slot = placement
+					? await placeInLine(tx, current.marketEventId, placement, {
+							id: visitId,
+							held: QueueNumber.of(current),
+						})
 					: undefined;
 				const changes =
-					queuePosition === undefined
+					slot === undefined
 						? visitCommandChanges(command)
-						: { ...visitCommandChanges(command), queuePosition };
+						: { ...visitCommandChanges(command), ...slot };
 				const [visit] = await tx
 					.update(visits)
 					.set(changes)
@@ -143,7 +164,7 @@ export async function runVisitCommand(
 							kind,
 							toStatus: visit.status,
 							actor: options.actor,
-							details: placement ? { placement, queuePosition } : undefined,
+							details: placement ? { placement } : undefined,
 						},
 					]);
 				}
@@ -191,7 +212,7 @@ async function callNextInTransaction(
 					.select({ id: visits.id })
 					.from(visits)
 					.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'waiting')))
-					.orderBy(sql`${visits.queuePosition} ASC NULLS LAST`, asc(visits.createdAt))
+					.orderBy(...lineOrder)
 					.limit(count),
 			),
 		)
@@ -307,56 +328,44 @@ export async function resolveOutstandingVisits(tx: Transaction, marketEventId: s
 }
 
 /**
- * Picks the queue position for a guest added during service. `end` appends after everyone;
- * `next` puts them at the front of the waiting guests and shifts those down by one.
+ * Places a guest in the session's line — a new one a worker is adding, or one being returned to the
+ * queue, who keeps the number they `hold` — and returns the columns to write. The rules are
+ * `LineOrder`'s; this reads the line they need.
  *
- * Positions are display ordering, not a key — there is no unique constraint on
- * `(market_event_id, queue_position)` — so shifting is safe.
+ * Locks the session row first, so two workers placing guests at once cannot both read the same
+ * highest number and hand it out twice. Nothing else moves: a number, once given, never changes.
  */
-export async function nextQueuePosition(
+export async function placeInLine(
 	tx: Transaction,
 	marketEventId: string,
 	placement: QueuePlacement,
+	visit: { id: string; held: QueueNumber | null } | null = null,
 ) {
-	return tracedQuery('visit.next_queue_position', async () => {
-		const [highest] = await tx
-			.select({ position: sql<number | null>`max(${visits.queuePosition})` })
+	return tracedQuery('visit.place_in_line', async () => {
+		await tx
+			.select({ id: marketEvents.id })
+			.from(marketEvents)
+			.where(eq(marketEvents.id, marketEventId))
+			.for('update');
+
+		const othersWaiting = visit
+			? sql`${visits.status} = 'waiting' AND ${visits.id} <> ${visit.id}`
+			: sql`${visits.status} = 'waiting'`;
+		const [line] = await tx
+			.select({
+				highestNumber: sql<number | null>`max(${visits.queuePosition})`,
+				highestPriorityNumber: sql<number | null>`max(${visits.priorityNumber})`,
+				highestOrder: sql<number | null>`max(${visits.queueOrder})`,
+				othersWaiting: sql<number>`count(*) FILTER (WHERE ${othersWaiting})::int`,
+			})
 			.from(visits)
 			.where(eq(visits.marketEventId, marketEventId));
-		const endPosition = (highest?.position ?? 0) + 1;
 
-		if (placement === 'end') {
-			return endPosition;
-		}
-
-		const [front] = await tx
-			.select({ position: visits.queuePosition })
-			.from(visits)
-			.where(
-				and(
-					eq(visits.marketEventId, marketEventId),
-					eq(visits.status, 'waiting'),
-					isNotNull(visits.queuePosition),
-				),
-			)
-			.orderBy(asc(visits.queuePosition))
-			.limit(1);
-
-		if (front?.position === null || front?.position === undefined) {
-			return endPosition;
-		}
-
-		await tx
-			.update(visits)
-			.set({ queuePosition: sql`${visits.queuePosition} + 1` })
-			.where(
-				and(
-					eq(visits.marketEventId, marketEventId),
-					eq(visits.status, 'waiting'),
-					sql`${visits.queuePosition} >= ${front.position}`,
-				),
-			);
-
-		return front.position;
+		return new LineOrder({
+			highestNumber: line?.highestNumber ?? null,
+			highestPriorityNumber: line?.highestPriorityNumber ?? null,
+			highestOrder: line?.highestOrder ?? null,
+			othersWaiting: line?.othersWaiting ?? 0,
+		}).place(placement, visit?.held ?? null);
 	});
 }

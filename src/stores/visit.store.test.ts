@@ -75,6 +75,7 @@ describe('VisitStore', () => {
 				marketEventId: 'event-1',
 				status: 'registered',
 				queuePosition: null,
+				priorityNumber: null,
 				aheadOfYou: null,
 				nowCalling: null,
 			});

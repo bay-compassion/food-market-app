@@ -89,17 +89,19 @@ describe('visit handler GET', () => {
 			status: 'waiting',
 			marketEventId: 'event-1',
 			queuePosition: 4,
+			priorityNumber: null,
 			calledAt: null,
 			sessionStatus: 'service_started',
 		};
 
-		queueResult([visit]);
+		queueResult([{ ...visit, queueFront: false, queueOrder: 4 }]);
 		queueResult([{ count: 3 }]);
 		queueResult([{ queuePosition: 1 }]);
 
 		const response = await handler(request('GET', { token: validToken }));
 
 		expect(response.status).toBe(200);
+		// The line order stays on the server: a guest sees their number, not how it was placed.
 		await expect(response.json()).resolves.toEqual({ ...visit, aheadOfYou: 3, nowCalling: 1 });
 	});
 

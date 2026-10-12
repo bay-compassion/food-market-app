@@ -51,8 +51,10 @@ export type VisitEventActor =
 export type VisitEventDetails = {
 	/** Where a returned guest was put back in line. */
 	placement?: QueuePlacement;
-	/** The place in line a guest was given. */
+	/** The main-series number a guest was given. */
 	queuePosition?: number;
+	/** The priority-series number (`P1`, …) a guest a worker put at the front was given. */
+	priorityNumber?: number;
 	/** Why a visit was cancelled without anyone cancelling it. */
 	cause?: 'session_ended';
 };

@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 
 import type { VisitStatusTranslations } from '@/locales.ts';
 
+import type { QueueNumber } from '../../../models/queue-number';
 import { useLinePositionIndicator } from '../../hooks/use-line-position-indicator';
 import { NowCallingIndicator } from './NowCallingIndicator';
 import { QueuePositionDots } from './QueuePositionDots';
@@ -77,7 +78,7 @@ const QueueNext = styled.p`
 
 export type QueueStandingProps = {
 	copy: VisitStatusTranslations;
-	queuePosition: number;
+	queueNumber: QueueNumber;
 	guestsAhead: number | null;
 	nowCalling: number | null;
 	className?: string;
@@ -90,7 +91,7 @@ export type QueueStandingProps = {
  */
 export function QueueStanding({
 	copy,
-	queuePosition,
+	queueNumber,
 	guestsAhead,
 	nowCalling,
 	className,
@@ -104,7 +105,7 @@ export function QueueStanding({
 			) : null}
 			<QueuePosition className="queue-position">
 				<span>{copy.waiting.queuePositionLabel}</span>
-				<strong>{queuePosition}</strong>
+				<strong>{queueNumber.label}</strong>
 			</QueuePosition>
 			{guestsAhead === 0 ? (
 				<QueueNext className="queue-next">{copy.waiting.youAreNext}</QueueNext>

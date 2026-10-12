@@ -210,6 +210,7 @@ export const visitExportHeaders = [
 	'visit_status',
 	'visit_source',
 	'queue_position',
+	'priority_number',
 	'lottery_weight',
 	'is_first_visit',
 	'registered_at',
@@ -243,6 +244,7 @@ export async function runVisitExport({ start, end }: ReportRange) {
 			v.status AS "visit_status",
 			v.source AS "visit_source",
 			v.queue_position AS "queue_position",
+			v.priority_number AS "priority_number",
 			v.lottery_weight AS "lottery_weight",
 			v.is_first_visit AS "is_first_visit",
 			v.created_at AS "registered_at",
@@ -260,7 +262,8 @@ export async function runVisitExport({ start, end }: ReportRange) {
 		JOIN visits v ON v.market_event_id = e.id
 		JOIN guests g ON g.id = v.guest_id
 		WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
-		ORDER BY e.registration_opens_at DESC, v.queue_position ASC NULLS LAST, v.created_at ASC
+		ORDER BY e.registration_opens_at DESC, v.queue_front DESC, v.queue_order ASC NULLS LAST,
+			v.created_at ASC
 	`),
 	);
 

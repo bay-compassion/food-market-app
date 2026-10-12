@@ -18,6 +18,9 @@ const baseGuest: QueueGuest = {
 	householdSize: 4,
 	locale: 'es',
 	queuePosition: 1,
+	priorityNumber: null,
+	queueFront: false,
+	queueOrder: 1,
 	calledAt: null,
 	status: 'waiting',
 };
@@ -34,6 +37,9 @@ export function guestWithStatus(status: VisitStatus): QueueGuest {
 		// Only a called guest has been called, and the waiting-time label reads from this.
 		calledAt: status === 'called' ? new Date(Date.now() - 4 * 60_000).toISOString() : null,
 		queuePosition: status === 'waiting' ? 3 : null,
+		priorityNumber: null,
+		queueFront: false,
+		queueOrder: status === 'waiting' ? 3 : null,
 	});
 }
 
@@ -46,6 +52,9 @@ export const busyQueue: QueueGuest[] = [
 		locale: 'es',
 		status: 'called',
 		queuePosition: null,
+		priorityNumber: null,
+		queueFront: false,
+		queueOrder: null,
 		calledAt: new Date(Date.now() - 9 * 60_000).toISOString(),
 	}),
 	queueGuest({
@@ -56,6 +65,9 @@ export const busyQueue: QueueGuest[] = [
 		householdSize: 2,
 		status: 'called',
 		queuePosition: null,
+		priorityNumber: null,
+		queueFront: false,
+		queueOrder: null,
 		calledAt: new Date(Date.now() - 30_000).toISOString(),
 	}),
 	queueGuest({
@@ -65,6 +77,9 @@ export const busyQueue: QueueGuest[] = [
 		locale: 'vi',
 		householdSize: 5,
 		queuePosition: 3,
+		priorityNumber: null,
+		queueFront: false,
+		queueOrder: 3,
 	}),
 	queueGuest({
 		id: 'guest-waiting-2',

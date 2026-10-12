@@ -81,6 +81,7 @@ function seededStore({
 					marketEventId: 'story-market',
 					status: visitStatus,
 					queuePosition,
+					priorityNumber: null,
 					aheadOfYou,
 					nowCalling,
 				},

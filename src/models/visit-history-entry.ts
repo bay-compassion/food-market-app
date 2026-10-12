@@ -1,5 +1,6 @@
 import type { VisitHistoryTranslation } from '../adminLocales.ts';
 import type { VisitEvent } from '../services/visit-events.ts';
+import { QueueNumber } from './queue-number.ts';
 
 /**
  * One line of a visit's History panel: what happened, who did it, and when. A value object over
@@ -30,8 +31,13 @@ export class VisitHistoryEntry {
 			return `${title} · ${where}`;
 		}
 
-		if (kind === 'drawn' && details.queuePosition !== undefined) {
-			return `${title} · #${details.queuePosition}`;
+		const number = QueueNumber.of({
+			queuePosition: details.queuePosition ?? null,
+			priorityNumber: details.priorityNumber ?? null,
+		});
+
+		if ((kind === 'drawn' || kind === 'added') && number) {
+			return `${title} · #${number.label}`;
 		}
 
 		return title;

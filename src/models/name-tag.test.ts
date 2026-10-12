@@ -6,6 +6,7 @@ const maria: NameTagSource = {
 	firstName: 'Maria',
 	lastName: 'Garcia',
 	queuePosition: 14,
+	priorityNumber: null,
 	locale: 'es',
 };
 
@@ -55,16 +56,17 @@ describe('NameTag', () => {
 		expect(sizes).toEqual([false, true]);
 	});
 
-	it('carries the place in line, or none for a visit the draw has not placed', () => {
+	it('carries the queue number in either series, or none for a visit the draw has not placed', () => {
 		// Arrange
 		const placed = new NameTag(maria);
+		const front = new NameTag({ ...maria, queuePosition: null, priorityNumber: 2 });
 		const unplaced = new NameTag({ ...maria, queuePosition: null });
 
 		// Act
-		const positions = [placed.position, unplaced.position];
+		const numbers = [placed, front, unplaced].map((tag) => tag.number?.label ?? null);
 
 		// Assert
-		expect(positions).toEqual([14, null]);
+		expect(numbers).toEqual(['14', 'P2', null]);
 	});
 
 	it('writes the registration language as an uppercase code', () => {

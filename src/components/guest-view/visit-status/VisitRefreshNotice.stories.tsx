@@ -53,6 +53,7 @@ function SeededRefreshNotice({
 						marketEventId: 'story-market',
 						status: visitStatus,
 						queuePosition: 7,
+						priorityNumber: null,
 						aheadOfYou: 6,
 						nowCalling: 1,
 					},

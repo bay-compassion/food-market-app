@@ -166,10 +166,12 @@ export function KioskBoard({ board, reconnecting }: KioskBoardProps) {
 							<Bilingual text={(copy) => copy.nowCallingNone} />
 						</p>
 					) : (
-						<strong key={nowCalling} data-native={native ? true : undefined}>
-							<span>{nowCalling}</span>
+						<strong key={nowCalling.label} data-native={native ? true : undefined}>
+							<span>{nowCalling.label}</span>
 							{native ? (
-								<span lang={native.locale}>{native.numerals.nativeOf(nowCalling)}</span>
+								<span lang={native.locale}>
+									{nowCalling.format((value) => native.numerals.nativeOf(value) ?? String(value))}
+								</span>
 							) : null}
 						</strong>
 					)}

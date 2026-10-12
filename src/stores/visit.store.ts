@@ -3,6 +3,7 @@ import { type IReactionDisposer, reaction, runInAction } from 'mobx';
 import type { VisitStatus } from '@/services/visitStateMachine.ts';
 import type { SessionOverview } from '@/stores/market-session.store.ts';
 
+import { QueueNumber } from '../models/queue-number';
 import {
 	cancelCurrentVisit,
 	type CurrentVisit,
@@ -72,8 +73,9 @@ export class VisitStore {
 		return this._currentVisit?.status === 'registered' || this._currentVisit?.status === 'waiting';
 	}
 
-	get queuePosition(): number | null {
-		return this._currentVisit?.status === 'waiting' ? this._currentVisit.queuePosition : null;
+	/** The guest's number while they wait in line. */
+	get queueNumber(): QueueNumber | null {
+		return this._currentVisit?.status === 'waiting' ? QueueNumber.of(this._currentVisit) : null;
 	}
 
 	get guestsAhead(): number | null {
@@ -179,6 +181,7 @@ export class VisitStore {
 			marketEventId,
 			status: registration.status,
 			queuePosition: null,
+			priorityNumber: null,
 			aheadOfYou: null,
 			nowCalling: null,
 		};

@@ -106,8 +106,13 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 
 	it('returns a guest to the back of the line when asked to', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
-		queueResult([{ status: 'no_show', marketEventId: 'event-1' }]); // current visit
-		queueResult([{ position: 9 }]); // the last place in line
+		queueResult([
+			{ status: 'no_show', marketEventId: 'event-1', queuePosition: 4, priorityNumber: null },
+		]); // current visit
+		queueResult([{ id: 'event-1' }]); // the session lock
+		queueResult([
+			{ highestNumber: 9, highestPriorityNumber: null, highestOrder: 9, othersWaiting: 3 },
+		]); // the line so far
 		queueResult([{ id: 'visit-1', status: 'waiting' }]); // the update
 
 		const response = await handler(

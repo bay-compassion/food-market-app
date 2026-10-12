@@ -11,6 +11,7 @@ function job(id: string, firstName = 'Maria'): NameTagPrintJob {
 		firstName,
 		lastInitial: 'S',
 		queuePosition: 14,
+		priorityNumber: null,
 		locale: 'es',
 		requestedAt: '2026-10-05T18:00:00.000Z',
 	};
