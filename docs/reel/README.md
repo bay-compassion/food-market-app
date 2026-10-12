@@ -103,6 +103,15 @@ components in `src/components/queue/` before changing what it says a button does
 
 Where the voice comes from is the `voice` setting at the top of that file:
 
+- **`{ source: 'kokoro', name: 'af_heart', speed: 0.96, language: 'en-us' }`** — the queue desk's
+  default: a local neural voice with a conversational delivery. Install [uv](https://docs.astral.sh/uv/)
+  and [ffmpeg](https://ffmpeg.org/) once; `voice.mjs` runs `kokoro.py` with pinned speech dependencies
+  and Python 3.12, then matches the clips' loudness at -16 LUFS with a -2 dB true-peak ceiling. The first run
+  downloads the runtime and [Kokoro v1.0 model](https://github.com/thewh1teagle/kokoro-onnx)
+  (about 340 MB of model and voices) into ignored `out/kokoro/`; later runs work offline.
+  No API key or speech-service account is needed. Change `name` to another
+  [Kokoro voice](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md), or `speed` to adjust
+  the delivery. The [model weights](https://huggingface.co/hexgrad/Kokoro-82M) use Apache-2.0.
 - **`{ source: 'say', name: 'Samantha' }`** — macOS's text to speech. Quick for drafting the pace,
   but **not for a video anyone else sees**: Apple's macOS licence allows its system voices only in
   personal, non-commercial projects, and excludes recording or publishing them in a non-profit or

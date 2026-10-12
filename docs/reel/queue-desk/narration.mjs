@@ -12,11 +12,11 @@
  */
 
 /**
- * Where the voice comes from (see `voice.mjs`). The macOS voice is a draft for checking the pace;
- * Apple's licence does not allow it in a video the market hands out. Once a person has recorded
- * the lines into `queue-desk/voice/`, switch to `{ source: 'recorded', folder: 'queue-desk/voice' }`.
+ * Where the voice comes from (see `voice.mjs`). Kokoro's Heart voice runs locally, with a slightly
+ * slower pace for the tutorial. A person's recordings can still replace it by switching to
+ * `{ source: 'recorded', folder: 'queue-desk/voice' }`.
  */
-export const voice = { source: 'say', name: 'Samantha' };
+export const voice = { source: 'kokoro', name: 'af_heart', speed: 0.96, language: 'en-us' };
 
 export const lines = [
 	// Title.

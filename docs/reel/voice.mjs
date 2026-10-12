@@ -7,6 +7,8 @@
  *
  * Where the voice comes from is the narration file's `voice` setting:
  *
+ * - `{ source: 'kokoro', name, speed }` — a local neural voice, generated in one batch with
+ *   `kokoro.py`. Needs uv and ffmpeg; Python, packages and model files download on the first run.
  * - `{ source: 'recorded', folder }` — a person read the lines. Each is a file in that folder named
  *   for its id (`call-next.m4a`, or `.wav`, `.aiff`, `.mp3`); `voice.mjs` reports any missing.
  * - `{ source: 'say', name }` — macOS's own text to speech, for drafting the pace before anyone
@@ -37,6 +39,31 @@ const previous = existsSync(timingsPath)
 	: { lines: {} };
 
 mkdirSync(clips, { recursive: true });
+
+if (voice.source === 'kokoro') {
+	const cache = path.join(dir, 'out', 'kokoro');
+
+	try {
+		execFileSync(
+			'uv',
+			['run', '--managed-python', '--python', '3.12', '--script', path.join(dir, 'kokoro.py')],
+			{
+				input: JSON.stringify({ voice, lines, clips, cache }),
+				stdio: ['pipe', 'inherit', 'inherit'],
+				env: {
+					...process.env,
+					UV_CACHE_DIR: process.env.UV_CACHE_DIR ?? path.join(cache, 'uv-cache'),
+					UV_PYTHON_INSTALL_DIR: process.env.UV_PYTHON_INSTALL_DIR ?? path.join(cache, 'python'),
+				},
+			},
+		);
+	} catch (error) {
+		throw new Error(
+			'Neural narration failed. Install uv and allow downloads on the first run; see docs/reel/README.md.',
+			{ cause: error },
+		);
+	}
+}
 
 /** Seconds of audio in a file, as `afinfo` measures it. */
 function duration(file) {
@@ -100,6 +127,23 @@ for (const line of lines) {
 
 	if (voice.source === 'say') {
 		recordWithSay(line, wav);
+	} else if (voice.source === 'kokoro') {
+		// Match spoken loudness across clips, leaving headroom for the music underneath.
+		execFileSync('ffmpeg', [
+			'-hide_banner',
+			'-loglevel',
+			'error',
+			'-y',
+			'-i',
+			path.join(clips, `${line.id}.kokoro.wav`),
+			'-af',
+			'loudnorm=I=-16:TP=-2:LRA=7',
+			'-ar',
+			'44100',
+			'-c:a',
+			'pcm_s16le',
+			wav,
+		]);
 	} else if (voice.source === 'recorded') {
 		const recording = findRecording(line);
 
@@ -110,7 +154,7 @@ for (const line of lines) {
 
 		toWav(recording, wav);
 	} else {
-		throw new Error(`Unknown voice source "${voice.source}"; use "recorded" or "say".`);
+		throw new Error(`Unknown voice source "${voice.source}"; use "kokoro", "recorded" or "say".`);
 	}
 
 	timings.lines[line.id] = { text: line.text, duration: Number(duration(wav).toFixed(3)) };
@@ -120,7 +164,7 @@ if (missing.length) {
 	console.error(`No recording yet for: ${missing.join(', ')} (in ${voice.folder}/).`);
 	process.exitCode = 1;
 } else {
-	writeFileSync(timingsPath, JSON.stringify(timings, null, '\t') + '\n');
+	writeFileSync(timingsPath, JSON.stringify(timings, null, 2) + '\n');
 	const total = Object.values(timings.lines).reduce((sum, line) => sum + line.duration, 0);
 	const changed = lines.filter(
 		(line) => previous.lines[line.id]?.duration !== timings.lines[line.id].duration,
