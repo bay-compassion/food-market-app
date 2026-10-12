@@ -450,6 +450,10 @@
 		const fmt = (sec) => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
 
 		function syncControls() {
+			document.body.classList.toggle(
+				'watch-title',
+				document.body.classList.contains('watch') && tl.paused() && tl.time() === 0,
+			);
 			scrub.value = String(Math.round((tl.time() / END) * 1000));
 			clock.textContent = fmt(tl.time());
 			const text = tl.paused() || tl.progress() === 1 ? 'Play' : 'Pause';
@@ -527,7 +531,10 @@
 			syncControls();
 			stopAudio();
 
-			if (!document.body.classList.contains('record')) {
+			if (
+				!document.body.classList.contains('record') &&
+				!document.body.classList.contains('watch')
+			) {
 				gsap.delayedCall(3, () => tl.restart());
 			}
 		});
@@ -685,9 +692,14 @@
 		}
 
 		const record = location.hash === '#record';
+		const watch = location.hash === '#watch';
 
 		if (record) {
 			document.body.classList.add('record');
+		}
+
+		if (watch) {
+			document.body.classList.add('watch');
 		}
 		window.reel = {
 			tl,
@@ -701,6 +713,7 @@
 			soundtrackReady,
 		};
 		render();
+		syncControls();
 		const dev = location.hash === '#dev';
 
 		if (dev) {
@@ -717,7 +730,7 @@
 			history.replaceState(null, '', '#dev');
 			void startDevMode();
 		});
-		const start = () => (record || dev ? null : tl.play());
+		const start = () => (record || dev || watch ? null : tl.play());
 
 		void (document.fonts ? document.fonts.ready : Promise.resolve()).then(start);
 	}

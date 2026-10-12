@@ -1,39 +1,25 @@
 /**
- * Publishes the reel to GitHub Pages: a landing page with the video, the interactive page, a
- * poster frame, and the logos, force-pushed as a single commit to the `gh-pages` branch.
+ * Builds and assembles the GSAP presentations for GitHub Pages. The market day reel stays at
+ * the root; the volunteer guide lives at /queue-desk/. No capture, transcoding or git push.
  *
- *   node docs/reel/publish.mjs [--dry-run] ['Co-Authored-By: …']
+ *   node docs/reel/publish.mjs
  *
- * `--dry-run` assembles the site in `out/site/` to look at, without pushing.
- *
- * Run it after building, capturing, and encoding the web copy (see the README). The branch is
- * replaced on every publish rather than added to, so old renders never pile up in git history,
- * and it shares no history with `main`. The site is public.
+ * GitHub Actions uploads out/site as a Pages artifact and deploys it. --dry-run remains an
+ * alias for local previews; this script always assembles files without publishing them.
  */
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { videos } from './videos.mjs';
 
 const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 const site = here('./out/site');
-/** The moment the poster frame shows: a number being called on every screen at once. */
-const posterSeconds = 25.5;
-const fps = 30;
-const git = (args, cwd = here('../..')) =>
-	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+const git = (args) => execFileSync('git', args, { cwd: here('../..'), encoding: 'utf8' }).trim();
 
-const inputs = {
-	page: here('./out/market-day-reel.html'),
-	video: here('./out/market-day-reel-web.mp4'),
-	frame: here(
-		`./out/market-day-reel/frames/${String(Math.round(posterSeconds * fps)).padStart(5, '0')}.jpg`,
-	),
-};
-
-for (const [name, path] of Object.entries(inputs)) {
-	if (!existsSync(path)) {
-		throw new Error(`Missing the ${name} (${path}); build, capture, and encode first.`);
-	}
+if (process.argv.slice(2).some((arg) => arg !== '--dry-run')) {
+	throw new Error('Usage: node docs/reel/publish.mjs [--dry-run]');
 }
 
 const remote = git(['remote', 'get-url', 'origin']);
@@ -43,41 +29,91 @@ if (!owner || !repo) {
 	throw new Error(`Cannot tell the GitHub repository from the origin remote: ${remote}`);
 }
 
-const base = `https://${owner}.github.io/${repo}/`;
+const base =
+	(process.env.PAGES_BASE_URL ?? `https://${owner}.github.io/${repo}`).replace(/\/$/, '') + '/';
+const source = git(['rev-parse', 'HEAD']);
+const branch = git(['branch', '--show-current']) || process.env.GITHUB_REF_NAME || null;
+const dirty = Boolean(git(['status', '--porcelain']));
+const published = Object.entries(videos).filter(([, video]) => video.publish);
+
+// The committed soundtracks and narration timings are the audio source in CI. Reject stale
+// narration rather than publishing pictures that no longer match what the voice says.
+for (const [name] of published) {
+	execFileSync(process.execPath, [here('./build.mjs'), name, '--strict'], { stdio: 'inherit' });
+}
+
+const escape = (value) =>
+	String(value).replace(
+		/[&<>"']/g,
+		(character) =>
+			({
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#39;',
+			})[character],
+	);
+const template = readFileSync(here('./site.html'), 'utf8');
 
 rmSync(site, { recursive: true, force: true });
 mkdirSync(site, { recursive: true });
-writeFileSync(
-	`${site}/index.html`,
-	readFileSync(here('./site.html'), 'utf8').replaceAll('__BASE__', base),
-);
-copyFileSync(inputs.page, `${site}/reel.html`);
-copyFileSync(inputs.video, `${site}/market-day-reel.mp4`);
-copyFileSync(here('../../public/wordmark.png'), `${site}/wordmark.png`);
-copyFileSync(here('../../public/bay-compassion-logo.png'), `${site}/logo.png`);
-execFileSync('sips', ['-Z', '1280', inputs.frame, '--out', `${site}/poster.jpg`], {
-	stdio: 'ignore',
-});
-// Plain files only: tells Pages not to run them through Jekyll.
-writeFileSync(`${site}/.nojekyll`, '');
 
-const args = process.argv.slice(2);
+for (const [name, video] of published) {
+	const presentation = video.publish;
+	const destination = path.join(site, presentation.folder);
 
-if (args.includes('--dry-run')) {
-	console.log(`Assembled out/site for ${base}; nothing pushed.`);
-	process.exit(0);
+	mkdirSync(destination, { recursive: true });
+	const values = {
+		BASE: base + (presentation.folder ? presentation.folder + '/' : ''),
+		TITLE: presentation.title,
+		HEADING: presentation.heading,
+		SUMMARY: presentation.summary,
+		DESCRIPTION: presentation.description,
+		SOUND: presentation.sound,
+		INTERACTIVE: presentation.interactive,
+	};
+	const links = published
+		.filter(([other]) => other !== name)
+		.map(([, other]) => {
+			const relative =
+				path.relative(presentation.folder || '.', other.publish.folder || '.') || '.';
+
+			return `<a href="${escape(relative + '/index.html')}">${escape(other.publish.title)}</a>`;
+		})
+		.join('\n');
+	const page = template.replace(/__([A-Z]+(?:_[A-Z]+)*)__/g, (token, key) => {
+		if (key === 'OTHER_VIDEOS') {
+			return links;
+		}
+
+		if (!(key in values)) {
+			throw new Error(`Unknown site placeholder: ${token}`);
+		}
+
+		return escape(values[key]);
+	});
+
+	writeFileSync(path.join(destination, 'index.html'), page);
+	copyFileSync(here(`./out/${name}.html`), path.join(destination, presentation.interactive));
+	copyFileSync(here('../../public/wordmark.png'), path.join(destination, 'wordmark.png'));
+	copyFileSync(here('../../public/bay-compassion-logo.png'), path.join(destination, 'logo.png'));
 }
 
-const source = git(['rev-parse', '--short', 'HEAD']);
-
-git(['init', '--quiet', '--initial-branch=gh-pages'], site);
-git(['add', '--all'], site);
-// Any arguments are added to the commit message as trailers, e.g. a Co-Authored-By line.
-const trailers = args.flatMap((line) => ['--trailer', line]);
-
-git(
-	['commit', '--quiet', '--message', `Publish the market day reel from ${source}`, ...trailers],
-	site,
+writeFileSync(`${site}/.nojekyll`, '');
+writeFileSync(
+	`${site}/source.json`,
+	JSON.stringify(
+		{
+			commit: source,
+			branch,
+			dirty,
+			url: `https://github.com/${owner}/${repo}/commit/${source}`,
+		},
+		null,
+		2,
+	) + '\n',
 );
-git(['push', '--force', remote, 'gh-pages'], site);
-console.log(`Pushed gh-pages; the reel will be at ${base} once Pages has deployed it.`);
+console.log(
+	`Assembled out/site for ${base}; no files pushed.${dirty ? ' Source changes are uncommitted.' : ''}`,
+);

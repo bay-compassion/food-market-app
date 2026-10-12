@@ -137,6 +137,25 @@ body.record #controls {
 	text-align: end;
 }
 
+/* Published presentations start paused and keep playback controls usable on narrow phones. */
+body.watch-title #title > * {
+	opacity: 1 !important;
+	transform: none !important;
+}
+body.watch #controls {
+	flex-wrap: wrap;
+}
+body.watch #devOpen {
+	display: none;
+}
+body.watch #scrub {
+	order: 1;
+	flex-basis: calc(100% - 6ch - 8px);
+}
+body.watch #clock {
+	order: 2;
+}
+
 /* ---------- captions ---------- */
 #cap {
 	position: absolute;

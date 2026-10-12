@@ -20,6 +20,14 @@ import { videoFromArgs } from './videos.mjs';
 
 const here = (path) => new URL(path, import.meta.url);
 const video = videoFromArgs();
+const strict = process.argv.includes('--strict');
+
+if (strict && !existsSync(here('./' + video.soundtrack))) {
+	throw new Error(
+		`Missing ${video.soundtrack}; render and commit the soundtrack before publishing.`,
+	);
+}
+
 const { translations } = await import(here('../../src/locales.ts'));
 const { adminTranslations } = await import(here('../../src/adminLocales.ts'));
 
@@ -113,15 +121,26 @@ async function narration() {
 		return [];
 	}
 
-	const { lines } = await import(here('./' + video.narration));
+	const { lines, voice } = await import(here('./' + video.narration));
 	const timings = existsSync(here('./' + video.timings))
-		? JSON.parse(readFileSync(here('./' + video.timings), 'utf8')).lines
-		: {};
+		? JSON.parse(readFileSync(here('./' + video.timings), 'utf8'))
+		: { lines: {} };
+
+	if (strict && !Object.entries(voice).every(([key, value]) => timings.voice?.[key] === value)) {
+		throw new Error(
+			`The recorded voice differs from ${video.narration}; render and commit the audio first.`,
+		);
+	}
+
 	const stale = [];
 	const result = lines.map((line) => {
-		const recorded = timings[line.id];
+		const recorded = timings.lines[line.id];
 
-		if (recorded?.text === line.text) {
+		if (
+			recorded?.text === line.text &&
+			Number.isFinite(recorded.duration) &&
+			recorded.duration > 0
+		) {
 			return { ...line, duration: recorded.duration };
 		}
 
@@ -131,6 +150,12 @@ async function narration() {
 	});
 
 	if (stale.length) {
+		if (strict) {
+			throw new Error(
+				`Narration needs recording for: ${stale.join(', ')}. Render and commit the audio first.`,
+			);
+		}
+
 		console.warn(`Not yet recorded, so timed on an estimate: ${stale.join(', ')}.`);
 		console.warn(`Run: node docs/reel/voice.mjs ${video.name}`);
 	}

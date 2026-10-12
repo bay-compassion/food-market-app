@@ -3,25 +3,13 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Market Day Reel</title>
-		<meta
-			name="description"
-			content="A one-minute look at how The Bay Compassion's community food market runs its line."
-		/>
-		<meta property="og:type" content="video.other" />
-		<meta property="og:title" content="Market Day Reel · The Bay Compassion" />
-		<meta
-			property="og:description"
-			content="Guests register on their own phones in eight languages, a lottery gives everyone the same chance, and volunteers call each number on a room display and a phone at the desk."
-		/>
+		<title>__TITLE__</title>
+		<meta name="description" content="__SUMMARY__" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="__TITLE__ · The Bay Compassion" />
+		<meta property="og:description" content="__DESCRIPTION__" />
 		<meta property="og:url" content="__BASE__" />
-		<meta property="og:image" content="__BASE__poster.jpg" />
-		<meta property="og:image:width" content="1280" />
-		<meta property="og:image:height" content="720" />
-		<meta property="og:video" content="__BASE__market-day-reel.mp4" />
-		<meta property="og:video:type" content="video/mp4" />
-		<meta property="og:video:width" content="1920" />
-		<meta property="og:video:height" content="1080" />
+		<meta property="og:image" content="__BASE__logo.png" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<link rel="icon" href="logo.png" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,7 +18,7 @@
 			href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700&family=Roboto:wght@400;500&display=swap"
 		/>
 		<style>
-			/* One dark page in the market's brand teal, the video as the only thing that matters. */
+			/* The presentation plays directly from its GSAP page, with its own audio and controls. */
 			:root {
 				--brand: #023940;
 				--brand-dark: #012a2f;
@@ -87,11 +75,19 @@
 				text-wrap: balance;
 			}
 
-			video {
+			.player {
+				position: relative;
+				aspect-ratio: 16 / 9;
+				margin-bottom: 136px;
+			}
+
+			iframe {
+				position: absolute;
+				inset: 0;
 				display: block;
 				width: 100%;
-				max-width: 100%;
-				aspect-ratio: 16 / 9;
+				height: calc(100% + 136px);
+				border: 0;
 				border-radius: 14px;
 				background: var(--night);
 				box-shadow: 0 30px 80px rgb(0 0 0 / 45%);
@@ -150,27 +146,21 @@
 		<main>
 			<header>
 				<img class="wordmark" src="wordmark.png" alt="The Bay Compassion" />
-				<h1>A simpler way to welcome every neighbor.</h1>
+				<h1>__HEADING__</h1>
 			</header>
-			<video controls playsinline preload="metadata" poster="poster.jpg">
-				<source src="market-day-reel.mp4" type="video/mp4" />
-				<a href="market-day-reel.mp4">Download the video</a>
-			</video>
+			<div class="player">
+				<iframe src="__INTERACTIVE__#watch" title="__TITLE__" allow="autoplay"></iframe>
+			</div>
 			<section class="about">
+				<p>__SUMMARY__ __DESCRIPTION__</p>
 				<p>
-					A one-minute look at how The Bay Compassion's community food market runs its line. Guests
-					register on their own phones in eight languages, and the day's lottery gives everyone the
-					same chance. Volunteers then call each number from a phone at the desk, and it lights up
-					on the room display and on the guest's phone at the same moment.
-				</p>
-				<p>
-					The screens are simplified recreations of the real app, with fictional guests. Turn the
-					sound on for the soundtrack.
+					The screens are simplified recreations of the real app, with fictional guests. __SOUND__
 				</p>
 			</section>
 			<nav class="links" aria-label="More">
-				<a href="reel.html">Interactive version</a>
-				<a href="market-day-reel.mp4" download>Download video</a>
+				<a href="__INTERACTIVE__#watch">Open presentation</a>
+				<a href="__INTERACTIVE__" download>Download presentation</a>
+				__OTHER_VIDEOS__
 			</nav>
 		</main>
 	</body>

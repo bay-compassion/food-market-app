@@ -12,6 +12,16 @@ export const videos = {
 		source: 'reel.src.html',
 		soundtrack: 'soundtrack.m4a',
 		arrangement: 'music/arrangement.cjs',
+		publish: {
+			folder: '',
+			interactive: 'reel.html',
+			title: 'Market Day Reel',
+			heading: 'A simpler way to welcome every neighbor.',
+			summary: "A one-minute look at how The Bay Compassion's community food market runs its line.",
+			description:
+				"Guests register on their own phones in eight languages, and the day's lottery gives everyone the same chance. Volunteers then call each number from a phone at the desk, and it lights up on the room display and on the guest's phone at the same moment.",
+			sound: 'Turn the sound on for the soundtrack.',
+		},
 	},
 	'queue-desk': {
 		source: 'queue-desk/queue-desk.src.html',
@@ -19,6 +29,16 @@ export const videos = {
 		arrangement: 'queue-desk/arrangement.cjs',
 		narration: 'queue-desk/narration.mjs',
 		timings: 'queue-desk/narration.timings.json',
+		publish: {
+			folder: 'queue-desk',
+			interactive: 'queue-desk.html',
+			title: 'Queue Desk Guide',
+			heading: 'A guide to the queue desk.',
+			summary: 'A narrated guide for volunteers welcoming guests on market day.',
+			description:
+				'Learn how to call guests, print name tags, keep the line moving, handle late arrivals, add a guest, and close the session.',
+			sound: 'Turn the sound on for the narration. The voice is AI-generated.',
+		},
 	},
 };
 

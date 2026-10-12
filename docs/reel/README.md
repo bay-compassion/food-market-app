@@ -1,4 +1,4 @@
-# Videos
+# Presentations and video exports
 
 Motion pieces showing the app at work, built from its own design tokens and translations:
 
@@ -8,9 +8,10 @@ Motion pieces showing the app at work, built from its own design tokens and tran
   the volunteer running `/queue`: calling, name tags, serving, late arrivals, no-shows, adding a
   guest by hand, and closing the session.
 
-Each video is a single HTML page animated with [GSAP](https://gsap.com). The video is that page
-photographed one frame at a time, so editing the HTML and re-rendering gives a new video with the
-same timing. The screens are simplified recreations of the real ones.
+Each presentation is an HTML page animated with [GSAP](https://gsap.com), with its soundtrack
+embedded. GitHub Pages plays that page directly: publishing needs no frame capture or video
+encoding. MP4 exports are still available by photographing the page one frame at a time.
+The screens are simplified recreations of the real ones.
 
 ## Files
 
@@ -125,21 +126,49 @@ The market day reel has no narration.
 
 ## Publishing
 
-The reel is hosted on GitHub Pages at <https://bay-compassion.github.io/food-market-app/>: a
-landing page (`site.html`) with the video, the interactive page at `reel.html`, and a poster
-frame. After rendering, encode the web copy and publish:
+GitHub Pages hosts the market day reel at
+<https://bay-compassion.github.io/food-market-app/> and the queue desk guide at
+<https://bay-compassion.github.io/food-market-app/queue-desk/>. Each landing page embeds the
+GSAP presentation, with playback, restart, sound, and seek controls. It starts paused and
+plays once. The pages link to each other and offer the presentation as a downloadable HTML file.
+
+The **Publish presentations** workflow in `.github/workflows/publish-presentations.yml` builds
+and deploys automatically when relevant files change on `main`. Commit and push the source,
+then merge the change; there is no separate `gh-pages` push. It uses GitHub's Pages artifact
+and deployment actions, with the standard workflow token and no extra secrets. Pages must use
+**GitHub Actions** as its publishing source, and the `github-pages` environment must allow `main`.
+
+Once the workflow is on `main`, it can also be started in Actions → Publish presentations →
+Run workflow. Selecting `main` publishes; selecting another branch builds an artifact for
+review and skips deployment. Runs are serialized to prevent overlapping site deployments.
+
+For a local preview:
 
 ```bash
-docs/reel/out/encode docs/reel/out/market-day-reel/frames docs/reel/soundtrack.m4a docs/reel/out/market-day-reel-web.mp4 2900000
-node docs/reel/publish.mjs --dry-run
 node docs/reel/publish.mjs
 ```
 
-`--dry-run` assembles the site in `out/site/` to look at first. A real publish force-pushes it as
-a single commit to the `gh-pages` branch, which shares no history with `main` and is replaced each
-time, so old renders never accumulate. Pages deploys it within a minute or two. The site is public.
+This builds both presentations and assembles `out/site/`. `--dry-run` is an equivalent alias;
+the script always writes local files without pushing. No MP4, poster frames, Chromium, ffmpeg,
+Swift, or GarageBand installation is needed to build the site. The deployed `source.json`
+records the source commit and branch.
 
-The queue desk video is for volunteers and is not published there.
+The workflow uses the committed mixed soundtracks and narration timings. A changed script or
+voice setting must be recorded and mixed locally before committing: strict publishing rejects
+stale or missing narration timings and missing soundtracks. Updating narration does not require
+an MP4 export:
+
+```bash
+node docs/reel/voice.mjs queue-desk
+node docs/reel/build.mjs queue-desk
+node docs/reel/music/mix.cjs queue-desk
+node docs/reel/publish.mjs
+```
+
+Commit the narration source, measured timings, and mixed soundtrack together. The generated
+HTML stays in ignored `out/` and is rebuilt by Actions. Both presentations, including the
+volunteer guide, are public. The HTML uses the existing GSAP and Google Fonts CDN resources;
+its audio, copy, and logos are embedded.
 
 ## The soundtrack
 
