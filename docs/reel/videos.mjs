@@ -7,18 +7,36 @@
  * - `narration`, when set, is the voiceover: the lines `voice.mjs` records, and the measured length
  *   of each (`timings`), which the page reads at build time to set its pace.
  */
+const guestGuide = {
+	source: 'guest-guide/guest-guide.src.html',
+	soundtrack: 'guest-guide/soundtrack.m4a',
+	arrangement: 'guest-guide/arrangement.cjs',
+	narration: 'guest-guide/narration.mjs',
+	timings: 'guest-guide/narration.timings.json',
+	publish: {
+		folder: 'guest-guide',
+		interactive: 'guest-guide.html',
+		guest: true,
+	},
+};
+
 export const videos = {
-	'guest-guide': {
-		source: 'guest-guide/guest-guide.src.html',
-		soundtrack: 'guest-guide/soundtrack.m4a',
-		arrangement: 'guest-guide/arrangement.cjs',
-		narration: 'guest-guide/narration.mjs',
-		timings: 'guest-guide/narration.timings.json',
-		publish: {
-			folder: 'guest-guide',
-			interactive: 'guest-guide.html',
-			guest: true,
-		},
+	'guest-guide': guestGuide,
+	'guest-guide-zh': {
+		...guestGuide,
+		locale: 'zh',
+		soundtrack: 'guest-guide/zh/soundtrack.m4a',
+		narration: 'guest-guide/zh/narration.mjs',
+		timings: 'guest-guide/zh/narration.timings.json',
+		publish: { ...guestGuide.publish, folder: 'guest-guide/zh' },
+	},
+	'guest-guide-es': {
+		...guestGuide,
+		locale: 'es',
+		soundtrack: 'guest-guide/es/soundtrack.m4a',
+		narration: 'guest-guide/es/narration.mjs',
+		timings: 'guest-guide/es/narration.timings.json',
+		publish: { ...guestGuide.publish, folder: 'guest-guide/es' },
 	},
 	'market-day-reel': {
 		source: 'reel.src.html',

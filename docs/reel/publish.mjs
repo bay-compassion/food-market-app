@@ -57,6 +57,7 @@ const escape = (value) =>
 			})[character],
 	);
 const template = readFileSync(here('./site.html'), 'utf8');
+const narrationSoundKey = { en: 'sound', es: 'soundSpanish', zh: 'soundChinese' };
 
 rmSync(site, { recursive: true, force: true });
 mkdirSync(site, { recursive: true });
@@ -64,7 +65,7 @@ mkdirSync(site, { recursive: true });
 for (const [name, video] of published) {
 	const presentation = {
 		...video.publish,
-		...(video.publish.guest ? translations.en.guestView.presentation : {}),
+		...(video.publish.guest ? translations[video.locale ?? 'en'].guestView.presentation : {}),
 	};
 	const destination = path.join(site, presentation.folder);
 
@@ -75,7 +76,9 @@ for (const [name, video] of published) {
 		HEADING: presentation.heading,
 		SUMMARY: presentation.summary,
 		DESCRIPTION: presentation.description,
-		SOUND: presentation.sound,
+		SOUND: presentation[narrationSoundKey[video.locale ?? 'en']],
+		SCREENS: presentation.screens ?? translations.en.guestView.presentation.screens,
+		LOCALE: video.locale ?? 'en',
 		INTERACTIVE: presentation.interactive,
 		PLAYER_CLASS: presentation.guest ? 'guest-player' : '',
 		OPEN: presentation.open ?? 'Open presentation',
@@ -89,7 +92,7 @@ for (const [name, video] of published) {
 				path.relative(presentation.folder || '.', other.publish.folder || '.') || '.';
 
 			const title = other.publish.guest
-				? translations.en.guestView.presentation.title
+				? translations[other.locale ?? 'en'].guestView.presentation.title
 				: other.publish.title;
 
 			return `<a href="${escape(relative + '/index.html')}">${escape(title)}</a>`;

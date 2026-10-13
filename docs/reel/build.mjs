@@ -190,6 +190,7 @@ const soundtrack = existsSync(here('./' + video.soundtrack))
 	: '';
 const stageScript = readFileSync(here('./stage.js'), 'utf8')
 	.replace('__STRINGS__', JSON.stringify(strings))
+	.replace('__LOCALE__', video.locale ?? 'en')
 	.replace('__DESK__', JSON.stringify(deskStrings(adminTranslations.en, translations.en)))
 	.replace('__LOGO__', png('../../public/bay-compassion-logo.png'))
 	.replace('__SOUNDTRACK__', soundtrack);
@@ -198,6 +199,7 @@ const stageStyles = readFileSync(here('./stage.css'), 'utf8').replace(/\s*\n\s*/
 
 const page = readFileSync(here('./' + video.source), 'utf8')
 	.replace('__STAGE_CSS__', () => stageStyles)
+	.replace('__TITLE__', translations[video.locale ?? 'en'].guestView.presentation.title)
 	.replaceAll('__WORDMARK__', png('../../public/wordmark.png'))
 	.replace('__NARRATION__', JSON.stringify(await narration()))
 	.replace('__STAGE_JS__', () => stageScript);
@@ -207,7 +209,9 @@ writeFileSync(here(`./out/${video.name}.artifact.html`), page);
 // The shell goes on the page's first line, so the source's line numbers still hold.
 writeFileSync(
 	here(`./out/${video.name}.html`),
-	'<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+	'<!doctype html><html lang="' +
+		(video.locale ?? 'en') +
+		'"><head><meta charset="utf-8">' +
 		'<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
 		'</head><body>' +
 		page +

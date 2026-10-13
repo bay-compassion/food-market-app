@@ -1,0 +1,106 @@
+{
+  "voice": {
+    "source": "kokoro",
+    "name": "ef_dora",
+    "speed": 0.96,
+    "language": "es"
+  },
+  "lines": {
+    "welcome": {
+      "text": "Le damos la bienvenida a The Bay Compassion. Esta breve guía le explica cómo inscribirse y seguir su visita desde su teléfono.",
+      "duration": 7.635
+    },
+    "open": {
+      "text": "Escanee el código del mercado para abrir la página en su teléfono. Puede inscribirse desde cualquier lugar, incluso desde casa.",
+      "duration": 7.549
+    },
+    "language": {
+      "text": "Elija su idioma. La aplicación lo recuerda, y puede cambiarlo en la parte superior de la pantalla cuando quiera.",
+      "duration": 6.59
+    },
+    "closed": {
+      "text": "Si el mercado está cerrado, vuelva el sábado a las diez y media de la mañana.",
+      "duration": 4.517
+    },
+    "window": {
+      "text": "La inscripción permanece abierta durante quince minutos. El reloj muestra cuánto tiempo queda. No hay prisa. Inscribirse al principio no cambia sus posibilidades.",
+      "duration": 9.938
+    },
+    "identity": {
+      "text": "Escriba su nombre y apellido, y su número de celular. Por favor, use su nombre completo, en lugar de solo sus iniciales.",
+      "duration": 7.417
+    },
+    "household": {
+      "text": "Responda las preguntas sobre su hogar. Inclúyase en el total e indique para cuántos niños y personas mayores está comprando.",
+      "duration": 7.517
+    },
+    "returning": {
+      "text": "Si este teléfono ya le reconoce, su nombre y número de teléfono están guardados. Revise los datos de su hogar para la visita de hoy.",
+      "duration": 7.913
+    },
+    "join": {
+      "text": "Cuando termine, toque «Unirse al sorteo».",
+      "duration": 2.577
+    },
+    "registered": {
+      "text": "«¡Está participando en el sorteo!» confirma su inscripción. Si sale seleccionado, recibirá su número después del sorteo.",
+      "duration": 7.329
+    },
+    "texts": {
+      "text": "Los mensajes de texto son opcionales. Para recibirlos, toque «Enviarme novedades por SMS». Luego lea y acepte el consentimiento y toque «Activar actualizaciones por mensaje de texto».",
+      "duration": 11.453
+    },
+    "draw": {
+      "text": "El sorteo se realiza a las diez y cuarenta y cinco. Esta página se actualiza sola y muestra su resultado. Todos tienen la misma oportunidad, y no todos obtienen un número.",
+      "duration": 10.44
+    },
+    "notSelected": {
+      "text": "Si dice «No fue seleccionado hoy», puede participar de nuevo el próximo sábado a las diez y media. Sentimos no poder ofrecerle un lugar hoy.",
+      "duration": 8.264
+    },
+    "number": {
+      "text": "Si sale seleccionado, verá «¡Ya está en la lista!» y su número. El número de Maya es el cuatro. Venga al mercado con el teléfono que usó para inscribirse.",
+      "duration": 9.094
+    },
+    "line": {
+      "text": "Mantenga esta página abierta para seguir la fila. Su número permanece arriba. Debajo, «Llamando ahora» muestra los números que se están llamando en la mesa de registro.",
+      "duration": 9.884
+    },
+    "display": {
+      "text": "La pantalla del salón muestra los mismos números. Mire su teléfono para saber cuándo es su turno, aunque la pantalla del salón avance a otros números.",
+      "duration": 8.978
+    },
+    "called": {
+      "text": "Las compras empiezan a las once y media. Cuando le llamen, su teléfono dirá «Es su turno» y su número se pondrá verde.",
+      "duration": 6.899
+    },
+    "checkin": {
+      "text": "Acérquese a la mesa de registro ahora. Muestre su número en el teléfono que usó para inscribirse. No aceptamos capturas de pantalla.",
+      "duration": 7.857
+    },
+    "late": {
+      "text": "Si tarda un poco más, su número se vuelve amarillo gradualmente. Por favor, acérquese a la mesa de registro. El color le recuerda que otras personas están esperando.",
+      "duration": 10.095
+    },
+    "missed": {
+      "text": "Si su pantalla dice «No lo encontramos» y todavía está aquí, hable con un miembro del equipo del mercado en la mesa de registro.",
+      "duration": 7.293
+    },
+    "finished": {
+      "text": "Después de pasar por la mesa de registro, su teléfono dirá «Gracias por venir». Su visita ha terminado.",
+      "duration": 6.225
+    },
+    "missedWindow": {
+      "text": "Si no pudo inscribirse a tiempo, la página explica que el registro ha cerrado. Vuelva el próximo sábado a las diez y media.",
+      "duration": 7.165
+    },
+    "underway": {
+      "text": "Si el mercado ya está en marcha y usted todavía no ha pasado por la mesa de registro, hable con un miembro del equipo del mercado.",
+      "duration": 7.729
+    },
+    "help": {
+      "text": "¿Necesita recordar los pasos? Toque «Cómo funciona» o pregunte a cualquier voluntario. Gracias por acompañarnos.",
+      "duration": 6.899
+    }
+  }
+}

@@ -150,7 +150,7 @@ For a local preview:
 node docs/reel/publish.mjs
 ```
 
-This builds all three presentations and assembles `out/site/`. `--dry-run` is an equivalent alias;
+This builds the presentations and their narrated language versions and assembles `out/site/`. `--dry-run` is an equivalent alias;
 the script always writes local files without pushing. No MP4, poster frames, Chromium, ffmpeg,
 Swift, or GarageBand installation is needed to build the site. The deployed `source.json`
 records the source commit and branch.
@@ -239,7 +239,7 @@ node docs/reel/publish.mjs
 node docs/reel/verify.cjs
 ```
 
-`verify.cjs` checks embedded audio length and playback controls for all three presentations,
+`verify.cjs` checks embedded audio length and playback controls for every registered presentation,
 every guest narration scene in all eight languages at 320, 390, 600 and 1280 pixels, RTL consent,
 and Dev mode. It writes portrait and landscape stills to `out/guest-guide/review/` for visual review.
 It needs local Chromium, but it is a local review step, never a publishing dependency.
@@ -248,3 +248,48 @@ The existing **Publish presentations** workflow automatically includes every reg
 `main` it deploys the guest guide at `/guest-guide/`, alongside `/` and `/queue-desk/`, with links
 among all three. Publishing still uses only committed timings and mixed audio and builds HTML;
 it requires no frame capture, transcoding, speech runtime, or music library on the Actions runner.
+
+### Spanish narration
+
+`guest-guide-es` reuses the guest guide's scene source and music arrangement, with a separate
+Spanish script (`guest-guide/es/narration.mjs`), measured timings, and mixed soundtrack. It starts
+with Spanish screens, captions, and controls. Kokoro's Spanish Dora voice (`ef_dora`, `es`) uses
+the same 0.96 speed and audio normalization as Heart. Each recording drives its own cues, so the
+Spanish guide's longer sentences retime the visuals and the music together. The app's Spanish
+button and status labels are inserted into the script directly from `src/locales.ts`.
+
+```bash
+node docs/reel/voice.mjs guest-guide-es
+node docs/reel/build.mjs guest-guide-es
+node docs/reel/music/mix.cjs guest-guide-es
+node docs/reel/publish.mjs
+node docs/reel/verify.cjs guest-guide-es
+```
+
+The local site includes `/guest-guide/es/`; its Spanish landing page identifies the narration as
+Spanish. The language picker changes the screens and captions; each guide's audio stays in the
+language named on its landing page. The existing Pages workflow can publish both versions without
+recording speech or exporting video on the runner. The browser review takes Spanish scene timings
+and saves its stills separately under `out/guest-guide-es/review/`.
+
+### Mandarin narration
+
+`guest-guide-zh` uses the same scenes and music, with Simplified Chinese screens, captions, and
+controls. Its script (`guest-guide/zh/narration.mjs`) uses the app's Chinese labels. Kokoro's
+Mandarin Xiaoxiao voice (`zf_xiaoxiao`, `zh`) runs at 0.96 speed with the shared audio treatment.
+The recorder uses pinned Misaki Chinese pronunciation for the v1.0 model, preserving Mandarin
+tones and phonemizing English proper names separately. This dependency is used only for local
+recording; Pages builds use the committed soundtrack and measured timings.
+
+```bash
+node docs/reel/voice.mjs guest-guide-zh
+node docs/reel/build.mjs guest-guide-zh
+node docs/reel/music/mix.cjs guest-guide-zh
+node docs/reel/publish.mjs
+node docs/reel/verify.cjs guest-guide-zh
+```
+
+The local preview is `/guest-guide/zh/`. Its landing page identifies the narration as Mandarin;
+the language picker changes the screens and captions while the audio remains Mandarin. Browser
+review uses the Mandarin recording's scene timings and writes stills to
+`out/guest-guide-zh/review/`. English and Spanish retain their own audio and timing files.
