@@ -228,7 +228,8 @@ export class AdminStore {
 	/** Saves a guest's pronunciation and notes, then rereads the line so every ticket shows them. */
 	async updateGuestDetails(guestId: string, details: GuestDetails): Promise<void> {
 		await this.api.updateGuestDetails(guestId, details);
-		await this.refreshSessionGuests();
+		// The save has landed; a failed reread must not report it as failed and invite a retry.
+		await this.refreshSessionGuests().catch(() => {});
 	}
 
 	/** One visit's history. Read on demand rather than held, since only an open ticket shows it. */

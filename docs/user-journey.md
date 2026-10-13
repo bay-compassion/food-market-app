@@ -99,8 +99,8 @@ flowchart TD
     hasVisit -- no --> canRegister{Registration open?}
 
     canRegister -- yes --> cachedIdentity{Cached local<br/>name and phone?}
-    cachedIdentity -- no --> combinedForm[Sign-up fields — name, optional<br/>pronunciation, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
-    cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card and<br/>lottery-entry fields only:<br/>age range, household size,<br/>children/seniors]
+    cachedIdentity -- no --> combinedForm[Sign-up fields — name, an offer<br/>to add a pronunciation, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
+    cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card,<br/>an offer to add a pronunciation,<br/>and lottery-entry fields:<br/>age range, household size,<br/>children/seniors]
     canRegister -- no --> nonOpenIdentity[Show identity card:<br/>saved identity or offer to save information]
     nonOpenIdentity -. "Save my information" button .-> signupRoute
     nonOpenIdentity --> phase{Which active phase is<br/>the session in?}
@@ -110,7 +110,7 @@ flowchart TD
     signupRoute([Guest visits /signup]) --> alreadyIdentified{Already has a<br/>device token?}
     alreadyIdentified -- yes --> redirectHome[Redirect to /]
     redirectHome --> saved
-    alreadyIdentified -- no --> signupOnlyForm[Sign-up form:<br/>name, optional pronunciation,<br/>and phone only —<br/>no session or household data]
+    alreadyIdentified -- no --> signupOnlyForm[Sign-up form:<br/>name, an offer to add a<br/>pronunciation, and phone only —<br/>no session or household data]
     signupOnlyForm --> signupSubmit["POST /api/guest-information<br/>(creates/updates the guest,<br/>no visit)"]
     signupSubmit --> saveSignupIdentity[Save entered name, phone,<br/>and pronunciation if changed,<br/>and any issued device token]
     saveSignupIdentity --> signupSuccess([Show "Your information is saved"<br/>on /signup])

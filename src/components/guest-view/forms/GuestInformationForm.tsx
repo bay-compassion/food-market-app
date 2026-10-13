@@ -5,6 +5,7 @@ import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { PhoneField } from '../../PhoneField';
 import { FormSection } from './FormSection';
+import { PronunciationField } from './PronunciationField';
 
 /**
  * Who the guest is: the fields every registration needs, whichever flow it came through.
@@ -31,6 +32,7 @@ export const GuestInformationForm = observer(function GuestInformationForm() {
 				required
 				autoComplete="given-name"
 			/>
+			<PronunciationField />
 			<TextField
 				label={t.lastName}
 				value={registration.guest.lastName}
@@ -38,15 +40,6 @@ export const GuestInformationForm = observer(function GuestInformationForm() {
 				onBlur={(event) => registration.updateGuest({ lastName: event.target.value.trim() })}
 				required
 				autoComplete="family-name"
-			/>
-			<TextField
-				label={t.guestView.forms.pronunciationLabel}
-				helperText={t.guestView.forms.pronunciationHelp}
-				value={registration.guest.pronunciation}
-				onChange={(event) => registration.updateGuest({ pronunciation: event.target.value })}
-				onBlur={(event) => registration.updateGuest({ pronunciation: event.target.value.trim() })}
-				slotProps={{ htmlInput: { maxLength: 100 } }}
-				autoComplete="off"
 			/>
 			<PhoneField
 				label={t.phone}
