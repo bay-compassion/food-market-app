@@ -135,6 +135,7 @@ export async function loadScenario(input: DemoScenarioInput): Promise<DemoRoster
 				id: guest.id,
 				firstName: guest.firstName,
 				lastName: guest.lastName,
+				pronunciation: guest.pronunciation,
 				phone: guest.phone,
 				locale: guest.locale,
 				deviceToken: deviceCredentials.get(guest.id)!.token,

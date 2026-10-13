@@ -38,6 +38,18 @@ describe('buildFakeData', () => {
 		expect(new Set(phones).size).toBe(phones.length);
 	});
 
+	it('says how to say every name a volunteer could not read, and only the misreadable Latin ones', () => {
+		const { guests } = build({ guests: 120 });
+		// Anything past Latin Extended: Arabic, Persian, and Chinese script.
+		const unreadable = guests.filter((guest) => /[^\u0000-\u024F]/.test(guest.firstName));
+		const byName = (name: string) => guests.filter((guest) => guest.firstName === name);
+
+		expect(unreadable.length).toBeGreaterThan(0);
+		expect(unreadable.every((guest) => guest.pronunciation)).toBe(true);
+		expect(byName('Ignacio').every((guest) => guest.pronunciation === 'eeg-NAH-see-oh')).toBe(true);
+		expect(byName('Alice').every((guest) => guest.pronunciation === null)).toBe(true);
+	});
+
 	it('refuses to reuse a fictional number once the pool runs out', () => {
 		expect(() => build({ guests: 1001 })).toThrow(RangeError);
 	});

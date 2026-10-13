@@ -41,6 +41,7 @@ export class DemoPreviewSession implements Storage {
 			firstName: guest.firstName,
 			lastName: guest.lastName,
 			phone: guest.phone,
+			pronunciation: guest.pronunciation ?? '',
 		});
 		storage.set(StorageKey.RETURNING_VISITOR, true);
 		// A worker previewing a guest's screen wants that screen, not the first-visit tour over it.

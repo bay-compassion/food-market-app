@@ -6,6 +6,7 @@ export type DemoGuest = {
 	id: string;
 	firstName: string;
 	lastName: string;
+	pronunciation: string | null;
 	phone: string;
 	locale: string;
 	deviceToken: string;
