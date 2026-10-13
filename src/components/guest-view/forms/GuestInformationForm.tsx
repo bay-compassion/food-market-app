@@ -21,18 +21,19 @@ export const GuestInformationForm = observer(function GuestInformationForm() {
 
 	return (
 		<FormSection legend={t.guestView.forms.informationLegend}>
-			<TextField
-				label={t.firstName}
-				value={registration.guest.firstName}
-				onChange={(event) => registration.updateGuest({ firstName: event.target.value })}
-				// Trimmed on the way out rather than on every keystroke: trimming as the guest types
-				// would eat the space the moment it was pressed, leaving no way to enter a name in two
-				// words. The server trims these fields again before storing them.
-				onBlur={(event) => registration.updateGuest({ firstName: event.target.value.trim() })}
-				required
-				autoComplete="given-name"
-			/>
-			<PronunciationField />
+			<PronunciationField>
+				<TextField
+					label={t.firstName}
+					value={registration.guest.firstName}
+					onChange={(event) => registration.updateGuest({ firstName: event.target.value })}
+					// Trimmed on the way out rather than on every keystroke: trimming as the guest types
+					// would eat the space the moment it was pressed, leaving no way to enter a name in two
+					// words. The server trims these fields again before storing them.
+					onBlur={(event) => registration.updateGuest({ firstName: event.target.value.trim() })}
+					required
+					autoComplete="given-name"
+				/>
+			</PronunciationField>
 			<TextField
 				label={t.lastName}
 				value={registration.guest.lastName}
