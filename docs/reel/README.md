@@ -126,6 +126,22 @@ Where the voice comes from is the `voice` setting at the top of that file:
 
 The market day reel has no narration.
 
+### Chapters
+
+A narrated video has chapters, so a viewer can step back to review a part or skip ahead: a chapter
+list and previous and next buttons sit beside the playback controls (on a row of their own below
+1000 pixels). Previous goes back to the start of the current chapter, or to the one before when the
+playhead is within two seconds of its start, as a media player does. A jump keeps playing, or stays
+paused, as it was.
+
+**Step by step**, beside them, pauses playback as each chapter ends, holding the finished step on
+screen until the viewer presses play — for following along at the desk. It is off by default.
+
+A chapter starts at a narration line marked `chapter: '<key>'` in `narration.mjs`, roughly one per
+section of the script. The page names it: `CHAPTERS` in `queue-desk.src.html`, and
+`guestView.presentation.chapters` in `src/locales.ts` for the guest guide, in every language. Adding
+or moving a chapter changes no audio, so it needs no recording or mixing — rebuild and publish.
+
 ## Publishing
 
 GitHub Pages hosts the market day reel at

@@ -141,13 +141,22 @@
 				outline: 3px solid var(--gold);
 				outline-offset: 3px;
 			}
+			/* Below 1000px the player's chapters (stage.css) wrap onto another row: 48px more. */
+			@container (max-width: 999px) {
+				.chaptered {
+					margin-bottom: 184px;
+				}
+				.chaptered iframe {
+					height: calc(100% + 184px);
+				}
+			}
 			@container (max-width: 600px) {
 				.guest-player {
 					aspect-ratio: 9 / 16;
-					margin-bottom: 190px;
+					margin-bottom: 238px;
 				}
 				.guest-player iframe {
-					height: calc(100% + 190px);
+					height: calc(100% + 238px);
 				}
 			}
 		</style>

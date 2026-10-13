@@ -28,7 +28,7 @@ void (async () => {
 			assert.equal((await site.content()).includes('__INTERACTIVE__'), false);
 		}
 
-		for (const width of [320, 390, 608, 640, 1280]) {
+		for (const width of [320, 390, 608, 640, 932, 1024, 1280]) {
 			await site.setViewportSize({ width, height: 960 });
 			await site.goto('file://' + path.join(__dirname, 'out/site/guest-guide/index.html'));
 			const player = site.frames()[1];
@@ -55,6 +55,18 @@ void (async () => {
 					`${width}/${code}: embedded stage fits`,
 				);
 			}
+
+			// The queue desk's chapters wrap onto a row of their own below 1000px; its frame grows to fit.
+			await site.goto('file://' + path.join(__dirname, 'out/site/queue-desk/index.html'));
+			const desk = site.frames()[1];
+
+			await desk.waitForFunction(() => window.reel);
+			assert.ok(
+				await desk.evaluate(
+					() => document.querySelector('#controls').getBoundingClientRect().bottom <= innerHeight,
+				),
+				`${width}/queue-desk: embedded controls fit`,
+			);
 		}
 
 		await site.close();
@@ -94,6 +106,38 @@ void (async () => {
 			assert.ok(
 				Math.abs((await page.evaluate(() => window.reel.tl.time())) - duration * 0.6) < 0.1,
 			);
+			const chapters = await page.evaluate(() => window.reel.chapters);
+			const time = () => page.evaluate(() => window.reel.tl.time());
+
+			if (chapters.length) {
+				const current = chapters.findLastIndex((chapter) => chapter.t <= duration * 0.6);
+
+				await page.locator('#nextChapter').click();
+				assert.ok(Math.abs((await time()) - chapters[current + 1].t) < 0.01, `${name}: next`);
+				await page.locator('#prevChapter').click();
+				assert.ok(Math.abs((await time()) - chapters[current].t) < 0.01, `${name}: previous`);
+				await page.locator('#chapter').selectOption(String(chapters.length - 1));
+				assert.ok(Math.abs((await time()) - chapters.at(-1).t) < 0.01, `${name}: chapter list`);
+				assert.equal(await page.locator('#nextChapter').isDisabled(), true);
+				assert.equal(await page.evaluate(() => window.reel.tl.paused()), true, `${name}: paused`);
+				// Step by step holds the end of a chapter, then plays on across it when asked.
+				const boundary = chapters[2].t;
+
+				await page.locator('#stepMode').click();
+				assert.equal(await page.locator('#stepMode').getAttribute('aria-pressed'), 'true');
+				await page.evaluate((t) => window.reel.seek(t), boundary - 0.6);
+				await page.locator('#play').click();
+				await page.waitForFunction(() => window.reel.tl.paused(), null, { timeout: 3000 });
+				assert.ok(Math.abs((await time()) - (boundary - 0.05)) < 0.01, `${name}: held at end`);
+				await page.locator('#play').click();
+				await page.waitForFunction((t) => window.reel.tl.time() > t + 0.2, boundary);
+				await page.locator('#play').click();
+				await page.locator('#stepMode').click();
+				await page.locator('#chapter').selectOption('0');
+				assert.equal(await time(), 0, `${name}: first chapter opens on the title`);
+			} else {
+				assert.equal(await page.locator('#chapters').count(), 0, `${name}: no chapters`);
+			}
 			await page.locator('#restart').click();
 			assert.ok((await page.evaluate(() => window.reel.tl.time())) < 1);
 			await page.locator('#play').click();
@@ -102,7 +146,7 @@ void (async () => {
 			await page.waitForFunction(() => window.reel.tl.progress() === 1);
 			await page.waitForTimeout(350);
 			assert.equal(await page.evaluate(() => window.reel.tl.progress()), 1, `${name}: plays once`);
-			console.log(`${name}: audio, play/pause, seek, restart and end checked`);
+			console.log(`${name}: audio, play/pause, seek, chapters, restart and end checked`);
 			await page.close();
 		}
 		const guest = await browser.newPage();

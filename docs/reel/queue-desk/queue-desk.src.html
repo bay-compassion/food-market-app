@@ -10,6 +10,13 @@
 <style>
 	/* The queue desk front and centre, the room display and one guest's phone beside it, and the
 	   caption above them. The desk follows src/components/queue/ more closely than the reel's does. */
+	/* Below 1000px the chapters wrap onto a second row of controls, so the stage leaves room for it. */
+	@media (max-width: 999px) {
+		#viewport,
+		#controls {
+			width: min(100%, calc((100dvh - 144px) * 16 / 9));
+		}
+	}
 	#cap {
 		left: 70px;
 		top: 64px;
@@ -553,7 +560,21 @@
 		// Each line starts its `pause` after the one before it ends; `duration` is its recording's
 		// length, measured by voice.mjs. Beats hang off the lines, so a reworded line retimes them.
 		const NARRATION = __NARRATION__;
-		const { cues: CUES, C, E } = window.stage.narrationCues(NARRATION);
+		const { cues: CUES, chapters: CHAPTER_CUES, C, E } = window.stage.narrationCues(NARRATION);
+		/** Chapter titles, by the `chapter` key on the narration line each one starts at. */
+		const CHAPTERS = {
+			intro: 'Introduction',
+			beforeService: 'Before service',
+			line: 'A tour of the line',
+			calling: 'Calling a guest',
+			nameTag: 'The name tag',
+			serve: 'Serve and call next',
+			late: 'Late arrivals',
+			noShows: 'No-shows',
+			addGuest: 'Adding a guest by hand',
+			reaching: 'Reaching a guest',
+			ending: 'Ending the day',
+		};
 
 		/* ================= the line ================= */
 
@@ -1663,6 +1684,8 @@
 			describeBeat,
 			source: 'queue-desk/queue-desk.src.html',
 			cues: [...CUES.values()],
+			chapters: CHAPTER_CUES,
+			chapterTitle: (key) => CHAPTERS[key],
 		});
 
 		/** What a beat changed, for the #dev beat list. */
