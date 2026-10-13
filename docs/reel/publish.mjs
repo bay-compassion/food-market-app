@@ -1,6 +1,7 @@
 /**
  * Builds and assembles the GSAP presentations for GitHub Pages. The market day reel stays at
- * the root; the volunteer guide lives at /queue-desk/. No capture, transcoding or git push.
+ * the root; the volunteer guide lives at /queue-desk/ and the guest guide at /guest-guide/.
+ * No capture, transcoding or git push.
  *
  *   node docs/reel/publish.mjs
  *
@@ -12,6 +13,7 @@ import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'no
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { translations } from '../../src/locales.ts';
 import { videos } from './videos.mjs';
 
 const here = (path) => fileURLToPath(new URL(path, import.meta.url));
@@ -60,7 +62,10 @@ rmSync(site, { recursive: true, force: true });
 mkdirSync(site, { recursive: true });
 
 for (const [name, video] of published) {
-	const presentation = video.publish;
+	const presentation = {
+		...video.publish,
+		...(video.publish.guest ? translations.en.guestView.presentation : {}),
+	};
 	const destination = path.join(site, presentation.folder);
 
 	mkdirSync(destination, { recursive: true });
@@ -72,6 +77,10 @@ for (const [name, video] of published) {
 		DESCRIPTION: presentation.description,
 		SOUND: presentation.sound,
 		INTERACTIVE: presentation.interactive,
+		PLAYER_CLASS: presentation.guest ? 'guest-player' : '',
+		OPEN: presentation.open ?? 'Open presentation',
+		DOWNLOAD: presentation.download ?? 'Download presentation',
+		MORE: presentation.more ?? 'More',
 	};
 	const links = published
 		.filter(([other]) => other !== name)
@@ -79,7 +88,11 @@ for (const [name, video] of published) {
 			const relative =
 				path.relative(presentation.folder || '.', other.publish.folder || '.') || '.';
 
-			return `<a href="${escape(relative + '/index.html')}">${escape(other.publish.title)}</a>`;
+			const title = other.publish.guest
+				? translations.en.guestView.presentation.title
+				: other.publish.title;
+
+			return `<a href="${escape(relative + '/index.html')}">${escape(title)}</a>`;
 		})
 		.join('\n');
 	const page = template.replace(/__([A-Z]+(?:_[A-Z]+)*)__/g, (token, key) => {

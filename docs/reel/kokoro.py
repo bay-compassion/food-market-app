@@ -9,13 +9,15 @@ out/kokoro folder. No API key or hosted speech service is needed.
 """
 
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
 from urllib.request import urlopen
 
 import soundfile as sf
-from kokoro_onnx import Kokoro
+import espeakng_loader
+from kokoro_onnx import EspeakConfig, Kokoro
 
 
 def model_file(cache: Path, name: str) -> Path:
@@ -38,9 +40,16 @@ def main():
     cache = Path(request["cache"])
     cache.mkdir(parents=True, exist_ok=True)
     voice = request["voice"]
+    # espeak's data path buffer is short. uv's nested environment can exceed it,
+    # silently falling back to the wheel builder's absolute path on macOS.
+    data = cache / "espeak-ng-data"
+    if not data.exists():
+        shutil.copytree(espeakng_loader.get_data_path(), data)
+    os.environ["ESPEAK_DATA_PATH"] = str(data)
     model = Kokoro(
         str(model_file(cache, "kokoro-v1.0.onnx")),
         str(model_file(cache, "voices-v1.0.bin")),
+        espeak_config=EspeakConfig(data_path=str(data)),
     )
 
     for line in request["lines"]:

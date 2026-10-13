@@ -7,6 +7,8 @@ Motion pieces showing the app at work, built from its own design tokens and tran
 - **Queue desk** (`queue-desk`): about three and a quarter minutes, narrated. A training video for
   the volunteer running `/queue`: calling, name tags, serving, late arrivals, no-shows, adding a
   guest by hand, and closing the session.
+- **Guest market guide** (`guest-guide`): about three minutes, narrated. A guide for guests opening
+  the market page, entering the lottery, following their number, and coming to check-in.
 
 Each presentation is an HTML page animated with [GSAP](https://gsap.com), with its soundtrack
 embedded. GitHub Pages plays that page directly: publishing needs no frame capture or video
@@ -148,7 +150,7 @@ For a local preview:
 node docs/reel/publish.mjs
 ```
 
-This builds both presentations and assembles `out/site/`. `--dry-run` is an equivalent alias;
+This builds all three presentations and assembles `out/site/`. `--dry-run` is an equivalent alias;
 the script always writes local files without pushing. No MP4, poster frames, Chromium, ffmpeg,
 Swift, or GarageBand installation is needed to build the site. The deployed `source.json`
 records the source commit and branch.
@@ -166,7 +168,7 @@ node docs/reel/publish.mjs
 ```
 
 Commit the narration source, measured timings, and mixed soundtrack together. The generated
-HTML stays in ignored `out/` and is rebuilt by Actions. Both presentations, including the
+HTML stays in ignored `out/` and is rebuilt by Actions. All three presentations, including the
 volunteer guide, are public. The HTML uses the existing GSAP and Google Fonts CDN resources;
 its audio, copy, and logos are embedded.
 
@@ -197,3 +199,52 @@ The videos follow the same rules as guest copy: everyone in the lottery has the 
 everyone gets a number; nothing mentions standby or lottery weighting; guests are sent to the
 check-in desk; a late guest's number stays called and their board warms to yellow, with no penalty
 implied. All names are fictional, and phone numbers use the reserved 555-01xx range.
+
+## Guest market guide
+
+The narrated **Guest Market Guide** (`guest-guide`) follows a guest's phone from opening the
+market page to check-in. It uses the queue desk guide's Heart voice, speed, loudness normalization,
+and Moving Pictures arrangement, with every visual cue placed from measured clip lengths.
+The approximately three-minute presentation includes closed registration, the form, explicit text
+message consent, both lottery outcomes, the number and Now calling row, the room display, a call,
+a yellow late-arrival reminder, “We missed you,” completed check-in, and the help page.
+Maya Rivera and Amal Haddad are fictional guests; Amal illustrates not being selected, while Maya
+illustrates a selected visit. Luis Herrera shows the returning-guest form. The guide never presents not-selected as a step on the way to selection.
+
+Its screens **and captions** read the existing eight-language app translations. The language
+control also translates playback controls; Arabic and Farsi preserve right-to-left text. New
+presentation copy lives in `guestView.presentation` in `src/locales.ts`. Audio remains in English,
+as the landing page explains. On phones the same timeline uses a portrait composition, keeping
+the phone in focus and placing the room display below it when it appears. The other presentations
+keep their existing landscape layouts.
+
+Instruction sources (check these when changing the script):
+
+| Instruction                                                                                   | Current implementation                                                                |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Open the market page, choose a language, Saturday schedule, original phone and no screenshots | `HelpPage`, `GuestLanguageHero`, `help` and `guestView.tour` translations             |
+| Closed, registration closed, market underway                                                  | `GuestView`, `GuestNotOpenState`, `GuestRegistrationClosedState`, `GuestServiceState` |
+| Identity when needed, household details each visit, Join the lottery                          | `GuestCombinedForm`, `GuestInformationForm`, `GuestLotteryForm`, `RegistrationStore`  |
+| Explicit optional text consent                                                                | `NotificationOptIn`, `GuestIdentityCard`, `GuestStore`                                |
+| Confirmation, result, ticket number, Now calling, automatic updates                           | `GuestVisitStatus`, `RegisteredVisitStatus`, `WaitingVisitStatus`, `VisitStore`       |
+| Check-in, warmth after three minutes, full yellow at ten, missed call, complete               | `CalledVisitStatus`, `LateArrival`, `CompletedVisitStatus`, `guestView.visitStatus`   |
+
+To update and preview without an MP4:
+
+```bash
+node docs/reel/voice.mjs guest-guide
+node docs/reel/build.mjs guest-guide
+node docs/reel/music/mix.cjs guest-guide
+node docs/reel/publish.mjs
+node docs/reel/verify.cjs
+```
+
+`verify.cjs` checks embedded audio length and playback controls for all three presentations,
+every guest narration scene in all eight languages at 320, 390, 600 and 1280 pixels, RTL consent,
+and Dev mode. It writes portrait and landscape stills to `out/guest-guide/review/` for visual review.
+It needs local Chromium, but it is a local review step, never a publishing dependency.
+
+The existing **Publish presentations** workflow automatically includes every registry entry. On
+`main` it deploys the guest guide at `/guest-guide/`, alongside `/` and `/queue-desk/`, with links
+among all three. Publishing still uses only committed timings and mixed audio and builds HTML;
+it requires no frame capture, transcoding, speech runtime, or music library on the Actions runner.
