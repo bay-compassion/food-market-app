@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { guests, marketEvents, visits } from '../../../db/schema.mjs';
+import type { Permission } from '../../../src/services/permissions.js';
 import { visitCommands } from '../../../src/services/visitStateMachine.js';
 import { withPermission, workerActor, type AdminEnv } from '../../lib/http-auth.mjs';
 import {
@@ -36,6 +37,27 @@ async function currentEventId() {
 	);
 
 	return event?.id ?? null;
+}
+
+/**
+ * Which permission a guest-list read needs. `run:queue` covers a worker's daily screen — the
+ * current session's roster, whether named explicitly or left to default. Reading the whole
+ * database (`scope=all`) or any other session's guests is historical, cross-session PII, so it
+ * takes the same gate as the bulk export (`export:guest-data`) rather than being handed to every
+ * volunteer running the queue.
+ */
+async function guestListPermission(request: Request): Promise<Permission> {
+	const url = new URL(request.url);
+
+	if (url.searchParams.get('scope') === 'all') {
+		return 'export:guest-data';
+	}
+
+	const requested = url.searchParams.get('marketEventId');
+
+	return requested !== null && requested !== (await currentEventId())
+		? 'export:guest-data'
+		: 'run:queue';
 }
 
 async function listGuests(request: Request) {
@@ -139,7 +161,12 @@ async function updateGuest(context: Context<AdminEnv>) {
 
 export const guestRoutes = createRouter<AdminEnv>();
 
-guestRoutes.get('/guests', withPermission('run:queue'), (context) => listGuests(context.req.raw));
+guestRoutes.get(
+	'/guests',
+	async (context, next) =>
+		withPermission(await guestListPermission(context.req.raw))(context, next),
+	(context) => listGuests(context.req.raw),
+);
 guestRoutes.post('/guests', withPermission('run:queue'), (context) => createGuest(context));
 guestRoutes.patch('/guests', withPermission('run:queue'), (context) => updateGuest(context));
 guestRoutes.all('/guests', methodNotAllowed);

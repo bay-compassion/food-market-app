@@ -72,10 +72,10 @@ describe('endpoint permissions', () => {
 			'export:guest-data',
 		],
 		[
-			'listing guests',
+			'listing the whole guest database',
 			guestsHandler,
 			json('https://x/api/admin/guests?scope=all', 'GET'),
-			'run:queue',
+			'export:guest-data',
 		],
 		[
 			'running a visit command',
@@ -223,6 +223,40 @@ describe('endpoint permissions', () => {
 			expect(await permissionAskedFor(handler, request)).toBe(expected);
 		});
 	}
+
+	it('gates the current session roster on run:queue', async () => {
+		// The worker's daily screen names the live session explicitly; that is their job.
+		queueResult([{ id: 'event-1' }]);
+
+		const asked = await permissionAskedFor(
+			guestsHandler,
+			json('https://x/api/admin/guests?marketEventId=event-1', 'GET'),
+		);
+
+		expect(asked).toBe('run:queue');
+	});
+
+	it('gates the defaulted current roster on run:queue', async () => {
+		// No scope and no event id falls through to the current session, so a worker reaches it.
+		const asked = await permissionAskedFor(
+			guestsHandler,
+			json('https://x/api/admin/guests', 'GET'),
+		);
+
+		expect(asked).toBe('run:queue');
+	});
+
+	it('gates a past session’s guests on export:guest-data', async () => {
+		// The live session is event-1; asking for any other one is historical, cross-session PII.
+		queueResult([{ id: 'event-1' }]);
+
+		const asked = await permissionAskedFor(
+			guestsHandler,
+			json('https://x/api/admin/guests?marketEventId=ended-event', 'GET'),
+		);
+
+		expect(asked).toBe('export:guest-data');
+	});
 
 	it('checks manage:guest-access, and only that, before overriding a worker’s limits', async () => {
 		// A worker gets through the first gate, then the override gate refuses.
