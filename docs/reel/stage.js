@@ -82,14 +82,26 @@
 		return { at, snapshots };
 	}
 
-	/** Recorded line lengths pace both animation beats and the music arrangement. */
+	/**
+	 * Recorded line lengths pace both animation beats and the music arrangement. A line marked with
+	 * a `chapter` starts one: `chapters` lists each, from where its line starts (the first from 0,
+	 * so it includes the title card).
+	 */
 	function narrationCues(lines) {
 		const cues = new Map();
+		const chapters = [];
 		let clock = 0;
 
 		for (const line of lines) {
 			clock += line.pause;
 			cues.set(line.id, { ...line, t: clock });
+
+			if (line.chapter) {
+				chapters.push({
+					key: line.chapter,
+					t: chapters.length ? clock : 0,
+				});
+			}
 			clock += line.duration;
 		}
 
@@ -103,7 +115,7 @@
 			return cue.t + fraction * cue.duration;
 		};
 
-		return { cues, C, E: (id, plus = 0) => C(id, 1) + plus };
+		return { cues, chapters, C, E: (id, plus = 0) => C(id, 1) + plus };
 	}
 
 	const cap = (eyebrow, head, sub) => (s) => {
@@ -428,8 +440,20 @@
 	 * Plays a page's timeline with controls and its soundtrack, and exposes it as `window.reel` for
 	 * the capture and still scripts. `#record` hides the controls and waits to be driven; `#dev` adds
 	 * GSAP's scrubber and the beat list, which `describeBeat(prev, cur)` writes from the snapshots.
+	 * `chapters` (from `narrationCues`) adds a chapter list with previous and next buttons, each
+	 * named by `chapterTitle(key, locale)`, and a step-by-step mode that pauses as each one ends.
 	 */
-	function mountPlayer({ tl, END, snaps, describeBeat, source, cues = [], onLocaleChange }) {
+	function mountPlayer({
+		tl,
+		END,
+		snaps,
+		describeBeat,
+		source,
+		cues = [],
+		chapters = [],
+		chapterTitle = (key) => key,
+		onLocaleChange,
+	}) {
 		const viewport = k('viewport');
 		const stage = k('stage');
 		let locale = 'en';
@@ -445,6 +469,11 @@
 						soundOff: 'Sound off',
 						noSound: 'No sound',
 						seek: 'Seek',
+						chapter: 'Chapter',
+						previousChapter: 'Previous chapter',
+						nextChapter: 'Next chapter',
+						stepByStep: 'Step by step',
+						stepByStepHint: 'Pause at the end of each chapter',
 					};
 
 		viewport.insertAdjacentHTML(
@@ -457,6 +486,17 @@
 				'<input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek" />' +
 				'<span id="clock">0:00</span></div>',
 		);
+
+		if (chapters.length) {
+			k('controls').insertAdjacentHTML(
+				'beforeend',
+				'<div id="chapters">' +
+					'<button type="button" id="prevChapter">‹</button>' +
+					'<select id="chapter"></select>' +
+					'<button type="button" id="nextChapter">›</button></div>' +
+					'<button type="button" id="stepMode" aria-pressed="false"></button>',
+			);
+		}
 
 		if (onLocaleChange) {
 			k('controls').insertAdjacentHTML(
@@ -478,6 +518,7 @@
 		const render = tl.eventCallback('onUpdate');
 
 		tl.eventCallback('onUpdate', () => {
+			holdAtChapterEnd();
 			render();
 			syncControls();
 			syncAudio();
@@ -534,6 +575,111 @@
 			if (onLocaleChange) {
 				k('presentationLocale').setAttribute('aria-label', S[locale].guide.language);
 			}
+			syncChapters(L);
+		}
+
+		/* ---------- chapters ---------- */
+
+		/** The chapter the playhead is in. */
+		const chapterAt = (time) => chapters.findLastIndex((chapter) => chapter.t <= time + 0.01);
+		let chapterLocale = null;
+
+		function syncChapters(L) {
+			if (!chapters.length) {
+				return;
+			}
+			const select = k('chapter');
+
+			if (chapterLocale !== locale) {
+				chapterLocale = locale;
+				select.innerHTML = chapters
+					.map(
+						(chapter, i) =>
+							'<option value="' +
+							i +
+							'">' +
+							esc(i + 1 + '. ' + chapterTitle(chapter.key, locale)) +
+							'</option>',
+					)
+					.join('');
+				select.setAttribute('aria-label', L.chapter);
+				k('prevChapter').setAttribute('aria-label', L.previousChapter);
+				k('prevChapter').title = L.previousChapter;
+				k('nextChapter').setAttribute('aria-label', L.nextChapter);
+				k('nextChapter').title = L.nextChapter;
+			}
+			const current = chapterAt(tl.time());
+
+			select.value = String(current);
+			k('prevChapter').disabled = tl.time() < 0.05;
+			k('nextChapter').disabled = current === chapters.length - 1;
+			k('stepMode').textContent = L.stepByStep;
+			k('stepMode').title = L.stepByStepHint;
+			k('stepMode').setAttribute('aria-pressed', String(stepByStep));
+		}
+
+		/*
+		 * Step by step: playing into the next chapter pauses just before its first beat, holding the
+		 * finished step on screen (its last line has ended by then) until the viewer plays on. The
+		 * hold lands before the boundary, so playing on crosses it without stopping again.
+		 */
+		const HOLD = 0.05;
+		let stepByStep = false;
+		let lastTime = 0;
+
+		function holdAtChapterEnd() {
+			const now = tl.time();
+			const next =
+				stepByStep && !tl.paused()
+					? chapters.find(
+							(chapter) => chapter.t > 0 && lastTime < chapter.t - HOLD && now >= chapter.t - HOLD,
+						)
+					: null;
+
+			if (next) {
+				tl.pause(next.t - HOLD);
+			}
+			lastTime = tl.time();
+		}
+
+		/**
+		 * Jumps to a chapter and carries on as it was: playing on with the sound in step, or paused. A
+		 * chapter's first beat is at its start, so the jump lands just past it to show that beat.
+		 */
+		function seekChapter(i) {
+			const chapter = chapters[Math.max(0, Math.min(chapters.length - 1, i))];
+			const playing = !tl.paused() && tl.progress() < 1;
+
+			pendingRestart?.kill();
+			tl.pause();
+			tl.time(chapter.t && chapter.t + 0.001);
+
+			if (playing) {
+				tl.play();
+			}
+			syncControls();
+
+			if (playing) {
+				startAudio();
+			} else {
+				stopAudio();
+			}
+		}
+
+		if (chapters.length) {
+			k('chapter').addEventListener('change', (event) => seekChapter(Number(event.target.value)));
+			// As a media player does: back to the start of this chapter, or to the one before when
+			// already near its start.
+			k('prevChapter').addEventListener('click', () => {
+				const current = chapterAt(tl.time());
+
+				seekChapter(tl.time() - chapters[current].t > 2 ? current : current - 1);
+			});
+			k('nextChapter').addEventListener('click', () => seekChapter(chapterAt(tl.time()) + 1));
+			k('stepMode').addEventListener('click', () => {
+				stepByStep = !stepByStep;
+				syncControls();
+			});
 		}
 		/* Browsers start sound only from a click, so it begins off until the viewer turns it on. */
 		const soundBtn = k('sound');
@@ -601,6 +747,8 @@
 		}
 		soundBtn.addEventListener('click', () => void setSound(!soundOn));
 
+		let pendingRestart = null;
+
 		tl.eventCallback('onComplete', () => {
 			syncControls();
 			stopAudio();
@@ -609,7 +757,7 @@
 				!document.body.classList.contains('record') &&
 				!document.body.classList.contains('watch')
 			) {
-				gsap.delayedCall(3, () => tl.restart());
+				pendingRestart = gsap.delayedCall(3, () => tl.restart());
 			}
 		});
 		playBtn.addEventListener('click', () => {
@@ -779,6 +927,7 @@
 			tl,
 			END,
 			cues,
+			chapters,
 			seek: (sec) => {
 				tl.pause();
 				tl.time(sec);

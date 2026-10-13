@@ -6,6 +6,10 @@
  * `say`, where given, is how text to speech should pronounce the line; `text` is what a person
  * reading it sees, and what the page's captions follow.
  *
+ * `chapter`, on the first line of a section, starts a chapter there: the player's chapter list and
+ * its previous and next buttons jump to it. The page names each one (`CHAPTERS`). Adding or moving
+ * a chapter changes no audio, so it needs no recording.
+ *
  * The narration follows the app: every label it names is the label on the queue screen
  * (`src/adminLocales.ts`), and every behavior it describes is the real one (`QueueRoster`,
  * `TicketActions`, `LineOrder`). Like guest copy, it never mentions standby or lottery weighting.
@@ -19,16 +23,16 @@
 export const voice = { source: 'kokoro', name: 'af_heart', speed: 0.96, language: 'en-us' };
 
 export const lines = [
-	// Title.
 	{
 		id: 'welcome',
+		chapter: 'intro',
 		pause: 2.6,
 		text: 'This is a short guide to the queue desk: the screen volunteers use to call guests up on market day.',
 	},
 
-	// Before service.
 	{
 		id: 'open',
+		chapter: 'beforeService',
 		pause: 1.2,
 		text: 'On your phone, open the queue screen and sign in with your volunteer account.',
 	},
@@ -38,9 +42,9 @@ export const lines = [
 		text: 'Guests register from their own phones, then the lottery is drawn. Until then, the screen waits.',
 	},
 
-	// A tour of the line.
 	{
 		id: 'tour',
+		chapter: 'line',
 		pause: 1.4,
 		text: 'When service starts, the line appears. Waiting lists everyone in line, in the order they’ll be called.',
 	},
@@ -60,8 +64,12 @@ export const lines = [
 		text: 'The room display shows the same line, but only numbers, never names.',
 	},
 
-	// Calling a guest.
-	{ id: 'call', pause: 1.2, text: 'When you’re ready for the next guest, tap Call next.' },
+	{
+		id: 'call',
+		chapter: 'calling',
+		pause: 1.2,
+		text: 'When you’re ready for the next guest, tap Call next.',
+	},
 	{
 		id: 'called',
 		pause: 0.4,
@@ -73,9 +81,9 @@ export const lines = [
 		text: 'Their ticket opens on your screen, with a clock counting from the moment you called them.',
 	},
 
-	// The name tag.
 	{
 		id: 'tag',
+		chapter: 'nameTag',
 		pause: 0.8,
 		text: 'The name tag shows their first name and last initial, their number, and their language.',
 	},
@@ -90,9 +98,9 @@ export const lines = [
 		text: 'If the print station is offline, the button says so. Write the tag by hand instead.',
 	},
 
-	// Serve and call next.
 	{
 		id: 'serve',
+		chapter: 'serve',
 		pause: 1.0,
 		text: 'When the guest has checked in, tap Serve and call next. That finishes their visit and calls the next guest, in one step.',
 	},
@@ -107,9 +115,9 @@ export const lines = [
 		text: 'If two volunteers are calling at once, each tap calls a different guest. Nobody is called twice.',
 	},
 
-	// Late arrivals.
 	{
 		id: 'late',
+		chapter: 'late',
 		pause: 1.2,
 		text: 'Sometimes a guest isn’t there yet. Don’t hold up the line. Close their ticket, and call the next guest.',
 	},
@@ -124,9 +132,9 @@ export const lines = [
 		text: 'When they arrive, tap their row, and choose Mark served. That doesn’t call anyone new, so the line stays where it is.',
 	},
 
-	// No-shows.
 	{
 		id: 'noShow',
+		chapter: 'noShows',
 		pause: 1.2,
 		text: 'If someone you called a while ago still hasn’t come, you can mark them as a no-show. They move to a list of their own.',
 	},
@@ -141,9 +149,9 @@ export const lines = [
 		text: 'The arrow beside it puts them at the front instead, for a guest you called by mistake.',
 	},
 
-	// Adding a guest by hand.
 	{
 		id: 'add',
+		chapter: 'addGuest',
 		pause: 1.2,
 		text: 'To put someone in line yourself, tap Add guest, beside Waiting.',
 	},
@@ -164,16 +172,16 @@ export const lines = [
 		text: 'Then tap Show QR code for their phone. When they scan it with their camera, their phone follows their place in line.',
 	},
 
-	// Reaching a guest.
 	{
 		id: 'phone',
+		chapter: 'reaching',
 		pause: 1.0,
 		text: 'Need to reach a guest? Phone, on their ticket, calls them. And History shows who called and served them, and when.',
 	},
 
-	// Ending the day.
 	{
 		id: 'finish',
+		chapter: 'ending',
 		pause: 1.2,
 		text: 'When everyone has been through, Call next turns into Close session.',
 	},

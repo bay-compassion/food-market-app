@@ -2,17 +2,22 @@
  * Guest instructions checked against GuestView, GuestCombinedForm, VisitStore, LateArrival,
  * HelpPage and their current translations. Fictional guest: Maya Rivera, (510) 555-0142.
  * English audio, like the queue desk guide; screens and captions use all eight app locales.
+ *
+ * `chapter`, on the first line of a section, starts a chapter there for the player's chapter list.
+ * Its title is `guestView.presentation.chapters[chapter]` in `src/locales.ts`, in every language.
  */
 export const voice = { source: 'kokoro', name: 'af_heart', speed: 0.96, language: 'en-us' };
 
 export const lines = [
 	{
 		id: 'welcome',
+		chapter: 'welcome',
 		pause: 2.6,
 		text: 'Welcome to The Bay Compassion. This is a short guide to signing up and following your visit on your phone.',
 	},
 	{
 		id: 'open',
+		chapter: 'openPage',
 		pause: 1.2,
 		text: 'Scan the market’s code to open the market page on your phone. You can sign up from anywhere, even at home.',
 	},
@@ -23,6 +28,7 @@ export const lines = [
 	},
 	{
 		id: 'closed',
+		chapter: 'signUpTime',
 		pause: 1.0,
 		text: 'If the market is closed, come back on Saturday at ten thirty in the morning.',
 	},
@@ -33,6 +39,7 @@ export const lines = [
 	},
 	{
 		id: 'identity',
+		chapter: 'form',
 		pause: 1.0,
 		text: 'Enter your first and last name, and your cell phone number. Please use your full name, rather than just initials.',
 	},
@@ -49,6 +56,7 @@ export const lines = [
 	{ id: 'join', pause: 0.8, text: 'When you’ve finished, tap Join the lottery.' },
 	{
 		id: 'registered',
+		chapter: 'entered',
 		pause: 0.8,
 		text: 'You’re in the lottery confirms that you entered. Your number comes after the draw, if you’re selected.',
 	},
@@ -59,6 +67,7 @@ export const lines = [
 	},
 	{
 		id: 'draw',
+		chapter: 'draw',
 		pause: 1.2,
 		text: 'At ten forty-five, the lottery draws. This page updates on its own and shows your result. Everyone has the same chance, and not everyone gets a number.',
 	},
@@ -74,6 +83,7 @@ export const lines = [
 	},
 	{
 		id: 'line',
+		chapter: 'followLine',
 		pause: 0.8,
 		text: 'Keep this page open to follow the line. Your number stays at the top. Now calling underneath shows the numbers being called at the check-in desk.',
 	},
@@ -84,6 +94,7 @@ export const lines = [
 	},
 	{
 		id: 'called',
+		chapter: 'yourTurn',
 		pause: 1.2,
 		text: 'Shopping begins at eleven thirty. When you’re called, your phone says It’s your turn, and your number turns green.',
 	},
@@ -94,6 +105,7 @@ export const lines = [
 	},
 	{
 		id: 'late',
+		chapter: 'runningLate',
 		pause: 1.2,
 		text: 'If you’re taking a little longer, your number gradually turns yellow. Please come to the check-in desk. The color is a reminder that others are waiting.',
 	},
@@ -104,11 +116,13 @@ export const lines = [
 	},
 	{
 		id: 'finished',
+		chapter: 'complete',
 		pause: 1.0,
 		text: 'After check-in, your phone says Thank you for coming. Your visit is complete.',
 	},
 	{
 		id: 'missedWindow',
+		chapter: 'missedSignUp',
 		pause: 1.0,
 		text: 'If you missed sign-up, the page explains that registration has closed. Come back next Saturday at ten thirty.',
 	},
@@ -119,6 +133,7 @@ export const lines = [
 	},
 	{
 		id: 'help',
+		chapter: 'help',
 		pause: 1.0,
 		text: 'Need a reminder? Tap How it works, or ask any volunteer. Thank you for being here.',
 	},

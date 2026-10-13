@@ -136,6 +136,64 @@ body.record #controls {
 	color: var(--reel-ink-soft);
 	text-align: end;
 }
+#controls select {
+	min-width: 0;
+	height: 40px;
+	padding: 0 12px;
+	border: 1.5px solid rgb(233 241 238 / 35%);
+	border-radius: 999px;
+	color: var(--reel-ink);
+	background: var(--reel-night);
+	font: inherit;
+	font-weight: 700;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+#controls select:focus-visible {
+	outline: 3px solid var(--color-focus);
+	outline-offset: 2px;
+}
+#controls button:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+/* Chapters sit beside the buttons on a wide screen and on a row of their own below that. The
+   published pages size their player's frame to match (site.html). */
+#chapters {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+#chapters button {
+	padding: 0;
+	font-size: 22px;
+	line-height: 1;
+}
+#chapter {
+	max-width: 22ch;
+}
+#controls #stepMode[aria-pressed='true'] {
+	border-color: var(--color-focus);
+	color: var(--color-focus);
+}
+@media (max-width: 999px) {
+	#controls {
+		flex-wrap: wrap;
+	}
+	/* A zero basis with a floor, so a page's other row-three controls (the guest guide's language)
+	   share the row rather than wrapping onto another. */
+	#chapters {
+		order: 3;
+		flex: 1 1 0;
+		min-width: 200px;
+	}
+	#chapter {
+		flex: 1;
+		max-width: none;
+	}
+}
 
 /* Published presentations start paused and keep playback controls usable on narrow phones. */
 body.watch-title #title > * {

@@ -264,6 +264,14 @@
 		#controls #clock {
 			order: 2;
 		}
+		/* On a phone the chapter title needs the row's whole width, so the language picker joins
+		   the buttons instead. */
+		#presentationLocale {
+			order: 0;
+		}
+		#chapters {
+			flex-basis: 100%;
+		}
 		body.dev #viewport {
 			width: 100%;
 		}
@@ -311,7 +319,7 @@
 			renderKiosk,
 			mountPlayer,
 		} = window.stage;
-		const { cues, C, E } = narrationCues(__NARRATION__);
+		const { cues, chapters, C, E } = narrationCues(__NARRATION__);
 		let locale = 'en';
 		const phone = phoneFrame('10:30');
 		phone.id = 'guestPhone';
@@ -840,6 +848,8 @@
 			END,
 			snaps,
 			cues: [...cues.values()],
+			chapters,
+			chapterTitle: (key, value) => S[value].guide.presentation.chapters[key],
 			source: 'guest-guide/guest-guide.src.html',
 			onLocaleChange: (value) => {
 				locale = value;

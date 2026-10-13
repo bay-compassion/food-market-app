@@ -141,6 +141,31 @@ export interface GuestPresentationTranslations {
 	open: string;
 	download: string;
 	more: string;
+	/** Names the chapter picker in the player's controls. */
+	chapter: string;
+	previousChapter: string;
+	nextChapter: string;
+	/** Names the toggle that pauses playback as each chapter ends; the hint says what it does. */
+	stepByStep: string;
+	stepByStepHint: string;
+	/** Chapter titles, keyed by the `chapter` field on the narration line each one starts at. */
+	chapters: GuestPresentationChapters;
+}
+
+/** The guest guide's chapters (`docs/reel/guest-guide/narration.mjs`), in playing order. */
+export interface GuestPresentationChapters {
+	welcome: string;
+	openPage: string;
+	signUpTime: string;
+	form: string;
+	entered: string;
+	draw: string;
+	followLine: string;
+	yourTurn: string;
+	runningLate: string;
+	complete: string;
+	missedSignUp: string;
+	help: string;
 }
 
 export interface GuestViewTranslations {
@@ -492,6 +517,25 @@ export const translations = {
 				open: 'Open presentation',
 				download: 'Download presentation',
 				more: 'More presentations',
+				chapter: 'Chapter',
+				previousChapter: 'Previous chapter',
+				nextChapter: 'Next chapter',
+				stepByStep: 'Step by step',
+				stepByStepHint: 'Pause at the end of each chapter',
+				chapters: {
+					welcome: 'Welcome',
+					openPage: 'Open the market page',
+					signUpTime: 'When to sign up',
+					form: 'Fill in the form',
+					entered: 'You’re in the lottery',
+					draw: 'The lottery draw',
+					followLine: 'Follow the line',
+					yourTurn: 'It’s your turn',
+					runningLate: 'Running late',
+					complete: 'Visit complete',
+					missedSignUp: 'If you missed sign-up',
+					help: 'Getting help',
+				},
 			},
 			languageHint: 'You can change your language anytime at the top of the screen.',
 			helpPrompt: 'Not sure what to do?',
@@ -907,6 +951,25 @@ export const translations = {
 				open: 'Abrir presentación',
 				download: 'Descargar presentación',
 				more: 'Más presentaciones',
+				chapter: 'Capítulo',
+				previousChapter: 'Capítulo anterior',
+				nextChapter: 'Capítulo siguiente',
+				stepByStep: 'Paso a paso',
+				stepByStepHint: 'Pausar al final de cada capítulo',
+				chapters: {
+					welcome: 'Bienvenida',
+					openPage: 'Abra la página del mercado',
+					signUpTime: 'Cuándo registrarse',
+					form: 'Llene el formulario',
+					entered: 'Está participando en el sorteo',
+					draw: 'El sorteo',
+					followLine: 'Siga la fila',
+					yourTurn: 'Es su turno',
+					runningLate: 'Si llega tarde',
+					complete: 'Visita completada',
+					missedSignUp: 'Si no alcanzó a registrarse',
+					help: 'Cómo pedir ayuda',
+				},
 			},
 			languageHint:
 				'Puede cambiar el idioma en cualquier momento en la parte superior de la pantalla.',
@@ -1327,6 +1390,25 @@ export const translations = {
 				open: 'باز کردن ارائه',
 				download: 'دریافت ارائه',
 				more: 'ارائه‌های بیشتر',
+				chapter: 'بخش',
+				previousChapter: 'بخش قبلی',
+				nextChapter: 'بخش بعدی',
+				stepByStep: 'گام به گام',
+				stepByStepHint: 'توقف در پایان هر بخش',
+				chapters: {
+					welcome: 'خوش آمدید',
+					openPage: 'صفحهٔ بازارچه را باز کنید',
+					signUpTime: 'زمان ثبت‌نام',
+					form: 'پر کردن فرم',
+					entered: 'شما در قرعه‌کشی هستید',
+					draw: 'قرعه‌کشی',
+					followLine: 'دنبال کردن صف',
+					yourTurn: 'نوبت شماست',
+					runningLate: 'اگر دیر می‌رسید',
+					complete: 'پایان مراجعه',
+					missedSignUp: 'اگر ثبت‌نام را از دست دادید',
+					help: 'دریافت کمک',
+				},
 			},
 			languageHint: 'هر زمان بخواهید می‌توانید زبان را از بالای صفحه تغییر دهید.',
 			helpPrompt: 'نمی‌دانید چه کار کنید؟',
@@ -1739,6 +1821,25 @@ export const translations = {
 				open: 'Buksan ang presentasyon',
 				download: 'I-download ang presentasyon',
 				more: 'Iba pang presentasyon',
+				chapter: 'Kabanata',
+				previousChapter: 'Nakaraang kabanata',
+				nextChapter: 'Susunod na kabanata',
+				stepByStep: 'Hakbang-hakbang',
+				stepByStepHint: 'Huminto sa dulo ng bawat kabanata',
+				chapters: {
+					welcome: 'Maligayang pagdating',
+					openPage: 'Buksan ang pahina ng market',
+					signUpTime: 'Kailan magparehistro',
+					form: 'Sagutan ang form',
+					entered: 'Kasali na kayo sa lottery',
+					draw: 'Ang bunutan ng lottery',
+					followLine: 'Sundan ang pila',
+					yourTurn: 'Kayo na po ang susunod',
+					runningLate: 'Kung mahuhuli kayo',
+					complete: 'Tapos na ang pagbisita',
+					missedSignUp: 'Kung hindi kayo nakapagparehistro',
+					help: 'Paghingi ng tulong',
+				},
 			},
 			languageHint: 'Maaari mong palitan ang wika anumang oras sa itaas ng screen.',
 			helpPrompt: 'Hindi sigurado kung ano ang gagawin?',
@@ -2158,6 +2259,25 @@ export const translations = {
 				open: 'Mở bài hướng dẫn',
 				download: 'Tải bài hướng dẫn',
 				more: 'Các bài hướng dẫn khác',
+				chapter: 'Chương',
+				previousChapter: 'Chương trước',
+				nextChapter: 'Chương tiếp theo',
+				stepByStep: 'Từng bước',
+				stepByStepHint: 'Tạm dừng ở cuối mỗi chương',
+				chapters: {
+					welcome: 'Chào mừng',
+					openPage: 'Mở trang chợ',
+					signUpTime: 'Khi nào đăng ký',
+					form: 'Điền đơn',
+					entered: 'Bạn đã tham gia xổ số',
+					draw: 'Rút thăm xổ số',
+					followLine: 'Theo dõi hàng chờ',
+					yourTurn: 'Đã đến lượt bạn',
+					runningLate: 'Nếu bạn đến trễ',
+					complete: 'Hoàn tất lượt đến',
+					missedSignUp: 'Nếu bạn lỡ thời gian đăng ký',
+					help: 'Nhờ giúp đỡ',
+				},
 			},
 			languageHint: 'Bạn có thể đổi ngôn ngữ bất cứ lúc nào ở phía trên màn hình.',
 			helpPrompt: 'Chưa biết phải làm gì?',
@@ -2568,6 +2688,25 @@ export const translations = {
 				open: '打开演示',
 				download: '下载演示',
 				more: '更多演示',
+				chapter: '章节',
+				previousChapter: '上一章',
+				nextChapter: '下一章',
+				stepByStep: '分步播放',
+				stepByStepHint: '每章结束时暂停',
+				chapters: {
+					welcome: '欢迎',
+					openPage: '打开市集页面',
+					signUpTime: '何时登记',
+					form: '填写表格',
+					entered: '您已参加抽签',
+					draw: '抽签',
+					followLine: '关注排队进度',
+					yourTurn: '轮到您了',
+					runningLate: '如果您晚到',
+					complete: '到访完成',
+					missedSignUp: '如果错过了登记',
+					help: '获取帮助',
+				},
 			},
 			languageHint: '您可以随时在屏幕顶部更改语言。',
 			helpPrompt: '不知道该怎么做？',
@@ -2962,6 +3101,25 @@ export const translations = {
 				open: 'فتح العرض',
 				download: 'تنزيل العرض',
 				more: 'المزيد من العروض',
+				chapter: 'الفصل',
+				previousChapter: 'الفصل السابق',
+				nextChapter: 'الفصل التالي',
+				stepByStep: 'خطوة بخطوة',
+				stepByStepHint: 'التوقف عند نهاية كل فصل',
+				chapters: {
+					welcome: 'مرحبًا بك',
+					openPage: 'افتح صفحة السوق',
+					signUpTime: 'متى تسجّل',
+					form: 'املأ النموذج',
+					entered: 'أنت مشارك في السحب',
+					draw: 'إجراء القرعة',
+					followLine: 'تابع الطابور',
+					yourTurn: 'حان دورك',
+					runningLate: 'إذا تأخرت',
+					complete: 'اكتملت زيارتك',
+					missedSignUp: 'إذا فاتك التسجيل',
+					help: 'طلب المساعدة',
+				},
 			},
 			languageHint: 'يمكنك تغيير اللغة في أي وقت من أعلى الشاشة.',
 			helpPrompt: 'لست متأكدًا مما عليك فعله؟',
@@ -3370,6 +3528,25 @@ export const translations = {
 				open: 'Ouvrir la présentation',
 				download: 'Télécharger la présentation',
 				more: 'Autres présentations',
+				chapter: 'Chapitre',
+				previousChapter: 'Chapitre précédent',
+				nextChapter: 'Chapitre suivant',
+				stepByStep: 'Pas à pas',
+				stepByStepHint: 'Mettre en pause à la fin de chaque chapitre',
+				chapters: {
+					welcome: 'Bienvenue',
+					openPage: 'Ouvrir la page du marché',
+					signUpTime: 'Quand s’inscrire',
+					form: 'Remplir le formulaire',
+					entered: 'Vous participez au tirage au sort',
+					draw: 'Le tirage au sort',
+					followLine: 'Suivre la file',
+					yourTurn: 'C’est votre tour',
+					runningLate: 'En cas de retard',
+					complete: 'Visite terminée',
+					missedSignUp: 'Si vous avez manqué l’inscription',
+					help: 'Obtenir de l’aide',
+				},
 			},
 			languageHint: 'Vous pouvez changer de langue à tout moment en haut de l’écran.',
 			helpPrompt: 'Vous ne savez pas quoi faire ?',

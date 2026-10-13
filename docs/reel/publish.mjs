@@ -77,7 +77,10 @@ for (const [name, video] of published) {
 		DESCRIPTION: presentation.description,
 		SOUND: presentation.sound,
 		INTERACTIVE: presentation.interactive,
-		PLAYER_CLASS: presentation.guest ? 'guest-player' : '',
+		// A narrated video has chapters, which take a row of their own in a narrow player.
+		PLAYER_CLASS: [presentation.guest && 'guest-player', video.narration && 'chaptered']
+			.filter(Boolean)
+			.join(' '),
 		OPEN: presentation.open ?? 'Open presentation',
 		DOWNLOAD: presentation.download ?? 'Download presentation',
 		MORE: presentation.more ?? 'More',
