@@ -7,6 +7,7 @@ import { NameTagCard } from './NameTagCard';
 type NameTagArgs = {
 	firstName: string;
 	lastName: string;
+	pronunciation: string | null;
 	queuePosition: number | null;
 	priorityNumber: number | null;
 	locale: Locale;
@@ -23,7 +24,7 @@ function Tag({ printed, ...source }: NameTagArgs & { printed: boolean }) {
 
 /**
  * The name tag a check-in volunteer writes out for a guest they have just called: first name and
- * last initial, place in line, and the language the guest registered in. Drawn at the printed
+ * last initial, how to say it when someone wrote that down, place in line, and the language the guest registered in. Drawn at the printed
  * label's proportions, so the card on screen and the label that prints match.
  */
 const meta = {
@@ -36,6 +37,7 @@ const meta = {
 	args: {
 		firstName: 'Maria',
 		lastName: 'Santos',
+		pronunciation: null,
 		queuePosition: 14,
 		priorityNumber: null,
 		locale: 'es',
@@ -65,6 +67,22 @@ export const PriorityNumber: Story = {
 };
 
 /** A guest added by hand outside the draw has no place in line yet. */
+/** How to say the name, under it, for whoever reads the tag aloud. */
+export const WithPronunciation: Story = {
+	args: { firstName: 'Siobhan', lastName: 'Kelly', pronunciation: 'shi-VAWN', locale: 'en' },
+};
+
+/** A pronunciation as long as the field allows is cut to two lines rather than spilling off. */
+export const LongPronunciation: Story = {
+	args: {
+		firstName: 'Nguyễn',
+		lastName: 'Thị',
+		pronunciation:
+			'NWIN, like "win" with an n in front — the first syllable is said low and falling, then rising',
+		locale: 'vi',
+	},
+};
+
 export const Unplaced: Story = {
 	args: { queuePosition: null, locale: 'en' },
 };
@@ -80,4 +98,9 @@ export const PrintedLabel: Story = {
 /** A long name on the printed label, set smaller to fit. */
 export const PrintedLongName: Story = {
 	args: { printed: true, firstName: 'Maximiliana Guadalupe', lastName: 'de la Cruz' },
+};
+
+/** How to say the name on the printed label, in black like everything else on it. */
+export const PrintedWithPronunciation: Story = {
+	args: { printed: true, firstName: 'Siobhan', lastName: 'Kelly', pronunciation: 'shi-VAWN' },
 };

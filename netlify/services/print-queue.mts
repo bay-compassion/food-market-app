@@ -40,6 +40,8 @@ const jobSchema = z.object({
 	visitId: z.string(),
 	firstName: z.string(),
 	lastInitial: z.string(),
+	// Defaulted for a tag a phone sent before pronunciations existed, still in the store.
+	pronunciation: z.string().nullable().default(null),
 	queuePosition: z.number().int().nullable(),
 	// Defaulted for a tag a phone sent before priority numbers existed, still in the store.
 	priorityNumber: z.number().int().nullable().default(null),
@@ -138,7 +140,7 @@ export function printQueue(): PrintQueue {
 
 /**
  * What a visit's name tag needs, read from the database rather than taken from the phone: the
- * first name, the last name's initial, the place in line, and the language. Null for no such visit.
+ * first name, the last name's initial, how to say the name, the place in line, and the language. Null for no such visit.
  */
 export async function nameTagFor(
 	visitId: string,
@@ -148,6 +150,7 @@ export async function nameTagFor(
 			.select({
 				firstName: guests.firstName,
 				lastName: guests.lastName,
+				pronunciation: guests.pronunciation,
 				queuePosition: visits.queuePosition,
 				priorityNumber: visits.priorityNumber,
 				locale: guests.locale,
@@ -166,6 +169,7 @@ export async function nameTagFor(
 		visitId,
 		firstName: row.firstName.trim(),
 		lastInitial: row.lastName.trim().charAt(0).toLocaleUpperCase(),
+		pronunciation: row.pronunciation?.trim() || null,
 		queuePosition: row.queuePosition,
 		priorityNumber: row.priorityNumber,
 		locale: isLocale(row.locale) ? row.locale : 'en',

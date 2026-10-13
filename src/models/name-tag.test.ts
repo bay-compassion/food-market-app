@@ -44,6 +44,19 @@ describe('NameTag', () => {
 		expect(name).toBe('Ana Lucia D.');
 	});
 
+	it('carries how to say the name, trimmed, and nothing when nobody wrote it', () => {
+		// Arrange
+		const tags = [' mah-REE-ah ', '  ', null, undefined].map(
+			(pronunciation) => new NameTag({ ...maria, pronunciation }),
+		);
+
+		// Act
+		const pronunciations = tags.map((tag) => tag.pronunciation);
+
+		// Assert
+		expect(pronunciations).toEqual(['mah-REE-ah', null, null, null]);
+	});
+
 	it('sets a long name smaller so it still fits the label', () => {
 		// Arrange
 		const short = new NameTag(maria);

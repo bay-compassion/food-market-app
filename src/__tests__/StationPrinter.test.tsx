@@ -11,6 +11,7 @@ const maria: NameTagPrintJob = {
 	visitId: 'visit-1',
 	firstName: 'Maria',
 	lastInitial: 'S',
+	pronunciation: null,
 	queuePosition: 14,
 	priorityNumber: null,
 	locale: 'es',

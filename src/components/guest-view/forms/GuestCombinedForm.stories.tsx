@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
-import { expect, userEvent } from 'storybook/test';
+import { expect, userEvent, waitFor } from 'storybook/test';
 
 import { translations, type Locale } from '../../../locales';
 import { StorageKey, StorageService } from '../../../services/storage.service';
@@ -144,7 +144,8 @@ export const ReturningGuest: Story = {
 
 		await userEvent.click(canvas.getByRole('button', { name: forms.pronunciationOffer }));
 
-		await expect(canvas.getByLabelText(forms.pronunciationLabel)).toHaveFocus();
+		// Focus follows once the panel has finished opening.
+		await waitFor(() => expect(canvas.getByLabelText(forms.pronunciationLabel)).toHaveFocus());
 	},
 };
 

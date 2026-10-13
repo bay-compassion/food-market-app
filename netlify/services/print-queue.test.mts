@@ -23,6 +23,7 @@ const maria = {
 	visitId: 'visit-1',
 	firstName: 'Maria',
 	lastInitial: 'S',
+	pronunciation: null,
 	queuePosition: 14,
 	priorityNumber: null,
 	locale: 'es' as const,
@@ -43,6 +44,22 @@ describe('PrintQueue', () => {
 		// Assert
 		expect(pending.map((job) => job.firstName)).toEqual(['Maria', 'Linh']);
 		expect(pending[0]).toMatchObject({ ...maria, requestedAt: '2026-10-05T18:00:00.000Z' });
+	});
+
+	it('reads a tag sent before pronunciations existed as having none', async () => {
+		// Arrange
+		const { queue, entries } = queueWith();
+		const job = await queue.enqueue(maria);
+		const key = [...entries.keys()].find((entry) => entry.endsWith(job.id))!;
+		const { pronunciation: _, ...older } = entries.get(key) as Record<string, unknown>;
+
+		entries.set(key, older);
+
+		// Act
+		const pending = await queue.pending();
+
+		// Assert
+		expect(pending).toEqual([{ ...job, pronunciation: null }]);
 	});
 
 	it('removes a printed tag, and shrugs off removing it twice', async () => {

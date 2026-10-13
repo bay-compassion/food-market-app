@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
+import { expect, waitFor } from 'storybook/test';
 
 import { translations } from '../../../locales';
 import { GuestInformationForm } from './GuestInformationForm';
@@ -78,9 +78,10 @@ export const AddingAPronunciation: Story = {
 
 		await userEvent.click(canvas.getByRole('button', { name: forms.pronunciationOffer }));
 
-		const pronunciation = canvas.getByLabelText(forms.pronunciationLabel);
+		const pronunciation = await canvas.findByLabelText(forms.pronunciationLabel);
 
-		await expect(pronunciation).toHaveFocus();
+		// Focus follows once the panel has finished opening.
+		await waitFor(() => expect(pronunciation).toHaveFocus());
 		await userEvent.type(pronunciation, 'shi-VAWN');
 		await expect(pronunciation).toHaveValue('shi-VAWN');
 	},

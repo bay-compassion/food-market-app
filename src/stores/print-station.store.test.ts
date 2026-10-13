@@ -10,6 +10,7 @@ function job(id: string, firstName = 'Maria'): NameTagPrintJob {
 		visitId: `visit-${id}`,
 		firstName,
 		lastInitial: 'S',
+		pronunciation: null,
 		queuePosition: 14,
 		priorityNumber: null,
 		locale: 'es',

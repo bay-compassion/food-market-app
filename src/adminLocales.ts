@@ -319,6 +319,8 @@ export interface QueueDeskTranslation {
 	unplaced: string;
 	closeTicket: string;
 	nameTag: string;
+	/** Names the pronunciation line on a name tag. */
+	pronunciation: string;
 	printNameTag: string;
 	/** Under the print button: where the tag will come out. */
 	printsAtStation: string;
@@ -748,6 +750,7 @@ export const adminTranslations = {
 			unplaced: 'Not placed',
 			closeTicket: 'Close ticket',
 			nameTag: 'Name tag',
+			pronunciation: 'Pronunciation',
 			printNameTag: 'Print name tag',
 			printsAtStation: 'Prints at the print station',
 			printStationIsOffline: 'The print station is offline',

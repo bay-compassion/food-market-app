@@ -549,7 +549,7 @@ export const translations = {
 			forms: {
 				informationLegend: 'Your information',
 				pronunciationOffer: 'Would you like to tell us how to say your name?',
-				pronunciationLabel: 'How to say your name (optional)',
+				pronunciationLabel: 'How to say your name',
 				pronunciationHelp: 'Write it the way it sounds, so we can call your name correctly.',
 				lotteryLegend: 'Lottery entry details',
 				questionsLegend: 'Questions',
@@ -964,7 +964,7 @@ export const translations = {
 			forms: {
 				informationLegend: 'Su información',
 				pronunciationOffer: '¿Le gustaría decirnos cómo se pronuncia su nombre?',
-				pronunciationLabel: 'Cómo se pronuncia su nombre (opcional)',
+				pronunciationLabel: 'Cómo se pronuncia su nombre',
 				pronunciationHelp: 'Escríbalo como suena, para que podamos decir su nombre correctamente.',
 				lotteryLegend: 'Datos de inscripción al sorteo',
 				questionsLegend: 'Preguntas',
@@ -1382,7 +1382,7 @@ export const translations = {
 			forms: {
 				informationLegend: 'اطلاعات شما',
 				pronunciationOffer: 'مایلید به ما بگویید نام شما چگونه تلفظ می‌شود؟',
-				pronunciationLabel: 'تلفظ نام شما (اختیاری)',
+				pronunciationLabel: 'تلفظ نام شما',
 				pronunciationHelp: 'آن را همان‌طور که خوانده می‌شود بنویسید تا نام شما را درست صدا بزنیم.',
 				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
 				questionsLegend: 'پرسش‌ها',
@@ -1793,7 +1793,7 @@ export const translations = {
 			forms: {
 				informationLegend: 'Iyong impormasyon',
 				pronunciationOffer: 'Gusto mo bang sabihin sa amin kung paano bigkasin ang iyong pangalan?',
-				pronunciationLabel: 'Paano bigkasin ang iyong pangalan (opsyonal)',
+				pronunciationLabel: 'Paano bigkasin ang iyong pangalan',
 				pronunciationHelp:
 					'Isulat ito ayon sa tunog, para matawag namin nang tama ang iyong pangalan.',
 				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
@@ -2211,7 +2211,7 @@ export const translations = {
 			forms: {
 				informationLegend: 'Thông tin của bạn',
 				pronunciationOffer: 'Bạn có muốn cho chúng tôi biết cách đọc tên của bạn không?',
-				pronunciationLabel: 'Cách đọc tên của bạn (không bắt buộc)',
+				pronunciationLabel: 'Cách đọc tên của bạn',
 				pronunciationHelp: 'Hãy viết theo cách phát âm, để chúng tôi gọi đúng tên của bạn.',
 				lotteryLegend: 'Thông tin tham gia xổ số',
 				questionsLegend: 'Câu hỏi',
@@ -2620,7 +2620,7 @@ export const translations = {
 			forms: {
 				informationLegend: '您的信息',
 				pronunciationOffer: '愿意告诉我们您的名字怎么读吗？',
-				pronunciationLabel: '您的名字怎么读（选填）',
+				pronunciationLabel: '您的名字怎么读',
 				pronunciationHelp: '请按读音写出，方便我们正确叫出您的名字。',
 				lotteryLegend: '抽签登记信息',
 				questionsLegend: '问题',
@@ -3013,7 +3013,7 @@ export const translations = {
 			forms: {
 				informationLegend: 'معلوماتك',
 				pronunciationOffer: 'هل تودّ أن تخبرنا كيف يُنطق اسمك؟',
-				pronunciationLabel: 'كيف يُنطق اسمك (اختياري)',
+				pronunciationLabel: 'كيف يُنطق اسمك',
 				pronunciationHelp: 'اكتبه كما يُلفظ، حتى نتمكن من مناداة اسمك بشكل صحيح.',
 				lotteryLegend: 'تفاصيل التسجيل في القرعة',
 				questionsLegend: 'أسئلة',
@@ -3420,7 +3420,7 @@ export const translations = {
 			forms: {
 				informationLegend: 'Vos informations',
 				pronunciationOffer: 'Souhaitez-vous nous dire comment se prononce votre nom ?',
-				pronunciationLabel: 'Comment prononcer votre nom (facultatif)',
+				pronunciationLabel: 'Comment prononcer votre nom',
 				pronunciationHelp:
 					'Écrivez-le comme il se prononce, pour que nous puissions appeler votre nom correctement.',
 				lotteryLegend: 'Détails de l’inscription au tirage au sort',
