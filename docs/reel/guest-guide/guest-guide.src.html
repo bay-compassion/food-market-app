@@ -1,4 +1,4 @@
-<title>Guest Market Guide</title>
+<title>__TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link
 	rel="stylesheet"
@@ -176,6 +176,8 @@
 	.guide-consent .submit {
 		font-size: 13px;
 		margin-top: 20px;
+		padding-inline: 10px;
+		text-align: center;
 	}
 	#presentationLocale {
 		order: 3;
@@ -312,7 +314,7 @@
 			mountPlayer,
 		} = window.stage;
 		const { cues, C, E } = narrationCues(__NARRATION__);
-		let locale = 'en';
+		let locale = window.stage.LOCALE;
 		const phone = phoneFrame('10:30');
 		phone.id = 'guestPhone';
 		document.getElementById('phoneMotion').appendChild(phone);

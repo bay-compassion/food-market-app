@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12,<3.13"
-# dependencies = ["kokoro-onnx==0.6.1", "soundfile==0.13.1"]
+# dependencies = ["kokoro-onnx==0.6.1", "soundfile==0.13.1", "misaki[zh]==0.9.4"]
 # ///
 """Local neural narration, called once per video by voice.mjs through uv.
 
@@ -10,6 +10,7 @@ out/kokoro folder. No API key or hosted speech service is needed.
 
 import json
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -52,12 +53,31 @@ def main():
         espeak_config=EspeakConfig(data_path=str(data)),
     )
 
+    mandarin = voice.get("language") == "zh"
+    if mandarin:
+        from misaki.zh import ZHG2P
+
+        # The v1.0 model uses Misaki's original Mandarin tone alphabet.
+        # Phonemize interleaved English names separately; legacy ZHG2P keeps
+        # Latin letters literally rather than converting them to English phones.
+        g2p = ZHG2P()
+
     for line in request["lines"]:
+        text = line.get("say", line["text"])
+        if mandarin:
+            segments = re.split(r"([A-Za-z]+(?:[ '-][A-Za-z]+)*)", text)
+            text = " ".join(
+                model.tokenizer.phonemize(segment, lang="en-us")
+                if re.match(r"[A-Za-z]", segment)
+                else g2p(segment)[0]
+                for segment in segments if segment.strip()
+            )
         samples, sample_rate = model.create(
-            line.get("say", line["text"]),
+            text,
             voice=voice["name"],
             speed=voice.get("speed", 1.0),
             lang=voice.get("language", "en-us"),
+            is_phonemes=mandarin,
         )
         output = Path(request["clips"]) / f'{line["id"]}.kokoro.wav'
         sf.write(output, samples, sample_rate, subtype="PCM_16")

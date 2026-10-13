@@ -10,6 +10,7 @@
  */
 (() => {
 	const S = __STRINGS__;
+	const LOCALE = '__LOCALE__';
 	/** The queue desk's copy, from `src/adminLocales.ts`. Staff screens are English only. */
 	const DESK = __DESK__;
 	const LOGO = '__LOGO__';
@@ -432,7 +433,7 @@
 	function mountPlayer({ tl, END, snaps, describeBeat, source, cues = [], onLocaleChange }) {
 		const viewport = k('viewport');
 		const stage = k('stage');
-		let locale = 'en';
+		let locale = LOCALE;
 		let soundAvailable = true;
 		const copy = () =>
 			onLocaleChange
@@ -467,6 +468,7 @@
 					).join('') +
 					'</select>',
 			);
+			k('presentationLocale').value = locale;
 			k('presentationLocale').addEventListener('change', (event) => {
 				locale = event.target.value;
 				document.documentElement.lang = locale;
@@ -811,6 +813,7 @@
 
 	window.stage = {
 		S,
+		LOCALE,
 		DESK,
 		LOGO,
 		LANGS,

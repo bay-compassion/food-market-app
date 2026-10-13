@@ -7,9 +7,12 @@ const { chromium } = require('playwright');
 void (async () => {
 	const { videos } = await import('./videos.mjs');
 	const { translations, languages } = await import('../../src/locales.ts');
+	const reviewName =
+		process.argv.slice(2).find((name) => videos[name]?.publish.guest) ?? 'guest-guide';
+	const reviewLocale = videos[reviewName].locale ?? 'en';
 	const browser = await chromium.launch();
 	const errors = [];
-	const stills = path.join(__dirname, 'out/guest-guide/review');
+	const stills = path.join(__dirname, 'out/' + reviewName + '/review');
 
 	mkdirSync(stills, { recursive: true });
 
@@ -22,8 +25,8 @@ void (async () => {
 			);
 			assert.equal(
 				await site.locator('.links a').count(),
-				4,
-				'Every page links to both other presentations',
+				Object.values(videos).filter((video) => video.publish).length + 1,
+				'Every page links to the other presentations',
 			);
 			assert.equal((await site.content()).includes('__INTERACTIVE__'), false);
 		}
@@ -81,7 +84,10 @@ void (async () => {
 				Math.abs(audioDuration - duration) < 0.2,
 				`${name}: soundtrack length matches timeline`,
 			);
-			assert.equal(await page.locator('#play').textContent(), 'Play');
+			assert.equal(
+				await page.locator('#play').textContent(),
+				translations[videos[name].locale ?? 'en'].guestView.presentation.play,
+			);
 			await page.locator('#sound').click();
 			await page.waitForFunction(
 				() => document.querySelector('#sound').getAttribute('aria-pressed') === 'true',
@@ -108,7 +114,7 @@ void (async () => {
 		const guest = await browser.newPage();
 
 		guest.on('pageerror', (error) => errors.push(`guest-guide: ${error.message}`));
-		await guest.goto('file://' + path.join(__dirname, 'out/guest-guide.html') + '#watch');
+		await guest.goto('file://' + path.join(__dirname, 'out', reviewName + '.html') + '#watch');
 		await guest.waitForFunction(() => window.reel);
 		await guest.evaluate(() => document.fonts.ready);
 		const cues = await guest.evaluate(() => window.reel.cues);
@@ -154,10 +160,10 @@ void (async () => {
 					);
 				}
 			}
-			console.log(`guest-guide: every narration scene in eight locales at ${width}px`);
+			console.log(`${reviewName}: every narration scene in eight locales at ${width}px`);
 		}
 		await staticLayout.evaluate((element) => element.remove());
-		await guest.locator('#presentationLocale').selectOption('en');
+		await guest.locator('#presentationLocale').selectOption(reviewLocale);
 
 		for (const [width, height] of [
 			[1920, 1080],
@@ -201,13 +207,20 @@ void (async () => {
 		await guest.locator('#presentationLocale').selectOption('fa');
 		assert.equal(await guest.locator('.guide-consent').count(), 1);
 		assert.equal(await guest.locator('.guide-consent').getAttribute('dir'), 'rtl');
-		await guest.setViewportSize({ width: 1280, height: 850 });
-		await guest.goto('file://' + path.join(__dirname, 'out/guest-guide.html') + '#dev');
-		await guest.waitForSelector('#beats li');
-		await guest.waitForLoadState('networkidle');
-		assert.ok((await guest.locator('#beats li').count()) > 30);
-		await guest.locator('#beats li button').nth(5).click();
-		assert.ok((await guest.evaluate(() => window.reel.tl.time())) > 0);
+		// A hash-only navigation keeps the watch page alive and races the DevTools load.
+		// Match stills.cjs: initialize Dev mode in its own fresh document.
+		const dev = await browser.newPage({ viewport: { width: 1280, height: 850 } });
+
+		dev.on('pageerror', (error) => errors.push(`${reviewName}/dev: ${error.message}`));
+		await dev.goto('file://' + path.join(__dirname, 'out', reviewName + '.html') + '#dev');
+		await dev.waitForSelector('#beats li');
+		await dev.waitForLoadState('networkidle');
+		assert.ok((await dev.locator('#beats li').count()) > 30);
+		const beat = dev.locator('#beats li button').nth(5);
+		const beatTime = parseFloat(await beat.locator('time').textContent());
+
+		await beat.click();
+		await dev.waitForFunction((time) => Math.abs(window.reel.tl.time() - time) < 0.01, beatTime);
 		assert.deepEqual(errors, []);
 		console.log(
 			'Portrait and landscape review stills saved; RTL consent and Dev controls checked; no page errors.',

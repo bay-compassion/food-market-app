@@ -126,6 +126,9 @@ export interface GuestTourTranslations {
 
 /** Playback copy for the guest instructional presentation. Narration is in English. */
 export interface GuestPresentationTranslations {
+	soundChinese: string;
+	soundSpanish: string;
+	screens: string;
 	title: string;
 	heading: string;
 	summary: string;
@@ -468,6 +471,9 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish: 'Turn the sound on for Spanish narration. The voice is AI-generated.',
+				soundChinese: 'Turn the sound on for Mandarin narration. The voice is AI-generated.',
+				screens: 'The screens are simplified recreations of the real app, with fictional guests.',
 				title: 'Guest Market Guide',
 				heading: 'Your visit to The Bay Compassion',
 				summary: 'A short guide for guests on market day.',
@@ -878,6 +884,12 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish:
+					'Active el sonido para escuchar la narración en español. La voz se genera con inteligencia artificial.',
+				soundChinese:
+					'Active el sonido para escuchar la narración en chino mandarín. La voz se genera con inteligencia artificial.',
+				screens:
+					'Las pantallas son recreaciones simplificadas de la aplicación real, con visitantes ficticios.',
 				title: 'Guía del mercado para visitantes',
 				heading: 'Su visita a The Bay Compassion',
 				summary: 'Una breve guía para visitantes el día del mercado.',
@@ -1295,6 +1307,11 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish:
+					'برای شنیدن روایت اسپانیایی، صدا را روشن کنید. صدا با هوش مصنوعی تولید شده است.',
+				soundChinese:
+					'برای شنیدن روایت چینی ماندارین، صدا را روشن کنید. صدا با هوش مصنوعی تولید شده است.',
+				screens: 'صفحه‌ها بازسازی‌های ساده‌شدهٔ برنامهٔ واقعی با مهمانان خیالی هستند.',
 				title: 'راهنمای بازار برای مهمانان',
 				heading: 'بازدید شما از The Bay Compassion',
 				summary: 'راهنمایی کوتاه برای مهمانان در روز بازار.',
@@ -1703,6 +1720,10 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish: 'Buksan ang tunog para sa pagsasalaysay sa Espanyol. Gawa ng AI ang boses.',
+				soundChinese: 'Buksan ang tunog para sa pagsasalaysay sa Mandarin. Gawa ng AI ang boses.',
+				screens:
+					'Pinasimpleng bersyon ng tunay na app ang mga screen, gamit ang mga kathang-isip na bisita.',
 				title: 'Gabay sa palengke para sa mga bisita',
 				heading: 'Ang iyong pagbisita sa The Bay Compassion',
 				summary: 'Isang maikling gabay para sa mga bisita sa araw ng palengke.',
@@ -2117,6 +2138,11 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish:
+					'Bật âm thanh để nghe lời hướng dẫn bằng tiếng Tây Ban Nha. Giọng nói được tạo bằng AI.',
+				soundChinese:
+					'Bật âm thanh để nghe lời hướng dẫn bằng tiếng Trung Quan thoại. Giọng nói được tạo bằng AI.',
+				screens: 'Các màn hình là bản minh họa giản lược của ứng dụng thực tế, với khách hư cấu.',
 				title: 'Hướng dẫn chợ dành cho khách',
 				heading: 'Lần ghé thăm The Bay Compassion của bạn',
 				summary: 'Hướng dẫn ngắn dành cho khách vào ngày chợ.',
@@ -2524,6 +2550,9 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish: '打开声音收听西班牙语解说。声音由人工智能生成。',
+				soundChinese: '打开声音收听普通话解说。声音由人工智能生成。',
+				screens: '画面是实际应用的简化演示，使用虚构的访客。',
 				title: '访客食品市场指南',
 				heading: '您在 The Bay Compassion 的到访',
 				summary: '市场开放日的访客简明指南。',
@@ -2913,6 +2942,9 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish: 'شغّل الصوت لسماع الشرح باللغة الإسبانية. الصوت مولّد بالذكاء الاصطناعي.',
+				soundChinese: 'شغّل الصوت لسماع الشرح بالصينية المندرينية. الصوت مولّد بالذكاء الاصطناعي.',
+				screens: 'الشاشات نماذج مبسطة من التطبيق الحقيقي، مع ضيوف خياليين.',
 				title: 'دليل السوق للضيوف',
 				heading: 'زيارتك إلى The Bay Compassion',
 				summary: 'دليل قصير للضيوف في يوم السوق.',
@@ -3316,6 +3348,12 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				soundSpanish:
+					'Activez le son pour écouter la narration en espagnol. La voix est générée par intelligence artificielle.',
+				soundChinese:
+					'Activez le son pour écouter la narration en mandarin. La voix est générée par intelligence artificielle.',
+				screens:
+					'Les écrans sont des reproductions simplifiées de l’application réelle, avec des visiteurs fictifs.',
 				title: 'Guide du marché pour les visiteurs',
 				heading: 'Votre visite à The Bay Compassion',
 				summary: 'Un petit guide pour les visiteurs le jour du marché.',
