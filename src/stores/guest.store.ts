@@ -12,7 +12,10 @@ import {
 import { makeReactive } from '../services/make-reactive.ts';
 import { StorageKey, StorageService } from '../services/storage.service.ts';
 
-export type GuestIdentity = Pick<GuestRegistrationInput, 'firstName' | 'lastName' | 'phone'>;
+export type GuestIdentity = Pick<GuestRegistrationInput, 'firstName' | 'lastName' | 'phone'> & {
+	/** Empty when the guest has not written one — and on a phone that saved its identity before. */
+	pronunciation: string;
+};
 
 export type GuestStoreOptions = {
 	/** This browser's install ID; defaults to the one `src/install-id.ts` keeps in storage. */
@@ -227,8 +230,14 @@ export class GuestStore {
 	 * reading a guest profile back — because the single-use code that returned it was handed to this
 	 * guest in person.
 	 */
-	adopt(deviceToken: string, identity: GuestIdentity): void {
-		this.saveIdentity({ deviceToken }, identity);
+	adopt(
+		deviceToken: string,
+		identity: Omit<GuestIdentity, 'pronunciation'> & { pronunciation: string | null },
+	): void {
+		this.saveIdentity(
+			{ deviceToken },
+			{ ...identity, pronunciation: identity.pronunciation ?? '' },
+		);
 		// Consent belongs to a guest, so nothing the previous guest on this phone chose may show under
 		// this one's name — not even while the reload below is in flight, or if it fails.
 		this._smsState = 'idle';
@@ -257,7 +266,7 @@ export class GuestStore {
 	/** Saves the credential a registration/sign-up response issued, and the identity it carried. */
 	private saveIdentity(
 		result: { deviceToken?: string },
-		input: { firstName: string; lastName: string; phone: string },
+		input: Omit<GuestIdentity, 'pronunciation'> & { pronunciation?: string },
 	): void {
 		if (result.deviceToken) {
 			this.storage?.set(StorageKey.GUEST_DEVICE_TOKEN, result.deviceToken);
@@ -269,6 +278,8 @@ export class GuestStore {
 				firstName: input.firstName,
 				lastName: input.lastName,
 				phone: input.phone,
+				// Kept as it was when this submission left it unchanged.
+				pronunciation: input.pronunciation ?? this._identity?.pronunciation ?? '',
 			};
 			this.storage?.set(StorageKey.GUEST_IDENTITY, this._identity);
 		}
@@ -550,6 +561,11 @@ export class GuestStore {
 				firstName: identity.firstName,
 				lastName: identity.lastName,
 				phone: identity.phone,
+				// Optional: a phone that saved its identity before pronunciations existed has none.
+				pronunciation:
+					'pronunciation' in identity && typeof identity.pronunciation === 'string'
+						? identity.pronunciation
+						: '',
 			};
 		}
 

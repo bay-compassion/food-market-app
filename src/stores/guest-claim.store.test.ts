@@ -10,7 +10,7 @@ const visitTokenKey = 'bay-compassion.visit-token';
 const claimToken = 'claim-token-shown-as-a-qr-code-1234567890abcdef';
 const claimed: GuestClaimResult = {
 	deviceToken: 'device-token-for-this-phone',
-	identity: { firstName: 'Ada', lastName: 'Lovelace', phone: '510-555-0123' },
+	identity: { firstName: 'Ada', lastName: 'Lovelace', phone: '510-555-0123', pronunciation: null },
 	visit: {
 		id: 'visit-7',
 		marketEventId: 'event-1',

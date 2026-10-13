@@ -27,12 +27,19 @@ export type CurrentVisit = {
 	calledPriority: number[];
 };
 
-export type GuestRegistrationInput = GuestFormState & {
-	locale: string;
-	marketEventId: string | null;
-	answers: Record<string, string | number>;
-	source: 'self';
-};
+/**
+ * Sent only when the guest changed it on this phone. Absent leaves the stored one alone, so a
+ * correction a worker made is not overwritten by a phone that never saw it.
+ */
+type PronunciationChange = { pronunciation?: string };
+
+export type GuestRegistrationInput = Omit<GuestFormState, 'pronunciation'> &
+	PronunciationChange & {
+		locale: string;
+		marketEventId: string | null;
+		answers: Record<string, string | number>;
+		source: 'self';
+	};
 
 export type GuestRegistrationPayload = GuestRegistrationInput & { deviceToken: string | null };
 
@@ -66,7 +73,7 @@ export type GuestSignupInput = {
 	lastName: string;
 	phone: string;
 	locale: string;
-};
+} & PronunciationChange;
 
 export type GuestSignupPayload = GuestSignupInput & { deviceToken: string | null };
 
@@ -94,7 +101,7 @@ export async function submitGuestSignup(payload: GuestSignupPayload): Promise<Gu
 /** What a phone receives for scanning a worker's QR code. */
 export type GuestClaimResult = {
 	deviceToken: string;
-	identity: { firstName: string; lastName: string; phone: string };
+	identity: { firstName: string; lastName: string; phone: string; pronunciation: string | null };
 	/** The guest's visit in today's session, when they have one. */
 	visit: { id: string; marketEventId: string; status: VisitStatus; visitToken: string } | null;
 };

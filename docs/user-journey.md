@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=0bc61c69f8ea, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=0b1b3fca016f, src/stores/registration.store.ts=3d65f23ea9b3, src/services/guestVisitApi.ts=84409e12238d, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=8f2e48f04b00, netlify/services/guestRegistration.mts=d22a5312a73e, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3402af73fae9, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=0bc61c69f8ea, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=c9c3c32b90bd, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=d22a5312a73e, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=0afb6f55c178, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
 
 # Guest journey
 
@@ -29,6 +29,9 @@ only, no session), and
 consent). The routes render dedicated zero-prop forms—`GuestCombinedForm` for market registration
 and `GuestSignupForm` for identity-only signup—which share the same visual form shell and read the
 in-progress fields through the root's [`RegistrationStore`](../src/stores/registration.store.ts).
+The optional pronunciation of the guest's name is sent only when the guest changed it on this
+phone: a worker can correct it from the queue screen, and the phone never reads that back, so
+resending the saved one would undo the correction.
 `/api/visit` (check status, cancel) is
 called through [`src/services/guestVisitApi.ts`](../src/services/guestVisitApi.ts), with the root's
 [`VisitStore`](../src/stores/visit.store.ts) owning the stored visit token, the current visit, and its
@@ -96,8 +99,8 @@ flowchart TD
     hasVisit -- no --> canRegister{Registration open?}
 
     canRegister -- yes --> cachedIdentity{Cached local<br/>name and phone?}
-    cachedIdentity -- no --> combinedForm[Sign-up fields — name, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
-    cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card and<br/>lottery-entry fields only:<br/>age range, household size,<br/>children/seniors]
+    cachedIdentity -- no --> combinedForm[Sign-up fields — name, an offer<br/>to add a pronunciation, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
+    cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card,<br/>an offer to add a pronunciation,<br/>and lottery-entry fields:<br/>age range, household size,<br/>children/seniors]
     canRegister -- no --> nonOpenIdentity[Show identity card:<br/>saved identity or offer to save information]
     nonOpenIdentity -. "Save my information" button .-> signupRoute
     nonOpenIdentity --> phase{Which active phase is<br/>the session in?}
@@ -107,9 +110,9 @@ flowchart TD
     signupRoute([Guest visits /signup]) --> alreadyIdentified{Already has a<br/>device token?}
     alreadyIdentified -- yes --> redirectHome[Redirect to /]
     redirectHome --> saved
-    alreadyIdentified -- no --> signupOnlyForm[Sign-up form:<br/>name and phone only —<br/>no session or household data]
+    alreadyIdentified -- no --> signupOnlyForm[Sign-up form:<br/>name, an offer to add a<br/>pronunciation, and phone only —<br/>no session or household data]
     signupOnlyForm --> signupSubmit["POST /api/guest-information<br/>(creates/updates the guest,<br/>no visit)"]
-    signupSubmit --> saveSignupIdentity[Save entered name and phone,<br/>and any issued device token]
+    signupSubmit --> saveSignupIdentity[Save entered name, phone,<br/>and pronunciation if changed,<br/>and any issued device token]
     saveSignupIdentity --> signupSuccess([Show "Your information is saved"<br/>on /signup])
 
     workerAdded([A worker adds the guest by hand,<br/>or a manager picks any guest's<br/>Actions menu and confirms who they are]) --> claimRoute["Guest scans the QR code:<br/>/claim#code"]
@@ -122,7 +125,7 @@ flowchart TD
     replaceWarning --> claimTap[Guest taps "Set up this phone"]
     claimTap --> claimSubmit["POST /api/guest-claim<br/>(single use, valid 15 minutes)"]
     claimSubmit -- refused --> claimFailed[Expired or already used:<br/>ask a staff member for a new code]
-    claimSubmit -- accepted --> adoptIdentity[Save the issued device token,<br/>the returned name and phone,<br/>and a fresh visit token if the guest<br/>has a visit in today's session;<br/>a manager's override signs<br/>the old phone out]
+    claimSubmit -- accepted --> adoptIdentity[Save the issued device token,<br/>the returned name, phone,<br/>and pronunciation,<br/>and a fresh visit token if the guest<br/>has a visit in today's session;<br/>a manager's override signs<br/>the old phone out]
     adoptIdentity --> open
 
     combinedForm --> questions[Answer this session's<br/>registration questions]

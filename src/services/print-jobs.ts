@@ -2,7 +2,8 @@ import type { Locale } from '../locales.ts';
 
 /**
  * A name tag waiting at the print station, as `GET /api/admin/print-jobs` returns it. Only what the
- * label shows travels: the first name, the last name's initial, the queue number, and the language.
+ * label shows travels: the first name, the last name's initial, how to say the name, the queue
+ * number, and the language.
  */
 export type NameTagPrintJob = {
 	/** Sorts in the order the tags were sent. */
@@ -10,6 +11,7 @@ export type NameTagPrintJob = {
 	visitId: string;
 	firstName: string;
 	lastInitial: string;
+	pronunciation: string | null;
 	queuePosition: number | null;
 	priorityNumber: number | null;
 	locale: Locale;

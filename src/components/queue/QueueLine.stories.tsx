@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
-import type { AdminApi, AdminGuest } from '../../services/admin-api';
+import type { AdminApi, AdminGuest, GuestDetails } from '../../services/admin-api';
 import type { QueuePlacement } from '../../services/guestAdmission';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitEvent } from '../../services/visit-events';
@@ -49,7 +49,11 @@ const numberedQueue: AdminGuest[] = [
 	},
 ];
 
-const matt = { kind: 'worker', id: 'auth0|story-worker', name: 'Matt' } as const;
+const matt = {
+	kind: 'worker',
+	id: 'auth0|story-worker',
+	name: 'Matt',
+} as const;
 
 /**
  * A plausible history for a guest in the story line: drawn in the lottery, then whatever brought
@@ -116,7 +120,13 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 		}
 
 		roster = roster.map((guest) =>
-			guest === next ? { ...guest, status: 'called', calledAt: new Date().toISOString() } : guest,
+			guest === next
+				? {
+						...guest,
+						status: 'called',
+						calledAt: new Date().toISOString(),
+					}
+				: guest,
 		);
 
 		return [next.id];
@@ -134,7 +144,12 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 
 		roster = roster.map((guest) => {
 			if (guest.id === visitId) {
-				return { ...guest, status: 'waiting', calledAt: null, queuePosition: position };
+				return {
+					...guest,
+					status: 'waiting',
+					calledAt: null,
+					queuePosition: position,
+				};
 			}
 
 			return placement === 'next' && guest.status === 'waiting'
@@ -152,6 +167,17 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 			}
 		},
 		callNext: async () => callNext(),
+		updateGuestDetails: async (guestId: string, details: GuestDetails) => {
+			roster = roster.map((guest) =>
+				guest.guestId === guestId
+					? {
+							...guest,
+							pronunciation: details.pronunciation || null,
+							staffNotes: details.staffNotes || null,
+						}
+					: guest,
+			);
+		},
 		serveAndCallNext: async (visitId: string) => {
 			roster = roster.map((guest) =>
 				guest.id === visitId ? { ...guest, status: 'served' } : guest,
@@ -179,7 +205,9 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 
 	store.session.applyServerState(overview);
 
-	const desk = new QueueDeskStore(store.admin, store.session);
+	const desk = new QueueDeskStore(store.admin, store.session, {
+		notifications: store.notifications,
+	});
 
 	void store.admin.refreshSessionGuests().then(() => {
 		const open = store.admin.sessionGuests.find((guest) => guest.id === openVisitId);
@@ -280,12 +308,44 @@ export const TicketOpen: Story = {
 		await expect(tag.getByText('ES')).toBeVisible();
 
 		const history = within(
-			await within(document.body).findByRole('region', { name: t.history.title }),
+			await within(document.body).findByRole('region', {
+				name: t.history.title,
+			}),
 		);
 
 		await expect(history.getByText(t.history.kinds.called)).toBeVisible();
 		await expect(history.getByText(t.history.byWorker.replace('{name}', 'Matt'))).toBeVisible();
 		await expect(history.getByText(t.history.byLottery)).toBeVisible();
+	},
+};
+
+/**
+ * How to say the guest's name — as they wrote it on their phone — and the notes staff keep about
+ * them, edited from the open ticket. The guest never sees the notes.
+ */
+export const EditingGuestDetails: Story = {
+	args: {
+		guests: numberedQueue.map((guest) =>
+			guest.id === 'guest-called-1' ? { ...guest, pronunciation: 'mah-REE-ah' } : guest,
+		),
+		openVisitId: 'guest-called-1',
+	},
+	play: async () => {
+		const ticket = await openTicket();
+		const details = within(await ticket.findByRole('form', { name: t.guestDetails.title }));
+		const save = details.getByRole('button', { name: t.guestDetails.save });
+
+		await expect(details.getByLabelText(t.guestDetails.pronunciation)).toHaveValue('mah-REE-ah');
+		await expect(save).toBeDisabled();
+
+		await userEvent.type(
+			details.getByLabelText(t.guestDetails.staffNotes),
+			'Prefers to be called by her first name.',
+		);
+		await userEvent.click(save);
+
+		await expect(await within(document.body).findByText(t.guestDetails.saved)).toBeVisible();
+		await expect(save).toBeDisabled();
 	},
 };
 
@@ -315,7 +375,9 @@ export const ServingALateArrival: Story = {
 		const page = within(document.body);
 
 		await expect(
-			await page.findByRole('button', { name: adminTranslations.en.markServed }),
+			await page.findByRole('button', {
+				name: adminTranslations.en.markServed,
+			}),
 		).toBeVisible();
 		await expect(page.queryByRole('button', { name: t.serveAndCallNext })).toBeNull();
 	},
@@ -367,7 +429,9 @@ export const EveryoneThrough: Story = {
 		const canvas = within(canvasElement);
 
 		await expect(
-			await canvas.findByRole('button', { name: adminTranslations.en.closeSession }),
+			await canvas.findByRole('button', {
+				name: adminTranslations.en.closeSession,
+			}),
 		).toBeVisible();
 	},
 };

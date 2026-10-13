@@ -340,6 +340,7 @@ describe('App', () => {
 			firstName: 'Ada',
 			lastName: 'Lovelace',
 			phone: '(555) 123-4567',
+			pronunciation: '',
 		});
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('Ada L');
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('(555) 123-4567');

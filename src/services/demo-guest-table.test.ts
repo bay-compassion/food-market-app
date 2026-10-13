@@ -7,6 +7,7 @@ const guest: DemoGuest = {
 	id: 'one',
 	firstName: 'Zoe',
 	lastName: 'Example',
+	pronunciation: null,
 	phone: '5550100',
 	locale: 'es',
 	deviceToken: 'demo',

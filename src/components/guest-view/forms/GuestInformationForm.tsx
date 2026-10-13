@@ -5,6 +5,7 @@ import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { PhoneField } from '../../PhoneField';
 import { FormSection } from './FormSection';
+import { PronunciationField } from './PronunciationField';
 
 /**
  * Who the guest is: the fields every registration needs, whichever flow it came through.
@@ -20,17 +21,19 @@ export const GuestInformationForm = observer(function GuestInformationForm() {
 
 	return (
 		<FormSection legend={t.guestView.forms.informationLegend}>
-			<TextField
-				label={t.firstName}
-				value={registration.guest.firstName}
-				onChange={(event) => registration.updateGuest({ firstName: event.target.value })}
-				// Trimmed on the way out rather than on every keystroke: trimming as the guest types
-				// would eat the space the moment it was pressed, leaving no way to enter a name in two
-				// words. The server trims these fields again before storing them.
-				onBlur={(event) => registration.updateGuest({ firstName: event.target.value.trim() })}
-				required
-				autoComplete="given-name"
-			/>
+			<PronunciationField>
+				<TextField
+					label={t.firstName}
+					value={registration.guest.firstName}
+					onChange={(event) => registration.updateGuest({ firstName: event.target.value })}
+					// Trimmed on the way out rather than on every keystroke: trimming as the guest types
+					// would eat the space the moment it was pressed, leaving no way to enter a name in two
+					// words. The server trims these fields again before storing them.
+					onBlur={(event) => registration.updateGuest({ firstName: event.target.value.trim() })}
+					required
+					autoComplete="given-name"
+				/>
+			</PronunciationField>
 			<TextField
 				label={t.lastName}
 				value={registration.guest.lastName}

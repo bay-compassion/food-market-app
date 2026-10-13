@@ -70,6 +70,7 @@ export class PrintStationStore {
 			? new NameTag({
 					firstName: job.firstName,
 					lastName: job.lastInitial,
+					pronunciation: job.pronunciation,
 					queuePosition: job.queuePosition,
 					priorityNumber: job.priorityNumber,
 					locale: job.locale,

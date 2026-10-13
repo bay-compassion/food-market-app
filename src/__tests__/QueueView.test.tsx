@@ -25,6 +25,8 @@ function guest(overrides: Partial<QueueGuest> & { id: string }): QueueGuest {
 		guestId: `record-${overrides.id}`,
 		firstName: 'Ari',
 		lastName: 'Guest',
+		pronunciation: null,
+		staffNotes: null,
 		phone: '555-0100',
 		householdSize: 2,
 		locale: 'en',

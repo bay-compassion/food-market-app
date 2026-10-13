@@ -21,6 +21,10 @@ export type QueueGuest = {
 	guestId: string;
 	firstName: string;
 	lastName: string;
+	/** How to say the guest's name, as the guest or a worker wrote it. */
+	pronunciation: string | null;
+	/** What workers keep about the guest. Never shown to the guest. */
+	staffNotes: string | null;
 	phone: string;
 	householdSize: number;
 	locale: Locale;
@@ -36,6 +40,9 @@ export type QueueGuest = {
 
 /** A queue guest together with the session they belong to, as the admin endpoints return them. */
 export type AdminGuest = QueueGuest & { marketEventId: string | null };
+
+/** What a worker can change about a guest from an open ticket. Empty text clears a field. */
+export type GuestDetails = { pronunciation: string; staffNotes: string };
 
 /** One registration question, as the question bank edits it. */
 export type Question = {
@@ -227,6 +234,14 @@ export class AdminApi {
 		const { id, guestId } = await this.readJson<AddedGuest>(response, 'guest');
 
 		return { id, guestId };
+	}
+
+	/** Saves a worker's edits to a guest's pronunciation and notes. */
+	async updateGuestDetails(guestId: string, details: GuestDetails): Promise<void> {
+		this.assertOk(
+			await this.send('PATCH', `/api/admin/guests/${encodeURIComponent(guestId)}`, details),
+			'guest_details',
+		);
 	}
 
 	/**

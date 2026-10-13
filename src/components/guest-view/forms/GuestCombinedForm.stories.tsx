@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
-import { expect } from 'storybook/test';
+import { expect, userEvent, waitFor } from 'storybook/test';
 
 import { translations, type Locale } from '../../../locales';
+import { StorageKey, StorageService } from '../../../services/storage.service';
 import type { SessionQuestion } from '../../../stores/market-session.store';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
+import { MemoryStorage } from '../memory-storage.fixture';
 import { GuestCombinedForm } from './GuestCombinedForm';
 
 /**
@@ -30,6 +32,8 @@ type SeededState = {
 	askExtraQuestions?: boolean;
 	submissionError?: boolean;
 	isSubmitting?: boolean;
+	/** A phone that saved the guest's name and phone on an earlier visit. */
+	returningGuest?: boolean;
 };
 
 type RegistrationFormArgs = SeededState & {
@@ -42,10 +46,22 @@ type RegistrationFormArgs = SeededState & {
  * response goes through, so a story cannot drift into a shape the server could not produce.
  */
 function seededStore(
-	{ askExtraQuestions, submissionError, isSubmitting }: SeededState,
+	{ askExtraQuestions, submissionError, isSubmitting, returningGuest }: SeededState,
 	locale: Locale,
 ) {
-	const store = new RootStore();
+	// What this phone remembers lives in memory, not the shared window's `localStorage`.
+	const storage = new StorageService(new MemoryStorage());
+
+	if (returningGuest) {
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'returning-guest-device-token');
+		storage.set(StorageKey.GUEST_IDENTITY, {
+			firstName: 'Siobhan',
+			lastName: 'Kelly',
+			phone: '(510) 555-0123',
+		});
+	}
+
+	const store = new RootStore({ storage });
 
 	store.translations.setLanguage(locale);
 	// Direct writes to observables belong in an action; these two have no setter of their own
@@ -93,9 +109,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * Registration open, not yet identified: sign-up and lottery-entry fields together. Whether the
- * sign-up fields show reads the guest store's cached identity, not an arg, so this story cannot
- * force the identified state — see the running app instead.
+ * Registration open, not yet identified: sign-up and lottery-entry fields together. See
+ * `ReturningGuest` for a phone that already saved the guest's details.
  */
 export const RegistrationForm: Story = {
 	play: async ({ canvas }) => {
@@ -111,6 +126,26 @@ export const RegistrationForm: Story = {
 			canvas.getByRole('group', { name: translations.en.guestView.forms.lotteryLegend }),
 		).toBeInTheDocument();
 		await expect(canvas.getByRole('button', { name: translations.en.submit })).toBeEnabled();
+	},
+};
+
+/**
+ * A returning guest: their name and phone are saved on this phone and not asked for again, but
+ * they are still offered a way to say how their name is pronounced. The field stays folded away
+ * until they take the offer up.
+ */
+export const ReturningGuest: Story = {
+	args: { returningGuest: true },
+	play: async ({ canvas }) => {
+		const forms = translations.en.guestView.forms;
+
+		await expect(canvas.queryByLabelText(translations.en.firstName)).toBeNull();
+		await expect(canvas.queryByLabelText(forms.pronunciationLabel)).toBeNull();
+
+		await userEvent.click(canvas.getByRole('button', { name: forms.pronunciationOffer }));
+
+		// Focus follows once the panel has finished opening.
+		await waitFor(() => expect(canvas.getByLabelText(forms.pronunciationLabel)).toHaveFocus());
 	},
 };
 

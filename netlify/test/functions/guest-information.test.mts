@@ -76,4 +76,70 @@ describe('guest-information handler POST', () => {
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toEqual({ guestId: 'guest-1' });
 	});
+
+	describe('pronunciation', () => {
+		const deviceToken = 'device-token-from-this-browser-12345678901234567890';
+		const identity = {
+			firstName: 'Siobhan',
+			lastName: 'Guest',
+			phone: '555-123-4567',
+			locale: 'en',
+			deviceToken,
+		};
+
+		/** What the update of the existing guest wrote. */
+		function updatedFields() {
+			const update = vi.mocked(db.update).mock.results[0]!.value as {
+				set: ReturnType<typeof vi.fn>;
+			};
+
+			return update.set.mock.calls[0]![0] as Record<string, unknown>;
+		}
+
+		it('leaves the stored pronunciation alone when the phone did not send one', async () => {
+			// Arrange
+			queueResult([{ id: 'guest-1' }]);
+			queueResult([{ id: 'guest-1' }]);
+
+			// Act
+			await handler(request('POST', { body: identity }));
+
+			// Assert
+			expect(updatedFields().pronunciation).toBeUndefined();
+		});
+
+		it('saves a trimmed pronunciation the guest wrote', async () => {
+			// Arrange
+			queueResult([{ id: 'guest-1' }]);
+			queueResult([{ id: 'guest-1' }]);
+
+			// Act
+			await handler(request('POST', { body: { ...identity, pronunciation: '  shi-VAWN ' } }));
+
+			// Assert
+			expect(updatedFields().pronunciation).toBe('shi-VAWN');
+		});
+
+		it('clears the pronunciation when the guest emptied it', async () => {
+			// Arrange
+			queueResult([{ id: 'guest-1' }]);
+			queueResult([{ id: 'guest-1' }]);
+
+			// Act
+			await handler(request('POST', { body: { ...identity, pronunciation: '' } }));
+
+			// Assert
+			expect(updatedFields().pronunciation).toBeNull();
+		});
+
+		it('rejects a pronunciation longer than the field allows', async () => {
+			// Act
+			const response = await handler(
+				request('POST', { body: { ...identity, pronunciation: 'a'.repeat(101) } }),
+			);
+
+			// Assert
+			expect(response.status).toBe(400);
+		});
+	});
 });

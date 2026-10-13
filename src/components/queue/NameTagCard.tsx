@@ -39,8 +39,14 @@ const Tag = styled.figure`
 		text-transform: uppercase;
 	}
 
+	.spoken {
+		display: grid;
+		align-content: center;
+		gap: 1.5cqi;
+		min-height: 0;
+	}
+
 	.name {
-		align-self: center;
 		margin: 0;
 		overflow-wrap: anywhere;
 		font-family: var(--font-heading);
@@ -51,6 +57,20 @@ const Tag = styled.figure`
 
 	&[data-long-name='true'] .name {
 		font-size: 10cqi;
+	}
+
+	/* Up to the field's 100 characters; two lines is all the label has room for. */
+	.pronunciation {
+		display: -webkit-box;
+		margin: 0;
+		overflow: hidden;
+		color: var(--color-text-muted);
+		font-size: 5.5cqi;
+		font-style: italic;
+		line-height: 1.2;
+		overflow-wrap: anywhere;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
 	}
 
 	.details {
@@ -88,7 +108,8 @@ const Tag = styled.figure`
 			display: none;
 		}
 
-		.position {
+		.position,
+		.pronunciation {
 			color: #000;
 		}
 
@@ -106,7 +127,14 @@ export function NameTagCard({ tag, printed = false }: NameTagCardProps) {
 	return (
 		<Tag className="name-tag" data-printed={printed} data-long-name={tag.isLongName}>
 			<figcaption>{t.nameTag}</figcaption>
-			<p className="name">{tag.name}</p>
+			<div className="spoken">
+				<p className="name">{tag.name}</p>
+				{tag.pronunciation ? (
+					<p className="pronunciation" title={t.pronunciation}>
+						{tag.pronunciation}
+					</p>
+				) : null}
+			</div>
 			<p className="details">
 				<span className="position">
 					{tag.number === null ? t.unplaced : `#${tag.number.label}`}

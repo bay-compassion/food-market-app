@@ -25,6 +25,7 @@ function Fixture({ state }: { state: 'populated' | 'empty' | 'loading' | 'failur
 								id: `demo-${index}`,
 								firstName: 'Ada',
 								lastName: state === 'paged' ? `Example ${index + 1}` : 'Example',
+								pronunciation: null,
 								phone: '5105550123',
 								locale: index % 2 ? 'es' : 'en',
 								deviceToken: 'story-device',

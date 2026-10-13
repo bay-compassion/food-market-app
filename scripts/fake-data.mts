@@ -33,6 +33,8 @@ export type PlannedGuest = {
 	id: string;
 	firstName: string;
 	lastName: string;
+	/** How to say the first name, for one an American volunteer might misread; null otherwise. */
+	pronunciation: string | null;
 	age: number;
 	phone: string;
 	fake: true;
@@ -129,6 +131,76 @@ const namesByLocale: Record<Locale, { first: string[]; last: string[] }> = {
 		],
 		last: ['Diallo', 'Joseph', 'Kouassi', 'Lefebvre', 'Mbemba', 'Traoré', 'Duval'],
 	},
+};
+
+/**
+ * How to say the first names above that an American English speaker might misread or cannot read
+ * at all, respelled the way a guest might write it, with the stressed syllable in capitals. Names
+ * a volunteer would say right at sight have none, as most guests would leave it blank too.
+ *
+ * Looked up rather than drawn, so adding one does not change which names a seed produces.
+ */
+const firstNamePronunciations: Record<string, string> = {
+	// English
+	Priya: 'PREE-yah',
+	// Spanish
+	Javier: 'hah-vee-AIR',
+	Lucía: 'loo-SEE-ah',
+	Marisol: 'mah-ree-SOLE',
+	Ignacio: 'eeg-NAH-see-oh',
+	Beatriz: 'beh-ah-TREES',
+	Camilo: 'kah-MEE-loh',
+	// Farsi
+	نسرین: 'nas-REEN',
+	فرهاد: 'far-HAHD',
+	شیرین: 'shee-REEN',
+	کامران: 'kahm-RAHN',
+	مینا: 'MEE-nah',
+	بهرام: 'bah-RAHM',
+	ژاله: 'zhah-LEH',
+	سیاوش: 'see-yah-VAHSH',
+	// Tagalog
+	Rogelio: 'roh-HEH-lee-oh',
+	Corazon: 'koh-rah-SOHN',
+	Bayani: 'bah-YAH-nee',
+	Liwayway: 'lee-WHY-why',
+	Divina: 'dee-VEE-nah',
+	// Vietnamese
+	Thanh: 'TAHN',
+	Hoàng: 'HWAHNG',
+	'Mỹ Linh': 'MEE LIN',
+	Quốc: 'KWOHK',
+	Bích: 'BIK',
+	Tuấn: 'TWUN',
+	'Ngọc Anh': 'NOP AHN',
+	Kiều: 'KEE-oo',
+	// Chinese
+	秀英: 'shyoh-YING',
+	建国: 'jyen-GWAW',
+	丽华: 'lee-HWAH',
+	志强: 'jr-CHYAHNG',
+	桂芳: 'gway-FAHNG',
+	晓明: 'shyow-MING',
+	婉如: 'wahn-ROO',
+	国栋: 'gwaw-DOONG',
+	// Arabic
+	سميرة: 'sah-MEE-rah',
+	خالد: 'KHAH-lid',
+	نادية: 'NAH-dee-yah',
+	رامي: 'RAH-mee',
+	هدى: 'HOO-dah',
+	عمر: 'OH-mar',
+	ليلى: 'LAY-lah',
+	ياسر: 'YAH-ser',
+	// French
+	Amadou: 'AH-mah-doo',
+	Mireille: 'mee-RAY',
+	'Jean-Baptiste': 'zhahn bah-TEEST',
+	Fatoumata: 'fah-too-MAH-tah',
+	Didier: 'dee-dee-AY',
+	Nadège: 'nah-DEZH',
+	Moussa: 'MOO-sah',
+	Solène: 'soh-LEN',
 };
 
 /** Roughly the mix the market sees, so reports are not an even split across eight languages. */
@@ -267,11 +339,13 @@ function buildGuests(options: { guests: number; now: Date }, random: Random) {
 		const locale = pickShare(random, localeShares);
 		const names = namesByLocale[locale];
 		const phone = fictionalPhone(index);
+		const firstName = pick(random, names.first);
 
 		return {
 			id: crypto.randomUUID(),
-			firstName: pick(random, names.first),
+			firstName,
 			lastName: pick(random, names.last),
+			pronunciation: firstNamePronunciations[firstName] ?? null,
 			age: integerBetween(random, 19, 84),
 			phone,
 			fake: true,

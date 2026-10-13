@@ -25,6 +25,8 @@ export class RegistrationStore {
 	registrationAnswers: Record<string, string | number> = {};
 	isSubmitting = false;
 	submissionError = false;
+	/** The pronunciation the form started from, to tell whether the guest changed it. */
+	private initialPronunciation = '';
 
 	private readonly storage: Pick<StorageService, 'get' | 'set'> | null;
 
@@ -36,6 +38,17 @@ export class RegistrationStore {
 		this.guest = this.prefillGuest();
 
 		return makeReactive(this, { guestStore: false, storage: false });
+	}
+
+	/**
+	 * The pronunciation to send: only one the guest changed here. A worker may have corrected it
+	 * since this phone saved it, and this phone never reads that back, so resending the saved one
+	 * unchanged would quietly undo the correction.
+	 */
+	get pronunciationChange(): string | undefined {
+		const pronunciation = this.guest.pronunciation.trim();
+
+		return pronunciation === this.initialPronunciation ? undefined : pronunciation;
 	}
 
 	/** Applies an edit from the form. An action, so the write is batched and MobX does not warn
@@ -52,6 +65,7 @@ export class RegistrationStore {
 		this.guest = {
 			firstName: '',
 			lastName: '',
+			pronunciation: '',
 			ageRange: '',
 			householdSize: '',
 			childrenCount: '',
@@ -59,6 +73,7 @@ export class RegistrationStore {
 			phone: '',
 		};
 		this.registrationAnswers = {};
+		this.initialPronunciation = '';
 	}
 
 	/**
@@ -92,14 +107,18 @@ export class RegistrationStore {
 					firstName: this.guest.firstName,
 					lastName: this.guest.lastName,
 					phone: this.guest.phone,
+					pronunciation: this.pronunciationChange,
 					locale,
 				});
+
+				runInAction(() => (this.initialPronunciation = this.guest.pronunciation.trim()));
 
 				return { kind: 'signed-up' };
 			}
 
 			const registration = await this.guestStore.register({
 				...this.guest,
+				pronunciation: this.pronunciationChange,
 				locale,
 				marketEventId,
 				answers: this.registrationAnswers,
@@ -113,6 +132,8 @@ export class RegistrationStore {
 				childrenCount: this.guest.childrenCount,
 				seniorsCount: this.guest.seniorsCount,
 			});
+
+			runInAction(() => (this.initialPronunciation = this.guest.pronunciation.trim()));
 
 			return { kind: 'registered', registration };
 		} catch {
@@ -129,9 +150,12 @@ export class RegistrationStore {
 			Pick<GuestFormState, 'ageRange' | 'householdSize' | 'childrenCount' | 'seniorsCount'>
 		> | null;
 
+		this.initialPronunciation = this.guestStore.identity?.pronunciation ?? '';
+
 		return {
 			firstName: this.guestStore.identity?.firstName ?? '',
 			lastName: this.guestStore.identity?.lastName ?? '',
+			pronunciation: this.initialPronunciation,
 			ageRange: savedHousehold?.ageRange ?? '',
 			householdSize: savedHousehold?.householdSize ?? 1,
 			childrenCount: savedHousehold?.childrenCount ?? 0,

@@ -152,6 +152,14 @@ export interface GuestViewTranslations {
 	tour: GuestTourTranslations;
 	forms: {
 		informationLegend: string;
+		/** The optional field for how to say the guest's name, for whoever calls it out. */
+		/** The folded strip under the first name that offers the optional pronunciation field. */
+		pronunciationOffer: string;
+		/** Short, in front of the open field: what the guest writes is how the name sounds. */
+		pronunciationLabel: string;
+		pronunciationHelp: string;
+		/** Names the button that folds the pronunciation field away again. */
+		pronunciationCollapse: string;
 		lotteryLegend: string;
 		questionsLegend: string;
 	};
@@ -543,6 +551,10 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Your information',
+				pronunciationOffer: 'Add how to say your name',
+				pronunciationLabel: 'Sounds like',
+				pronunciationHelp: 'Write it the way it sounds, so we can call your name correctly.',
+				pronunciationCollapse: 'Hide how to say your name',
 				lotteryLegend: 'Lottery entry details',
 				questionsLegend: 'Questions',
 			},
@@ -955,6 +967,10 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Su información',
+				pronunciationOffer: 'Agregar cómo se pronuncia su nombre',
+				pronunciationLabel: 'Suena como',
+				pronunciationHelp: 'Escríbalo como suena, para que podamos decir su nombre correctamente.',
+				pronunciationCollapse: 'Ocultar cómo se pronuncia su nombre',
 				lotteryLegend: 'Datos de inscripción al sorteo',
 				questionsLegend: 'Preguntas',
 			},
@@ -1370,6 +1386,10 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'اطلاعات شما',
+				pronunciationOffer: 'افزودن تلفظ نام شما',
+				pronunciationLabel: 'تلفظ',
+				pronunciationHelp: 'آن را همان‌طور که خوانده می‌شود بنویسید تا نام شما را درست صدا بزنیم.',
+				pronunciationCollapse: 'پنهان کردن تلفظ نام شما',
 				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
 				questionsLegend: 'پرسش‌ها',
 			},
@@ -1778,6 +1798,11 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Iyong impormasyon',
+				pronunciationOffer: 'Idagdag kung paano bigkasin ang iyong pangalan',
+				pronunciationLabel: 'Bigkas',
+				pronunciationHelp:
+					'Isulat ito ayon sa tunog, para matawag namin nang tama ang iyong pangalan.',
+				pronunciationCollapse: 'Itago kung paano bigkasin ang iyong pangalan',
 				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
 				questionsLegend: 'Mga tanong',
 			},
@@ -2192,6 +2217,10 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Thông tin của bạn',
+				pronunciationOffer: 'Thêm cách đọc tên của bạn',
+				pronunciationLabel: 'Đọc là',
+				pronunciationHelp: 'Hãy viết theo cách phát âm, để chúng tôi gọi đúng tên của bạn.',
+				pronunciationCollapse: 'Ẩn cách đọc tên của bạn',
 				lotteryLegend: 'Thông tin tham gia xổ số',
 				questionsLegend: 'Câu hỏi',
 			},
@@ -2598,6 +2627,10 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: '您的信息',
+				pronunciationOffer: '添加您名字的读音',
+				pronunciationLabel: '读作',
+				pronunciationHelp: '请按读音写出，方便我们正确叫出您的名字。',
+				pronunciationCollapse: '隐藏名字读音',
 				lotteryLegend: '抽签登记信息',
 				questionsLegend: '问题',
 			},
@@ -2988,6 +3021,10 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'معلوماتك',
+				pronunciationOffer: 'أضف طريقة نطق اسمك',
+				pronunciationLabel: 'يُنطق',
+				pronunciationHelp: 'اكتبه كما يُلفظ، حتى نتمكن من مناداة اسمك بشكل صحيح.',
+				pronunciationCollapse: 'إخفاء طريقة نطق اسمك',
 				lotteryLegend: 'تفاصيل التسجيل في القرعة',
 				questionsLegend: 'أسئلة',
 			},
@@ -3392,6 +3429,11 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Vos informations',
+				pronunciationOffer: 'Ajouter la prononciation de votre nom',
+				pronunciationLabel: 'Se prononce',
+				pronunciationHelp:
+					'Écrivez-le comme il se prononce, pour que nous puissions appeler votre nom correctement.',
+				pronunciationCollapse: 'Masquer la prononciation de votre nom',
 				lotteryLegend: 'Détails de l’inscription au tirage au sort',
 				questionsLegend: 'Questions',
 			},

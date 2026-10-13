@@ -23,6 +23,7 @@ describe('RegistrationStore', () => {
 			expect(store.guest).toEqual({
 				firstName: '',
 				lastName: '',
+				pronunciation: '',
 				ageRange: '',
 				householdSize: 1,
 				childrenCount: 0,
@@ -86,6 +87,7 @@ describe('RegistrationStore', () => {
 			expect(store.guest).toEqual({
 				firstName: '',
 				lastName: '',
+				pronunciation: '',
 				ageRange: '',
 				householdSize: '',
 				childrenCount: '',
@@ -124,6 +126,7 @@ describe('RegistrationStore', () => {
 			expect(store.guest).toEqual({
 				firstName: '',
 				lastName: '',
+				pronunciation: '',
 				ageRange: '',
 				householdSize: 1,
 				childrenCount: 0,
@@ -131,6 +134,81 @@ describe('RegistrationStore', () => {
 				phone: '',
 			});
 			expect(store.registrationAnswers).toEqual({});
+		});
+	});
+
+	describe('pronunciation', () => {
+		function identifiedRegistration(pronunciation?: string) {
+			storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'device-token');
+			storage.set(StorageKey.GUEST_IDENTITY, {
+				firstName: 'Siobhan',
+				lastName: 'Guest',
+				phone: '555-123-4567',
+				...(pronunciation === undefined ? {} : { pronunciation }),
+			});
+			const identified = new GuestStore({ storage });
+			const signUp = vi.spyOn(identified, 'signUp').mockResolvedValue();
+
+			return { store: new RegistrationStore(identified, { storage }), signUp };
+		}
+
+		it('prefills the pronunciation this phone saved', () => {
+			// Arrange & Act
+			const { store } = identifiedRegistration('shi-VAWN');
+
+			// Assert
+			expect(store.guest.pronunciation).toBe('shi-VAWN');
+		});
+
+		it('does not send a pronunciation the guest left as it was', async () => {
+			// Arrange: a worker may have corrected it since, which this phone never saw.
+			const { store, signUp } = identifiedRegistration('shi-VAWN');
+
+			// Act
+			await store.submit('early', null, 'en');
+
+			// Assert
+			expect(signUp.mock.calls[0]![0].pronunciation).toBeUndefined();
+		});
+
+		it('sends a pronunciation the guest changed, trimmed', async () => {
+			// Arrange
+			const { store, signUp } = identifiedRegistration('shi-VAWN');
+
+			store.updateGuest({ pronunciation: ' shiv-AWN ' });
+
+			// Act
+			await store.submit('early', null, 'en');
+
+			// Assert
+			expect(signUp.mock.calls[0]![0].pronunciation).toBe('shiv-AWN');
+		});
+
+		it('sends an empty pronunciation when the guest cleared it', async () => {
+			// Arrange
+			const { store, signUp } = identifiedRegistration('shi-VAWN');
+
+			store.updateGuest({ pronunciation: '' });
+
+			// Act
+			await store.submit('early', null, 'en');
+
+			// Assert
+			expect(signUp.mock.calls[0]![0].pronunciation).toBe('');
+		});
+
+		it('stops sending it once the change has been submitted', async () => {
+			// Arrange
+			const { store, signUp } = identifiedRegistration();
+
+			store.updateGuest({ pronunciation: 'shi-VAWN' });
+			await store.submit('early', null, 'en');
+
+			// Act
+			await store.submit('early', null, 'en');
+
+			// Assert
+			expect(signUp.mock.calls[1]![0].pronunciation).toBeUndefined();
 		});
 	});
 
@@ -145,6 +223,7 @@ describe('RegistrationStore', () => {
 			store.guest = {
 				firstName: 'Ada',
 				lastName: 'Lovelace',
+				pronunciation: '',
 				ageRange: '30-44',
 				householdSize: 2,
 				childrenCount: 0,

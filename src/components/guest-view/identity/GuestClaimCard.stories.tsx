@@ -7,6 +7,7 @@ import type { GuestClaimResult } from '../../../services/guestVisitApi';
 import { StorageKey, StorageService } from '../../../services/storage.service';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
+import { MemoryStorage } from '../memory-storage.fixture';
 import { GuestClaimCard } from './GuestClaimCard';
 
 /**
@@ -25,34 +26,6 @@ type GuestClaimCardArgs = {
 
 const token = 'claim-token-shown-as-a-qr-code-1234567890abcdef';
 const copy = translations.en.claimView;
-
-class MemoryStorage implements Storage {
-	private readonly values = new Map<string, string>();
-
-	get length() {
-		return this.values.size;
-	}
-
-	clear() {
-		this.values.clear();
-	}
-
-	getItem(key: string) {
-		return this.values.get(key) ?? null;
-	}
-
-	key(index: number) {
-		return Array.from(this.values.keys())[index] ?? null;
-	}
-
-	removeItem(key: string) {
-		this.values.delete(key);
-	}
-
-	setItem(key: string, value: string) {
-		this.values.set(key, value);
-	}
-}
 
 const withPhone: Decorator = (Story, context) => {
 	const { locale, phoneHasSavedData, redeem } = context.args as GuestClaimCardArgs;

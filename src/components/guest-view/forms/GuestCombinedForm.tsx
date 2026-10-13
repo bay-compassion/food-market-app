@@ -5,6 +5,7 @@ import { useTranslation } from '../../../stores/react/use-translation';
 import { GuestForm } from './GuestForm';
 import { GuestInformationForm } from './GuestInformationForm';
 import { GuestLotteryForm } from './GuestLotteryForm';
+import { PronunciationField } from './PronunciationField';
 
 /** Today's market-registration form: identity fields when needed, plus lottery-entry fields. */
 export const GuestCombinedForm = observer(function GuestCombinedForm() {
@@ -30,7 +31,8 @@ export const GuestCombinedForm = observer(function GuestCombinedForm() {
 			submittingLabel={t.submitting}
 			onSubmit={submit}
 		>
-			{guest.identity === null ? <GuestInformationForm /> : null}
+			{/* A returning guest's name and phone are saved; only the pronunciation is still offered. */}
+			{guest.identity === null ? <GuestInformationForm /> : <PronunciationField />}
 			<GuestLotteryForm registrationQuestions={registrationQuestions} />
 		</GuestForm>
 	);

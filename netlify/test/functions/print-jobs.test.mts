@@ -26,6 +26,7 @@ const tag = {
 	visitId,
 	firstName: 'Maria',
 	lastInitial: 'S',
+	pronunciation: null,
 	queuePosition: 14,
 	priorityNumber: null,
 	locale: 'es' as const,

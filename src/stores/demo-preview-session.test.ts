@@ -10,6 +10,7 @@ const guest: DemoGuest = {
 	id: 'demo-guest',
 	firstName: 'Ada',
 	lastName: 'Example',
+	pronunciation: null,
 	phone: '5105550123',
 	locale: 'es',
 	deviceToken: 'demo-device',
@@ -24,6 +25,18 @@ afterEach(() => {
 });
 
 describe('demo guest tabs', () => {
+	it('gives the previewed phone the guest’s pronunciation along with their name', () => {
+		// Arrange
+		const storage = new DemoPreviewSession();
+
+		// Act
+		storage.seed({ ...guest, pronunciation: 'AY-duh' });
+		const store = new RootStore({ browserStorage: storage, previewName: 'Ada Example' });
+
+		// Assert
+		expect(store.guest.identity?.pronunciation).toBe('AY-duh');
+	});
+
 	it('persists guest state across refresh without changing normal browser identity or language', () => {
 		// Arrange
 		localStorage.setItem(StorageKey.GUEST_DEVICE_TOKEN, JSON.stringify('normal-device'));

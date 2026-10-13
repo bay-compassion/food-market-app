@@ -5,12 +5,15 @@ import { QueueNumber, type QueueNumberSource } from './queue-number.ts';
 export type NameTagSource = QueueNumberSource & {
 	firstName: string;
 	lastName: string;
+	/** How to say the name, as the guest or a worker wrote it. Absent or null when nobody has. */
+	pronunciation?: string | null;
 	locale: Locale;
 };
 
 /**
  * What goes on the sticker a check-in volunteer writes out for a guest they have just called: the
- * first name with a last initial, their queue number, and the language they registered in.
+ * first name with a last initial, how to say it when someone wrote that down, their queue number,
+ * and the language they registered in.
  *
  * A value object built from the visit, so the screen that shows it and the label printer that
  * prints it agree on exactly the same text.
@@ -38,6 +41,11 @@ export class NameTag {
 		const initial = this.source.lastName.trim().charAt(0).toLocaleUpperCase();
 
 		return initial ? `${first} ${initial}.` : first;
+	}
+
+	/** How to say the name, so whoever reads the tag aloud gets it right; null when nobody wrote it. */
+	get pronunciation(): string | null {
+		return this.source.pronunciation?.trim() || null;
 	}
 
 	/** Whether the name needs the smaller type to fit the label. */

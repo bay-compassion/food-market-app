@@ -12,6 +12,8 @@ import type { AgeRange } from '../services/ageRanges';
 export type GuestFormState = {
 	firstName: string;
 	lastName: string;
+	/** How to say the guest's name. Optional; empty when the guest has not written one. */
+	pronunciation: string;
 	ageRange: AgeRange | '';
 	householdSize: number | string;
 	childrenCount: number | string;

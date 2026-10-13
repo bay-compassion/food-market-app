@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
+import { expect, waitFor } from 'storybook/test';
 
 import { translations } from '../../../locales';
 import { GuestInformationForm } from './GuestInformationForm';
 
 /**
- * The identity-only fields — first name, last name, phone — shared by the standalone early
+ * The identity-only fields — first name, an offer to add how to say it, last name, phone — shared by the standalone early
  * sign-up screen and the combined registration-open form.
  *
  * The fields read and write the registration store, which the preview's decorator provides fresh
@@ -63,6 +63,27 @@ export const MultiWordNames: Story = {
 
 		await expect(firstName).toHaveValue('Mary Jane');
 		await expect(lastName).toHaveValue('de la Cruz');
+	},
+};
+
+/**
+ * How to say the guest's name is optional, so under the first name it is only offered, politely,
+ * and opens into a field when the guest takes the offer up.
+ */
+export const AddingAPronunciation: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const forms = translations.en.guestView.forms;
+
+		await expect(canvas.queryByLabelText(forms.pronunciationLabel)).toBeNull();
+
+		await userEvent.click(canvas.getByRole('button', { name: forms.pronunciationOffer }));
+
+		const pronunciation = await canvas.findByLabelText(forms.pronunciationLabel);
+
+		// Focus follows once the panel has finished opening.
+		await waitFor(() => expect(pronunciation).toHaveFocus());
+		await userEvent.type(pronunciation, 'shi-VAWN');
+		await expect(pronunciation).toHaveValue('shi-VAWN');
 	},
 };
 

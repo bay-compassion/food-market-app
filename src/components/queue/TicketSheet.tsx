@@ -7,6 +7,7 @@ import { languages } from '../../locales';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { useQueueDesk } from './queue-desk-context';
 import { TicketActions } from './TicketActions';
+import { TicketGuestDetails } from './TicketGuestDetails';
 import { TicketHistory } from './TicketHistory';
 import { TicketNameTag } from './TicketNameTag';
 import { TicketSummary } from './TicketSummary';
@@ -94,6 +95,7 @@ export const TicketSheet = observer(function TicketSheet() {
 						{language ? <span>{language}</span> : null}
 					</p>
 					<TicketActions guest={guest} />
+					<TicketGuestDetails key={guest.guestId} guest={guest} />
 					<TicketHistory />
 				</>
 			) : null}
