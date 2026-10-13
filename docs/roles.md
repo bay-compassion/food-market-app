@@ -39,27 +39,29 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 
 ## What each endpoint requires
 
-| Endpoint                                 | Requires                                                |
-| ---------------------------------------- | ------------------------------------------------------- |
-| `GET /api/market`                        | nothing — the guest app depends on it                   |
-| `POST /api/guest-information`            | nothing — saves guest identity only                     |
-| `POST /api/lottery-registration`         | nothing — public self-service lottery entry             |
-| `GET /api/admin/market?view=history`     | `run:queue`                                             |
-| `POST /api/admin/market`                 | `manage:sessions`, except `close_session` → `run:queue` |
-| `/api/admin/schedule` (every method)     | `manage:sessions`                                       |
-| `GET`, `POST`, `PATCH /api/admin/guests` | `run:queue`                                             |
-| `POST /api/admin/queue`                  | `run:queue`                                             |
-| `POST /api/admin/broadcast`              | `manage:sessions`                                       |
-| `POST /api/admin/guest-claims`           | `run:queue`; plus `manage:guest-access` to override     |
-| `GET /api/admin/reports`                 | `read:reports`                                          |
-| `GET /api/admin/reports?view=export`     | `export:guest-data`                                     |
-| `GET`, `POST /api/admin/demo-data`       | `manage:demo-data` — and, for `POST`, an env flag too   |
-| `GET /api/admin/kiosk`                   | `view:kiosk`                                            |
-| `GET /api/admin/visits/:id/events`       | `run:queue`                                             |
-| `POST /api/admin/print-jobs`             | `run:queue`                                             |
-| `GET /api/admin/print-station`           | `run:queue`                                             |
-| `GET /api/admin/print-jobs`              | `print:name-tags`                                       |
-| `DELETE /api/admin/print-jobs/:id`       | `print:name-tags`                                       |
+| Endpoint                                                 | Requires                                                |
+| -------------------------------------------------------- | ------------------------------------------------------- |
+| `GET /api/market`                                        | nothing — the guest app depends on it                   |
+| `POST /api/guest-information`                            | nothing — saves guest identity only                     |
+| `POST /api/lottery-registration`                         | nothing — public self-service lottery entry             |
+| `GET /api/admin/market?view=history`                     | `run:queue`                                             |
+| `POST /api/admin/market`                                 | `manage:sessions`, except `close_session` → `run:queue` |
+| `/api/admin/schedule` (every method)                     | `manage:sessions`                                       |
+| `POST`, `PATCH /api/admin/guests`                        | `run:queue`                                             |
+| `GET /api/admin/guests` (current session)                | `run:queue`                                             |
+| `GET /api/admin/guests` (`scope=all` or another session) | `export:guest-data`                                     |
+| `POST /api/admin/queue`                                  | `run:queue`                                             |
+| `POST /api/admin/broadcast`                              | `manage:sessions`                                       |
+| `POST /api/admin/guest-claims`                           | `run:queue`; plus `manage:guest-access` to override     |
+| `GET /api/admin/reports`                                 | `read:reports`                                          |
+| `GET /api/admin/reports?view=export`                     | `export:guest-data`                                     |
+| `GET`, `POST /api/admin/demo-data`                       | `manage:demo-data` — and, for `POST`, an env flag too   |
+| `GET /api/admin/kiosk`                                   | `view:kiosk`                                            |
+| `GET /api/admin/visits/:id/events`                       | `run:queue`                                             |
+| `POST /api/admin/print-jobs`                             | `run:queue`                                             |
+| `GET /api/admin/print-station`                           | `run:queue`                                             |
+| `GET /api/admin/print-jobs`                              | `print:name-tags`                                       |
+| `DELETE /api/admin/print-jobs/:id`                       | `print:name-tags`                                       |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session
@@ -226,9 +228,11 @@ print dialog, since no station ever reports in.
 
 ## What this does not do
 
-Workers still see guest names and phone numbers on the queue and guest-database screens. They have
-to; that is the job. What `export:guest-data` protects is bulk download of the entire history in a
-single click, which is a different exposure from reading today's line.
+Workers still see guest names and phone numbers on the current session's queue and guest screens.
+They have to; that is the job. What `export:guest-data` protects is every path to the history that
+is _not_ today's line: the bulk CSV download, the whole-database view (`scope=all`), and reading a
+finished session's roster by its id. Reading today's line is `run:queue`; reaching across sessions
+is the same exposure as the export, however it is spelled, so it takes the same permission.
 
 ## The dev-mode data loader
 
