@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Drawer } from '@mui/material';
+import { SwipeableDrawer } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
@@ -12,7 +12,7 @@ import { TicketNameTag } from './TicketNameTag';
 import { TicketSummary } from './TicketSummary';
 
 // The sheet renders in a portal, outside the queue screen's frame, so it carries its own styles.
-const Sheet = styled(Drawer)`
+const Sheet = styled(SwipeableDrawer)`
 	.MuiBackdrop-root {
 		background: rgb(1 42 47 / 62%);
 	}
@@ -72,7 +72,12 @@ export const TicketSheet = observer(function TicketSheet() {
 			// The content comes from the store, so an outgoing transition would animate an empty panel.
 			transitionDuration={0}
 			onClose={() => desk.dismiss()}
-			slotProps={{ paper: { dir: 'ltr', lang: 'en', 'aria-label': t.ticket } }}
+			// Dragging the sheet down dismisses it; it only ever opens by choosing a ticket.
+			disableSwipeToOpen
+			onOpen={() => undefined}
+			slotProps={{
+				paper: { dir: 'ltr', lang: 'en', 'aria-label': t.ticket },
+			}}
 		>
 			{guest ? (
 				<>
