@@ -257,3 +257,85 @@ describe('guests handler POST (admin only)', () => {
 		expect(db.insert).not.toHaveBeenCalled();
 	});
 });
+
+describe('guests handler PATCH /guests/:guestId (staff details)', () => {
+	const guestId = '6f1c2b8e-4a1d-4f7e-9b2a-3c5d7e9f1a2b';
+
+	it('returns the requirePermission response when unauthorized, without touching the database', async () => {
+		// Arrange
+		const unauthorized = Response.json({ error: 'Authorization required.' }, { status: 401 });
+
+		vi.mocked(requirePermission).mockResolvedValueOnce(unauthorized);
+
+		// Act
+		const response = await handler(
+			request('PATCH', {
+				path: `/${guestId}`,
+				body: { pronunciation: 'shi-VAWN', staffNotes: 'Uses a cane.' },
+			}),
+		);
+
+		// Assert
+		expect(response.status).toBe(401);
+		expect(db.update).not.toHaveBeenCalled();
+	});
+
+	it('saves trimmed details, storing empty ones as null', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([{ pronunciation: 'shi-VAWN', staffNotes: null }]);
+
+		// Act
+		const response = await handler(
+			request('PATCH', {
+				path: `/${guestId}`,
+				body: { pronunciation: ' shi-VAWN ', staffNotes: '   ' },
+			}),
+		);
+
+		// Assert
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({ pronunciation: 'shi-VAWN', staffNotes: null });
+		const update = vi.mocked(db.update).mock.results[0]!.value as { set: ReturnType<typeof vi.fn> };
+
+		expect(update.set).toHaveBeenCalledWith({ pronunciation: 'shi-VAWN', staffNotes: null });
+	});
+
+	it('answers 404 for a guest that does not exist', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([]);
+
+		// Act
+		const response = await handler(
+			request('PATCH', {
+				path: `/${guestId}`,
+				body: { pronunciation: '', staffNotes: '' },
+			}),
+		);
+
+		// Assert
+		expect(response.status).toBe(404);
+	});
+
+	it('rejects an id that is not a guest id, and notes longer than the field allows', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValue(null);
+
+		// Act
+		const badId = await handler(
+			request('PATCH', { path: '/visit-1', body: { pronunciation: '', staffNotes: '' } }),
+		);
+		const tooLong = await handler(
+			request('PATCH', {
+				path: `/${guestId}`,
+				body: { pronunciation: '', staffNotes: 'a'.repeat(2_001) },
+			}),
+		);
+
+		// Assert
+		expect(badId.status).toBe(400);
+		expect(tooLong.status).toBe(400);
+		expect(db.update).not.toHaveBeenCalled();
+	});
+});

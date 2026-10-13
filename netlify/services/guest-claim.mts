@@ -35,7 +35,7 @@ export type IssueGuestClaimResult =
 
 export type RedeemedGuestClaim = {
 	deviceToken: string;
-	identity: { firstName: string; lastName: string; phone: string };
+	identity: { firstName: string; lastName: string; phone: string; pronunciation: string | null };
 	visit: { id: string; marketEventId: string; status: VisitStatus; visitToken: string } | null;
 };
 
@@ -159,6 +159,8 @@ export async function redeemGuestClaim(
 					firstName: guests.firstName,
 					lastName: guests.lastName,
 					phone: guests.phone,
+					// The guest's own details. Never `staffNotes`: those are for workers only.
+					pronunciation: guests.pronunciation,
 				});
 
 			if (!identity) {

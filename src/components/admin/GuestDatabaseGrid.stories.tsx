@@ -75,6 +75,8 @@ export const WithGuestsWhoHaveNoVisit: Story = {
 				guestId: 'guest-without-visit',
 				firstName: 'Ana',
 				lastName: 'Reyes',
+				pronunciation: null,
+				staffNotes: null,
 				phone: '(555) 987-6543',
 				locale: 'tl',
 				householdSize: null,

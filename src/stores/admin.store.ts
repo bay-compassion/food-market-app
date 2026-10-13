@@ -7,6 +7,7 @@ import {
 	type AdminGuest,
 	type DatabaseGuest,
 	type GuestClaimCode,
+	type GuestDetails,
 	type HistoricalEvent,
 	type ManualGuest,
 	type QueueGuest,
@@ -222,6 +223,12 @@ export class AdminStore {
 	/** Sends a visit's name tag to the print station. */
 	async sendNameTag(visitId: string): Promise<PrintJobSubmission> {
 		return this.api.sendNameTag(visitId);
+	}
+
+	/** Saves a guest's pronunciation and notes, then rereads the line so every ticket shows them. */
+	async updateGuestDetails(guestId: string, details: GuestDetails): Promise<void> {
+		await this.api.updateGuestDetails(guestId, details);
+		await this.refreshSessionGuests();
 	}
 
 	/** One visit's history. Read on demand rather than held, since only an open ticket shows it. */

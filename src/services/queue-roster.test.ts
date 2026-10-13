@@ -10,6 +10,8 @@ function guest(id: string, status: VisitStatus, overrides: Partial<QueueGuest> =
 		guestId: `record-${id}`,
 		firstName: 'Ari',
 		lastName: 'Guest',
+		pronunciation: null,
+		staffNotes: null,
 		phone: '555-0100',
 		householdSize: 2,
 		locale: 'en',

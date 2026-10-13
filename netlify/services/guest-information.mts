@@ -14,6 +14,18 @@ export const guestLocales = languages.map(({ code }) => code) as [Locale, ...Loc
 /** A guest's own name, as they typed it. */
 export const guestNameSchema = z.string().trim().min(1).max(100);
 
+/** Optional free text, trimmed; an empty value clears what was there. */
+function optionalTextSchema(max: number) {
+	return z
+		.string()
+		.trim()
+		.max(max)
+		.transform((text) => text || null);
+}
+
+/** How to say a guest's name, in whatever spelling helps — "SHAH-nee", "like 'Juan'". */
+export const pronunciationSchema = optionalTextSchema(100);
+
 /** Accepted as typed, but only if it still dials once punctuation is stripped. */
 export const phoneSchema = z
 	.string()
@@ -44,6 +56,11 @@ export const guestIdentitySchema = z.object({
 	lastName: guestNameSchema,
 	phone: phoneSchema,
 	locale: z.enum(guestLocales),
+	/**
+	 * Absent leaves what is stored alone. A guest's phone sends it only when they changed it, so a
+	 * worker's correction is not overwritten by the next registration from a phone that never saw it.
+	 */
+	pronunciation: pronunciationSchema.optional(),
 });
 
 export const guestInformationSchema = guestIdentitySchema.extend({
@@ -86,7 +103,10 @@ export async function persistGuestInformation(
 	tx: Transaction,
 	options: {
 		existingGuest: typeof guests.$inferSelect | null;
-		information: Pick<GuestInformationSubmission, 'firstName' | 'lastName' | 'phone' | 'locale'>;
+		information: Pick<
+			GuestInformationSubmission,
+			'firstName' | 'lastName' | 'phone' | 'locale' | 'pronunciation'
+		>;
 		deviceTokenHash: string | null;
 	},
 ): Promise<typeof guests.$inferSelect> {
@@ -99,6 +119,7 @@ export async function persistGuestInformation(
 				phone: options.information.phone,
 				normalizedPhone: normalizePhone(options.information.phone),
 				locale: options.information.locale,
+				pronunciation: options.information.pronunciation,
 			})
 			.where(eq(guests.id, options.existingGuest.id))
 			.returning();
@@ -115,6 +136,7 @@ export async function persistGuestInformation(
 			normalizedPhone: normalizePhone(options.information.phone),
 			deviceTokenHash: options.deviceTokenHash,
 			locale: options.information.locale,
+			pronunciation: options.information.pronunciation ?? null,
 		})
 		.returning();
 
@@ -171,4 +193,28 @@ export async function saveGuestInformation(
 	);
 
 	return { ok: true, status: existingGuest ? 200 : 201, body: result };
+}
+
+/** What a worker can change about a guest from the queue screen. Both are optional free text. */
+export const staffGuestDetailsSchema = z.object({
+	pronunciation: pronunciationSchema,
+	staffNotes: optionalTextSchema(2_000),
+});
+
+export type StaffGuestDetails = z.infer<typeof staffGuestDetailsSchema>;
+
+/** Saves a worker's edits to a guest; `null` when there is no such guest. */
+export async function updateStaffGuestDetails(
+	guestId: string,
+	details: StaffGuestDetails,
+): Promise<StaffGuestDetails | null> {
+	const [updated] = await tracedQuery('guest.update_staff_details', () =>
+		db
+			.update(guests)
+			.set(details)
+			.where(eq(guests.id, guestId))
+			.returning({ pronunciation: guests.pronunciation, staffNotes: guests.staffNotes }),
+	);
+
+	return updated ?? null;
 }

@@ -152,6 +152,9 @@ export interface GuestViewTranslations {
 	tour: GuestTourTranslations;
 	forms: {
 		informationLegend: string;
+		/** The optional field for how to say the guest's name, for whoever calls it out. */
+		pronunciationLabel: string;
+		pronunciationHelp: string;
 		lotteryLegend: string;
 		questionsLegend: string;
 	};
@@ -543,6 +546,8 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Your information',
+				pronunciationLabel: 'How to say your name (optional)',
+				pronunciationHelp: 'Write it the way it sounds, so we can call your name correctly.',
 				lotteryLegend: 'Lottery entry details',
 				questionsLegend: 'Questions',
 			},
@@ -955,6 +960,8 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Su información',
+				pronunciationLabel: 'Cómo se pronuncia su nombre (opcional)',
+				pronunciationHelp: 'Escríbalo como suena, para que podamos decir su nombre correctamente.',
 				lotteryLegend: 'Datos de inscripción al sorteo',
 				questionsLegend: 'Preguntas',
 			},
@@ -1370,6 +1377,8 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'اطلاعات شما',
+				pronunciationLabel: 'تلفظ نام شما (اختیاری)',
+				pronunciationHelp: 'آن را همان‌طور که خوانده می‌شود بنویسید تا نام شما را درست صدا بزنیم.',
 				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
 				questionsLegend: 'پرسش‌ها',
 			},
@@ -1778,6 +1787,9 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Iyong impormasyon',
+				pronunciationLabel: 'Paano bigkasin ang iyong pangalan (opsyonal)',
+				pronunciationHelp:
+					'Isulat ito ayon sa tunog, para matawag namin nang tama ang iyong pangalan.',
 				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
 				questionsLegend: 'Mga tanong',
 			},
@@ -2192,6 +2204,8 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Thông tin của bạn',
+				pronunciationLabel: 'Cách đọc tên của bạn (không bắt buộc)',
+				pronunciationHelp: 'Hãy viết theo cách phát âm, để chúng tôi gọi đúng tên của bạn.',
 				lotteryLegend: 'Thông tin tham gia xổ số',
 				questionsLegend: 'Câu hỏi',
 			},
@@ -2598,6 +2612,8 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: '您的信息',
+				pronunciationLabel: '您的名字怎么读（选填）',
+				pronunciationHelp: '请按读音写出，方便我们正确叫出您的名字。',
 				lotteryLegend: '抽签登记信息',
 				questionsLegend: '问题',
 			},
@@ -2988,6 +3004,8 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'معلوماتك',
+				pronunciationLabel: 'كيف يُنطق اسمك (اختياري)',
+				pronunciationHelp: 'اكتبه كما يُلفظ، حتى نتمكن من مناداة اسمك بشكل صحيح.',
 				lotteryLegend: 'تفاصيل التسجيل في القرعة',
 				questionsLegend: 'أسئلة',
 			},
@@ -3392,6 +3410,9 @@ export const translations = {
 			},
 			forms: {
 				informationLegend: 'Vos informations',
+				pronunciationLabel: 'Comment prononcer votre nom (facultatif)',
+				pronunciationHelp:
+					'Écrivez-le comme il se prononce, pour que nous puissions appeler votre nom correctement.',
 				lotteryLegend: 'Détails de l’inscription au tirage au sort',
 				questionsLegend: 'Questions',
 			},

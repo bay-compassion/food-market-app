@@ -129,6 +129,7 @@ describe('GuestStore', () => {
 			firstName: 'Ari',
 			lastName: 'Guest',
 			phone: '555-123-4567',
+			pronunciation: '',
 		});
 	});
 
@@ -149,6 +150,39 @@ describe('GuestStore', () => {
 			firstName: 'Ari',
 			lastName: 'Guest',
 			phone: '555-123-4567',
+			pronunciation: '',
+		});
+	});
+
+	it('keeps the saved pronunciation when a sign-up leaves it unchanged', async () => {
+		// Arrange
+		const storage = new StorageService();
+
+		storage.clear();
+		storage.set(StorageKey.GUEST_DEVICE_TOKEN, 'saved-device-token');
+		storage.set(StorageKey.GUEST_IDENTITY, {
+			firstName: 'Ari',
+			lastName: 'Guest',
+			phone: '555-123-4567',
+			pronunciation: 'AH-ree',
+		});
+		const signUp = vi.fn().mockResolvedValue({ guestId: 'guest-1' });
+		const store = new GuestStore({ storage, signUp });
+
+		// Act
+		await store.signUp({
+			firstName: 'Ari',
+			lastName: 'Guest',
+			phone: '555-000-0000',
+			locale: 'en',
+		});
+
+		// Assert
+		expect(store.identity).toEqual({
+			firstName: 'Ari',
+			lastName: 'Guest',
+			phone: '555-000-0000',
+			pronunciation: 'AH-ree',
 		});
 	});
 
@@ -165,7 +199,8 @@ describe('GuestStore', () => {
 
 		const store = new GuestStore({ storage, register });
 
-		expect(store.identity).toEqual(savedIdentity);
+		// Saved before pronunciations existed, so it has none; that is not a corrupt identity.
+		expect(store.identity).toEqual({ ...savedIdentity, pronunciation: '' });
 		expect(register).not.toHaveBeenCalled();
 	});
 
@@ -286,6 +321,7 @@ describe('GuestStore', () => {
 			firstName: 'Ari',
 			lastName: 'Guest',
 			phone: '555-123-4567',
+			pronunciation: '',
 		});
 	});
 
@@ -305,6 +341,7 @@ describe('GuestStore', () => {
 			firstName: 'Ari',
 			lastName: 'Guest',
 			phone: '555-123-4567',
+			pronunciation: '',
 		});
 	});
 
@@ -498,6 +535,7 @@ describe('GuestStore.adopt', () => {
 			firstName: 'Bea',
 			lastName: 'Before',
 			phone: '510-555-0999',
+			pronunciation: '',
 		});
 		const store = new GuestStore({ storage });
 
@@ -506,6 +544,7 @@ describe('GuestStore.adopt', () => {
 			firstName: 'Ada',
 			lastName: 'Lovelace',
 			phone: '510-555-0123',
+			pronunciation: null,
 		});
 
 		// Assert
@@ -516,6 +555,7 @@ describe('GuestStore.adopt', () => {
 			firstName: 'Ada',
 			lastName: 'Lovelace',
 			phone: '510-555-0123',
+			pronunciation: '',
 		});
 	});
 });
@@ -530,6 +570,7 @@ describe('GuestStore.forget', () => {
 			firstName: 'Ada',
 			lastName: 'Lovelace',
 			phone: '510-555-0123',
+			pronunciation: '',
 		});
 		storage.set(StorageKey.GUEST_HOUSEHOLD, {
 			ageRange: '30-44',
@@ -590,6 +631,7 @@ describe('GuestStore.adopt on a shared phone', () => {
 			firstName: 'Ada',
 			lastName: 'Lovelace',
 			phone: '510-555-0123',
+			pronunciation: null,
 		});
 
 		// Assert

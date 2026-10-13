@@ -39,6 +39,15 @@ export const GuestInformationForm = observer(function GuestInformationForm() {
 				required
 				autoComplete="family-name"
 			/>
+			<TextField
+				label={t.guestView.forms.pronunciationLabel}
+				helperText={t.guestView.forms.pronunciationHelp}
+				value={registration.guest.pronunciation}
+				onChange={(event) => registration.updateGuest({ pronunciation: event.target.value })}
+				onBlur={(event) => registration.updateGuest({ pronunciation: event.target.value.trim() })}
+				slotProps={{ htmlInput: { maxLength: 100 } }}
+				autoComplete="off"
+			/>
 			<PhoneField
 				label={t.phone}
 				value={registration.guest.phone}

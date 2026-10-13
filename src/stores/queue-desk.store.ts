@@ -1,7 +1,7 @@
 import { reaction, runInAction, type IReactionDisposer } from 'mobx';
 
 import { adminTranslations } from '../adminLocales.ts';
-import type { QueueGuest } from '../services/admin-api.ts';
+import type { GuestDetails, QueueGuest } from '../services/admin-api.ts';
 import {
 	manualAdmissionsFor,
 	type ManualAdmission,
@@ -48,6 +48,8 @@ export class QueueDeskStore {
 	private _printStationOnline = false;
 	/** The visit whose name tag is on its way to the print station, so a second tap waits. */
 	private _sendingTagFor: string | null = null;
+	/** The guest whose pronunciation and notes are being saved, so a second tap waits. */
+	private _savingDetailsFor: string | null = null;
 
 	constructor(
 		private readonly admin: AdminStore,
@@ -222,6 +224,33 @@ export class QueueDeskStore {
 			runInAction(() => this.notifications.error(adminTranslations.en.queueDesk.printFailed));
 		} finally {
 			runInAction(() => (this._sendingTagFor = null));
+		}
+	}
+
+	isSavingDetails(guest: QueueGuest): boolean {
+		return this._savingDetailsFor === guest.guestId;
+	}
+
+	/**
+	 * Saves a guest's pronunciation and staff notes. Resolves to whether it worked, so the ticket
+	 * can keep the volunteer's draft on screen to try again when it did not.
+	 */
+	async saveGuestDetails(guest: QueueGuest, details: GuestDetails): Promise<boolean> {
+		const t = adminTranslations.en.queueDesk.guestDetails;
+
+		this._savingDetailsFor = guest.guestId;
+
+		try {
+			await this.admin.updateGuestDetails(guest.guestId, details);
+			runInAction(() => this.notifications.success(t.saved));
+
+			return true;
+		} catch {
+			runInAction(() => this.notifications.error(t.saveFailed));
+
+			return false;
+		} finally {
+			runInAction(() => (this._savingDetailsFor = null));
 		}
 	}
 

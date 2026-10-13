@@ -16,6 +16,8 @@ const guest: QueueGuest = {
 	guestId: 'guest-1',
 	firstName: 'Hal',
 	lastName: 'Reyes',
+	pronunciation: null,
+	staffNotes: null,
 	phone: '(510) 555-0142',
 	householdSize: 2,
 	locale: 'en',

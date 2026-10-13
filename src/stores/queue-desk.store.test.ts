@@ -16,6 +16,8 @@ function guestWith(overrides: Partial<AdminGuest> = {}): AdminGuest {
 		guestId: 'guest-1',
 		firstName: 'Ada',
 		lastName: 'Lovelace',
+		pronunciation: null,
+		staffNotes: null,
 		phone: '5105550123',
 		householdSize: 2,
 		locale: 'en',
@@ -58,6 +60,7 @@ function deskWith({
 			listVisitEvents: vi.fn().mockResolvedValue([] as VisitEvent[]),
 			isPrintStationOnline: vi.fn().mockResolvedValue(false),
 			sendNameTag: vi.fn().mockResolvedValue({ queued: true }),
+			updateGuestDetails: vi.fn().mockResolvedValue(undefined),
 			runGuestCommand: vi.fn().mockResolvedValue(undefined),
 			runMarketAction: vi.fn().mockResolvedValue(undefined),
 		},
@@ -70,6 +73,7 @@ function deskWith({
 			listVisitEvents: false,
 			isPrintStationOnline: false,
 			sendNameTag: false,
+			updateGuestDetails: false,
 			runGuestCommand: false,
 			runMarketAction: false,
 		},
@@ -413,6 +417,42 @@ describe('QueueDeskStore', () => {
 
 		// Assert
 		expect(desk.printStationOnline).toBe(false);
+		expect(notifications.pending.at(-1)).toMatchObject({ severity: 'error' });
+	});
+
+	it('saves a guest’s details against the guest, not the visit', async () => {
+		// Arrange
+		const { desk, admin, notifications } = deskWith();
+		const guest = admin.sessionGuests[0]!;
+		const details = { pronunciation: 'AY-duh', staffNotes: 'Brings a friend.' };
+
+		// Act
+		const saving = desk.saveGuestDetails(guest, details);
+		const whileSaving = desk.isSavingDetails(guest);
+		const saved = await saving;
+
+		// Assert
+		expect(whileSaving).toBe(true);
+		expect(saved).toBe(true);
+		expect(desk.isSavingDetails(guest)).toBe(false);
+		expect(admin.updateGuestDetails).toHaveBeenCalledWith('guest-1', details);
+		expect(notifications.pending.at(-1)).toMatchObject({ severity: 'success' });
+	});
+
+	it('reports a guest’s details that could not be saved', async () => {
+		// Arrange
+		const { desk, admin, notifications } = deskWith();
+
+		admin.updateGuestDetails.mockRejectedValueOnce(new Error('offline'));
+
+		// Act
+		const saved = await desk.saveGuestDetails(admin.sessionGuests[0]!, {
+			pronunciation: '',
+			staffNotes: '',
+		});
+
+		// Assert
+		expect(saved).toBe(false);
 		expect(notifications.pending.at(-1)).toMatchObject({ severity: 'error' });
 	});
 

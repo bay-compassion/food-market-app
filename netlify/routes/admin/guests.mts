@@ -15,7 +15,12 @@ import {
 	routeHandler,
 } from '../../lib/http.mjs';
 import { tracedQuery } from '../../lib/sentry.mjs';
-import { adminProfileSchema, createGuestProfile } from '../../services/guest-information.mjs';
+import {
+	adminProfileSchema,
+	createGuestProfile,
+	staffGuestDetailsSchema,
+	updateStaffGuestDetails,
+} from '../../services/guest-information.mjs';
 import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
 
@@ -25,6 +30,8 @@ const visitUpdateSchema = z.object({
 	/** Where `return_to_queue` puts the guest; without one they go back to the place they had. */
 	placement: z.enum(['next', 'end']).optional(),
 });
+
+const guestIdSchema = z.uuid();
 
 async function currentEventId() {
 	const [event] = await tracedQuery('admin_guests.read_event', () =>
@@ -87,6 +94,8 @@ async function listGuests(request: Request) {
 					marketEventId: visits.marketEventId,
 					firstName: guests.firstName,
 					lastName: guests.lastName,
+					pronunciation: guests.pronunciation,
+					staffNotes: guests.staffNotes,
 					ageRange: visits.ageRange,
 					householdSize: visits.householdSize,
 					childrenCount: visits.childrenCount,
@@ -159,6 +168,19 @@ async function updateGuest(context: Context<AdminEnv>) {
 	return result.ok ? Response.json(result.visit) : jsonError(result.error, result.status);
 }
 
+async function updateGuestDetails(context: Context<AdminEnv>) {
+	const guestId = guestIdSchema.safeParse(context.req.param('guestId'));
+	const details = staffGuestDetailsSchema.safeParse(await jsonBody(context.req.raw));
+
+	if (!guestId.success || !details.success) {
+		return jsonError('Invalid guest details.');
+	}
+
+	const updated = await updateStaffGuestDetails(guestId.data, details.data);
+
+	return updated ? Response.json(updated) : jsonError('Guest not found.', 404);
+}
+
 export const guestRoutes = createRouter<AdminEnv>();
 
 guestRoutes.get(
@@ -170,5 +192,9 @@ guestRoutes.get(
 guestRoutes.post('/guests', withPermission('run:queue'), (context) => createGuest(context));
 guestRoutes.patch('/guests', withPermission('run:queue'), (context) => updateGuest(context));
 guestRoutes.all('/guests', methodNotAllowed);
+guestRoutes.patch('/guests/:guestId', withPermission('run:queue'), (context) =>
+	updateGuestDetails(context),
+);
+guestRoutes.all('/guests/:guestId', methodNotAllowed);
 
 export default routeHandler(createRouter<AdminEnv>().route('/api/admin', guestRoutes));

@@ -334,6 +334,21 @@ export interface QueueDeskTranslation {
 	elapsedMinutes: string;
 	elapsedJustNow: string;
 	history: VisitHistoryTranslation;
+	guestDetails: GuestDetailsTranslation;
+}
+
+/** The open ticket's editor for how to say a guest's name and what staff note about them. */
+export interface GuestDetailsTranslation {
+	title: string;
+	pronunciation: string;
+	pronunciationHelp: string;
+	staffNotes: string;
+	/** Under the notes: who can read them. */
+	staffNotesHelp: string;
+	save: string;
+	saving: string;
+	saved: string;
+	saveFailed: string;
 }
 
 /** The `/printing-station` page an unattended desktop runs to print tags sent from phones. */
@@ -762,6 +777,17 @@ export const adminTranslations = {
 			household: 'Household of {count}',
 			elapsedMinutes: '{minutes}m',
 			elapsedJustNow: 'now',
+			guestDetails: {
+				title: 'Guest details',
+				pronunciation: 'Pronunciation',
+				pronunciationHelp: 'How to say their name, the way it sounds.',
+				staffNotes: 'Staff notes',
+				staffNotesHelp: 'Only staff see these. The guest never does.',
+				save: 'Save details',
+				saving: 'Saving…',
+				saved: 'Guest details saved.',
+				saveFailed: 'The guest details couldn’t be saved. Try again.',
+			},
 			history: {
 				title: 'History',
 				empty: 'No history recorded for this visit.',

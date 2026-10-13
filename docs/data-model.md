@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=2433064cf7f3 -->
+<!-- diagram-sources: db/schema.mts=d0e3ed74eb52 -->
 
 # Database structure
 
@@ -85,6 +85,8 @@ erDiagram
         uuid id PK
         text first_name
         text last_name
+        text pronunciation "nullable; how to say the guest's name"
+        text staff_notes "nullable; workers only, never sent to the guest"
         integer age "nullable; superseded by age_range, dropped in a later migration"
         text phone
         text normalized_phone

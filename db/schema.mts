@@ -117,6 +117,10 @@ export const guests = pgTable(
 		id: uuid('id').defaultRandom().primaryKey(),
 		firstName: text('first_name').notNull(),
 		lastName: text('last_name').notNull(),
+		/** How to say the guest's name, written by the guest or a worker; null when neither has. */
+		pronunciation: text('pronunciation'),
+		/** What workers want to remember about a guest. Never sent to the guest's own device. */
+		staffNotes: text('staff_notes'),
 		/** Still present for the pending backfill-then-drop follow-up; superseded by `ageRange`. */
 		age: integer('age'),
 		phone: text('phone').notNull(),

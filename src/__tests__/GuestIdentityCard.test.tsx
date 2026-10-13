@@ -84,6 +84,7 @@ describe('GuestIdentityCard menu', () => {
 		expect(store.registration.guest).toEqual({
 			firstName: '',
 			lastName: '',
+			pronunciation: '',
 			ageRange: '',
 			householdSize: 1,
 			childrenCount: 0,
