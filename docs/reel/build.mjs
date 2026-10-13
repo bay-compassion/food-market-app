@@ -36,6 +36,22 @@ function guestStrings(t) {
 	const visit = t.guestView.visitStatus;
 
 	return {
+		guide: {
+			...t.guestView,
+			help: t.help,
+			language: t.language,
+			formTitle: t.formTitle,
+			formDescription: t.formDescription,
+			age: t.age,
+			agePlaceholder: t.agePlaceholder,
+			ageRange: t.ageRange30to44,
+			household: t.household,
+			householdHint: t.householdHint,
+			children: t.childrenCount,
+			seniors: t.seniorsCount,
+			privacy: t.privacy,
+			submitting: t.submitting,
+		},
 		welcome: t.welcome,
 		languagePrompt: t.languagePrompt,
 		info: t.guestView.forms.informationLegend,
@@ -50,6 +66,8 @@ function guestStrings(t) {
 		registeredDetails: visit.registered.details,
 		notPlaced: visit.not_placed.header,
 		notPlacedDetails: visit.not_placed.details,
+		noShow: visit.no_show.header,
+		noShowDetails: visit.no_show.details,
 		waiting: visit.waiting.header,
 		waitingDetails: visit.waiting.details,
 		nowCallingLabel: visit.waiting.nowCallingLabel,

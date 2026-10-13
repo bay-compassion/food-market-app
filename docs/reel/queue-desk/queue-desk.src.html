@@ -464,24 +464,6 @@
 		}
 	}
 
-	/* ---------- what the narration points at ---------- */
-	.spot {
-		position: relative;
-		z-index: 2;
-		border-radius: var(--radius-md);
-		box-shadow:
-			0 0 0 3px var(--color-focus),
-			0 0 0 9px rgb(255 181 69 / 30%);
-		animation: spot 1.6s ease-in-out infinite;
-	}
-	@keyframes spot {
-		50% {
-			box-shadow:
-				0 0 0 3px var(--color-focus),
-				0 0 0 14px rgb(255 181 69 / 12%);
-		}
-	}
-
 	/* ---------- the close-early prompt, beside the desk ---------- */
 	#callout {
 		position: absolute;
@@ -571,21 +553,7 @@
 		// Each line starts its `pause` after the one before it ends; `duration` is its recording's
 		// length, measured by voice.mjs. Beats hang off the lines, so a reworded line retimes them.
 		const NARRATION = __NARRATION__;
-		const CUES = new Map();
-		let clock = 0;
-		for (const line of NARRATION) {
-			clock += line.pause;
-			CUES.set(line.id, { id: line.id, t: clock, duration: line.duration, text: line.text });
-			clock += line.duration;
-		}
-		/** A moment in a line of narration: its start, or a fraction of the way through it. */
-		const C = (id, at = 0) => {
-			const cue = CUES.get(id);
-			if (!cue) throw new Error('No narration line "' + id + '"');
-			return cue.t + at * cue.duration;
-		};
-		/** The end of a line of narration, plus a little. */
-		const E = (id, plus = 0) => C(id, 1) + plus;
+		const { cues: CUES, C, E } = window.stage.narrationCues(NARRATION);
 
 		/* ================= the line ================= */
 

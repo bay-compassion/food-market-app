@@ -124,7 +124,27 @@ export interface GuestTourTranslations {
 	};
 }
 
+/** Playback copy for the guest instructional presentation. Narration is in English. */
+export interface GuestPresentationTranslations {
+	title: string;
+	heading: string;
+	summary: string;
+	description: string;
+	sound: string;
+	play: string;
+	pause: string;
+	restart: string;
+	soundOn: string;
+	soundOff: string;
+	noSound: string;
+	seek: string;
+	open: string;
+	download: string;
+	more: string;
+}
+
 export interface GuestViewTranslations {
+	presentation: GuestPresentationTranslations;
 	/** Under the first-visit language picker: the choice is not final, and where to change it. */
 	languageHint: string;
 	/** Leads into the link to the help page, for a guest the home screen leaves unsure. */
@@ -447,6 +467,24 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: 'Guest Market Guide',
+				heading: 'Your visit to The Bay Compassion',
+				summary: 'A short guide for guests on market day.',
+				description:
+					'Learn how to register, read your lottery result, follow your number, and come to the check-in desk.',
+				sound: 'Turn the sound on for English narration. The voice is AI-generated.',
+				play: 'Play',
+				pause: 'Pause',
+				restart: 'Restart',
+				soundOn: 'Sound on',
+				soundOff: 'Sound off',
+				noSound: 'No sound',
+				seek: 'Seek',
+				open: 'Open presentation',
+				download: 'Download presentation',
+				more: 'More presentations',
+			},
 			languageHint: 'You can change your language anytime at the top of the screen.',
 			helpPrompt: 'Not sure what to do?',
 			tour: {
@@ -839,6 +877,25 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: 'Guía del mercado para visitantes',
+				heading: 'Su visita a The Bay Compassion',
+				summary: 'Una breve guía para visitantes el día del mercado.',
+				description:
+					'Aprenda a inscribirse, consultar el resultado del sorteo, seguir su número y acudir a la mesa de registro.',
+				sound:
+					'Active el sonido para escuchar la narración en inglés. La voz se genera con inteligencia artificial.',
+				play: 'Reproducir',
+				pause: 'Pausar',
+				restart: 'Reiniciar',
+				soundOn: 'Sonido activado',
+				soundOff: 'Sonido desactivado',
+				noSound: 'Sin sonido',
+				seek: 'Ir a un momento',
+				open: 'Abrir presentación',
+				download: 'Descargar presentación',
+				more: 'Más presentaciones',
+			},
 			languageHint:
 				'Puede cambiar el idioma en cualquier momento en la parte superior de la pantalla.',
 			helpPrompt: '¿No sabe qué hacer?',
@@ -1237,6 +1294,24 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: 'راهنمای بازار برای مهمانان',
+				heading: 'بازدید شما از The Bay Compassion',
+				summary: 'راهنمایی کوتاه برای مهمانان در روز بازار.',
+				description:
+					'با ثبت‌نام، دیدن نتیجهٔ قرعه‌کشی، پیگیری شمارهٔ خود و رفتن به میز پذیرش آشنا شوید.',
+				sound: 'برای شنیدن روایت انگلیسی، صدا را روشن کنید. صدا با هوش مصنوعی تولید شده است.',
+				play: 'پخش',
+				pause: 'مکث',
+				restart: 'شروع دوباره',
+				soundOn: 'صدا روشن',
+				soundOff: 'صدا خاموش',
+				noSound: 'بدون صدا',
+				seek: 'رفتن به زمان',
+				open: 'باز کردن ارائه',
+				download: 'دریافت ارائه',
+				more: 'ارائه‌های بیشتر',
+			},
 			languageHint: 'هر زمان بخواهید می‌توانید زبان را از بالای صفحه تغییر دهید.',
 			helpPrompt: 'نمی‌دانید چه کار کنید؟',
 			tour: {
@@ -1627,6 +1702,24 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: 'Gabay sa palengke para sa mga bisita',
+				heading: 'Ang iyong pagbisita sa The Bay Compassion',
+				summary: 'Isang maikling gabay para sa mga bisita sa araw ng palengke.',
+				description:
+					'Alamin kung paano magparehistro, tingnan ang resulta ng bunutan, subaybayan ang iyong numero, at pumunta sa check-in desk.',
+				sound: 'Buksan ang tunog para sa pagsasalaysay sa Ingles. Gawa ng AI ang boses.',
+				play: 'I-play',
+				pause: 'I-pause',
+				restart: 'Magsimulang muli',
+				soundOn: 'May tunog',
+				soundOff: 'Walang tunog',
+				noSound: 'Walang audio',
+				seek: 'Pumunta sa oras',
+				open: 'Buksan ang presentasyon',
+				download: 'I-download ang presentasyon',
+				more: 'Iba pang presentasyon',
+			},
 			languageHint: 'Maaari mong palitan ang wika anumang oras sa itaas ng screen.',
 			helpPrompt: 'Hindi sigurado kung ano ang gagawin?',
 			tour: {
@@ -2023,6 +2116,24 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: 'Hướng dẫn chợ dành cho khách',
+				heading: 'Lần ghé thăm The Bay Compassion của bạn',
+				summary: 'Hướng dẫn ngắn dành cho khách vào ngày chợ.',
+				description:
+					'Tìm hiểu cách đăng ký, xem kết quả bốc thăm, theo dõi số của bạn và đến bàn tiếp đón.',
+				sound: 'Bật âm thanh để nghe lời hướng dẫn bằng tiếng Anh. Giọng nói được tạo bằng AI.',
+				play: 'Phát',
+				pause: 'Tạm dừng',
+				restart: 'Bắt đầu lại',
+				soundOn: 'Bật âm thanh',
+				soundOff: 'Tắt âm thanh',
+				noSound: 'Không có âm thanh',
+				seek: 'Chuyển đến thời điểm',
+				open: 'Mở bài hướng dẫn',
+				download: 'Tải bài hướng dẫn',
+				more: 'Các bài hướng dẫn khác',
+			},
 			languageHint: 'Bạn có thể đổi ngôn ngữ bất cứ lúc nào ở phía trên màn hình.',
 			helpPrompt: 'Chưa biết phải làm gì?',
 			tour: {
@@ -2412,6 +2523,23 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: '访客食品市场指南',
+				heading: '您在 The Bay Compassion 的到访',
+				summary: '市场开放日的访客简明指南。',
+				description: '了解如何报名、查看抽签结果、关注您的号码以及前往签到处。',
+				sound: '打开声音收听英语解说。声音由人工智能生成。',
+				play: '播放',
+				pause: '暂停',
+				restart: '重新开始',
+				soundOn: '声音已开启',
+				soundOff: '声音已关闭',
+				noSound: '无音频',
+				seek: '跳转进度',
+				open: '打开演示',
+				download: '下载演示',
+				more: '更多演示',
+			},
 			languageHint: '您可以随时在屏幕顶部更改语言。',
 			helpPrompt: '不知道该怎么做？',
 			tour: {
@@ -2784,6 +2912,24 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: 'دليل السوق للضيوف',
+				heading: 'زيارتك إلى The Bay Compassion',
+				summary: 'دليل قصير للضيوف في يوم السوق.',
+				description:
+					'تعرّف على كيفية التسجيل ومعرفة نتيجة القرعة ومتابعة رقمك والتوجه إلى مكتب تسجيل الوصول.',
+				sound: 'شغّل الصوت لسماع الشرح باللغة الإنجليزية. الصوت مولّد بالذكاء الاصطناعي.',
+				play: 'تشغيل',
+				pause: 'إيقاف مؤقت',
+				restart: 'البدء من جديد',
+				soundOn: 'الصوت مفعّل',
+				soundOff: 'الصوت مغلق',
+				noSound: 'لا يوجد صوت',
+				seek: 'الانتقال إلى وقت',
+				open: 'فتح العرض',
+				download: 'تنزيل العرض',
+				more: 'المزيد من العروض',
+			},
 			languageHint: 'يمكنك تغيير اللغة في أي وقت من أعلى الشاشة.',
 			helpPrompt: 'لست متأكدًا مما عليك فعله؟',
 			tour: {
@@ -3169,6 +3315,25 @@ export const translations = {
 			},
 		},
 		guestView: {
+			presentation: {
+				title: 'Guide du marché pour les visiteurs',
+				heading: 'Votre visite à The Bay Compassion',
+				summary: 'Un petit guide pour les visiteurs le jour du marché.',
+				description:
+					'Découvrez comment vous inscrire, consulter le résultat du tirage, suivre votre numéro et vous présenter à l’accueil.',
+				sound:
+					'Activez le son pour écouter la narration en anglais. La voix est générée par intelligence artificielle.',
+				play: 'Lire',
+				pause: 'Pause',
+				restart: 'Recommencer',
+				soundOn: 'Son activé',
+				soundOff: 'Son désactivé',
+				noSound: 'Sans son',
+				seek: 'Aller à un moment',
+				open: 'Ouvrir la présentation',
+				download: 'Télécharger la présentation',
+				more: 'Autres présentations',
+			},
 			languageHint: 'Vous pouvez changer de langue à tout moment en haut de l’écran.',
 			helpPrompt: 'Vous ne savez pas quoi faire ?',
 			tour: {

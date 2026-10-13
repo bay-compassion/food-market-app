@@ -8,6 +8,18 @@
  *   of each (`timings`), which the page reads at build time to set its pace.
  */
 export const videos = {
+	'guest-guide': {
+		source: 'guest-guide/guest-guide.src.html',
+		soundtrack: 'guest-guide/soundtrack.m4a',
+		arrangement: 'guest-guide/arrangement.cjs',
+		narration: 'guest-guide/narration.mjs',
+		timings: 'guest-guide/narration.timings.json',
+		publish: {
+			folder: 'guest-guide',
+			interactive: 'guest-guide.html',
+			guest: true,
+		},
+	},
 	'market-day-reel': {
 		source: 'reel.src.html',
 		soundtrack: 'soundtrack.m4a',

@@ -49,6 +49,7 @@
 			}
 
 			main {
+				container-type: inline-size;
 				display: grid;
 				gap: 24px;
 				width: min(100%, 1100px);
@@ -140,6 +141,15 @@
 				outline: 3px solid var(--gold);
 				outline-offset: 3px;
 			}
+			@container (max-width: 600px) {
+				.guest-player {
+					aspect-ratio: 9 / 16;
+					margin-bottom: 190px;
+				}
+				.guest-player iframe {
+					height: calc(100% + 190px);
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -148,7 +158,7 @@
 				<img class="wordmark" src="wordmark.png" alt="The Bay Compassion" />
 				<h1>__HEADING__</h1>
 			</header>
-			<div class="player">
+			<div class="player __PLAYER_CLASS__">
 				<iframe src="__INTERACTIVE__#watch" title="__TITLE__" allow="autoplay"></iframe>
 			</div>
 			<section class="about">
@@ -157,9 +167,9 @@
 					The screens are simplified recreations of the real app, with fictional guests. __SOUND__
 				</p>
 			</section>
-			<nav class="links" aria-label="More">
-				<a href="__INTERACTIVE__#watch">Open presentation</a>
-				<a href="__INTERACTIVE__" download>Download presentation</a>
+			<nav class="links" aria-label="__MORE__">
+				<a href="__INTERACTIVE__#watch">__OPEN__</a>
+				<a href="__INTERACTIVE__" download>__DOWNLOAD__</a>
 				__OTHER_VIDEOS__
 			</nav>
 		</main>

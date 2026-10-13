@@ -82,6 +82,30 @@
 		return { at, snapshots };
 	}
 
+	/** Recorded line lengths pace both animation beats and the music arrangement. */
+	function narrationCues(lines) {
+		const cues = new Map();
+		let clock = 0;
+
+		for (const line of lines) {
+			clock += line.pause;
+			cues.set(line.id, { ...line, t: clock });
+			clock += line.duration;
+		}
+
+		const C = (id, fraction = 0) => {
+			const cue = cues.get(id);
+
+			if (!cue) {
+				throw new Error('No narration line "' + id + '"');
+			}
+
+			return cue.t + fraction * cue.duration;
+		};
+
+		return { cues, C, E: (id, plus = 0) => C(id, 1) + plus };
+	}
+
 	const cap = (eyebrow, head, sub) => (s) => {
 		s.cap = { eyebrow, head, sub };
 	};
@@ -148,6 +172,14 @@
 			board = false;
 		}
 
+		if (x.status === 'no_show') {
+			mark = '!';
+			tone = ' warning';
+			head = L.noShow;
+			det = L.noShowDetails;
+			board = false;
+		}
+
 		if (x.status === 'registered') {
 			head = L.registered;
 			det = L.registeredDetails;
@@ -164,7 +196,7 @@
 			esc(det) +
 			'</p>';
 
-		if (x.status === 'registered') {
+		if (x.status === 'registered' && !s.registrationClosed) {
 			// Warms toward the error colour over the last five minutes, as RegistrationCountdown does.
 			const progress = Math.min(1, Math.max(0, 1 - s.clock / 300));
 			const clock =
@@ -198,7 +230,7 @@
 			const toneColor = x.status === 'called' ? 'var(--color-success)' : 'var(--color-brand-dark)';
 
 			html +=
-				'<div class="stamp"><span class="live"></span><span><strong>' +
+				'<div class="stamp" dir="ltr"><span class="live"></span><span><strong>' +
 				esc(x.first + ' ' + x.last) +
 				'</strong><small>10/10/2026</small></span></div>' +
 				'<div class="standing"><div class="board' +
@@ -397,9 +429,23 @@
 	 * the capture and still scripts. `#record` hides the controls and waits to be driven; `#dev` adds
 	 * GSAP's scrubber and the beat list, which `describeBeat(prev, cur)` writes from the snapshots.
 	 */
-	function mountPlayer({ tl, END, snaps, describeBeat, source, cues = [] }) {
+	function mountPlayer({ tl, END, snaps, describeBeat, source, cues = [], onLocaleChange }) {
 		const viewport = k('viewport');
 		const stage = k('stage');
+		let locale = 'en';
+		let soundAvailable = true;
+		const copy = () =>
+			onLocaleChange
+				? S[locale].guide.presentation
+				: {
+						play: 'Play',
+						pause: 'Pause',
+						restart: 'Restart',
+						soundOn: 'Sound on',
+						soundOff: 'Sound off',
+						noSound: 'No sound',
+						seek: 'Seek',
+					};
 
 		viewport.insertAdjacentHTML(
 			'afterend',
@@ -411,6 +457,23 @@
 				'<input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek" />' +
 				'<span id="clock">0:00</span></div>',
 		);
+
+		if (onLocaleChange) {
+			k('controls').insertAdjacentHTML(
+				'beforeend',
+				'<select id="presentationLocale">' +
+					LANGS.map(
+						([code, name]) => '<option value="' + code + '">' + esc(name) + '</option>',
+					).join('') +
+					'</select>',
+			);
+			k('presentationLocale').addEventListener('change', (event) => {
+				locale = event.target.value;
+				document.documentElement.lang = locale;
+				onLocaleChange(locale);
+				syncControls();
+			});
+		}
 		let devTick = null;
 		const render = tl.eventCallback('onUpdate');
 
@@ -434,11 +497,13 @@
 				const button = k('sound');
 
 				button.disabled = true;
-				button.textContent = 'No sound';
+				soundAvailable = false;
+				button.textContent = copy().noSound;
 			});
 
 		const fit = () => {
-			stage.style.transform = 'scale(' + viewport.clientWidth / 1920 + ')';
+			stage.style.transform =
+				'scale(' + viewport.clientWidth / parseFloat(getComputedStyle(stage).width) + ')';
 		};
 
 		new ResizeObserver(fit).observe(viewport);
@@ -456,10 +521,19 @@
 			);
 			scrub.value = String(Math.round((tl.time() / END) * 1000));
 			clock.textContent = fmt(tl.time());
-			const text = tl.paused() || tl.progress() === 1 ? 'Play' : 'Pause';
+			const L = copy();
+			const text = tl.paused() || tl.progress() === 1 ? L.play : L.pause;
 
 			playBtn.textContent = text;
 			playBtn.setAttribute('aria-label', text);
+			k('restart').textContent = L.restart;
+			k('sound').textContent = soundAvailable ? (soundOn ? L.soundOn : L.soundOff) : L.noSound;
+			k('sound').setAttribute('aria-pressed', String(soundOn));
+			scrub.setAttribute('aria-label', L.seek);
+
+			if (onLocaleChange) {
+				k('presentationLocale').setAttribute('aria-label', S[locale].guide.language);
+			}
 		}
 		/* Browsers start sound only from a click, so it begins off until the viewer turns it on. */
 		const soundBtn = k('sound');
@@ -514,7 +588,7 @@
 
 		async function setSound(on) {
 			soundOn = on;
-			soundBtn.textContent = on ? 'Sound on' : 'Sound off';
+			soundBtn.textContent = on ? copy().soundOn : copy().soundOff;
 			soundBtn.setAttribute('aria-pressed', String(on));
 
 			if (!on) {
@@ -748,6 +822,7 @@
 		esc,
 		label,
 		beatScript,
+		narrationCues,
 		cap,
 		put,
 		appBar,
