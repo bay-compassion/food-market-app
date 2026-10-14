@@ -89,6 +89,13 @@
 
 ## Style Conventions
 
+- Prefer title case for English page titles, headings, subheadings, navigation items, tabs, and
+  short UI labels across the app, project site, README, documentation, and presentations. Capitalize
+  the first and last words and major words; keep articles, coordinating conjunctions, and short
+  prepositions lowercase unless they begin or end the title (e.g. "Time to Register" and
+  "The Need Beyond a Full Queue"). Use sentence case for prose, full-sentence instructions,
+  validation messages, and other sentence-length copy. Preserve proper names and follow each
+  language's capitalization conventions rather than imposing English title case on translations.
 - Use kebab-case for file names except for components (where the casing matters).
 - Use the Arrange-Act-Assert (AAA) pattern for unit tests.
 
