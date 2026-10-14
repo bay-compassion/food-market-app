@@ -8,7 +8,7 @@ test('static SMS consent evidence is publicly reviewable', { tag: '@small' }, as
 	await expect(page.getByRole('img')).toHaveCount(5);
 	await expect(page.locator('script[src="/src/main.tsx"]')).toHaveCount(0);
 	await expect(page.locator('#app')).toHaveCount(0);
-	await expect(page.locator('.site-header')).toHaveCSS('background-color', 'rgb(2, 57, 64)');
+	await expect(page.locator('.site-header')).toHaveCSS('background-color', 'rgb(39, 92, 99)');
 	await expect(page.locator('.evidence article').first()).toHaveCSS('display', 'grid');
 
 	const stylesheetResponse = await page.request.get('/sms-consent/styles.css');

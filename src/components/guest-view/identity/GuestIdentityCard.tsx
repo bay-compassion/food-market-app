@@ -59,7 +59,7 @@ const IdentityCard = styled(Card)`
 		grid-area: notifications;
 		margin-top: 12px;
 		padding-top: 12px;
-		border-top: 1px solid rgb(2 57 64 / 18%);
+		border-top: 1px solid rgb(39 92 99 / 18%);
 	}
 
 	.notification-status .app-button {

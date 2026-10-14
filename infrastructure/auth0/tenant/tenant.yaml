@@ -177,8 +177,8 @@ tenant:
   support_url: ''
   universal_login:
     colors:
-      page_background: '#023940'
-      primary: '#023940'
+      page_background: '#275c63'
+      primary: '#275c63'
 clientGrants:
   - client_id: Bay Compassion (Test Application)
     audience: https://thebaycompassion.org

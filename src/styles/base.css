@@ -8,17 +8,19 @@
  * stylesheet, so the cascade order matches what `App.vue` used to produce.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Arabic:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+@import url('/fonts/brand.css');
+@import './brand.css';
 
 :root {
-	--font-body: Roboto, Arial, sans-serif;
-	--font-heading: 'Roboto Condensed', Impact, sans-serif;
-	--color-brand: #023940;
-	--color-brand-dark: #012a2f;
+	--color-brand: #275c63;
+	--color-brand-light: #7ebdc5;
+	--color-brand-dark: #1e474d;
 	--color-on-brand: #fff;
 	--color-background: #fff;
-	--color-surface-soft: #f1f5f3;
-	--color-text: #101010;
+	--color-surface-soft: #eef7f8;
+	--color-text: #000000;
 	--color-text-muted: #3d453f;
 	--color-text-subtle: #60746a;
 	--color-border: #5c655f;

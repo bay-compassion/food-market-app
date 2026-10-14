@@ -9,7 +9,7 @@ import { useRootStore } from '../../stores/react/store-context';
 // its own styles and its own writing direction.
 const Sheet = styled(Drawer)`
 	.MuiBackdrop-root {
-		background: rgb(1 42 47 / 62%);
+		background: rgb(30 71 77 / 62%);
 	}
 
 	.MuiDrawer-paper {
@@ -24,7 +24,7 @@ const Sheet = styled(Drawer)`
 		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 		color: var(--color-text);
 		background: var(--color-background);
-		box-shadow: 0 -18px 60px rgb(1 42 47 / 24%);
+		box-shadow: 0 -18px 60px rgb(30 71 77 / 24%);
 	}
 `;
 

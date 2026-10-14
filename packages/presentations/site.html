@@ -16,19 +16,19 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link
 			rel="stylesheet"
-			href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700&family=Roboto:wght@400;500&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
 		/>
 		<style>
+			__FONT_CSS__
 			/* The presentation plays directly from its GSAP page, with its own audio and controls. */
 			:root {
-				--brand: #023940;
-				--brand-dark: #012a2f;
-				--night: #011d21;
-				--ink: #e9f1ee;
-				--ink-soft: rgb(233 241 238 / 72%);
-				--gold: #ffb545;
-				--font-body: Roboto, Arial, sans-serif;
-				--font-heading: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+				--brand: #275c63;
+				--brand-dark: #1e474d;
+				--night: #142f33;
+				--ink: #ffffff;
+				--ink-soft: rgb(255 255 255 / 72%);
+				--accent: #7ebdc5;
+				--focus: #ffb545;
 				color-scheme: dark;
 			}
 
@@ -43,7 +43,7 @@
 				padding-block: 32px 48px;
 				color: var(--ink);
 				background:
-					radial-gradient(circle at 75% 0%, rgb(3 74 82 / 80%), transparent 55%),
+					radial-gradient(circle at 75% 0%, rgb(39 92 99 / 80%), transparent 55%),
 					linear-gradient(170deg, var(--brand-dark), var(--night));
 				font-family: var(--font-body);
 				line-height: 1.55;
@@ -63,9 +63,7 @@
 			}
 
 			.wordmark {
-				width: 220px;
-				max-width: 60%;
-				filter: brightness(0) invert(1);
+				--brand-lockup-size: 24px;
 			}
 
 			h1 {
@@ -118,7 +116,7 @@
 				align-items: center;
 				min-height: 44px;
 				padding: 0 20px;
-				border: 2px solid rgb(233 241 238 / 35%);
+				border: 2px solid rgb(255 255 255 / 35%);
 				border-radius: 999px;
 				color: var(--ink);
 				font-family: var(--font-heading);
@@ -130,25 +128,25 @@
 			}
 
 			.links a:first-child {
-				border-color: var(--gold);
-				color: var(--gold);
+				border-color: var(--accent);
+				color: var(--accent);
 			}
 
 			.links a:hover {
-				border-color: var(--gold);
+				border-color: var(--accent);
 			}
 
 			a:focus-visible {
-				outline: 3px solid var(--gold);
+				outline: 3px solid var(--focus);
 				outline-offset: 3px;
 			}
-			/* Below 1000px the player's chapters (stage.css) wrap onto another row: 48px more. */
+			/* Reserve room for wrapped chapter and playback controls with the brand typefaces. */
 			@container (max-width: 999px) {
 				.chaptered {
-					margin-bottom: 184px;
+					margin-bottom: 232px;
 				}
 				.chaptered iframe {
-					height: calc(100% + 184px);
+					height: calc(100% + 232px);
 				}
 			}
 			@container (max-width: 600px) {
@@ -166,7 +164,7 @@
 		<main>
 			<header>
 				<a href="__HOME__" style="color: inherit">← Project Overview</a>
-				<img class="wordmark" src="wordmark.png" alt="The Bay Compassion" />
+				__BRAND_LOCKUP__
 				<h1>__HEADING__</h1>
 			</header>
 			<div class="player __PLAYER_CLASS__">

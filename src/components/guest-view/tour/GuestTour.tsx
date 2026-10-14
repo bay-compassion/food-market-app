@@ -78,7 +78,7 @@ const GuestTour = observer(function GuestTour() {
 				// The tooltip handles Escape itself, ending the tour rather than advancing it.
 				dismissKeyAction: false,
 				overlayClickAction: false,
-				overlayColor: 'rgb(1 42 47 / 0.6)',
+				overlayColor: 'rgb(30 71 77 / 0.6)',
 				scrollOffset,
 				skipBeacon: true,
 				spotlightPadding: 6,

@@ -8,7 +8,7 @@ self.addEventListener('push', (event) => {
 		self.registration.showNotification(notification.title, {
 			body: notification.body,
 			icon: '/icon-192.png',
-			badge: '/bay-compassion-logo.png',
+			badge: '/notification-badge.png',
 			tag: notification.tag || notification.type,
 			data: { url: notification.url || '/' },
 		}),

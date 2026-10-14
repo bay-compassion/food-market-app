@@ -55,6 +55,7 @@ type Story = StoryObj<typeof meta>;
 /** Folded: a strip under the field, offering the optional one. */
 export const Folded: Story = {
 	play: async ({ canvas }) => {
+		await expect(canvas.getByRole('button', { name: copy.offer })).not.toHaveFocus();
 		await expect(canvas.getByRole('button', { name: copy.offer })).toHaveAttribute(
 			'aria-expanded',
 			'false',

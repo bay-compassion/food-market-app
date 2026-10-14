@@ -47,7 +47,7 @@ const CallBar = styled.div`
 	bottom: 0;
 	padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
 	background: var(--color-background);
-	box-shadow: 0 -8px 24px rgb(1 42 47 / 10%);
+	box-shadow: 0 -8px 24px rgb(30 71 77 / 10%);
 
 	> * {
 		max-width: 480px;

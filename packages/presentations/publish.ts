@@ -14,6 +14,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { translations } from '../../src/locales.ts';
+import { brandCss, brandLockup } from './branding.ts';
+import { brandFontCss } from './fonts.ts';
 import { allVideos } from './videos.ts';
 
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
@@ -58,7 +60,9 @@ const escape = (value: unknown) =>
 			})[character] ?? character,
 	);
 const repository = `https://github.com/${owner}/${repo}`;
-const template = readFileSync(here('./site.html'), 'utf8');
+const template = readFileSync(here('./site.html'), 'utf8')
+	.replace('__FONT_CSS__', brandFontCss + brandCss)
+	.replace('__BRAND_LOCKUP__', () => brandLockup('logo.svg'));
 
 rmSync(site, { recursive: true, force: true });
 mkdirSync(site, { recursive: true });
@@ -115,17 +119,23 @@ for (const video of published) {
 
 	writeFileSync(path.join(destination, 'index.html'), page);
 	copyFileSync(here(`./out/${video.name}.html`), path.join(destination, presentation.interactive));
-	copyFileSync(here('../../public/wordmark.png'), path.join(destination, 'wordmark.png'));
+	copyFileSync(
+		here('../../public/bay-compassion-icon-digital.svg'),
+		path.join(destination, 'logo.svg'),
+	);
 	copyFileSync(here('../../public/bay-compassion-logo.png'), path.join(destination, 'logo.png'));
 }
 
 const portfolio = readFileSync(here('./portfolio/index.html'), 'utf8')
 	.replaceAll('__BASE__', escape(base))
-	.replaceAll('__REPO__', escape(repository));
+	.replaceAll('__REPO__', escape(repository))
+	.replace('__FONT_CSS__', brandFontCss + brandCss)
+	.replace('__BRAND_LOCKUP__', () => brandLockup('logo.svg'));
 
 writeFileSync(path.join(site, 'index.html'), portfolio);
+cpSync(here('../../public/fonts'), path.join(site, 'fonts'), { recursive: true });
 copyFileSync(here('./portfolio/portfolio.css'), path.join(site, 'portfolio.css'));
-copyFileSync(here('../../public/wordmark.png'), path.join(site, 'wordmark.png'));
+copyFileSync(here('../../public/bay-compassion-icon-digital.svg'), path.join(site, 'logo.svg'));
 copyFileSync(here('../../public/bay-compassion-logo.png'), path.join(site, 'logo.png'));
 cpSync(here('../../docs/images/portfolio'), path.join(site, 'images'), { recursive: true });
 

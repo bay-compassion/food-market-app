@@ -1,15 +1,13 @@
 :root {
 	color-scheme: dark;
-	--ink: #e9f1ee;
-	--brand-dark: #012a2f;
-	--night: #011d21;
-	--border: rgb(233 241 238 / 20%);
+	--ink: #ffffff;
+	--brand-dark: #1e474d;
+	--night: #142f33;
+	--border: rgb(255 255 255 / 20%);
 	/* Decorative accents follow the brand palette; focus remains a visibility cue. */
-	--brand-accent: var(--ink);
+	--brand-accent: #7ebdc5;
 	--focus-color: #ffb545;
-	--muted: rgb(233 241 238 / 72%);
-	--font-body: Roboto, Arial, sans-serif;
-	--font-heading: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+	--muted: rgb(255 255 255 / 72%);
 	font-family: var(--font-body);
 	color: var(--ink);
 	background: var(--night);
@@ -21,7 +19,7 @@ body {
 	margin: 0;
 	line-height: 1.6;
 	background:
-		radial-gradient(ellipse 1000px 800px at 75% 0%, rgb(3 74 82 / 80%), transparent 75%),
+		radial-gradient(ellipse 1000px 800px at 75% 0%, rgb(39 92 99 / 80%), transparent 75%),
 		linear-gradient(170deg, var(--brand-dark), var(--night));
 }
 a {
@@ -89,8 +87,8 @@ p {
 	padding-block: 28px;
 	border-bottom: 1px solid var(--border);
 }
-.site-header img {
-	filter: brightness(0) invert(1);
+.site-header .brand-lockup {
+	--brand-lockup-size: 20px;
 }
 nav {
 	display: flex;
@@ -162,7 +160,7 @@ nav {
 }
 .hero-phone img,
 .gallery img {
-	border: 6px solid #0a515a;
+	border: 6px solid #275c63;
 	border-radius: 28px;
 	box-shadow: 0 24px 56px rgb(0 0 0 / 40%);
 }
@@ -200,7 +198,7 @@ article a {
 	font-size: 14px;
 }
 .gallery-section {
-	background: rgb(3 74 82 / 30%);
+	background: rgb(39 92 99 / 30%);
 }
 .gallery {
 	display: grid;
@@ -235,13 +233,13 @@ figcaption strong {
 	display: block;
 	border: 1px solid var(--border);
 	border-radius: 14px;
-	background: rgb(3 74 82 / 20%);
+	background: rgb(39 92 99 / 20%);
 	padding: 24px;
 	text-decoration: none;
 }
 .guides > a:hover {
 	border-color: var(--brand-accent);
-	background: rgb(3 74 82 / 50%);
+	background: rgb(39 92 99 / 50%);
 }
 .guides .eyebrow {
 	display: block;
