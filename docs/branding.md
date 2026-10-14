@@ -41,6 +41,9 @@ meaning. App tokens live in `src/styles/base.css`; concrete MUI palette values i
 must stay aligned. Static flyers and presentation styles carry equivalent values.
 
 Headings, structural labels, buttons, and counts use **Area Normal** (ExtraBold 800 and Black 900).
+App headings and labels use tighter tracking through `--tracking-heading` and `--tracking-label`
+in `src/styles/base.css`; RTL containers reset these to zero to preserve joined letterforms.
+Document headings and brand lockups keep their own spacing.
 Body text uses **DM Sans** (400–900, plus regular italic). Existing heading weights below 800
 resolve to the supplied ExtraBold face; no artificial bold is needed. Both families are self-hosted
 as WOFF2 in `public/fonts/`, with `font-display: swap`. The shared stylesheet is

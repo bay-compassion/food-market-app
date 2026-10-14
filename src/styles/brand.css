@@ -30,3 +30,13 @@
 .brand-lockup__name > span {
 	display: block;
 }
+
+/* Wide document headers can keep the name on a single line. */
+.brand-lockup--inline .brand-lockup__name {
+	display: flex;
+	gap: 0.25em;
+}
+.brand-lockup--inline .brand-lockup__icon {
+	width: 1.65em;
+	height: 1.65em;
+}

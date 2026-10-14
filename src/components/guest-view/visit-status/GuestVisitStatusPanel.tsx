@@ -33,7 +33,7 @@ const Panel = styled.div`
 		margin-bottom: 9px;
 		font-family: var(--font-heading);
 		font-size: 29px;
-		letter-spacing: -0.01em;
+		letter-spacing: var(--tracking-heading);
 		text-transform: uppercase;
 		color: var(--color-text);
 	}

@@ -29,6 +29,8 @@
 	--color-error: #a12622;
 	--color-success: #146c34;
 	--color-warning: #7a4e00;
+	--tracking-heading: -0.035em;
+	--tracking-label: -0.02em;
 	--radius-sm: 8px;
 	--radius-md: 16px;
 	--radius-lg: 24px;
@@ -38,6 +40,11 @@
 	color: var(--color-text);
 	background: var(--color-background);
 	font-synthesis: none;
+}
+/* Preserve joined letterforms in Arabic and Farsi. */
+[dir='rtl'] {
+	--tracking-heading: 0;
+	--tracking-label: 0;
 }
 * {
 	box-sizing: border-box;
@@ -73,7 +80,7 @@ h1 {
 	font-size: 38px;
 	font-weight: 700;
 	line-height: 1.05;
-	letter-spacing: -0.01em;
+	letter-spacing: var(--tracking-heading);
 	text-transform: uppercase;
 }
 .sr-only {

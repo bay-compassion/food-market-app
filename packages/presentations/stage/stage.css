@@ -291,7 +291,7 @@ body.watch #clock {
 	pointer-events: none;
 }
 .wordmark {
-	--brand-lockup-size: 48px;
+	--brand-lockup-size: 80px;
 }
 .card-center .line {
 	font-family: var(--font-heading);

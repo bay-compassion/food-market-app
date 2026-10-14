@@ -24,6 +24,7 @@ const Brand = styled(Link)`
 	font-family: var(--font-heading);
 	font-weight: 700;
 	font-size: 14.5px;
+	letter-spacing: var(--tracking-heading);
 	text-transform: uppercase;
 	text-decoration: none;
 

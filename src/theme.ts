@@ -70,12 +70,13 @@ export const appTheme = createTheme({
 	},
 	typography: {
 		fontFamily: 'var(--font-body)',
+		button: { letterSpacing: 'var(--tracking-label)' },
 		h1: {
 			fontFamily: 'var(--font-heading)',
 			fontSize: '2.375rem',
 			fontWeight: 700,
 			lineHeight: 1.05,
-			letterSpacing: '-0.01em',
+			letterSpacing: 'var(--tracking-heading)',
 			textTransform: 'uppercase',
 		},
 	},
@@ -137,6 +138,7 @@ export const appTheme = createTheme({
 					color: 'var(--color-text)',
 					fontFamily: 'var(--font-heading)',
 					fontSize: 16,
+					letterSpacing: 'var(--tracking-label)',
 					fontWeight: 700,
 					lineHeight: 1.2,
 					'&.Mui-focused': { color: 'var(--color-text)' },

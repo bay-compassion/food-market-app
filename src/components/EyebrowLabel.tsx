@@ -15,7 +15,7 @@ const Eyebrow = styled.p<{ $tone: EyebrowTone }>`
 	font-family: var(--font-heading);
 	font-size: 13.5px;
 	font-weight: 600;
-	letter-spacing: 0.1em;
+	letter-spacing: var(--tracking-label);
 	text-transform: uppercase;
 	color: ${({ $tone }) => ($tone === 'brand' ? 'var(--color-brand)' : 'var(--color-on-brand)')};
 `;

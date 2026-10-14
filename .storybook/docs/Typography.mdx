@@ -21,6 +21,11 @@ because a heading on the guest hero and a heading on an admin section are doing 
 
 <Story of={Specimens.HeadingScale} />
 
+App headings use `--tracking-heading` and labels use `--tracking-label`, defined in
+`src/styles/base.css`. These tighter settings reduce wrapping with Area’s wide letterforms;
+Arabic and Farsi reset them to zero to preserve joined letters. Brand lockups and document
+headings keep their own spacing.
+
 ## Body — `--font-body`
 
 DM Sans, sentence case, weight 400. Line height sits between 1.5 and 1.65 — generous, because a
