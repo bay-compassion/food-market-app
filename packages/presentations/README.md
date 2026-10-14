@@ -13,7 +13,8 @@ Motion pieces showing the app at work, built from its own design tokens and tran
 Each presentation is an HTML page animated with [GSAP](https://gsap.com), with its soundtrack
 embedded. GitHub Pages plays that page directly: publishing needs no frame capture or video
 encoding. MP4 exports are still available by photographing the page one frame at a time.
-The screens are simplified recreations of the real ones.
+The guest guide's phone is the guest app itself (see [The guest phone](#the-guest-phone)); the
+reel's and the queue desk's screens, and every room display, are simplified recreations.
 
 ## Files
 
@@ -47,6 +48,7 @@ it uses (`gsap` for types, `ts-blank-space`) are dev dependencies of the reposit
 | `publish.ts`, `site.html`              | Assembles the GitHub Pages site around the built pages.                                                      |
 | `verify.ts`                            | Browser checks for the built site and players.                                                               |
 | `music/mix.ts`                         | Mixes a video's arrangement, and its narration, into its soundtrack.                                         |
+| `phone/`                               | The guest phone: the guest app's own screens, driven by the guest guide (see below).                         |
 | `music/catalog.py`                     | Lists every installed Apple Loop with its key, tempo, instrument and mood, for choosing more.                |
 
 Everything generated goes to `out/`, which is ignored.
@@ -248,7 +250,8 @@ a yellow late-arrival reminder, “We missed you,” completed check-in, and the
 Maya Rivera and Amal Haddad are fictional guests; Amal illustrates not being selected, while Maya
 illustrates a selected visit. Luis Herrera shows the returning-guest form. The guide never presents not-selected as a step on the way to selection.
 
-Its screens **and captions** read the existing eight-language app translations. The language
+Its phone is the guest app, so its screens are the app's own in all eight languages, and its
+captions read the same translations. The language
 control also translates playback controls; Arabic and Farsi preserve right-to-left text. New
 presentation copy lives in `guestView.presentation` in `src/locales.ts`. Audio remains in English,
 as the landing page explains. On phones the same timeline uses a portrait composition, keeping
@@ -278,8 +281,47 @@ node packages/presentations/verify.ts
 
 `verify.ts` checks embedded audio length and playback controls for all three presentations,
 every guest narration scene in all eight languages at 320, 390, 600 and 1280 pixels, RTL consent,
-and Dev mode. It writes portrait and landscape stills to `out/guest-guide/review/` for visual review.
-It needs local Chromium, but it is a local review step, never a publishing dependency.
+that each moment of the guest phone looks the same however it is reached, that the phone makes no
+request the guide doesn't answer, and Dev mode. It writes portrait and landscape stills to
+`out/guest-guide/review/` for visual review. It needs local Chromium, but it is a local review
+step, never a publishing dependency.
+
+### The guest phone
+
+The guest guide's phone runs the guest app: `GuestHome` and `GuestMarketStatus` (the home screen
+`GuestView` lays out once the market is loaded), `HelpPage`, and the `AppBar`, with the app's own
+stores, stylesheets and theme. A change to a guest screen reaches the guide on its next build, and
+the guide can't show a screen the app doesn't have.
+
+`phone/` is a small Vite app that `build.ts` builds and inlines into the guide, which shows it in a
+frame inside the drawn phone. The frame is the phone's own window, so the guide controls its
+world without touching the page around it:
+
+- **Its clock** (`phone/clock.ts`): the frame's `Date` and timers are faked, set from the scene.
+  The registration countdown, the late-arrival warmth and the refresh notice all run on it, in
+  step with the timeline however fast capture steps through it.
+- **Its server** (`phone/server.ts`): the frame's `fetch` answers `/api/market`, `/api/visit` and
+  the text-update endpoints from the scene. Anything else is recorded as unanswered.
+- **Its storage**: a fresh in-memory store per phone, seeded with the guest it remembers.
+
+The page's script (`guest-guide/page.ts`) keeps the beat script and turns each moment into a
+`PhoneScene` (`phone/scene.ts`): the clock, language, page, who the phone remembers, what is typed,
+what the server reports, how far through text sign-up the guest is, and what the narration points
+at. `PhoneDevice` (`phone/device.tsx`) applies it through the app's public seams —
+`session.applyServerState`, `visit.submit`/`refresh`/`reset`, `registration.updateGuest` — and
+taps the screen where only a tap will do: the text-updates sheet is the identity card's own
+state. While the timeline plays forward the phone carries on as it is; a seek, a change of
+language, or another guest builds a new phone from the scene, so a moment looks the same however
+it is reached. Capture, stills and `verify.ts` wait for `window.reel.settle()` after each seek.
+
+What the narration points at and taps are marks (`phone/marks.ts`): names like `household` or
+`texts`, found on the real screen by the app's guided-tour anchors (`data-tour`), class names, or
+the translated label. The phone scrolls to keep the mark in view and draws the ring and the tap
+over it. A new mark is a new case there.
+
+The phone builds without the repository's `.env`, and swaps `src/auth.ts` and
+`src/sentry-feedback-trigger.ts` for stand-ins (`phone/stubs/`): it signs nobody in and reports to
+no one.
 
 The existing **Publish presentations** workflow automatically includes every registry entry. On
 `main` it deploys the guest guide at `/guest-guide/`, alongside `/` and `/queue-desk/`, with links

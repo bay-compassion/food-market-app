@@ -37,7 +37,10 @@ void (async () => {
 	await tab.evaluate(() => document.fonts.ready);
 
 	for (const time of times) {
-		await tab.evaluate((t) => window.reel.seek(t), time);
+		await tab.evaluate(async (t) => {
+			window.reel.seek(t);
+			await window.reel.settle();
+		}, time);
 		// Lets CSS transitions started by the seek settle before the picture is taken.
 		await tab.waitForTimeout(1300);
 		await tab.screenshot({ path: path.join(stills, `${time}.png`) });

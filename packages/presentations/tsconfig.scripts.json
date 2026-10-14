@@ -9,7 +9,9 @@
     "*/narration.ts",
     "*/arrangement.ts",
     // Shared with the pages: types only, which the scripts read off a built page.
-    "stage/reel.ts"
+    "stage/reel.ts",
+    "phone/scene.ts",
+    "phone/vite.config.ts"
   ],
 
   // `strings.ts` cuts the app's own copy down for the stage, so it imports `src/locales.ts`.

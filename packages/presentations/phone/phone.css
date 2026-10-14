@@ -1,0 +1,79 @@
+/* The guest phone's own frame around the app: a screen that never scrolls on its own, a page that
+   the guide scrolls under the bar, and what the narration points at. */
+html,
+body {
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+}
+
+.phone-scroll {
+	position: relative;
+	transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.phone-marks {
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	pointer-events: none;
+}
+
+.phone-spot,
+.phone-tap {
+	position: absolute;
+	z-index: 2000;
+	pointer-events: none;
+}
+
+.phone-spot {
+	box-shadow:
+		0 0 0 3px var(--color-focus),
+		0 0 0 9px rgb(255 181 69 / 30%);
+	animation: phone-spot 1.6s ease-in-out infinite;
+}
+
+@keyframes phone-spot {
+	50% {
+		box-shadow:
+			0 0 0 3px var(--color-focus),
+			0 0 0 14px rgb(255 181 69 / 12%);
+	}
+}
+
+/* A finger landing in the middle of what it taps. */
+.phone-tap::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 46px;
+	height: 46px;
+	margin: -23px 0 0 -23px;
+	border-radius: 50%;
+	background: rgb(255 181 69 / 65%);
+	box-shadow: 0 0 0 3px rgb(255 181 69 / 90%);
+	animation: phone-tap 0.65s ease-out forwards;
+}
+
+@keyframes phone-tap {
+	0% {
+		transform: scale(0.3);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(2.6);
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.phone-scroll {
+		transition: none;
+	}
+
+	.phone-spot,
+	.phone-tap::after {
+		animation: none;
+	}
+}

@@ -52,6 +52,11 @@ export interface Reel {
 	seek: (seconds: number) => void;
 	setSound: (on: boolean) => Promise<void>;
 	soundtrackReady: Promise<AudioBuffer | void>;
+	/**
+	 * Resolves once the page shows the moment the playhead is on, fully drawn. Capture and stills
+	 * wait on it after every seek; a page whose screens all draw at once has nothing to wait for.
+	 */
+	settle: () => Promise<void>;
 }
 
 declare global {

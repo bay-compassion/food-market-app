@@ -12,12 +12,17 @@
  *   node build.ts                 # the market day reel
  *   node build.ts queue-desk      # the queue desk training video
  *
+ * A video with a `phone` also gets the guest app itself: Vite builds `phone/` and the page carries
+ * the result, scripts and styles inlined, as the document its phone frame shows.
+ *
  * Writes `out/<name>.html` (open it in a browser) and `out/<name>.artifact.html` (the same page
  * without its document shell, for publishing as a claude.ai Artifact).
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import blankSpace from 'ts-blank-space';
+import { build as vite } from 'vite';
 
 import { adminTranslations } from '../../src/adminLocales.ts';
 import { translations } from '../../src/locales.ts';
@@ -110,6 +115,33 @@ function script(path: string, fill: (code: string) => string = (code) => code): 
 	);
 }
 
+/** The guest phone's page, built by Vite, with its script and stylesheet inlined. */
+async function phone(): Promise<string> {
+	if (!video.phone) {
+		return '';
+	}
+
+	await vite({ configFile: fileURLToPath(here('./phone/vite.config.ts')) });
+	const out = (path: string) => readFileSync(here(`./out/phone/${path}`), 'utf8');
+
+	const page = out('index.html')
+		.replace(
+			/<script type="module" crossorigin src="\.\/([^"]+)"><\/script>/,
+			(_tag, path: string) =>
+				`<script type="module">${out(path).replaceAll('</script', '<\\/script')}</script>`,
+		)
+		.replace(
+			/<link rel="stylesheet" crossorigin href="\.\/([^"]+)">/,
+			(_tag, path: string) => `<style>${out(path)}</style>`,
+		);
+
+	if (page.includes('./assets/')) {
+		throw new Error('The guest phone still links an asset; inline it in build.ts.');
+	}
+
+	return page;
+}
+
 const strings = Object.fromEntries(
 	Object.entries(translations).map(([locale, t]) => [locale, guestStrings(t)]),
 );
@@ -119,6 +151,7 @@ const soundtrack = existsSync(here('./' + video.soundtrack))
 	? readFileSync(here('./' + video.soundtrack)).toString('base64')
 	: '';
 const narrationJson = JSON.stringify(await narration());
+const phoneJson = JSON.stringify(await phone());
 const stageScript = script('./stage/stage.ts', (code) =>
 	code
 		.replace('__STRINGS__', () => JSON.stringify(strings))
@@ -127,7 +160,7 @@ const stageScript = script('./stage/stage.ts', (code) =>
 		.replace('__SOUNDTRACK__', () => soundtrack),
 );
 const pageScript = script(`./${video.folder}/page.ts`, (code) =>
-	code.replace('__NARRATION__', () => narrationJson),
+	code.replace('__NARRATION__', () => narrationJson).replace('__PHONE__', () => phoneJson),
 );
 // Collapsed onto one line, so the stylesheet takes the single line its placeholder held.
 const stageStyles = readFileSync(here('./stage/stage.css'), 'utf8').replace(/\s*\n\s*/g, ' ');

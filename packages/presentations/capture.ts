@@ -18,8 +18,8 @@ import { videoFromArgs } from './videos.ts';
 
 declare global {
 	interface Window {
-		/** Moves the timeline and every CSS animation to one moment. */
-		renderFrame: (seconds: number) => void;
+		/** Moves the timeline and every CSS animation to one moment, the page's frames' included. */
+		renderFrame: (seconds: number) => Promise<void>;
 	}
 
 	interface Animation {
@@ -46,10 +46,18 @@ void (async () => {
 	await tab.waitForFunction(() => window.reel);
 	await tab.evaluate(() => document.fonts.ready);
 	await tab.evaluate(() => {
-		window.renderFrame = (t) => {
+		window.renderFrame = async (t) => {
 			window.reel.tl.time(t);
+			await window.reel.settle();
+			const documents = [document];
 
-			for (const animation of document.getAnimations()) {
+			for (const frame of document.querySelectorAll('iframe')) {
+				if (frame.contentDocument) {
+					documents.push(frame.contentDocument);
+				}
+			}
+
+			for (const animation of documents.flatMap((doc) => doc.getAnimations())) {
 				if (animation.bornAt === undefined) {
 					animation.bornAt = t;
 					animation.pause();

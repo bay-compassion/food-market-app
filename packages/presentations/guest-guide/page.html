@@ -67,115 +67,12 @@
 			top 0.9s,
 			transform 0.9s;
 	}
-	#guestPhone .guest-layout {
-		height: 644px;
-		overflow: hidden;
-	}
-	.guide-scroll {
-		display: grid;
-		gap: 18px;
-		transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-	}
-	.guide-scroll h2 {
-		margin: 0;
-		font: 700 29px/1.05 var(--font-heading);
-		text-transform: uppercase;
-	}
-	.guide-scroll p {
-		margin: 0;
-		color: var(--color-text-muted);
-		font-size: 16px;
-		line-height: 1.5;
-	}
-	.guide-help {
-		margin-top: 22px;
-		padding-top: 14px;
-		border-top: 1px solid var(--color-surface-soft);
-		color: var(--color-brand);
-		text-align: center;
-		font-size: 14px;
-	}
-	.guide-help strong {
+	/* The guest app itself, at the size of the phone's screen below its status bar. */
+	#guestPhone .app iframe {
 		display: block;
-		margin-top: 6px;
-	}
-	.guide-identity {
-		margin-bottom: 18px;
-		padding: 14px;
-		border-radius: var(--radius-md);
-		background: var(--color-surface-soft);
-		font-size: 14px;
-	}
-	.guide-identity strong,
-	.guide-identity small {
-		display: block;
-		margin-bottom: 7px;
-	}
-	.guide-identity .outlined {
-		display: block;
-		position: relative;
-		padding: 10px;
-		border: 1px solid var(--color-brand);
-		border-radius: 6px;
-		color: var(--color-brand);
-		text-align: center;
-		font-weight: 700;
-	}
-	.guide-count {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 10px 0;
-		border-bottom: 1px solid var(--color-surface-soft);
-		font-size: 16px;
-		gap: 10px;
-	}
-	.guide-count > span {
-		max-width: 200px;
-	}
-	.guide-count small {
-		display: block;
-		font-size: 12px;
-		color: var(--color-text-subtle);
-	}
-	.guide-count b {
-		white-space: nowrap;
-		font-weight: 500;
-		letter-spacing: 4px;
-	}
-	.guide-refresh {
-		margin-top: 18px;
-		text-align: center;
-		color: var(--color-text-muted);
-		font-size: 13px;
-		line-height: 1.5;
-	}
-	.guide-refresh strong {
-		display: block;
-	}
-	.guide-consent {
-		position: absolute;
-		inset: 52px 0 0;
-		background: rgb(1 42 47 / 60%);
-		display: flex;
-		align-items: flex-end;
-	}
-	.guide-consent > div {
-		padding: 22px 18px 26px;
-		background: #fff;
-		border-radius: 24px 24px 0 0;
-	}
-	.guide-consent h2 {
-		font: 700 24px var(--font-heading);
-		margin: 0 0 18px;
-	}
-	.guide-consent p {
-		font-size: 14px;
-		line-height: 1.5;
-	}
-	.guide-consent .submit {
-		font-size: 13px;
-		margin-top: 20px;
+		width: 100%;
+		height: 100%;
+		border: 0;
 	}
 	#presentationLocale {
 		order: 3;
@@ -278,8 +175,7 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		#phoneLocation,
-		#kioskLocation,
-		.guide-scroll {
+		#kioskLocation {
 			transition: none;
 		}
 	}

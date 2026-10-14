@@ -1,12 +1,18 @@
 /**
  * The guest market guide: a guest's phone from opening the market page to check-in, paced by the
- * narration. Waits for the stage, which the build inlines after this script.
+ * narration. The phone is the guest app itself (`phone/`), in a frame of its own; this script
+ * tells it what to show at each moment (`sceneAt`), and draws everything around it — captions,
+ * the title and closing cards, and the room display. Waits for the stage, which the build inlines
+ * after this script.
  */
 import type { Locale } from '../../../src/locales.ts';
+import type { PhoneHandle, PhoneScene } from '../phone/scene.ts';
 import type { TimedLine } from '../stage/reel.ts';
 import type { StageGuest } from '../stage/stage.ts';
 
 declare const __NARRATION__: TimedLine[];
+/** The guest phone's page, built from `phone/` by `build.ts`. */
+declare const __PHONE__: string;
 
 type Page =
 	| 'language'
@@ -43,6 +49,12 @@ type CaptionId =
 	| 'underway'
 	| 'help';
 
+interface GuideGuest extends StageGuest {
+	phone: string;
+	/** When the desk called them, on the phone's clock (`HH:MM`). */
+	calledAt: string | null;
+}
+
 interface GuideState {
 	phase: 'title' | 'phone' | 'display';
 	title: boolean;
@@ -51,30 +63,33 @@ interface GuideState {
 	outro: boolean;
 	page: Page;
 	caption: CaptionId | null;
-	/** The element the narration points at, by its `data-mark`. */
+	/** What the narration points at, by mark (see `phone/marks.ts`). */
 	focus: string | null;
-	/** The element a finger is on, by its `data-mark`. */
+	/** What a finger is on, by mark. */
 	tap: string | null;
-	scroll: number;
+	/** A returning guest's phone, which skips the identity fields. */
 	returning: boolean;
+	/** The text-updates sheet is open. */
 	consent: boolean;
 	consentChecked: boolean;
 	texts: boolean;
 	registrationClosed: boolean;
-	/** Seconds left to register. */
-	clock: number;
 	nowCalling: number | null;
 	/** The guest whose phone this is, by number. */
 	featured: number;
+	/** The phone's clock, `HH:MM`. */
 	time: string;
 	form: { first: string; last: string; phone: string };
-	guests: StageGuest[];
+	guests: GuideGuest[];
 }
+
+/** The day the guide happens on, for the phone's clock. */
+const MARKET_DAY = '2026-10-10';
+const clockAt = (time: string) => new Date(`${MARKET_DAY}T${time}:00`).getTime();
 
 document.addEventListener('DOMContentLoaded', () => {
 	const {
 		S,
-		LANGS,
 		RTL,
 		esc,
 		k,
@@ -83,10 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		snapshotAt,
 		narrationCues,
 		put,
-		guestApp,
 		phoneFrame,
-		statusHtml,
-		renderGuestPhone,
 		renderCaption,
 		renderKiosk,
 		mountPlayer,
@@ -94,9 +106,34 @@ document.addEventListener('DOMContentLoaded', () => {
 	const { cues, chapters, C, E } = narrationCues(__NARRATION__);
 	let locale: Locale = 'en';
 	const phone = phoneFrame('10:30');
+	const app = one(phone, '.app');
+	const frame = document.createElement('iframe');
 
 	phone.id = 'guestPhone';
+	// An illustration: the narration and captions carry what it shows, and a viewer's own taps
+	// would take it off the script.
+	frame.setAttribute('aria-hidden', 'true');
+	frame.tabIndex = -1;
+	frame.style.pointerEvents = 'none';
+	frame.srcdoc = __PHONE__;
+	app.appendChild(frame);
 	k('phoneMotion').appendChild(phone);
+
+	// A phone that never starts fails here, by name, rather than leaving capture and stills waiting.
+	const phoneReady = new Promise<PhoneHandle>((resolve, reject) => {
+		frame.addEventListener('load', () => {
+			const handle = frame.contentWindow?.phone;
+
+			if (handle) {
+				void handle.ready.then(() => resolve(handle));
+			} else {
+				reject(new Error('The guest phone did not start; its frame logged why.'));
+			}
+		});
+	});
+
+	phoneReady.catch((error: unknown) => console.error(error));
+
 	// A small fictional line. Maya receives ticket 4 only after selection.
 	const initial: GuideState = {
 		phase: 'title',
@@ -108,33 +145,43 @@ document.addEventListener('DOMContentLoaded', () => {
 		caption: null,
 		focus: null,
 		tap: null,
-		scroll: 0,
 		returning: false,
 		consent: false,
 		consentChecked: false,
 		texts: false,
 		registrationClosed: false,
-		clock: 840,
 		nowCalling: null,
 		featured: 4,
 		time: '10:30',
 		form: { first: '', last: '', phone: '' },
-		guests: ['Luis Herrera', 'Mai Nguyen', 'Grace Okafor', 'Maya Rivera', 'Amal Haddad'].map(
-			(name, i) => {
-				const [first = '', last = ''] = name.split(' ');
-
-				return { n: i + 1, first, last, loc: 'en', status: 'registered', warmth: 0 };
-			},
-		),
+		guests: [
+			['Luis', 'Herrera', '(510) 555-0118'],
+			['Mai', 'Nguyen', '(510) 555-0127'],
+			['Grace', 'Okafor', '(510) 555-0135'],
+			['Maya', 'Rivera', '(510) 555-0142'],
+			['Amal', 'Haddad', '(510) 555-0163'],
+		].map(([first = '', last = '', phone = ''], i) => ({
+			n: i + 1,
+			first,
+			last,
+			phone,
+			loc: 'en',
+			status: 'registered',
+			warmth: 0,
+			calledAt: null,
+		})),
 	};
 	const { at, snapshots } = beatScript(initial);
 	const g = (s: GuideState, n: number) => s.guests[n - 1]!;
+	const call = (s: GuideState, n: number) => {
+		g(s, n).status = 'called';
+		g(s, n).calledAt = s.time;
+	};
 	const scene = (id: CaptionId, page: Page, caption: CaptionId, focus: string | null = null) =>
 		at(C(id), (s) => {
 			s.page = page;
 			s.caption = caption;
 			s.focus = focus;
-			s.scroll = 0;
 		});
 	const tap = (t: number, target: string, action?: (s: GuideState) => void) => {
 		at(t, (s) => {
@@ -170,9 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	type('identity', 'last', 'Rivera', 0.28);
 	type('identity', 'phone', '(510) 555-0142', 0.5);
 	scene('household', 'form', 'household', 'household');
-	at(C('household'), (s) => {
-		s.scroll = -445;
-	});
 	scene('returning', 'form', 'returning', 'identity-card');
 	at(C('returning'), (s) => {
 		s.featured = 1;
@@ -182,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	at(C('join'), (s) => {
 		s.featured = 4;
 		s.returning = false;
-		s.scroll = -445;
 	});
 	tap(C('join', 0.65), 'join', (s) => {
 		s.page = 'submitting';
@@ -205,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	scene('draw', 'visit', 'draw');
 	at(C('draw'), (s) => {
-		s.clock = 0;
 		s.registrationClosed = true;
 		s.time = '10:45';
 	});
@@ -223,13 +265,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	scene('line', 'visit', 'line', 'nowcalling');
 	at(C('line', 0.4), (s) => {
-		g(s, 1).status = 'called';
-		s.nowCalling = 1;
 		s.time = '11:30';
+		call(s, 1);
+		s.nowCalling = 1;
 	});
 	at(C('line', 0.7), (s) => {
 		g(s, 1).status = 'served';
-		g(s, 2).status = 'called';
+		call(s, 2);
 		s.nowCalling = 2;
 	});
 	scene('display', 'visit', 'display', 'nowcalling');
@@ -240,8 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	scene('called', 'visit', 'called', 'number');
 	at(C('called', 0.5), (s) => {
 		g(s, 2).status = 'served';
-		g(s, 3).status = 'called';
-		g(s, 4).status = 'called';
+		call(s, 3);
+		call(s, 4);
 		s.nowCalling = 4;
 	});
 	scene('checkin', 'visit', 'checkin', 'number');
@@ -251,10 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	scene('late', 'visit', 'late', 'number');
 
-	// Compress the passage of ten minutes, using LateArrival's squared ramp after minute three.
+	// Ten minutes pass in a few seconds; the phone's board warms as LateArrival says it does.
 	for (let minute = 3; minute <= 10; minute++) {
 		at(C('late', (minute - 3) / 10), (s) => {
-			g(s, 4).warmth = ((minute - 3) / 7) ** 2;
 			s.time = '11:' + (30 + minute);
 		});
 	}
@@ -276,6 +317,150 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	const END = E('help', 4);
 	const snaps = snapshots();
+
+	/* ================= the phone ================= */
+
+	/** When each snapshot's clock was last set, so the phone's clock runs on from there. */
+	const clockSetAt = snaps.reduce<number[]>((list, snap, i) => {
+		const prev = snaps[i - 1];
+
+		list.push(prev && prev.s.time === snap.s.time ? list[i - 1]! : snap.t);
+
+		return list;
+	}, []);
+	/** Fourteen minutes left to register when the narration turns to the timer. */
+	const registrationClosesAt = clockAt('10:30') + Math.floor(C('window')) * 1000 + 14 * 60_000;
+
+	/** The market as the phone's server reports it on each page. */
+	function marketOf(s: GuideState): PhoneScene['market'] {
+		switch (s.page) {
+			case 'language':
+			case 'closed':
+				return { status: 'inactive' };
+			case 'form':
+			case 'submitting':
+				return { status: 'registration_open', registrationClosesAt };
+			case 'visit':
+				return {
+					status: s.registrationClosed ? 'service_started' : 'registration_open',
+					registrationClosesAt,
+				};
+			case 'missed-window':
+				return { status: 'registration_closed', registrationClosesAt };
+			case 'underway':
+			case 'help':
+				return { status: 'service_started', registrationClosesAt };
+		}
+	}
+
+	/** The featured guest's visit, as the phone's server reports it. */
+	function visitOf(s: GuideState): PhoneScene['visit'] {
+		if (s.page !== 'visit') {
+			return null;
+		}
+
+		const x = g(s, s.featured);
+		const inLine = x.status === 'waiting' || x.status === 'called';
+		const called = s.guests
+			.filter((y) => y.status === 'called')
+			.sort((a, b) => b.n - a.n)
+			.map((y) => y.n);
+
+		return {
+			status: x.status as NonNullable<PhoneScene['visit']>['status'],
+			queuePosition: inLine ? x.n : null,
+			aheadOfYou:
+				x.status === 'waiting'
+					? s.guests.filter((y) => y.status === 'waiting' && y.n < x.n).length
+					: null,
+			calledAt: x.calledAt === null ? null : clockAt(x.calledAt),
+			nowCalling: s.nowCalling,
+			called,
+		};
+	}
+
+	/** What the phone shows at `time`, in snapshot `i`. */
+	function sceneAt(i: number, time: number): PhoneScene {
+		const s = snaps[i]!.s;
+		const x = g(s, s.featured);
+		const remembered =
+			s.page === 'form' ? s.returning : !['language', 'closed', 'submitting'].includes(s.page);
+		const defaultScroll = s.page === 'submitting' ? 'join' : s.page === 'visit' ? 'standing' : null;
+
+		return {
+			now: clockAt(s.time) + Math.max(0, Math.floor(time - clockSetAt[i]!)) * 1000,
+			locale,
+			route: s.page === 'help' ? 'help' : 'home',
+			returning: s.page !== 'language',
+			identity: remembered ? { firstName: x.first, lastName: x.last, phone: x.phone } : null,
+			// Maya's household, as she fills it in; the narration only points at it.
+			form: {
+				firstName: s.form.first,
+				lastName: s.form.last,
+				phone: s.form.phone,
+				ageRange: '30-44',
+				householdSize: 3,
+				childrenCount: 1,
+				seniorsCount: 0,
+			},
+			submitting: s.page === 'submitting',
+			market: marketOf(s),
+			visit: visitOf(s),
+			texts: {
+				consented: s.texts,
+				sheet: s.consent ? (s.consentChecked ? 'checked' : 'open') : 'closed',
+			},
+			focus: s.focus,
+			tap: s.tap === 'language-en' ? 'language-' + locale : s.tap,
+			scrollTo: s.focus ?? defaultScroll,
+		};
+	}
+
+	let handle: PhoneHandle | null = null;
+	let shownScene = '';
+	let lastTime = 0;
+
+	/** Hands the phone the scene at `time`; anything but forward play starts it over. */
+	function showPhone(i: number, time: number, jumped: boolean) {
+		const scene = sceneAt(i, time);
+		const json = JSON.stringify(scene);
+		const continuous = !jumped && time >= lastTime && time - lastTime < 0.5;
+
+		lastTime = time;
+
+		if (handle && (json !== shownScene || !continuous)) {
+			shownScene = json;
+			handle.show(scene, continuous);
+		}
+	}
+
+	/** The phone's frame calls attention to a call, and its screen eases in when it changes. */
+	let screenKey = '';
+
+	function frameFor(s: GuideState) {
+		const x = g(s, s.featured);
+		const key = s.page === 'visit' ? x.status : s.page;
+
+		if (screenKey && key !== screenKey) {
+			app.classList.remove('swap');
+			void app.offsetWidth;
+			app.classList.add('swap');
+		}
+
+		if (key === 'called' && screenKey !== 'called') {
+			phone.classList.remove('is-called');
+			void phone.offsetWidth;
+			phone.classList.add('is-called');
+		}
+
+		if (key !== 'called') {
+			phone.classList.remove('is-called');
+		}
+		screenKey = key;
+		one(phone, '.statusbar > span').textContent = s.time;
+	}
+
+	/* ================= captions ================= */
 
 	// Captions reuse the app's short labels and localized guidance, never separate guest copy.
 	function captionOf(id: CaptionId) {
@@ -328,167 +513,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		return { eyebrow: String(eyebrow), head, sub };
 	}
-	type Guide = (typeof S)[Locale]['guide'];
-	type Copy = (typeof S)[Locale];
-	const help = (G: Guide) =>
-		'<div class="guide-help" data-mark="help">' +
-		esc(G.helpPrompt) +
-		'<strong>' +
-		esc(G.help.title) +
-		'</strong></div>';
-	const identity = (s: GuideState, G: Guide) =>
-		'<div class="guide-identity" data-mark="identity-card"><small>' +
-		esc(G.identityIndicator.heading) +
-		'</small><strong>' +
-		esc(g(s, s.featured).first + ' ' + g(s, s.featured).last) +
-		'</strong>' +
-		(s.texts
-			? esc(G.identityIndicator.notificationsEnabled)
-			: '<span class="outlined" data-mark="texts">' +
-				esc(G.identityIndicator.notificationsAction) +
-				'</span>') +
-		'</div>';
-	const field = (label: string, value: string) =>
-		'<div class="field"><label>' + esc(label) + '</label><span>' + esc(value) + '</span></div>';
 
-	function formHtml(s: GuideState, L: Copy) {
-		const G = L.guide;
-		const clock =
-			String(Math.floor(s.clock / 60)).padStart(2, '0') +
-			':' +
-			String(s.clock % 60).padStart(2, '0');
-		const counts = [
-			[G.household, '3', G.householdHint],
-			[G.children, '1', ''],
-			[G.seniors, '0', ''],
-		] as const;
+	/* ================= rendering ================= */
 
-		return (
-			'<div class="guide-scroll" style="transform:translateY(' +
-			s.scroll +
-			'px)">' +
-			(s.returning ? identity(s, G) : '') +
-			'<div class="countdown" data-mark="timer" style="--progress:0"><span>' +
-			esc(L.closesIn) +
-			'</span><strong>' +
-			clock +
-			'</strong></div>' +
-			help(G) +
-			'<h2>' +
-			esc(G.formTitle) +
-			'</h2><p>' +
-			esc(G.formDescription) +
-			'</p>' +
-			(s.returning
-				? ''
-				: '<div class="fieldset" data-mark="identity"><div class="legend">' +
-					esc(L.info) +
-					'</div>' +
-					field(L.firstName, s.form.first) +
-					field(L.lastName, s.form.last) +
-					field(L.phone, s.form.phone) +
-					'</div>') +
-			'<div class="fieldset" data-mark="household"><div class="legend">' +
-			esc(G.forms.lotteryLegend) +
-			'</div>' +
-			field(G.age, G.ageRange) +
-			counts
-				.map(
-					([label, n, hint]) =>
-						'<div class="guide-count"><span>' +
-						esc(label) +
-						'<small>' +
-						esc(hint) +
-						'</small></span><b>− ' +
-						n +
-						' +</b></div>',
-				)
-				.join('') +
-			'</div>' +
-			'<div class="submit" data-mark="join">' +
-			esc(L.joinLottery) +
-			'</div><p>' +
-			esc(G.privacy) +
-			'</p></div>'
-		);
-	}
-
-	function phoneHtml(s: GuideState): string {
-		const L = S[locale],
-			G = L.guide;
-		const panel = (heading: string, description: string, mark = '—') =>
-			'<div class="panel"><div class="mark muted">' +
-			mark +
-			'</div><h2>' +
-			esc(heading) +
-			'</h2><p>' +
-			esc(description) +
-			'</p></div>' +
-			help(G);
-
-		switch (s.page) {
-			case 'language':
-				return (
-					'<div class="hero"><h1>' +
-					esc(L.welcome) +
-					'</h1><p class="language-prompt">' +
-					esc(L.languagePrompt) +
-					'</p><div class="language-list" data-mark="languages">' +
-					LANGS.map(
-						([code, name]) =>
-							'<span data-mark="language-' +
-							code +
-							'" class="language-option' +
-							(code === locale ? ' active' : '') +
-							'">' +
-							esc(name) +
-							'</span>',
-					).join('') +
-					'</div><p class="language-prompt">' +
-					esc(G.languageHint) +
-					'</p></div>'
-				);
-			case 'closed':
-				return panel(G.notOpenState.heading, G.notOpenState.subheading);
-			case 'form':
-				return formHtml(s, L);
-			case 'submitting':
-				return panel(G.submitting, G.privacy, '…');
-			case 'missed-window':
-				return (
-					identity(s, G) +
-					panel(G.registrationClosedState.heading, G.registrationClosedState.description)
-				);
-			case 'underway':
-				return (
-					identity(s, G) +
-					panel(G.serviceState.inProgressHeading, G.serviceState.inProgressDescription, '⋯')
-				);
-			case 'help':
-				return (
-					'<div class="guide-scroll" data-mark="help"><h2>' +
-					esc(G.help.title) +
-					'</h2><p>' +
-					esc(G.help.introBody) +
-					'</p>' +
-					G.help.steps
-						.map(
-							(step) =>
-								'<div><div class="legend">' +
-								esc(step.time ?? '') +
-								' ' +
-								esc(step.title) +
-								'</div><p>' +
-								esc(step.body) +
-								'</p></div>',
-						)
-						.join('') +
-					'</div>'
-				);
-			case 'visit':
-				return identity(s, G) + statusHtml(s, { ...g(s, s.featured), loc: locale }) + help(G);
-		}
-	}
 	let lastIndex = -1;
 
 	function renderAt(time: number, force = false) {
@@ -522,78 +549,14 @@ document.addEventListener('DOMContentLoaded', () => {
 				put(one(card, '.sub'), esc(sub));
 			}
 			k('cap').setAttribute('dir', dir);
-			const x = g(s, s.featured);
-
-			renderGuestPhone(
-				phone,
-				guestApp(locale, '<div class="guide-content">' + phoneHtml(s) + '</div>'),
-				s.page === 'visit' ? x.status : s.page,
-			);
-			one(phone, '.statusbar > span').textContent = s.time;
-			const board = phone.querySelector<HTMLElement>('.board');
-
-			if (board) {
-				board.dataset.mark = 'number';
-			}
-			const calling = phone.querySelector<HTMLElement>('.nowcalling');
-
-			if (calling) {
-				calling.dataset.mark = 'nowcalling';
-			}
-			phone.querySelector('.guide-consent')?.remove();
-
-			if (s.consent) {
-				one(phone, '.screen').insertAdjacentHTML(
-					'beforeend',
-					'<div class="guide-consent" dir="' +
-						dir +
-						'"><div><h2>' +
-						esc(G.identityIndicator.notificationsDialogTitle) +
-						'</h2><p>' +
-						(s.consentChecked ? '☑ ' : '☐ ') +
-						esc(G.notificationOptIn.consentLabel) +
-						'</p><div class="submit" data-mark="enable">' +
-						esc(G.notificationOptIn.enable) +
-						'</div></div></div>',
-				);
-			}
-
-			for (const el of phone.querySelectorAll<HTMLElement>('[data-mark]')) {
-				el.classList.toggle('spot', el.dataset.mark === s.focus);
-				const tapped = s.tap === 'language-en' ? 'language-' + locale : s.tap;
-
-				el.classList.toggle('tapping', el.dataset.mark === tapped);
-			}
-			// The real page scrolls. Keep the complete number board and calling row in view
-			// even when a translated heading takes more lines than English.
-			const content = one(phone, '.guide-content');
-
-			content.style.transform = '';
-			const standing = phone.querySelector('.standing');
-
-			if (standing) {
-				const layout = one(phone, '.guest-layout').getBoundingClientRect();
-				const scale = layout.width / 320;
-				const offset = Math.max(
-					0,
-					(standing.getBoundingClientRect().bottom - layout.bottom) / scale + 12,
-				);
-
-				content.style.transform = 'translateY(-' + offset + 'px)';
-			}
+			frameFor(s);
 		}
-		const timer = phone.querySelector('.countdown strong');
-
-		if (timer && !s.registrationClosed) {
-			const remaining = Math.max(0, s.clock - Math.floor(Math.max(0, time - C('window'))));
-
-			timer.textContent =
-				String(Math.floor(remaining / 60)).padStart(2, '0') +
-				':' +
-				String(remaining % 60).padStart(2, '0');
-		}
+		showPhone(i, time, force);
 		renderKiosk(s, Math.max(0, Math.floor((time - C('display')) / 3.4)));
 	}
+
+	/* ================= timeline ================= */
+
 	const tl = gsap.timeline({
 		id: 'Guest Market Guide',
 		paused: true,
@@ -651,6 +614,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			);
 		}
 	}
+
+	type Guide = (typeof S)[Locale]['guide'];
+
 	mountPlayer({
 		tl,
 		END,
@@ -663,6 +629,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		onLocaleChange: (value) => {
 			locale = value;
 			renderAt(tl.time(), true);
+		},
+		ready: phoneReady.then((loaded) => {
+			handle = loaded;
+			renderAt(tl.time(), true);
+		}),
+		settle: async () => {
+			await phoneReady;
+			await handle?.settle();
 		},
 		describeBeat: (prev, cur) => ({
 			items: [

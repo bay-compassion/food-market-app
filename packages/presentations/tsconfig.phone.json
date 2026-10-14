@@ -1,0 +1,39 @@
+// The guest phone (`phone/`): a small React app around the app's own guest screens, which Vite
+// builds for the guest guide. Checked like the app itself, which it imports.
+{
+  "include": ["phone/**/*.ts", "phone/**/*.tsx"],
+  "exclude": ["phone/vite.config.ts"],
+
+  "references": [{ "path": "../../tsconfig.app.json" }],
+
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    // `vite/client` for the stylesheet imports in `main.tsx`.
+    "types": ["vite/client"],
+
+    // The app's own modules import each other through `@/`, which Vite resolves the same way.
+    "paths": { "@/*": ["../../src/*"] },
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.presentations-phone.tsbuildinfo"
+  }
+}

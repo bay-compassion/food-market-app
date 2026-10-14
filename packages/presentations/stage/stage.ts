@@ -538,6 +538,10 @@ export interface PlayerOptions<State> {
 	chapters?: Chapter[];
 	chapterTitle?: (key: string, locale: Locale) => string;
 	onLocaleChange?: (locale: Locale) => void;
+	/** Resolves once everything the page needs before it plays — beyond its fonts — has loaded. */
+	ready?: Promise<void>;
+	/** Resolves once the page shows the playhead's moment, fully drawn (see `Reel.settle`). */
+	settle?: () => Promise<void>;
 }
 
 interface DevRow {
@@ -566,6 +570,8 @@ function mountPlayer<State>({
 	chapters = [],
 	chapterTitle = (key) => key,
 	onLocaleChange,
+	ready = Promise.resolve(),
+	settle = () => Promise.resolve(),
 }: PlayerOptions<State>): void {
 	const viewport = k('viewport');
 	const stage = k('stage');
@@ -1051,6 +1057,7 @@ function mountPlayer<State>({
 		},
 		setSound,
 		soundtrackReady,
+		settle,
 	};
 
 	window.reel = reel;
@@ -1074,7 +1081,7 @@ function mountPlayer<State>({
 	});
 	const start = () => (record || dev || watch ? null : tl.play());
 
-	void (document.fonts ? document.fonts.ready : Promise.resolve()).then(start);
+	void Promise.all([document.fonts.ready, ready]).then(start);
 }
 
 const stage = {

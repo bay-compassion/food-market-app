@@ -28,6 +28,10 @@
 - `playwright.config.ts` emulates a phone by default, matching this app's mobile-first priority.
 - Every Playwright test carries a size tag — `@small`, `@medium`, or `@large` — passed as `test('…', { tag: '@small' }, …)`. CI runs everything but `@large` on each pull request; `@large` (the full-stack queue rig in `e2e-queue/`) runs only from the manual **Large E2E** workflow. Tag a new test by what it costs to run, and see `e2e/README.md` for the definitions.
 
+## Presentations
+
+- `packages/presentations` builds the narrated guides published to GitHub Pages. The guest guide's phone runs the real guest app — `GuestHome`, `GuestMarketStatus`, `HelpPage` and the app's stores — so a change to a guest screen, store, or stylesheet changes the guide. After one, run `node packages/presentations/build.ts guest-guide` and `node packages/presentations/verify.ts` (it needs `npx playwright install chromium` once). See `packages/presentations/README.md`.
+
 ## Localization
 
 - All user-facing text must be localized: labels, headings, buttons, validation and error messages, empty states, success messages, placeholders, and accessibility text.

@@ -1,15 +1,163 @@
 /** Browser checks for the published players; run after publish.ts. No frame capture or encoding. */
 import assert from 'node:assert/strict';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { chromium } from 'playwright';
+import { chromium, type Page } from 'playwright';
 
 import { languages, translations } from '../../src/locales.ts';
+import type { Cue } from './stage/reel.ts';
 import { videos } from './videos.ts';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * The guest phone, with every animation at rest — CSS transitions finished, endless ones at their
+ * start — so two pictures of the same moment differ only if what they show does.
+ */
+async function phoneShot(page: Page): Promise<string> {
+	await page.evaluate(() => {
+		const documents = [document, document.querySelector('iframe')?.contentDocument];
+
+		for (const animation of documents.flatMap((doc) => doc?.getAnimations() ?? [])) {
+			if (animation.effect?.getTiming().iterations === Infinity) {
+				animation.pause();
+				animation.currentTime = 0;
+			} else {
+				animation.finish();
+			}
+		}
+	});
+
+	return (await page.locator('#guestPhone').screenshot()).toString('base64');
+}
+
+/** How many pixels two pictures of the same size differ in. */
+function differingPixels(page: Page, first: string, second: string): Promise<number> {
+	return page.evaluate(
+		async ([a, b]) => {
+			const pixels = async (base64: string) => {
+				const image = new Image();
+
+				image.src = 'data:image/png;base64,' + base64;
+				await image.decode();
+				const canvas = new OffscreenCanvas(image.width, image.height);
+				const context = canvas.getContext('2d')!;
+
+				context.drawImage(image, 0, 0);
+
+				return context.getImageData(0, 0, image.width, image.height).data;
+			};
+			const [p, q] = [await pixels(a), await pixels(b)];
+			let count = 0;
+
+			for (let i = 0; i < p.length; i += 4) {
+				if (
+					Math.abs(p[i]! - q[i]!) +
+						Math.abs(p[i + 1]! - q[i + 1]!) +
+						Math.abs(p[i + 2]! - q[i + 2]!) >
+					24
+				) {
+					count++;
+				}
+			}
+
+			return count;
+		},
+		[first, second] as const,
+	);
+}
+
+/**
+ * A moment of the guest guide must look the same however the viewer reached it: by seeking
+ * straight there, by seeking back to it from the end, after a change of language and back, or by
+ * playing up to it — which is how capture reaches every frame.
+ *
+ * Checked with the phone at full size. A few pixels may still differ where text is anti-aliased a
+ * hair differently; a phone that shows something else differs in thousands.
+ */
+const ANTI_ALIASING_PIXELS = 24;
+
+async function sameHoweverReached(page: Page, cues: Cue[], stills: string): Promise<void> {
+	const settle = () => page.evaluate(() => window.reel.settle());
+	const seek = async (t: number) => {
+		await page.evaluate((t) => window.reel.seek(t), t);
+		await settle();
+	};
+	const end = await page.evaluate(() => window.reel.END);
+
+	let most = 0;
+
+	await page.setViewportSize({ width: 1920, height: 1080 });
+
+	for (const id of [
+		'identity',
+		'returning',
+		'join',
+		'registered',
+		'texts',
+		'number',
+		'called',
+		'late',
+		'missed',
+		'help',
+	]) {
+		const cue = cues.find((cue) => cue.id === id)!;
+		const t = cue.t + cue.duration * 0.75;
+
+		await seek(t);
+		const direct = await phoneShot(page);
+
+		await seek(end - 1);
+		await seek(t);
+		const back = await phoneShot(page);
+
+		await page.locator('#presentationLocale').selectOption('ar');
+		await settle();
+		await page.locator('#presentationLocale').selectOption('en');
+		await settle();
+		const relocalized = await phoneShot(page);
+
+		await seek(t - 2);
+
+		for (let frame = 1; frame <= 60; frame++) {
+			await page.evaluate(
+				(t) => {
+					window.reel.tl.time(t);
+				},
+				t - 2 + frame / 30,
+			);
+			await settle();
+		}
+		const played = await phoneShot(page);
+
+		for (const [how, shot] of [
+			['seeking back to it', back],
+			['changing language and back', relocalized],
+			['playing up to it', played],
+		] as const) {
+			const differing = await differingPixels(page, direct, shot);
+
+			most = Math.max(most, differing);
+
+			if (differing > ANTI_ALIASING_PIXELS) {
+				// Both pictures, to see what differs.
+				const name = `${id}-${how.replaceAll(' ', '-')}`;
+
+				writeFileSync(path.join(stills, `${name}-direct.png`), Buffer.from(direct, 'base64'));
+				writeFileSync(path.join(stills, `${name}.png`), Buffer.from(shot, 'base64'));
+			}
+			assert.ok(
+				differing <= ANTI_ALIASING_PIXELS,
+				`${id}: the same after ${how} (${differing} pixels differ)`,
+			);
+		}
+	}
+	console.log(
+		`guest-guide: each moment looks the same however it is reached (at most ${most} pixels differ)`,
+	);
+}
 
 void (async () => {
 	const browser = await chromium.launch();
@@ -153,15 +301,33 @@ void (async () => {
 			await page.close();
 		}
 		const guest = await browser.newPage();
+		// Fonts and GSAP are the only things a presentation loads; the guest phone talks to nobody.
+		const allowed =
+			/^(data:|file:|about:|https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\/)/;
 
 		guest.on('pageerror', (error) => errors.push(`guest-guide: ${error.message}`));
+		guest.on('console', (message) => {
+			if (message.type() === 'error') {
+				errors.push(`guest-guide: ${message.text()}`);
+			}
+		});
+		guest.on('request', (request) => {
+			if (!allowed.test(request.url())) {
+				errors.push(`guest-guide requested ${request.url()}`);
+			}
+		});
 		await guest.goto('file://' + path.join(dir, 'out/guest-guide.html') + '#watch');
 		await guest.waitForFunction(() => window.reel);
-		await guest.evaluate(() => document.fonts.ready);
+		await guest.evaluate(() => window.reel.settle());
 		const cues = await guest.evaluate(() => window.reel.cues);
+		const seek = (t: number) =>
+			guest.evaluate(async (t) => {
+				window.reel.seek(t);
+				await window.reel.settle();
+			}, t);
 		const staticLayout = await guest.addStyleTag({
 			content:
-				'#phoneLocation, #kioskLocation, #cap, .guide-scroll { transition: none !important; } #cap .inner, .app.swap { animation: none !important; }',
+				'#phoneLocation, #kioskLocation, #cap { transition: none !important; } #cap .inner, .app.swap { animation: none !important; }',
 		});
 
 		for (const width of [320, 390, 600, 1280]) {
@@ -175,8 +341,7 @@ void (async () => {
 				);
 
 				for (const cue of cues) {
-					await guest.evaluate((t) => window.reel.seek(t), cue.t + cue.duration * 0.9);
-					await guest.waitForTimeout(25);
+					await seek(cue.t + cue.duration * 0.9);
 					const overflow = await guest.evaluate(() => {
 						const rect = (selector: string) =>
 							document.querySelector(selector)!.getBoundingClientRect();
@@ -235,7 +400,7 @@ void (async () => {
 			]) {
 				const cue = cues.find((cue) => cue.id === id)!;
 
-				await guest.evaluate((t) => window.reel.seek(t), cue.t + cue.duration * 0.75);
+				await seek(cue.t + cue.duration * 0.75);
 				await guest.waitForTimeout(1200);
 				await guest
 					.locator('#viewport')
@@ -244,22 +409,37 @@ void (async () => {
 		}
 		// Changing locales while the consent sheet is open must replace it, never stack sheets.
 		const consent = cues.find((cue) => cue.id === 'texts')!;
+		const phone = guest.frameLocator('#guestPhone iframe');
 
-		await guest.evaluate((t) => window.reel.seek(t), consent.t + consent.duration * 0.75);
+		await seek(consent.t + consent.duration * 0.75);
 		await guest.locator('#presentationLocale').selectOption('ar');
 		await guest.locator('#presentationLocale').selectOption('fa');
-		assert.equal(await guest.locator('.guide-consent').count(), 1);
-		assert.equal(await guest.locator('.guide-consent').getAttribute('dir'), 'rtl');
+		await guest.evaluate(() => window.reel.settle());
+		assert.equal(await phone.locator('[role="dialog"]').count(), 1, 'one consent sheet');
+		assert.equal(
+			await phone.locator('html').getAttribute('dir'),
+			'rtl',
+			'the sheet reads right to left',
+		);
+		await guest.locator('#presentationLocale').selectOption('en');
+		await sameHoweverReached(guest, cues, stills);
+		assert.deepEqual(
+			await guest.frames()[1]!.evaluate(() => window.phone?.unanswered()),
+			[],
+			'the guest phone asked only what the guide answers',
+		);
 		await guest.setViewportSize({ width: 1280, height: 850 });
 		await guest.goto('file://' + path.join(dir, 'out/guest-guide.html') + '#dev');
 		await guest.waitForSelector('#beats li');
-		await guest.waitForLoadState('networkidle');
+		// GSDevTools moves the playhead as it starts; on a page that is already open only the hash
+		// changes, so there is no network quiet to wait for — wait for its scrubber instead.
+		await guest.waitForSelector('.gs-dev-tools');
 		assert.ok((await guest.locator('#beats li').count()) > 30);
 		await guest.locator('#beats li button').nth(5).click();
 		assert.ok((await guest.evaluate(() => window.reel.tl.time())) > 0);
 		assert.deepEqual(errors, []);
 		console.log(
-			'Portrait and landscape review stills saved; RTL consent and Dev controls checked; no page errors.',
+			'Portrait and landscape review stills saved; RTL consent, reaching each moment, and Dev controls checked; no page errors.',
 		);
 	} finally {
 		await browser.close();

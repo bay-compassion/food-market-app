@@ -7,6 +7,8 @@
  * - `soundtrack` is the mixed track the build embeds; `music/mix.ts` writes it from `arrangement`.
  * - `narration`, when set, is the voiceover: the lines `voice.ts` records, and the measured length
  *   of each (`timings`), which the page reads at build time to set its pace.
+ * - `phone`, when set, puts the guest app itself on the page's phone (see `phone/`), built and
+ *   inlined with the page.
  */
 export interface Publication {
 	/** Where the landing page goes under the site root; `''` is the root itself. */
@@ -32,6 +34,7 @@ export interface VideoDefinition {
 	arrangement: string;
 	narration?: string;
 	timings?: string;
+	phone?: boolean;
 	publish: Publication;
 }
 
@@ -42,6 +45,7 @@ export const videos = {
 		arrangement: 'guest-guide/arrangement.ts',
 		narration: 'guest-guide/narration.ts',
 		timings: 'guest-guide/narration.timings.json',
+		phone: true,
 		publish: {
 			folder: 'guest-guide',
 			interactive: 'guest-guide.html',
