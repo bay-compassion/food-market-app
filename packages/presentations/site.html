@@ -140,6 +140,14 @@
 				outline: 3px solid var(--focus);
 				outline-offset: 3px;
 			}
+			/* The guest guide's translated controls can take an extra row even on wide screens.
+			   Reserve the same space there as at the intermediate breakpoint. */
+			.guest-player {
+				margin-bottom: 232px;
+			}
+			.guest-player iframe {
+				height: calc(100% + 232px);
+			}
 			/* Reserve room for wrapped chapter and playback controls with the brand typefaces. */
 			@container (max-width: 999px) {
 				.chaptered {
