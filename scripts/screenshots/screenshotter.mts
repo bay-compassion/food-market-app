@@ -71,7 +71,7 @@ export class Screenshotter {
 	 *
 	 * Throws if the beat never reaches its screen, or cannot do what it asks of the guest.
 	 */
-	async capture(step: ScreenshotStep): Promise<Screenshot> {
+	async capture(step: ScreenshotStep, options: { fullPage?: boolean } = {}): Promise<Screenshot> {
 		const copy = translations[this.locale];
 		const fixtures = new SceneFixtures(step, this.locale);
 
@@ -108,7 +108,8 @@ export class Screenshotter {
 		}
 
 		const height = await page.evaluate(() => document.documentElement.scrollHeight);
-		const truncated = !step.overlay && height > maxHeight;
+		const fullPage = options.fullPage ?? !step.overlay;
+		const truncated = fullPage && height > maxHeight;
 		const file = path.join('png', `${step.id}.png`);
 
 		await page.screenshot({
@@ -118,7 +119,7 @@ export class Screenshotter {
 			scale: 'device',
 			// The whole page, app bar to footer, is the point — unless a sheet or dialog is open, in
 			// which case the screen is what a guest is looking at and the page behind it is not.
-			fullPage: !step.overlay,
+			fullPage,
 			...(truncated ? { clip: { x: 0, y: 0, width: phone.width, height: maxHeight } } : {}),
 		});
 
@@ -126,7 +127,7 @@ export class Screenshotter {
 			step,
 			file,
 			width: phone.width,
-			height: step.overlay ? phone.height : Math.min(height, maxHeight),
+			height: fullPage ? Math.min(height, maxHeight) : phone.height,
 			truncated,
 		};
 	}

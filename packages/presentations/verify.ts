@@ -1,6 +1,6 @@
 /** Browser checks for the published players; run after publish.ts. No frame capture or encoding. */
 import assert from 'node:assert/strict';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -168,6 +168,63 @@ void (async () => {
 
 	try {
 		const site = await browser.newPage();
+		const root = path.join(dir, 'out/site/index.html');
+
+		await site.goto('file://' + root);
+		assert.equal(await site.locator('h1').count(), 1);
+		assert.equal(await site.locator('.guides a').count(), 3);
+		assert.equal((await site.content()).includes('__BASE__'), false);
+		assert.equal((await site.content()).includes('__REPO__'), false);
+
+		// Relative links must survive a repository subpath and work in a local preview.
+		for (const href of await site
+			.locator('a[href], link[href]')
+			.evaluateAll((elements) => elements.map((element) => element.getAttribute('href')!))) {
+			if (href.startsWith('http') || href.startsWith('#')) {
+				continue;
+			}
+
+			assert.ok(existsSync(path.resolve(path.dirname(root), href)), `Missing link: ${href}`);
+		}
+
+		for (const width of [320, 390, 1280]) {
+			await site.setViewportSize({ width, height: 900 });
+			await site.goto('file://' + root);
+			await site.evaluate(() => document.fonts.ready);
+			await site.evaluate(async () => {
+				const images = [...document.images];
+
+				await Promise.all(
+					images.map((image) => {
+						image.loading = 'eager';
+
+						return image.decode();
+					}),
+				);
+			});
+			assert.ok(
+				await site.evaluate(() =>
+					[...document.images].every((image) => image.complete && image.naturalWidth > 0),
+				),
+				'Every portfolio image loads',
+			);
+			assert.ok(
+				await site.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+				`${width}: portfolio fits the viewport`,
+			);
+			await site.screenshot({ path: path.join(stills, `portfolio-${width}.png`), fullPage: true });
+		}
+
+		for (const [oldPath, destination] of [
+			['guest-guide/index.html', 'presentations/guest-guide/index.html'],
+			['queue-desk/index.html', 'presentations/queue-desk/index.html'],
+			['guest-guide/guest-guide.html', 'presentations/guest-guide/guest-guide.html'],
+			['queue-desk/queue-desk.html', 'presentations/queue-desk/queue-desk.html'],
+			['reel.html', 'presentations/market-day-reel/reel.html'],
+		] as const) {
+			await site.goto('file://' + path.join(dir, 'out/site', oldPath));
+			await site.waitForURL('file://' + path.join(dir, 'out/site', destination));
+		}
 
 		for (const video of Object.values(videos)) {
 			await site.goto('file://' + path.join(dir, 'out/site', video.publish.folder, 'index.html'));
@@ -181,7 +238,7 @@ void (async () => {
 
 		for (const width of [320, 390, 608, 640, 932, 1024, 1280]) {
 			await site.setViewportSize({ width, height: 960 });
-			await site.goto('file://' + path.join(dir, 'out/site/guest-guide/index.html'));
+			await site.goto('file://' + path.join(dir, 'out/site/presentations/guest-guide/index.html'));
 			const player = site.frames()[1]!;
 
 			await player.waitForFunction(() => window.reel);
@@ -208,7 +265,7 @@ void (async () => {
 			}
 
 			// The queue desk's chapters wrap onto a row of their own below 1000px; its frame grows to fit.
-			await site.goto('file://' + path.join(dir, 'out/site/queue-desk/index.html'));
+			await site.goto('file://' + path.join(dir, 'out/site/presentations/queue-desk/index.html'));
 			const desk = site.frames()[1]!;
 
 			await desk.waitForFunction(() => window.reel);

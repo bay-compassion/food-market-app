@@ -2,6 +2,12 @@
 
 ## Product priorities
 
+- Before writing project introductions, portfolio copy, or presentation summaries, read
+  `docs/project-purpose.md`. It explains the market’s mission and the aims of the app in the
+  organization’s voice. Ground the story in the market’s purpose and the signup barriers guests
+  face; distinguish intended benefits and possible allocation policies from measured outcomes
+  and adopted rules. Guest instructions need a separate policy and localization review.
+
 - This is primarily a mobile app. Design and implement for the mobile experience first; desktop responsiveness is not a requirement unless a task explicitly asks for it.
 - Write expert-level code: use the abstractions, tooling, modularity, and dependencies a senior engineer would reach for when they are the right tool for the job. This project is maintained largely through agentic coding tools rather than read and hand-edited line-by-line by novice contributors, so simplifying implementations for a beginner reader is a false economy — optimize for correctness, maintainability, and idiomatic use of the ecosystem instead.
 - Make the smallest change that fully solves the request. "Smallest" refers to behavior and blast radius, not to the number of files: splitting an oversized file into focused pieces is not scope creep, and neither is extracting a component you had to read in full in order to edit safely. Reuse the existing React, TypeScript, and project patterns before introducing a new pattern or library.

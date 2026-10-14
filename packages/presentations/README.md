@@ -1,5 +1,10 @@
 # Presentations and video exports
 
+Read [Shopping for food shouldn’t start with a race](../../docs/project-purpose.md) before writing
+introductions or changing the story these presentations tell. The aim is a more dignified path to a
+shopping place, with time to register and better visibility into unmet demand. The walkthroughs
+explain the process; their screens and existing narration do not yet tell the full case study.
+
 Motion pieces showing the app at work, built from its own design tokens and translations:
 
 - **Market day reel** (`market-day-reel`): one minute, no words. A guest registers on their phone,
@@ -167,19 +172,20 @@ or moving a chapter changes no audio, so it needs no recording or mixing — reb
 
 ## Publishing
 
-GitHub Pages hosts the market day reel at
-<https://bay-compassion.github.io/food-market-app/> and the queue desk guide at
-<https://bay-compassion.github.io/food-market-app/queue-desk/>. Each landing page embeds the
+GitHub Pages hosts the portfolio overview at
+<https://bay-compassion.github.io/food-market-app/>. All three presentation pages live under
+`/presentations/`: `market-day-reel/`, `queue-desk/`, and `guest-guide/`.
+See [portfolio publishing](../../docs/portfolio.md) for the landing page and screenshot workflow. Each landing page embeds the
 GSAP presentation, with playback, restart, sound, and seek controls. It starts paused and
 plays once. The pages link to each other and offer the presentation as a downloadable HTML file.
 
-The **Publish presentations** workflow in `.github/workflows/publish-presentations.yml` builds
+The **Publish project site** workflow in `.github/workflows/publish-presentations.yml` builds
 and deploys automatically when relevant files change on `main`. Commit and push the source,
 then merge the change; there is no separate `gh-pages` push. It uses GitHub's Pages artifact
 and deployment actions, with the standard workflow token and no extra secrets. Pages must use
 **GitHub Actions** as its publishing source, and the `github-pages` environment must allow `main`.
 
-Once the workflow is on `main`, it can also be started in Actions → Publish presentations →
+Once the workflow is on `main`, it can also be started in Actions → Publish project site →
 Run workflow. Selecting `main` publishes; selecting another branch builds an artifact for
 review and skips deployment. Runs are serialized to prevent overlapping site deployments.
 
@@ -233,6 +239,11 @@ the videos, but not the loops on their own, so the decoded loops stay in `out/` 
 committed.
 
 ## Guest messaging
+
+The app supports adjustable weighting, and the allocation policy is still being developed. That
+needs reconciliation with the equal-chance wording below before a guest-copy or narration change.
+The existing instruction below describes the current walkthrough copy, not a settled allocation
+policy.
 
 The videos follow the same rules as guest copy: everyone in the lottery has the same chance and not
 everyone gets a number; nothing mentions standby or lottery weighting; guests are sent to the
@@ -323,7 +334,8 @@ The phone builds without the repository's `.env`, and swaps `src/auth.ts` and
 `src/sentry-feedback-trigger.ts` for stand-ins (`phone/stubs/`): it signs nobody in and reports to
 no one.
 
-The existing **Publish presentations** workflow automatically includes every registry entry. On
-`main` it deploys the guest guide at `/guest-guide/`, alongside `/` and `/queue-desk/`, with links
+The existing **Publish project site** workflow automatically includes every registry entry. On
+`main` it deploys the guest guide at `/presentations/guest-guide/`, alongside the other
+presentations and the portfolio overview, with links
 among all three. Publishing still uses only committed timings and mixed audio and builds HTML;
 it requires no frame capture, transcoding, speech runtime, or music library on the Actions runner.

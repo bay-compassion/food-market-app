@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>The Bay Compassion · Community Food Market App</title>
+		<meta
+			name="description"
+			content="Guests choose their groceries at The Bay Compassion. This project gives them time to register and helps the market understand demand beyond its available shopping places."
+		/>
+		<link rel="canonical" href="__BASE__" />
+		<meta property="og:type" content="website" />
+		<meta
+			property="og:title"
+			content="The Bay Compassion · Shopping for food shouldn’t start with a race"
+		/>
+		<meta
+			property="og:description"
+			content="The market director wanted more dignity in getting a shopping place. A purpose-built app gives guests time to register and the market room to develop its allocation approach."
+		/>
+		<meta property="og:url" content="__BASE__" />
+		<meta property="og:image" content="__BASE__images/social.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta
+			property="og:image:alt"
+			content="The Bay Compassion. Shopping for food shouldn’t start with a race. Time to register. A clearer view of unmet demand."
+		/>
+		<meta name="twitter:card" content="summary_large_image" />
+		<link rel="icon" href="logo.png" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700&family=Roboto:wght@400;500&display=swap"
+		/>
+		<link rel="stylesheet" href="portfolio.css" />
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Skip to content</a>
+		<header class="site-header wrap">
+			<a href="./" aria-label="The Bay Compassion project home"
+				><img src="wordmark.png" alt="The Bay Compassion" width="180"
+			/></a>
+			<nav aria-label="Main navigation">
+				<a href="#walkthroughs">Walkthroughs</a><a href="__REPO__">Source code ↗</a>
+			</nav>
+		</header>
+		<main id="main">
+			<section class="hero wrap">
+				<div>
+					<p class="eyebrow">Design &amp; engineering / Community food access</p>
+					<h1>Shopping for food<br />shouldn’t start with a race.</h1>
+					<p class="intro">
+						Guests at The Bay Compassion choose their groceries, much as they would in a store. The
+						market director wanted more dignity in getting a shopping place, too. This project gives
+						guests time to register and the market more control over its process.
+					</p>
+					<div class="actions">
+						<a class="button" href="presentations/guest-guide/"
+							>Follow a guest’s visit <span aria-hidden="true">→</span></a
+						><a href="__REPO__">Explore the repository ↗</a>
+					</div>
+					<p class="facts">
+						A purpose-built app for the market, informed by stakeholder interviews and observation.
+					</p>
+				</div>
+				<figure class="hero-phone">
+					<img
+						src="images/waiting.png"
+						alt="Guest phone showing a place in line, queue number 12, and the Now calling row."
+						width="390"
+						height="844"
+						fetchpriority="high"
+					/>
+					<figcaption>A guest’s place in line, on their own phone.</figcaption>
+				</figure>
+			</section>
+			<section class="section wrap" aria-labelledby="problem">
+				<p class="eyebrow">The market and its purpose</p>
+				<h2 id="problem">Guests choose their food. Getting a place had become a race.</h2>
+				<p class="lede">
+					The market offers a shopping experience rather than a predetermined bag of groceries.
+					Guests choose food that meets their needs. That choice is part of
+					<a href="https://www.thebaycompassion.org/programs/compassion-food"
+						>Compassion Food’s commitment to dignity and belonging</a
+					>.
+				</p>
+				<div class="columns">
+					<article>
+						<h3>By 10:31, registration was full</h3>
+						<p>
+							Guests rushed the Saturday signup page; some entered only initials to finish faster.
+							Seniors, people less comfortable with technology, and people reading in a non-native
+							language could lose a place while taking the time they needed to register.
+						</p>
+					</article>
+					<article>
+						<h3>Fifteen minutes to register</h3>
+						<p>
+							The new process gives guests a full registration window before selection, with less
+							urgency to submit. They can read and enter accurate information. Registering from home
+							can also spare someone a trip when they aren’t selected that day.
+						</p>
+					</article>
+				</div>
+			</section>
+			<section class="section wrap" aria-labelledby="demand">
+				<p class="eyebrow">What the market could not see</p>
+				<h2 id="demand">A full queue doesn’t tell the whole story of need.</h2>
+				<p class="lede">
+					The existing system closes registration when capacity is reached. The market knows how
+					many places it filled, but not how many more people wanted to register.
+				</p>
+				<div class="columns">
+					<article>
+						<h3>Make more of that demand visible</h3>
+						<p>
+							Keeping registration open for the full window can reveal demand beyond the places
+							available. Demographic and market questionnaires also gather aggregate information the
+							director wants to use in grant writing and communicating the mission.
+						</p>
+					</article>
+					<article>
+						<h3>Give the market room to develop its policy</h3>
+						<p>
+							Controlling the app lets the team adjust lottery weights and manually promote guests
+							as its allocation approach develops. The policy is still being defined. Software
+							doesn’t create more shopping places, but it gives the market tools to make and revisit
+							those decisions.
+						</p>
+					</article>
+				</div>
+				<p class="caption">
+					These are the project’s intended benefits, not measured outcomes.
+					<a href="__REPO__/blob/main/docs/project-purpose.md"
+						>Read why we are building the app ↗</a
+					>
+				</p>
+			</section>
+			<section class="section wrap" aria-labelledby="role">
+				<p class="eyebrow">My role &amp; process</p>
+				<h2 id="role">From understanding the market to building the app.</h2>
+				<p class="lede">
+					The market director originated the vision. I was the sole technical contributor,
+					responsible for architecture, product management, requirements gathering, and
+					implementation.
+				</p>
+				<div class="columns">
+					<article>
+						<h3>Start with the people and the practice</h3>
+						<p>
+							I interviewed stakeholders and observed the market’s existing practices to understand
+							how the service worked. Those conversations and observations informed the requirements
+							and how the new app would behave.
+						</p>
+					</article>
+					<article>
+						<h3>Carry the requirements through the build</h3>
+						<p>
+							My role spanned product decisions and technical delivery: turning what I learned at
+							the market into the app’s architecture and its guest and volunteer workflows.
+						</p>
+					</article>
+				</div>
+			</section>
+			<section class="section gallery-section" aria-labelledby="product">
+				<div class="wrap">
+					<p class="eyebrow">The product</p>
+					<h2 id="product">The registration window, in the guest’s language.</h2>
+					<div class="gallery">
+						<figure>
+							<img
+								src="images/registration.png"
+								alt="The English guest registration form on a phone."
+								width="390"
+								height="844"
+								loading="lazy"
+							/>
+							<figcaption>
+								<strong>Time to enter their information.</strong> Guests register during a
+								fifteen-minute window.
+							</figcaption>
+						</figure>
+						<figure>
+							<img
+								src="images/farsi.png"
+								alt="The same registration form in Farsi, with a right-to-left layout."
+								width="390"
+								height="844"
+								loading="lazy"
+							/>
+							<figcaption>
+								<strong>Time to read in their own language.</strong> Farsi and Arabic preserve
+								right-to-left layouts.
+							</figcaption>
+						</figure>
+						<figure>
+							<img
+								src="images/queue.png"
+								alt="Volunteer queue controls showing called guests and the next numbers to call."
+								width="390"
+								height="844"
+								loading="lazy"
+							/>
+							<figcaption>
+								<strong>When it is time to welcome guests.</strong> Volunteers call and manage
+								guests from a phone.
+							</figcaption>
+						</figure>
+					</div>
+					<p class="caption">
+						Captured from the app and its component workshop using fictional data.
+						<a href="__REPO__/blob/main/docs/portfolio.md"
+							>See how these screenshots stay current ↗</a
+						>
+					</p>
+				</div>
+			</section>
+			<section class="section wrap" aria-labelledby="engineering">
+				<p class="eyebrow">Inside the build</p>
+				<h2 id="engineering">Building the process the market needs.</h2>
+				<div class="decisions">
+					<article>
+						<span class="number">01</span>
+						<h3>Shared rules, separate interfaces</h3>
+						<p>
+							Explicit session and visit state machines define the lifecycle. Plain TypeScript
+							domain models work in both the browser and server, while MobX stores keep React
+							screens in sync.
+						</p>
+						<a href="__REPO__/blob/main/docs/session-lifecycle.md">Session lifecycle ↗</a>
+					</article>
+					<article>
+						<span class="number">02</span>
+						<h3>Registering in a familiar language</h3>
+						<p>
+							English, Spanish, Tagalog, Chinese, Farsi, Arabic, Vietnamese, and French cover the
+							guest journey. Typed dictionaries keep translation keys aligned; language selection
+							also sets writing direction.
+						</p>
+						<a href="__REPO__/blob/main/src/locales.ts">Translation source ↗</a>
+					</article>
+					<article>
+						<span class="number">03</span>
+						<h3>A public entrance, protected operations</h3>
+						<p>
+							Guests register without an account. Auth0 permissions protect administrative
+							operations. Netlify Functions, Drizzle, and Postgres handle persistent state; push and
+							SMS updates use explicit notification preferences.
+						</p>
+						<a href="__REPO__/blob/main/docs/server-security.md">Security design ↗</a>
+					</article>
+					<article>
+						<span class="number">04</span>
+						<h3>Evidence that follows the code</h3>
+						<p>
+							Storybook exposes component states. Browser tests cover the guest journey. A printable
+							review document combines stories with captured screens, and the guest guide runs the
+							real guest app inside its phone.
+						</p>
+						<a href="__REPO__/blob/main/docs/screenshots.md">Review document workflow ↗</a>
+					</article>
+				</div>
+			</section>
+			<section class="section wrap" id="walkthroughs" aria-labelledby="guides">
+				<p class="eyebrow">See it in motion</p>
+				<h2 id="guides">Walk through a market day.</h2>
+				<p class="lede">
+					No sign-in or local setup needed. These presentations use fictional guests; the guest
+					guide’s phone runs the actual guest interface. Narrated audio is in English.
+				</p>
+				<div class="guides">
+					<a href="presentations/market-day-reel/"
+						><span class="eyebrow">A quick overview</span>
+						<h3>Market Day Reel <span aria-hidden="true">↗</span></h3>
+						<p>
+							A one-minute visual tour from registration through the lottery to the moving line.
+						</p></a
+					><a href="presentations/guest-guide/"
+						><span class="eyebrow">The guest experience</span>
+						<h3>Guest Market Guide <span aria-hidden="true">↗</span></h3>
+						<p>
+							Follow registration, lottery results, queue updates, and check-in. Switch the phone
+							between all eight languages.
+						</p></a
+					><a href="presentations/queue-desk/"
+						><span class="eyebrow">Behind the desk</span>
+						<h3>Queue Desk Guide <span aria-hidden="true">↗</span></h3>
+						<p>
+							See how volunteers call guests, handle late arrivals, and keep the service moving.
+						</p></a
+					>
+				</div>
+			</section>
+			<section class="section wrap closing">
+				<p class="eyebrow">Explore further</p>
+				<h2>Read the purpose behind the implementation.</h2>
+				<p>Read the source, trace the data model, or run the component workshop locally.</p>
+				<div class="actions">
+					<a class="button" href="__REPO__">View on GitHub ↗</a
+					><a href="__REPO__/blob/main/docs/data-model.md">Explore the data model ↗</a>
+				</div>
+			</section>
+		</main>
+		<footer class="wrap site-footer">
+			<span>The Bay Compassion · Community Food Market App</span
+			><a href="__REPO__">Source &amp; documentation ↗</a>
+		</footer>
+	</body>
+</html>

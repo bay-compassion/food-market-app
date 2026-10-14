@@ -63,6 +63,16 @@ jobs:
           # flag pin it by intercepting LaunchDarkly's requests, and the rest read flag defaults.
           VITE_LAUNCHDARKLY_CLIENT_ID: e2e-placeholder
 
+      - name: Capture portfolio assets
+        run: npm run capture:portfolio
+
+      - name: Upload portfolio images
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-images
+          path: docs/images/portfolio
+          retention-days: 7
+
       - name: Upload browser test report
         if: failure()
         uses: actions/upload-artifact@v4
