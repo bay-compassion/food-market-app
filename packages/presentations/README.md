@@ -1,6 +1,6 @@
 # Presentations and video exports
 
-Read [Shopping for food shouldn’t start with a race](../../docs/project-purpose.md) before writing
+Read [Shopping for Food Shouldn’t Start with a Race](../../docs/project-purpose.md) before writing
 introductions or changing the story these presentations tell. The aim is a more dignified path to a
 shopping place, with time to register and better visibility into unmet demand. The walkthroughs
 explain the process; their screens and existing narration do not yet tell the full case study.

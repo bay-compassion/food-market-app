@@ -63,8 +63,8 @@ already applies, because an arbitrary URL can carry a token or a guest identifie
 - **Anything that identifies a guest.** `sendDefaultPii` is `false` on the server and
   `dataCollection.userInfo` is `false` in the browser, so no IP addresses, cookies, headers, or
   request bodies are attached. Nobody is identified with `Sentry.setUser` unless a beta build opts
-  in — see [Identifying beta testers](#identifying-beta-testers). Replays mask all text, all inputs,
-  and all media, and record no request or response bodies. The server's Sentry transport sits
+  in — see [Identifying beta testers](#identifying-beta-testers). Replays mask all inputs and explicitly marked identity details, block media, and record no
+  request or response bodies. `maskAllText` is `false`, so ordinary interface text remains visible. The server's Sentry transport sits
   downstream of the logger's `sanitize` format, so the redaction that keeps phone numbers and tokens
   out of stdout keeps them out of Sentry too — with the SMS logger, which records message bodies
   verbatim at debug level, excluded from Sentry entirely.
@@ -107,7 +107,7 @@ and remove it when the beta ends.
 guest registers or forgets the device mid-session. Each event carries:
 
 - **`user.id`** — the SHA-256 hex digest of the device token, not the token. The token is the
-  credential the server authenticates a guest with, so it never leaves the browser. The digest is
+  credential the server authenticates a guest with, so it is never sent to Sentry. The digest is
   the value of `guests.device_token_hash`, which is how a Sentry user is matched to a guest record.
   The **Device ID** shown in the identity card's menu is the raw token, so hash it before searching
   Sentry for one (`printf %s "$TOKEN" | shasum -a 256`).

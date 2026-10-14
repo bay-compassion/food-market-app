@@ -84,8 +84,8 @@ for (const video of published) {
 		PLAYER_CLASS: [presentation.guest && 'guest-player', video.narration && 'chaptered']
 			.filter(Boolean)
 			.join(' '),
-		OPEN: presentation.open ?? 'Open presentation',
-		DOWNLOAD: presentation.download ?? 'Download presentation',
+		OPEN: presentation.open ?? 'Open Presentation',
+		DOWNLOAD: presentation.download ?? 'Download Presentation',
 		MORE: presentation.more ?? 'More',
 	};
 	const links = published

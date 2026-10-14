@@ -1,11 +1,11 @@
-# Portfolio publishing
+# Portfolio Publishing
 
 The [project site](https://bay-compassion.github.io/food-market-app/) introduces the product and
 engineering decisions. The repository README uses the same screenshot assets. Presentations live
 under `/presentations/market-day-reel/`, `/presentations/guest-guide/`, and
 `/presentations/queue-desk/`.
 
-## Refresh the screenshots
+## Refresh the Screenshots
 
 ```bash
 npx playwright install chromium # once
@@ -31,9 +31,9 @@ runs the capture before assembling the site, so deployed screenshots follow the 
 The README displays the committed images; CI uploads a refreshed set as the `portfolio-images`
 artifact for review and copying into a subsequent commit. Automation does not write back to a branch.
 
-## Edit and preview the site
+## Edit and Preview the Site
 
-Start with [Shopping for food shouldn’t start with a race](project-purpose.md) when changing
+Start with [Shopping for Food Shouldn’t Start with a Race](project-purpose.md) when changing
 editorial copy. It explains the market’s purpose, registration barriers, and aims for the new app
 in the organization’s voice. The README and landing page should tell that story before describing
 features.
@@ -69,7 +69,7 @@ Previously shared `/guest-guide/`, `/queue-desk/`, and `/reel.html` URLs redirec
 presentation locations. The root is now the project overview. No live guest-facing application
 is deployed to GitHub Pages; Netlify remains the app's deployment target.
 
-## Sharing the project
+## Sharing the Project
 
 Use the project root URL when sharing a portfolio entry; it has a description and PNG social
 preview. Link a guide directly when the audience needs instructions rather than the case study.

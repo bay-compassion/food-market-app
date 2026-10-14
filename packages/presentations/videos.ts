@@ -60,7 +60,7 @@ export const videos = {
 			folder: 'presentations/market-day-reel',
 			interactive: 'reel.html',
 			title: 'Market Day Reel',
-			heading: 'Giving guests time to register for a shopping place.',
+			heading: 'Giving Guests Time to Register for a Shopping Place',
 			summary:
 				'A one-minute walkthrough of registration and shopping places at The Bay Compassion.',
 			description:
@@ -78,7 +78,7 @@ export const videos = {
 			folder: 'presentations/queue-desk',
 			interactive: 'queue-desk.html',
 			title: 'Queue Desk Guide',
-			heading: 'A guide to the queue desk.',
+			heading: 'A Guide to the Queue Desk',
 			summary: 'A narrated guide for volunteers welcoming guests on market day.',
 			description:
 				'Learn how to call guests, print name tags, keep the line moving, handle late arrivals, add a guest, and close the session.',

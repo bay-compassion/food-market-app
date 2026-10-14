@@ -1,15 +1,15 @@
 # The Bay Compassion
 
 At The Bay Compassion's community food market, guests shop for groceries they choose themselves.
-The market director wanted the process of getting a shopping place to offer more dignity, too.
+We want the process of getting a shopping place to offer more dignity, too.
 This app is being built to give guests time to register and the market more control over how it
 allocates limited places and understands unmet demand.
 
-**[Read the case study](https://bay-compassion.github.io/food-market-app/)** ·
-**[Guest walkthrough](https://bay-compassion.github.io/food-market-app/presentations/guest-guide/)** ·
-**[Volunteer walkthrough](https://bay-compassion.github.io/food-market-app/presentations/queue-desk/)**
+**[Read the Case Study](https://bay-compassion.github.io/food-market-app/)** ·
+**[Guest Walkthrough](https://bay-compassion.github.io/food-market-app/presentations/guest-guide/)** ·
+**[Volunteer Walkthrough](https://bay-compassion.github.io/food-market-app/presentations/queue-desk/)**
 
-## Why the market wanted a change
+## Why the Market Wanted a Change
 
 Guests shop much as they would in a grocery store, choosing food that meets their needs rather
 than receiving a predetermined bag. That choice is part of
@@ -28,15 +28,27 @@ A purpose-built app also lets the market develop its allocation approach over ti
 adjustable lottery weights and manual promotion. The policy for using those capabilities is still
 being defined; the app does not remove the limit on how many guests can shop.
 
-## Understanding the people who cannot get a place
+## Reaching the People Who Live Here
+
+Language support was chosen with the regional population in mind. English, Spanish, Tagalog,
+Chinese, Farsi, Arabic, Vietnamese, and French cover the guest journey, from registration through
+lottery results and check-in instructions. Guests recognize language choices by their own names;
+Arabic and Farsi also change the layout to follow a right-to-left reading direction.
+
+Accessibility belongs to that same work. The interface includes labeled fields, prominent queue
+numbers, visible keyboard focus, screen-reader status announcements, and reduced-motion support
+on the queue number board. Giving people more time to register matters only if they can
+understand and use the process.
+
+## Understanding the People Who Cannot Get a Place
 
 The existing system closes registration when capacity is reached, so the market cannot see how
 many more people wanted to register. Keeping registration open for the full window can reveal
 more demand beyond the places available. Demographic and market questionnaires also help gather
-aggregate information the director wants to use in grant writing and explaining the mission.
+aggregate information we can use in grant writing and explaining the mission.
 These are intended benefits, not measured outcomes of the new app.
 
-Read [Shopping for food shouldn’t start with a race](docs/project-purpose.md) for the market’s
+Read [Shopping for Food Shouldn’t Start with a Race](docs/project-purpose.md) for the market’s
 account of why we are building the app.
 
 <table>
@@ -55,14 +67,24 @@ account of why we are building the app.
 Screenshots use fictional data and are generated from the current app and Storybook. Refresh them
 with `npm run capture:portfolio`; see the [portfolio publishing guide](docs/portfolio.md).
 
-## My role and process
+## Caring for Guest Information
 
-The market director originated the vision. I was the sole technical contributor, responsible for
-architecture, product management, requirements gathering, and implementation. I interviewed stakeholders and observed the market's
-existing practices to understand how the service worked. That research informed the requirements
+The app collects personal details to run the market, so privacy is part of its design. Server-side
+permissions separate the current queue, aggregate reports, and identifying exports. Guest device
+and visit credentials are stored as hashes on the server; handled API responses use `no-store`.
+Operational logs remove sensitive fields, and replay settings mask inputs and marked identity
+information. Text updates require explicit consent.
+
+See [Privacy and Security in the Design](docs/privacy-design.md) for the implementation examples,
+existing verification, and configuration considerations behind those controls.
+
+## My Role and Process
+
+The vision came from the market team. I was the sole technical contributor, responsible for
+architecture, product management, requirements gathering, and implementation. I interviewed stakeholders and observed the market’s existing practices to understand how the service worked. That research informed the requirements
 and how the app would behave for guests and the market team.
 
-## Engineering decisions
+## Engineering Decisions
 
 The frontend uses **React, TypeScript, MobX, and Emotion**. **Netlify Functions, Postgres, and
 Drizzle** provide the API and persistent state. **Auth0** protects staff operations; notification
@@ -82,7 +104,7 @@ delivery uses **Web Push, Twilio, and Netlify Async Workloads**.
   components and interactions, and Playwright covers guest journeys and the full-stack queue rig.
   See [browser test coverage](e2e/README.md) and [server security](docs/server-security.md).
 
-## Try it without setup
+## Try It Without Setup
 
 The [project site](https://bay-compassion.github.io/food-market-app/) includes three interactive
 presentations using fictional guests. No account or backend setup is needed.
@@ -95,7 +117,7 @@ presentations using fictional guests. No account or backend setup is needed.
 - [Queue Desk Guide](https://bay-compassion.github.io/food-market-app/presentations/queue-desk/):
   calling guests, managing arrivals, and closing a session.
 
-## Run locally
+## Run Locally
 
 Use Node.js 24 (see [.nvmrc](.nvmrc)):
 
@@ -115,7 +137,7 @@ npx playwright install chromium # once, for browser tests and captures
 npm run storybook              # component workshop on port 6006
 ```
 
-## Verify changes
+## Verify Changes
 
 ```bash
 npm run checks                 # lint, formatting, diagrams, unit tests, build
@@ -127,7 +149,7 @@ The [contributor guide](AGENTS.md) covers mobile-first design, localization, sta
 verification requirements. [The concepts guide](docs/concepts.md) explains the system for
 maintainers without a software background.
 
-## Find your way around
+## Find Your Way Around
 
 | Area                      | Contents                                                             |
 | ------------------------- | -------------------------------------------------------------------- |
