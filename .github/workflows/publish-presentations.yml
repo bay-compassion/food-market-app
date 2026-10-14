@@ -1,10 +1,13 @@
-name: Publish presentations
+name: Publish project site
 
 on:
   push:
     branches: [main]
     paths:
       - 'packages/presentations/**'
+      - 'scripts/screenshots/**'
+      - '.storybook/**'
+      - 'docs/images/portfolio/**'
       - 'src/locales.ts'
       - 'src/adminLocales.ts'
       # The guest guide's phone runs the guest app itself, so a change to it changes the guide.
@@ -16,7 +19,6 @@ on:
       - 'src/theme.ts'
       - 'public/bay-compassion-logo.png'
       - 'public/wordmark.png'
-      - 'public/bay-compassion-logo.png'
       - 'package.json'
       - 'package-lock.json'
       - '.nvmrc'
@@ -57,13 +59,21 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
+      - uses: ./.github/actions/install-chromium
+
+      - name: Refresh portfolio assets
+        run: npm run capture:portfolio
+
       # The GSAP pages embed the committed soundtrack, and the guest guide its phone, which
-      # Vite builds. No browser, speech model, GarageBand library, frame capture or video
-      # encoder is needed on the runner.
-      - name: Build presentations
+      # Vite builds. Screenshots use Chromium; no speech model, GarageBand library, frame
+      # capture or video encoder is needed on the runner.
+      - name: Build project site
         run: node packages/presentations/publish.ts
         env:
           PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - name: Verify project site
+        run: node packages/presentations/verify.ts --site-only
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
@@ -84,6 +94,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Deploy presentations
+      - name: Deploy project site
         id: deployment
         uses: actions/deploy-pages@v4

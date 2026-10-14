@@ -1,262 +1,165 @@
 # The Bay Compassion
 
-The Bay Compassion is a mobile-first check-in app for a community food market. Guests can choose their language, share the details needed for their visit, and join the queue. The app currently supports English, Spanish, Farsi, Tagalog, Vietnamese, Chinese, and Arabic. An early admin view is also available for future queue-management tools.
+At The Bay Compassion's community food market, guests shop for groceries they choose themselves.
+We want the process of getting a shopping place to offer more dignity, too.
+This app is being built to give guests time to register and the market more control over how it
+allocates limited places and understands unmet demand.
 
-The frontend is a React app in `src/`. Guest submissions are handled by a Netlify Function and stored with Netlify DB through Drizzle.
+**[Read the Case Study](https://bay-compassion.github.io/food-market-app/)** ·
+**[Guest Walkthrough](https://bay-compassion.github.io/food-market-app/presentations/guest-guide/)** ·
+**[Volunteer Walkthrough](https://bay-compassion.github.io/food-market-app/presentations/queue-desk/)**
 
-New to how apps like this are put together? Start with [`docs/concepts.md`](docs/concepts.md) —
-a primer on frontend/backend/database, frameworks, secrets, and migrations, written for a
-maintainer without a software background. For the shape of this app specifically, there are three
-diagrams: [`docs/data-model.md`](docs/data-model.md) (the database tables),
-[`docs/session-lifecycle.md`](docs/session-lifecycle.md) (the states a market session moves
-through), and [`docs/user-journey.md`](docs/user-journey.md) (a guest's path through the app).
+## Why the Market Wanted a Change
 
-## Screenshots
+Guests shop much as they would in a grocery store, choosing food that meets their needs rather
+than receiving a predetermined bag. That choice is part of
+[Compassion Food's commitment to dignity and belonging](https://www.thebaycompassion.org/programs/compassion-food).
+But getting a place had become a race: by 10:31 on Saturday morning, registration was full.
+Some guests entered only initials to submit faster. Seniors, people less comfortable with
+technology, and people reading in a non-native language could lose places while taking the time
+they needed to register.
 
-### Guest check-in
+The new process gives guests a fifteen-minute window before selection. They can read and enter
+information with less urgency. Registering from home can also spare someone a trip when they are
+not selected. The guest interface supports eight languages, including right-to-left layouts for
+Arabic and Farsi.
+
+A purpose-built app also lets the market develop its allocation approach over time, with
+adjustable lottery weights and manual promotion. The policy for using those capabilities is still
+being defined; the app does not remove the limit on how many guests can shop.
+
+## Reaching the People Who Live Here
+
+Language support was chosen with the regional population in mind. English, Spanish, Tagalog,
+Chinese, Farsi, Arabic, Vietnamese, and French cover the guest journey, from registration through
+lottery results and check-in instructions. Guests recognize language choices by their own names;
+Arabic and Farsi also change the layout to follow a right-to-left reading direction.
+
+Accessibility belongs to that same work. The interface includes labeled fields, prominent queue
+numbers, visible keyboard focus, screen-reader status announcements, and reduced-motion support
+on the queue number board. Giving people more time to register matters only if they can
+understand and use the process.
+
+## Understanding the People Who Cannot Get a Place
+
+The existing system closes registration when capacity is reached, so the market cannot see how
+many more people wanted to register. Keeping registration open for the full window can reveal
+more demand beyond the places available. Demographic and market questionnaires also help gather
+aggregate information we can use in grant writing and explaining the mission.
+These are intended benefits, not measured outcomes of the new app.
+
+Read [Shopping for Food Shouldn’t Start with a Race](docs/project-purpose.md) for the market’s
+account of why we are building the app.
 
 <table>
   <tr>
-	<td width="50%"><img src="docs/images/first-time.png" alt="Welcome screen with the language picker" width="100%"></td>
-	<td width="50%"><img src="docs/images/new-guest.png" alt="Guest form asking for name, age range, household details, and phone number" width="100%"></td>
+    <td width="50%"><img src="docs/images/portfolio/registration.png" alt="English guest registration form" width="100%"></td>
+    <td width="50%"><img src="docs/images/portfolio/farsi.png" alt="Guest registration in Farsi with a right-to-left layout" width="100%"></td>
   </tr>
+  <tr><td>Register on a phone.</td><td>Choose your language.</td></tr>
   <tr>
-	<td>Choose a language to begin.</td>
-	<td>Guests share renewed details for every visit; the browser keeps a private device credential.</td>
+    <td width="50%"><img src="docs/images/portfolio/waiting.png" alt="Guest queue number and visit status" width="100%"></td>
+    <td width="50%"><img src="docs/images/portfolio/queue.png" alt="Volunteer queue with call-next controls and called guests" width="100%"></td>
   </tr>
-  <tr>
-    <td width="33%"><img src="docs/images/spanish.png" alt="New guest form translated into Spanish" width="100%"></td>
-    <td width="33%"><img src="docs/images/farsi.png" alt="New guest form translated into Farsi and laid out right to left" width="100%"></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Every screen is translated — here in Spanish.</td>
-    <td>Right-to-left languages such as Farsi flip the whole layout.</td>
-    <td></td>
-  </tr>
+  <tr><td>Follow your place in line.</td><td>Keep the service moving.</td></tr>
 </table>
 
-### Market team admin
+Screenshots use fictional data and are generated from the current app and Storybook. Refresh them
+with `npm run capture:portfolio`; see the [portfolio publishing guide](docs/portfolio.md).
 
-<table>
-  <tr>
-    <td width="33%"><img src="docs/images/current-session.png" alt="Current session screen showing registration status and registration overrides" width="100%"></td>
-    <td width="33%"><img src="docs/images/guest-database.png" alt="Guest database screen listing guests with search and status controls" width="100%"></td>
-    <td width="33%"><img src="docs/images/broadcast-notification.png" alt="Registered guest list above a broadcast notification form and reset session control" width="100%"></td>
-  </tr>
-  <tr>
-    <td>Open registration, extend the window, and set queue capacity.</td>
-    <td>Search guests and update their status.</td>
-    <td>Send a broadcast notification, or reset the session.</td>
-  </tr>
-</table>
+## Caring for Guest Information
 
-## Quickstart
+The app collects personal details to run the market, so privacy is part of its design. Server-side
+permissions separate the current queue, aggregate reports, and identifying exports. Guest device
+and visit credentials are stored as hashes on the server; handled API responses use `no-store`.
+Operational logs remove sensitive fields, and replay settings mask inputs and marked identity
+information. Text updates require explicit consent.
 
-### Prerequisites
+See [Privacy and Security in the Design](docs/privacy-design.md) for the implementation examples,
+existing verification, and configuration considerations behind those controls.
 
-- Node.js 24.15.0 (see `.nvmrc`)
-- The [Netlify CLI](https://docs.netlify.com/cli/get-started/), signed in and linked to the Netlify site when you need to use functions or the database
+## My Role and Process
 
-### Run locally
+The vision came from the market team. I was the sole technical contributor, responsible for
+architecture, product management, requirements gathering, and implementation. I interviewed stakeholders and observed the market’s existing practices to understand how the service worked. That research informed the requirements
+and how the app would behave for guests and the market team.
+
+## Engineering Decisions
+
+The frontend uses **React, TypeScript, MobX, and Emotion**. **Netlify Functions, Postgres, and
+Drizzle** provide the API and persistent state. **Auth0** protects staff operations; notification
+delivery uses **Web Push, Twilio, and Netlify Async Workloads**.
+
+- **Share domain rules across browser and server.** Plain TypeScript models and explicit state
+  machines define session and visit behavior. React reads observable stores rather than recreating
+  those rules in each screen. See the [session lifecycle](docs/session-lifecycle.md) and
+  [data model](docs/data-model.md).
+- **Treat localization as behavior.** Typed translation dictionaries cover guest copy, while the
+  selected language also controls writing direction. See [the translation source](src/locales.ts).
+- **Make review artifacts follow the implementation.** Storybook exposes component states; the
+  printable review document embeds those stories and captures states that require interaction.
+  The guest presentation runs the actual guest app inside its phone. See the
+  [review workflow](docs/screenshots.md) and [presentation implementation](packages/presentations/README.md).
+- **Verify at several levels.** Unit tests exercise domain and API behavior, Storybook tests render
+  components and interactions, and Playwright covers guest journeys and the full-stack queue rig.
+  See [browser test coverage](e2e/README.md) and [server security](docs/server-security.md).
+
+## Try It Without Setup
+
+The [project site](https://bay-compassion.github.io/food-market-app/) includes three interactive
+presentations using fictional guests. No account or backend setup is needed.
+
+- [Market Day Reel](https://bay-compassion.github.io/food-market-app/presentations/market-day-reel/):
+  a one-minute visual overview.
+- [Guest Market Guide](https://bay-compassion.github.io/food-market-app/presentations/guest-guide/):
+  registration, lottery results, queue updates, and check-in. The phone supports all eight languages;
+  narration is in English.
+- [Queue Desk Guide](https://bay-compassion.github.io/food-market-app/presentations/queue-desk/):
+  calling guests, managing arrivals, and closing a session.
+
+## Run Locally
+
+Use Node.js 24 (see [.nvmrc](.nvmrc)):
 
 ```bash
 npm install
-npm start
+VITE_LAUNCHDARKLY_DISABLED=true npm run dev
 ```
 
-`npm start` runs `netlify dev`, which serves the app and Netlify Functions together. Follow the command output to open the local URL.
+This starts the frontend. API-backed workflows need the Netlify runtime and local configuration;
+see [development and operations](docs/development.md) for `npm start`, fake data, Auth0, deployment,
+and notification setup.
 
-To work only on the frontend, you can also run:
+To explore components and their states independently:
 
 ```bash
-npm run dev
+npx playwright install chromium # once, for browser tests and captures
+npm run storybook              # component workshop on port 6006
 ```
 
-This Vite server does not run the Netlify API function, including `/api/admin/guests`.
-
-### Fake data
-
-A fresh local database is empty, so the queue and the reports have nothing to show. With
-`netlify dev` running in another terminal, fill it with a plausible history:
+## Verify Changes
 
 ```bash
-npm run seed                                # 12 past weekly sessions, 120 guests
-npm run seed -- --reset --open-session      # start clean, and open a session for today
-npm run seed -- --help                      # every option
+npm run checks                 # lint, formatting, diagrams, unit tests, build
+npm run test:storybook         # component rendering and interactions
+npm run test:e2e               # guest browser journeys
 ```
 
-The history includes the awkward cases worth testing against: oversubscribed sessions, guests a
-worker added by hand, no-shows, cancellations, and visits served without a recorded time. The
-script refuses to touch a database that is not on localhost unless you pass `--force`.
+The [contributor guide](AGENTS.md) covers mobile-first design, localization, state management, and
+verification requirements. [The concepts guide](docs/concepts.md) explains the system for
+maintainers without a software background.
 
-### Review document
+## Find Your Way Around
 
-Copy and design reviews go better on paper, and the people doing them rarely have the app or a code
-editor. `npm run capture:screenshots` builds a PDF for them to mark up. Every word in it is an MDX page in
-Storybook that tags itself `review`, with its stories shown inside the app's own bar and footer; the
-one thing the script makes is screenshots of the running app, for screens a story cannot show, which
-a page embeds with `<Screenshot id="…" />`:
+| Area                      | Contents                                                             |
+| ------------------------- | -------------------------------------------------------------------- |
+| `src/`                    | React screens, observable stores, shared domain models, and services |
+| `netlify/`                | API handlers, server services, and database migrations               |
+| `db/`                     | Drizzle schema and database client                                   |
+| `.storybook/`             | Component workshop and printable review document                     |
+| `scripts/screenshots/`    | Deterministic review and portfolio captures                          |
+| `packages/presentations/` | Portfolio site, narrated guides, and video exports                   |
+| `docs/`                   | Architecture, security, development, and operations guides           |
 
-```bash
-npx playwright install chromium             # once
-npm run capture:screenshots                      # → screenshots/review.pdf
-npm run capture:screenshots -- --locale es       # the same document, in Spanish
-```
-
-See [`docs/screenshots.md`](docs/screenshots.md) for how to write a page, what the screenshots are for, and the
-options.
-
-## Checks
-
-Run these commands from the repository root before opening a pull request:
-
-```bash
-npm run lint
-npm run format:check
-npm run check:diagrams
-npm run test:unit -- --run
-npm run build
-```
-
-Or run all of them at once with `npm run checks`.
-
-See [`docs/testing.md`](docs/testing.md) for why the automated tests matter, especially if you're
-relying on an AI coding agent to make changes.
-
-`npm run check:diagrams` is the odd one out: it doesn't test the app, it flags when a source file
-behind one of the diagrams in `docs/` has changed, so the pictures don't quietly drift out of date.
-Review the flagged diagram, then run `npm run check:diagrams -- --update` to record that you did.
-
-## Deployment
-
-The app is configured for Netlify in `netlify.toml`. Connect the repository to a Netlify site; Netlify builds the root app and publishes `dist`, while serving the functions in `netlify/functions/`.
-
-See [`docs/server-security.md`](docs/server-security.md) for the HTTP policies, registration rate
-limit, and security-header checks to make on a deploy preview before merging.
-
-Production can also be deployed manually from GitHub without building the app on a GitHub runner:
-
-1. In Netlify, open **Project configuration → Build & deploy → Continuous deployment → Build
-   hooks** and create a hook for the production branch.
-2. Add the hook URL to the GitHub repository as an Actions secret named
-   `NETLIFY_BUILD_HOOK`.
-3. In GitHub, open **Actions → Deploy production → Run workflow**.
-
-The workflow only triggers the hook. Netlify performs the build so its production environment
-variables are available to Vite and the serverless functions.
-
-Database migrations under `netlify/database/migrations/` apply automatically the moment a build
-runs, including production builds — there is no separate manual step. Read
-[`docs/migrations.md`](docs/migrations.md) before adding or changing a migration.
-
-### Error monitoring
-
-Sentry reports errors from the browser and the functions, traces a guest's page load through to
-the API request behind it, and records a masked replay of sessions that hit an error. It is off
-until `VITE_SENTRY_DSN` and `SENTRY_DSN` are set on the Netlify site. Everything is scoped to what
-the free Developer plan covers — see [`docs/observability.md`](docs/observability.md) for the
-quotas, what is deliberately left out, and the privacy rules that apply to guest data.
-
-### Push notifications
-
-Push notifications use standards-based Web Push with VAPID authentication. Generate the site's
-long-lived key pair once:
-
-```bash
-npx web-push generate-vapid-keys
-```
-
-Add `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` to the Netlify environment. The
-subject must be a `mailto:` address or an HTTPS URL. Keep the private key secret and keep the same
-key pair across deploys so existing browser subscriptions continue to work.
-
-Set `NOTIFICATIONS_ENABLED=false` in the Netlify environment to hide notification opt-in, stop
-queueing and delivering notifications. Notifications remain enabled by default when the variable
-is unset.
-
-Install Netlify's Async Workloads extension for the team before deploying notification delivery.
-Scheduling a registration window creates one delayed workload event for its close time; editing or
-postponing the window creates a replacement, and the old event safely does nothing. A market
-transition creates one dispatch event whose checkpointed batches submit the durable delivery rows
-to push and SMS providers. No application Scheduled Function polls for notification work.
-
-To test the live Twilio transport without creating a guest or changing a market session, submit a
-smoke-test message to one or two explicitly named phones:
-
-```bash
-npm run sms:smoke -- --to=+15551234567 --send
-```
-
-The command reads `.env`, bypasses the database and workload queue, masks recipients in its output,
-and refuses to run without `--send`. It uses live Twilio credentials and may incur messaging charges.
-
-To keep application consent synchronized with replies sent to the Twilio number, enable Advanced
-Opt-Out on the Messaging Service and configure its incoming-message integration to send an HTTP
-`POST` webhook to `https://<production-domain>/api/twilio/incoming-message`. The endpoint validates
-Twilio's request signature, removes every matching guest's SMS subscription for `STOP`, restores it
-for `START`, and ignores other incoming messages. Twilio remains responsible for sending the
-configured opt-out and opt-in confirmation replies. The webhook also records the Twilio number
-that received each active `STOP`. The guest interface detects that record and offers a prefilled
-`sms:` link so the guest can send `START` to the same number, which lets Twilio lift its blocks and
-lets the webhook restore local delivery. The server-side website re-consent fallback uses Twilio's
-Consent Management API and fails closed when that API is unavailable.
-
-## Auth0 administration access
-
-The guest check-in is public. Auth0 protects the `/admin` route, guest records, and every
-administrative API operation that changes market or guest data.
-
-Configure Auth0 using [Netlify's Auth0 extension guide](https://docs.netlify.com/extend/install-and-use/setup-guides/auth0/):
-
-1. Deploy and link this repository to a Netlify site.
-2. As a Netlify Team Owner, install the **Auth0** extension from the team's Extensions page.
-3. In the site's **Access & security** settings, link an Auth0 tenant and add it under **Site
-   tenants**.
-4. Create or choose both an Auth0 Single-Page Application and an Auth0 API. The API is required
-   because the Netlify Functions validate access tokens using its audience.
-5. In the Auth0 application's **API Access** tab, edit the Bay Compassion API and grant
-   **User-delegated Access**. Without this grant, Auth0 rejects the SPA's audience request.
-6. Choose the **Vite** environment-variable preset and assign the configuration to the desired
-   deploy contexts. Confirm that Netlify created these values:
-   - `VITE_AUTH0_DOMAIN`
-   - `VITE_AUTH0_CLIENT_ID`
-   - `VITE_AUTH0_AUDIENCE`
-   - `VITE_AUTH0_ISSUER`
-
-7. Redeploy the site so Vite can include its `VITE_` variables in the frontend build.
-
-Netlify configures callback, logout, and web-origin URLs when the application is created through
-the extension. If you select an existing Auth0 application instead, add the deployed site origin
-and the local `netlify dev` origin to **Allowed Callback URLs**, **Allowed Logout URLs**, and
-**Allowed Web Origins** in Auth0. Auth0 matches callback URLs exactly, so include the trailing `/`.
-
-For local values not supplied by a linked Netlify site, copy `.env.example` to `.env` and replace
-the placeholders. Do not commit `.env`.
-
-Signed-in users need the [API permissions and roles](docs/roles.md) required by each admin
-operation. Signing in alone does not grant access.
-
-Tenant configuration is kept as code. Follow the [Auth0 configuration sync guide](docs/auth0.md)
-to pull dashboard changes, preview updates, and push reviewed configuration.
-
-## Metabase (optional ad hoc analytics)
-
-The [Reports](docs/reporting.md) screen covers the predefined questions the app anticipates. For
-anything else — a one-off chart, a dashboard to watch over time — this repo supports connecting
-[Metabase](https://www.metabase.com/), either self-hosted with Docker Compose (`npm run
-metabase:up`) or on Metabase Cloud. See [`docs/metabase.md`](docs/metabase.md) for setup and,
-importantly, how to connect it without handing it the app's own database credentials.
-
-## Project structure
-
-- `src/` — React frontend
-- `public/` — static frontend assets
-- `scripts/screenshots/` — the review document's capture; see [`docs/screenshots.md`](docs/screenshots.md)
-- `netlify/functions/` — API endpoints, including guest check-in
-- `netlify/database/migrations/` — Netlify DB migrations; read [`docs/migrations.md`](docs/migrations.md)
-  before changing anything here
-- `db/` — Drizzle schema and database client; [`docs/data-model.md`](docs/data-model.md) diagrams
-  the tables
-- `metabase/` — optional Docker Compose setup for self-hosted Metabase; see
-  [`docs/metabase.md`](docs/metabase.md)
+Database migrations apply during Netlify builds. Read [the migration guide](docs/migrations.md)
+before changing them.

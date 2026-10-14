@@ -1,6 +1,6 @@
 /**
- * Builds and assembles the GSAP presentations for GitHub Pages. The market day reel stays at
- * the root; the volunteer guide lives at /queue-desk/ and the guest guide at /guest-guide/.
+ * Builds and assembles the GSAP presentations for GitHub Pages. The portfolio lives at the root;
+ * every presentation has a page under /presentations/.
  * No capture, transcoding or git push.
  *
  *   node packages/presentations/publish.ts
@@ -9,7 +9,7 @@
  * alias for local previews; this script always assembles files without publishing them.
  */
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -57,6 +57,7 @@ const escape = (value: unknown) =>
 				"'": '&#39;',
 			})[character] ?? character,
 	);
+const repository = `https://github.com/${owner}/${repo}`;
 const template = readFileSync(here('./site.html'), 'utf8');
 
 rmSync(site, { recursive: true, force: true });
@@ -71,6 +72,7 @@ for (const video of published) {
 
 	mkdirSync(destination, { recursive: true });
 	const values: Record<string, string | undefined> = {
+		HOME: '../../',
 		BASE: base + (presentation.folder ? presentation.folder + '/' : ''),
 		TITLE: presentation.title,
 		HEADING: presentation.heading,
@@ -82,8 +84,8 @@ for (const video of published) {
 		PLAYER_CLASS: [presentation.guest && 'guest-player', video.narration && 'chaptered']
 			.filter(Boolean)
 			.join(' '),
-		OPEN: presentation.open ?? 'Open presentation',
-		DOWNLOAD: presentation.download ?? 'Download presentation',
+		OPEN: presentation.open ?? 'Open Presentation',
+		DOWNLOAD: presentation.download ?? 'Download Presentation',
 		MORE: presentation.more ?? 'More',
 	};
 	const links = published
@@ -115,6 +117,34 @@ for (const video of published) {
 	copyFileSync(here(`./out/${video.name}.html`), path.join(destination, presentation.interactive));
 	copyFileSync(here('../../public/wordmark.png'), path.join(destination, 'wordmark.png'));
 	copyFileSync(here('../../public/bay-compassion-logo.png'), path.join(destination, 'logo.png'));
+}
+
+const portfolio = readFileSync(here('./portfolio/index.html'), 'utf8')
+	.replaceAll('__BASE__', escape(base))
+	.replaceAll('__REPO__', escape(repository));
+
+writeFileSync(path.join(site, 'index.html'), portfolio);
+copyFileSync(here('./portfolio/portfolio.css'), path.join(site, 'portfolio.css'));
+copyFileSync(here('../../public/wordmark.png'), path.join(site, 'wordmark.png'));
+copyFileSync(here('../../public/bay-compassion-logo.png'), path.join(site, 'logo.png'));
+cpSync(here('../../docs/images/portfolio'), path.join(site, 'images'), { recursive: true });
+
+// Preserve links already shared from the original presentations site.
+for (const [oldPath, destination] of [
+	['guest-guide/index.html', '../presentations/guest-guide/index.html'],
+	['queue-desk/index.html', '../presentations/queue-desk/index.html'],
+	['guest-guide/guest-guide.html', '../presentations/guest-guide/guest-guide.html'],
+	['queue-desk/queue-desk.html', '../presentations/queue-desk/queue-desk.html'],
+	['reel.html', 'presentations/market-day-reel/reel.html'],
+] as const) {
+	const target = path.join(site, oldPath);
+
+	mkdirSync(path.dirname(target), { recursive: true });
+
+	writeFileSync(
+		target,
+		`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${escape(destination)}"><title>Presentation moved</title></head><body><a href="${escape(destination)}">Continue to the presentation</a></body></html>`,
+	);
 }
 
 writeFileSync(`${site}/.nojekyll`, '');

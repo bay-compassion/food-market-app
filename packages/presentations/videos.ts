@@ -11,7 +11,7 @@
  *   inlined with the page.
  */
 export interface Publication {
-	/** Where the landing page goes under the site root; `''` is the root itself. */
+	/** Where the landing page goes under the site root; relative to the portfolio landing page. */
 	folder: string;
 	/** The presentation's own file name, beside the landing page. */
 	interactive: string;
@@ -47,7 +47,7 @@ export const videos = {
 		timings: 'guest-guide/narration.timings.json',
 		phone: true,
 		publish: {
-			folder: 'guest-guide',
+			folder: 'presentations/guest-guide',
 			interactive: 'guest-guide.html',
 			guest: true,
 		},
@@ -57,13 +57,14 @@ export const videos = {
 		soundtrack: 'market-day-reel/soundtrack.m4a',
 		arrangement: 'market-day-reel/arrangement.ts',
 		publish: {
-			folder: '',
+			folder: 'presentations/market-day-reel',
 			interactive: 'reel.html',
 			title: 'Market Day Reel',
-			heading: 'A simpler way to welcome every neighbor.',
-			summary: "A one-minute look at how The Bay Compassion's community food market runs its line.",
+			heading: 'Giving Guests Time to Register for a Shopping Place',
+			summary:
+				'A one-minute walkthrough of registration and shopping places at The Bay Compassion.',
 			description:
-				"Guests register on their own phones in eight languages, and the day's lottery gives everyone the same chance. Volunteers then call each number from a phone at the desk, and it lights up on the room display and on the guest's phone at the same moment.",
+				'At this community food market, guests choose their groceries. The new app gives them a registration window before selection rather than a rush to claim the first available places. This walkthrough shows registration, a lottery result, and volunteers welcoming selected guests to shop.',
 			sound: 'Turn the sound on for the soundtrack.',
 		},
 	},
@@ -74,10 +75,10 @@ export const videos = {
 		narration: 'queue-desk/narration.ts',
 		timings: 'queue-desk/narration.timings.json',
 		publish: {
-			folder: 'queue-desk',
+			folder: 'presentations/queue-desk',
 			interactive: 'queue-desk.html',
 			title: 'Queue Desk Guide',
-			heading: 'A guide to the queue desk.',
+			heading: 'A Guide to the Queue Desk',
 			summary: 'A narrated guide for volunteers welcoming guests on market day.',
 			description:
 				'Learn how to call guests, print name tags, keep the line moving, handle late arrivals, add a guest, and close the session.',

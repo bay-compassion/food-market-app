@@ -34,7 +34,10 @@ export class AppServer {
 			// machine has configured, and must look like the fresh clone the guests' screens are
 			// written against.
 			envPrefix: 'BAY_COMPASSION_SCREENSHOTS_NEVER_MATCHES_',
-			define: { __SENTRY_DEBUG__: 'false' },
+			define: {
+				__SENTRY_DEBUG__: 'false',
+				'import.meta.env.VITE_LAUNCHDARKLY_DISABLED': JSON.stringify('true'),
+			},
 			resolve: { alias: { '@': fileURLToPath(new URL('../../src', import.meta.url)) } },
 			logLevel: 'warn',
 			server: { host: '127.0.0.1', port, strictPort: true },
