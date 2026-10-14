@@ -1,6 +1,6 @@
 import { CircularProgress } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { lazy, Suspense, use, useEffect, useState } from 'react';
+import { lazy, type ReactNode, Suspense, use, useEffect, useState } from 'react';
 
 import { RegistrationOpenState } from '@/components/guest-view/states/RegistrationOpenState.tsx';
 import { visitTakesPrecedence } from '@/services/guest-visit-presentation.ts';
@@ -22,7 +22,7 @@ const GuestTour = lazy(() => import('./tour/GuestTour'));
 /** The guest home screen (`/`): identity, language, and whichever card the market status calls for. */
 export const GuestView = observer(function GuestView() {
 	const t = useTranslation();
-	const { guest, session, visit } = useRootStore();
+	const { session, visit } = useRootStore();
 
 	const [status] = useState(() =>
 		Promise.all([session.getStatus().catch(() => undefined), visit.refresh()]).then(
@@ -31,29 +31,47 @@ export const GuestView = observer(function GuestView() {
 	);
 
 	return (
+		<GuestHome>
+			<Suspense
+				fallback={
+					<p className="status-loading" role="status">
+						<CircularProgress size={24} aria-hidden="true" />
+						{t.statusLoading}
+					</p>
+				}
+			>
+				<LoadedMarketStatus status={status} />
+			</Suspense>
+		</GuestHome>
+	);
+});
+
+/**
+ * The home screen's layout around its market status: the first-visit introduction until a language
+ * is chosen, then the content beneath it. Exported, with `GuestMarketStatus`, for a page that
+ * supplies the stores' state itself rather than loading it — the presentations' guest phone.
+ */
+export const GuestHome = observer(function GuestHome({ children }: { children: ReactNode }) {
+	const { guest } = useRootStore();
+
+	return (
 		<section className="guest-layout">
 			{!guest.isReturningVisitor ? <GuestLanguageHero /> : null}
 
 			{/* Named so it slides up into the introduction's place rather than cross-fading. */}
-			<div className="guest-content">
-				<Suspense
-					fallback={
-						<p className="status-loading" role="status">
-							<CircularProgress size={24} aria-hidden="true" />
-							{t.statusLoading}
-						</p>
-					}
-				>
-					<MarketStatus status={status} />
-				</Suspense>
-			</div>
+			<div className="guest-content">{children}</div>
 		</section>
 	);
 });
 
-const MarketStatus = observer(function MarketStatus({ status }: { status: Promise<void> }) {
+function LoadedMarketStatus({ status }: { status: Promise<void> }) {
 	use(status);
 
+	return <GuestMarketStatus />;
+}
+
+/** Whichever cards the market status and the guest's visit call for, once both are known. */
+export const GuestMarketStatus = observer(function GuestMarketStatus() {
 	const rootStore = useRootStore();
 	const { guest, session, tour, visit } = rootStore;
 	const tourEnabled = useGuestTourEnabled();

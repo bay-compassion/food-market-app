@@ -1,0 +1,36 @@
+// The browser code: the shared stage and each video's beat script. The build strips their types
+// without moving a line and inlines them as classic scripts, so they share no runtime imports —
+// only `import type`, which stripping erases — and reach each other through `window.stage`.
+{
+  "include": ["stage/*.ts", "*/page.ts", "strings.ts", "phone/scene.ts"],
+
+  // `strings.ts` reads the shape of the app's copy from `src/locales.ts`.
+  "references": [{ "path": "../../tsconfig.app.json" }],
+
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    // GSAP loads from its CDN as a global; the package only supplies its types.
+    "types": ["gsap"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.presentations-pages.tsbuildinfo"
+  }
+}

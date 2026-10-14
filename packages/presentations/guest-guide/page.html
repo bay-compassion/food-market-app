@@ -1,0 +1,199 @@
+<title>Guest Market Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap"
+/>
+<style>
+	__STAGE_CSS__
+</style>
+<style>
+	#viewport,
+	#controls {
+		width: min(100%, calc((100dvh - 200px) * 16 / 9));
+	}
+	#cap {
+		left: 110px;
+		top: 300px;
+		width: 950px;
+	}
+	#cap .head {
+		font-size: 68px;
+	}
+	#cap .sub {
+		font-size: 30px;
+		max-width: 42ch;
+	}
+	#cap .eyebrow {
+		font-size: 23px;
+	}
+	.card-center .sub {
+		font-size: 26px;
+		color: var(--reel-ink-soft);
+		max-width: 42ch;
+	}
+	#phoneLocation {
+		position: absolute;
+		left: 1230px;
+		top: 70px;
+		transform-origin: 0 0;
+		transform: scale(1.2);
+	}
+	#phoneMotion {
+		width: 380px;
+		height: 780px;
+	}
+	#guestPhone {
+		opacity: 1;
+	}
+	#kiosk {
+		left: 0;
+		top: 0;
+	}
+	#kioskLocation {
+		position: absolute;
+		left: 110px;
+		top: 520px;
+		transform-origin: 0 0;
+		transform: scale(0.9);
+	}
+	#stage[data-phase='display'] #cap {
+		top: 70px;
+	}
+	#phoneLocation,
+	#kioskLocation {
+		transition:
+			left 0.9s,
+			top 0.9s,
+			transform 0.9s;
+	}
+	/* The guest app itself, at the size of the phone's screen below its status bar. */
+	#guestPhone .app iframe {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border: 0;
+	}
+	#presentationLocale {
+		order: 3;
+		color: var(--reel-ink);
+		border: 1px solid rgb(233 241 238 / 35%);
+		border-radius: 20px;
+		padding: 10px;
+		background: var(--color-brand-dark);
+		font: inherit;
+		max-width: 100%;
+	}
+	#presentationLocale:focus-visible {
+		outline: 3px solid var(--color-focus);
+	}
+	#controls {
+		flex-wrap: wrap;
+	}
+	#controls button {
+		min-height: 44px;
+		height: auto;
+		padding-block: 10px;
+	}
+	@media (max-width: 600px) {
+		body {
+			justify-content: flex-start;
+			overflow-y: auto;
+			gap: 12px;
+		}
+		#viewport {
+			width: 100%;
+			aspect-ratio: 9 / 16;
+			flex: none;
+		}
+		#stage {
+			width: 1080px;
+			height: 1920px;
+		}
+		#cap,
+		#stage[data-phase='display'] #cap {
+			left: 90px;
+			top: 100px;
+			width: 900px;
+		}
+		#cap .head {
+			font-size: 82px;
+		}
+		#cap .sub {
+			font-size: 44px;
+			max-width: none;
+		}
+		#cap .eyebrow {
+			font-size: 30px;
+		}
+		#phoneLocation {
+			left: 236px;
+			top: 620px;
+			transform: scale(1.6);
+		}
+		#stage[data-phase='display'] #phoneLocation {
+			left: 350px;
+			top: 550px;
+			transform: scale(1);
+		}
+		#kioskLocation {
+			left: 115px;
+			top: 1370px;
+			transform: scale(0.85);
+		}
+		.card-center {
+			padding: 90px;
+		}
+		.card-center .line {
+			font-size: 76px;
+		}
+		.card-center .sub {
+			font-size: 42px;
+		}
+		#controls {
+			width: 100%;
+			gap: 8px;
+		}
+		#controls #scrub {
+			order: 1;
+			flex-basis: calc(100% - 6ch - 8px);
+		}
+		#controls #clock {
+			order: 2;
+		}
+		/* On a phone the chapter title needs the row's whole width, so the language picker joins
+		   the buttons instead. */
+		#presentationLocale {
+			order: 0;
+		}
+		#chapters {
+			flex-basis: 100%;
+		}
+		body.dev #viewport {
+			width: 100%;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		#phoneLocation,
+		#kioskLocation {
+			transition: none;
+		}
+	}
+</style>
+<div id="viewport">
+	<div id="stage" data-phase="title">
+		<div id="cap" aria-live="polite"></div>
+		<div class="card-center" id="title">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line"></div>
+			<div class="sub"></div>
+		</div>
+		<div id="phoneLocation"><div id="phoneMotion"></div></div>
+		<div id="kioskLocation"><div id="kiosk"></div></div>
+		<div class="card-center" id="outro" style="opacity: 0">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line"></div>
+			<div class="sub"></div>
+		</div>
+	</div>
+</div>
