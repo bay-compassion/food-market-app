@@ -44,6 +44,12 @@ features.
 - `packages/presentations/site.html`: individual presentation page template.
 - `packages/presentations/videos.ts`: presentation registry and publication paths.
 
+The social card's `:root` defines `--social-background`, `--social-text`, and `--social-accent`;
+the accent defaults to white from the current teal-and-white brand palette. Update those mappings
+when the brand guidelines change, then run `npm run capture:portfolio` to regenerate the PNG.
+The landing page uses `--brand-accent` for decoration and a separate `--focus-color` for visible
+keyboard focus. Amber is a functional visibility cue, not a decorative brand color.
+
 These project pages are English editorial documentation. Guest interfaces and presentation
 controls continue to use the app's translation dictionaries.
 

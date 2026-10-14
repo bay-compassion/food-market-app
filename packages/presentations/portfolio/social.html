@@ -4,6 +4,13 @@
 		<meta charset="utf-8" />
 		<title>The Bay Compassion · Project Preview</title>
 		<style>
+			:root {
+				/* Current brand palette; update these when the brand guidelines change. */
+				--social-background: #023940;
+				--social-text: #fff;
+				--social-accent: var(--social-text);
+				--social-text-muted: rgb(255 255 255 / 80%);
+			}
 			* {
 				box-sizing: border-box;
 			}
@@ -12,17 +19,17 @@
 				width: 1200px;
 				height: 630px;
 				padding: 70px;
-				background: #023940;
-				color: #f4f2e9;
+				background: var(--social-background);
+				color: var(--social-text);
 				font-family: Arial, sans-serif;
-				border-bottom: 18px solid #ffb545;
+				border-bottom: 18px solid var(--social-accent);
 			}
 			img {
 				width: 240px;
 				filter: brightness(0) invert(1);
 			}
 			p {
-				color: #ffb545;
+				color: var(--social-accent);
 				font-size: 24px;
 				margin: 50px 0 22px;
 			}
@@ -36,14 +43,14 @@
 			footer {
 				margin-top: 38px;
 				font-size: 25px;
-				color: #d1ded9;
+				color: var(--social-text-muted);
 			}
 		</style>
 	</head>
 	<body>
 		<img src="../../../public/wordmark.png" alt="The Bay Compassion" />
-		<p>Guests choose their groceries. They need time to register, too.</p>
-		<h1>Shopping for Food<br />Shouldn’t Start with a Race</h1>
-		<footer>Time to Register · A Clearer View of Unmet Demand</footer>
+		<p>Compassion Food · Community Markets</p>
+		<h1>A Community Market<br />Rooted in Dignity and Choice</h1>
+		<footer>Fresh Food · Personal Choice · Community Belonging</footer>
 	</body>
 </html>
