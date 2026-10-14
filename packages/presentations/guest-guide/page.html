@@ -12,6 +12,10 @@
 	#controls {
 		width: min(100%, calc((100dvh - 200px) * 16 / 9));
 	}
+	/* Wrapped controls must never compress the video out of its aspect ratio. */
+	#viewport {
+		flex-shrink: 0;
+	}
 	#cap {
 		left: 110px;
 		top: 300px;

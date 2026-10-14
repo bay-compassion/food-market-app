@@ -242,6 +242,7 @@ void (async () => {
 			const player = site.frames()[1]!;
 
 			await player.waitForFunction(() => window.reel);
+			await player.evaluate(() => document.fonts.ready);
 
 			for (const { code } of languages) {
 				await player.locator('#presentationLocale').selectOption(code);
@@ -262,6 +263,27 @@ void (async () => {
 					Math.abs(layout.viewportWidth / layout.viewportHeight - ratio) < 0.02,
 					`${width}/${code}: embedded stage fits`,
 				);
+			}
+
+			if (width === 1280) {
+				// Native select chrome and font metrics differ across macOS and Linux. Reproduce
+				// the extra control row that previously squeezed the Tagalog stage in CI.
+				await player.locator('#presentationLocale').selectOption('tl');
+				await player.addStyleTag({
+					content:
+						'#controls { font-size: 18px !important; }' +
+						'#controls select { padding-inline: 40px !important; }',
+				});
+				const layout = await player.evaluate(() => ({
+					ratio:
+						document.querySelector('#viewport')!.clientWidth /
+						document.querySelector('#viewport')!.clientHeight,
+					controlsBottom: document.querySelector('#controls')!.getBoundingClientRect().bottom,
+					height: innerHeight,
+				}));
+
+				assert.ok(Math.abs(layout.ratio - 16 / 9) < 0.02, 'Wider controls preserve stage ratio');
+				assert.ok(layout.controlsBottom <= layout.height, 'Wider controls fit the embedded frame');
 			}
 
 			// The queue desk's chapters wrap onto a row of their own below 1000px; its frame grows to fit.
