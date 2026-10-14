@@ -28,6 +28,7 @@ export const BrandColors: Story = {
 		preview: 'color',
 		tokens: [
 			['--color-brand', 'Top bar, hero, primary buttons, headings on admin screens'],
+			['--color-brand-light', 'Lake Blue: secondary accents, with dark text'],
 			['--color-brand-dark', 'Hover state for primary buttons'],
 			['--color-on-brand', 'Text and borders on top of the brand color'],
 		],

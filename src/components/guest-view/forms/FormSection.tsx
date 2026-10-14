@@ -19,7 +19,7 @@ const Legend = styled.legend`
 	font-family: var(--font-heading);
 	font-size: 18px;
 	font-weight: 700;
-	letter-spacing: 0.01em;
+	letter-spacing: var(--tracking-label);
 	text-transform: uppercase;
 	color: var(--color-text);
 `;

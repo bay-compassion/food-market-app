@@ -15,7 +15,7 @@ import { TicketSummary } from './TicketSummary';
 // The sheet renders in a portal, outside the queue screen's frame, so it carries its own styles.
 const Sheet = styled(SwipeableDrawer)`
 	.MuiBackdrop-root {
-		background: rgb(1 42 47 / 62%);
+		background: rgb(30 71 77 / 62%);
 	}
 
 	.MuiDrawer-paper {

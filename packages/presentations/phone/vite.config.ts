@@ -10,6 +10,8 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 
+import { brandFontCss } from '../fonts.ts';
+
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 /**
@@ -38,12 +40,17 @@ const imageTypes: Record<string, string> = {
 };
 
 /**
- * The app names its `public/` images by path (`/bay-compassion-logo.png`), which a page opened from
+ * The app names its `public/` images by path (`/bay-compassion-icon-closed.svg`), which a page opened from
  * a file has nowhere to serve from. The phone carries each one it names inside itself instead.
  */
 const publicImages: Plugin = {
 	name: 'presentations:phone-public-images',
+	enforce: 'pre',
 	transform(code, id) {
+		if (id === here('../../../src/styles/base.css')) {
+			return code.replace("@import url('/fonts/brand.css');", brandFontCss);
+		}
+
 		if (!id.startsWith(here('../../../src/'))) {
 			return null;
 		}

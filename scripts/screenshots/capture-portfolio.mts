@@ -3,6 +3,7 @@ import { mkdir, rename, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { brandFontCss } from '../../packages/presentations/fonts.js';
 import { adminTranslations } from '../../src/adminLocales.js';
 import { SessionStatusEnum } from '../../src/services/sessionStateMachine.js';
 import { AppServer } from './app-server.mjs';
@@ -67,6 +68,9 @@ try {
 		await page.goto(
 			new URL('../../packages/presentations/portfolio/social.html', import.meta.url).href,
 		);
+		// The source card opens from disk; embed its fonts just as the presentation build does.
+		await page.addStyleTag({ content: brandFontCss });
+		await page.evaluate(() => document.fonts.ready);
 		await page.screenshot({
 			path: path.join(staging, 'png/social.png'),
 			animations: 'disabled',

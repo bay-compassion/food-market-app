@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/brand-lockup-white.png">
+  <img src="public/brand-lockup.png" alt="The Bay Compassion" width="280">
+</picture>
+
 # The Bay Compassion
 
 At The Bay Compassion's community food market, guests shop for groceries they choose themselves.

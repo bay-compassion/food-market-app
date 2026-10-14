@@ -8,17 +8,19 @@
  * stylesheet, so the cascade order matches what `App.vue` used to produce.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Arabic:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+@import url('/fonts/brand.css');
+@import './brand.css';
 
 :root {
-	--font-body: Roboto, Arial, sans-serif;
-	--font-heading: 'Roboto Condensed', Impact, sans-serif;
-	--color-brand: #023940;
-	--color-brand-dark: #012a2f;
+	--color-brand: #275c63;
+	--color-brand-light: #7ebdc5;
+	--color-brand-dark: #1e474d;
 	--color-on-brand: #fff;
 	--color-background: #fff;
-	--color-surface-soft: #f1f5f3;
-	--color-text: #101010;
+	--color-surface-soft: #eef7f8;
+	--color-text: #000000;
 	--color-text-muted: #3d453f;
 	--color-text-subtle: #60746a;
 	--color-border: #5c655f;
@@ -27,6 +29,8 @@
 	--color-error: #a12622;
 	--color-success: #146c34;
 	--color-warning: #7a4e00;
+	--tracking-heading: -0.035em;
+	--tracking-label: -0.02em;
 	--radius-sm: 8px;
 	--radius-md: 16px;
 	--radius-lg: 24px;
@@ -36,6 +40,11 @@
 	color: var(--color-text);
 	background: var(--color-background);
 	font-synthesis: none;
+}
+/* Preserve joined letterforms in Arabic and Farsi. */
+[dir='rtl'] {
+	--tracking-heading: 0;
+	--tracking-label: 0;
 }
 * {
 	box-sizing: border-box;
@@ -71,7 +80,7 @@ h1 {
 	font-size: 38px;
 	font-weight: 700;
 	line-height: 1.05;
-	letter-spacing: -0.01em;
+	letter-spacing: var(--tracking-heading);
 	text-transform: uppercase;
 }
 .sr-only {

@@ -1040,7 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			n +
 			' ' +
 			n +
-			'" fill="#023940" shape-rendering="crispEdges">' +
+			'" fill="#275c63" shape-rendering="crispEdges">' +
 			finder(0, 0) +
 			finder(n - 7, 0) +
 			finder(0, n - 7) +

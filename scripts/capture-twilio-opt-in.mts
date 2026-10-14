@@ -12,7 +12,8 @@
 import { mkdir } from 'node:fs/promises';
 
 import { chromium, type Page } from 'playwright';
-import { createServer } from 'vite';
+
+import { AppServer } from './screenshots/app-server.mjs';
 
 const baseUrl = 'http://127.0.0.1:4173';
 const outputDirectory = new URL('../public/sms-consent/', import.meta.url);
@@ -90,10 +91,10 @@ async function newMobileContext(options: { identified?: boolean } = {}) {
 	return context;
 }
 
-async function screenshot(page: Page, filename: string) {
+async function screenshot(page: Page, filename: string, fullPage = false) {
 	await page.screenshot({
 		path: new URL(filename, outputDirectory).pathname,
-		fullPage: false,
+		fullPage,
 		animations: 'disabled',
 	});
 }
@@ -112,15 +113,10 @@ async function capturePreregistration() {
 
 	for (const link of legalLinks) {
 		await link.waitFor();
-		const bounds = await link.boundingBox();
-		const viewport = page.viewportSize();
-
-		if (!bounds || !viewport || bounds.y + bounds.height > viewport.height) {
-			throw new Error('The preregistration legal links must fit within the screenshot viewport.');
-		}
 	}
 
-	await screenshot(page, '01-preregistration.png');
+	// Capture the entire current form so the legal links remain part of the evidence.
+	await screenshot(page, '01-preregistration.png', true);
 }
 
 async function captureConsentFlow() {
@@ -165,18 +161,15 @@ async function captureConsentFlow() {
 	await screenshot(page, '05-notifications-enabled.png');
 }
 
-const server = await createServer({
-	server: { host: '127.0.0.1', port: 4173, strictPort: true },
-});
+const server = await AppServer.start(4173);
 const browser = await chromium.launch();
 
 try {
 	await mkdir(outputDirectory, { recursive: true });
-	await server.listen();
 	await capturePreregistration();
 	await captureConsentFlow();
 	console.log(`Captured Twilio opt-in screenshots in ${outputDirectory.pathname}`);
 } finally {
 	await browser.close();
-	await server.close();
+	await server[Symbol.asyncDispose]();
 }

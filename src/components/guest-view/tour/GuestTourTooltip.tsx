@@ -23,7 +23,7 @@ const Card = styled.div`
 	border-radius: var(--radius-md);
 	color: var(--color-text);
 	background: var(--color-background);
-	box-shadow: 0 12px 32px rgb(1 42 47 / 0.28);
+	box-shadow: 0 12px 32px rgb(30 71 77 / 0.28);
 	text-align: start;
 `;
 

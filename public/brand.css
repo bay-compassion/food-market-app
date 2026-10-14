@@ -1,0 +1,42 @@
+/* Logo and live type share proportions; each surface chooses the text size. */
+.brand-lockup {
+	display: inline-flex;
+	direction: ltr;
+	align-items: center;
+	gap: 0.42em;
+	color: inherit;
+	font-family: var(--font-heading);
+	font-size: var(--brand-lockup-size, 24px);
+	font-weight: 800;
+	line-height: 1.04;
+	letter-spacing: -0.035em;
+	text-align: start;
+	text-transform: none;
+	white-space: nowrap;
+	vertical-align: middle;
+}
+.brand-lockup .brand-lockup__icon {
+	display: block;
+	flex: none;
+	width: 2.1em;
+	height: 2.1em;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 0 0 1px #fff;
+}
+.brand-lockup__name {
+	display: grid;
+}
+.brand-lockup__name > span {
+	display: block;
+}
+
+/* Wide document headers can keep the name on a single line. */
+.brand-lockup--inline .brand-lockup__name {
+	display: flex;
+	gap: 0.25em;
+}
+.brand-lockup--inline .brand-lockup__icon {
+	width: 1.65em;
+	height: 1.65em;
+}

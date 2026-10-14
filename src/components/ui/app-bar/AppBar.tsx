@@ -24,6 +24,7 @@ const Brand = styled(Link)`
 	font-family: var(--font-heading);
 	font-weight: 700;
 	font-size: 14.5px;
+	letter-spacing: var(--tracking-heading);
 	text-transform: uppercase;
 	text-decoration: none;
 
@@ -32,7 +33,8 @@ const Brand = styled(Link)`
 		width: 28px;
 		height: 28px;
 		object-fit: contain;
-		border-radius: var(--radius-sm);
+		border-radius: 50%;
+		box-shadow: 0 0 0 1px var(--color-on-brand);
 	}
 `;
 
@@ -113,7 +115,7 @@ export const AppBar = observer(function AppBar({
 				sx={{ minHeight: { xs: 60, sm: 60 }, px: '20px', gap: 1, justifyContent: 'space-between' }}
 			>
 				<Brand to={brandTo}>
-					<img src="/bay-compassion-logo.png" alt="" />
+					<img src="/bay-compassion-icon-digital.svg" alt="" />
 					<span>{t.marketName}</span>
 				</Brand>
 				<Actions>

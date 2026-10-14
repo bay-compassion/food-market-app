@@ -26,6 +26,8 @@ import { build as vite } from 'vite';
 
 import { adminTranslations } from '../../src/adminLocales.ts';
 import { translations } from '../../src/locales.ts';
+import { brandCss, brandLockup } from './branding.ts';
+import { brandFontCss } from './fonts.ts';
 import type { NarrationLine, NarrationTimings, TimedLine, Voice } from './stage/reel.ts';
 import { deskStrings, guestStrings } from './strings.ts';
 import { videoFromArgs } from './videos.ts';
@@ -145,8 +147,8 @@ async function phone(): Promise<string> {
 const strings = Object.fromEntries(
 	Object.entries(translations).map(([locale, t]) => [locale, guestStrings(t)]),
 );
-const png = (path: string) =>
-	'data:image/png;base64,' + readFileSync(here(path)).toString('base64');
+const svg = (path: string) =>
+	'data:image/svg+xml;base64,' + readFileSync(here(path)).toString('base64');
 const soundtrack = existsSync(here('./' + video.soundtrack))
 	? readFileSync(here('./' + video.soundtrack)).toString('base64')
 	: '';
@@ -156,19 +158,25 @@ const stageScript = script('./stage/stage.ts', (code) =>
 	code
 		.replace('__STRINGS__', () => JSON.stringify(strings))
 		.replace('__DESK__', () => JSON.stringify(deskStrings(adminTranslations.en, translations.en)))
-		.replace('__LOGO__', () => png('../../public/bay-compassion-logo.png'))
+		.replace('__LOGO__', () => svg('../../public/bay-compassion-icon-digital.svg'))
 		.replace('__SOUNDTRACK__', () => soundtrack),
 );
 const pageScript = script(`./${video.folder}/page.ts`, (code) =>
 	code.replace('__NARRATION__', () => narrationJson).replace('__PHONE__', () => phoneJson),
 );
 // Collapsed onto one line, so the stylesheet takes the single line its placeholder held.
-const stageStyles = readFileSync(here('./stage/stage.css'), 'utf8').replace(/\s*\n\s*/g, ' ');
+const stageStyles = (
+	brandFontCss +
+	brandCss +
+	readFileSync(here('./stage/stage.css'), 'utf8')
+).replace(/\s*\n\s*/g, ' ');
 
 const page =
 	readFileSync(here(`./${video.folder}/page.html`), 'utf8')
 		.replace('__STAGE_CSS__', () => stageStyles)
-		.replaceAll('__WORDMARK__', png('../../public/wordmark.png')) +
+		.replaceAll('__BRAND_LOCKUP__', () =>
+			brandLockup(svg('../../public/bay-compassion-icon-digital.svg')),
+		) +
 	'\n<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>' +
 	// The page's script first: it waits for the stage, which comes after it.
 	// Each script starts on its tag's own line: a newline first would make line 1 blank.

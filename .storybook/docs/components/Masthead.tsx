@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 
+import { BrandLockup } from '../../../src/components/BrandLockup';
 import type { MastheadProps } from '../types';
 
 /**
@@ -17,16 +18,9 @@ const Band = styled.header`
 	-webkit-print-color-adjust: exact;
 `;
 
-/**
- * The wordmark is a single teal ink on a transparent ground, so on the brand fill it is drawn as
- * white by flattening it to black and inverting — the same colour the app bar sets its name in.
- */
-const Wordmark = styled.img`
-	display: block;
-	width: auto;
-	height: 44px;
+const Wordmark = styled(BrandLockup)`
+	--brand-lockup-size: 24px;
 	margin: 0 0 24px;
-	filter: brightness(0) invert(1);
 `;
 
 /**
@@ -75,7 +69,7 @@ const Subtitle = styled.p`
 export function Masthead({ title, subtitle }: MastheadProps) {
 	return (
 		<Band>
-			<Wordmark src="/wordmark.png" alt="The Bay Compassion" />
+			<Wordmark />
 			<Title>
 				<Heading>{title}</Heading>
 				{subtitle ? <Subtitle>{subtitle}</Subtitle> : null}

@@ -2,7 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link
 	rel="stylesheet"
-	href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap"
+	href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
 />
 <style>
 	__STAGE_CSS__
@@ -117,19 +117,19 @@
 			width: 900px;
 		}
 		#cap .head {
-			font-size: 82px;
+			font-size: 68px;
 		}
 		#cap .sub {
-			font-size: 44px;
+			font-size: 40px;
 			max-width: none;
 		}
 		#cap .eyebrow {
 			font-size: 30px;
 		}
 		#phoneLocation {
-			left: 236px;
-			top: 620px;
-			transform: scale(1.6);
+			left: 255px;
+			top: 660px;
+			transform: scale(1.5);
 		}
 		#stage[data-phase='display'] #phoneLocation {
 			left: 350px;
@@ -150,24 +150,45 @@
 		.card-center .sub {
 			font-size: 42px;
 		}
-		#controls {
+		/* Explicit rows keep longer translated controls inside the embedded phone player. */
+		body:not(.dev) #controls {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-areas:
+				'play restart'
+				'sound step'
+				'locale locale'
+				'scrub clock'
+				'chapters chapters';
 			width: 100%;
 			gap: 8px;
+			font-size: 13px;
+		}
+		#play {
+			grid-area: play;
+		}
+		#restart {
+			grid-area: restart;
+		}
+		#sound {
+			grid-area: sound;
+		}
+		#stepMode {
+			grid-area: step;
+		}
+		#presentationLocale {
+			grid-area: locale;
 		}
 		#controls #scrub {
-			order: 1;
-			flex-basis: calc(100% - 6ch - 8px);
+			grid-area: scrub;
+			width: 100%;
+			margin: 0;
 		}
 		#controls #clock {
-			order: 2;
-		}
-		/* On a phone the chapter title needs the row's whole width, so the language picker joins
-		   the buttons instead. */
-		#presentationLocale {
-			order: 0;
+			grid-area: clock;
 		}
 		#chapters {
-			flex-basis: 100%;
+			grid-area: chapters;
 		}
 		body.dev #viewport {
 			width: 100%;
@@ -184,14 +205,14 @@
 	<div id="stage" data-phase="title">
 		<div id="cap" aria-live="polite"></div>
 		<div class="card-center" id="title">
-			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			__BRAND_LOCKUP__
 			<div class="line"></div>
 			<div class="sub"></div>
 		</div>
 		<div id="phoneLocation"><div id="phoneMotion"></div></div>
 		<div id="kioskLocation"><div id="kiosk"></div></div>
 		<div class="card-center" id="outro" style="opacity: 0">
-			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			__BRAND_LOCKUP__
 			<div class="line"></div>
 			<div class="sub"></div>
 		</div>

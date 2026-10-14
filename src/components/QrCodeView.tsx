@@ -19,7 +19,7 @@ const Page = styled.section`
 		color: var(--color-brand);
 		font-family: var(--font-heading);
 		font-size: 30px;
-		letter-spacing: -0.01em;
+		letter-spacing: var(--tracking-heading);
 		text-transform: uppercase;
 	}
 

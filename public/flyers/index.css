@@ -1,13 +1,13 @@
 /* The list of printable flyers at /flyers/, for volunteers choosing which ones to print. */
 :root {
-	--brand: #023940;
-	--text: #101010;
+	--brand: #275c63;
+	--text: #000000;
 	--text-muted: #3d453f;
 	--border: #5c655f;
-	--surface-soft: #f1f5f3;
+	--surface-soft: #eef7f8;
 	color: var(--text);
 	background: var(--surface-soft);
-	font-family: Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
+	font-family: var(--font-body);
 	font-synthesis: none;
 }
 
@@ -32,16 +32,14 @@ main {
 }
 
 .wordmark {
-	display: block;
-	height: 44px;
-	width: auto;
+	--brand-lockup-size: 24px;
 	margin-bottom: 28px;
 }
 
 h1 {
 	margin: 0 0 8px;
 	color: var(--brand);
-	font-family: 'Roboto Condensed', Impact, sans-serif;
+	font-family: var(--font-heading);
 	font-size: 34px;
 	line-height: 1.1;
 	text-transform: uppercase;
@@ -64,7 +62,7 @@ h1 {
 .flyers a {
 	display: grid;
 	gap: 2px;
-	min-height: 44px;
+	min-height: 64px;
 	padding: 16px 18px;
 	border: 1px solid var(--border);
 	border-radius: 16px;

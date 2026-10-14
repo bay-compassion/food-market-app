@@ -48,8 +48,9 @@ const notchedOutline = {
 export const appTheme = createTheme({
 	palette: {
 		primary: {
-			main: '#023940',
-			dark: '#012a2f',
+			main: '#275c63',
+			dark: '#1e474d',
+			light: '#7ebdc5',
 			contrastText: '#fff',
 		},
 		background: {
@@ -57,7 +58,7 @@ export const appTheme = createTheme({
 			paper: '#fff',
 		},
 		text: {
-			primary: '#101010',
+			primary: '#000000',
 			secondary: '#3d453f',
 		},
 		error: { main: '#a12622' },
@@ -68,13 +69,14 @@ export const appTheme = createTheme({
 		borderRadius: 24,
 	},
 	typography: {
-		fontFamily: 'Roboto, Arial, sans-serif',
+		fontFamily: 'var(--font-body)',
+		button: { letterSpacing: 'var(--tracking-label)' },
 		h1: {
-			fontFamily: "'Roboto Condensed', Impact, sans-serif",
+			fontFamily: 'var(--font-heading)',
 			fontSize: '2.375rem',
 			fontWeight: 700,
 			lineHeight: 1.05,
-			letterSpacing: '-0.01em',
+			letterSpacing: 'var(--tracking-heading)',
 			textTransform: 'uppercase',
 		},
 	},
@@ -136,6 +138,7 @@ export const appTheme = createTheme({
 					color: 'var(--color-text)',
 					fontFamily: 'var(--font-heading)',
 					fontSize: 16,
+					letterSpacing: 'var(--tracking-label)',
 					fontWeight: 700,
 					lineHeight: 1.2,
 					'&.Mui-focused': { color: 'var(--color-text)' },

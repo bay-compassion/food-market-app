@@ -18,7 +18,7 @@ type SessionOverviewProps = {
  * in `base.css` because this is the only figure in the app that draws them.
  */
 const segmentColors: Record<PipelineStatus, string> = {
-	served: '#023940',
+	served: '#275c63',
 	called: '#34767b',
 	waiting: '#9dbfbf',
 	no_show: '#c3ccc7',

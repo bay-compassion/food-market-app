@@ -6,14 +6,16 @@ import * as Specimens from './DesignTokens.stories';
 
 # Colors
 
-Every value below is read live from `src/styles/base.css` by the Vue component behind these tables.
-The palette is deliberately small: one brand color carries almost the whole interface, and
+Every value below is read live from `src/styles/base.css` by the React component behind these tables.
+The palette is deliberately small: Harbor Blue carries the primary interface, and
 everything else is either a neutral or a signal.
 
 ## Brand
 
-The dark teal is the app's only real color. It fills the top bar, the guest hero, primary
-buttons, and the queue-position number — the places a guest's eye should land first.
+Harbor Blue (`#275C63`) fills the top bar, guest hero, primary buttons, and queue-position number.
+White is the contrast color on Harbor Blue. Lake Blue (`#7EBDC5`) supplies secondary accents with
+dark text; black is the primary text color on white. Hover and soft surface shades are derived
+from this palette. Functional status colors and the amber focus ring keep their existing roles.
 
 <Story of={Specimens.BrandColors} />
 
