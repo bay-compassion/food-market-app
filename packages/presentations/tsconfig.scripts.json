@@ -1,0 +1,44 @@
+// The Node scripts. Node runs them directly, stripping their types, so they use only erasable
+// syntax and import each other with real `.ts` extensions.
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+
+  "include": [
+    "*.ts",
+    "music/*.ts",
+    "*/narration.ts",
+    "*/arrangement.ts",
+    // Shared with the pages: types only, which the scripts read off a built page.
+    "stage/reel.ts"
+  ],
+
+  // `strings.ts` cuts the app's own copy down for the stage, so it imports `src/locales.ts`.
+  // Referencing the app project is what lets that resolve without pulling `src/` in here.
+  "references": [{ "path": "../../tsconfig.app.json" }],
+
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+
+    // The scripts also hand functions to Playwright and Web Audio to run inside a page.
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node", "gsap"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.presentations-scripts.tsbuildinfo"
+  }
+}

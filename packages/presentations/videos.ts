@@ -1,0 +1,106 @@
+/**
+ * Every video this package makes. Each one is a folder holding its page (`page.html` for the stage
+ * markup and styles, `page.ts` for its beat script) that the build fills in from the shared stage
+ * and writes to `out/<name>.html`; its frames, stills and voice clips go under `out/<name>/`, so
+ * rendering one never touches another's.
+ *
+ * - `soundtrack` is the mixed track the build embeds; `music/mix.ts` writes it from `arrangement`.
+ * - `narration`, when set, is the voiceover: the lines `voice.ts` records, and the measured length
+ *   of each (`timings`), which the page reads at build time to set its pace.
+ */
+export interface Publication {
+	/** Where the landing page goes under the site root; `''` is the root itself. */
+	folder: string;
+	/** The presentation's own file name, beside the landing page. */
+	interactive: string;
+	/** A guest presentation takes its landing page copy from `guestView.presentation`. */
+	guest?: boolean;
+	title?: string;
+	heading?: string;
+	summary?: string;
+	description?: string;
+	sound?: string;
+	open?: string;
+	download?: string;
+	more?: string;
+}
+
+export interface VideoDefinition {
+	/** The video's folder, holding `page.html` and `page.ts`. */
+	folder: string;
+	soundtrack: string;
+	arrangement: string;
+	narration?: string;
+	timings?: string;
+	publish: Publication;
+}
+
+export const videos = {
+	'guest-guide': {
+		folder: 'guest-guide',
+		soundtrack: 'guest-guide/soundtrack.m4a',
+		arrangement: 'guest-guide/arrangement.ts',
+		narration: 'guest-guide/narration.ts',
+		timings: 'guest-guide/narration.timings.json',
+		publish: {
+			folder: 'guest-guide',
+			interactive: 'guest-guide.html',
+			guest: true,
+		},
+	},
+	'market-day-reel': {
+		folder: 'market-day-reel',
+		soundtrack: 'market-day-reel/soundtrack.m4a',
+		arrangement: 'market-day-reel/arrangement.ts',
+		publish: {
+			folder: '',
+			interactive: 'reel.html',
+			title: 'Market Day Reel',
+			heading: 'A simpler way to welcome every neighbor.',
+			summary: "A one-minute look at how The Bay Compassion's community food market runs its line.",
+			description:
+				"Guests register on their own phones in eight languages, and the day's lottery gives everyone the same chance. Volunteers then call each number from a phone at the desk, and it lights up on the room display and on the guest's phone at the same moment.",
+			sound: 'Turn the sound on for the soundtrack.',
+		},
+	},
+	'queue-desk': {
+		folder: 'queue-desk',
+		soundtrack: 'queue-desk/soundtrack.m4a',
+		arrangement: 'queue-desk/arrangement.ts',
+		narration: 'queue-desk/narration.ts',
+		timings: 'queue-desk/narration.timings.json',
+		publish: {
+			folder: 'queue-desk',
+			interactive: 'queue-desk.html',
+			title: 'Queue Desk Guide',
+			heading: 'A guide to the queue desk.',
+			summary: 'A narrated guide for volunteers welcoming guests on market day.',
+			description:
+				'Learn how to call guests, print name tags, keep the line moving, handle late arrivals, add a guest, and close the session.',
+			sound: 'Turn the sound on for the narration. The voice is AI-generated.',
+		},
+	},
+} satisfies Record<string, VideoDefinition>;
+
+export type VideoName = keyof typeof videos;
+
+export type Video = VideoDefinition & { name: VideoName };
+
+const isVideoName = (name: string): name is VideoName => Object.hasOwn(videos, name);
+
+/** The video named on the command line (its first argument), or the market day reel. */
+export function videoFromArgs(argv = process.argv.slice(2)): Video {
+	const name = argv.find((arg) => !arg.startsWith('-') && Number.isNaN(Number(arg)));
+	const key = name ?? 'market-day-reel';
+
+	if (!isVideoName(key)) {
+		throw new Error(`No video named "${key}". Choose one of: ${Object.keys(videos).join(', ')}`);
+	}
+
+	return { name: key, ...videos[key] };
+}
+
+/** Every video, with its name. */
+export function allVideos(): Video[] {
+	return Object.entries(videos).map(([name, video]) => ({ name: name as VideoName, ...video }));
+}

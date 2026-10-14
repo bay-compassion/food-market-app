@@ -152,7 +152,9 @@ export interface GuestPresentationTranslations {
 	chapters: GuestPresentationChapters;
 }
 
-/** The guest guide's chapters (`docs/reel/guest-guide/narration.mjs`), in playing order. */
+/**
+ * The guest guide's chapters (`packages/presentations/guest-guide/narration.ts`), in playing order.
+ */
 export interface GuestPresentationChapters {
 	welcome: string;
 	openPage: string;

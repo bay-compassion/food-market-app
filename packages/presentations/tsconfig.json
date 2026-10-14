@@ -1,0 +1,8 @@
+// The presentations package has two kinds of TypeScript, checked as two projects: the Node scripts
+// that record, build, mix, capture and publish (`tsconfig.scripts.json`), and the browser code the
+// build inlines into each page (`tsconfig.pages.json`). Referenced from the repository root, so
+// `npm run type-check` and oxlint's type-aware pass cover both.
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.scripts.json" }, { "path": "./tsconfig.pages.json" }]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@bay-compassion/presentations",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Narrated presentations and video exports of the app at work, published to GitHub Pages.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.ts",
+    "voice": "node voice.ts",
+    "mix": "node music/mix.ts",
+    "stills": "node stills.ts",
+    "capture": "node capture.ts",
+    "render": "node render.ts",
+    "publish:site": "node publish.ts",
+    "verify": "node verify.ts"
+  }
+}

@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/reel/**'
+      - 'packages/presentations/**'
       - 'src/locales.ts'
       - 'src/adminLocales.ts'
       - 'public/wordmark.png'
@@ -52,14 +52,14 @@ jobs:
       # The GSAP pages embed the committed soundtrack. No browser, speech model,
       # GarageBand library, frame capture or video encoder is needed on the runner.
       - name: Build presentations
-        run: node docs/reel/publish.mjs
+        run: node packages/presentations/publish.ts
         env:
           PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: docs/reel/out/site
+          path: packages/presentations/out/site
 
   deploy:
     # A manual run on another branch builds an artifact for review; only main goes live.

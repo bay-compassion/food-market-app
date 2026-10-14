@@ -1,0 +1,303 @@
+<title>Guest Market Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap"
+/>
+<style>
+	__STAGE_CSS__
+</style>
+<style>
+	#viewport,
+	#controls {
+		width: min(100%, calc((100dvh - 200px) * 16 / 9));
+	}
+	#cap {
+		left: 110px;
+		top: 300px;
+		width: 950px;
+	}
+	#cap .head {
+		font-size: 68px;
+	}
+	#cap .sub {
+		font-size: 30px;
+		max-width: 42ch;
+	}
+	#cap .eyebrow {
+		font-size: 23px;
+	}
+	.card-center .sub {
+		font-size: 26px;
+		color: var(--reel-ink-soft);
+		max-width: 42ch;
+	}
+	#phoneLocation {
+		position: absolute;
+		left: 1230px;
+		top: 70px;
+		transform-origin: 0 0;
+		transform: scale(1.2);
+	}
+	#phoneMotion {
+		width: 380px;
+		height: 780px;
+	}
+	#guestPhone {
+		opacity: 1;
+	}
+	#kiosk {
+		left: 0;
+		top: 0;
+	}
+	#kioskLocation {
+		position: absolute;
+		left: 110px;
+		top: 520px;
+		transform-origin: 0 0;
+		transform: scale(0.9);
+	}
+	#stage[data-phase='display'] #cap {
+		top: 70px;
+	}
+	#phoneLocation,
+	#kioskLocation {
+		transition:
+			left 0.9s,
+			top 0.9s,
+			transform 0.9s;
+	}
+	#guestPhone .guest-layout {
+		height: 644px;
+		overflow: hidden;
+	}
+	.guide-scroll {
+		display: grid;
+		gap: 18px;
+		transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.guide-scroll h2 {
+		margin: 0;
+		font: 700 29px/1.05 var(--font-heading);
+		text-transform: uppercase;
+	}
+	.guide-scroll p {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 16px;
+		line-height: 1.5;
+	}
+	.guide-help {
+		margin-top: 22px;
+		padding-top: 14px;
+		border-top: 1px solid var(--color-surface-soft);
+		color: var(--color-brand);
+		text-align: center;
+		font-size: 14px;
+	}
+	.guide-help strong {
+		display: block;
+		margin-top: 6px;
+	}
+	.guide-identity {
+		margin-bottom: 18px;
+		padding: 14px;
+		border-radius: var(--radius-md);
+		background: var(--color-surface-soft);
+		font-size: 14px;
+	}
+	.guide-identity strong,
+	.guide-identity small {
+		display: block;
+		margin-bottom: 7px;
+	}
+	.guide-identity .outlined {
+		display: block;
+		position: relative;
+		padding: 10px;
+		border: 1px solid var(--color-brand);
+		border-radius: 6px;
+		color: var(--color-brand);
+		text-align: center;
+		font-weight: 700;
+	}
+	.guide-count {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 10px 0;
+		border-bottom: 1px solid var(--color-surface-soft);
+		font-size: 16px;
+		gap: 10px;
+	}
+	.guide-count > span {
+		max-width: 200px;
+	}
+	.guide-count small {
+		display: block;
+		font-size: 12px;
+		color: var(--color-text-subtle);
+	}
+	.guide-count b {
+		white-space: nowrap;
+		font-weight: 500;
+		letter-spacing: 4px;
+	}
+	.guide-refresh {
+		margin-top: 18px;
+		text-align: center;
+		color: var(--color-text-muted);
+		font-size: 13px;
+		line-height: 1.5;
+	}
+	.guide-refresh strong {
+		display: block;
+	}
+	.guide-consent {
+		position: absolute;
+		inset: 52px 0 0;
+		background: rgb(1 42 47 / 60%);
+		display: flex;
+		align-items: flex-end;
+	}
+	.guide-consent > div {
+		padding: 22px 18px 26px;
+		background: #fff;
+		border-radius: 24px 24px 0 0;
+	}
+	.guide-consent h2 {
+		font: 700 24px var(--font-heading);
+		margin: 0 0 18px;
+	}
+	.guide-consent p {
+		font-size: 14px;
+		line-height: 1.5;
+	}
+	.guide-consent .submit {
+		font-size: 13px;
+		margin-top: 20px;
+	}
+	#presentationLocale {
+		order: 3;
+		color: var(--reel-ink);
+		border: 1px solid rgb(233 241 238 / 35%);
+		border-radius: 20px;
+		padding: 10px;
+		background: var(--color-brand-dark);
+		font: inherit;
+		max-width: 100%;
+	}
+	#presentationLocale:focus-visible {
+		outline: 3px solid var(--color-focus);
+	}
+	#controls {
+		flex-wrap: wrap;
+	}
+	#controls button {
+		min-height: 44px;
+		height: auto;
+		padding-block: 10px;
+	}
+	@media (max-width: 600px) {
+		body {
+			justify-content: flex-start;
+			overflow-y: auto;
+			gap: 12px;
+		}
+		#viewport {
+			width: 100%;
+			aspect-ratio: 9 / 16;
+			flex: none;
+		}
+		#stage {
+			width: 1080px;
+			height: 1920px;
+		}
+		#cap,
+		#stage[data-phase='display'] #cap {
+			left: 90px;
+			top: 100px;
+			width: 900px;
+		}
+		#cap .head {
+			font-size: 82px;
+		}
+		#cap .sub {
+			font-size: 44px;
+			max-width: none;
+		}
+		#cap .eyebrow {
+			font-size: 30px;
+		}
+		#phoneLocation {
+			left: 236px;
+			top: 620px;
+			transform: scale(1.6);
+		}
+		#stage[data-phase='display'] #phoneLocation {
+			left: 350px;
+			top: 550px;
+			transform: scale(1);
+		}
+		#kioskLocation {
+			left: 115px;
+			top: 1370px;
+			transform: scale(0.85);
+		}
+		.card-center {
+			padding: 90px;
+		}
+		.card-center .line {
+			font-size: 76px;
+		}
+		.card-center .sub {
+			font-size: 42px;
+		}
+		#controls {
+			width: 100%;
+			gap: 8px;
+		}
+		#controls #scrub {
+			order: 1;
+			flex-basis: calc(100% - 6ch - 8px);
+		}
+		#controls #clock {
+			order: 2;
+		}
+		/* On a phone the chapter title needs the row's whole width, so the language picker joins
+		   the buttons instead. */
+		#presentationLocale {
+			order: 0;
+		}
+		#chapters {
+			flex-basis: 100%;
+		}
+		body.dev #viewport {
+			width: 100%;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		#phoneLocation,
+		#kioskLocation,
+		.guide-scroll {
+			transition: none;
+		}
+	}
+</style>
+<div id="viewport">
+	<div id="stage" data-phase="title">
+		<div id="cap" aria-live="polite"></div>
+		<div class="card-center" id="title">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line"></div>
+			<div class="sub"></div>
+		</div>
+		<div id="phoneLocation"><div id="phoneMotion"></div></div>
+		<div id="kioskLocation"><div id="kiosk"></div></div>
+		<div class="card-center" id="outro" style="opacity: 0">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line"></div>
+			<div class="sub"></div>
+		</div>
+	</div>
+</div>

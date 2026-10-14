@@ -1,0 +1,548 @@
+<title>Queue Desk Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap"
+/>
+<style>
+	__STAGE_CSS__
+</style>
+<style>
+	/* The queue desk front and centre, the room display and one guest's phone beside it, and the
+	   caption above them. The desk follows src/components/queue/ more closely than the reel's does. */
+	/* Below 1000px the chapters wrap onto a second row of controls, so the stage leaves room for it. */
+	@media (max-width: 999px) {
+		#viewport,
+		#controls {
+			width: min(100%, calc((100dvh - 144px) * 16 / 9));
+		}
+	}
+	#cap {
+		left: 70px;
+		top: 64px;
+		width: 680px;
+	}
+	#cap .head {
+		font-size: 44px;
+	}
+	#kiosk {
+		left: 0;
+		top: 0;
+		transform-origin: 0 0;
+	}
+	#kiosk,
+	#guestPhone {
+		transition: filter 0.6s;
+	}
+	.dim {
+		filter: brightness(0.45) saturate(0.6);
+	}
+	.card-center .sub {
+		font-size: 26px;
+		color: var(--reel-ink-soft);
+	}
+
+	/* ---------- the desk ---------- */
+	#desk .desk-body {
+		position: relative;
+		display: block;
+		height: 704px;
+		padding: 0;
+	}
+	.desk-scroll {
+		display: grid;
+		gap: 12px;
+		padding: 8px 12px 120px;
+		transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.dh {
+		position: relative;
+	}
+	.dh .kebab {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+	}
+	.message {
+		display: grid;
+		gap: 16px;
+		justify-items: start;
+		padding: 32px 8px;
+	}
+	.message p {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 17px;
+		line-height: 1.5;
+	}
+	.outlined {
+		position: relative;
+		padding: 8px 16px;
+		border: 1px solid rgb(2 57 64 / 50%);
+		border-radius: 6px;
+		color: var(--color-brand);
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+	.banner {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 16px;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 14px;
+		border-radius: var(--radius-md);
+		color: var(--color-brand);
+		background: var(--color-surface-soft);
+		font-size: 15px;
+		animation: fade 0.4s ease-out;
+	}
+	.banner p {
+		margin: 0;
+	}
+	.banner .outlined {
+		padding: 5px 10px;
+		font-size: 12.5px;
+	}
+	.chip[data-status='no_show'] .number {
+		color: #fff;
+		background: var(--color-error);
+	}
+	.chip[data-status='not_placed'] .number {
+		color: var(--color-text-subtle);
+	}
+	.tsection .add {
+		position: relative;
+	}
+	.mui-btn.danger {
+		background: var(--color-error);
+	}
+	.mui-btn {
+		transition: background 0.4s;
+	}
+
+	/* ---------- the open ticket ---------- */
+	.sheet {
+		max-height: 704px;
+		padding: 0;
+		overflow: hidden;
+	}
+	.sheet-scroll {
+		display: grid;
+		gap: 14px;
+		padding: 10px 16px 24px;
+		transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+	}
+	.summary .st {
+		justify-content: space-between;
+	}
+	.summary .st[data-status='waiting'] {
+		color: var(--color-brand);
+	}
+	.summary .st[data-status='no_show'] {
+		color: var(--color-error);
+	}
+	.summary .st .timer {
+		flex: none;
+		font-variant-numeric: tabular-nums;
+	}
+	.nametag .nm {
+		font-size: 46px;
+	}
+	.print {
+		display: grid;
+		gap: 4px;
+		justify-items: stretch;
+		margin-top: -4px;
+	}
+	.print p {
+		margin: 0;
+		color: var(--color-text-subtle);
+		font-size: 13px;
+		text-align: center;
+	}
+	.printbtn {
+		position: relative;
+		height: 44px;
+		font-size: 15px;
+		transition: opacity 0.3s;
+	}
+	.printbtn.disabled {
+		opacity: 0.4;
+	}
+	.actions {
+		position: relative;
+	}
+	.actions span {
+		min-height: 44px;
+		font-size: 15px;
+	}
+	.actions .split {
+		display: inline-flex;
+		gap: 2px;
+		padding: 0;
+		background: none;
+	}
+	.actions .split span:first-child {
+		border-start-end-radius: 0;
+		border-end-end-radius: 0;
+	}
+	.actions .split span:last-child {
+		padding: 0 12px;
+		border-start-start-radius: 0;
+		border-end-start-radius: 0;
+	}
+	.history {
+		display: grid;
+		gap: 8px;
+		padding: 14px 16px;
+		border-radius: var(--radius-lg);
+		background: var(--color-surface-soft);
+	}
+	.history h2 {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 17px;
+	}
+	.history ol {
+		display: grid;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.history li {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		font-size: 14px;
+	}
+	.history .title {
+		font-weight: 700;
+	}
+	.history .byline {
+		grid-row: 2;
+		color: var(--color-text-subtle);
+		font-size: 13px;
+	}
+	.history time {
+		grid-row: 1 / span 2;
+		grid-column: 2;
+		align-self: center;
+		color: var(--color-text-muted);
+	}
+
+	/* ---------- menus, dialogs, sheets, toasts ---------- */
+	.menu {
+		position: absolute;
+		z-index: 6;
+		display: grid;
+		min-width: 230px;
+		padding: 8px 0;
+		border-radius: 4px;
+		background: var(--color-background);
+		box-shadow:
+			0 5px 5px -3px rgb(0 0 0 / 20%),
+			0 8px 10px 1px rgb(0 0 0 / 14%),
+			0 3px 14px 2px rgb(0 0 0 / 12%);
+		animation: menuIn 0.25s ease-out;
+	}
+	.menu span {
+		position: relative;
+		padding: 10px 16px;
+		font-size: 15px;
+	}
+	.actions .menu span {
+		display: block;
+		min-height: 0;
+		border-radius: 0;
+		background: none;
+		font-weight: 400;
+	}
+	.menu .danger {
+		color: var(--color-error);
+		font-weight: 700;
+	}
+	.menu-kebab {
+		top: 48px;
+		right: 8px;
+	}
+	.menu-return {
+		right: 0;
+		bottom: calc(100% + 6px);
+	}
+	@keyframes menuIn {
+		from {
+			opacity: 0;
+			transform: scale(0.9);
+		}
+	}
+	.overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 8;
+		display: grid;
+		align-items: center;
+		padding: 0 14px;
+		background: rgb(0 0 0 / 50%);
+		opacity: 0;
+		transition: opacity 0.3s;
+	}
+	.overlay.open {
+		opacity: 1;
+	}
+	.dialog {
+		display: grid;
+		gap: 14px;
+		padding: 20px 18px 14px;
+		border-radius: 4px;
+		background: var(--color-background);
+		box-shadow: 0 11px 15px -7px rgb(0 0 0 / 20%);
+		transform: translateY(16px);
+		transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.overlay.open .dialog {
+		transform: none;
+	}
+	.dialog h2 {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 21px;
+	}
+	.field {
+		position: relative;
+		display: grid;
+		gap: 2px;
+		padding: 6px 12px 7px;
+		border: 1px solid rgb(0 0 0 / 30%);
+		border-radius: 4px;
+		font-size: 16px;
+		min-height: 52px;
+	}
+	.field label {
+		color: var(--color-text-subtle);
+		font-size: 12px;
+	}
+	.field.focus {
+		border: 2px solid var(--color-brand);
+		padding: 5px 11px 6px;
+	}
+	.field.focus label {
+		color: var(--color-brand);
+	}
+	.field.focus span::after {
+		content: '';
+		display: inline-block;
+		width: 1.5px;
+		height: 1.1em;
+		margin-inline-start: 1px;
+		vertical-align: text-bottom;
+		background: var(--color-brand);
+		animation: blink 1s steps(1) infinite;
+	}
+	.field.select span::after {
+		content: '▾';
+		float: right;
+		color: var(--color-text-muted);
+	}
+	@keyframes blink {
+		50% {
+			opacity: 0;
+		}
+	}
+	.help {
+		margin: -8px 2px 0;
+		color: var(--color-text-subtle);
+		font-size: 12.5px;
+		line-height: 1.4;
+	}
+	.dialog-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+	}
+	.dialog-actions span {
+		position: relative;
+		padding: 8px 12px;
+		border-radius: 4px;
+		color: var(--color-brand);
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+	.dialog-actions .contained {
+		color: #fff;
+		background: var(--color-brand);
+	}
+	.dialog .qr {
+		justify-self: center;
+		width: 220px;
+		padding: 12px;
+		border: 2px solid var(--color-brand);
+		border-radius: var(--radius-lg);
+		background: #fff;
+	}
+	.dialog .qr svg {
+		display: block;
+		width: 100%;
+	}
+	.dialog p {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 14.5px;
+		line-height: 1.5;
+		text-align: center;
+	}
+	.confirm {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 9;
+		display: grid;
+		gap: 12px;
+		padding: 20px 18px 28px;
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		background: var(--color-background);
+		transform: translateY(105%);
+		transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	#desk.confirm-open .confirm,
+	#callout .confirm {
+		transform: none;
+	}
+	#desk.confirm-open .backdrop {
+		opacity: 1;
+	}
+	.confirm h2 {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 21px;
+	}
+	.confirm p {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: 15px;
+		line-height: 1.5;
+	}
+	.confirm .buttons {
+		display: grid;
+		gap: 8px;
+	}
+	.confirm .buttons span {
+		position: relative;
+		display: grid;
+		place-items: center;
+		height: 46px;
+		border-radius: 6px;
+		color: var(--color-brand);
+		font-size: 15px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+	.confirm .buttons .go {
+		color: #fff;
+		background: var(--color-error);
+	}
+	.toast {
+		position: absolute;
+		left: 14px;
+		right: 14px;
+		bottom: 92px;
+		z-index: 10;
+		padding: 14px 16px;
+		border-radius: 4px;
+		color: #fff;
+		background: var(--color-success);
+		font-size: 14.5px;
+		box-shadow: 0 3px 5px rgb(0 0 0 / 20%);
+		animation: toastIn 0.35s ease-out;
+	}
+	@keyframes toastIn {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+	}
+
+	/* ---------- the close-early prompt, beside the desk ---------- */
+	#callout {
+		position: absolute;
+		left: 70px;
+		top: 560px;
+		width: 600px;
+		opacity: 0;
+		transform: translateY(20px);
+		transition:
+			opacity 0.6s,
+			transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	#callout.on {
+		opacity: 1;
+		transform: none;
+	}
+	#callout .confirm {
+		position: static;
+		border-radius: var(--radius-lg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		box-shadow: 0 30px 70px rgb(0 0 0 / 45%);
+	}
+	#callout .from {
+		margin-bottom: 12px;
+		font-family: var(--font-heading);
+		font-size: 17px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--reel-ink-soft);
+	}
+</style>
+
+<div id="viewport">
+	<div id="stage" data-phase="title">
+		<div id="cap" aria-live="polite"></div>
+
+		<div class="card-center" id="title">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line">Running the queue desk</div>
+			<div class="sub">A guide for market-day volunteers</div>
+		</div>
+
+		<div id="kiosk"></div>
+		<div class="zone-label" id="zKiosk" style="left: 72px; top: 552px">Room display</div>
+		<div class="zone-label" id="zDesk" style="left: 834px; top: 30px">Queue desk · your phone</div>
+		<div class="zone-label" id="zGuest" style="left: 1404px; top: 196px">A guest’s phone</div>
+
+		<div id="callout"></div>
+
+		<div class="phone" id="desk">
+			<div class="screen">
+				<div class="statusbar light">
+					<span>11:32</span><i><s></s><b></b></i>
+				</div>
+				<div class="desk-body"><div class="desk-scroll" id="deskBody"></div></div>
+				<div class="callbar"><div class="mui-btn" id="callNext"></div></div>
+				<div class="backdrop"></div>
+				<div class="sheet"><div class="sheet-scroll" id="sheet"></div></div>
+				<div class="overlay" id="overlay"></div>
+				<div class="confirm" id="confirm"></div>
+				<div id="toast"></div>
+			</div>
+		</div>
+
+		<div class="card-center" id="outro" style="opacity: 0">
+			<img class="wordmark" alt="The Bay Compassion" src="__WORDMARK__" />
+			<div class="line">Thank you for running the desk.</div>
+			<div class="tags">
+				<span>Call next</span><span>Serve and call next</span><span>Close session</span>
+			</div>
+		</div>
+	</div>
+</div>
