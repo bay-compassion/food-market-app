@@ -639,12 +639,11 @@ function mountPlayer<State>({
 		'<div id="controls">' +
 			'<button type="button" class="icon" id="play"></button>' +
 			'<button type="button" class="icon" id="restart"></button>' +
-			'<button type="button" class="icon" id="sound" aria-pressed="false"></button>' +
+			'<div id="soundGroup"><button type="button" class="icon" id="sound" aria-pressed="false"></button>' +
+			'<input type="range" id="volume" min="0" max="100" value="100" /></div>' +
 			(VOICE_TRACK
 				? '<button type="button" class="icon" id="music" aria-pressed="true"></button>'
 				: '') +
-			'<input type="range" id="volume" min="0" max="100" value="100" />' +
-			'<button type="button" id="devOpen" title="Scrubber and beat list for editing the video">Dev</button>' +
 			'<input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek" />' +
 			'<span id="clock">0:00</span></div>',
 	);
@@ -676,6 +675,10 @@ function mountPlayer<State>({
 			syncControls();
 		});
 	}
+	k('controls').insertAdjacentHTML(
+		'beforeend',
+		'<button type="button" id="devOpen" title="Scrubber and beat list for editing the video">Dev</button>',
+	);
 	let devTick: (() => void) | null = null;
 	const render = tl.eventCallback('onUpdate') as () => void;
 
@@ -1021,8 +1024,9 @@ function mountPlayer<State>({
 	}
 
 	/*
-	 * Keys as a media player takes them. A focused control keeps the keys it has its own use for:
-	 * Space presses a button, and the arrows move a slider or a list.
+	 * Keys as YouTube takes them: Space plays and pauses wherever the focus is, even on a button,
+	 * which Enter still presses. Only a list or a text field keeps Space, and a slider, a list or a
+	 * text field keeps the arrows.
 	 */
 	document.addEventListener('keydown', (event) => {
 		const target = event.target as HTMLElement;
@@ -1036,7 +1040,7 @@ function mountPlayer<State>({
 			target.closest(
 				skip
 					? 'input, select, textarea, [contenteditable]'
-					: 'button, input, select, textarea, [contenteditable]',
+					: 'input:not([type="range"]), select, textarea, [contenteditable]',
 			)
 		) {
 			return;
@@ -1047,6 +1051,14 @@ function mountPlayer<State>({
 			seekTo(tl.time() + skip);
 		} else {
 			playBtn.click();
+		}
+	});
+
+	// A focused button presses itself as Space comes back up, in some browsers even after the key
+	// went down to play or pause.
+	document.addEventListener('keyup', (event) => {
+		if (event.key === ' ' && (event.target as HTMLElement).closest('button')) {
+			event.preventDefault();
 		}
 	});
 

@@ -215,6 +215,7 @@ writeFileSync(
 	here(`./out/${video.name}.html`),
 	'<!doctype html><html lang="en"><head><meta charset="utf-8">' +
 		'<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
+		`<link rel="icon" type="image/svg+xml" href="${svg('../../public/bay-compassion-icon-digital.svg')}">` +
 		'</head><body>' +
 		page +
 		'</body></html>',

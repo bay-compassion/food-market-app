@@ -484,13 +484,40 @@ void (async () => {
 				Math.abs((await page.evaluate(() => window.reel.tl.time())) - before - 10) < 0.01,
 				`${name}: arrows with a button focused`,
 			);
+			// Space plays and pauses there too, as on YouTube, rather than pressing Restart.
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), false);
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			assert.ok(
+				(await page.evaluate(() => window.reel.tl.time())) >= before + 10 - 0.01,
+				`${name}: Space with a button focused plays, not presses it`,
+			);
 
 			if (voiceDuration !== null) {
 				await page.locator('#music').click();
 				assert.equal(await page.locator('#music').getAttribute('aria-pressed'), 'false');
 				await page.locator('#music').click();
 			}
+			// The volume opens beside the speaker on hover, and is out of the way otherwise.
+			const volumeWidth = () =>
+				page.evaluate(() => document.querySelector('#volume')!.getBoundingClientRect().width);
+
+			await page.mouse.move(0, 0);
+			await page.waitForFunction(
+				() => document.querySelector('#volume')!.getBoundingClientRect().width === 0,
+			);
+			await page.locator('#sound').hover();
+			await page.waitForFunction(
+				() => document.querySelector('#volume')!.getBoundingClientRect().width > 80,
+			);
+			assert.ok((await volumeWidth()) > 80, `${name}: volume opens from the speaker`);
 			await page.locator('#volume').fill('40');
+			assert.equal(
+				await page.evaluate(() => document.querySelector('#controls')!.lastElementChild!.id),
+				'devOpen',
+				`${name}: Dev is the last control`,
+			);
 			await page.locator('#scrub').fill('600');
 			assert.ok(
 				Math.abs((await page.evaluate(() => window.reel.tl.time())) - duration * 0.6) < 0.1,

@@ -133,10 +133,35 @@ body.record #controls {
 #controls button.icon[aria-pressed='false'] {
 	color: var(--reel-ink-soft);
 }
-#volume {
+/* The volume slider opens beside the speaker while the pointer or the keyboard is on either, as
+   in other players. A touch screen has no hover, and there, as in YouTube's and the browsers' own
+   mobile players, the device's buttons set the volume: the slider stays hidden and the speaker
+   only mutes. */
+#soundGroup {
+	display: flex;
 	flex: none;
-	width: 88px;
+	align-items: center;
+}
+#volume {
+	width: 0;
+	margin: 0;
+	opacity: 0;
 	accent-color: var(--color-focus);
+	transition:
+		width 0.2s,
+		margin 0.2s,
+		opacity 0.2s;
+}
+#soundGroup:hover #volume,
+#soundGroup:focus-within #volume {
+	width: 88px;
+	margin-inline: 10px 4px;
+	opacity: 1;
+}
+@media (hover: none) {
+	#volume {
+		display: none;
+	}
 }
 #volume:focus-visible {
 	outline: 3px solid var(--color-focus);
@@ -1561,15 +1586,17 @@ body.dev #controls {
 	#controls button {
 		padding: 0 10px;
 	}
-	/* On a phone: the symbol buttons in a row, then the language and the volume, then the seek bar
-	   and clock, then the chapters, each control row as full as it will go. */
+	/* On a phone: the symbol buttons in a row, then the language, then the seek bar and clock, then
+	   the chapters, each control row as full as it will go. */
 	body:not(.dev) #controls {
 		flex-wrap: wrap;
 		width: 100%;
 	}
-	#controls #presentationLocale,
-	#controls #volume {
+	#controls #presentationLocale {
 		order: 1;
+	}
+	#controls #devOpen {
+		order: 4;
 	}
 	#controls #presentationLocale {
 		flex: 1 1 0;
