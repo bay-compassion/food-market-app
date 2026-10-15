@@ -5,6 +5,8 @@
  * rendering one never touches another's.
  *
  * - `soundtrack` is the mixed track the build embeds; `music/mix.ts` writes it from `arrangement`.
+ *   A narrated video also gets `voiceTrack`, the same mix without its loops, which the player
+ *   switches to when the viewer turns the music off.
  * - `narration`, when set, is the voiceover: the lines `voice.ts` records, and the measured length
  *   of each (`timings`), which the page reads at build time to set its pace.
  * - `frame`, when set, puts part of the app itself on the page, built and inlined with it: the
@@ -35,6 +37,8 @@ export interface VideoDefinition {
 	/** The video's folder, holding `page.html` and `page.ts`. */
 	folder: string;
 	soundtrack: string;
+	/** The narration alone, mixed as in `soundtrack`; set exactly when `narration` is. */
+	voiceTrack?: string;
 	arrangement: string;
 	narration?: string;
 	timings?: string;
@@ -46,6 +50,7 @@ export const videos = {
 	'guest-guide': {
 		folder: 'guest-guide',
 		soundtrack: 'guest-guide/soundtrack.m4a',
+		voiceTrack: 'guest-guide/voice.m4a',
 		arrangement: 'guest-guide/arrangement.ts',
 		narration: 'guest-guide/narration.ts',
 		timings: 'guest-guide/narration.timings.json',
@@ -75,6 +80,7 @@ export const videos = {
 	'queue-desk': {
 		folder: 'queue-desk',
 		soundtrack: 'queue-desk/soundtrack.m4a',
+		voiceTrack: 'queue-desk/voice.m4a',
 		arrangement: 'queue-desk/arrangement.ts',
 		narration: 'queue-desk/narration.ts',
 		timings: 'queue-desk/narration.timings.json',
@@ -92,6 +98,7 @@ export const videos = {
 	'admin-guide': {
 		folder: 'admin-guide',
 		soundtrack: 'admin-guide/soundtrack.m4a',
+		voiceTrack: 'admin-guide/voice.m4a',
 		arrangement: 'admin-guide/arrangement.ts',
 		narration: 'admin-guide/narration.ts',
 		timings: 'admin-guide/narration.timings.json',

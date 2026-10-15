@@ -439,7 +439,22 @@ void (async () => {
 				Math.abs(audioDuration - duration) < 0.2,
 				`${name}: soundtrack length matches timeline`,
 			);
-			assert.equal(await page.locator('#play').textContent(), 'Play');
+			const voiceDuration = await page.evaluate(
+				async () => (await window.reel.loadVoiceTrack())?.duration ?? null,
+			);
+
+			if ('narration' in videos[name as keyof typeof videos]) {
+				assert.ok(
+					voiceDuration !== null && Math.abs(voiceDuration - duration) < 0.2,
+					`${name}: voice track length matches timeline`,
+				);
+			}
+			assert.equal(
+				await page.locator('#music').count(),
+				voiceDuration === null ? 0 : 1,
+				`${name}: a music toggle exactly when there is a voice track`,
+			);
+			assert.equal(await page.locator('#play').getAttribute('aria-label'), 'Play');
 			await page.locator('#sound').click();
 			await page.waitForFunction(
 				() => document.querySelector('#sound')!.getAttribute('aria-pressed') === 'true',
@@ -448,6 +463,34 @@ void (async () => {
 			await page.waitForFunction(() => window.reel.tl.time() > 0.3);
 			await page.locator('#play').click();
 			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			// Space plays and pauses, and the arrows skip ten seconds, unless a control has focus.
+			await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+			await page.evaluate(() => window.reel.seek(20));
+			await page.keyboard.press('ArrowRight');
+			assert.ok(Math.abs((await page.evaluate(() => window.reel.tl.time())) - 30) < 0.01);
+			await page.keyboard.press('ArrowLeft');
+			await page.keyboard.press('ArrowLeft');
+			assert.ok(Math.abs((await page.evaluate(() => window.reel.tl.time())) - 10) < 0.01);
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), false, `${name}: Space`);
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			// The arrows still skip with a button focused, as one is after it's clicked.
+			const before = await page.evaluate(() => window.reel.tl.time());
+
+			await page.locator('#restart').focus();
+			await page.keyboard.press('ArrowRight');
+			assert.ok(
+				Math.abs((await page.evaluate(() => window.reel.tl.time())) - before - 10) < 0.01,
+				`${name}: arrows with a button focused`,
+			);
+
+			if (voiceDuration !== null) {
+				await page.locator('#music').click();
+				assert.equal(await page.locator('#music').getAttribute('aria-pressed'), 'false');
+				await page.locator('#music').click();
+			}
+			await page.locator('#volume').fill('40');
 			await page.locator('#scrub').fill('600');
 			assert.ok(
 				Math.abs((await page.evaluate(() => window.reel.tl.time())) - duration * 0.6) < 0.1,
@@ -492,7 +535,9 @@ void (async () => {
 			await page.waitForFunction(() => window.reel.tl.progress() === 1);
 			await page.waitForTimeout(350);
 			assert.equal(await page.evaluate(() => window.reel.tl.progress()), 1, `${name}: plays once`);
-			console.log(`${name}: audio, play/pause, seek, chapters, restart and end checked`);
+			console.log(
+				`${name}: audio, play/pause, keys, music, volume, seek, chapters, restart and end checked`,
+			);
 			await page.close();
 		}
 		const guest = await browser.newPage();
@@ -531,7 +576,7 @@ void (async () => {
 			for (const { code } of languages) {
 				await guest.locator('#presentationLocale').selectOption(code);
 				assert.equal(
-					await guest.locator('#play').textContent(),
+					await guest.locator('#play').getAttribute('aria-label'),
 					translations[code].guestView.presentation.play,
 				);
 

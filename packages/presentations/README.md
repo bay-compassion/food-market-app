@@ -50,6 +50,7 @@ it uses (`gsap` for types, `ts-blank-space`) are dev dependencies of the reposit
 | `<video>/narration.timings.json`       | How long each recorded line runs, written by `voice.ts`; the build paces the page from it.                   |
 | `<video>/arrangement.ts`               | Which Apple Loop plays when, at what level, under the video.                                                 |
 | `<video>/soundtrack.m4a`               | The video's mixed soundtrack, voice included.                                                                |
+| `<video>/voice.m4a`                    | A narrated video's voice alone, mixed as in its soundtrack; the player plays it with the music off.          |
 | `build.ts`                             | Builds `out/<name>.html`, inlining the stage, the page, the app's copy, logos, timings and music.            |
 | `voice.ts`                             | Records a video's narration, one clip per line, and measures each.                                           |
 | `stills.ts`                            | Screenshots chosen moments and reports page errors, for a quick check.                                       |

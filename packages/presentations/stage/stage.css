@@ -119,6 +119,32 @@ body.record #controls {
 #controls button:hover {
 	border-color: var(--color-focus);
 }
+#controls button.icon {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 44px;
+	padding: 0;
+}
+#controls button.icon svg {
+	width: 22px;
+	height: 22px;
+}
+#controls button.icon[aria-pressed='false'] {
+	color: var(--reel-ink-soft);
+}
+#volume {
+	flex: none;
+	width: 88px;
+	accent-color: var(--color-focus);
+}
+#volume:focus-visible {
+	outline: 3px solid var(--color-focus);
+	outline-offset: 2px;
+}
+#volume:disabled {
+	opacity: 0.4;
+}
 #controls button:focus-visible,
 #scrub:focus-visible {
 	outline: 3px solid var(--color-focus);
@@ -207,7 +233,7 @@ body.watch #devOpen {
 }
 body.watch #scrub {
 	order: 1;
-	flex-basis: calc(100% - 6ch - 8px);
+	flex: 1 1 calc(100% - 8ch - 12px);
 }
 body.watch #clock {
 	order: 2;
@@ -1534,6 +1560,32 @@ body.dev #controls {
 	}
 	#controls button {
 		padding: 0 10px;
+	}
+	/* On a phone: the symbol buttons in a row, then the language and the volume, then the seek bar
+	   and clock, then the chapters, each control row as full as it will go. */
+	body:not(.dev) #controls {
+		flex-wrap: wrap;
+		width: 100%;
+	}
+	#controls #presentationLocale,
+	#controls #volume {
+		order: 1;
+	}
+	#controls #presentationLocale {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	#controls #scrub {
+		order: 2;
+		flex: 1 1 calc(100% - 8ch - 8px);
+		margin: 0;
+	}
+	#controls #clock {
+		order: 2;
+	}
+	#controls #chapters {
+		order: 3;
+		flex: 1 1 100%;
 	}
 }
 

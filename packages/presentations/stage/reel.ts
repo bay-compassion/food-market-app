@@ -58,6 +58,8 @@ export interface Reel {
 	seek: (seconds: number) => void;
 	setSound: (on: boolean) => Promise<void>;
 	soundtrackReady: Promise<AudioBuffer | void>;
+	/** Decodes the voice-only track the player plays with the music off; null for the reel. */
+	loadVoiceTrack: () => Promise<AudioBuffer | null>;
 	/**
 	 * Resolves once the page shows the moment the playhead is on, fully drawn. Capture and stills
 	 * wait on it after every seek; a page whose screens all draw at once has nothing to wait for.

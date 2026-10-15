@@ -8,6 +8,7 @@
  * An arrangement is a function of the video's length and its narration cues (when each line starts
  * and how long it runs, read from the built page), returning parts: a `loop` by name, or a `voice`
  * line by id, recorded by `voice.ts`. A part with `duck` drops by that many dB under every line.
+ * A narrated video also gets its `voiceTrack`: the same mix with only the voice parts playing.
  *
  * Needs GarageBand's loop library installed (`/Library/Audio/Apple Loops`), macOS's `afconvert`,
  * a built page (for the reel's length), and `npx playwright install chromium` once. The mixing
@@ -95,120 +96,172 @@ void (async () => {
 	}
 
 	await tab.goto('about:blank');
-	const wav = await tab.evaluate(
+	// The whole mix, and for a narrated video the same mix without its loops: the player switches to
+	// that when the viewer turns the music off. Both are scaled by the whole mix's peak, so the voice
+	// keeps its level either way.
+	const voiceOnly = parts.some((part) => part.voice);
+	const tracks = await tab.evaluate(
 		async ({
 			loops,
 			end,
 			parts,
 			cues,
+			voiceOnly,
 		}: {
 			loops: Record<string, string>;
 			end: number;
 			parts: SoundPart[];
 			cues: Cue[];
+			voiceOnly: boolean;
 		}) => {
 			const rate = 44100;
-			const ctx = new OfflineAudioContext(2, Math.ceil(end * rate), rate);
 			const buffers: Record<string, AudioBuffer> = {};
+			const decoder = new OfflineAudioContext(2, 1, rate);
 
 			for (const [name, base64] of Object.entries(loops)) {
 				const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
 
-				buffers[name] = await ctx.decodeAudioData(bytes.buffer);
+				buffers[name] = await decoder.decodeAudioData(bytes.buffer);
 			}
 
-			const master = ctx.createGain();
-			const glue = ctx.createDynamicsCompressor();
+			async function render(playing: SoundPart[]): Promise<AudioBuffer> {
+				const ctx = new OfflineAudioContext(2, Math.ceil(end * rate), rate);
+				const master = ctx.createGain();
+				const glue = ctx.createDynamicsCompressor();
 
-			glue.threshold.value = -14;
-			glue.ratio.value = 2;
-			glue.attack.value = 0.02;
-			glue.release.value = 0.25;
-			master.connect(glue).connect(ctx.destination);
+				glue.threshold.value = -14;
+				glue.ratio.value = 2;
+				glue.attack.value = 0.02;
+				glue.release.value = 0.25;
+				master.connect(glue).connect(ctx.destination);
 
-			// A light shared room, so loops recorded dry and wet sit in one space.
-			const room = ctx.createConvolver();
-			const impulse = ctx.createBuffer(2, 2.2 * rate, rate);
-			let seed = 3;
-			const noise = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
+				// A light shared room, so loops recorded dry and wet sit in one space.
+				const room = ctx.createConvolver();
+				const impulse = ctx.createBuffer(2, 2.2 * rate, rate);
+				let seed = 3;
+				const noise = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
 
-			for (let c = 0; c < 2; c++) {
-				const data = impulse.getChannelData(c);
+				for (let c = 0; c < 2; c++) {
+					const data = impulse.getChannelData(c);
 
-				for (let i = 0; i < data.length; i++) {
-					data[i] = noise() * Math.pow(1 - i / data.length, 3);
+					for (let i = 0; i < data.length; i++) {
+						data[i] = noise() * Math.pow(1 - i / data.length, 3);
+					}
 				}
-			}
 
-			room.buffer = impulse;
-			const roomLevel = ctx.createGain();
+				room.buffer = impulse;
+				const roomLevel = ctx.createGain();
 
-			roomLevel.gain.value = 0.18;
-			room.connect(roomLevel).connect(master);
+				roomLevel.gain.value = 0.18;
+				room.connect(roomLevel).connect(master);
 
-			for (const part of parts) {
-				const buffer = buffers[part.loop ?? 'voice:' + part.voice]!;
-				const speed = part.rate ?? 1;
-				const length = buffer.duration / speed;
-				const level = Math.pow(10, part.db / 20);
-				const fadeIn = part.fadeIn ?? 0.01;
-				const fadeOut = part.fadeOut ?? 0.05;
-				const gain = ctx.createGain();
+				for (const part of playing) {
+					const buffer = buffers[part.loop ?? 'voice:' + part.voice]!;
+					const speed = part.rate ?? 1;
+					const length = buffer.duration / speed;
+					const level = Math.pow(10, part.db / 20);
+					const fadeIn = part.fadeIn ?? 0.01;
+					const fadeOut = part.fadeOut ?? 0.05;
+					const gain = ctx.createGain();
 
-				gain.gain.setValueAtTime(0, part.start);
-				gain.gain.linearRampToValueAtTime(level, part.start + fadeIn);
-				gain.gain.setValueAtTime(level, Math.max(part.start + fadeIn, part.end - fadeOut));
-				gain.gain.linearRampToValueAtTime(0, part.end);
-				let node: AudioNode = gain;
+					gain.gain.setValueAtTime(0, part.start);
+					gain.gain.linearRampToValueAtTime(level, part.start + fadeIn);
+					gain.gain.setValueAtTime(level, Math.max(part.start + fadeIn, part.end - fadeOut));
+					gain.gain.linearRampToValueAtTime(0, part.end);
+					let node: AudioNode = gain;
 
-				// Under each line of narration the part dips, and comes back up slowly after it, so the
-				// short pauses between lines don't pump; it is only back to full in a longer break.
-				if (part.duck) {
-					const duck = ctx.createGain();
-					const low = Math.pow(10, -part.duck / 20);
+					// Under each line of narration the part dips, and comes back up slowly after it, so
+					// the short pauses between lines don't pump; it is only back to full in a longer break.
+					if (part.duck) {
+						const duck = ctx.createGain();
+						const low = Math.pow(10, -part.duck / 20);
 
-					for (const cue of cues) {
-						duck.gain.setTargetAtTime(low, cue.t - 0.3, 0.12);
-						duck.gain.setTargetAtTime(1, cue.t + cue.duration + 0.2, 1.1);
+						for (const cue of cues) {
+							duck.gain.setTargetAtTime(low, cue.t - 0.3, 0.12);
+							duck.gain.setTargetAtTime(1, cue.t + cue.duration + 0.2, 1.1);
+						}
+
+						gain.connect(duck);
+						node = duck;
 					}
 
-					gain.connect(duck);
-					node = duck;
+					if (part.lowpass) {
+						const filter = ctx.createBiquadFilter();
+
+						filter.frequency.setValueAtTime(part.lowpass[0], part.start);
+						filter.frequency.exponentialRampToValueAtTime(part.lowpass[1], part.end);
+						node.connect(filter);
+						node = filter;
+					}
+
+					const pan = ctx.createStereoPanner();
+					const send = ctx.createGain();
+
+					pan.pan.value = part.pan ?? 0;
+					send.gain.value = part.verb ?? 0.3;
+					node.connect(pan).connect(master);
+					pan.connect(send).connect(room);
+
+					// A line of narration plays once; a loop repeats to fill its part.
+					const repeat = part.voice ? Infinity : length;
+
+					for (let t = part.start - (part.offset ?? 0); t < part.end; t += repeat) {
+						const source = ctx.createBufferSource();
+						const from = Math.max(t, part.start);
+
+						source.buffer = buffer;
+						source.playbackRate.value = speed;
+						source.connect(gain);
+						source.start(from, (from - t) * speed);
+						source.stop(Math.min(part.end, t + length) + 0.01);
+					}
 				}
 
-				if (part.lowpass) {
-					const filter = ctx.createBiquadFilter();
-
-					filter.frequency.setValueAtTime(part.lowpass[0], part.start);
-					filter.frequency.exponentialRampToValueAtTime(part.lowpass[1], part.end);
-					node.connect(filter);
-					node = filter;
-				}
-
-				const pan = ctx.createStereoPanner();
-				const send = ctx.createGain();
-
-				pan.pan.value = part.pan ?? 0;
-				send.gain.value = part.verb ?? 0.3;
-				node.connect(pan).connect(master);
-				pan.connect(send).connect(room);
-
-				// A line of narration plays once; a loop repeats to fill its part.
-				const repeat = part.voice ? Infinity : length;
-
-				for (let t = part.start - (part.offset ?? 0); t < part.end; t += repeat) {
-					const source = ctx.createBufferSource();
-					const from = Math.max(t, part.start);
-
-					source.buffer = buffer;
-					source.playbackRate.value = speed;
-					source.connect(gain);
-					source.start(from, (from - t) * speed);
-					source.stop(Math.min(part.end, t + length) + 0.01);
-				}
+				return ctx.startRendering();
 			}
 
-			const mix = await ctx.startRendering();
+			/** 16-bit PCM WAV, base64, at `scale` (a sample of 1 becomes `scale`). */
+			function wav(mix: AudioBuffer, scale: number): string {
+				const left = mix.getChannelData(0);
+				const right = mix.getChannelData(1);
+				const frames = left.length;
+				const file = new DataView(new ArrayBuffer(44 + frames * 4));
+				// The chunk tags are ASCII, one byte per character.
+				const text = (offset: number, value: string) => {
+					for (let i = 0; i < value.length; i++) {
+						file.setUint8(offset + i, value.charCodeAt(i));
+					}
+				};
+
+				text(0, 'RIFF');
+				file.setUint32(4, 36 + frames * 4, true);
+				text(8, 'WAVEfmt ');
+				file.setUint32(16, 16, true);
+				file.setUint16(20, 1, true);
+				file.setUint16(22, 2, true);
+				file.setUint32(24, rate, true);
+				file.setUint32(28, rate * 4, true);
+				file.setUint16(32, 4, true);
+				file.setUint16(34, 16, true);
+				text(36, 'data');
+				file.setUint32(40, frames * 4, true);
+
+				for (let i = 0; i < frames; i++) {
+					file.setInt16(44 + i * 4, left[i]! * scale, true);
+					file.setInt16(46 + i * 4, right[i]! * scale, true);
+				}
+
+				const bytes = new Uint8Array(file.buffer);
+				let binary = '';
+
+				for (let i = 0; i < bytes.length; i += 32768) {
+					binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
+				}
+
+				return btoa(binary);
+			}
+
+			const mix = await render(parts);
 			const left = mix.getChannelData(0);
 			const right = mix.getChannelData(1);
 			let peak = 0;
@@ -219,59 +272,41 @@ void (async () => {
 
 			// Normalised to just under full scale, then written as 16-bit PCM.
 			const scale = (0.89 / peak) * 32767;
-			const frames = left.length;
-			const file = new DataView(new ArrayBuffer(44 + frames * 4));
-			// The chunk tags are ASCII, one byte per character.
-			const text = (offset: number, value: string) => {
-				for (let i = 0; i < value.length; i++) {
-					file.setUint8(offset + i, value.charCodeAt(i));
-				}
+
+			return {
+				soundtrack: wav(mix, scale),
+				voice: voiceOnly ? wav(await render(parts.filter((part) => part.voice)), scale) : null,
 			};
-
-			text(0, 'RIFF');
-			file.setUint32(4, 36 + frames * 4, true);
-			text(8, 'WAVEfmt ');
-			file.setUint32(16, 16, true);
-			file.setUint16(20, 1, true);
-			file.setUint16(22, 2, true);
-			file.setUint32(24, rate, true);
-			file.setUint32(28, rate * 4, true);
-			file.setUint16(32, 4, true);
-			file.setUint16(34, 16, true);
-			text(36, 'data');
-			file.setUint32(40, frames * 4, true);
-
-			for (let i = 0; i < frames; i++) {
-				file.setInt16(44 + i * 4, left[i]! * scale, true);
-				file.setInt16(46 + i * 4, right[i]! * scale, true);
-			}
-
-			const bytes = new Uint8Array(file.buffer);
-			let binary = '';
-
-			for (let i = 0; i < bytes.length; i += 32768) {
-				binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-			}
-
-			return btoa(binary);
 		},
-		{ loops, end, parts, cues },
+		{ loops, end, parts, cues, voiceOnly },
 	);
 
 	await browser.close();
-	const wavPath = path.join(out, video.name, 'soundtrack.wav');
 
-	mkdirSync(path.dirname(wavPath), { recursive: true });
-	writeFileSync(wavPath, Buffer.from(wav, 'base64'));
-	execFileSync('afconvert', [
-		'-f',
-		'm4af',
-		'-d',
-		'aac',
-		'-b',
-		'192000',
-		wavPath,
-		path.join(root, video.soundtrack),
-	]);
-	console.log(`Wrote ${video.soundtrack}; rebuild the page to embed it.`);
+	const write = (base64: string, file: string, target: string, bitrate: number, channels = 2) => {
+		const wavPath = path.join(out, video.name, file);
+
+		mkdirSync(path.dirname(wavPath), { recursive: true });
+		writeFileSync(wavPath, Buffer.from(base64, 'base64'));
+		execFileSync('afconvert', [
+			'-f',
+			'm4af',
+			'-d',
+			'aac',
+			'-b',
+			String(bitrate),
+			'-c',
+			String(channels),
+			wavPath,
+			path.join(root, target),
+		]);
+		console.log(`Wrote ${target}; rebuild the page to embed it.`);
+	};
+
+	write(tracks.soundtrack, 'soundtrack.wav', video.soundtrack, 192000);
+
+	if (tracks.voice && video.voiceTrack) {
+		// Speech alone needs far less than the music does: one channel, at a lower rate.
+		write(tracks.voice, 'voice.wav', video.voiceTrack, 64000, 1);
+	}
 })();

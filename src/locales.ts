@@ -137,6 +137,10 @@ export interface GuestPresentationTranslations {
 	soundOn: string;
 	soundOff: string;
 	noSound: string;
+	/** The toggle for the music under the narration; the voice plays either way. */
+	musicOn: string;
+	musicOff: string;
+	volume: string;
 	seek: string;
 	open: string;
 	download: string;
@@ -533,6 +537,9 @@ export const translations = {
 				soundOn: 'Sound on',
 				soundOff: 'Sound off',
 				noSound: 'No sound',
+				musicOn: 'Music on',
+				musicOff: 'Music off',
+				volume: 'Volume',
 				seek: 'Seek',
 				open: 'Open presentation',
 				download: 'Download presentation',
@@ -967,6 +974,9 @@ export const translations = {
 				soundOn: 'Sonido activado',
 				soundOff: 'Sonido desactivado',
 				noSound: 'Sin sonido',
+				musicOn: 'Música activada',
+				musicOff: 'Música desactivada',
+				volume: 'Volumen',
 				seek: 'Ir a un momento',
 				open: 'Abrir presentación',
 				download: 'Descargar presentación',
@@ -1406,6 +1416,9 @@ export const translations = {
 				soundOn: 'صدا روشن',
 				soundOff: 'صدا خاموش',
 				noSound: 'بدون صدا',
+				musicOn: 'موسیقی روشن',
+				musicOff: 'موسیقی خاموش',
+				volume: 'بلندی صدا',
 				seek: 'رفتن به زمان',
 				open: 'باز کردن ارائه',
 				download: 'دریافت ارائه',
@@ -1837,6 +1850,9 @@ export const translations = {
 				soundOn: 'May tunog',
 				soundOff: 'Walang tunog',
 				noSound: 'Walang audio',
+				musicOn: 'May musika',
+				musicOff: 'Walang musika',
+				volume: 'Lakas ng tunog',
 				seek: 'Pumunta sa oras',
 				open: 'Buksan ang presentasyon',
 				download: 'I-download ang presentasyon',
@@ -2275,6 +2291,9 @@ export const translations = {
 				soundOn: 'Bật âm thanh',
 				soundOff: 'Tắt âm thanh',
 				noSound: 'Không có âm thanh',
+				musicOn: 'Bật nhạc',
+				musicOff: 'Tắt nhạc',
+				volume: 'Âm lượng',
 				seek: 'Chuyển đến thời điểm',
 				open: 'Mở bài hướng dẫn',
 				download: 'Tải bài hướng dẫn',
@@ -2704,6 +2723,9 @@ export const translations = {
 				soundOn: '声音已开启',
 				soundOff: '声音已关闭',
 				noSound: '无音频',
+				musicOn: '音乐已开启',
+				musicOff: '音乐已关闭',
+				volume: '音量',
 				seek: '跳转进度',
 				open: '打开演示',
 				download: '下载演示',
@@ -3117,6 +3139,9 @@ export const translations = {
 				soundOn: 'الصوت مفعّل',
 				soundOff: 'الصوت مغلق',
 				noSound: 'لا يوجد صوت',
+				musicOn: 'الموسيقى مفعّلة',
+				musicOff: 'الموسيقى مغلقة',
+				volume: 'مستوى الصوت',
 				seek: 'الانتقال إلى وقت',
 				open: 'فتح العرض',
 				download: 'تنزيل العرض',
@@ -3544,6 +3569,9 @@ export const translations = {
 				soundOn: 'Son activé',
 				soundOff: 'Son désactivé',
 				noSound: 'Sans son',
+				musicOn: 'Musique activée',
+				musicOff: 'Musique désactivée',
+				volume: 'Volume',
 				seek: 'Aller à un moment',
 				open: 'Ouvrir la présentation',
 				download: 'Télécharger la présentation',
