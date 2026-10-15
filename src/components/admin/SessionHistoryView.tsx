@@ -3,9 +3,11 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
+import { SessionHistoryMonths } from '../../models/session-history-months';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import { useRootStore } from '../../stores/react/store-context';
 import { ManualGuestDialog } from './ManualGuestDialog';
+import { SessionHistoryRow } from './SessionHistoryRow';
 import type { HistoricalEvent, ManualGuest } from './types';
 
 export type SessionHistoryViewProps = {
@@ -23,69 +25,28 @@ export type SessionHistoryViewProps = {
 const endedAdmissions: GuestAdmission[] = ['served'];
 
 const Section = styled.section`
-	.history-list {
-		display: grid;
-		gap: 12px;
-	}
+	display: grid;
+	gap: 18px;
 
-	.history-entry {
-		display: grid;
-		gap: 12px;
-		padding: 18px;
-		border: 1.5px solid #c7d2cc;
-		border-radius: var(--radius-md);
-	}
-
-	.history-row {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 14px;
-		align-items: center;
-	}
-
-	.history-row > div {
-		display: grid;
-		gap: 4px;
-	}
-
-	.history-row > div:nth-of-type(2) {
-		text-align: end;
-	}
-
-	.history-row span:not(.history-state) {
+	/* A month's heading reads as a divider over its sessions, not as a section of its own. */
+	&& h2 {
+		margin: 0;
+		padding-bottom: 6px;
+		border-bottom: 1px solid #e2e6e3;
 		color: var(--color-text-subtle);
+		font-family: var(--font-body);
 		font-size: 13px;
+		letter-spacing: 0.08em;
 	}
 
-	.history-row .history-state,
-	.history-row .add-guest-button {
-		grid-column: 1 / -1;
-		justify-self: start;
-	}
-
-	/* A status, not a control: small and flat, so it is not mistaken for the add button below it. */
-	.history-state {
-		padding: 3px 10px;
-		border-radius: var(--radius-pill);
-		background: #edf0ee;
-		color: var(--color-text-muted);
-		font-size: 12px;
-		font-weight: 700;
-	}
-
-	@media (min-width: 860px) {
-		.history-row {
-			grid-template-columns: minmax(0, 1fr) auto auto;
-		}
-
-		.history-row .history-state {
-			grid-column: auto;
-			justify-self: end;
-		}
+	ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 `;
 
-/** Past sessions, and the one thing still possible on them: recording a guest served out of band. */
+/** Past sessions by month, and the one thing still possible on them: recording a guest served out of band. */
 export const SessionHistoryView = observer(function SessionHistoryView({
 	history,
 	busy,
@@ -94,13 +55,11 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 	const t = adminTranslations.en;
 	const { translations } = useRootStore();
 	const [openEventId, setOpenEventId] = useState<string | null>(null);
-
-	function formatEventDate(value: string) {
-		return new Intl.DateTimeFormat(translations.locale, {
-			dateStyle: 'medium',
-			timeStyle: 'short',
-		}).format(new Date(value));
-	}
+	const months = new SessionHistoryMonths(history).months;
+	const monthName = new Intl.DateTimeFormat(translations.locale, {
+		month: 'long',
+		year: 'numeric',
+	});
 
 	function addGuest(guest: ManualGuest, marketEventId: string) {
 		setOpenEventId(null);
@@ -109,32 +68,21 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 
 	return (
 		<Section className="admin-section history-section">
-			{history.length ? (
-				<div className="history-list">
-					{history.map((pastEvent) => (
-						<div key={pastEvent.id} className="history-entry">
-							<article className="history-row">
-								<div>
-									<strong>{formatEventDate(pastEvent.registrationOpensAt)}</strong>
-									<span>{formatEventDate(pastEvent.registrationClosesAt)}</span>
-								</div>
-								<div>
-									<strong>{pastEvent.guestCount}</strong>
-									<span>{t.sessionGuests}</span>
-								</div>
-								<span className="history-state">{t.sessionClosed}</span>
-								{/* Records a guest who was served out of band, after this session had ended. */}
-								<button
-									className="add-guest-button"
-									type="button"
-									onClick={() => setOpenEventId(pastEvent.id)}
-								>
-									+ {t.addGuest}
-								</button>
-							</article>
-						</div>
-					))}
-				</div>
+			{months.length ? (
+				months.map((month) => (
+					<section key={month.key} aria-labelledby={`history-${month.key}`}>
+						<h2 id={`history-${month.key}`}>{monthName.format(month.start)}</h2>
+						<ul>
+							{month.sessions.map((session) => (
+								<SessionHistoryRow
+									key={session.id}
+									session={session}
+									onRecordServedGuest={() => setOpenEventId(session.id)}
+								/>
+							))}
+						</ul>
+					</section>
+				))
 			) : (
 				<p className="empty-state">{t.noHistory}</p>
 			)}

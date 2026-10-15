@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { adminTranslations } from '../adminLocales';
@@ -44,17 +44,18 @@ afterEach(() => {
 });
 
 describe('ReportsView', () => {
-	it('loads the session summary on open and renders its translated headings', async () => {
+	it('loads the session summary on open and renders its translated labels', async () => {
 		const fetchMock = respondWith([
 			{ sessionDate: '2026-03-04T17:00:00.000Z', capacity: 50, served: 48, fillRate: 96 },
 		]);
-		const { container } = renderReports(fetchMock);
+		const screen = renderReports(fetchMock);
 
-		await waitFor(() => expect(container.querySelector('table')).not.toBeNull());
+		// On a phone — which is what jsdom's media queries report — each row is a card.
+		const card = await screen.findByRole('listitem');
+		const text = card.textContent!;
 
-		const text = container.textContent!;
-
-		expect(text).toContain(t.reportColumnLabels.sessionDate);
+		// The first column titles the card; every other one is a labelled figure.
+		expect(within(card).getByRole('heading').textContent).toContain('2026');
 		expect(text).toContain(t.reportColumnLabels.fillRate);
 		// Rendered through the locale formatter, not printed as the raw number the server sent.
 		expect(text).toContain('96%');
@@ -77,7 +78,9 @@ describe('ReportsView', () => {
 
 		await settled(fetchMock);
 
-		fireEvent.change(container.querySelector('select')!, { target: { value: 'people-served' } });
+		fireEvent.click(
+			within(container).getByRole('button', { name: t.reportNames['people-served'] }),
+		);
 
 		await waitFor(() => expect(callArgs(fetchMock, -1)[0]).toContain('report=people-served'));
 	});
@@ -89,6 +92,7 @@ describe('ReportsView', () => {
 		await waitFor(() => expect(container.textContent).toContain(t.reportEmpty));
 
 		expect(container.querySelector('table')).toBeNull();
+		expect(container.querySelector('.report-cards')).toBeNull();
 	});
 
 	it('refuses a backwards range without asking the server', async () => {
@@ -114,7 +118,10 @@ describe('ReportsView', () => {
 		for (const input of container.querySelectorAll<HTMLInputElement>('input[type="date"]')) {
 			expect(input.disabled).toBe(false);
 		}
-		expect(container.querySelector<HTMLSelectElement>('select')!.disabled).toBe(false);
+
+		for (const report of within(container).getAllByRole('button', { pressed: false })) {
+			expect((report as HTMLButtonElement).disabled).toBe(false);
+		}
 	});
 
 	it('ignores a slow answer that a newer range has already replaced', async () => {

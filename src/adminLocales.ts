@@ -1,5 +1,6 @@
 import type { GuestFormCopy } from './locales.ts';
 import type { AdminView, AdminViewGroup } from './services/admin-views.ts';
+import type { GuestDatabaseFilter } from './services/guest-database-filters.ts';
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
 import type { VisitEventKind } from './services/visit-events.ts';
 
@@ -35,10 +36,18 @@ export interface AdminTranslation {
 	switchView: string;
 	/** A past session's status in the history list. */
 	sessionClosed: string;
+	/** A past session's one menu item: recording a guest served outside the app. */
+	recordServedGuest: string;
 	/** The guest-registration copy, reworded for a worker entering someone else's details. */
 	manualGuestForm: GuestFormCopy;
 	adminTitle: string;
 	allGuests: string;
+	/** Names the guest database's search field, which shows `searchGuestsPlaceholder` inside it. */
+	searchGuests: string;
+	searchGuestsPlaceholder: string;
+	/** Names the row of quick filters over the guest database. */
+	guestFilterLabel: string;
+	guestFilters: Record<GuestDatabaseFilter, string>;
 	broadcastConfirm: string;
 	broadcastHelp: string;
 	broadcastMessageLabel: string;
@@ -456,6 +465,7 @@ export const adminTranslations = {
 		},
 		switchView: 'Switch View',
 		sessionClosed: 'Closed',
+		recordServedGuest: 'Record a Served Guest',
 		manualGuestForm: {
 			informationLegend: 'Guest Details',
 			pronunciationOffer: 'Add how to say their name',
@@ -470,6 +480,14 @@ export const adminTranslations = {
 		},
 		adminTitle: 'Market Dashboard',
 		allGuests: 'All guests',
+		searchGuests: 'Search guests',
+		searchGuestsPlaceholder: 'Name or phone number',
+		guestFilterLabel: 'Show',
+		guestFilters: {
+			all: 'All',
+			'in-session': 'In Today’s Session',
+			'not-placed': 'Not Placed',
+		},
 		broadcastConfirm: 'Send this announcement to every subscribed guest in the current session?',
 		broadcastHelp: 'The message will be sent exactly as written to all subscribed guests.',
 		broadcastMessageLabel: 'Message',
@@ -671,11 +689,11 @@ export const adminTranslations = {
 			'Reports count people without naming them. Only the full export identifies guests, so share that file carefully.',
 		reportEmpty: 'No sessions in this date range.',
 		reportNames: {
-			'session-summary': 'Session summary',
-			'people-served': 'People served by month',
-			'guest-demographics': 'Who was served',
-			'lottery-outcomes': 'Lottery outcomes by odds',
-			'service-timing': 'Service timing',
+			'session-summary': 'Session Summary',
+			'people-served': 'People Served by Month',
+			'guest-demographics': 'Who Was Served',
+			'lottery-outcomes': 'Lottery Outcomes by Odds',
+			'service-timing': 'Service Timing',
 		},
 		reportDescriptions: {
 			'session-summary':

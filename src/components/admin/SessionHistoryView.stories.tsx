@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
@@ -20,8 +20,9 @@ function pastSession(day: number, guestCount: number): HistoricalEvent {
 }
 
 /**
- * Past sessions, newest first. Each one can still take an after-the-fact record of a guest served
- * outside the app, which opens the add-guest dialog limited to that.
+ * Past sessions, newest first, under the month they ran in. Each one can still take an
+ * after-the-fact record of a guest served outside the app, from its row's menu, which opens the
+ * add-guest dialog limited to that.
  */
 const meta = {
 	title: 'Admin/Session History/History List',
@@ -43,6 +44,22 @@ export const PastSessions: Story = {
 	play: async ({ canvas }) => {
 		await expect(canvas.getAllByText(t.sessionClosed)).toHaveLength(3);
 		await expect(canvas.queryByText(t.closeSession)).not.toBeInTheDocument();
+		await expect(canvas.getByRole('heading', { name: /October 2026/ })).toBeVisible();
+	},
+};
+
+/** Recording a guest served outside the app, from the session's own menu. */
+export const RecordingAServedGuest: Story = {
+	play: async ({ canvas }) => {
+		const [firstMenu] = canvas.getAllByRole('button', { name: new RegExp(t.sessionActions) });
+
+		await userEvent.click(firstMenu!);
+		await userEvent.click(
+			await within(document.body).findByRole('menuitem', { name: t.recordServedGuest }),
+		);
+		await expect(
+			await within(document.body).findByRole('dialog', { name: t.manualGuestTitle }),
+		).toBeVisible();
 	},
 };
 

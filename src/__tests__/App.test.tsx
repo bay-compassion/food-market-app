@@ -715,7 +715,9 @@ describe('App', () => {
 		expect(container.textContent).toContain('Registration questions');
 
 		await navigateTo(adminTranslations.en.guestDatabase);
-		expect(container.textContent).toContain('All guests');
+		expect(
+			screen.getByRole('searchbox', { name: adminTranslations.en.searchGuests }),
+		).not.toBeNull();
 		// This fixture has no session configured, and a guest can still be added — details only.
 		expect(container.textContent).toContain('Add Guest');
 		expect(getAccessToken).toHaveBeenCalled();
