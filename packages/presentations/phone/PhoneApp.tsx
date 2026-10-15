@@ -14,7 +14,7 @@ import type { RootStore } from '../../../src/stores/root.store.ts';
  * The app's theme with its motion taken out. The guide moves between screens on its own timeline,
  * so a sheet that slid or a button that rippled on the phone's clock would land between frames.
  */
-const still = (theme: Theme) =>
+export const still = (theme: Theme) =>
 	createTheme(theme, {
 		transitions: {
 			create: () => 'none',

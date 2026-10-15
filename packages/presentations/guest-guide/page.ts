@@ -12,7 +12,7 @@ import type { StageGuest } from '../stage/stage.ts';
 
 declare const __NARRATION__: TimedLine[];
 /** The guest phone's page, built from `phone/` by `build.ts`. */
-declare const __PHONE__: string;
+declare const __FRAME__: string;
 
 type Page =
 	| 'language'
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	frame.setAttribute('aria-hidden', 'true');
 	frame.tabIndex = -1;
 	frame.style.pointerEvents = 'none';
-	frame.srcdoc = __PHONE__;
+	frame.srcdoc = __FRAME__;
 	app.appendChild(frame);
 	k('phoneMotion').appendChild(phone);
 

@@ -20,6 +20,12 @@ export interface NarrationLine {
 	chapter?: string;
 	/** What `say` reads instead of `text`, where macOS mispronounces it. */
 	say?: string;
+	/**
+	 * The dashboard labels the line says aloud, by their keys in `src/adminLocales.ts`. The build
+	 * checks each label's current English text is still in `text`, so a relabelled button can't
+	 * leave the recorded voice naming one the screen no longer has.
+	 */
+	names?: string[];
 }
 
 /** A line with the measured length of its recording, which paces the page. */

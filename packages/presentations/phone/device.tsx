@@ -7,7 +7,7 @@ import type { CurrentVisit } from '../../../src/services/guestVisitApi.ts';
 import { StorageKey, StorageService } from '../../../src/services/storage.service.ts';
 import { RootStore } from '../../../src/stores/root.store.ts';
 import { PhoneClock } from './clock.ts';
-import { MarkLayer, markTarget } from './marks.ts';
+import { MarkLayer, markTarget, scrollUnderBar } from './marks.ts';
 import { PhoneApp } from './PhoneApp.tsx';
 import type { PhoneHandle, PhoneScene } from './scene.ts';
 import { MARKET_ID, PhoneServer, VISIT_ID } from './server.ts';
@@ -362,7 +362,7 @@ export class PhoneDevice implements PhoneHandle {
 
 		document.documentElement.lang = scene.locale;
 		document.documentElement.dir = this.current.translations.dir;
-		this.scroll(scene.scrollTo ? markTarget(scene.scrollTo, document, t) : null);
+		scrollUnderBar(this.container, scene.scrollTo ? markTarget(scene.scrollTo, document, t) : null);
 		this.marks.draw(
 			scene.focus ? markTarget(scene.focus, document, t) : null,
 			scene.tap ? markTarget(scene.tap, document, t) : null,
@@ -373,31 +373,5 @@ export class PhoneDevice implements PhoneHandle {
 	/** The page's content under the bar, which the phone scrolls. */
 	private get scroller(): HTMLElement | null {
 		return this.container.querySelector('.phone-scroll');
-	}
-
-	/**
-	 * Scrolls the page under the bar so `target` shows whole — its top, when it is taller than the
-	 * screen — or back to the top. The page moves by a transform, which the stylesheet eases.
-	 */
-	private scroll(target: HTMLElement | null): void {
-		const scroller = this.scroller;
-
-		if (!scroller) {
-			return;
-		}
-
-		const bar = this.container.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
-		const view = window.innerHeight - bar;
-		let offset = 0;
-
-		if (target && scroller.contains(target)) {
-			const top = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
-			const bottom = top + target.offsetHeight;
-			const most = Math.max(0, scroller.offsetHeight - view);
-
-			offset = Math.min(Math.max(0, bottom + 16 - view), Math.max(0, top - 16), most);
-		}
-
-		scroller.style.transform = `translateY(${-offset}px)`;
 	}
 }

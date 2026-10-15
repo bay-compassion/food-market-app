@@ -83,9 +83,16 @@ for (const video of published) {
 		SUMMARY: presentation.summary,
 		DESCRIPTION: presentation.description,
 		SOUND: presentation.sound,
+		SCREENS:
+			presentation.screens ??
+			'The screens are simplified recreations of the real app, with fictional guests.',
 		INTERACTIVE: presentation.interactive,
 		// A narrated video has chapters, which take a row of their own in a narrow player.
-		PLAYER_CLASS: [presentation.guest && 'guest-player', video.narration && 'chaptered']
+		PLAYER_CLASS: [
+			presentation.guest && 'guest-player',
+			presentation.portrait && 'portrait-player',
+			video.narration && 'chaptered',
+		]
 			.filter(Boolean)
 			.join(' '),
 		OPEN: presentation.open ?? 'Open Presentation',

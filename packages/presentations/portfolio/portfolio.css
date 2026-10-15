@@ -272,9 +272,12 @@ figcaption strong {
 	.decisions {
 		grid-template-columns: 1fr 1fr;
 	}
-	.gallery,
-	.guides {
+	.gallery {
 		grid-template-columns: repeat(3, 1fr);
+	}
+	/* Two pairs: the overview and the guest's guide, then the two staff guides. */
+	.guides {
+		grid-template-columns: repeat(2, 1fr);
 	}
 	.section {
 		padding-block: 80px;

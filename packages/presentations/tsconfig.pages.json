@@ -2,7 +2,7 @@
 // without moving a line and inlines them as classic scripts, so they share no runtime imports —
 // only `import type`, which stripping erases — and reach each other through `window.stage`.
 {
-  "include": ["stage/*.ts", "*/page.ts", "strings.ts", "phone/scene.ts"],
+  "include": ["stage/*.ts", "*/page.ts", "strings.ts", "phone/scene.ts", "admin/scene.ts"],
 
   // `strings.ts` reads the shape of the app's copy from `src/locales.ts`.
   "references": [{ "path": "../../tsconfig.app.json" }],

@@ -157,12 +157,15 @@
 					height: calc(100% + 232px);
 				}
 			}
+			/* A guide that turns portrait on a phone, as the guest and dashboard guides do. */
 			@container (max-width: 600px) {
-				.guest-player {
+				.guest-player,
+				.portrait-player {
 					aspect-ratio: 9 / 16;
 					margin-bottom: 238px;
 				}
-				.guest-player iframe {
+				.guest-player iframe,
+				.portrait-player iframe {
 					height: calc(100% + 238px);
 				}
 			}
@@ -180,9 +183,7 @@
 			</div>
 			<section class="about">
 				<p>__SUMMARY__ __DESCRIPTION__</p>
-				<p>
-					The screens are simplified recreations of the real app, with fictional guests. __SOUND__
-				</p>
+				<p>__SCREENS__ __SOUND__</p>
 			</section>
 			<nav class="links" aria-label="__MORE__">
 				<a href="__INTERACTIVE__#watch">__OPEN__</a>

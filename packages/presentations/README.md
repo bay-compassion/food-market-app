@@ -14,12 +14,17 @@ Motion pieces showing the app at work, built from its own design tokens and tran
   guest by hand, and closing the session.
 - **Guest market guide** (`guest-guide`): about three minutes, narrated. A guide for guests opening
   the market page, entering the lottery, following their number, and coming to check-in.
+- **Market dashboard guide** (`admin-guide`): about three and a half minutes, narrated. A training
+  video for the coordinator running `/admin`: the schedule, registration, the lottery, service,
+  adding a guest, broadcasts, records and reports, and closing the session.
 
 Each presentation is an HTML page animated with [GSAP](https://gsap.com), with its soundtrack
 embedded. GitHub Pages plays that page directly: publishing needs no frame capture or video
 encoding. MP4 exports are still available by photographing the page one frame at a time.
-The guest guide's phone is the guest app itself (see [The guest phone](#the-guest-phone)); the
-reel's and the queue desk's screens, and every room display, are simplified recreations.
+The guest guide's phone is the guest app itself (see [The guest phone](#the-guest-phone)), and the
+dashboard guide's phone is the admin dashboard itself (see
+[Market dashboard guide](#market-dashboard-guide)); the reel's and the queue desk's screens, and
+every room display, are simplified recreations.
 
 ## Files
 
@@ -40,6 +45,7 @@ it uses (`gsap` for types, `ts-blank-space`) are dev dependencies of the reposit
 | `market-day-reel/page.html`, `page.ts` | The market day reel: its screens and styles, and its beat script and timeline.                               |
 | `queue-desk/page.html`, `page.ts`      | The queue desk video: a closer recreation of `/queue`, its beat script, and timeline.                        |
 | `guest-guide/page.html`, `page.ts`     | The guest market guide.                                                                                      |
+| `admin-guide/page.html`, `page.ts`     | The market dashboard guide: its beat script, turning each moment into a scene for the admin frame.           |
 | `<video>/narration.ts`                 | A narrated video's voiceover, line by line, and where the voice comes from.                                  |
 | `<video>/narration.timings.json`       | How long each recorded line runs, written by `voice.ts`; the build paces the page from it.                   |
 | `<video>/arrangement.ts`               | Which Apple Loop plays when, at what level, under the video.                                                 |
@@ -54,6 +60,8 @@ it uses (`gsap` for types, `ts-blank-space`) are dev dependencies of the reposit
 | `verify.ts`                            | Browser checks for the built site and players.                                                               |
 | `music/mix.ts`                         | Mixes a video's arrangement, and its narration, into its soundtrack.                                         |
 | `phone/`                               | The guest phone: the guest app's own screens, driven by the guest guide (see below).                         |
+| `admin/`                               | The admin frame: the dashboard's own screens, driven by the dashboard guide (see below).                     |
+| `frame-vite.ts`, `stage/frame.ts`      | What the two frame apps share: their Vite build, and the handle a page drives one through.                   |
 | `music/catalog.py`                     | Lists every installed Apple Loop with its key, tempo, instrument and mood, for choosing more.                |
 
 Everything generated goes to `out/`, which is ignored.
@@ -173,8 +181,8 @@ or moving a chapter changes no audio, so it needs no recording or mixing — reb
 ## Publishing
 
 GitHub Pages hosts the portfolio overview at
-<https://bay-compassion.github.io/food-market-app/>. All three presentation pages live under
-`/presentations/`: `market-day-reel/`, `queue-desk/`, and `guest-guide/`.
+<https://bay-compassion.github.io/food-market-app/>. Every presentation page lives under
+`/presentations/`: `market-day-reel/`, `queue-desk/`, `guest-guide/`, and `admin-guide/`.
 See [portfolio publishing](../../docs/portfolio.md) for the landing page and screenshot workflow. Each landing page embeds the
 GSAP presentation, with playback, restart, sound, and seek controls. It starts paused and
 plays once. The pages link to each other and offer the presentation as a downloadable HTML file.
@@ -195,7 +203,7 @@ For a local preview:
 node packages/presentations/publish.ts
 ```
 
-This builds all three presentations and assembles `out/site/`. `--dry-run` is an equivalent alias;
+This builds every presentation and assembles `out/site/`. `--dry-run` is an equivalent alias;
 the script always writes local files without pushing. No MP4, poster frames, Chromium, ffmpeg,
 Swift, or GarageBand installation is needed to build the site. The deployed `source.json`
 records the source commit and branch.
@@ -290,7 +298,7 @@ node packages/presentations/publish.ts
 node packages/presentations/verify.ts
 ```
 
-`verify.ts` checks embedded audio length and playback controls for all three presentations,
+`verify.ts` checks embedded audio length and playback controls for every presentation,
 every guest narration scene in all eight languages at 320, 390, 600 and 1280 pixels, RTL consent,
 that each moment of the guest phone looks the same however it is reached, that the phone makes no
 request the guide doesn't answer, and Dev mode. It writes portrait and landscape stills to
@@ -339,3 +347,69 @@ The existing **Publish project site** workflow automatically includes every regi
 presentations and the portfolio overview, with links
 among all three. Publishing still uses only committed timings and mixed audio and builds HTML;
 it requires no frame capture, transcoding, speech runtime, or music library on the Actions runner.
+
+## Market dashboard guide
+
+The narrated **Market Dashboard Guide** (`admin-guide`) follows a coordinator through one market
+day on `/admin`: the Schedule's recurring pattern and next session, Current session from scheduled
+through registration, the grace period and the lottery to service, the Queue tab, adding a guest by
+hand, a broadcast, Guest database, Session history and Reports, and closing the session. It uses
+the queue desk guide's voice and arrangement. It is English only, as the dashboard is.
+
+The admin side changes more often than the guest screens, so this guide is built to be re-rendered
+rather than redrawn: **its phone runs the real `AdminDashboard`**, and a change to a dashboard screen
+reaches the guide on its next build.
+
+- `admin/` is a small Vite app, built by `build.ts` like `phone/`, that mounts `AdminDashboard`
+  behind the app bar with the confirmation sheet, without Auth0 (`admin/stubs/auth.ts` grants a
+  coordinator's permissions: no Dev Mode, no guest-data export).
+- `admin/server.ts` answers every request the dashboard makes from the scene — the session as
+  `SessionTimeline` derives it, the guests, the schedule, history and a report. It answers reads
+  only. Where the narration accepts a confirmation, the frame withdraws the sheet and the next
+  scene carries the result, which the dashboard reloads as it would after a command, so every
+  moment can be built from nothing and looks the same however it is reached.
+- What the narration points at and taps is named by the dashboard's own copy:
+  `button:closeRegistration`, `field:capacity`, `tab:schedule` (`AdminMark` in `admin/scene.ts`,
+  found by `admin/marks.ts`). The ring follows a relabelled button; a key removed from
+  `src/adminLocales.ts` fails the type check; a control that is gone fails `verify.ts` by name.
+- The recorded voice can't follow a relabel, so each line lists the labels it says aloud
+  (`names` in `admin-guide/narration.ts`). The build warns, and publishing fails, when a label's
+  text is no longer in its line: reword the line and record it again.
+- Captions read `src/adminLocales.ts` too (`__ADMIN_COPY__`), so they name what the screen names.
+- The frame never shows lottery weighting: a guest is added during service, when the dialog has no
+  weighting control, and Reports opens on the session summary.
+
+After changing a dashboard screen, rebuild and verify:
+
+```bash
+node packages/presentations/build.ts admin-guide
+node packages/presentations/publish.ts
+node packages/presentations/verify.ts
+```
+
+`verify.ts` visits every narration line on the real dashboard and fails when a mark it names isn't
+on screen, when the dashboard asks the frame's server something it doesn't answer, when a moment
+looks different reached by seeking or by playing, or on any page error. It writes a still per line
+to `out/admin-guide/review/` — look through them, since a screen can change in ways no mark notices.
+When a change makes the narration wrong (a renamed step, a moved control), edit
+`admin-guide/narration.ts` and the beat in `admin-guide/page.ts`, then record and mix again:
+
+```bash
+node packages/presentations/voice.ts admin-guide
+node packages/presentations/build.ts admin-guide
+node packages/presentations/music/mix.ts admin-guide
+node packages/presentations/build.ts admin-guide
+```
+
+Instruction sources (check these when changing the script):
+
+| Instruction                                                       | Current implementation                                      |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- |
+| Recurring pattern, next session created automatically, one-off    | `ScheduleView`, `ScheduleStore`, `scheduleIntro`            |
+| Opens on its own, Open Early, Postpone, Extend, capacity, Close   | `SessionPhaseControls`, `SessionStepper`, `SessionTimeline` |
+| Grace period, automatic draw, Run immediately, postpone, pause    | `SessionTransitionTimer`, `LotteryPendingCard`              |
+| Today's overview, Go to Queue                                     | `SessionOverview`, `SessionPhaseControls`, `QueueView`      |
+| Add guest, Give them a spot, end of the line                      | `ManualGuestDialog`, `guestAdmission.ts`                    |
+| Broadcast to subscribed guests, sent exactly as written           | `SessionBroadcastForm`, `broadcastHelp`                     |
+| Guest database search, history add-after, reports without names   | `GuestDatabaseGrid`, `SessionHistoryView`, `ReportsView`    |
+| Close session replaces Call next; sooner marks waiting as no show | `QueueView`, `confirmCloseSessionOutstanding`               |

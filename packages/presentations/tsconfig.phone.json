@@ -1,8 +1,15 @@
-// The guest phone (`phone/`): a small React app around the app's own guest screens, which Vite
-// builds for the guest guide. Checked like the app itself, which it imports.
+// The frame apps: the guest phone (`phone/`) and the admin dashboard (`admin/`), small React apps
+// around the app's own screens, which Vite builds for the guest and admin guides. Checked like the
+// app itself, which they import.
 {
-  "include": ["phone/**/*.ts", "phone/**/*.tsx"],
-  "exclude": ["phone/vite.config.ts"],
+  "include": [
+    "phone/**/*.ts",
+    "phone/**/*.tsx",
+    "admin/**/*.ts",
+    "admin/**/*.tsx",
+    "stage/frame.ts"
+  ],
+  "exclude": ["phone/vite.config.ts", "admin/vite.config.ts"],
 
   "references": [{ "path": "../../tsconfig.app.json" }],
 
