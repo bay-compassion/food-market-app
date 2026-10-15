@@ -1,6 +1,7 @@
 import { languages, type Locale } from '../locales.ts';
-import type { DatabaseGuest } from './admin-api.ts';
-import { visitStatuses, type VisitStatus } from './visitStateMachine.ts';
+import type { DatabaseGuest } from '../services/admin-api.ts';
+import type { GuestDatabaseFilter } from '../services/guest-database-filters.ts';
+import { visitStatuses, type VisitStatus } from '../services/visitStateMachine.ts';
 
 /** One guest as the guest database grid renders, sorts, and filters them. */
 export type GuestDatabaseRow = {
@@ -51,6 +52,35 @@ export class GuestDatabaseRows {
 			status: guest.status,
 			statusLabel: guest.status === null ? this.noVisitLabel : this.statusLabels[guest.status],
 		}));
+	}
+
+	/**
+	 * The rows a quick filter and a search leave on screen. The search matches a name by its
+	 * letters, ignoring case, and a phone number by its digits, so "5550125" finds
+	 * "(510) 555-0125".
+	 */
+	matching(filter: GuestDatabaseFilter, search: string): GuestDatabaseRow[] {
+		const words = search.trim().toLocaleLowerCase();
+		const digits = search.replace(/\D/g, '');
+
+		return this.rows.filter(
+			(row) =>
+				GuestDatabaseRows.passes(row, filter) &&
+				(!words ||
+					row.name.toLocaleLowerCase().includes(words) ||
+					(digits.length > 0 && row.phone.replace(/\D/g, '').includes(digits))),
+		);
+	}
+
+	private static passes(row: GuestDatabaseRow, filter: GuestDatabaseFilter): boolean {
+		switch (filter) {
+			case 'all':
+				return true;
+			case 'in-session':
+				return row.status !== null;
+			case 'not-placed':
+				return row.status === 'not_placed';
+		}
 	}
 
 	get statusOptions(): string[] {

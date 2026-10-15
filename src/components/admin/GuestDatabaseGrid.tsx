@@ -1,19 +1,19 @@
 import { Global, css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { useMediaQuery, useTheme } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useMemo } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { GuestDatabaseRows } from '../../services/guest-database-rows';
-import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
+import type { GuestDatabaseRow, GuestDatabaseRows } from '../../models/guest-database-rows';
+import type { VisitCommand } from '../../services/visitStateMachine';
 import { guestDatabaseColumns } from './guest-database-columns';
-import type { DatabaseGuest, QueueGuest } from './types';
+import type { QueueGuest } from './types';
 
 export type GuestDatabaseGridProps = {
-	/** Every visit on record, and every guest who has none. */
-	guests: DatabaseGuest[];
-	statusLabels: Record<VisitStatus, string>;
+	/** Every guest on record, which the columns' filter options are drawn from. */
+	rows: GuestDatabaseRows;
+	/** The rows the screen's search and quick filter leave on show. */
+	shown: GuestDatabaseRow[];
 	/** Whether this worker may take guest names and phone numbers off the screen. */
 	canExport: boolean;
 	busy?: boolean;
@@ -78,27 +78,16 @@ const panelStyles = css`
 /**
  * Every guest on record, as a sortable and filterable grid.
  *
- * The whole guest list is already loaded by the time this renders, so searching, sorting, and
- * narrowing all happen here rather than as a round trip: the toolbar's search box matches across
- * every column at once, and the filter panel narrows one column at a time.
+ * The whole guest list is already loaded by the time this renders, so sorting and narrowing all
+ * happen here rather than as a round trip. The screen's own search and quick filters sit above the
+ * grid, shared with the phone's list, so the toolbar keeps only the filter panel (one column at a
+ * time), the column picker, and export.
  */
-export function GuestDatabaseGrid({
-	guests,
-	statusLabels,
-	canExport,
-	busy,
-	onRun,
-}: GuestDatabaseGridProps) {
+export function GuestDatabaseGrid({ rows, shown, canExport, busy, onRun }: GuestDatabaseGridProps) {
 	const t = adminTranslations.en;
 	// Household size and visit status are worth filtering and sorting by, but not worth a column of
-	// their own on a screen used to look a guest up — so they start hidden everywhere, and language
-	// joins them on a phone, where three columns is the most that fits. The Columns button brings
-	// any of them back. Read once, as the grid's initial state, so a worker's own choice then sticks.
-	const narrow = useMediaQuery(useTheme().breakpoints.down('sm'));
-	const rows = useMemo(
-		() => new GuestDatabaseRows(guests, statusLabels, t.noVisit),
-		[guests, statusLabels, t.noVisit],
-	);
+	// their own on a screen used to look a guest up, so they start hidden. The Columns button brings
+	// either back. Read once, as the grid's initial state, so a worker's own choice then sticks.
 	const columns = useMemo(
 		() =>
 			guestDatabaseColumns({
@@ -117,7 +106,7 @@ export function GuestDatabaseGrid({
 				// Named for assistive technology rather than with the `label` prop, which the toolbar
 				// would draw a second time under the section's own heading.
 				aria-label={t.allGuests}
-				rows={rows.rows}
+				rows={shown}
 				columns={columns}
 				loading={busy}
 				rowHeight={56}
@@ -130,7 +119,6 @@ export function GuestDatabaseGrid({
 						columnVisibilityModel: {
 							householdSize: false,
 							statusLabel: false,
-							language: !narrow,
 						},
 					},
 				}}
@@ -143,6 +131,7 @@ export function GuestDatabaseGrid({
 					// numbers that `export:guest-data` exists to gate. Disabling both export routes
 					// takes the whole export menu out of the toolbar for a worker without it.
 					toolbar: {
+						showQuickFilter: false,
 						csvOptions: { disableToolbarButton: !canExport, fileName: 'guests' },
 						printOptions: { disableToolbarButton: !canExport },
 					},

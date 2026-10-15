@@ -1,8 +1,8 @@
 import type { GridColDef } from '@mui/x-data-grid';
 
 import { adminTranslations } from '../../adminLocales';
+import type { GuestDatabaseRow, GuestDatabaseRows } from '../../models/guest-database-rows';
 import type { QueueGuest } from '../../services/admin-api';
-import type { GuestDatabaseRow, GuestDatabaseRows } from '../../services/guest-database-rows';
 import type { VisitCommand } from '../../services/visitStateMachine';
 import { QueueGuestActions } from './QueueGuestActions';
 

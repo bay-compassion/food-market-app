@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 import { Button } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
@@ -13,6 +14,8 @@ import {
 	type ReportRow,
 } from '../../services/reports';
 import { useRootStore } from '../../stores/react/store-context';
+import { wideLayoutQuery } from './admin-layout';
+import { ReportCards } from './ReportCards';
 import { ReportFilters } from './ReportFilters';
 import { ReportTable } from './ReportTable';
 
@@ -57,6 +60,7 @@ function download(blob: Blob, filename: string) {
 export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 	const t = adminTranslations.en;
 	const { notifications } = useRootStore();
+	const isWide = useMediaQuery(wideLayoutQuery);
 	const [range] = useState(defaultReportRange);
 	const [selectedReport, setSelectedReport] = useState<ReportId>('session-summary');
 	const [from, setFrom] = useState(range.from);
@@ -211,7 +215,11 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 				) : null}
 
 				{rows.length ? (
-					<ReportTable columns={columns} rows={rows} />
+					isWide ? (
+						<ReportTable columns={columns} rows={rows} />
+					) : (
+						<ReportCards columns={columns} rows={rows} label={t.reportNames[selectedReport]} />
+					)
 				) : !isBusy && !feedback && !loadFailed ? (
 					<p className="empty-state">{t.reportEmpty}</p>
 				) : null}

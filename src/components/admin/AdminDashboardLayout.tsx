@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useId, type ReactNode } from 'react';
 
 import { useRootStore } from '../../stores/react/store-context';
+import { wideLayoutQuery } from './admin-layout';
 import { adminViewLabels } from './admin-view-labels';
 import { AdminFeedbackBanner } from './AdminFeedbackBanner';
 import { AdminThemeProvider } from './AdminThemeProvider';
@@ -12,12 +13,6 @@ import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { GuestClaimDialog } from './GuestClaimDialog';
 import { SessionStateChip } from './SessionStateChip';
 import type { AdminView } from './types';
-
-/**
- * The width at which the navigation leaves the switcher's sheet for a sidebar beside the screen.
- * The only place the dashboard decides between its phone and desk layouts.
- */
-const wideLayoutQuery = '(min-width: 860px)';
 
 /*
  * Reports are the one admin screen meant for a desk: a wide table is easier to read than a narrow

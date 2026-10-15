@@ -1,19 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
+import { GuestDatabaseRows } from '../../models/guest-database-rows';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { GuestDatabaseGrid } from './GuestDatabaseGrid';
 import { busyQueue } from './queueGuests.fixture';
 import type { DatabaseGuest } from './types';
 
 /**
- * Every guest on record.
+ * Every guest on record, as the guest database shows them on a desk.
  *
- * The whole list is already in memory when this renders, so the toolbar owns searching, sorting
- * and filtering rather than a round trip to the server. Row grouping is deliberately absent: it is
- * a Data Grid Premium feature, and the status and language filters cover the same ground here.
+ * The whole list is already in memory when this renders, so sorting and filtering happen here
+ * rather than as a round trip to the server. Searching and the quick filters belong to the screen
+ * around the grid (`Admin/Guest Database/Database View`), which hands it the rows they leave.
+ * Row grouping is deliberately absent: it is a Data Grid Premium feature, and the status and
+ * language filters cover the same ground here.
  */
 type GuestDatabaseGridArgs = {
 	locale: Locale;
@@ -23,10 +26,16 @@ type GuestDatabaseGridArgs = {
 };
 
 function Grid({ locale, busy, canExport, guests }: GuestDatabaseGridArgs) {
+	const rows = new GuestDatabaseRows(
+		guests,
+		adminVisitStatusLabels(locale),
+		adminTranslations.en.noVisit,
+	);
+
 	return (
 		<GuestDatabaseGrid
-			guests={guests}
-			statusLabels={adminVisitStatusLabels(locale)}
+			rows={rows}
+			shown={rows.rows}
 			canExport={canExport}
 			busy={busy}
 			onRun={fn()}
@@ -38,6 +47,8 @@ const meta = {
 	title: 'Admin/Guest Database/Guest Grid',
 	component: Grid,
 	parameters: { shell: 'admin' },
+	// The grid is the desk form of the guest database; a phone gets the list instead.
+	globals: { viewport: { value: 'ipad12p', isRotated: false } },
 	args: { locale: 'en', busy: false, canExport: true, guests: busyQueue },
 } satisfies Meta<typeof Grid>;
 
@@ -47,19 +58,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The default view: every guest, sorted by name. */
 export const AllGuests: Story = {};
-
-/** Typing in the toolbar's search narrows the grid to the matching guests. */
-export const SearchNarrowsTheGrid: Story = {
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-
-		await userEvent.type(canvas.getByRole('searchbox'), 'Nguyen');
-
-		// The toolbar's search debounces, so the grid narrows a moment after the last keystroke.
-		await waitFor(() => expect(canvas.queryByText('Maria Santos')).not.toBeInTheDocument());
-		await expect(canvas.getByText('Linh Nguyen')).toBeInTheDocument();
-	},
-};
 
 /**
  * Guests who have never had a visit — saved between sessions by a worker, or through `/signup` —
@@ -119,8 +117,8 @@ export const Busy: Story = {
 };
 
 /**
- * A worker who may run the queue but not `export:guest-data`. The toolbar keeps its columns,
- * filter and search controls and loses the export menu, so guest names and phone numbers stay on
+ * A worker who may run the queue but not `export:guest-data`. The toolbar keeps its columns and
+ * filter controls and loses the export menu, so guest names and phone numbers stay on
  * the screen they were loaded for.
  */
 export const WithoutExportPermission: Story = {

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { QueueGuest, UnvisitedGuest } from './admin-api';
+import type { QueueGuest, UnvisitedGuest } from '../services/admin-api';
+import { visitStatuses } from '../services/visitStateMachine';
+import { adminVisitStatusLabels } from '../services/visitStatusLabels';
 import { GuestDatabaseRows, languageLabel } from './guest-database-rows';
-import { visitStatuses } from './visitStateMachine';
-import { adminVisitStatusLabels } from './visitStatusLabels';
 
 const statusLabels = adminVisitStatusLabels('en');
 const noVisit = 'No visit';
@@ -126,5 +126,61 @@ describe('languageLabel', () => {
 		// Arrange, Act, Assert
 		expect(languageLabel('fa')).toBe('Farsi');
 		expect(languageLabel('zh')).toBe('Chinese');
+	});
+
+	describe('matching', () => {
+		const everyone = new GuestDatabaseRows(
+			[
+				guest(),
+				guest({ id: 'guest-2', firstName: 'Daniel', lastName: 'Brooks', status: 'not_placed' }),
+				unvisited,
+			],
+			statusLabels,
+			noVisit,
+		);
+
+		it('keeps only guests with a visit today for the session filter', () => {
+			// Arrange
+			const filter = 'in-session';
+
+			// Act
+			const names = everyone.matching(filter, '').map((row) => row.name);
+
+			// Assert
+			expect(names).toEqual(['Maria Santos', 'Daniel Brooks']);
+		});
+
+		it('keeps only guests the lottery did not place for the not-placed filter', () => {
+			// Arrange
+			const filter = 'not-placed';
+
+			// Act
+			const names = everyone.matching(filter, '').map((row) => row.name);
+
+			// Assert
+			expect(names).toEqual(['Daniel Brooks']);
+		});
+
+		it('finds a name regardless of case', () => {
+			// Arrange
+			const search = '  reyes ';
+
+			// Act
+			const names = everyone.matching('all', search).map((row) => row.name);
+
+			// Assert
+			expect(names).toEqual(['Ana Reyes']);
+		});
+
+		it('finds a phone number by its digits, whatever the punctuation', () => {
+			// Arrange
+			const search = '987 6543';
+
+			// Act
+			const names = everyone.matching('all', search).map((row) => row.name);
+
+			// Assert
+			expect(names).toEqual(['Ana Reyes']);
+		});
 	});
 });

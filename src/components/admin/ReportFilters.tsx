@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 
 import { adminTranslations } from '../../adminLocales';
 import { reportIds, type ReportId } from '../../services/reports';
+import { ChoiceChips } from './ChoiceChips';
 
 export type ReportFiltersProps = {
 	selectedReport: ReportId;
@@ -21,17 +22,24 @@ const Filters = styled.div`
 		line-height: 1.5;
 	}
 
-	@media (min-width: 860px) {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		align-items: end;
+	/*
+	 * Two dates side by side even on a phone: each is short, and together they read as a range.
+	 * Doubled to outrank the shared \`.field-row\`, which stacks its fields on a phone.
+	 */
+	&& .field-row {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+	}
 
-		.report-description {
-			grid-column: 1 / -1;
-		}
+	&& .field-row input {
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
 	}
 `;
 
-/** Which report to run, and over what dates. */
+/** Which report to run, as a row of pills that are all in sight, and over what dates. */
 export function ReportFilters({
 	selectedReport,
 	onSelectedReportChange,
@@ -44,19 +52,12 @@ export function ReportFilters({
 
 	return (
 		<Filters className="report-filters">
-			<label className="report-picker">
-				{t.reports}
-				<select
-					value={selectedReport}
-					onChange={(event) => onSelectedReportChange(event.target.value as ReportId)}
-				>
-					{reportIds.map((id) => (
-						<option key={id} value={id}>
-							{t.reportNames[id]}
-						</option>
-					))}
-				</select>
-			</label>
+			<ChoiceChips
+				label={t.reports}
+				options={reportIds.map((id) => ({ value: id, label: t.reportNames[id] }))}
+				value={selectedReport}
+				onChange={onSelectedReportChange}
+			/>
 			<div className="field-row">
 				<label>
 					{t.reportRangeFrom}
