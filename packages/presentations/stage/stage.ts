@@ -744,6 +744,12 @@ function mountPlayer<State>({
 	 * hold lands before the boundary, so playing on crosses it without stopping again.
 	 */
 	const HOLD = 0.05;
+	/**
+	 * Where a chapter's hold lands, to the millisecond GSAP keeps time in: a boundary such as
+	 * 46.126000000000005 would otherwise hold at 46.076, which still reads as before it, and playing
+	 * on would hold there again.
+	 */
+	const holdBefore = (t: number) => Math.round((t - HOLD) * 1000) / 1000;
 	let stepByStep = false;
 	let lastTime = 0;
 
@@ -752,12 +758,13 @@ function mountPlayer<State>({
 		const next =
 			stepByStep && !tl.paused()
 				? chapters.find(
-						(chapter) => chapter.t > 0 && lastTime < chapter.t - HOLD && now >= chapter.t - HOLD,
+						(chapter) =>
+							chapter.t > 0 && lastTime < holdBefore(chapter.t) && now >= holdBefore(chapter.t),
 					)
 				: null;
 
 		if (next) {
-			tl.pause(next.t - HOLD);
+			tl.pause(holdBefore(next.t));
 		}
 		lastTime = tl.time();
 	}

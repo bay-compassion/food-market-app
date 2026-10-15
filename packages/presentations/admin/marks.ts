@@ -6,6 +6,7 @@
  * find them by, and use the component's role or class instead.
  */
 import { adminTranslations } from '../../../src/adminLocales.ts';
+import { adminViewLabels } from '../../../src/components/admin/admin-view-labels.ts';
 import type { AdminView } from '../../../src/services/admin-views.ts';
 import type { AdminMark } from './scene.ts';
 
@@ -62,6 +63,27 @@ function field(doc: Document, label: string): HTMLElement | null {
 /** The open confirmation sheet. */
 const sheet = (doc: Document) => doc.querySelector<HTMLElement>('[role="alertdialog"]');
 
+/**
+ * The list of screens: in the view switcher's sheet on a phone, which is only there while open, or
+ * the sidebar on a desk.
+ */
+export const navigation = (doc: Document) => doc.querySelector<HTMLElement>('.admin-navigation');
+
+/** The title that is also the view switcher on a phone. A desk has a plain title instead. */
+export const switcher = (doc: Document) =>
+	doc.querySelector<HTMLElement>('.admin-heading h1 button');
+
+/** The screen the dashboard is on, read from its title. */
+export function currentView(doc: Document): AdminView | null {
+	const title = doc.querySelector('.admin-heading h1');
+	const words = title ? text(title) : '';
+
+	return (
+		(Object.keys(adminViewLabels) as AdminView[]).find((view) => adminViewLabels[view] === words) ??
+		null
+	);
+}
+
 /** The element a mark names on the screen as it is now, or `null` when it isn't showing. */
 export function markTarget(mark: AdminMark, doc: Document): HTMLElement | null {
 	const [kind, key] = mark.split(':') as [string, keyof typeof t | undefined];
@@ -70,7 +92,11 @@ export function markTarget(mark: AdminMark, doc: Document): HTMLElement | null {
 
 	switch (kind) {
 		case 'tab':
-			return labelled(doc, '[role="tab"]', tabLabels[key as unknown as AdminView]);
+			return labelled(navigation(doc), 'button', adminViewLabels[key as unknown as AdminView]);
+		case 'switcher':
+			return switcher(doc);
+		case 'navigation':
+			return navigation(doc);
 		case 'button':
 			return labelled(doc, 'button', copy);
 		case 'heading':
@@ -82,13 +108,14 @@ export function markTarget(mark: AdminMark, doc: Document): HTMLElement | null {
 		case 'sheet':
 			return key ? labelled(sheet(doc), 'button', copy) : sheet(doc);
 		case 'status':
-			return doc.querySelector('.event-state');
+			return doc.querySelector('.session-state');
 		case 'step':
 			return doc.querySelector('[aria-current="step"]');
 		case 'timer':
 			return doc.querySelector('[role="timer"]');
+		// A dialog, not the view switcher's sheet, which is a drawer.
 		case 'dialog':
-			return doc.querySelector('[role="dialog"]');
+			return doc.querySelector('.MuiDialog-root [role="dialog"]');
 		case 'reset':
 			return doc.querySelector('.reset-card');
 		case 'overview':
@@ -99,44 +126,20 @@ export function markTarget(mark: AdminMark, doc: Document): HTMLElement | null {
 			return doc.querySelector('.admin-feedback');
 		case 'row':
 			return doc.querySelector<HTMLElement>(`[role="row"][data-rowindex="${Number(key)}"]`);
-		// The guest database's search box, in the grid's own toolbar.
+		// The guest database's search, over its list on a phone and its grid on a desk.
 		case 'search':
 			return (
 				doc
-					.querySelector('.MuiDataGrid-root [role="searchbox"]')
+					.querySelector(`input[type="search"][aria-label="${CSS.escape(t.searchGuests)}"]`)
 					?.closest<HTMLElement>('.MuiFormControl-root') ?? null
 			);
 		case 'history':
-			return doc.querySelector('.history-list');
+			return doc.querySelector('.history-section');
+		// A report's rows: cards on a phone, a table on a desk.
 		case 'report':
-			return doc.querySelector('.report-scroll');
+			return doc.querySelector('.report-cards, .report-scroll');
 		default:
 			return null;
-	}
-}
-
-/** Each screen's tab, as `AdminDashboardLayout` labels it. */
-const tabLabels: Record<AdminView, string> = {
-	'current-session': t.currentSession,
-	schedule: t.schedule,
-	queue: t.queue,
-	broadcast: t.broadcastTitle,
-	'question-bank': t.questionBank,
-	'guest-database': t.guestDatabase,
-	'session-history': t.historySessions,
-	reports: t.reports,
-	'dev-mode': t.devMode,
-};
-
-/**
- * Brings a tab into the navigation strip's view before the narration points at it: on a phone the
- * strip scrolls sideways, and a tab past its edge is still there to tap but not to see.
- */
-export function revealTab(target: HTMLElement | null): void {
-	const strip = target?.closest<HTMLElement>('.MuiTabs-scroller');
-
-	if (target && strip) {
-		strip.scrollLeft = target.offsetLeft - (strip.clientWidth - target.offsetWidth) / 2;
 	}
 }
 

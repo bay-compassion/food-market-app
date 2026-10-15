@@ -47,6 +47,8 @@ interface GuideState {
 	confirm: AdminMark | null;
 	addGuest: AdminSceneGuestForm | null;
 	broadcast: { title: string; body: string };
+	/** Whether the view switcher's sheet of screens is open. */
+	navigating: boolean;
 	focus: AdminMark | null;
 	tap: AdminMark | null;
 	scrollTo: AdminMark | null;
@@ -157,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		confirm: null,
 		addGuest: null,
 		broadcast: { title: '', body: '' },
+		navigating: false,
 		focus: null,
 		tap: null,
 		scrollTo: null,
@@ -197,12 +200,30 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 		at(t + 0.4, (s) => {
 			s.tap = null;
-
-			// A new screen starts at its top.
-			if (target.startsWith('tab:')) {
-				s.scrollTo = null;
-			}
-
+			action?.(s);
+		});
+	};
+	/**
+	 * Moves to another screen as a worker does on a phone: a tap on the title opens the sheet of
+	 * screens, a tap on one opens it, and the new screen starts at its top.
+	 */
+	const go = (t: number, view: AdminView, action?: (s: GuideState) => void) => {
+		at(t, (s) => {
+			s.tap = 'switcher';
+			s.focus = null;
+		});
+		at(t + 0.25, (s) => {
+			s.tap = null;
+			s.navigating = true;
+		});
+		at(t + 0.4, (s) => {
+			s.tap = `tab:${view}`;
+		});
+		at(t + 0.7, (s) => {
+			s.tap = null;
+			s.navigating = false;
+			s.view = view;
+			s.scrollTo = null;
 			action?.(s);
 		});
 	};
@@ -251,14 +272,21 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	line(
 		'tabs',
-		['Getting started', 'Sign in on your phone.', 'Swipe the row of screens.'],
-		'labelled:adminTitle',
+		['Getting started', 'Sign in on your phone.', 'Tap the title to switch screens.'],
+		'switcher',
 		null,
 	);
+	// The title opens the sheet of every screen, which stays up into the first move.
+	at(C('tabs', 0.45), (s) => {
+		s.navigating = true;
+		s.focus = 'navigation';
+	});
 
 	// The schedule.
 	tap(before('schedule'), 'tab:schedule', (s) => {
+		s.navigating = false;
 		s.view = 'schedule';
+		s.scrollTo = null;
 	});
 	line('schedule', [A.schedule, A.schedulePatternDialogTitle, A.scheduleIntro], 'row:0');
 	line('upcoming', [A.schedule, A.scheduleGridLabel, A.scheduleIntro], 'row:1');
@@ -269,9 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	);
 
 	// Before registration.
-	tap(before('current'), 'tab:current-session', (s) => {
-		s.view = 'current-session';
-	});
+	go(before('current'), 'current-session');
 	line('current', [A.currentSession, 'Where today stands.', A.scheduled], 'status');
 	line('scheduled', [A.scheduled, A.openRegistrationNow, A.postponeByMinutes], 'step');
 
@@ -416,9 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	// Broadcasts.
-	tap(before('broadcast'), 'tab:broadcast', (s) => {
-		s.view = 'broadcast';
-	});
+	go(before('broadcast'), 'broadcast');
 	line(
 		'broadcast',
 		[A.broadcastTitle, 'Reach every guest at once.', A.broadcastHelp],
@@ -452,26 +476,19 @@ document.addEventListener('DOMContentLoaded', () => {
 	);
 
 	// Records and reports.
-	tap(before('database'), 'tab:guest-database', (s) => {
-		s.view = 'guest-database';
-	});
+	go(before('database'), 'guest-database');
 	line(
 		'database',
 		[A.guestDatabase, 'Everyone on record.', 'Search by name or phone number.'],
 		'search',
 	);
-	tap(before('history'), 'tab:session-history', (s) => {
-		s.view = 'session-history';
-	});
-	line('history', [A.historySessions, 'Past markets.', A.admitAsServed], 'history');
-	tap(before('reports'), 'tab:reports', (s) => {
-		s.view = 'reports';
-	});
+	go(before('history'), 'session-history');
+	line('history', [A.historySessions, 'Past markets, by month.', A.recordServedGuest], 'history');
+	go(before('reports'), 'reports');
 	line('reports', [A.reports, A.reportNames['session-summary'], A.reportPrivacyNote], 'report');
 
 	// Closing the session.
-	tap(before('close'), 'tab:queue', (s) => {
-		s.view = 'queue';
+	go(before('close'), 'queue', (s) => {
 		s.time = '13:05';
 		// Everyone placed has come up by the time the market closes.
 		s.guests
@@ -483,9 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		s.status = 'ended';
 		s.archived = true;
 	});
-	tap(before('next'), 'tab:current-session', (s) => {
-		s.view = 'current-session';
-	});
+	go(before('next'), 'current-session');
 	line('next', [A.currentSession, 'Ready for next week.', A.scheduleIntro], 'step');
 	at(C('thanks'), (s) => {
 		s.cap = null;
@@ -527,6 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			},
 			guests: s.guests,
 			archived: s.archived,
+			navigating: s.navigating,
 			confirm: s.confirm,
 			addGuest: s.addGuest,
 			broadcast: s.broadcast,

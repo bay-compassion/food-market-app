@@ -59,6 +59,8 @@ export type AdminMark =
 	| `labelled:${KeysOf<string>}`
 	| `sheet:${KeysOf<string>}`
 	| `row:${number}`
+	| 'switcher'
+	| 'navigation'
 	| 'status'
 	| 'step'
 	| 'timer'
@@ -84,6 +86,8 @@ export interface AdminScene {
 	guests: AdminSceneGuest[];
 	/** Today's session has moved to Session history. */
 	archived: boolean;
+	/** Whether the view switcher's sheet of screens is open. */
+	navigating: boolean;
 	/** The button whose confirmation sheet is open, or `null` for none. */
 	confirm: AdminMark | null;
 	/** The add-guest dialog and what is typed into it, or `null` while it is shut. */

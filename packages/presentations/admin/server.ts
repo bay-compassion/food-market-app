@@ -48,9 +48,9 @@ const RETURNING: [string, string, string][] = [
 
 /** The session-summary report's rows for the guide's past weeks: sign-ups, places, served. */
 const PAST_WEEKS: [number, number, number, number][] = [
-	[3, 26, 18, 16],
-	[2, 22, 18, 17],
-	[1, 31, 18, 15],
+	[3, 26, 12, 11],
+	[2, 22, 12, 12],
+	[1, 31, 12, 10],
 ];
 
 const json = (body: unknown, status = 200) =>
@@ -193,7 +193,7 @@ export class AdminServer {
 	/** Finished sessions, newest first, with today's once it has closed. */
 	private get history(): HistoricalEvent[] {
 		const { market } = this.scene;
-		const past = PAST_WEEKS.map(([weeks, guestCount]) => ({
+		const past = [...PAST_WEEKS].reverse().map(([weeks, guestCount]) => ({
 			id: `guide-past-${weeks}`,
 			registrationOpensAt: iso(weeksOn(market.opensAt, -weeks)),
 			registrationClosesAt: iso(weeksOn(market.opensAt, -weeks) + market.windowMinutes * 60_000),
