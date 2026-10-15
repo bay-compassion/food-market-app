@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -77,10 +77,37 @@ function renderDashboard(
 	return { ...result, onNavigate, store };
 }
 
-function navigationLabels(container: HTMLElement) {
-	return Array.from(container.querySelectorAll('.admin-navigation button')).map(
-		(button) => button.textContent,
-	);
+/**
+ * On a phone — which is what jsdom's media queries report — the screens are listed in a sheet the
+ * title opens, so reading them means opening it first. Waits for the title to become a switcher,
+ * which happens once the worker's permissions have resolved to at least one screen.
+ */
+async function openNavigation(container: HTMLElement) {
+	const switcher = await waitFor(() => {
+		const button = container.querySelector<HTMLButtonElement>('h1 button');
+
+		if (!button) {
+			throw new Error('The view switcher has not rendered yet.');
+		}
+
+		return button;
+	});
+
+	await userEvent.setup().click(switcher);
+
+	return document.body.querySelector<HTMLElement>('.admin-navigation')!;
+}
+
+async function navigationLabels(container: HTMLElement) {
+	const navigation = await openNavigation(container);
+
+	return Array.from(navigation.querySelectorAll('button')).map((button) => button.textContent);
+}
+
+async function navigateTo(container: HTMLElement, label: string) {
+	const navigation = await openNavigation(container);
+
+	await userEvent.setup().click(within(navigation).getByRole('button', { name: label }));
 }
 
 afterEach(() => {
@@ -92,9 +119,11 @@ describe('admin navigation by permission', () => {
 	it('offers a queue worker only the screens their role can open', async () => {
 		const { container } = renderDashboard(['run:queue']);
 
-		await waitFor(() =>
-			expect(navigationLabels(container)).toEqual([t.queue, t.guestDatabase, t.historySessions]),
-		);
+		expect(await navigationLabels(container)).toEqual([
+			t.queue,
+			t.guestDatabase,
+			t.historySessions,
+		]);
 	});
 
 	it('offers an administrator everything', async () => {
@@ -105,18 +134,16 @@ describe('admin navigation by permission', () => {
 			'export:guest-data',
 		]);
 
-		await waitFor(() =>
-			expect(navigationLabels(container)).toEqual([
-				t.currentSession,
-				t.schedule,
-				t.queue,
-				t.broadcastTitle,
-				t.questionBank,
-				t.guestDatabase,
-				t.historySessions,
-				t.reports,
-			]),
-		);
+		expect(await navigationLabels(container)).toEqual([
+			t.currentSession,
+			t.queue,
+			t.broadcastTitle,
+			t.schedule,
+			t.questionBank,
+			t.guestDatabase,
+			t.historySessions,
+			t.reports,
+		]);
 	});
 
 	it('lands a worker on a screen they can open, not the default one they cannot', async () => {
@@ -130,13 +157,14 @@ describe('admin navigation by permission', () => {
 		const { container } = renderDashboard([]);
 
 		await waitFor(() => expect(container.textContent).toContain(t.noAccess));
-		expect(navigationLabels(container)).toEqual([]);
+		expect(container.querySelector('h1 button')).toBeNull();
+		expect(document.body.querySelector('.admin-navigation')).toBeNull();
 	});
 
 	it('does not request guest data a worker has no permission to read', async () => {
 		const { container } = renderDashboard(['read:reports']);
 
-		await waitFor(() => expect(navigationLabels(container)).toEqual([t.reports]));
+		expect(await navigationLabels(container)).toEqual([t.reports]);
 
 		const urls = vi
 			.mocked(fetch)
@@ -150,32 +178,31 @@ describe('admin navigation by permission', () => {
 	it('offers the dev-mode screen only to whoever holds manage:demo-data', async () => {
 		const { container } = renderDashboard(['manage:demo-data']);
 
-		await waitFor(() => expect(navigationLabels(container)).toEqual([t.devMode]));
+		expect(await navigationLabels(container)).toEqual([t.devMode]);
 	});
 });
 
-describe('broadcast notification tab', () => {
-	it('opens its own screen and preserves a draft across tab switches', async () => {
+describe('broadcast notification screen', () => {
+	it('opens its own screen and preserves a draft across screen switches', async () => {
 		// Arrange
 		const user = userEvent.setup();
 		const screen = renderDashboard(['manage:sessions'], {
 			status: SessionStatusEnum.REGISTRATION_OPEN,
 		});
-		const tab = await screen.findByRole('tab', { name: t.broadcastTitle });
 
 		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
 
 		// Act
-		await user.click(tab);
+		await navigateTo(screen.container, t.broadcastTitle);
 		await user.type(screen.getByLabelText(t.broadcastTitleLabel), 'Doors open');
 		await user.type(screen.getByLabelText(t.broadcastMessageLabel), 'Come on in');
-		await user.click(screen.getByRole('tab', { name: t.currentSession }));
+		await navigateTo(screen.container, t.currentSession);
 		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
-		await user.click(tab);
+		await navigateTo(screen.container, t.broadcastTitle);
 
 		// Assert
 		expect(screen.onNavigate).toHaveBeenLastCalledWith('broadcast');
-		expect(tab.getAttribute('aria-selected')).toBe('true');
+		expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(t.broadcastTitle);
 		expect((screen.getByLabelText(t.broadcastTitleLabel) as HTMLInputElement).value).toBe(
 			'Doors open',
 		);

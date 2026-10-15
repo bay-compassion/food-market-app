@@ -1,17 +1,21 @@
 import { TextField } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
+import type { GuestFormCopy } from '../../../locales';
 import { ageRanges, type AgeRange } from '../../../services/ageRanges';
 import type { SessionQuestion } from '../../../stores/market-session.store';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { NumberSpinner } from '../../NumberSpinner';
 import { FormSection } from './FormSection';
+import { useGuestFormCopy } from './use-guest-form-copy';
 
 export type GuestLotteryFormProps = {
 	/** The session's own questions, which vary per market event. Owned by the container, since it
 	 *  is what knows which session is running. */
 	registrationQuestions: SessionQuestion[];
+	/** Wording to use in place of the guest's own, for a worker filling it in for them. */
+	copy?: Partial<GuestFormCopy>;
 };
 
 /** The scale answers on offer, 1 through 10. */
@@ -26,8 +30,10 @@ const scaleValues = Array.from({ length: 10 }, (_, index) => index + 1);
  */
 export const GuestLotteryForm = observer(function GuestLotteryForm({
 	registrationQuestions,
+	copy: override,
 }: GuestLotteryFormProps) {
 	const t = useTranslation();
+	const copy = useGuestFormCopy(override);
 	const { registration } = useRootStore();
 	const { guest } = registration;
 
@@ -50,7 +56,7 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 
 	return (
 		<>
-			<FormSection legend={t.guestView.forms.lotteryLegend}>
+			<FormSection legend={copy.lotteryLegend}>
 				<TextField
 					label={t.age}
 					select
@@ -62,7 +68,7 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 					required
 				>
 					<option value="" disabled>
-						{t.agePlaceholder}
+						{copy.agePlaceholder}
 					</option>
 					{ageRanges.map((range) => (
 						<option key={range} value={range}>
@@ -72,8 +78,8 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 				</TextField>
 				<NumberSpinner
 					{...countProps}
-					label={t.household}
-					hint={t.householdHint}
+					label={copy.household}
+					hint={copy.householdHint}
 					// A household always has at least the guest in it, where the other two counts can
 					// legitimately be nobody.
 					min={1}
@@ -82,14 +88,14 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 				/>
 				<NumberSpinner
 					{...countProps}
-					label={t.childrenCount}
+					label={copy.childrenCount}
 					min={0}
 					value={guest.childrenCount}
 					onChange={(value) => registration.updateGuest({ childrenCount: value })}
 				/>
 				<NumberSpinner
 					{...countProps}
-					label={t.seniorsCount}
+					label={copy.seniorsCount}
 					min={0}
 					value={guest.seniorsCount}
 					onChange={(value) => registration.updateGuest({ seniorsCount: value })}

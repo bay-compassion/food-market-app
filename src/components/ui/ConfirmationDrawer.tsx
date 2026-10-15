@@ -1,32 +1,10 @@
 import styled from '@emotion/styled';
-import { Button, Drawer } from '@mui/material';
+import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
 
 import { useRootStore } from '../../stores/react/store-context';
-
-// The sheet renders in a portal, outside both `.app-shell` and `.admin-dashboard`, so it carries
-// its own styles and its own writing direction.
-const Sheet = styled(Drawer)`
-	.MuiBackdrop-root {
-		background: rgb(30 71 77 / 62%);
-	}
-
-	.MuiDrawer-paper {
-		box-sizing: border-box;
-		width: min(100%, 480px);
-		max-height: calc(100dvh - 32px);
-
-		/* Anchored bottom, so the paper spans the viewport; this centres it on a wider screen. */
-		margin-inline: auto;
-		padding: 22px 22px calc(22px + env(safe-area-inset-bottom));
-		overflow-y: auto;
-		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-		color: var(--color-text);
-		background: var(--color-background);
-		box-shadow: 0 -18px 60px rgb(30 71 77 / 24%);
-	}
-`;
+import { BottomSheet } from './BottomSheet';
 
 const Question = styled.h2`
 	margin: 0;
@@ -80,7 +58,7 @@ export const ConfirmationDrawer = observer(function ConfirmationDrawer() {
 	const hasDetails = !!request?.details?.length;
 
 	return (
-		<Sheet
+		<BottomSheet
 			anchor="bottom"
 			className="confirmation-drawer"
 			open={request !== null}
@@ -148,6 +126,6 @@ export const ConfirmationDrawer = observer(function ConfirmationDrawer() {
 					</Answers>
 				</>
 			) : null}
-		</Sheet>
+		</BottomSheet>
 	);
 });

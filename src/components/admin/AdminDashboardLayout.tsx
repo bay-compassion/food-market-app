@@ -1,13 +1,22 @@
 import styled from '@emotion/styled';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import { useId, type ReactNode } from 'react';
 
-import { currentSessionState } from '../../services/sessionStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
-import { AdminDashboardTabs } from './AdminDashboardTabs';
+import { adminViewLabels } from './admin-view-labels';
 import { AdminFeedbackBanner } from './AdminFeedbackBanner';
+import { AdminViewList } from './AdminViewList';
+import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { GuestClaimDialog } from './GuestClaimDialog';
+import { SessionStateChip } from './SessionStateChip';
 import type { AdminView } from './types';
+
+/**
+ * The width at which the navigation leaves the switcher's sheet for a sidebar beside the screen.
+ * The only place the dashboard decides between its phone and desk layouts.
+ */
+const wideLayoutQuery = '(min-width: 860px)';
 
 /*
  * Reports are the one admin screen meant for a desk: a wide table is easier to read than a narrow
@@ -16,66 +25,49 @@ import type { AdminView } from './types';
 const Dashboard = styled.section<{ $wide: boolean }>`
 	width: min(100% - 32px, ${({ $wide }) => ($wide ? '1600px' : '1180px')});
 	margin: 0 auto;
-	padding: 16px 0 60px;
+	padding: 12px 0 60px;
+
+	.admin-sidebar {
+		position: sticky;
+		top: 24px;
+	}
 
 	.admin-content {
 		min-width: 0;
 	}
 
+	/*
+	 * The title and the session's status share a line, so the status is read on every screen
+	 * without costing one of its own; the screen's content starts right under a one-line summary.
+	 */
 	.admin-heading {
-		margin-bottom: 24px;
+		display: grid;
+		gap: 6px;
+		margin-bottom: 20px;
+		padding-bottom: 14px;
+		border-bottom: 1px solid #e2e6e3;
+	}
+
+	.admin-title-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 12px;
+		align-items: center;
+		justify-content: space-between;
 	}
 
 	.admin-heading h1 {
-		color: var(--color-brand);
-		margin-bottom: 8px;
+		margin: 0;
+		color: var(--color-brand-dark);
+		font-size: 24px;
+		letter-spacing: normal;
+		text-transform: none;
 	}
 
 	.admin-heading p {
 		color: var(--color-text-subtle);
-		line-height: 1.5;
-	}
-
-	/*
-	 * The session's status leads the heading rather than trailing it: on the two screens that show
-	 * it, it is the thing a worker opens the dashboard to check, so it is read before the title
-	 * rather than found beside it. Solid rather than tinted for the same reason.
-	 */
-	.event-state {
-		display: inline-flex;
-		gap: 9px;
-		align-items: center;
-		margin-bottom: 12px;
-		padding: 8px 15px;
-		border-radius: var(--radius-pill);
-		background: #146c34;
-		color: white;
 		font-size: 15px;
-		font-weight: 700;
-		line-height: 1.2;
-	}
-
-	/* The status light, which carries the state at a glance before the words are read. */
-	.event-state::before {
-		content: '';
-		width: 9px;
-		height: 9px;
-		border-radius: 50%;
-		background: currentColor;
-	}
-
-	.event-state.registration_closed,
-	.event-state.lottery_pending,
-	.event-state.inactive {
-		background: #7a4e00;
-	}
-
-	.event-state.scheduled {
-		background: #254d7a;
-	}
-
-	.event-state.service_started {
-		background: #39306b;
+		line-height: 1.45;
 	}
 
 	.admin-no-access {
@@ -95,15 +87,20 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 		color: var(--color-brand);
 	}
 
-	@media (min-width: 860px) {
+	@media ${wideLayoutQuery} {
 		display: grid;
-		grid-template-columns: 210px minmax(0, 1fr);
+		grid-template-columns: 220px minmax(0, 1fr);
 		gap: 42px;
 		align-items: start;
+		padding-top: 24px;
+
+		.admin-heading h1 {
+			font-size: 30px;
+		}
 	}
 `;
 
-/** Shared navigation and feedback around each admin screen. */
+/** Shared navigation, title, and feedback around each admin screen. */
 export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 	activeView,
 	onNavigate,
@@ -113,70 +110,44 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 	onNavigate: (view: AdminView) => void;
 	children: ReactNode;
 }) {
-	const { translations, admin, session } = useRootStore();
+	const { translations, admin } = useRootStore();
 	const t = translations.adminTranslation;
-	const viewLabels: Record<AdminView, string> = {
-		'current-session': t.currentSession,
-		schedule: t.schedule,
-		queue: t.queue,
-		broadcast: t.broadcastTitle,
-		'question-bank': t.questionBank,
-		'guest-database': t.guestDatabase,
-		'session-history': t.historySessions,
-		reports: t.reports,
-		'dev-mode': t.devMode,
-	};
-	const navigation = admin.views.map((id) => ({ id, label: viewLabels[id] }));
-	const idPrefix = useId();
-	const idFor = (view: AdminView) => ({
-		tab: `${idPrefix}-${view}-tab`,
-		panel: `${idPrefix}-${view}-panel`,
-	});
-	const sessionState = currentSessionState(session.currentState?.event?.status);
-	const sessionStatusLabel = {
-		scheduled: t.scheduled,
-		registration_open: t.open,
-		registration_closed: t.closed,
-		lottery_pending: t.lotteryPending,
-		service_started: t.serviceStarted,
-		inactive: t.noActiveSession,
-	}[sessionState];
+	const isWide = useMediaQuery(wideLayoutQuery);
+	const headingId = useId();
 
 	return (
 		<Dashboard className="admin-dashboard" $wide={activeView === 'reports'}>
-			<AdminDashboardTabs
-				items={navigation}
-				value={activeView}
-				idFor={idFor}
-				onChange={onNavigate}
-				label={t.adminTitle}
-			/>
-			{!navigation.length ? (
+			{isWide ? (
+				<div className="admin-sidebar">
+					<AdminViewList activeView={activeView} onSelect={onNavigate} label={t.adminTitle} />
+				</div>
+			) : null}
+			{admin.navigation.isEmpty ? (
 				<p className="admin-no-access" role="status">
 					{t.noAccess}
 				</p>
 			) : (
-				<div
-					className="admin-content"
-					role="tabpanel"
-					id={idFor(activeView).panel}
-					aria-labelledby={idFor(activeView).tab}
-				>
-					{/* Keep queue controls above the fold on a phone. */}
+				<section className="admin-content" aria-labelledby={headingId}>
 					<header className="admin-heading">
-						{activeView === 'current-session' || activeView === 'queue' ? (
-							<span className={`event-state ${sessionState}`}>{sessionStatusLabel}</span>
-						) : null}
-						<h1>{viewLabels[activeView]}</h1>
-						{activeView !== 'queue' && activeView !== 'schedule' ? (
-							<p>{t.adminDescription}</p>
-						) : null}
+						<div className="admin-title-row">
+							{isWide ? (
+								<h1 id={headingId}>{adminViewLabels[activeView]}</h1>
+							) : (
+								<AdminViewSwitcher
+									activeView={activeView}
+									onNavigate={onNavigate}
+									headingId={headingId}
+								/>
+							)}
+							<SessionStateChip />
+						</div>
+						<p>{t.viewDescriptions[activeView]}</p>
 					</header>
 					<AdminFeedbackBanner />
 					{children}
 					{/* Opened from the feedback line after an add, or from any guest's Actions menu. */}
 					<GuestClaimDialog />
-				</div>
+				</section>
 			)}
 		</Dashboard>
 	);

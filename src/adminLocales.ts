@@ -1,3 +1,5 @@
+import type { GuestFormCopy } from './locales.ts';
+import type { AdminView, AdminViewGroup } from './services/admin-views.ts';
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
 import type { VisitEventKind } from './services/visit-events.ts';
 
@@ -25,7 +27,16 @@ export interface AdminTranslation {
 	admitToLotteryHelp: string;
 	admitToQueue: string;
 	admitToQueueHelp: string;
-	adminDescription: string;
+	/** One line under each screen's title saying what the screen is for. */
+	viewDescriptions: Record<AdminView, string>;
+	/** The navigation's headings. */
+	viewGroups: Record<AdminViewGroup, string>;
+	/** Names the sheet, and the title button that opens it, where a worker picks another screen. */
+	switchView: string;
+	/** A past session's status in the history list. */
+	sessionClosed: string;
+	/** The guest-registration copy, reworded for a worker entering someone else's details. */
+	manualGuestForm: GuestFormCopy;
 	adminTitle: string;
 	allGuests: string;
 	broadcastConfirm: string;
@@ -422,8 +433,37 @@ export const adminTranslations = {
 		admitToQueue: 'Give them a spot',
 		admitToQueueHelp:
 			'The guest skips the lottery and goes straight into the line. This uses one of the session’s spots.',
-		adminDescription: 'Configure registration, draw the lottery, and manage today’s guests.',
-		adminTitle: 'Market dashboard',
+		viewDescriptions: {
+			'current-session': 'Open registration, draw the lottery, and follow today’s service.',
+			queue: 'Call guests forward and record who has been served.',
+			broadcast: 'Send one message to every guest who turned on notifications.',
+			schedule: 'Set when the market runs and add one-off sessions.',
+			'question-bank': 'The questions a session can ask guests when they register.',
+			'guest-database': 'Everyone who has registered or been added by staff.',
+			'session-history': 'Past sessions, and guests served outside the app.',
+			reports: 'Basic figures for a date range. Export a CSV for anything more.',
+			'dev-mode': 'Load demo guests and visits to show the app at a chosen moment.',
+		},
+		viewGroups: {
+			today: 'Today',
+			plan: 'Plan',
+			records: 'Records',
+		},
+		switchView: 'Switch View',
+		sessionClosed: 'Closed',
+		manualGuestForm: {
+			informationLegend: 'Guest Details',
+			pronunciationOffer: 'Add how to say their name',
+			pronunciationHelp: 'Write it the way it sounds, so whoever calls it says it correctly.',
+			pronunciationCollapse: 'Hide how to say their name',
+			lotteryLegend: 'Household',
+			agePlaceholder: 'Select their age range',
+			household: 'Number of people in their household',
+			householdHint: 'Including the guest',
+			childrenCount: 'Number of children they’re shopping for',
+			seniorsCount: 'Number of seniors (55+) they’re shopping for',
+		},
+		adminTitle: 'Market Dashboard',
 		allGuests: 'All guests',
 		broadcastConfirm: 'Send this announcement to every subscribed guest in the current session?',
 		broadcastHelp: 'The message will be sent exactly as written to all subscribed guests.',
@@ -431,7 +471,7 @@ export const adminTranslations = {
 		broadcastNoRecipients: 'No subscribed guests are available for this broadcast.',
 		broadcastQueued: 'Broadcast queued for subscribed guests:',
 		broadcastSend: 'Send broadcast',
-		broadcastTitle: 'Broadcast notification',
+		broadcastTitle: 'Broadcast Notification',
 		broadcastTitleLabel: 'Notification title',
 		broadcastUnavailable:
 			'Broadcast notifications are available once registration opens and until the session ends.',
@@ -452,7 +492,7 @@ export const adminTranslations = {
 		confirmResetSessionDetails:
 			'It will leave Current Session and remain available in session history.',
 		confirmRunLottery: 'Run the lottery and start service?',
-		currentSession: 'Current session',
+		currentSession: 'Current Session',
 		drawComplete: 'Lottery draw complete.',
 		drawn: 'Lottery drawn',
 		editSettings: 'Lottery setup',
@@ -460,7 +500,7 @@ export const adminTranslations = {
 		extendRegistration: 'Extend',
 		extendRegistrationMinutes: 'Extend registration by (minutes)',
 		guestList: 'Guest list',
-		guestDatabase: 'Guest database',
+		guestDatabase: 'Guest Database',
 		guestAdded: '{name} was added.',
 		guestClaimClose: 'Close QR code',
 		guestClaimConfirm: "Show a QR code that puts {name}'s record on a phone?",
@@ -477,7 +517,7 @@ export const adminTranslations = {
 			'{name} already uses the app on another phone. Once this is scanned, that phone is signed out and this one takes over their record.',
 		guestClaimShow: 'Show QR code for their phone',
 		guestClaimTitle: 'Set up their phone',
-		historySessions: 'Session history',
+		historySessions: 'Session History',
 		householdCount: 'Household',
 		lotteryActions: 'Lottery actions',
 		lotteryPending: 'Lottery pending',
@@ -598,7 +638,7 @@ export const adminTranslations = {
 		placeEnd: 'End of the queue',
 		confirmCloseSessionOutstanding:
 			'{count} guests have not been served yet. Closing marks them as a no show.',
-		questionBank: 'Question bank',
+		questionBank: 'Question Bank',
 		questions: 'Registration questions',
 		registered: 'Registered',
 		registeredGuests: 'Registered guests',
