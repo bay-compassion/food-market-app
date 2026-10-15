@@ -133,11 +133,29 @@ export const LotteryPending: Story = {
 	},
 };
 
+/**
+ * Service under way: the overview leads, and the four finished steps fold into one line so the
+ * way to the queue sits near the top. The whole timeline is a tap away.
+ */
 export const ServiceStarted: Story = {
 	args: {
 		event: { ...event, status: 'service_started' },
 		sessionState: 'service_started',
 		counts: { waiting: 20, called: 5, served: 10, not_placed: 3 },
+	},
+	play: async ({ canvas, userEvent, args }) => {
+		const stepper = within(canvas.getByRole('group', { name: t.currentSession }));
+		const summary = canvas.getByRole('button', {
+			name: new RegExp(t.stepsDone.replace('{count}', '4')),
+		});
+
+		await expect(stepper.queryByText(t.lotteryPending)).not.toBeInTheDocument();
+		await expect(summary).toHaveAttribute('aria-expanded', 'false');
+		await userEvent.click(summary);
+		await expect(summary).toHaveAttribute('aria-expanded', 'true');
+		await expect(stepper.getByText(t.lotteryPending)).toBeVisible();
+		await userEvent.click(canvas.getByRole('button', { name: t.goToQueue }));
+		await expect(args.onNavigateQueue).toHaveBeenCalled();
 	},
 };
 

@@ -6,6 +6,7 @@ import { useId, type ReactNode } from 'react';
 import { useRootStore } from '../../stores/react/store-context';
 import { adminViewLabels } from './admin-view-labels';
 import { AdminFeedbackBanner } from './AdminFeedbackBanner';
+import { AdminThemeProvider } from './AdminThemeProvider';
 import { AdminViewList } from './AdminViewList';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { GuestClaimDialog } from './GuestClaimDialog';
@@ -116,39 +117,41 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 	const headingId = useId();
 
 	return (
-		<Dashboard className="admin-dashboard" $wide={activeView === 'reports'}>
-			{isWide ? (
-				<div className="admin-sidebar">
-					<AdminViewList activeView={activeView} onSelect={onNavigate} label={t.adminTitle} />
-				</div>
-			) : null}
-			{admin.navigation.isEmpty ? (
-				<p className="admin-no-access" role="status">
-					{t.noAccess}
-				</p>
-			) : (
-				<section className="admin-content" aria-labelledby={headingId}>
-					<header className="admin-heading">
-						<div className="admin-title-row">
-							{isWide ? (
-								<h1 id={headingId}>{adminViewLabels[activeView]}</h1>
-							) : (
-								<AdminViewSwitcher
-									activeView={activeView}
-									onNavigate={onNavigate}
-									headingId={headingId}
-								/>
-							)}
-							<SessionStateChip />
-						</div>
-						<p>{t.viewDescriptions[activeView]}</p>
-					</header>
-					<AdminFeedbackBanner />
-					{children}
-					{/* Opened from the feedback line after an add, or from any guest's Actions menu. */}
-					<GuestClaimDialog />
-				</section>
-			)}
-		</Dashboard>
+		<AdminThemeProvider>
+			<Dashboard className="admin-dashboard" $wide={activeView === 'reports'}>
+				{isWide ? (
+					<div className="admin-sidebar">
+						<AdminViewList activeView={activeView} onSelect={onNavigate} label={t.adminTitle} />
+					</div>
+				) : null}
+				{admin.navigation.isEmpty ? (
+					<p className="admin-no-access" role="status">
+						{t.noAccess}
+					</p>
+				) : (
+					<section className="admin-content" aria-labelledby={headingId}>
+						<header className="admin-heading">
+							<div className="admin-title-row">
+								{isWide ? (
+									<h1 id={headingId}>{adminViewLabels[activeView]}</h1>
+								) : (
+									<AdminViewSwitcher
+										activeView={activeView}
+										onNavigate={onNavigate}
+										headingId={headingId}
+									/>
+								)}
+								<SessionStateChip />
+							</div>
+							<p>{t.viewDescriptions[activeView]}</p>
+						</header>
+						<AdminFeedbackBanner />
+						{children}
+						{/* Opened from the feedback line after an add, or from any guest's Actions menu. */}
+						<GuestClaimDialog />
+					</section>
+				)}
+			</Dashboard>
+		</AdminThemeProvider>
 	);
 });

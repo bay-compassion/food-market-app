@@ -717,7 +717,7 @@ describe('App', () => {
 		await navigateTo(adminTranslations.en.guestDatabase);
 		expect(container.textContent).toContain('All guests');
 		// This fixture has no session configured, and a guest can still be added — details only.
-		expect(container.textContent).toContain('Add guest');
+		expect(container.textContent).toContain('Add Guest');
 		expect(getAccessToken).toHaveBeenCalled();
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/admin/market/overview',
@@ -731,29 +731,29 @@ describe('App', () => {
 	it.each([
 		{
 			status: 'scheduled',
-			shown: ['Registration scheduled', 'Postpone', 'Open Early', 'Add guest'],
+			shown: ['Registration scheduled', 'Postpone', 'Open Early', 'Add Guest'],
 			hidden: ['Schedule registration', 'Today’s overview', 'Broadcast Notification'],
 		},
 		{
 			status: 'registration_open',
-			shown: ['Extend registration by (minutes)', 'Close early', 'Add guest'],
-			hidden: ['Today’s overview', 'Run lottery draw'],
+			shown: ['Extend registration by (minutes)', 'Close Early', 'Add Guest'],
+			hidden: ['Today’s overview', 'Run Lottery Draw'],
 		},
 		{
 			status: 'registration_closed',
-			shown: ['Reopen registration', 'Add guest'],
-			hidden: ['Schedule registration', 'Today’s overview', 'Run lottery draw'],
+			shown: ['Reopen Registration', 'Add Guest'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Run Lottery Draw'],
 		},
 		{
 			status: 'lottery_pending',
-			shown: ['Run lottery draw', 'Add guest'],
-			hidden: ['Schedule registration', 'Today’s overview', 'Reopen registration'],
+			shown: ['Run Lottery Draw', 'Add Guest'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Reopen Registration'],
 		},
 		{
 			// Queue management moved to its own view, so current-session only points at it.
 			status: 'service_started',
-			shown: ['Today’s overview', 'Go to Queue', 'Add guest'],
-			hidden: ['Schedule registration', 'Run lottery draw', 'Call next'],
+			shown: ['Today’s overview', 'Go to the Queue', 'Add Guest'],
+			hidden: ['Schedule registration', 'Run Lottery Draw', 'Call Next'],
 		},
 	] as const)(
 		'shows only the $status current-session controls',
@@ -875,9 +875,9 @@ describe('App', () => {
 
 		const { container } = renderDashboard();
 
-		await waitFor(() => expect(container.textContent).toContain('Close early'));
+		await waitFor(() => expect(container.textContent).toContain('Close Early'));
 
-		await user.click(screen.getByRole('button', { name: 'Close early' }));
+		await user.click(screen.getByRole('button', { name: 'Close Early' }));
 
 		expect((await screen.findByRole('alertdialog')).textContent).toContain(
 			'Close registration now?',
@@ -896,7 +896,7 @@ describe('App', () => {
 		);
 
 		fetchMock.mockClear();
-		await user.click(screen.getByRole('button', { name: 'Reset session' }));
+		await user.click(screen.getByRole('button', { name: 'Reset Session' }));
 
 		const resetSheet = await screen.findByRole('alertdialog');
 

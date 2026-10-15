@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 
+import { AdminThemeProvider } from '../src/components/admin/AdminThemeProvider';
 import { AppFooter } from '../src/components/AppFooter';
 import { AppThemeProvider } from '../src/components/AppThemeProvider';
 import { StaticLDProvider } from '../src/components/StaticLDProvider';
@@ -223,7 +224,14 @@ const preview: Preview = {
 								</main>
 							) : (
 								<div className={shells[shell]} dir={store.translations.dir}>
-									<Story />
+									{shell === 'admin' ? (
+										// What `AdminDashboardLayout` provides around every admin screen.
+										<AdminThemeProvider>
+											<Story />
+										</AdminThemeProvider>
+									) : (
+										<Story />
+									)}
 								</div>
 							)}
 							<ConfirmationDrawer />

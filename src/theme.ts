@@ -218,3 +218,18 @@ export const appTheme = createTheme({
 		},
 	},
 });
+
+/**
+ * The market dashboard's theme: the app's own, with button labels left as written. The guest app
+ * keeps MUI's capitalised buttons; staff screens put many buttons side by side, where a row of
+ * capitals is hard to scan, so their labels are written in title case instead (see `CLAUDE.md`).
+ */
+export const adminTheme = createTheme(appTheme, {
+	components: {
+		MuiButton: {
+			styleOverrides: {
+				root: { textTransform: 'none' },
+			},
+		},
+	},
+});
