@@ -396,6 +396,24 @@ export interface HoldingPageTranslations {
 	currentAppLink: string;
 }
 
+/**
+ * The registration-form copy that speaks to the guest ("your information", "you're shopping for").
+ * A worker adding a guest by hand fills in the same forms for someone else, so the admin dialog
+ * replaces exactly these with its own staff wording; every other label is neutral as it stands.
+ */
+export type GuestFormCopy = Pick<
+	GuestViewTranslations['forms'],
+	| 'informationLegend'
+	| 'pronunciationOffer'
+	| 'pronunciationHelp'
+	| 'pronunciationCollapse'
+	| 'lotteryLegend'
+> &
+	Pick<
+		Translation,
+		'agePlaceholder' | 'household' | 'householdHint' | 'childrenCount' | 'seniorsCount'
+	>;
+
 export interface Translation {
 	holdingPage: HoldingPageTranslations;
 	appBar: AppBarTranslations;

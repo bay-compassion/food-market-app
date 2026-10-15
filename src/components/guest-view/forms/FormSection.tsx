@@ -14,7 +14,16 @@ const Fieldset = styled.fieldset`
 	}
 `;
 
+/*
+ * Floated so it leaves the fieldset's border. A legend otherwise renders inside the top border, so
+ * the divider between two sections ran through the second section's heading.
+ */
 const Legend = styled.legend`
+	float: inline-start;
+	width: 100%;
+
+	/* On the legend, not the fields: a cleared element's top margin is lost against the float. */
+	margin-bottom: 14px;
 	padding: 0;
 	font-family: var(--font-heading);
 	font-size: 18px;
@@ -25,9 +34,9 @@ const Legend = styled.legend`
 `;
 
 const Fields = styled.div`
+	clear: both;
 	display: grid;
 	gap: 18px;
-	margin-top: 14px;
 `;
 
 type FormSectionProps = {

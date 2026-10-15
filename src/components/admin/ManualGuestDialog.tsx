@@ -121,10 +121,10 @@ const ManualGuestFields = observer(function ManualGuestFields({
 
 	return (
 		<Form id={formId} className="manual-guest-form" onSubmit={handleSubmit}>
-			<GuestInformationForm />
+			<GuestInformationForm copy={t.manualGuestForm} />
 			{/* Household details belong to a visit, so saving details alone does not ask for them. */}
 			{admissionCreatesVisit(choice.admission) ? (
-				<GuestLotteryForm registrationQuestions={[]} />
+				<GuestLotteryForm registrationQuestions={[]} copy={t.manualGuestForm} />
 			) : null}
 			<FormSection legend={t.admissionLegend}>
 				{admissions.length > 1 ? (
@@ -186,7 +186,8 @@ const ManualGuestFields = observer(function ManualGuestFields({
  * Adding a guest by hand, in a dialog over whichever admin screen asked for it.
  *
  * The identity and household fields are the same components a guest fills in for themselves, so
- * the two never drift apart; only the admission block is the worker's alone. What the resulting
+ * the two never drift apart; only their guest-facing wording is swapped for the worker's, and the
+ * admission block is the worker's alone. What the resulting
  * visit looks like depends entirely on `admissions`, which the container derives from how far the
  * session has progressed — see `manualAdmissionsFor` in `services/guestAdmission.ts`. Saving details
  * only is always among them, so a guest can be added between sessions too; that creates no visit.

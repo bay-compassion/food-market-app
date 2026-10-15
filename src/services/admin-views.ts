@@ -1,13 +1,14 @@
 import type { Permission } from './permissions.ts';
 
 /**
- * The admin screens, in navigation order. AdminAuthView validates route parameters against this set.
+ * The admin screens, in navigation order: grouped as `adminViewGroup` heads them, so a list that
+ * follows this order never splits a group. AdminAuthView validates route parameters against this set.
  */
 export const adminViews = [
 	'current-session',
-	'schedule',
 	'queue',
 	'broadcast',
+	'schedule',
 	'question-bank',
 	'guest-database',
 	'session-history',
@@ -42,3 +43,24 @@ export const viewPermissions: Record<AdminView, Permission> = {
 export function viewsFor(granted: Permission[]): AdminView[] {
 	return adminViews.filter((view) => granted.includes(viewPermissions[view]));
 }
+
+/** The headings the navigation sorts screens under, in the order they appear. */
+export const adminViewGroups = ['today', 'plan', 'records'] as const;
+
+export type AdminViewGroup = (typeof adminViewGroups)[number];
+
+/**
+ * Which heading each screen sits under. Dev Mode belongs to none: it is a tool for staging the
+ * market, not part of running one, so it trails the list on its own.
+ */
+export const adminViewGroup: Record<AdminView, AdminViewGroup | null> = {
+	'current-session': 'today',
+	queue: 'today',
+	broadcast: 'today',
+	schedule: 'plan',
+	'question-bank': 'plan',
+	'guest-database': 'records',
+	'session-history': 'records',
+	reports: 'records',
+	'dev-mode': null,
+};

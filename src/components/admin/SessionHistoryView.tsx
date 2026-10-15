@@ -52,23 +52,24 @@ const Section = styled.section`
 		text-align: end;
 	}
 
-	.history-row span:not(.event-state) {
+	.history-row span:not(.history-state) {
 		color: var(--color-text-subtle);
 		font-size: 13px;
 	}
 
-	.history-row .event-state,
+	.history-row .history-state,
 	.history-row .add-guest-button {
 		grid-column: 1 / -1;
 		justify-self: start;
 	}
 
-	.event-state {
-		padding: 9px 13px;
+	/* A status, not a control: small and flat, so it is not mistaken for the add button below it. */
+	.history-state {
+		padding: 3px 10px;
 		border-radius: var(--radius-pill);
 		background: #edf0ee;
-		color: var(--color-text-subtle);
-		font-size: 13px;
+		color: var(--color-text-muted);
+		font-size: 12px;
 		font-weight: 700;
 	}
 
@@ -77,7 +78,7 @@ const Section = styled.section`
 			grid-template-columns: minmax(0, 1fr) auto auto;
 		}
 
-		.history-row .event-state {
+		.history-row .history-state {
 			grid-column: auto;
 			justify-self: end;
 		}
@@ -121,7 +122,7 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 									<strong>{pastEvent.guestCount}</strong>
 									<span>{t.sessionGuests}</span>
 								</div>
-								<span className="event-state ended">{t.closeSession}</span>
+								<span className="history-state">{t.sessionClosed}</span>
 								{/* Records a guest who was served out of band, after this session had ended. */}
 								<button
 									className="add-guest-button"

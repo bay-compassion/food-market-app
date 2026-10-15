@@ -2,6 +2,7 @@ import { runInAction } from 'mobx';
 
 import { adminTranslations } from '../adminLocales.ts';
 import type { Locale } from '../locales.ts';
+import { AdminNavigation } from '../models/admin-navigation.ts';
 import {
 	AdminApi,
 	type AdminGuest,
@@ -124,6 +125,11 @@ export class AdminStore {
 	/** The screens this worker can open, in navigation order. */
 	get views(): AdminView[] {
 		return viewsFor(this._permissions);
+	}
+
+	/** Those screens as the navigation lists them, under the headings that say what each is for. */
+	get navigation(): AdminNavigation {
+		return new AdminNavigation(this.views);
 	}
 
 	constructor(

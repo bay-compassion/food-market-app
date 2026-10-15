@@ -697,22 +697,24 @@ describe('App', () => {
 			expect(container.textContent).toContain(adminTranslations.en.noSessionHelp),
 		);
 
-		expect(container.textContent).toContain('Current session');
+		expect(container.textContent).toContain(adminTranslations.en.currentSession);
 		expect(container.textContent).not.toContain('Registration questions');
 
-		// Selected by label rather than index — the nav gained a Queue tab, and positional
-		// indexing silently points at a different view every time the nav changes.
-		const navigateTo = (label: string) =>
-			user.click(
-				Array.from(container.querySelectorAll('.admin-navigation button')).find(
-					(button) => button.textContent === label,
-				)!,
+		// On a phone the screens are listed in a sheet the title opens. Selected by label rather
+		// than index, since positional indexing points elsewhere every time the navigation changes.
+		const navigateTo = async (label: string) => {
+			await user.click(container.querySelector('h1 button')!);
+			await user.click(
+				within(document.body.querySelector<HTMLElement>('.admin-navigation')!).getByRole('button', {
+					name: label,
+				}),
 			);
+		};
 
-		await navigateTo('Question bank');
+		await navigateTo(adminTranslations.en.questionBank);
 		expect(container.textContent).toContain('Registration questions');
 
-		await navigateTo('Guest database');
+		await navigateTo(adminTranslations.en.guestDatabase);
 		expect(container.textContent).toContain('All guests');
 		// This fixture has no session configured, and a guest can still be added — details only.
 		expect(container.textContent).toContain('Add guest');
@@ -730,7 +732,7 @@ describe('App', () => {
 		{
 			status: 'scheduled',
 			shown: ['Registration scheduled', 'Postpone', 'Open Early', 'Add guest'],
-			hidden: ['Schedule registration', 'Today’s overview', 'Broadcast notification'],
+			hidden: ['Schedule registration', 'Today’s overview', 'Broadcast Notification'],
 		},
 		{
 			status: 'registration_open',
@@ -784,7 +786,7 @@ describe('App', () => {
 			await waitFor(() => expect(container.textContent).toContain(shown[0]!));
 			const content = container.querySelector('.admin-content')!;
 
-			expect(content.textContent).not.toContain('Broadcast notification');
+			expect(content.textContent).not.toContain('Broadcast Notification');
 
 			for (const copy of shown) {
 				expect(content.textContent).toContain(copy);
