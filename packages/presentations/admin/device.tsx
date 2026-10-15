@@ -3,12 +3,12 @@ import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 
 import { adminTranslations } from '../../../src/adminLocales.ts';
-import { adminViews, type AdminView } from '../../../src/services/admin-views.ts';
+import type { AdminView } from '../../../src/services/admin-views.ts';
 import { RootStore } from '../../../src/stores/root.store.ts';
 import { PhoneClock } from '../phone/clock.ts';
 import { MarkLayer, scrollUnderBar } from '../phone/marks.ts';
 import { AdminApp } from './AdminApp.tsx';
-import { markTarget, revealInDialog, revealTab } from './marks.ts';
+import { currentView, markTarget, navigation, revealInDialog, switcher } from './marks.ts';
 import type { AdminHandle, AdminMark, AdminScene } from './scene.ts';
 import { AdminServer } from './server.ts';
 
@@ -197,32 +197,50 @@ export class AdminDevice implements AdminHandle {
 		]);
 	}
 
-	/** The screen, the confirmation sheet, the add-guest dialog and the broadcast form. */
+	/** The screen, the sheet of screens, the confirmation sheet, the add-guest dialog and the broadcast form. */
 	private async screen(scene: AdminScene): Promise<void> {
 		await this.navigate(scene.view);
+		await this.navigation(scene);
 		await this.confirmation(scene);
 		await this.addGuest(scene);
 		this.broadcast(scene);
 		await this.commit();
 	}
 
-	/** The screen the dashboard is on: its tab in the navigation, tapped as a worker would. */
+	/** The screen the dashboard is on, as its title names it. */
 	private get view(): AdminView | null {
-		const selected = document.querySelector('[role="tab"][aria-selected="true"]');
-
-		return (
-			adminViews.find((view) => selected && selected === markTarget(`tab:${view}`, document)) ??
-			null
-		);
+		return currentView(document);
 	}
 
+	/**
+	 * Moves to `view` as a worker would: on a phone, the title opens the sheet of screens and the
+	 * screen is tapped there, which closes it again.
+	 */
 	private async navigate(view: AdminView): Promise<void> {
 		if (this.view === view) {
 			return;
 		}
 
+		if (!navigation(document)) {
+			this.press('switcher');
+			await this.commit();
+		}
+
 		this.press(`tab:${view}`);
 		await this.commit();
+	}
+
+	/** The view switcher's sheet, opened from the title and closed by tapping outside it. */
+	private async navigation(scene: AdminScene): Promise<void> {
+		const open = Boolean(navigation(document));
+
+		if (scene.navigating && !open && switcher(document)) {
+			this.press('switcher');
+			await this.commit();
+		} else if (!scene.navigating && open && switcher(document)) {
+			document.querySelector<HTMLElement>('.MuiDrawer-root .MuiBackdrop-root')?.click();
+			await this.commit();
+		}
 	}
 
 	/**
@@ -320,6 +338,8 @@ export class AdminDevice implements AdminHandle {
 
 		return (
 			this.view === scene.view &&
+			// A desk's sidebar is always there; only a phone's sheet opens and shuts.
+			(!switcher(document) || Boolean(navigation(document)) === scene.navigating) &&
 			session.currentState?.event?.id === this.network.overview.event?.id &&
 			session.currentState?.event?.status === this.network.overview.event?.status &&
 			Boolean(confirmation.pending) === Boolean(scene.confirm) &&
@@ -356,9 +376,6 @@ export class AdminDevice implements AdminHandle {
 				this.notFound.add(mark);
 			}
 
-			if (mark?.startsWith('tab:')) {
-				revealTab(target);
-			}
 			revealInDialog(target);
 
 			return target;

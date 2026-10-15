@@ -11,8 +11,8 @@
       "duration": 8.446
     },
     "tabs": {
-      "text": "Open the admin dashboard on your phone and sign in. Along the top is a row of screens. Swipe it to reach the rest.",
-      "duration": 7.295
+      "text": "Open the admin dashboard on your phone and sign in. The title at the top names the screen you are on. Tap it to see every screen, grouped by what it is for.",
+      "duration": 9.75
     },
     "schedule": {
       "text": "Market days come from the Schedule. The recurring pattern sets when registration opens each week, how long it stays open, and how many places there are.",
@@ -67,8 +67,8 @@
       "duration": 5.567
     },
     "queue": {
-      "text": "Go to Queue opens the line itself. Calling guests up is covered in the queue desk guide.",
-      "duration": 5.577
+      "text": "Go to the Queue opens the line itself. Calling guests up is covered in the queue desk guide.",
+      "duration": 5.845
     },
     "addGuest": {
       "text": "Someone who could not register can still be helped. Add guest takes their details, just as the guest form does.",
@@ -80,7 +80,7 @@
     },
     "saveGuest": {
       "text": "Save guest, and they join the end of the line.",
-      "duration": 2.66
+      "duration": 2.669
     },
     "broadcast": {
       "text": "To reach everyone at once, Broadcast notification sends a message to every guest in today’s session who signed up for updates.",
@@ -95,8 +95,8 @@
       "duration": 5.781
     },
     "history": {
-      "text": "Session history lists past markets, and you can still add a guest to one after the fact.",
-      "duration": 5.098
+      "text": "Session history lists past markets by month. From a session’s menu, Record a served guest adds someone after the fact.",
+      "duration": 7.521
     },
     "reports": {
       "text": "Reports count people without naming them: sign-ups, guests served, and how full each session ran.",

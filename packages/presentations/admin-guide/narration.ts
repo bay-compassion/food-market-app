@@ -31,7 +31,7 @@ export const lines: AdminLine[] = [
 	{
 		id: 'tabs',
 		pause: 0.8,
-		text: 'Open the admin dashboard on your phone and sign in. Along the top is a row of screens. Swipe it to reach the rest.',
+		text: 'Open the admin dashboard on your phone and sign in. The title at the top names the screen you are on. Tap it to see every screen, grouped by what it is for.',
 	},
 
 	{
@@ -120,7 +120,7 @@ export const lines: AdminLine[] = [
 		id: 'queue',
 		names: ['goToQueue'],
 		pause: 0.5,
-		text: 'Go to Queue opens the line itself. Calling guests up is covered in the queue desk guide.',
+		text: 'Go to the Queue opens the line itself. Calling guests up is covered in the queue desk guide.',
 	},
 
 	{
@@ -165,14 +165,14 @@ export const lines: AdminLine[] = [
 	},
 	{
 		id: 'history',
-		names: ['historySessions'],
-		pause: 0.5,
-		text: 'Session history lists past markets, and you can still add a guest to one after the fact.',
+		names: ['historySessions', 'recordServedGuest'],
+		pause: 0.9,
+		text: 'Session history lists past markets by month. From a session’s menu, Record a served guest adds someone after the fact.',
 	},
 	{
 		id: 'reports',
 		names: ['reports'],
-		pause: 0.5,
+		pause: 0.9,
 		text: 'Reports count people without naming them: sign-ups, guests served, and how full each session ran.',
 	},
 
@@ -185,7 +185,7 @@ export const lines: AdminLine[] = [
 	},
 	{
 		id: 'next',
-		pause: 0.5,
+		pause: 0.9,
 		text: 'The day moves to Session history, and the schedule’s next market is ready, a week away.',
 	},
 	{

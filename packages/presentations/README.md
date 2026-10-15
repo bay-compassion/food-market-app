@@ -352,7 +352,7 @@ it requires no frame capture, transcoding, speech runtime, or music library on t
 
 The narrated **Market Dashboard Guide** (`admin-guide`) follows a coordinator through one market
 day on `/admin`: the Schedule's recurring pattern and next session, Current session from scheduled
-through registration, the grace period and the lottery to service, the Queue tab, adding a guest by
+through registration, the grace period and the lottery to service, the Queue, adding a guest by
 hand, a broadcast, Guest database, Session history and Reports, and closing the session. It uses
 the queue desk guide's voice and arrangement. It is English only, as the dashboard is.
 
@@ -408,8 +408,9 @@ Instruction sources (check these when changing the script):
 | Recurring pattern, next session created automatically, one-off    | `ScheduleView`, `ScheduleStore`, `scheduleIntro`            |
 | Opens on its own, Open Early, Postpone, Extend, capacity, Close   | `SessionPhaseControls`, `SessionStepper`, `SessionTimeline` |
 | Grace period, automatic draw, Run immediately, postpone, pause    | `SessionTransitionTimer`, `LotteryPendingCard`              |
-| Today's overview, Go to Queue                                     | `SessionOverview`, `SessionPhaseControls`, `QueueView`      |
+| Today's overview, Go to the Queue                                 | `SessionOverview`, `SessionPhaseControls`, `QueueView`      |
 | Add guest, Give them a spot, end of the line                      | `ManualGuestDialog`, `guestAdmission.ts`                    |
 | Broadcast to subscribed guests, sent exactly as written           | `SessionBroadcastForm`, `broadcastHelp`                     |
-| Guest database search, history add-after, reports without names   | `GuestDatabaseGrid`, `SessionHistoryView`, `ReportsView`    |
+| Switching screens from the title, grouped                         | `AdminViewSwitcher`, `AdminViewList`                        |
+| Guest database search, history add-after, reports without names   | `GuestDatabaseView`, `SessionHistoryRow`, `ReportsView`     |
 | Close session replaces Call next; sooner marks waiting as no show | `QueueView`, `confirmCloseSessionOutstanding`               |
