@@ -13,7 +13,7 @@ import { GuestDatabaseView } from './GuestDatabaseView';
  *
  * The grid reads its rows from the root store, which a story does not seed, so it shows its empty
  * state here — `Admin/GuestDatabaseGrid` is where the rows themselves are reviewed. What this
- * covers is the frame around it, and in particular that "Add guest" sits in the heading rather
+ * covers is the frame around it, and in particular that "Add Guest" sits in the heading rather
  * than below the list, where a worker would have to scroll every guest on record to reach it.
  */
 type GuestDatabaseViewArgs = {

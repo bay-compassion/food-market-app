@@ -100,6 +100,11 @@ export interface AdminTranslation {
 	historySessions: string;
 	householdCount: string;
 	lotteryActions: string;
+	/** The folded timeline's summary, for one completed step and for several (`{count}`). */
+	stepsDoneOne: string;
+	stepsDone: string;
+	showTimeline: string;
+	hideTimeline: string;
 	lotteryPending: string;
 	lotteryPendingHelp: string;
 	lotteryWeightHelp: string;
@@ -416,8 +421,8 @@ export const adminTranslations = {
 		graceCountdown: 'Lottery pending in {time}',
 		lotteryCountdown: 'Automatic draw in {time}',
 		transitionDue: 'Waiting for the server to transition…',
-		pauseLottery: 'Pause automatic draw',
-		addGuest: 'Add guest',
+		pauseLottery: 'Pause Automatic Draw',
+		addGuest: 'Add Guest',
 		addQuestion: 'Add question',
 		admissionLabel: 'How should they join?',
 		admissionLegend: 'Admission',
@@ -470,7 +475,7 @@ export const adminTranslations = {
 		broadcastMessageLabel: 'Message',
 		broadcastNoRecipients: 'No subscribed guests are available for this broadcast.',
 		broadcastQueued: 'Broadcast queued for subscribed guests:',
-		broadcastSend: 'Send broadcast',
+		broadcastSend: 'Send Broadcast',
 		broadcastTitle: 'Broadcast Notification',
 		broadcastTitleLabel: 'Notification title',
 		broadcastUnavailable:
@@ -479,8 +484,8 @@ export const adminTranslations = {
 		capacity: 'Queue capacity',
 		cancelled: 'Cancelled',
 		callGuest: 'Call guest',
-		closeSession: 'Close session',
-		closeRegistration: 'Close early',
+		closeSession: 'Close Session',
+		closeRegistration: 'Close Early',
 		closed: 'Registration closed',
 		confirmCloseRegistration: 'Close registration now?',
 		confirmContinue: 'Continue',
@@ -515,11 +520,15 @@ export const adminTranslations = {
 		guestClaimRefused: 'Only a manager can set up a phone for this guest now.',
 		guestClaimReplacesDevice:
 			'{name} already uses the app on another phone. Once this is scanned, that phone is signed out and this one takes over their record.',
-		guestClaimShow: 'Show QR code for their phone',
+		guestClaimShow: 'Show QR Code for Their Phone',
 		guestClaimTitle: 'Set up their phone',
 		historySessions: 'Session History',
 		householdCount: 'Household',
-		lotteryActions: 'Lottery actions',
+		lotteryActions: 'Lottery Draw',
+		stepsDoneOne: '1 Step Done',
+		stepsDone: '{count} Steps Done',
+		showTimeline: 'Show Timeline',
+		hideTimeline: 'Hide Timeline',
 		lotteryPending: 'Lottery pending',
 		lotteryPendingHelp: 'The registration pool is frozen. The lottery is ready to run.',
 		lotteryWeightHelp:
@@ -549,8 +558,8 @@ export const adminTranslations = {
 		scheduleNothingOnDate: 'Nothing is scheduled on this date.',
 		scheduleShowingDate: 'Showing {date}',
 		scheduleClearDate: 'Show all',
-		scheduleAddPattern: 'Add recurring',
-		scheduleAddOneOff: 'Add one-off',
+		scheduleAddPattern: 'Add Recurring',
+		scheduleAddOneOff: 'Add One-Off',
 		scheduleOneOffBlockedActive: 'A session is running. Add a one-off session once it ends.',
 		scheduleOneOffBlockedPending:
 			'A one-off session is already pending, or someone has joined the next session.',
@@ -594,8 +603,8 @@ export const adminTranslations = {
 		scheduleConfirmCreateNext: 'Create the next session from the recurring pattern?',
 		scheduleOpenSchedule: 'Go to Schedule',
 		lotteryDrawsAt: 'The lottery draws automatically at {time}.',
-		postponeLotteryBy: 'Postpone {minutes} min',
-		runLotteryNow: 'Run immediately',
+		postponeLotteryBy: 'Postpone {minutes} Min',
+		runLotteryNow: 'Run Immediately',
 		questionBankNeedsPattern:
 			'Add a recurring pattern on the Schedule tab to set the questions its sessions ask.',
 		noSession: 'No session',
@@ -611,7 +620,7 @@ export const adminTranslations = {
 		questionPlaceholder: 'Enter a question for guests',
 		queuePosition: 'Queue position',
 		queue: 'Queue',
-		callNext: 'Call next',
+		callNext: 'Call Next',
 		callNextCount: 'How many to call',
 		waitingQueue: 'Waiting',
 		calledNow: 'At check-in',
@@ -631,8 +640,8 @@ export const adminTranslations = {
 		noWaitingGuests: 'Nobody is waiting to be called.',
 		noCalledGuests: 'Nobody has been called up yet.',
 		queueNotStarted: 'The queue opens once you run the lottery and service starts.',
-		goToQueue: 'Go to Queue',
-		goToCurrentSession: 'Go to the current session',
+		goToQueue: 'Go to the Queue',
+		goToCurrentSession: 'Go to the Current Session',
 		queuePlacement: 'Place in the queue',
 		placeNext: 'Next up',
 		placeEnd: 'End of the queue',
@@ -645,7 +654,7 @@ export const adminTranslations = {
 		registrationClosedHelp:
 			'This step will advance automatically to Lottery pending in a few seconds.',
 		registrationOverrides: 'Registration overrides',
-		reopenRegistration: 'Reopen registration',
+		reopenRegistration: 'Reopen Registration',
 		noAccess:
 			'Your account does not have access to the admin area yet. Ask an administrator to give you a role.',
 		forbidden: 'Your account does not have access to that.',
@@ -710,16 +719,16 @@ export const adminTranslations = {
 			household: 'Household size',
 			language: 'Language',
 		},
-		resetSession: 'Reset session',
+		resetSession: 'Reset Session',
 		resetSessionHelp:
 			'Return to inactive setup. This session and its guest records will remain in history.',
 		postponeByMinutes: 'Postpone by (minutes)',
 		postponeRegistration: 'Postpone',
 		remove: 'Remove',
 		required: 'Required',
-		runLottery: 'Run lottery draw',
-		saveGuest: 'Save guest',
-		saveSettings: 'Save settings',
+		runLottery: 'Run Lottery Draw',
+		saveGuest: 'Save Guest',
+		saveSettings: 'Save Settings',
 		saved: 'Settings saved.',
 		scheduled: 'Registration scheduled',
 		scheduledFor: 'Registration scheduled for',
