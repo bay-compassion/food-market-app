@@ -12,8 +12,9 @@
  *   node build.ts                 # the market day reel
  *   node build.ts queue-desk      # the queue desk training video
  *
- * A video with a `phone` also gets the guest app itself: Vite builds `phone/` and the page carries
- * the result, scripts and styles inlined, as the document its phone frame shows.
+ * A video with a `frame` also gets part of the app itself — the guest phone (`phone/`) or the admin
+ * dashboard (`admin/`): Vite builds that folder and the page carries the result, scripts and styles
+ * inlined, as the document its frame shows.
  *
  * Writes `out/<name>.html` (open it in a browser) and `out/<name>.artifact.html` (the same page
  * without its document shell, for publishing as a claude.ai Artifact).
@@ -64,6 +65,27 @@ async function narration(): Promise<TimedLine[]> {
 		throw new Error(
 			`The recorded voice differs from ${video.narration}; render and commit the audio first.`,
 		);
+	}
+
+	const copy: Record<string, unknown> = adminTranslations.en;
+	const renamed = lines.flatMap(({ id, text, names = [] }) =>
+		names
+			.filter((key) => {
+				const label = copy[key];
+
+				return typeof label !== 'string' || !text.toLowerCase().includes(label.toLowerCase());
+			})
+			.map((key) => `${id} says "${key}", now ${JSON.stringify(copy[key]) ?? 'gone'}`),
+	);
+
+	if (renamed.length) {
+		const message = `The narration names labels the dashboard has changed: ${renamed.join('; ')}.`;
+
+		if (strict) {
+			throw new Error(`${message} Reword ${video.narration}, then record it again.`);
+		}
+
+		console.warn(message);
 	}
 
 	const stale: string[] = [];
@@ -117,14 +139,14 @@ function script(path: string, fill: (code: string) => string = (code) => code): 
 	);
 }
 
-/** The guest phone's page, built by Vite, with its script and stylesheet inlined. */
-async function phone(): Promise<string> {
-	if (!video.phone) {
+/** The frame's page, built by Vite, with its script and stylesheet inlined. */
+async function frame(): Promise<string> {
+	if (!video.frame) {
 		return '';
 	}
 
-	await vite({ configFile: fileURLToPath(here('./phone/vite.config.ts')) });
-	const out = (path: string) => readFileSync(here(`./out/phone/${path}`), 'utf8');
+	await vite({ configFile: fileURLToPath(here(`./${video.frame}/vite.config.ts`)) });
+	const out = (path: string) => readFileSync(here(`./out/${video.frame}/${path}`), 'utf8');
 
 	const page = out('index.html')
 		.replace(
@@ -138,7 +160,7 @@ async function phone(): Promise<string> {
 		);
 
 	if (page.includes('./assets/')) {
-		throw new Error('The guest phone still links an asset; inline it in build.ts.');
+		throw new Error(`The ${video.frame} frame still links an asset; inline it in build.ts.`);
 	}
 
 	return page;
@@ -153,7 +175,7 @@ const soundtrack = existsSync(here('./' + video.soundtrack))
 	? readFileSync(here('./' + video.soundtrack)).toString('base64')
 	: '';
 const narrationJson = JSON.stringify(await narration());
-const phoneJson = JSON.stringify(await phone());
+const frameJson = JSON.stringify(await frame());
 const stageScript = script('./stage/stage.ts', (code) =>
 	code
 		.replace('__STRINGS__', () => JSON.stringify(strings))
@@ -162,7 +184,10 @@ const stageScript = script('./stage/stage.ts', (code) =>
 		.replace('__SOUNDTRACK__', () => soundtrack),
 );
 const pageScript = script(`./${video.folder}/page.ts`, (code) =>
-	code.replace('__NARRATION__', () => narrationJson).replace('__PHONE__', () => phoneJson),
+	code
+		.replace('__NARRATION__', () => narrationJson)
+		.replace('__FRAME__', () => frameJson)
+		.replace('__ADMIN_COPY__', () => JSON.stringify(adminTranslations.en)),
 );
 // Collapsed onto one line, so the stylesheet takes the single line its placeholder held.
 const stageStyles = (

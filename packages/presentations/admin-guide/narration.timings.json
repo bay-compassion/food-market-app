@@ -1,0 +1,118 @@
+{
+  "voice": {
+    "source": "kokoro",
+    "name": "af_heart",
+    "speed": 0.96,
+    "language": "en-us"
+  },
+  "lines": {
+    "welcome": {
+      "text": "This is a guide to the market dashboard: where a coordinator sets up market day, steers registration and the lottery, and keeps the records.",
+      "duration": 8.446
+    },
+    "tabs": {
+      "text": "Open the admin dashboard on your phone and sign in. Along the top is a row of screens. Swipe it to reach the rest.",
+      "duration": 7.295
+    },
+    "schedule": {
+      "text": "Market days come from the Schedule. The recurring pattern sets when registration opens each week, how long it stays open, and how many places there are.",
+      "duration": 9.515
+    },
+    "upcoming": {
+      "text": "Below it is the next session the pattern created. When a session ends, the next one is created automatically.",
+      "duration": 6.453
+    },
+    "oneOff": {
+      "text": "For a special market, Add one-off schedules a single session in place of the next one.",
+      "duration": 5.162
+    },
+    "current": {
+      "text": "Current session follows today’s market step by step. The badge at the top always says where it stands.",
+      "duration": 6.314
+    },
+    "scheduled": {
+      "text": "Registration opens on its own at the scheduled time. Open Early starts it now, and Postpone pushes it back.",
+      "duration": 7.423
+    },
+    "open": {
+      "text": "At ten thirty, registration opens, and guests start signing up from their own phones.",
+      "duration": 5.28
+    },
+    "registered": {
+      "text": "Each guest appears under Registered as they join, with their household size, language, and phone number.",
+      "duration": 6.251
+    },
+    "overrides": {
+      "text": "If guests need more time, extend registration by a few minutes. You can also change the queue capacity: how many places the lottery fills.",
+      "duration": 9.352
+    },
+    "closeEarly": {
+      "text": "Registration closes on its own when the window ends. Close early ends it now, once you confirm.",
+      "duration": 6.314
+    },
+    "grace": {
+      "text": "After registration closes, a short grace period lets anyone still submitting finish. Then the lottery is pending.",
+      "duration": 7.563
+    },
+    "pending": {
+      "text": "It draws automatically at the time the schedule sets. Run immediately draws it now, and you can postpone it a few minutes, or pause the automatic draw.",
+      "duration": 9.589
+    },
+    "draw": {
+      "text": "When the lottery runs, every guest sees their result on their phone, and service starts.",
+      "duration": 5.065
+    },
+    "overview": {
+      "text": "During service, Today’s overview counts guests as they are served, called, and still waiting.",
+      "duration": 5.567
+    },
+    "queue": {
+      "text": "Go to Queue opens the line itself. Calling guests up is covered in the queue desk guide.",
+      "duration": 5.577
+    },
+    "addGuest": {
+      "text": "Someone who could not register can still be helped. Add guest takes their details, just as the guest form does.",
+      "duration": 6.89
+    },
+    "admission": {
+      "text": "During service, Give them a spot puts them straight into the line, using one of the session’s places.",
+      "duration": 5.92
+    },
+    "saveGuest": {
+      "text": "Save guest, and they join the end of the line.",
+      "duration": 2.66
+    },
+    "broadcast": {
+      "text": "To reach everyone at once, Broadcast notification sends a message to every guest in today’s session who signed up for updates.",
+      "duration": 7.945
+    },
+    "message": {
+      "text": "Write a short title and message. It goes out exactly as written, so check it before you send.",
+      "duration": 5.707
+    },
+    "database": {
+      "text": "Guest database holds everyone on record. Search by name or phone number to find someone.",
+      "duration": 5.781
+    },
+    "history": {
+      "text": "Session history lists past markets, and you can still add a guest to one after the fact.",
+      "duration": 5.098
+    },
+    "reports": {
+      "text": "Reports count people without naming them: sign-ups, guests served, and how full each session ran.",
+      "duration": 6.111
+    },
+    "close": {
+      "text": "When nobody is left to call, Close session takes the place of Call next. Closing sooner, from the Session actions menu, marks anyone still waiting as a no show.",
+      "duration": 10.325
+    },
+    "next": {
+      "text": "The day moves to Session history, and the schedule’s next market is ready, a week away.",
+      "duration": 5.419
+    },
+    "thanks": {
+      "text": "That’s the market dashboard. Thank you for running the market.",
+      "duration": 3.339
+    }
+  }
+}

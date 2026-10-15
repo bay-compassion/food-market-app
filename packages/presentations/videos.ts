@@ -7,8 +7,8 @@
  * - `soundtrack` is the mixed track the build embeds; `music/mix.ts` writes it from `arrangement`.
  * - `narration`, when set, is the voiceover: the lines `voice.ts` records, and the measured length
  *   of each (`timings`), which the page reads at build time to set its pace.
- * - `phone`, when set, puts the guest app itself on the page's phone (see `phone/`), built and
- *   inlined with the page.
+ * - `frame`, when set, puts part of the app itself on the page, built and inlined with it: the
+ *   guest app on the page's phone (`phone/`), or the admin dashboard (`admin/`).
  */
 export interface Publication {
 	/** Where the landing page goes under the site root; relative to the portfolio landing page. */
@@ -22,6 +22,10 @@ export interface Publication {
 	summary?: string;
 	description?: string;
 	sound?: string;
+	/** What the screens in the presentation are; by default, simplified recreations of the app. */
+	screens?: string;
+	/** The page turns portrait on a phone (9:16 below 600px), so its player does too. */
+	portrait?: boolean;
 	open?: string;
 	download?: string;
 	more?: string;
@@ -34,7 +38,7 @@ export interface VideoDefinition {
 	arrangement: string;
 	narration?: string;
 	timings?: string;
-	phone?: boolean;
+	frame?: 'phone' | 'admin';
 	publish: Publication;
 }
 
@@ -45,7 +49,7 @@ export const videos = {
 		arrangement: 'guest-guide/arrangement.ts',
 		narration: 'guest-guide/narration.ts',
 		timings: 'guest-guide/narration.timings.json',
-		phone: true,
+		frame: 'phone',
 		publish: {
 			folder: 'presentations/guest-guide',
 			interactive: 'guest-guide.html',
@@ -83,6 +87,26 @@ export const videos = {
 			description:
 				'Learn how to call guests, print name tags, keep the line moving, handle late arrivals, add a guest, and close the session.',
 			sound: 'Turn the sound on for the narration. The voice is AI-generated.',
+		},
+	},
+	'admin-guide': {
+		folder: 'admin-guide',
+		soundtrack: 'admin-guide/soundtrack.m4a',
+		arrangement: 'admin-guide/arrangement.ts',
+		narration: 'admin-guide/narration.ts',
+		timings: 'admin-guide/narration.timings.json',
+		frame: 'admin',
+		publish: {
+			folder: 'presentations/admin-guide',
+			interactive: 'admin-guide.html',
+			title: 'Market Dashboard Guide',
+			heading: 'A Guide to the Market Dashboard',
+			summary: 'A narrated guide for staff running market day from the admin dashboard.',
+			description:
+				'Learn how the schedule sets up each market, how to steer registration and the lottery, add a guest by hand, send a broadcast, find past records and reports, and close the session.',
+			sound: 'Turn the sound on for the narration. The voice is AI-generated.',
+			screens: 'The phone runs the real admin dashboard, with fictional guests.',
+			portrait: true,
 		},
 	},
 } satisfies Record<string, VideoDefinition>;

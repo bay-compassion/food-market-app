@@ -10,7 +10,7 @@ on:
       - 'docs/images/portfolio/**'
       - 'src/locales.ts'
       - 'src/adminLocales.ts'
-      # The guest guide's phone runs the guest app itself, so a change to it changes the guide.
+      # The guest and admin guides run the app itself, so a change to it changes the guides.
       - 'src/components/**'
       - 'src/stores/**'
       - 'src/models/**'

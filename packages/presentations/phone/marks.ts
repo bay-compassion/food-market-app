@@ -149,3 +149,30 @@ export class MarkLayer {
 		layer.appendChild(mark);
 	}
 }
+
+/**
+ * Scrolls the frame's page under its bar (the `.phone-scroll` inside `container`) so `target` shows
+ * whole — its top, when it is taller than the screen — or back to the top. The page moves by a
+ * transform, which the stylesheet eases.
+ */
+export function scrollUnderBar(container: HTMLElement, target: HTMLElement | null): void {
+	const scroller = container.querySelector<HTMLElement>('.phone-scroll');
+
+	if (!scroller) {
+		return;
+	}
+
+	const bar = container.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
+	const view = window.innerHeight - bar;
+	let offset = 0;
+
+	if (target && scroller.contains(target)) {
+		const top = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+		const bottom = top + target.offsetHeight;
+		const most = Math.max(0, scroller.offsetHeight - view);
+
+		offset = Math.min(Math.max(0, bottom + 16 - view), Math.max(0, top - 16), most);
+	}
+
+	scroller.style.transform = `translateY(${-offset}px)`;
+}

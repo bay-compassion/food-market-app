@@ -7,6 +7,7 @@
 import type { GuestFormState } from '../../../src/components/types.ts';
 import type { Locale } from '../../../src/locales.ts';
 import type { VisitStatus } from '../../../src/services/visitStateMachine.ts';
+import type { FrameHandle } from '../stage/frame.ts';
 
 export interface PhoneIdentity {
 	firstName: string;
@@ -67,20 +68,11 @@ export interface PhoneScene {
 	scrollTo: string | null;
 }
 
-/** The phone a page's script drives, as the phone's frame exposes it to the page. */
-export interface PhoneHandle {
-	/** Resolves once the phone has started and its fonts have loaded. */
-	ready: Promise<void>;
-	/**
-	 * Shows a scene. `continuous` is true while the timeline plays forward on its own; a seek,
-	 * a language change, or anything else that jumps starts the phone over from the scene.
-	 */
-	show(scene: PhoneScene, continuous: boolean): void;
-	/** Resolves once the phone shows the last scene it was given, fully drawn. */
-	settle(): Promise<void>;
-	/** Requests the phone made that the guide had no answer for; `verify.ts` expects none. */
-	unanswered(): string[];
-}
+/**
+ * The phone a page's script drives, as the phone's frame exposes it to the page. A change of
+ * language starts the phone over, as a seek does.
+ */
+export type PhoneHandle = FrameHandle<PhoneScene>;
 
 declare global {
 	interface Window {

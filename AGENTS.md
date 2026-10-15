@@ -37,6 +37,7 @@
 ## Presentations
 
 - `packages/presentations` builds the narrated guides published to GitHub Pages. The guest guide's phone runs the real guest app — `GuestHome`, `GuestMarketStatus`, `HelpPage` and the app's stores — so a change to a guest screen, store, or stylesheet changes the guide. After one, run `node packages/presentations/build.ts guest-guide` and `node packages/presentations/verify.ts` (it needs `npx playwright install chromium` once). See `packages/presentations/README.md`.
+- The market dashboard guide's phone runs the real `AdminDashboard` the same way, so a change to an admin screen changes that guide too. After one, run `node packages/presentations/build.ts admin-guide`, `publish.ts` and `verify.ts`, which fails by name when a control the narration points at is gone, and look over the stills it writes to `out/admin-guide/review/`.
 
 ## Localization
 

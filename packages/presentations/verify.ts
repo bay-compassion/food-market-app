@@ -7,16 +7,16 @@ import { fileURLToPath } from 'node:url';
 import { chromium, type Page } from 'playwright';
 
 import { languages, translations } from '../../src/locales.ts';
-import type { Cue } from './stage/reel.ts';
 import { videos } from './videos.ts';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * The guest phone, with every animation at rest — CSS transitions finished, endless ones at their
- * start — so two pictures of the same moment differ only if what they show does.
+ * A frame's phone (`#guestPhone`, `#adminPhone`), with every animation at rest — CSS transitions
+ * finished, endless ones at their start — so two pictures of the same moment differ only if what
+ * they show does.
  */
-async function phoneShot(page: Page): Promise<string> {
+async function phoneShot(page: Page, selector: string): Promise<string> {
 	await page.evaluate(() => {
 		const documents = [document, document.querySelector('iframe')?.contentDocument];
 
@@ -30,7 +30,7 @@ async function phoneShot(page: Page): Promise<string> {
 		}
 	});
 
-	return (await page.locator('#guestPhone').screenshot()).toString('base64');
+	return (await page.locator(selector).screenshot()).toString('base64');
 }
 
 /** How many pixels two pictures of the same size differ in. */
@@ -70,54 +70,52 @@ function differingPixels(page: Page, first: string, second: string): Promise<num
 }
 
 /**
- * A moment of the guest guide must look the same however the viewer reached it: by seeking
- * straight there, by seeking back to it from the end, after a change of language and back, or by
- * playing up to it — which is how capture reaches every frame.
+ * A moment of a guide whose screen is a frame must look the same however the viewer reached it: by
+ * seeking straight there, by seeking back to it from the end, after a change of language and back
+ * (where the guide has a language), or by playing up to it — which is how capture reaches every
+ * frame.
  *
  * Checked with the phone at full size. A few pixels may still differ where text is anti-aliased a
  * hair differently; a phone that shows something else differs in thousands.
  */
 const ANTI_ALIASING_PIXELS = 24;
 
-async function sameHoweverReached(page: Page, cues: Cue[], stills: string): Promise<void> {
+async function sameHoweverReached(
+	page: Page,
+	{ name, phone, ids, stills }: { name: string; phone: string; ids: string[]; stills: string },
+): Promise<void> {
 	const settle = () => page.evaluate(() => window.reel.settle());
 	const seek = async (t: number) => {
 		await page.evaluate((t) => window.reel.seek(t), t);
 		await settle();
 	};
 	const end = await page.evaluate(() => window.reel.END);
+	const cues = await page.evaluate(() => window.reel.cues);
+	const localized = (await page.locator('#presentationLocale').count()) > 0;
 
 	let most = 0;
 
 	await page.setViewportSize({ width: 1920, height: 1080 });
 
-	for (const id of [
-		'identity',
-		'returning',
-		'join',
-		'registered',
-		'texts',
-		'number',
-		'called',
-		'late',
-		'missed',
-		'help',
-	]) {
+	for (const id of ids) {
 		const cue = cues.find((cue) => cue.id === id)!;
 		const t = cue.t + cue.duration * 0.75;
 
 		await seek(t);
-		const direct = await phoneShot(page);
+		const direct = await phoneShot(page, phone);
 
 		await seek(end - 1);
 		await seek(t);
-		const back = await phoneShot(page);
+		const back = await phoneShot(page, phone);
+		const ways: [string, string][] = [['seeking back to it', back]];
 
-		await page.locator('#presentationLocale').selectOption('ar');
-		await settle();
-		await page.locator('#presentationLocale').selectOption('en');
-		await settle();
-		const relocalized = await phoneShot(page);
+		if (localized) {
+			await page.locator('#presentationLocale').selectOption('ar');
+			await settle();
+			await page.locator('#presentationLocale').selectOption('en');
+			await settle();
+			ways.push(['changing language and back', await phoneShot(page, phone)]);
+		}
 
 		await seek(t - 2);
 
@@ -130,32 +128,147 @@ async function sameHoweverReached(page: Page, cues: Cue[], stills: string): Prom
 			);
 			await settle();
 		}
-		const played = await phoneShot(page);
+		ways.push(['playing up to it', await phoneShot(page, phone)]);
 
-		for (const [how, shot] of [
-			['seeking back to it', back],
-			['changing language and back', relocalized],
-			['playing up to it', played],
-		] as const) {
+		for (const [how, shot] of ways) {
 			const differing = await differingPixels(page, direct, shot);
 
 			most = Math.max(most, differing);
 
 			if (differing > ANTI_ALIASING_PIXELS) {
 				// Both pictures, to see what differs.
-				const name = `${id}-${how.replaceAll(' ', '-')}`;
+				const file = `${id}-${how.replaceAll(' ', '-')}`;
 
-				writeFileSync(path.join(stills, `${name}-direct.png`), Buffer.from(direct, 'base64'));
-				writeFileSync(path.join(stills, `${name}.png`), Buffer.from(shot, 'base64'));
+				writeFileSync(path.join(stills, `${file}-direct.png`), Buffer.from(direct, 'base64'));
+				writeFileSync(path.join(stills, `${file}.png`), Buffer.from(shot, 'base64'));
 			}
 			assert.ok(
 				differing <= ANTI_ALIASING_PIXELS,
-				`${id}: the same after ${how} (${differing} pixels differ)`,
+				`${name} ${id}: the same after ${how} (${differing} pixels differ)`,
 			);
 		}
 	}
 	console.log(
-		`guest-guide: each moment looks the same however it is reached (at most ${most} pixels differ)`,
+		`${name}: each moment looks the same however it is reached (at most ${most} pixels differ)`,
+	);
+}
+
+/**
+ * The admin guide against the dashboard as it is today. Every narration line is visited at its
+ * start, middle and end, and must find every mark it points at and taps, ask the frame's server
+ * nothing it doesn't answer, and raise no error. This is what makes the guide repeatable: a
+ * change to a dashboard screen either reaches the video on the next build, or fails here by name.
+ */
+async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
+	const errors: string[] = [];
+
+	page.on('pageerror', (error) => errors.push(error.message));
+	page.on('console', (message) => {
+		if (message.type() === 'error') {
+			errors.push(message.text());
+		}
+	});
+	page.on('request', (request) => {
+		if (
+			!/^(data:|file:|https:\/\/(cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com)\/)/.test(
+				request.url(),
+			)
+		) {
+			errors.push(`requested ${request.url()}`);
+		}
+	});
+	await page.setViewportSize({ width: 1920, height: 1080 });
+	await page.goto('file://' + path.join(dir, 'out/admin-guide.html') + '#watch');
+	await page.waitForFunction(() => window.reel);
+	await page.evaluate(() => window.reel.settle());
+	const cues = await page.evaluate(() => window.reel.cues);
+
+	for (const cue of cues) {
+		for (const fraction of [0.1, 0.5, 0.9]) {
+			await page.evaluate(
+				async (t) => {
+					window.reel.seek(t);
+					await window.reel.settle();
+				},
+				cue.t + cue.duration * fraction,
+			);
+		}
+		await page.waitForTimeout(900);
+		await page.locator('#adminPhone').screenshot({ path: path.join(stills, `${cue.id}.png`) });
+	}
+
+	const frame = page.frames()[1]!;
+
+	assert.deepEqual(
+		await frame.evaluate(() => window.admin?.missing?.()),
+		[],
+		'admin-guide: every mark the narration points at is on the dashboard',
+	);
+	assert.deepEqual(
+		await frame.evaluate(() => window.admin?.unanswered()),
+		[],
+		'admin-guide: the dashboard asked only what the guide answers',
+	);
+	await page.addStyleTag({
+		content:
+			'#phoneLocation, #cap { transition: none !important; } #cap .inner { animation: none !important; }',
+	});
+
+	for (const width of [320, 390, 1280]) {
+		await page.setViewportSize({ width, height: width > 600 ? 850 : 960 });
+
+		for (const cue of cues) {
+			await page.evaluate(
+				async (t) => {
+					window.reel.seek(t);
+					await window.reel.settle();
+				},
+				cue.t + cue.duration * 0.9,
+			);
+			const overflow = await page.evaluate(() => {
+				const rect = (selector: string) =>
+					document.querySelector(selector)!.getBoundingClientRect();
+				const stage = rect('#stage');
+				const cap = rect('#cap');
+				const phase = document.querySelector<HTMLElement>('#stage')!.dataset.phase;
+
+				return {
+					page: document.body.scrollWidth > innerWidth,
+					caption: cap.bottom > stage.bottom,
+					controls: rect('#controls').right > innerWidth + 1,
+					overlap: innerWidth <= 600 && phase === 'phone' && cap.bottom > rect('#adminPhone').top,
+				};
+			});
+
+			assert.deepEqual(
+				overflow,
+				{ page: false, caption: false, controls: false, overlap: false },
+				`admin-guide ${width}px/${cue.id}: fits`,
+			);
+		}
+	}
+	await page.setViewportSize({ width: 390, height: 960 });
+	await page.locator('#viewport').screenshot({ path: path.join(stills, 'portrait.png') });
+	await sameHoweverReached(page, {
+		name: 'admin-guide',
+		phone: '#adminPhone',
+		ids: [
+			'registered',
+			'overrides',
+			'grace',
+			'pending',
+			'overview',
+			'admission',
+			'message',
+			'database',
+			'reports',
+			'next',
+		],
+		stills,
+	});
+	assert.deepEqual(errors, [], 'admin-guide: no page errors or outside requests');
+	console.log(
+		`admin-guide: ${cues.length} narration lines on the real dashboard; stills in out/admin-guide/review`,
 	);
 }
 
@@ -172,7 +285,7 @@ void (async () => {
 
 		await site.goto('file://' + root);
 		assert.equal(await site.locator('h1').count(), 1);
-		assert.equal(await site.locator('.guides a').count(), 3);
+		assert.equal(await site.locator('.guides a').count(), Object.keys(videos).length);
 		assert.equal((await site.content()).includes('__BASE__'), false);
 		assert.equal((await site.content()).includes('__REPO__'), false);
 
@@ -230,8 +343,8 @@ void (async () => {
 			await site.goto('file://' + path.join(dir, 'out/site', video.publish.folder, 'index.html'));
 			assert.equal(
 				await site.locator('.links a').count(),
-				4,
-				'Every page links to both other presentations',
+				2 + Object.keys(videos).length - 1,
+				'Every page links to every other presentation',
 			);
 			assert.equal((await site.content()).includes('__INTERACTIVE__'), false);
 		}
@@ -286,17 +399,20 @@ void (async () => {
 				assert.ok(layout.controlsBottom <= layout.height, 'Wider controls fit the embedded frame');
 			}
 
-			// The queue desk's chapters wrap onto a row of their own below 1000px; its frame grows to fit.
-			await site.goto('file://' + path.join(dir, 'out/site/presentations/queue-desk/index.html'));
-			const desk = site.frames()[1]!;
+			// The staff guides' chapters wrap onto a row of their own below 1000px; the frame grows to fit.
+			for (const name of ['queue-desk', 'admin-guide']) {
+				await site.goto('file://' + path.join(dir, `out/site/presentations/${name}/index.html`));
+				const player = site.frames()[1]!;
 
-			await desk.waitForFunction(() => window.reel);
-			assert.ok(
-				await desk.evaluate(
-					() => document.querySelector('#controls')!.getBoundingClientRect().bottom <= innerHeight,
-				),
-				`${width}/queue-desk: embedded controls fit`,
-			);
+				await player.waitForFunction(() => window.reel);
+				assert.ok(
+					await player.evaluate(
+						() =>
+							document.querySelector('#controls')!.getBoundingClientRect().bottom <= innerHeight,
+					),
+					`${width}/${name}: embedded controls fit`,
+				);
+			}
 		}
 
 		await site.close();
@@ -501,7 +617,23 @@ void (async () => {
 			'the sheet reads right to left',
 		);
 		await guest.locator('#presentationLocale').selectOption('en');
-		await sameHoweverReached(guest, cues, stills);
+		await sameHoweverReached(guest, {
+			name: 'guest-guide',
+			phone: '#guestPhone',
+			ids: [
+				'identity',
+				'returning',
+				'join',
+				'registered',
+				'texts',
+				'number',
+				'called',
+				'late',
+				'missed',
+				'help',
+			],
+			stills,
+		});
 		assert.deepEqual(
 			await guest.frames()[1]!.evaluate(() => window.phone?.unanswered()),
 			[],
@@ -516,6 +648,10 @@ void (async () => {
 		assert.ok((await guest.locator('#beats li').count()) > 30);
 		await guest.locator('#beats li button').nth(5).click();
 		assert.ok((await guest.evaluate(() => window.reel.tl.time())) > 0);
+		const adminStills = path.join(dir, 'out/admin-guide/review');
+
+		mkdirSync(adminStills, { recursive: true });
+		await verifyAdminGuide(await browser.newPage(), adminStills);
 		assert.deepEqual(errors, []);
 		console.log(
 			'Portrait and landscape review stills saved; RTL consent, reaching each moment, and Dev controls checked; no page errors.',

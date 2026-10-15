@@ -1,0 +1,166 @@
+<title>Market Dashboard Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+/>
+<style>
+	__STAGE_CSS__
+</style>
+<style>
+	#viewport,
+	#controls {
+		width: min(100%, calc((100dvh - 200px) * 16 / 9));
+	}
+	/* Wrapped controls must never compress the video out of its aspect ratio. */
+	#viewport {
+		flex-shrink: 0;
+	}
+	#cap {
+		left: 110px;
+		top: 300px;
+		width: 950px;
+	}
+	#cap .head {
+		font-size: 64px;
+	}
+	#cap .sub {
+		font-size: 30px;
+		max-width: 42ch;
+	}
+	#cap .eyebrow {
+		font-size: 23px;
+	}
+	.card-center .sub {
+		font-size: 26px;
+		color: var(--reel-ink-soft);
+		max-width: 42ch;
+	}
+	#phoneLocation {
+		position: absolute;
+		left: 1230px;
+		top: 70px;
+		transform-origin: 0 0;
+		transform: scale(1.2);
+	}
+	#phoneMotion {
+		width: 380px;
+		height: 780px;
+	}
+	#adminPhone {
+		opacity: 1;
+	}
+	/* The dashboard itself, at the size of the phone's screen below its status bar. */
+	#adminPhone .app iframe {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border: 0;
+	}
+	#controls {
+		flex-wrap: wrap;
+	}
+	#controls button {
+		min-height: 44px;
+		height: auto;
+		padding-block: 10px;
+	}
+	@media (max-width: 600px) {
+		body {
+			justify-content: flex-start;
+			overflow-y: auto;
+			gap: 12px;
+		}
+		#viewport {
+			width: 100%;
+			aspect-ratio: 9 / 16;
+			flex: none;
+		}
+		#stage {
+			width: 1080px;
+			height: 1920px;
+		}
+		#cap {
+			left: 90px;
+			top: 100px;
+			width: 900px;
+		}
+		#cap .sub {
+			font-size: 40px;
+			max-width: none;
+		}
+		#cap .eyebrow {
+			font-size: 30px;
+		}
+		#phoneLocation {
+			left: 255px;
+			top: 660px;
+			transform: scale(1.5);
+		}
+		.card-center {
+			padding: 90px;
+		}
+		.card-center .line {
+			font-size: 76px;
+		}
+		.card-center .sub {
+			font-size: 42px;
+		}
+		body:not(.dev) #controls {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-areas:
+				'play restart'
+				'sound step'
+				'scrub clock'
+				'chapters chapters';
+			width: 100%;
+			gap: 8px;
+			font-size: 13px;
+		}
+		#play {
+			grid-area: play;
+		}
+		#restart {
+			grid-area: restart;
+		}
+		#sound {
+			grid-area: sound;
+		}
+		#stepMode {
+			grid-area: step;
+		}
+		#controls #scrub {
+			grid-area: scrub;
+			width: 100%;
+			margin: 0;
+		}
+		#controls #clock {
+			grid-area: clock;
+		}
+		#chapters {
+			grid-area: chapters;
+		}
+		body.dev #viewport {
+			width: 100%;
+		}
+	}
+</style>
+<div id="viewport">
+	<div id="stage" data-phase="title">
+		<div id="cap" aria-live="polite"></div>
+		<div class="card-center" id="title">
+			__BRAND_LOCKUP__
+			<div class="line">A Guide to the Market Dashboard</div>
+			<div class="sub">
+				Setting up market day, running registration and the lottery, and keeping the records.
+			</div>
+		</div>
+		<div id="phoneLocation"><div id="phoneMotion"></div></div>
+		<div class="card-center" id="outro" style="opacity: 0">
+			__BRAND_LOCKUP__
+			<div class="line">Thank You for Running the Market</div>
+			<div class="sub">Calling guests up on the day is covered in the queue desk guide.</div>
+		</div>
+	</div>
+</div>
