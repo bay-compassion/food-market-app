@@ -59,7 +59,7 @@ export function CalledVisitStatus({
 			icon="→"
 			iconClassName="called-mark"
 			tone="action"
-			heading={copy.called.header}
+			heading={isLate ? copy.called.headerLate : copy.called.header}
 			description={isLate ? copy.called.detailsLate : copy.called.details}
 			details={
 				<>

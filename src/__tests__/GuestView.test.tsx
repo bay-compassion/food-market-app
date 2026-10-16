@@ -239,7 +239,7 @@ describe('GuestView', () => {
 		const { container } = await renderLoadedGuestView();
 
 		// Assert
-		await waitFor(() => expect(container.textContent).toContain('It’s your turn'));
+		await waitFor(() => expect(container.textContent).toContain('Come to check-in now'));
 		expect(container.querySelector('.submission-error')).toBeNull();
 	});
 
