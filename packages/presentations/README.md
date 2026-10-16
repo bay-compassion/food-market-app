@@ -247,6 +247,24 @@ Mixing needs GarageBand's loop library installed. Apple's licence allows the mix
 the videos, but not the loops on their own, so the decoded loops stay in `out/` and are never
 committed.
 
+### How the player plays it
+
+The build embeds `soundtrack.m4a`, and a narrated video's `voice.m4a`, as base64 in the page. The
+player turns each into a `blob:` URL and plays it through one hidden `<audio>` element, routed with
+`createMediaElementSource` into a gain node that the volume slider sets; the music toggle swaps the
+element between the two tracks at the same moment. The GSAP timeline keeps the time: the element is
+started and stopped with it and moved to it whenever the two drift more than 0.15 s apart.
+
+The sound is a media element, not Web Audio alone, for two reasons. An iPhone with its ring/silent
+switch on mutes Web Audio but plays a media element, so a playing element should keep the guide
+audible there; Safari's `navigator.audioSession` is also set to `playback` where it exists. That
+the routed element plays with the switch on has not yet been confirmed on a device. If it is
+silent, the fallback is to play the element directly on iOS, hiding the volume slider there. And only a playing media element reaches the lock
+screen, Control Center, and the keyboard's media keys, which the player answers through the Media
+Session API: play and pause, skip ten seconds, seek, and previous and next chapter. The gain node
+stays because an iPhone ignores a media element's own `volume`. `#record` never turns the sound on;
+`capture.ts` and `encode.swift` take the soundtrack from `<video>/soundtrack.m4a` instead.
+
 ## Guest messaging
 
 The app supports adjustable weighting, and the allocation policy is still being developed. That

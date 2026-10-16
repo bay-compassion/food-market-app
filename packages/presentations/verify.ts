@@ -170,7 +170,7 @@ async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
 	});
 	page.on('request', (request) => {
 		if (
-			!/^(data:|file:|https:\/\/(cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com)\/)/.test(
+			!/^(data:|blob:|file:|https:\/\/(cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com)\/)/.test(
 				request.url(),
 			)
 		) {
@@ -461,7 +461,18 @@ void (async () => {
 			);
 			await page.locator('#play').click();
 			await page.waitForFunction(() => window.reel.tl.time() > 0.3);
+			// The sound comes from a media element, which an iPhone plays with its silent switch on.
+			await page.waitForFunction(() => {
+				const media = document.querySelector('audio')!;
+
+				return !media.paused && Math.abs(media.currentTime - window.reel.tl.time()) < 0.3;
+			});
 			await page.locator('#play').click();
+			assert.equal(
+				await page.evaluate(() => document.querySelector('audio')!.paused),
+				true,
+				`${name}: the sound pauses with the video`,
+			);
 			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
 			// Space plays and pauses, and the arrows skip ten seconds, unless a control has focus.
 			await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -570,7 +581,7 @@ void (async () => {
 		const guest = await browser.newPage();
 		// Fonts and GSAP are the only things a presentation loads; the guest phone talks to nobody.
 		const allowed =
-			/^(data:|file:|about:|https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\/)/;
+			/^(data:|blob:|file:|about:|https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\/)/;
 
 		guest.on('pageerror', (error) => errors.push(`guest-guide: ${error.message}`));
 		guest.on('console', (message) => {

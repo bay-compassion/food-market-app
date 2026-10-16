@@ -691,24 +691,34 @@ function mountPlayer<State>({
 	});
 	tl.set({}, {}, END);
 
-	const decode = (base64: string) =>
-		new OfflineAudioContext(2, 1, 44100).decodeAudioData(
-			Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)).buffer,
+	/** An embedded track as a URL a media element can play, once it has read the track's length. */
+	const load = (base64: string) => {
+		const url = URL.createObjectURL(
+			new Blob([Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))], { type: 'audio/mp4' }),
 		);
-	let soundtrack: AudioBuffer | null = null;
-	const soundtrackReady = decode(SOUNDTRACK)
-		.then((buffer) => (soundtrack = buffer))
+		const probe = new Audio();
+
+		return new Promise<HTMLAudioElement>((resolve, reject) => {
+			probe.preload = 'metadata';
+			probe.addEventListener('loadedmetadata', () => resolve(probe), { once: true });
+			probe.addEventListener('error', reject, { once: true });
+			probe.src = url;
+		});
+	};
+	let soundtrack: string | null = null;
+	const soundtrackReady = load(SOUNDTRACK)
+		.then((track) => ((soundtrack = track.src), track))
 		.catch(() => {
-			// A browser without AAC decoding plays the video silently rather than offering dead sound.
+			// A browser without AAC playback plays the video silently rather than offering dead sound.
 			soundAvailable = false;
 			syncControls();
 		});
-	/** The voice alone, decoded the first time the viewer turns the music off. */
-	let voiceTrack: AudioBuffer | null = null;
-	let voiceTrackReady: Promise<AudioBuffer | null> | null = null;
+	/** The voice alone, loaded the first time the viewer turns the music off. */
+	let voiceTrack: string | null = null;
+	let voiceTrackReady: Promise<HTMLAudioElement | null> | null = null;
 	const loadVoiceTrack = () =>
 		(voiceTrackReady ??= VOICE_TRACK
-			? decode(VOICE_TRACK).then((buffer) => (voiceTrack = buffer))
+			? load(VOICE_TRACK).then((track) => ((voiceTrack = track.src), track))
 			: Promise.resolve(null));
 
 	const fit = () => {
@@ -881,38 +891,50 @@ function mountPlayer<State>({
 			syncControls();
 		});
 	}
-	/* Browsers start sound only from a click, so it begins off until the viewer turns it on. */
+	/*
+	 * Browsers start sound only from a click, so it begins off until the viewer turns it on. It plays
+	 * from a media element rather than from Web Audio alone: an iPhone with its silent switch on
+	 * mutes Web Audio but not a playing media element, and only a media element reaches the lock
+	 * screen and the media keys. The element still plays through a gain node, as an iPhone ignores a
+	 * media element's own volume. The timeline keeps the time; the element is moved to it on drift.
+	 */
+	const media = document.createElement('audio');
+
+	media.hidden = true;
+	media.preload = 'auto';
+	document.body.appendChild(media);
 	let audio: AudioContext | null = null;
-	/** The volume slider's level, which every source plays through. */
+	/** The volume slider's level, which the element plays through. */
 	let level: GainNode | null = null;
-	let node: AudioBufferSourceNode | null = null;
-	let sourceStart = { ctx: 0, offset: 0 };
 
 	function stopAudio() {
-		if (!node) {
-			return;
-		}
-
-		try {
-			node.stop();
-		} catch {}
-		node.disconnect();
-		node = null;
+		media.pause();
+		syncMediaSession();
 	}
 
 	function startAudio() {
-		stopAudio();
+		const track = musicOn ? soundtrack : voiceTrack;
 
-		const buffer = musicOn ? soundtrack : voiceTrack;
-
-		if (!soundOn || !buffer || !audio || !level || tl.paused() || tl.progress() === 1) {
-			return;
+		if (!soundOn || !track || !audio || tl.paused() || tl.progress() === 1) {
+			return stopAudio();
 		}
-		node = audio.createBufferSource();
-		node.buffer = buffer;
-		node.connect(level);
-		sourceStart = { ctx: audio.currentTime, offset: tl.time() };
-		node.start(0, tl.time());
+
+		// An iPhone suspends the context when it locks or takes a call, leaving the element mute.
+		if (audio.state !== 'running') {
+			void audio.resume();
+		}
+
+		if (media.src !== track) {
+			media.src = track;
+		}
+		media.currentTime = tl.time();
+		media.play().catch((error: DOMException) => {
+			// Turned away for want of a click; a swap of track interrupting it is an AbortError.
+			if (error.name === 'NotAllowedError') {
+				void setSound(false);
+			}
+		});
+		syncMediaSession();
 	}
 
 	function syncAudio() {
@@ -924,13 +946,17 @@ function mountPlayer<State>({
 			return stopAudio();
 		}
 
-		if (!node || !audio) {
-			return startAudio();
+		// A track a frame shorter than the timeline ends first, and stays ended.
+		if (media.paused) {
+			return media.ended ? undefined : startAudio();
 		}
-		const position = sourceStart.offset + audio.currentTime - sourceStart.ctx;
 
-		if (Math.abs(position - tl.time()) > 0.15) {
-			startAudio();
+		if (
+			!media.seeking &&
+			media.readyState >= HTMLMediaElement.HAVE_METADATA &&
+			Math.abs(media.currentTime - tl.time()) > 0.15
+		) {
+			media.currentTime = tl.time();
 		}
 	}
 
@@ -952,12 +978,23 @@ function mountPlayer<State>({
 		if (!audio) {
 			audio = new AudioContext();
 			level = audio.createGain();
+			audio.createMediaElementSource(media).connect(level);
 			level.connect(audio.destination);
 			syncLevel();
+
+			// Safari's own switch for the same thing: sound that plays with the silent switch on.
+			if (navigator.audioSession) {
+				navigator.audioSession.type = 'playback';
+			}
 		}
-		await audio.resume();
-		await (musicOn ? soundtrackReady : loadVoiceTrack());
+		void audio.resume();
+		// Started within the click where the track is ready, as Safari asks.
 		startAudio();
+		await (musicOn ? soundtrackReady : loadVoiceTrack());
+
+		if (media.paused) {
+			startAudio();
+		}
 	}
 	soundBtn.addEventListener('click', () => void setSound(!soundOn));
 	volume.addEventListener('input', syncLevel);
@@ -966,9 +1003,61 @@ function mountPlayer<State>({
 	musicBtn?.addEventListener('click', async () => {
 		musicOn = !musicOn;
 		syncControls();
-		await (musicOn ? soundtrackReady : loadVoiceTrack());
 		startAudio();
+		await (musicOn ? soundtrackReady : loadVoiceTrack());
+
+		if (media.paused) {
+			startAudio();
+		}
 	});
+
+	/*
+	 * The lock screen, Control Center and the keyboard's media keys, which reach a page only while
+	 * its media element plays: play and pause, skip ten seconds, seek, and step through chapters.
+	 */
+	const session = 'mediaSession' in navigator ? navigator.mediaSession : null;
+
+	function syncMediaSession() {
+		if (!session) {
+			return;
+		}
+		session.playbackState = tl.paused() || tl.progress() === 1 ? 'paused' : 'playing';
+
+		try {
+			session.setPositionState({ duration: END, position: tl.time(), playbackRate: 1 });
+		} catch {}
+	}
+
+	if (session) {
+		const stopped = () => tl.paused() || tl.progress() === 1;
+		const actions: [MediaSessionAction, MediaSessionActionHandler][] = [
+			['play', () => stopped() && playBtn.click()],
+			['pause', () => !stopped() && playBtn.click()],
+			['seekbackward', (details) => seekTo(tl.time() - (details.seekOffset ?? SKIP))],
+			['seekforward', (details) => seekTo(tl.time() + (details.seekOffset ?? SKIP))],
+			['seekto', (details) => seekTo(details.seekTime ?? tl.time())],
+		];
+
+		if (chapters.length) {
+			actions.push(
+				['previoustrack', () => k('prevChapter').click()],
+				['nexttrack', () => k('nextChapter').click()],
+			);
+		}
+		session.metadata = new MediaMetadata({
+			title: document.title,
+			artist: 'The Bay Compassion',
+			artwork: [{ src: LOGO, sizes: '512x512', type: 'image/svg+xml' }],
+		});
+
+		for (const [action, handler] of actions) {
+			try {
+				session.setActionHandler(action, handler);
+			} catch {
+				// An action this browser doesn't offer.
+			}
+		}
+	}
 
 	let pendingRestart: gsap.core.Tween | null = null;
 
@@ -1276,6 +1365,13 @@ export type Stage = typeof stage;
 declare global {
 	interface Window {
 		stage: Stage;
+	}
+
+	/** Safari's Audio Session API, which TypeScript's DOM types don't carry yet. */
+	interface Navigator {
+		audioSession?: {
+			type: 'auto' | 'playback' | 'transient' | 'transient-solo' | 'ambient' | 'play-and-record';
+		};
 	}
 }
 
