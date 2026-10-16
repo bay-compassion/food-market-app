@@ -57,7 +57,10 @@ export interface Reel {
 	chapters: Chapter[];
 	seek: (seconds: number) => void;
 	setSound: (on: boolean) => Promise<void>;
-	soundtrackReady: Promise<AudioBuffer | void>;
+	/** The soundtrack, loaded as far as its length; void where the browser can't play it. */
+	soundtrackReady: Promise<HTMLAudioElement | void>;
+	/** Loads the voice-only track the player plays with the music off; null for the reel. */
+	loadVoiceTrack: () => Promise<HTMLAudioElement | null>;
 	/**
 	 * Resolves once the page shows the moment the playhead is on, fully drawn. Capture and stills
 	 * wait on it after every seek; a page whose screens all draw at once has nothing to wait for.

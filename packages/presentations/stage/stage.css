@@ -119,6 +119,57 @@ body.record #controls {
 #controls button:hover {
 	border-color: var(--color-focus);
 }
+#controls button.icon {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 44px;
+	padding: 0;
+}
+#controls button.icon svg {
+	width: 22px;
+	height: 22px;
+}
+#controls button.icon[aria-pressed='false'] {
+	color: var(--reel-ink-soft);
+}
+/* The volume slider opens beside the speaker while the pointer or the keyboard is on either, as
+   in other players. A touch screen has no hover, and there, as in YouTube's and the browsers' own
+   mobile players, the device's buttons set the volume: the slider stays hidden and the speaker
+   only mutes. */
+#soundGroup {
+	display: flex;
+	flex: none;
+	align-items: center;
+}
+#volume {
+	width: 0;
+	margin: 0;
+	opacity: 0;
+	accent-color: var(--color-focus);
+	transition:
+		width 0.2s,
+		margin 0.2s,
+		opacity 0.2s;
+}
+#soundGroup:hover #volume,
+#soundGroup:focus-within #volume {
+	width: 88px;
+	margin-inline: 10px 4px;
+	opacity: 1;
+}
+@media (hover: none) {
+	#volume {
+		display: none;
+	}
+}
+#volume:focus-visible {
+	outline: 3px solid var(--color-focus);
+	outline-offset: 2px;
+}
+#volume:disabled {
+	opacity: 0.4;
+}
 #controls button:focus-visible,
 #scrub:focus-visible {
 	outline: 3px solid var(--color-focus);
@@ -207,7 +258,7 @@ body.watch #devOpen {
 }
 body.watch #scrub {
 	order: 1;
-	flex-basis: calc(100% - 6ch - 8px);
+	flex: 1 1 calc(100% - 8ch - 12px);
 }
 body.watch #clock {
 	order: 2;
@@ -1534,6 +1585,34 @@ body.dev #controls {
 	}
 	#controls button {
 		padding: 0 10px;
+	}
+	/* On a phone: the symbol buttons in a row, then the language, then the seek bar and clock, then
+	   the chapters, each control row as full as it will go. */
+	body:not(.dev) #controls {
+		flex-wrap: wrap;
+		width: 100%;
+	}
+	#controls #presentationLocale {
+		order: 1;
+	}
+	#controls #devOpen {
+		order: 4;
+	}
+	#controls #presentationLocale {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	#controls #scrub {
+		order: 2;
+		flex: 1 1 calc(100% - 8ch - 8px);
+		margin: 0;
+	}
+	#controls #clock {
+		order: 2;
+	}
+	#controls #chapters {
+		order: 3;
+		flex: 1 1 100%;
 	}
 }
 

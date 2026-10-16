@@ -37,10 +37,10 @@ const here = (path: string) => new URL(path, import.meta.url);
 const video = videoFromArgs();
 const strict = process.argv.includes('--strict');
 
-if (strict && !existsSync(here('./' + video.soundtrack))) {
-	throw new Error(
-		`Missing ${video.soundtrack}; render and commit the soundtrack before publishing.`,
-	);
+for (const track of [video.soundtrack, video.voiceTrack]) {
+	if (strict && track && !existsSync(here('./' + track))) {
+		throw new Error(`Missing ${track}; render and commit the soundtrack before publishing.`);
+	}
 }
 
 /**
@@ -171,9 +171,10 @@ const strings = Object.fromEntries(
 );
 const svg = (path: string) =>
 	'data:image/svg+xml;base64,' + readFileSync(here(path)).toString('base64');
-const soundtrack = existsSync(here('./' + video.soundtrack))
-	? readFileSync(here('./' + video.soundtrack)).toString('base64')
-	: '';
+const embed = (track: string | undefined) =>
+	track && existsSync(here('./' + track))
+		? readFileSync(here('./' + track)).toString('base64')
+		: '';
 const narrationJson = JSON.stringify(await narration());
 const frameJson = JSON.stringify(await frame());
 const stageScript = script('./stage/stage.ts', (code) =>
@@ -181,7 +182,8 @@ const stageScript = script('./stage/stage.ts', (code) =>
 		.replace('__STRINGS__', () => JSON.stringify(strings))
 		.replace('__DESK__', () => JSON.stringify(deskStrings(adminTranslations.en, translations.en)))
 		.replace('__LOGO__', () => svg('../../public/bay-compassion-icon-digital.svg'))
-		.replace('__SOUNDTRACK__', () => soundtrack),
+		.replace('__SOUNDTRACK__', () => embed(video.soundtrack))
+		.replace('__VOICE_TRACK__', () => embed(video.voiceTrack)),
 );
 const pageScript = script(`./${video.folder}/page.ts`, (code) =>
 	code
@@ -213,6 +215,7 @@ writeFileSync(
 	here(`./out/${video.name}.html`),
 	'<!doctype html><html lang="en"><head><meta charset="utf-8">' +
 		'<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
+		`<link rel="icon" type="image/svg+xml" href="${svg('../../public/bay-compassion-icon-digital.svg')}">` +
 		'</head><body>' +
 		page +
 		'</body></html>',

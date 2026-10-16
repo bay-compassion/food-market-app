@@ -60,7 +60,7 @@
 	#controls {
 		flex-wrap: wrap;
 	}
-	#controls button {
+	#controls button:not(.icon) {
 		min-height: 44px;
 		height: auto;
 		padding-block: 10px;
@@ -105,41 +105,6 @@
 		}
 		.card-center .sub {
 			font-size: 42px;
-		}
-		body:not(.dev) #controls {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			grid-template-areas:
-				'play restart'
-				'sound step'
-				'scrub clock'
-				'chapters chapters';
-			width: 100%;
-			gap: 8px;
-			font-size: 13px;
-		}
-		#play {
-			grid-area: play;
-		}
-		#restart {
-			grid-area: restart;
-		}
-		#sound {
-			grid-area: sound;
-		}
-		#stepMode {
-			grid-area: step;
-		}
-		#controls #scrub {
-			grid-area: scrub;
-			width: 100%;
-			margin: 0;
-		}
-		#controls #clock {
-			grid-area: clock;
-		}
-		#chapters {
-			grid-area: chapters;
 		}
 		body.dev #viewport {
 			width: 100%;

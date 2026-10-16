@@ -170,7 +170,7 @@ async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
 	});
 	page.on('request', (request) => {
 		if (
-			!/^(data:|file:|https:\/\/(cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com)\/)/.test(
+			!/^(data:|blob:|file:|https:\/\/(cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com)\/)/.test(
 				request.url(),
 			)
 		) {
@@ -439,15 +439,96 @@ void (async () => {
 				Math.abs(audioDuration - duration) < 0.2,
 				`${name}: soundtrack length matches timeline`,
 			);
-			assert.equal(await page.locator('#play').textContent(), 'Play');
+			const voiceDuration = await page.evaluate(
+				async () => (await window.reel.loadVoiceTrack())?.duration ?? null,
+			);
+
+			if ('narration' in videos[name as keyof typeof videos]) {
+				assert.ok(
+					voiceDuration !== null && Math.abs(voiceDuration - duration) < 0.2,
+					`${name}: voice track length matches timeline`,
+				);
+			}
+			assert.equal(
+				await page.locator('#music').count(),
+				voiceDuration === null ? 0 : 1,
+				`${name}: a music toggle exactly when there is a voice track`,
+			);
+			assert.equal(await page.locator('#play').getAttribute('aria-label'), 'Play');
 			await page.locator('#sound').click();
 			await page.waitForFunction(
 				() => document.querySelector('#sound')!.getAttribute('aria-pressed') === 'true',
 			);
 			await page.locator('#play').click();
 			await page.waitForFunction(() => window.reel.tl.time() > 0.3);
+			// The sound comes from a media element, which an iPhone plays with its silent switch on.
+			await page.waitForFunction(() => {
+				const media = document.querySelector('audio')!;
+
+				return !media.paused && Math.abs(media.currentTime - window.reel.tl.time()) < 0.3;
+			});
 			await page.locator('#play').click();
+			assert.equal(
+				await page.evaluate(() => document.querySelector('audio')!.paused),
+				true,
+				`${name}: the sound pauses with the video`,
+			);
 			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			// Space plays and pauses, and the arrows skip ten seconds, unless a control has focus.
+			await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+			await page.evaluate(() => window.reel.seek(20));
+			await page.keyboard.press('ArrowRight');
+			assert.ok(Math.abs((await page.evaluate(() => window.reel.tl.time())) - 30) < 0.01);
+			await page.keyboard.press('ArrowLeft');
+			await page.keyboard.press('ArrowLeft');
+			assert.ok(Math.abs((await page.evaluate(() => window.reel.tl.time())) - 10) < 0.01);
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), false, `${name}: Space`);
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			// The arrows still skip with a button focused, as one is after it's clicked.
+			const before = await page.evaluate(() => window.reel.tl.time());
+
+			await page.locator('#restart').focus();
+			await page.keyboard.press('ArrowRight');
+			assert.ok(
+				Math.abs((await page.evaluate(() => window.reel.tl.time())) - before - 10) < 0.01,
+				`${name}: arrows with a button focused`,
+			);
+			// Space plays and pauses there too, as on YouTube, rather than pressing Restart.
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), false);
+			await page.keyboard.press(' ');
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			assert.ok(
+				(await page.evaluate(() => window.reel.tl.time())) >= before + 10 - 0.01,
+				`${name}: Space with a button focused plays, not presses it`,
+			);
+
+			if (voiceDuration !== null) {
+				await page.locator('#music').click();
+				assert.equal(await page.locator('#music').getAttribute('aria-pressed'), 'false');
+				await page.locator('#music').click();
+			}
+			// The volume opens beside the speaker on hover, and is out of the way otherwise.
+			const volumeWidth = () =>
+				page.evaluate(() => document.querySelector('#volume')!.getBoundingClientRect().width);
+
+			await page.mouse.move(0, 0);
+			await page.waitForFunction(
+				() => document.querySelector('#volume')!.getBoundingClientRect().width === 0,
+			);
+			await page.locator('#sound').hover();
+			await page.waitForFunction(
+				() => document.querySelector('#volume')!.getBoundingClientRect().width > 80,
+			);
+			assert.ok((await volumeWidth()) > 80, `${name}: volume opens from the speaker`);
+			await page.locator('#volume').fill('40');
+			assert.equal(
+				await page.evaluate(() => document.querySelector('#controls')!.lastElementChild!.id),
+				'devOpen',
+				`${name}: Dev is the last control`,
+			);
 			await page.locator('#scrub').fill('600');
 			assert.ok(
 				Math.abs((await page.evaluate(() => window.reel.tl.time())) - duration * 0.6) < 0.1,
@@ -492,13 +573,15 @@ void (async () => {
 			await page.waitForFunction(() => window.reel.tl.progress() === 1);
 			await page.waitForTimeout(350);
 			assert.equal(await page.evaluate(() => window.reel.tl.progress()), 1, `${name}: plays once`);
-			console.log(`${name}: audio, play/pause, seek, chapters, restart and end checked`);
+			console.log(
+				`${name}: audio, play/pause, keys, music, volume, seek, chapters, restart and end checked`,
+			);
 			await page.close();
 		}
 		const guest = await browser.newPage();
 		// Fonts and GSAP are the only things a presentation loads; the guest phone talks to nobody.
 		const allowed =
-			/^(data:|file:|about:|https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\/)/;
+			/^(data:|blob:|file:|about:|https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)\/)/;
 
 		guest.on('pageerror', (error) => errors.push(`guest-guide: ${error.message}`));
 		guest.on('console', (message) => {
@@ -531,7 +614,7 @@ void (async () => {
 			for (const { code } of languages) {
 				await guest.locator('#presentationLocale').selectOption(code);
 				assert.equal(
-					await guest.locator('#play').textContent(),
+					await guest.locator('#play').getAttribute('aria-label'),
 					translations[code].guestView.presentation.play,
 				);
 

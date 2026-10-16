@@ -20,6 +20,8 @@ const S = __STRINGS__;
 const DESK = __DESK__;
 const LOGO = '__LOGO__';
 const SOUNDTRACK = '__SOUNDTRACK__';
+/** A narrated video's voice alone, for playing it without the music; empty for the reel. */
+const VOICE_TRACK = '__VOICE_TRACK__';
 const LANGS: [Locale, string][] = [
 	['en', 'English'],
 	['es', 'Español'],
@@ -522,6 +524,39 @@ function renderCaption(s: { cap: Caption | null }): void {
 
 /* ================= player ================= */
 
+/** The player's button symbols, drawn in the button's text colour. */
+const ICONS = {
+	play: '<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',
+	pause: '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" stroke="none"/>',
+	restart: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+	soundOn:
+		'<path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
+	soundOff: '<path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor"/><path d="m22 9-6 6M16 9l6 6"/>',
+	musicOn:
+		'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+	musicOff:
+		'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><path d="m2 2 20 20"/>',
+	previous: '<path d="M19 20 9 12l10-8z" fill="currentColor"/><path d="M5 19V5"/>',
+	next: '<path d="m5 4 10 8-10 8z" fill="currentColor"/><path d="M19 5v14"/>',
+	steps: '<path d="M3 20h5v-5h5v-5h5V5h3"/>',
+};
+
+/** Shows `icon` on a symbol-only button, named for assistive technology and in its tooltip. */
+function setIcon(button: HTMLElement, icon: keyof typeof ICONS, name: string, hint = name) {
+	if (button.dataset.icon !== icon) {
+		button.dataset.icon = icon;
+		button.innerHTML =
+			'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+			ICONS[icon] +
+			'</svg>';
+	}
+	button.setAttribute('aria-label', name);
+	button.title = hint;
+}
+
+/** How far the arrow keys move the playhead, in seconds. */
+const SKIP = 10;
+
 export interface BeatDescription {
 	items: string[];
 	minor: string | null;
@@ -559,6 +594,7 @@ interface DevRow {
  * GSAP's scrubber and the beat list, which `describeBeat(prev, cur)` writes from the snapshots.
  * `chapters` (from `narrationCues`) adds a chapter list with previous and next buttons, each
  * named by `chapterTitle(key, locale)`, and a step-by-step mode that pauses as each one ends.
+ * Space plays and pauses, and the arrow keys skip ten seconds back or ahead.
  */
 function mountPlayer<State>({
 	tl,
@@ -587,6 +623,9 @@ function mountPlayer<State>({
 					soundOn: 'Sound on',
 					soundOff: 'Sound off',
 					noSound: 'No sound',
+					musicOn: 'Music on',
+					musicOff: 'Music off',
+					volume: 'Volume',
 					seek: 'Seek',
 					chapter: 'Chapter',
 					previousChapter: 'Previous chapter',
@@ -598,10 +637,13 @@ function mountPlayer<State>({
 	viewport.insertAdjacentHTML(
 		'afterend',
 		'<div id="controls">' +
-			'<button type="button" id="play" aria-label="Pause">Pause</button>' +
-			'<button type="button" id="restart">Restart</button>' +
-			'<button type="button" id="sound" aria-pressed="false">Sound off</button>' +
-			'<button type="button" id="devOpen" title="Scrubber and beat list for editing the video">Dev</button>' +
+			'<button type="button" class="icon" id="play"></button>' +
+			'<button type="button" class="icon" id="restart"></button>' +
+			'<div id="soundGroup"><button type="button" class="icon" id="sound" aria-pressed="false"></button>' +
+			'<input type="range" id="volume" min="0" max="100" value="100" /></div>' +
+			(VOICE_TRACK
+				? '<button type="button" class="icon" id="music" aria-pressed="true"></button>'
+				: '') +
 			'<input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek" />' +
 			'<span id="clock">0:00</span></div>',
 	);
@@ -610,10 +652,10 @@ function mountPlayer<State>({
 		k('controls').insertAdjacentHTML(
 			'beforeend',
 			'<div id="chapters">' +
-				'<button type="button" id="prevChapter">‹</button>' +
+				'<button type="button" class="icon" id="prevChapter"></button>' +
 				'<select id="chapter"></select>' +
-				'<button type="button" id="nextChapter">›</button></div>' +
-				'<button type="button" id="stepMode" aria-pressed="false"></button>',
+				'<button type="button" class="icon" id="nextChapter"></button></div>' +
+				'<button type="button" class="icon" id="stepMode" aria-pressed="false"></button>',
 		);
 	}
 
@@ -633,6 +675,10 @@ function mountPlayer<State>({
 			syncControls();
 		});
 	}
+	k('controls').insertAdjacentHTML(
+		'beforeend',
+		'<button type="button" id="devOpen" title="Scrubber and beat list for editing the video">Dev</button>',
+	);
 	let devTick: (() => void) | null = null;
 	const render = tl.eventCallback('onUpdate') as () => void;
 
@@ -645,21 +691,35 @@ function mountPlayer<State>({
 	});
 	tl.set({}, {}, END);
 
-	let soundtrack: AudioBuffer | null = null;
-	const soundtrackReady = (async () => {
-		const bytes = Uint8Array.from(atob(SOUNDTRACK), (c) => c.charCodeAt(0));
+	/** An embedded track as a URL a media element can play, once it has read the track's length. */
+	const load = (base64: string) => {
+		const url = URL.createObjectURL(
+			new Blob([Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))], { type: 'audio/mp4' }),
+		);
+		const probe = new Audio();
 
-		return new OfflineAudioContext(2, 1, 44100).decodeAudioData(bytes.buffer);
-	})()
-		.then((buffer) => (soundtrack = buffer))
-		.catch(() => {
-			// A browser without AAC decoding plays the video silently rather than offering dead sound.
-			const button = k('sound') as HTMLButtonElement;
-
-			button.disabled = true;
-			soundAvailable = false;
-			button.textContent = copy().noSound;
+		return new Promise<HTMLAudioElement>((resolve, reject) => {
+			probe.preload = 'metadata';
+			probe.addEventListener('loadedmetadata', () => resolve(probe), { once: true });
+			probe.addEventListener('error', reject, { once: true });
+			probe.src = url;
 		});
+	};
+	let soundtrack: string | null = null;
+	const soundtrackReady = load(SOUNDTRACK)
+		.then((track) => ((soundtrack = track.src), track))
+		.catch(() => {
+			// A browser without AAC playback plays the video silently rather than offering dead sound.
+			soundAvailable = false;
+			syncControls();
+		});
+	/** The voice alone, loaded the first time the viewer turns the music off. */
+	let voiceTrack: string | null = null;
+	let voiceTrackReady: Promise<HTMLAudioElement | null> | null = null;
+	const loadVoiceTrack = () =>
+		(voiceTrackReady ??= VOICE_TRACK
+			? load(VOICE_TRACK).then((track) => ((voiceTrack = track.src), track))
+			: Promise.resolve(null));
 
 	const fit = () => {
 		stage.style.transform =
@@ -670,7 +730,12 @@ function mountPlayer<State>({
 	fit();
 
 	const playBtn = k('play');
+	const soundBtn = k('sound') as HTMLButtonElement;
+	const musicBtn = document.getElementById('music') as HTMLButtonElement | null;
+	const volume = k('volume') as HTMLInputElement;
 	const scrub = k('scrub') as HTMLInputElement;
+	let soundOn = false;
+	let musicOn = true;
 	const clock = k('clock');
 	const fmt = (sec: number) =>
 		Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
@@ -683,13 +748,26 @@ function mountPlayer<State>({
 		scrub.value = String(Math.round((tl.time() / END) * 1000));
 		clock.textContent = fmt(tl.time());
 		const L = copy();
-		const text = tl.paused() || tl.progress() === 1 ? L.play : L.pause;
+		const stopped = tl.paused() || tl.progress() === 1;
 
-		playBtn.textContent = text;
-		playBtn.setAttribute('aria-label', text);
-		k('restart').textContent = L.restart;
-		k('sound').textContent = soundAvailable ? (soundOn ? L.soundOn : L.soundOff) : L.noSound;
-		k('sound').setAttribute('aria-pressed', String(soundOn));
+		setIcon(playBtn, stopped ? 'play' : 'pause', stopped ? L.play : L.pause);
+		setIcon(k('restart'), 'restart', L.restart);
+		setIcon(
+			soundBtn,
+			soundOn && soundAvailable ? 'soundOn' : 'soundOff',
+			soundAvailable ? (soundOn ? L.soundOn : L.soundOff) : L.noSound,
+		);
+		soundBtn.setAttribute('aria-pressed', String(soundOn));
+		soundBtn.disabled = !soundAvailable;
+		volume.disabled = !soundAvailable;
+		volume.setAttribute('aria-label', L.volume);
+		volume.title = L.volume;
+
+		if (musicBtn) {
+			setIcon(musicBtn, musicOn ? 'musicOn' : 'musicOff', musicOn ? L.musicOn : L.musicOff);
+			musicBtn.setAttribute('aria-pressed', String(musicOn));
+			musicBtn.disabled = !soundAvailable;
+		}
 		scrub.setAttribute('aria-label', L.seek);
 
 		if (onLocaleChange) {
@@ -723,18 +801,15 @@ function mountPlayer<State>({
 				)
 				.join('');
 			select.setAttribute('aria-label', L.chapter);
-			k('prevChapter').setAttribute('aria-label', L.previousChapter);
-			k('prevChapter').title = L.previousChapter;
-			k('nextChapter').setAttribute('aria-label', L.nextChapter);
-			k('nextChapter').title = L.nextChapter;
+			setIcon(k('prevChapter'), 'previous', L.previousChapter);
+			setIcon(k('nextChapter'), 'next', L.nextChapter);
 		}
 		const current = chapterAt(tl.time());
 
 		select.value = String(current);
 		(k('prevChapter') as HTMLButtonElement).disabled = tl.time() < 0.05;
 		(k('nextChapter') as HTMLButtonElement).disabled = current === chapters.length - 1;
-		k('stepMode').textContent = L.stepByStep;
-		k('stepMode').title = L.stepByStepHint;
+		setIcon(k('stepMode'), 'steps', L.stepByStep, L.stepByStep + ' — ' + L.stepByStepHint);
 		k('stepMode').setAttribute('aria-pressed', String(stepByStep));
 	}
 
@@ -770,27 +845,33 @@ function mountPlayer<State>({
 	}
 
 	/**
-	 * Jumps to a chapter and carries on as it was: playing on with the sound in step, or paused. A
-	 * chapter's first beat is at its start, so the jump lands just past it to show that beat.
+	 * Jumps to `time` and carries on as it was: playing on with the sound in step, or paused. The
+	 * jump is made paused, so a step-by-step hold it crosses doesn't stop playback at once.
 	 */
-	function seekChapter(i: number) {
-		const chapter = chapters[Math.max(0, Math.min(chapters.length - 1, i))]!;
+	function seekTo(time: number) {
 		const playing = !tl.paused() && tl.progress() < 1;
 
 		pendingRestart?.kill();
 		tl.pause();
-		tl.time(chapter.t && chapter.t + 0.001);
+		tl.time(Math.max(0, Math.min(END, time)));
 
-		if (playing) {
+		if (playing && tl.progress() < 1) {
 			tl.play();
 		}
 		syncControls();
 
-		if (playing) {
+		if (!tl.paused()) {
 			startAudio();
 		} else {
 			stopAudio();
 		}
+	}
+
+	/** A chapter's first beat is at its start, so the jump lands just past it to show that beat. */
+	function seekChapter(i: number) {
+		const chapter = chapters[Math.max(0, Math.min(chapters.length - 1, i))]!;
+
+		seekTo(chapter.t && chapter.t + 0.001);
 	}
 
 	if (chapters.length) {
@@ -810,36 +891,50 @@ function mountPlayer<State>({
 			syncControls();
 		});
 	}
-	/* Browsers start sound only from a click, so it begins off until the viewer turns it on. */
-	const soundBtn = k('sound');
+	/*
+	 * Browsers start sound only from a click, so it begins off until the viewer turns it on. It plays
+	 * from a media element rather than from Web Audio alone: an iPhone with its silent switch on
+	 * mutes Web Audio but not a playing media element, and only a media element reaches the lock
+	 * screen and the media keys. The element still plays through a gain node, as an iPhone ignores a
+	 * media element's own volume. The timeline keeps the time; the element is moved to it on drift.
+	 */
+	const media = document.createElement('audio');
+
+	media.hidden = true;
+	media.preload = 'auto';
+	document.body.appendChild(media);
 	let audio: AudioContext | null = null;
-	let node: AudioBufferSourceNode | null = null;
-	let soundOn = false;
-	let sourceStart = { ctx: 0, offset: 0 };
+	/** The volume slider's level, which the element plays through. */
+	let level: GainNode | null = null;
 
 	function stopAudio() {
-		if (!node) {
-			return;
-		}
-
-		try {
-			node.stop();
-		} catch {}
-		node.disconnect();
-		node = null;
+		media.pause();
+		syncMediaSession();
 	}
 
 	function startAudio() {
-		stopAudio();
+		const track = musicOn ? soundtrack : voiceTrack;
 
-		if (!soundOn || !soundtrack || !audio || tl.paused() || tl.progress() === 1) {
-			return;
+		if (!soundOn || !track || !audio || tl.paused() || tl.progress() === 1) {
+			return stopAudio();
 		}
-		node = audio.createBufferSource();
-		node.buffer = soundtrack;
-		node.connect(audio.destination);
-		sourceStart = { ctx: audio.currentTime, offset: tl.time() };
-		node.start(0, tl.time());
+
+		// An iPhone suspends the context when it locks or takes a call, leaving the element mute.
+		if (audio.state !== 'running') {
+			void audio.resume();
+		}
+
+		if (media.src !== track) {
+			media.src = track;
+		}
+		media.currentTime = tl.time();
+		media.play().catch((error: DOMException) => {
+			// Turned away for want of a click; a swap of track interrupting it is an AbortError.
+			if (error.name === 'NotAllowedError') {
+				void setSound(false);
+			}
+		});
+		syncMediaSession();
 	}
 
 	function syncAudio() {
@@ -851,30 +946,118 @@ function mountPlayer<State>({
 			return stopAudio();
 		}
 
-		if (!node || !audio) {
-			return startAudio();
+		// A track a frame shorter than the timeline ends first, and stays ended.
+		if (media.paused) {
+			return media.ended ? undefined : startAudio();
 		}
-		const position = sourceStart.offset + audio.currentTime - sourceStart.ctx;
 
-		if (Math.abs(position - tl.time()) > 0.15) {
-			startAudio();
+		if (
+			!media.seeking &&
+			media.readyState >= HTMLMediaElement.HAVE_METADATA &&
+			Math.abs(media.currentTime - tl.time()) > 0.15
+		) {
+			media.currentTime = tl.time();
 		}
 	}
 
+	/** Perceived loudness follows the square of the gain more closely than the gain itself. */
+	const syncLevel = () => {
+		if (level) {
+			level.gain.value = (Number(volume.value) / 100) ** 2;
+		}
+	};
+
 	async function setSound(on: boolean) {
 		soundOn = on;
-		soundBtn.textContent = on ? copy().soundOn : copy().soundOff;
-		soundBtn.setAttribute('aria-pressed', String(on));
+		syncControls();
 
 		if (!on) {
 			return stopAudio();
 		}
-		audio ??= new AudioContext();
-		await audio.resume();
-		await soundtrackReady;
+
+		if (!audio) {
+			audio = new AudioContext();
+			level = audio.createGain();
+			audio.createMediaElementSource(media).connect(level);
+			level.connect(audio.destination);
+			syncLevel();
+
+			// Safari's own switch for the same thing: sound that plays with the silent switch on.
+			if (navigator.audioSession) {
+				navigator.audioSession.type = 'playback';
+			}
+		}
+		void audio.resume();
+		// Started within the click where the track is ready, as Safari asks.
 		startAudio();
+		await (musicOn ? soundtrackReady : loadVoiceTrack());
+
+		if (media.paused) {
+			startAudio();
+		}
 	}
 	soundBtn.addEventListener('click', () => void setSound(!soundOn));
+	volume.addEventListener('input', syncLevel);
+
+	/* With the music off the player swaps to the voice alone, picking up at the same moment. */
+	musicBtn?.addEventListener('click', async () => {
+		musicOn = !musicOn;
+		syncControls();
+		startAudio();
+		await (musicOn ? soundtrackReady : loadVoiceTrack());
+
+		if (media.paused) {
+			startAudio();
+		}
+	});
+
+	/*
+	 * The lock screen, Control Center and the keyboard's media keys, which reach a page only while
+	 * its media element plays: play and pause, skip ten seconds, seek, and step through chapters.
+	 */
+	const session = 'mediaSession' in navigator ? navigator.mediaSession : null;
+
+	function syncMediaSession() {
+		if (!session) {
+			return;
+		}
+		session.playbackState = tl.paused() || tl.progress() === 1 ? 'paused' : 'playing';
+
+		try {
+			session.setPositionState({ duration: END, position: tl.time(), playbackRate: 1 });
+		} catch {}
+	}
+
+	if (session) {
+		const stopped = () => tl.paused() || tl.progress() === 1;
+		const actions: [MediaSessionAction, MediaSessionActionHandler][] = [
+			['play', () => stopped() && playBtn.click()],
+			['pause', () => !stopped() && playBtn.click()],
+			['seekbackward', (details) => seekTo(tl.time() - (details.seekOffset ?? SKIP))],
+			['seekforward', (details) => seekTo(tl.time() + (details.seekOffset ?? SKIP))],
+			['seekto', (details) => seekTo(details.seekTime ?? tl.time())],
+		];
+
+		if (chapters.length) {
+			actions.push(
+				['previoustrack', () => k('prevChapter').click()],
+				['nexttrack', () => k('nextChapter').click()],
+			);
+		}
+		session.metadata = new MediaMetadata({
+			title: document.title,
+			artist: 'The Bay Compassion',
+			artwork: [{ src: LOGO, sizes: '512x512', type: 'image/svg+xml' }],
+		});
+
+		for (const [action, handler] of actions) {
+			try {
+				session.setActionHandler(action, handler);
+			} catch {
+				// An action this browser doesn't offer.
+			}
+		}
+	}
 
 	let pendingRestart: gsap.core.Tween | null = null;
 
@@ -910,6 +1093,62 @@ function mountPlayer<State>({
 		stopAudio();
 		tl.time((Number(scrub.value) / 1000) * END);
 		syncControls();
+	});
+
+	/*
+	 * A frame on the stage runs part of the app, whose dialogs focus themselves as a scene opens
+	 * them. That takes the keyboard into the frame, away from the keys below, so take it back. The
+	 * frames are `srcdoc`, so their documents are this page's to listen to.
+	 */
+	for (const frame of document.querySelectorAll<HTMLIFrameElement>('iframe[aria-hidden="true"]')) {
+		const reclaim = () =>
+			frame.contentDocument?.addEventListener('focusin', () => {
+				(frame.contentDocument?.activeElement as HTMLElement | null)?.blur();
+				frame.blur();
+				window.focus();
+			});
+
+		frame.addEventListener('load', reclaim);
+		reclaim();
+	}
+
+	/*
+	 * Keys as YouTube takes them: Space plays and pauses wherever the focus is, even on a button,
+	 * which Enter still presses. Only a list or a text field keeps Space, and a slider, a list or a
+	 * text field keeps the arrows.
+	 */
+	document.addEventListener('keydown', (event) => {
+		const target = event.target as HTMLElement;
+		const skip = event.key === 'ArrowLeft' ? -SKIP : event.key === 'ArrowRight' ? SKIP : 0;
+
+		if (record || event.altKey || event.ctrlKey || event.metaKey || (event.key !== ' ' && !skip)) {
+			return;
+		}
+
+		if (
+			target.closest(
+				skip
+					? 'input, select, textarea, [contenteditable]'
+					: 'input:not([type="range"]), select, textarea, [contenteditable]',
+			)
+		) {
+			return;
+		}
+		event.preventDefault();
+
+		if (skip) {
+			seekTo(tl.time() + skip);
+		} else {
+			playBtn.click();
+		}
+	});
+
+	// A focused button presses itself as Space comes back up, in some browsers even after the key
+	// went down to play or pause.
+	document.addEventListener('keyup', (event) => {
+		if (event.key === ' ' && (event.target as HTMLElement).closest('button')) {
+			event.preventDefault();
+		}
 	});
 
 	/* ---------- dev mode (#dev) ---------- */
@@ -1064,6 +1303,7 @@ function mountPlayer<State>({
 		},
 		setSound,
 		soundtrackReady,
+		loadVoiceTrack,
 		settle,
 	};
 
@@ -1125,6 +1365,13 @@ export type Stage = typeof stage;
 declare global {
 	interface Window {
 		stage: Stage;
+	}
+
+	/** Safari's Audio Session API, which TypeScript's DOM types don't carry yet. */
+	interface Navigator {
+		audioSession?: {
+			type: 'auto' | 'playback' | 'transient' | 'transient-solo' | 'ambient' | 'play-and-record';
+		};
 	}
 }
 
