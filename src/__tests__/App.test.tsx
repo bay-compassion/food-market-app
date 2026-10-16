@@ -429,7 +429,7 @@ describe('App', () => {
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBeNull();
-		expect(container.textContent).not.toContain('You’re on the list!');
+		expect(container.textContent).not.toContain('You got a number!');
 	});
 
 	it('shows identity signup on /signup when the device token is missing', async () => {
@@ -537,10 +537,12 @@ describe('App', () => {
 			aheadOfYou: null,
 		});
 
-		await waitFor(() => expect(container.textContent).toContain('It’s your turn'));
+		await waitFor(() => expect(container.textContent).toContain('Come to check-in now'));
 
-		expect(container.textContent).toContain('Please come to the check-in desk now.');
-		expect(container.textContent).not.toContain('You’re on the list!');
+		expect(container.textContent).toContain(
+			'It’s your turn. Bring this phone to the check-in desk.',
+		);
+		expect(container.textContent).not.toContain('You got a number!');
 		// The number stays, for the worker at the entrance to check.
 		expect(container.querySelector('.queue-number-board')?.textContent).toBe('Your number2');
 		// A called guest has nothing left to cancel.
@@ -560,7 +562,7 @@ describe('App', () => {
 		await waitFor(() => expect(container.textContent).toContain(copy.header));
 
 		expect(container.textContent).toContain(copy.details);
-		expect(container.textContent).not.toContain('You’re on the list!');
+		expect(container.textContent).not.toContain('You got a number!');
 	});
 
 	it('lets a cancelled guest register again while the market is open', async () => {
@@ -576,7 +578,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
-		expect(container.textContent).not.toContain('You’re on the list!');
+		expect(container.textContent).not.toContain('You got a number!');
 	});
 
 	it('does not let a visit from another market override the current market', async () => {
