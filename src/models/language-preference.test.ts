@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { languages } from '../locales.ts';
 import { LanguagePreference } from './language-preference';
 
-const supported = ['en', 'es', 'tl', 'zh', 'fa', 'ar', 'vi', 'fr'] as const;
+const supported = languages.map(({ code }) => code);
 
 function preference(languages: string[], language = languages[0] ?? '') {
 	return LanguagePreference.fromNavigator({ language, languages }, supported);
@@ -44,7 +45,7 @@ describe('LanguagePreference', () => {
 
 	it('has no match when the browser asks for no supported language', () => {
 		// Arrange
-		const browser = preference(['de-DE', 'ru']);
+		const browser = preference(['de-DE', 'ko-KR']);
 
 		// Act
 		const match = browser.match;

@@ -646,7 +646,9 @@ void (async () => {
 					);
 				}
 			}
-			console.log(`guest-guide: every narration scene in eight locales at ${width}px`);
+			console.log(
+				`guest-guide: every narration scene in ${languages.length} locales at ${width}px`,
+			);
 		}
 		await staticLayout.evaluate((element) => (element as HTMLStyleElement).remove());
 		await guest.locator('#presentationLocale').selectOption('en');

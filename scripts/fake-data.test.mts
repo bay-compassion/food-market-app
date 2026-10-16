@@ -40,7 +40,7 @@ describe('buildFakeData', () => {
 
 	it('says how to say every name a volunteer could not read, and only the misreadable Latin ones', () => {
 		const { guests } = build({ guests: 120 });
-		// Anything past Latin Extended: Arabic, Persian, and Chinese script.
+		// Anything past Latin Extended: Arabic, Persian, Chinese, and Cyrillic script.
 		const unreadable = guests.filter((guest) => /[^\u0000-\u024F]/.test(guest.firstName));
 		const byName = (name: string) => guests.filter((guest) => guest.firstName === name);
 

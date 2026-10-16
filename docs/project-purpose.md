@@ -48,7 +48,7 @@ is ongoing work.
 Giving guests more time matters only if they can understand and use the app. We put substantial
 consideration into language support for the communities in our region, choosing languages with
 the local population in mind. The guest experience is available in English, Spanish, Tagalog,
-Chinese, Farsi, Arabic, Vietnamese, and French.
+Chinese, Farsi, Arabic, Vietnamese, French, Portuguese, and Russian.
 
 That work extends beyond translating a signup form. Guests need to understand when registration
 is open, what information we are asking for, whether they have been selected, and what to do when

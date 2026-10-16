@@ -141,11 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		cap(
 			'Guests',
 			'Neighbors register from their own phones.',
-			'In eight languages, right-to-left included.',
+			'In ten languages, right-to-left included.',
 		)(s);
 	});
-	(['es', 'tl', 'zh', 'fa', 'ar', 'vi', 'fr', 'en'] as const).forEach((code, i) =>
-		at(4.9 + i * 0.42, (s) => {
+	(['es', 'tl', 'zh', 'fa', 'ar', 'vi', 'fr', 'pt', 'ru', 'en'] as const).forEach((code, i) =>
+		at(4.9 + i * 0.34, (s) => {
 			s.heroLang = code;
 		}),
 	);

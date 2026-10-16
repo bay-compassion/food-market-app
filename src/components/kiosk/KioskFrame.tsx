@@ -18,7 +18,10 @@ export const KioskFrame = styled.main`
 	color: var(--color-on-brand);
 	font-family: var(--font-heading);
 	overflow: hidden;
-	cursor: none;
+	/* Keep the pointer visible while browsing; only the fullscreen room display hides it. */
+	@media (display-mode: fullscreen) {
+		cursor: none;
+	}
 `;
 
 const Message = styled.section`

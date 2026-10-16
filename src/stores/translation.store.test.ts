@@ -30,6 +30,29 @@ describe('TranslationStore', () => {
 		expect(detected.locale).toBe('tl');
 	});
 
+	it.each([
+		['pt-BR', 'pt'],
+		['pt-PT', 'pt'],
+		['ru-RU', 'ru'],
+	] as const)('detects %s and restores the saved %s preference', (browserLanguage, language) => {
+		// Arrange
+		vi.stubGlobal('navigator', { language: browserLanguage, languages: [browserLanguage] });
+		const detected = new TranslationStore(window.localStorage);
+
+		const detectedLocale = detected.locale;
+
+		// Act
+		detected.setLanguage(language);
+		vi.stubGlobal('navigator', { language: 'en-US', languages: ['en-US'] });
+		const returning = new TranslationStore(window.localStorage);
+
+		// Assert
+		expect(detectedLocale).toBe(language);
+		expect(returning.locale).toBe(language);
+		expect(returning.translation).toEqual(translations[language]);
+		expect(returning.dir).toBe('ltr');
+	});
+
 	it('should have default locale', () => {
 		// Arrange
 
