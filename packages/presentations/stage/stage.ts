@@ -31,6 +31,8 @@ const LANGS: [Locale, string][] = [
 	['ar', 'العربية'],
 	['vi', 'Tiếng Việt'],
 	['fr', 'Français'],
+	['pt', 'Português'],
+	['ru', 'Русский'],
 ];
 const ENGLISH: Record<Locale, string> = {
 	en: 'English',
@@ -41,8 +43,10 @@ const ENGLISH: Record<Locale, string> = {
 	ar: 'Arabic',
 	vi: 'Vietnamese',
 	fr: 'French',
+	pt: 'Portuguese',
+	ru: 'Russian',
 };
-const KIOSK_ROTATION: Locale[] = ['es', 'tl', 'zh', 'fa', 'ar', 'vi', 'fr'];
+const KIOSK_ROTATION: Locale[] = LANGS.map(([code]) => code).filter((code) => code !== 'en');
 const RTL = new Set<Locale>(['fa', 'ar']);
 const DIGITS: Partial<Record<Locale, string>> = { fa: '۰۱۲۳۴۵۶۷۸۹', ar: '٠١٢٣٤٥٦٧٨٩' };
 const nativeOf = (loc: Locale, n: number | string) => {

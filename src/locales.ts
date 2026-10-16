@@ -4,8 +4,8 @@ import { outdent } from 'outdent';
  * `label` is the language's own name, for a guest choosing it; `englishLabel` is what an
  * English-reading worker sees on the admin screens.
  *
- * Ordered by how many people speak each language at home in Contra Costa County (ACS 2024
- * 1-year, table B16001), so the picker and the kiosk rotation put the most common first.
+ * The original languages are ordered by how many people speak each language at home in
+ * Contra Costa County (ACS 2024 1-year, table B16001). Portuguese and Russian follow that group.
  */
 export const languages = [
 	{ code: 'en', label: 'English', englishLabel: 'English' },
@@ -16,6 +16,8 @@ export const languages = [
 	{ code: 'ar', label: 'العربية', englishLabel: 'Arabic' },
 	{ code: 'vi', label: 'Tiếng Việt', englishLabel: 'Vietnamese' },
 	{ code: 'fr', label: 'Français', englishLabel: 'French' },
+	{ code: 'pt', label: 'Português', englishLabel: 'Portuguese' },
+	{ code: 'ru', label: 'Русский', englishLabel: 'Russian' },
 ] as const;
 
 export type Locale = (typeof languages)[number]['code'];
@@ -3950,5 +3952,890 @@ export const translations = {
 		termsAndConditions: 'Conditions générales',
 		statusLoading: 'Vérification de l’état du marché d’aujourd’hui…',
 		welcome: 'Bienvenue au marché alimentaire communautaire',
+	},
+	pt: {
+		holdingPage: {
+			heading: 'O novo aplicativo será lançado em 31 de outubro',
+			instructions: 'Guarde este código QR e escaneie-o novamente em 31 de outubro.',
+			currentAppHeading: 'Está procurando o mercado de alimentos de hoje?',
+			currentAppDescription:
+				'Use o aplicativo atual até 31 de outubro. Este código QR é para o novo aplicativo.',
+			currentAppLink: 'Abrir o aplicativo atual',
+		},
+		appBar: {
+			openMenu: 'Abrir menu',
+			accountMenu: 'Menu da conta',
+			website: 'Site da The Bay Compassion',
+			qrCode: 'Código QR',
+			staffLogin: 'Acesso da equipe',
+			adminPanel: 'Painel de administração',
+			signOut: 'Sair',
+			sendFeedback: 'Enviar comentário',
+			deviceDetails: {
+				title: 'Detalhes do dispositivo',
+				close: 'Fechar detalhes do dispositivo',
+				installIdLabel: 'ID do dispositivo',
+				deviceTokenLabel: 'Token do visitante',
+				deviceTokenHint: 'Compartilhe apenas com um membro da equipe.',
+				copy: 'Copiar',
+				copied: 'Copiado',
+				copyInstallId: 'Copiar ID do dispositivo',
+				copyDeviceToken: 'Copiar token do visitante',
+				copyError: 'Não foi possível copiar. Tente novamente.',
+			},
+			takeTour: 'Ver o guia',
+			feedbackForm: {
+				formTitle: 'Enviar comentário',
+				nameLabel: 'Nome (opcional)',
+				namePlaceholder: 'Seu nome',
+				messageLabel: 'Seu comentário',
+				messagePlaceholder:
+					'Conte o que deu errado ou o que poderia melhorar. Não inclua dados pessoais.',
+				submitButtonLabel: 'Enviar',
+				cancelButtonLabel: 'Cancelar',
+				successMessageText: 'Obrigado pelo seu comentário!',
+				isRequiredLabel: '(obrigatório)',
+				errorEmptyMessageText: 'Escreva uma mensagem antes de enviar.',
+				errorTimeoutText: 'O envio demorou demais. Tente novamente.',
+				errorGenericText: 'Não foi possível enviar seu comentário. Tente novamente.',
+			},
+		},
+		guestView: {
+			presentation: {
+				title: 'Guia do mercado para visitantes',
+				heading: 'Sua visita à The Bay Compassion',
+				summary: 'Um guia breve para visitantes no dia do mercado.',
+				description:
+					'Saiba como se inscrever, ver o resultado do sorteio, acompanhar seu número e ir ao balcão de atendimento.',
+				sound:
+					'Ative o som para ouvir a narração em inglês. A voz é gerada por inteligência artificial.',
+				play: 'Reproduzir',
+				pause: 'Pausar',
+				restart: 'Recomeçar',
+				soundOn: 'Som ativado',
+				soundOff: 'Som desativado',
+				noSound: 'Sem som',
+				musicOn: 'Música ativada',
+				musicOff: 'Música desativada',
+				volume: 'Volume',
+				seek: 'Avançar ou voltar',
+				open: 'Abrir apresentação',
+				download: 'Baixar apresentação',
+				more: 'Mais apresentações',
+				chapter: 'Capítulo',
+				previousChapter: 'Capítulo anterior',
+				nextChapter: 'Próximo capítulo',
+				stepByStep: 'Passo a passo',
+				stepByStepHint: 'Pausar ao final de cada capítulo',
+				chapters: {
+					welcome: 'Boas-vindas',
+					openPage: 'Abrir a página do mercado',
+					signUpTime: 'Quando se inscrever',
+					form: 'Preencher o formulário',
+					entered: 'Você está no sorteio',
+					draw: 'O sorteio',
+					followLine: 'Acompanhar a fila',
+					yourTurn: 'É a sua vez',
+					runningLate: 'Em caso de atraso',
+					complete: 'Visita concluída',
+					missedSignUp: 'Se você perdeu a inscrição',
+					help: 'Como obter ajuda',
+				},
+			},
+			languageHint: 'Você pode mudar o idioma a qualquer momento no topo da tela.',
+			helpPrompt: 'Não sabe o que fazer?',
+			tour: {
+				progress: '{current} de {total}',
+				start: 'Quero ver',
+				next: 'Próximo',
+				back: 'Voltar',
+				skip: 'Pular o guia',
+				done: 'Concluir',
+				close: 'Fechar o guia',
+				steps: {
+					welcome: {
+						title: 'Boas-vindas! Veja como funciona',
+						body: 'Não precisa ter pressa. As inscrições ficam abertas por 15 minutos, e se inscrever mais cedo não muda suas chances. Você pode pular este guia e voltar a ele pelo menu a qualquer momento.',
+					},
+					language: {
+						title: 'Seu idioma',
+						body: 'Toque aqui para mudar o idioma a qualquer momento. O aplicativo lembra sua escolha para a próxima vez.',
+					},
+					countdown: {
+						time: '10h30',
+						title: 'Abertura das inscrições',
+						body: 'Todo sábado às 10h30, as inscrições abrem por 15 minutos. Você pode se inscrever de qualquer lugar, até de casa. Enquanto estiverem abertas, um cronômetro nesta tela mostra quanto tempo falta.',
+					},
+					form: {
+						title: 'Preencha o formulário',
+						body: 'Informe seu nome e sobrenome (não apenas as iniciais), seu celular e responda a algumas perguntas sobre as pessoas que moram com você. Depois, toque em “{submit}”.',
+					},
+					textUpdates: {
+						title: 'Receba atualizações por SMS',
+						body: 'Depois de se inscrever, toque em “{action}” nesta tela. É opcional, mas sem isso você não receberá mensagens de texto.',
+					},
+					lottery: {
+						time: '10h45',
+						title: 'Realização do sorteio',
+						body: 'Todos têm a mesma chance. Esta tela mostra se você recebeu um número. Nem todos recebem um número a cada semana.',
+					},
+					line: {
+						title: 'Seu lugar na fila',
+						body: 'Se você recebeu um número, vá ao mercado. Esta tela mostra seu lugar na fila, como neste exemplo, e se atualiza sozinha.',
+					},
+					turn: {
+						time: '11h30',
+						title: 'Início das compras',
+						body: 'Quando for sua vez, esta tela avisará, e enviaremos um SMS se você tiver ativado as mensagens. Vá ao balcão de atendimento e leve o celular usado na inscrição — não aceitamos capturas de tela.',
+					},
+					help: {
+						title: 'Precisa relembrar?',
+						body: '“{help}” tem todas as etapas. Você também pode perguntar a qualquer voluntário.',
+					},
+					replay: {
+						title: 'Veja novamente',
+						body: 'Você pode ver este guia novamente a qualquer momento por este menu.',
+					},
+				},
+			},
+			forms: {
+				informationLegend: 'Seus dados',
+				pronunciationOffer: 'Adicionar a pronúncia do seu nome',
+				pronunciationLabel: 'Pronuncia-se',
+				pronunciationHelp:
+					'Escreva como se pronuncia, para que possamos chamar seu nome corretamente.',
+				pronunciationCollapse: 'Ocultar a pronúncia do seu nome',
+				lotteryLegend: 'Dados da inscrição no sorteio',
+				questionsLegend: 'Perguntas',
+			},
+			identityIndicator: {
+				cancelForgetInformation: 'Cancelar',
+				closeForgetDialog: 'Fechar confirmação de exclusão dos dados',
+				closeNotificationsDialog: 'Fechar atualizações por SMS',
+				forgetDialogDescription:
+					'Isso remove deste dispositivo seu nome, telefone, ID do dispositivo e dados das pessoas que moram com você. Essa ação não pode ser desfeita.',
+				forgetDialogTitle: 'Esquecer seus dados?',
+				forgetInformation: 'Esquecer dados',
+				heading: 'Reconhecido neste dispositivo',
+				notificationsAction: 'Receber atualizações por SMS',
+				notificationsDialogTitle: 'Atualizações por SMS',
+				notificationsEnabled: 'Notificações ativadas',
+				notificationsError:
+					'Não foi possível consultar o status das suas notificações. Tente novamente mais tarde.',
+				notificationsLoading: 'Consultando status das notificações…',
+				openIdentityMenu: 'Abrir menu de identificação',
+				optOut: 'Cancelar recebimento',
+				optOutError: 'Não foi possível cancelar o recebimento de SMS. Tente novamente.',
+				saveInformationAction: 'Salvar meus dados',
+				unidentifiedHeading: 'Salve seus dados para a próxima vez',
+				unidentifiedMessage:
+					'Salve seu nome e telefone para não precisar informá-los na próxima visita. Isso não inscreve você no sorteio.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'Concordo em receber mensagens de texto da The Bay Compassion sobre minha situação na fila e minha visita. A frequência varia, geralmente não mais do que algumas mensagens por dia de mercado. Podem ser cobradas tarifas de mensagens e dados. Responda STOP para cancelar ou HELP para obter ajuda. O consentimento não é necessário para receber atendimento no mercado de alimentos.',
+				enable: 'Ativar atualizações por SMS',
+				enabled: 'As atualizações por SMS estão ativadas para esta visita e as próximas.',
+				error: 'Não foi possível ativar as atualizações por SMS. Tente novamente.',
+				optedOut:
+					'Você cancelou as mensagens de texto anteriormente. Para voltar a receber atualizações, envie START para o nosso número.',
+				sendStart: 'Abrir mensagem com START',
+				checkStart: 'Enviei START — verificar novamente',
+			},
+			scheduleInformation: {
+				heading: 'As inscrições abrem todo sábado às 10h30',
+				body: 'As inscrições ainda não estão abertas. Volte no sábado às 10h30.\nTodos terão uma chance justa de participar do sorteio para entrar na fila.',
+			},
+			notOpenState: {
+				heading: 'O mercado está fechado',
+				subheading:
+					'As inscrições abrirão novamente no próximo sábado às 10h30 e ficarão abertas por 15 minutos, até as 10h45.',
+				lotteryDescription:
+					'Como os alimentos são limitados, o mercado usa um sorteio para selecionar aleatoriamente quem poderá fazer compras a cada semana. Você pode se inscrever de qualquer lugar, a qualquer momento durante os 15 minutos entre 10h30 e 10h45 de sábado. Inscrever-se mais cedo não altera suas chances de ser selecionado, então não precisa ter pressa.',
+				selectionDescription:
+					'O sorteio será realizado às 10h45, dando tempo para ir ao mercado se você for selecionado. Se for selecionado para fazer compras, receberá um número aqui no aplicativo, e as compras começam às 11h30. Se autorizar o recebimento de mensagens de texto, também será avisado por SMS.',
+			},
+			registrationClosedState: {
+				heading: 'As inscrições foram encerradas',
+				description:
+					'Sentimos muito — você perdeu o horário de inscrição de hoje. As inscrições abrem novamente no próximo sábado às 10h30, e todos os inscritos têm a mesma chance no sorteio.',
+			},
+			serviceState: {
+				inProgressHeading: 'O mercado de hoje está em andamento',
+				inProgressDescription:
+					'As inscrições de hoje estão encerradas. Se você ainda não se apresentou no balcão, fale com um membro da equipe do mercado.',
+			},
+			refreshNotice: {
+				countdown: 'Atualização em {seconds}s',
+				updating: 'Atualizando…',
+				noNeedToRefresh: 'Não precisa atualizar — esta página se atualiza sozinha.',
+				accessibleDescription:
+					'Esta página se atualiza automaticamente. Você não precisa atualizá-la.',
+			},
+			visitStatus: {
+				yourNumberLabel: 'Seu número',
+				labels: {
+					registered: 'Inscrito',
+					waiting: 'Aguardando',
+					called: 'Chamado',
+					served: 'Atendido',
+					not_placed: 'Sem lugar na fila',
+					no_show: 'Não compareceu',
+					cancelled: 'Cancelado',
+				},
+				registered: {
+					header: 'Você está no sorteio!',
+					details: 'Avisaremos após o sorteio. Obrigado por estar aqui.',
+				},
+				waiting: {
+					header: 'Você está na lista!',
+					details: 'Avisaremos quando for sua vez. Obrigado por estar aqui.',
+					guestsAheadLabel: 'Pessoas à sua frente',
+					youAreNext: 'Você é o próximo',
+					nowCallingLabel: 'Chamando agora',
+					nowCallingNone: 'Nenhum número chamado ainda',
+				},
+				called: {
+					header: 'É a sua vez',
+					details: 'Vá ao balcão de atendimento agora.',
+					detailsLate:
+						'Há outras pessoas esperando atrás de você. Vá ao balcão de atendimento agora.',
+					calledMinutesAgoOne: 'Chamado há 1 minuto',
+					calledMinutesAgoOther: 'Chamado há {minutes} minutos',
+				},
+				served: {
+					header: 'Obrigado pela visita',
+					details:
+						'Sua visita de hoje foi concluída. As inscrições abrem novamente no próximo sábado às 10h30.',
+				},
+				not_placed: {
+					header: 'Você não foi selecionado hoje',
+					details:
+						'Sentimos muito — você não foi selecionado no sorteio de hoje. Os alimentos são limitados, então nem todos conseguem um lugar. Você pode participar novamente no próximo sábado às 10h30.',
+				},
+				no_show: {
+					header: 'Sentimos sua falta',
+					details:
+						'Chamamos seu número, mas não encontramos você. Se ainda estiver aqui, fale com um membro da equipe do mercado no balcão de atendimento.',
+				},
+				cancelled: {
+					header: 'Visita cancelada',
+					details:
+						'Seu lugar de hoje foi cancelado. Você pode se inscrever novamente quando as inscrições abrirem.',
+				},
+				cancelAction: 'Cancelar esta visita',
+				cancelConfirmation: 'Cancelar seu lugar na fila para esta visita?',
+				cancelConfirm: 'Sim, cancelar minha visita',
+				cancelDismiss: 'Manter meu lugar',
+				updateError:
+					'Não foi possível atualizar esta visita. Peça ajuda a um membro da equipe do mercado.',
+			},
+		},
+		admin: 'Administração',
+		adminDescription: 'As ferramentas de gerenciamento da fila estarão disponíveis em breve.',
+		adminTitle: 'Uma forma mais simples de acolher cada vizinho.',
+		age: 'Idade',
+		agePlaceholder: 'Selecione sua faixa etária',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
+		authConfigurationDescription:
+			'Adicione as variáveis de ambiente do Auth0 pela extensão Auth0 do Netlify e publique o site novamente.',
+		authConfigurationRequired: 'O acesso da administração não está configurado',
+		authError: 'Não foi possível verificar sua sessão de administrador. Tente entrar novamente.',
+		authLoading: 'Verificando sua sessão de administrador…',
+		backToGuest: 'Voltar à entrada de visitantes',
+		childrenCount: 'Número de crianças para quem você está fazendo compras',
+		countDecrementLabel: 'Diminuir quantidade',
+		countIncrementLabel: 'Aumentar quantidade',
+		chooseAnswer: 'Escolha uma resposta',
+		signupView: {
+			formDescription:
+				'Salve seu nome e telefone para não precisar informá-los na próxima visita. Isso não inscreve você no sorteio nem reserva um lugar na fila.',
+			formTitle: 'Salve seus dados para a próxima vez',
+			submit: 'Salvar meus dados',
+			submitting: 'Salvando…',
+			successDescription:
+				'Você não precisará informar seus dados novamente na próxima visita. Você não está inscrito no sorteio e não reservou um lugar na fila.',
+			successTitle: 'Seus dados foram salvos',
+		},
+		claimView: {
+			title: 'Configure este celular',
+			description:
+				'Um membro da equipe cadastrou você. Configure este celular para ver sua situação e receber atualizações aqui.',
+			replaceHeading: 'Os dados salvos serão substituídos',
+			replaceWarning:
+				'Este celular já tem dados salvos ou uma visita. Ao configurá-lo para você, esses dados serão substituídos e não poderão ser recuperados.',
+			submit: 'Configurar este celular',
+			submitting: 'Configurando…',
+			failed: 'Este código expirou ou já foi usado. Peça um novo código a um membro da equipe.',
+			missingCode:
+				'Falta o código neste link. Peça a um membro da equipe para mostrar o código QR novamente.',
+		},
+		kiosk: {
+			nowCalling: 'Chamando agora',
+			nowCallingNone: 'Nenhum número chamado ainda',
+			stillWaitingFor: 'Já chamados',
+			waitingCount: 'Na fila: {count}',
+			moreCount: '+{count} mais',
+			notStarted: 'Os números serão chamados aqui quando o mercado abrir',
+			ended: 'O mercado de hoje terminou. Obrigado pela visita!',
+			loading: 'Carregando a fila…',
+			reconnecting: 'Reconectando…',
+			signInRequired: 'Esta tela foi desconectada. Um membro da equipe precisa entrar novamente.',
+			signIn: 'Acesso da equipe',
+			notPermitted: 'Esta conta não pode exibir a tela da fila.',
+		},
+		help: {
+			title: 'Como funciona',
+			introHeading: 'Agora é um sorteio, não uma corrida.',
+			introBody: 'Inscreva-se de qualquer lugar. Todos têm a mesma chance.',
+			stepsHeading: 'Todo sábado',
+			steps: [
+				{
+					time: '10h30',
+					title: 'Escaneie o código',
+					body: 'Escaneie de qualquer lugar, até de casa. Você tem 15 minutos, e a tela mostra quanto tempo falta.',
+				},
+				{
+					title: 'Escolha seu idioma',
+					body: 'O aplicativo lembra sua escolha para a próxima vez.',
+				},
+				{
+					title: 'Preencha o formulário',
+					body: 'Informe seu nome e sobrenome (não apenas as iniciais), celular e responda a algumas perguntas sobre as pessoas que moram com você. Não precisa ter pressa. Depois, toque no botão para participar do sorteio.',
+				},
+				{
+					title: 'Toque em “Receber atualizações por SMS”',
+					body: 'É opcional, mas sem isso você não receberá mensagens de texto.',
+				},
+				{
+					time: '10h45',
+					title: 'Veja se você recebeu um número',
+					body: 'O sorteio é realizado e a tela mostra o resultado e seu lugar na fila. Se você recebeu um número, vá ao mercado. Nem todos recebem um número a cada semana.',
+				},
+				{
+					time: '11h30',
+					title: 'Início das compras',
+					body: 'Quando for sua vez, enviaremos um SMS (se você fez a etapa 4) e a tela avisará. Vá ao balcão de atendimento.',
+				},
+			],
+			phoneNotice: {
+				heading: 'Leve o celular usado na inscrição.',
+				body: 'Não aceitamos capturas de tela.',
+			},
+			needHelp: {
+				heading: 'Precisa de ajuda?',
+				body: 'Pergunte a qualquer voluntário.',
+			},
+		},
+		firstName: 'Nome',
+		formDescription: 'Alguns dados nos ajudam a preparar sua visita.',
+		formTitle: 'Conte sobre você',
+		guest: 'Visitante',
+		household: 'Número de pessoas que moram com você',
+		householdHint: 'Inclua você',
+		lastName: 'Sobrenome',
+		language: 'Idioma',
+		languagePrompt: 'Escolha seu idioma',
+		marketName: 'The Bay Compassion',
+		notifications: {
+			registered: {
+				title: 'Inscrição confirmada',
+				body: 'Sua inscrição está confirmada.',
+			},
+			registrationClosed: {
+				title: 'Inscrições encerradas',
+				body: 'As inscrições foram encerradas. O sorteio começará em breve.',
+			},
+			selected: {
+				title: 'Você foi selecionado',
+				body: 'Você foi selecionado. Aguarde até ser chamado.',
+			},
+			notSelected: {
+				title: 'Resultado do sorteio',
+				body: 'Você não foi selecionado para o atendimento de hoje.',
+			},
+			called: {
+				title: 'É a sua vez',
+				body: 'Vá ao balcão de atendimento agora.',
+			},
+			sms: {
+				welcome: 'Boas-vindas! Você já pode receber atualizações por SMS.',
+				selected: 'Você foi selecionado! Seu número é {number}. Aguarde até ser chamado.',
+				notSelected: 'Você não foi selecionado para o atendimento de hoje.',
+				called: 'É a sua vez. Vá ao balcão de atendimento agora.',
+			},
+			pushOptIn: {
+				enable: 'Receber notificações sobre esta visita',
+				denied: 'As notificações estão bloqueadas. Ative-as nas configurações do dispositivo.',
+				enabled: 'As notificações estão ativadas para esta visita.',
+				error: 'Não foi possível ativar as notificações. Tente novamente.',
+				iosInstall:
+					'No iPhone ou iPad, adicione este aplicativo à tela de início antes de ativar as notificações.',
+				unsupported: 'As notificações push não estão disponíveis neste dispositivo.',
+			},
+		},
+		seniorsCount: 'Número de pessoas com 55 anos ou mais para quem você está fazendo compras',
+		phone: 'Número de telefone',
+		privacy: 'Seus dados são usados apenas para ajudar no seu atendimento.',
+		privacyPolicy: 'Política de privacidade',
+		qrCodeDescription:
+			'Escaneie este código com a câmera do celular ou acesse o link abaixo para abrir a página de entrada.',
+		qrCodeImageAlt: 'Código QR que leva à página de entrada',
+		qrCodePrint: 'Imprimir',
+		qrCodeTitle: 'Escaneie para se apresentar',
+		registrationClosesIn: 'As inscrições encerram em',
+		registrationClosesInMinutes: 'As inscrições encerram em {minutes} min',
+		submissionError: 'Não foi possível salvar sua entrada. Tente novamente.',
+		submit: 'Participar do sorteio',
+		submitting: 'Entrando no sorteio…',
+		termsAndConditions: 'Termos e condições',
+		statusLoading: 'Consultando a situação do mercado de hoje…',
+		welcome: 'Boas-vindas ao mercado comunitário de alimentos',
+	},
+	ru: {
+		holdingPage: {
+			heading: 'Новое приложение запустится 31 октября',
+			instructions: 'Сохраните этот QR-код и отсканируйте его снова 31 октября.',
+			currentAppHeading: 'Ищете сегодняшний продуктовый рынок?',
+			currentAppDescription:
+				'Пользуйтесь текущим приложением до 31 октября. Этот QR-код предназначен для нового приложения.',
+			currentAppLink: 'Открыть текущее приложение',
+		},
+		appBar: {
+			openMenu: 'Открыть меню',
+			accountMenu: 'Меню аккаунта',
+			website: 'Сайт The Bay Compassion',
+			qrCode: 'QR-код',
+			staffLogin: 'Вход для сотрудников',
+			adminPanel: 'Панель администратора',
+			signOut: 'Выйти',
+			sendFeedback: 'Отправить отзыв',
+			deviceDetails: {
+				title: 'Данные устройства',
+				close: 'Закрыть данные устройства',
+				installIdLabel: 'Идентификатор устройства',
+				deviceTokenLabel: 'Токен посетителя',
+				deviceTokenHint: 'Сообщайте его только сотруднику.',
+				copy: 'Копировать',
+				copied: 'Скопировано',
+				copyInstallId: 'Копировать идентификатор устройства',
+				copyDeviceToken: 'Копировать токен посетителя',
+				copyError: 'Не удалось скопировать. Попробуйте ещё раз.',
+			},
+			takeTour: 'Посмотреть инструкцию',
+			feedbackForm: {
+				formTitle: 'Отправить отзыв',
+				nameLabel: 'Имя (необязательно)',
+				namePlaceholder: 'Ваше имя',
+				messageLabel: 'Ваш отзыв',
+				messagePlaceholder:
+					'Расскажите, что пошло не так или что можно улучшить. Не указывайте личные данные.',
+				submitButtonLabel: 'Отправить',
+				cancelButtonLabel: 'Отмена',
+				successMessageText: 'Спасибо за ваш отзыв!',
+				isRequiredLabel: '(обязательно)',
+				errorEmptyMessageText: 'Напишите сообщение перед отправкой.',
+				errorTimeoutText: 'Отправка заняла слишком много времени. Попробуйте ещё раз.',
+				errorGenericText: 'Не удалось отправить отзыв. Попробуйте ещё раз.',
+			},
+		},
+		guestView: {
+			presentation: {
+				title: 'Руководство для посетителей рынка',
+				heading: 'Ваш визит в The Bay Compassion',
+				summary: 'Краткое руководство для посетителей в день работы рынка.',
+				description:
+					'Узнайте, как зарегистрироваться, посмотреть результат жеребьёвки, следить за своим номером и подойти к стойке регистрации.',
+				sound:
+					'Включите звук, чтобы услышать пояснения на английском. Голос создан искусственным интеллектом.',
+				play: 'Воспроизвести',
+				pause: 'Пауза',
+				restart: 'Начать заново',
+				soundOn: 'Звук включён',
+				soundOff: 'Звук выключен',
+				noSound: 'Без звука',
+				musicOn: 'Музыка включена',
+				musicOff: 'Музыка выключена',
+				volume: 'Громкость',
+				seek: 'Перемотка',
+				open: 'Открыть презентацию',
+				download: 'Скачать презентацию',
+				more: 'Другие презентации',
+				chapter: 'Глава',
+				previousChapter: 'Предыдущая глава',
+				nextChapter: 'Следующая глава',
+				stepByStep: 'Шаг за шагом',
+				stepByStepHint: 'Пауза в конце каждой главы',
+				chapters: {
+					welcome: 'Добро пожаловать',
+					openPage: 'Откройте страницу рынка',
+					signUpTime: 'Когда регистрироваться',
+					form: 'Заполните форму',
+					entered: 'Вы участвуете в жеребьёвке',
+					draw: 'Жеребьёвка',
+					followLine: 'Следите за очередью',
+					yourTurn: 'Ваша очередь',
+					runningLate: 'Если вы опаздываете',
+					complete: 'Визит завершён',
+					missedSignUp: 'Если вы пропустили регистрацию',
+					help: 'Как получить помощь',
+				},
+			},
+			languageHint: 'Вы можете изменить язык вверху экрана в любое время.',
+			helpPrompt: 'Не знаете, что делать?',
+			tour: {
+				progress: '{current} из {total}',
+				start: 'Покажите мне',
+				next: 'Далее',
+				back: 'Назад',
+				skip: 'Пропустить инструкцию',
+				done: 'Готово',
+				close: 'Закрыть инструкцию',
+				steps: {
+					welcome: {
+						title: 'Добро пожаловать! Вот как всё устроено',
+						body: 'Торопиться не нужно. Регистрация открыта 15 минут, и ранняя регистрация не влияет на ваши шансы. Вы можете пропустить эту инструкцию и вернуться к ней через меню в любое время.',
+					},
+					language: {
+						title: 'Ваш язык',
+						body: 'Нажмите здесь, чтобы изменить язык в любое время. Приложение запомнит ваш выбор.',
+					},
+					countdown: {
+						time: '10:30',
+						title: 'Начало регистрации',
+						body: 'Каждую субботу в 10:30 регистрация открывается на 15 минут. Зарегистрироваться можно откуда угодно, даже из дома. Пока регистрация открыта, таймер на этом экране показывает оставшееся время.',
+					},
+					form: {
+						title: 'Заполните форму',
+						body: 'Укажите имя и фамилию (пожалуйста, не только инициалы), номер мобильного телефона и ответьте на несколько вопросов о вашей семье. Затем нажмите «{submit}».',
+					},
+					textUpdates: {
+						title: 'Получайте обновления по SMS',
+						body: 'После регистрации нажмите «{action}» на этом экране. Это необязательно, но без этого SMS приходить не будут.',
+					},
+					lottery: {
+						time: '10:45',
+						title: 'Проведение жеребьёвки',
+						body: 'У всех одинаковые шансы. На этом экране будет видно, получили ли вы номер. Не все получают номер каждую неделю.',
+					},
+					line: {
+						title: 'Ваше место в очереди',
+						body: 'Если вы получили номер, отправляйтесь на рынок. Этот экран показывает ваше место в очереди, как в этом примере, и обновляется автоматически.',
+					},
+					turn: {
+						time: '11:30',
+						title: 'Начало покупок',
+						body: 'Когда подойдёт ваша очередь, на экране появится сообщение, и мы отправим SMS, если вы подписались на сообщения. Подойдите к стойке регистрации и возьмите телефон, с которого вы регистрировались — снимки экрана не принимаются.',
+					},
+					help: {
+						title: 'Нужно напоминание?',
+						body: 'В разделе «{help}» описаны все шаги. Также можно обратиться к любому волонтёру.',
+					},
+					replay: {
+						title: 'Посмотрите ещё раз',
+						body: 'Вы можете снова открыть эту инструкцию через это меню в любое время.',
+					},
+				},
+			},
+			forms: {
+				informationLegend: 'Ваши данные',
+				pronunciationOffer: 'Добавить произношение имени',
+				pronunciationLabel: 'Произносится как',
+				pronunciationHelp:
+					'Напишите имя так, как оно звучит, чтобы мы могли правильно его произнести.',
+				pronunciationCollapse: 'Скрыть произношение имени',
+				lotteryLegend: 'Данные для участия в жеребьёвке',
+				questionsLegend: 'Вопросы',
+			},
+			identityIndicator: {
+				cancelForgetInformation: 'Отмена',
+				closeForgetDialog: 'Закрыть подтверждение удаления данных',
+				closeNotificationsDialog: 'Закрыть обновления по SMS',
+				forgetDialogDescription:
+					'С этого устройства будут удалены сохранённые имя, номер телефона, идентификатор устройства и данные о вашей семье. Это действие нельзя отменить.',
+				forgetDialogTitle: 'Удалить ваши данные?',
+				forgetInformation: 'Удалить данные',
+				heading: 'Вы опознаны на этом устройстве',
+				notificationsAction: 'Получать обновления по SMS',
+				notificationsDialogTitle: 'Обновления по SMS',
+				notificationsEnabled: 'Уведомления включены',
+				notificationsError: 'Не удалось проверить статус уведомлений. Попробуйте позже.',
+				notificationsLoading: 'Проверка статуса уведомлений…',
+				openIdentityMenu: 'Открыть меню идентификации',
+				optOut: 'Отписаться',
+				optOutError: 'Не удалось отключить обновления по SMS. Попробуйте ещё раз.',
+				saveInformationAction: 'Сохранить мои данные',
+				unidentifiedHeading: 'Сохраните данные для следующего визита',
+				unidentifiedMessage:
+					'Сохраните имя и номер телефона, чтобы не вводить их снова при следующем визите. Это не регистрирует вас для участия в жеребьёвке.',
+			},
+			notificationOptIn: {
+				consentLabel:
+					'Я соглашаюсь получать SMS от The Bay Compassion о моей очереди и статусе визита. Частота сообщений может меняться; обычно их не более нескольких за день работы рынка. Может взиматься плата за сообщения и передачу данных. Ответьте STOP, чтобы отписаться, или HELP, чтобы получить помощь. Согласие не является условием получения продуктов на рынке.',
+				enable: 'Включить обновления по SMS',
+				enabled: 'Обновления по SMS включены для этого и будущих визитов.',
+				error: 'Не удалось включить обновления по SMS. Попробуйте ещё раз.',
+				optedOut:
+					'Ранее вы отказались от SMS. Чтобы снова получать обновления, отправьте START на наш номер.',
+				sendStart: 'Открыть SMS с текстом START',
+				checkStart: 'Команда START отправлена — проверить снова',
+			},
+			scheduleInformation: {
+				heading: 'Регистрация открывается каждую субботу в 10:30',
+				body: 'Регистрация ещё не открыта. Вернитесь в субботу в 10:30.\nУ всех будут равные шансы участвовать в жеребьёвке мест в очереди.',
+			},
+			notOpenState: {
+				heading: 'Рынок закрыт',
+				subheading:
+					'Регистрация снова откроется в следующую субботу в 10:30 и продлится 15 минут, до 10:45.',
+				lotteryDescription:
+					'Запасы продуктов ограничены, поэтому каждую неделю рынок случайным образом выбирает покупателей с помощью жеребьёвки. Зарегистрироваться можно откуда угодно в течение 15 минут с 10:30 до 10:45 в субботу. Ранняя регистрация не влияет на шансы быть выбранным, поэтому торопиться не нужно.',
+				selectionDescription:
+					'Жеребьёвка пройдёт в 10:45, чтобы у выбранных участников было время добраться до рынка. Если вас выберут для покупок, вы получите номер здесь, в приложении. Покупки начнутся в 11:30. Если вы согласились получать SMS, мы также уведомим вас сообщением.',
+			},
+			registrationClosedState: {
+				heading: 'Регистрация закрыта',
+				description:
+					'К сожалению, вы пропустили сегодняшнюю регистрацию. Регистрация снова откроется в следующую субботу в 10:30. У всех зарегистрированных равные шансы в жеребьёвке.',
+			},
+			serviceState: {
+				inProgressHeading: 'Сегодняшний рынок уже работает',
+				inProgressDescription:
+					'Регистрация на сегодня закрыта. Если вы ещё не отметились на стойке регистрации, обратитесь к сотруднику рынка.',
+			},
+			refreshNotice: {
+				countdown: 'Обновление через {seconds} с',
+				updating: 'Обновление…',
+				noNeedToRefresh: 'Обновлять страницу не нужно — она обновляется автоматически.',
+				accessibleDescription: 'Эта страница обновляется автоматически. Вам не нужно её обновлять.',
+			},
+			visitStatus: {
+				yourNumberLabel: 'Ваш номер',
+				labels: {
+					registered: 'Зарегистрирован',
+					waiting: 'Ожидает',
+					called: 'Вызван',
+					served: 'Обслужен',
+					not_placed: 'Без места в очереди',
+					no_show: 'Не явился',
+					cancelled: 'Отменён',
+				},
+				registered: {
+					header: 'Вы участвуете в жеребьёвке!',
+					details: 'Мы сообщим вам результат после жеребьёвки. Спасибо, что вы с нами.',
+				},
+				waiting: {
+					header: 'Вы в списке!',
+					details: 'Мы сообщим, когда подойдёт ваша очередь. Спасибо, что вы с нами.',
+					guestsAheadLabel: 'Посетителей перед вами',
+					youAreNext: 'Вы следующие',
+					nowCallingLabel: 'Сейчас вызывают',
+					nowCallingNone: 'Номера ещё не вызывались',
+				},
+				called: {
+					header: 'Ваша очередь',
+					details: 'Пожалуйста, подойдите к стойке регистрации сейчас.',
+					detailsLate:
+						'За вами ждут другие люди. Пожалуйста, подойдите к стойке регистрации сейчас.',
+					calledMinutesAgoOne: 'Вызов был 1 минуту назад',
+					calledMinutesAgoOther: 'С момента вызова прошло минут: {minutes}',
+				},
+				served: {
+					header: 'Спасибо за визит',
+					details:
+						'Ваш сегодняшний визит завершён. Регистрация снова откроется в следующую субботу в 10:30.',
+				},
+				not_placed: {
+					header: 'Сегодня вас не выбрали',
+					details:
+						'К сожалению, вас не выбрали в сегодняшней жеребьёвке. Запасы продуктов ограничены, поэтому места получают не все. Вы можете участвовать снова в следующую субботу в 10:30.',
+				},
+				no_show: {
+					header: 'Мы вас не нашли',
+					details:
+						'Мы вызвали ваш номер, но не смогли вас найти. Если вы ещё здесь, обратитесь к сотруднику рынка на стойке регистрации.',
+				},
+				cancelled: {
+					header: 'Визит отменён',
+					details:
+						'Ваше место на сегодня отменено. Вы можете зарегистрироваться снова, когда откроется регистрация.',
+				},
+				cancelAction: 'Отменить этот визит',
+				cancelConfirmation: 'Отменить ваше место в очереди для этого визита?',
+				cancelConfirm: 'Да, отменить мой визит',
+				cancelDismiss: 'Сохранить моё место',
+				updateError: 'Не удалось обновить данные визита. Попросите помощи у сотрудника рынка.',
+			},
+		},
+		admin: 'Администратор',
+		adminDescription: 'Инструменты управления очередью скоро появятся.',
+		adminTitle: 'Простой способ радушно принять каждого соседа.',
+		age: 'Возраст',
+		agePlaceholder: 'Выберите вашу возрастную группу',
+		ageRange0to17: '0–17',
+		ageRange18to29: '18–29',
+		ageRange30to44: '30–44',
+		ageRange45to59: '45–59',
+		ageRange60to74: '60–74',
+		ageRange75plus: '75+',
+		authConfigurationDescription:
+			'Добавьте переменные окружения Auth0 через расширение Auth0 в Netlify, затем повторно разверните сайт.',
+		authConfigurationRequired: 'Вход для администратора не настроен',
+		authError: 'Не удалось проверить вашу сессию администратора. Попробуйте войти снова.',
+		authLoading: 'Проверка сессии администратора…',
+		backToGuest: 'Вернуться к регистрации посетителей',
+		childrenCount: 'Количество детей, для которых вы берёте продукты',
+		countDecrementLabel: 'Уменьшить количество',
+		countIncrementLabel: 'Увеличить количество',
+		chooseAnswer: 'Выберите ответ',
+		signupView: {
+			formDescription:
+				'Сохраните имя и номер телефона, чтобы не вводить их снова при следующем визите. Это не регистрирует вас для участия в жеребьёвке и не сохраняет место в очереди.',
+			formTitle: 'Сохраните данные для следующего визита',
+			submit: 'Сохранить мои данные',
+			submitting: 'Сохранение…',
+			successDescription:
+				'При следующем визите вам не нужно будет вводить данные снова. Вы не зарегистрированы для участия в жеребьёвке, и место в очереди за вами не закреплено.',
+			successTitle: 'Ваши данные сохранены',
+		},
+		claimView: {
+			title: 'Настройте этот телефон',
+			description:
+				'Сотрудник добавил вас в систему. Настройте этот телефон, чтобы видеть свой статус и получать обновления здесь.',
+			replaceHeading: 'Сохранённые данные будут заменены',
+			replaceWarning:
+				'На этом телефоне уже есть сохранённые данные или визит. Настройка телефона для вас заменит их без возможности восстановления.',
+			submit: 'Настроить этот телефон',
+			submitting: 'Настройка…',
+			failed: 'Срок действия кода истёк или он уже использован. Попросите у сотрудника новый код.',
+			missingCode: 'В этой ссылке отсутствует код. Попросите сотрудника снова показать QR-код.',
+		},
+		kiosk: {
+			nowCalling: 'Сейчас вызывают',
+			nowCallingNone: 'Номера ещё не вызывались',
+			stillWaitingFor: 'Уже вызваны',
+			waitingCount: 'В очереди: {count}',
+			moreCount: 'Ещё: {count}',
+			notStarted: 'Когда рынок откроется, здесь будут вызывать номера',
+			ended: 'Сегодняшний рынок завершён. Спасибо за визит!',
+			loading: 'Загрузка очереди…',
+			reconnecting: 'Повторное подключение…',
+			signInRequired:
+				'На этом экране выполнен выход из системы. Сотруднику необходимо войти снова.',
+			signIn: 'Вход для сотрудников',
+			notPermitted: 'Этот аккаунт не имеет доступа к экрану очереди.',
+		},
+		help: {
+			title: 'Как это работает',
+			introHeading: 'Теперь это жеребьёвка, а не гонка.',
+			introBody: 'Регистрируйтесь откуда угодно. У всех одинаковые шансы.',
+			stepsHeading: 'Каждую субботу',
+			steps: [
+				{
+					time: '10:30',
+					title: 'Отсканируйте код',
+					body: 'Сканируйте откуда угодно, даже из дома. У вас есть 15 минут, и экран показывает оставшееся время.',
+				},
+				{
+					title: 'Выберите язык',
+					body: 'Приложение запомнит ваш выбор.',
+				},
+				{
+					title: 'Заполните форму',
+					body: 'Укажите имя и фамилию (пожалуйста, не только инициалы), номер мобильного телефона и ответьте на несколько вопросов о вашей семье. Торопиться не нужно. Затем нажмите кнопку для участия в жеребьёвке.',
+				},
+				{
+					title: 'Нажмите «Получать обновления по SMS»',
+					body: 'Это необязательно, но без этого SMS приходить не будут.',
+				},
+				{
+					time: '10:45',
+					title: 'Проверьте, получили ли вы номер',
+					body: 'После жеребьёвки на экране появятся результат и ваше место в очереди. Если вы получили номер, отправляйтесь на рынок. Не все получают номер каждую неделю.',
+				},
+				{
+					time: '11:30',
+					title: 'Начало покупок',
+					body: 'Когда подойдёт ваша очередь, мы отправим SMS (если вы выполнили шаг 4), а на экране появится сообщение. Подойдите к стойке регистрации.',
+				},
+			],
+			phoneNotice: {
+				heading: 'Возьмите телефон, с которого вы регистрировались.',
+				body: 'Снимки экрана не принимаются.',
+			},
+			needHelp: {
+				heading: 'Нужна помощь?',
+				body: 'Обратитесь к любому волонтёру.',
+			},
+		},
+		firstName: 'Имя',
+		formDescription: 'Несколько сведений помогут нам подготовиться к вашему визиту.',
+		formTitle: 'Расскажите о себе',
+		guest: 'Посетитель',
+		household: 'Количество человек в вашей семье',
+		householdHint: 'Включая вас',
+		lastName: 'Фамилия',
+		language: 'Язык',
+		languagePrompt: 'Выберите язык',
+		marketName: 'The Bay Compassion',
+		notifications: {
+			registered: {
+				title: 'Регистрация подтверждена',
+				body: 'Ваша регистрация подтверждена.',
+			},
+			registrationClosed: {
+				title: 'Регистрация закрыта',
+				body: 'Регистрация закрыта. Жеребьёвка скоро начнётся.',
+			},
+			selected: {
+				title: 'Вас выбрали',
+				body: 'Вас выбрали. Пожалуйста, дождитесь вызова.',
+			},
+			notSelected: {
+				title: 'Результат жеребьёвки',
+				body: 'Вас не выбрали для сегодняшнего обслуживания.',
+			},
+			called: {
+				title: 'Ваша очередь',
+				body: 'Пожалуйста, подойдите к стойке регистрации сейчас.',
+			},
+			sms: {
+				welcome: 'Добро пожаловать! Теперь вы будете получать обновления по SMS.',
+				selected: 'Вас выбрали! Ваш номер — {number}. Пожалуйста, дождитесь вызова.',
+				notSelected: 'Вас не выбрали для сегодняшнего обслуживания.',
+				called: 'Ваша очередь. Пожалуйста, подойдите к стойке регистрации сейчас.',
+			},
+			pushOptIn: {
+				enable: 'Получать уведомления об этом визите',
+				denied: 'Уведомления заблокированы. Включите их в настройках устройства.',
+				enabled: 'Уведомления включены для этого визита.',
+				error: 'Не удалось включить уведомления. Попробуйте ещё раз.',
+				iosInstall:
+					'На iPhone или iPad добавьте это приложение на главный экран перед включением уведомлений.',
+				unsupported: 'Push-уведомления недоступны на этом устройстве.',
+			},
+		},
+		seniorsCount: 'Количество людей старшего возраста (55+), для которых вы берёте продукты',
+		phone: 'Номер телефона',
+		privacy: 'Ваши данные используются только для того, чтобы помочь нам обслужить вас.',
+		privacyPolicy: 'Политика конфиденциальности',
+		qrCodeDescription:
+			'Отсканируйте этот код камерой телефона или перейдите по ссылке ниже, чтобы открыть страницу регистрации.',
+		qrCodeImageAlt: 'QR-код со ссылкой на страницу регистрации',
+		qrCodePrint: 'Печать',
+		qrCodeTitle: 'Отсканируйте для регистрации',
+		registrationClosesIn: 'Регистрация закроется через',
+		registrationClosesInMinutes: 'Регистрация закроется через {minutes} мин',
+		submissionError: 'Не удалось сохранить вашу регистрацию. Попробуйте ещё раз.',
+		submit: 'Участвовать в жеребьёвке',
+		submitting: 'Регистрация на жеребьёвку…',
+		termsAndConditions: 'Условия использования',
+		statusLoading: 'Проверка статуса сегодняшнего рынка…',
+		welcome: 'Добро пожаловать на общественный продуктовый рынок',
 	},
 } as const satisfies Record<Locale, Translation>;

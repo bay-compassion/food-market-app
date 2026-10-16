@@ -26,7 +26,7 @@ they needed to register.
 
 The new process gives guests a fifteen-minute window before selection. They can read and enter
 information with less urgency. Registering from home can also spare someone a trip when they are
-not selected. The guest interface supports eight languages, including right-to-left layouts for
+not selected. The guest interface supports ten languages, including right-to-left layouts for
 Arabic and Farsi.
 
 A purpose-built app also lets the market develop its allocation approach over time, with
@@ -36,7 +36,7 @@ being defined; the app does not remove the limit on how many guests can shop.
 ## Reaching the People Who Live Here
 
 Language support was chosen with the regional population in mind. English, Spanish, Tagalog,
-Chinese, Farsi, Arabic, Vietnamese, and French cover the guest journey, from registration through
+Chinese, Farsi, Arabic, Vietnamese, French, Portuguese, and Russian cover the guest journey, from registration through
 lottery results and check-in instructions. Guests recognize language choices by their own names;
 Arabic and Farsi also change the layout to follow a right-to-left reading direction.
 
@@ -117,7 +117,7 @@ presentations using fictional guests. No account or backend setup is needed.
 - [Market Day Reel](https://bay-compassion.github.io/food-market-app/presentations/market-day-reel/):
   a one-minute visual overview.
 - [Guest Market Guide](https://bay-compassion.github.io/food-market-app/presentations/guest-guide/):
-  registration, lottery results, queue updates, and check-in. The phone supports all eight languages;
+  registration, lottery results, queue updates, and check-in. The phone supports all ten languages;
   narration is in English.
 - [Queue Desk Guide](https://bay-compassion.github.io/food-market-app/presentations/queue-desk/):
   calling guests, managing arrivals, and closing a session.

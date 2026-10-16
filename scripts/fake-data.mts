@@ -118,6 +118,14 @@ const namesByLocale: Record<Locale, { first: string[]; last: string[] }> = {
 		first: ['سميرة', 'خالد', 'نادية', 'رامي', 'هدى', 'عمر', 'ليلى', 'ياسر'],
 		last: ['الحسن', 'الخوري', 'منصور', 'الصايغ', 'حداد', 'العتيبي', 'شاهين'],
 	},
+	pt: {
+		first: ['Ana', 'João', 'Beatriz', 'Pedro', 'Luísa', 'Rafael', 'Mariana', 'Tiago'],
+		last: ['Silva', 'Santos', 'Oliveira', 'Pereira', 'Costa', 'Ferreira', 'Almeida'],
+	},
+	ru: {
+		first: ['Анна', 'Дмитрий', 'Мария', 'Алексей', 'Елена', 'Михаил', 'Ольга', 'Сергей'],
+		last: ['Иваненко', 'Петренко', 'Коваленко', 'Бондаренко', 'Кравченко', 'Шевченко'],
+	},
 	fr: {
 		first: [
 			'Amadou',
@@ -192,6 +200,20 @@ const firstNamePronunciations: Record<string, string> = {
 	عمر: 'OH-mar',
 	ليلى: 'LAY-lah',
 	ياسر: 'YAH-ser',
+	// Portuguese
+	João: 'zhoo-OW',
+	Luísa: 'loo-EE-zah',
+	Rafael: 'hah-fah-EL',
+	Tiago: 'chee-AH-goo',
+	// Russian
+	Анна: 'AH-nah',
+	Дмитрий: 'DMEE-tree',
+	Мария: 'mah-REE-yah',
+	Алексей: 'ah-lek-SAY',
+	Елена: 'yeh-LEH-nah',
+	Михаил: 'mee-khah-EEL',
+	Ольга: 'OHL-gah',
+	Сергей: 'sehr-GAY',
 	// French
 	Amadou: 'AH-mah-doo',
 	Mireille: 'mee-RAY',
@@ -203,7 +225,7 @@ const firstNamePronunciations: Record<string, string> = {
 	Solène: 'soh-LEN',
 };
 
-/** Roughly the mix the market sees, so reports are not an even split across eight languages. */
+/** Roughly the mix the market sees, so reports are not an even split across ten languages. */
 const localeShares: [Locale, number][] = [
 	['en', 40],
 	['es', 28],
@@ -213,6 +235,8 @@ const localeShares: [Locale, number][] = [
 	['fa', 5],
 	['ar', 3],
 	['fr', 2],
+	['pt', 2],
+	['ru', 2],
 ];
 
 /** The tiers a worker can pick from, at the rate a worker realistically picks them. */

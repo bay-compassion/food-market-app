@@ -288,7 +288,7 @@ a yellow late-arrival reminder, “We missed you,” completed check-in, and the
 Maya Rivera and Amal Haddad are fictional guests; Amal illustrates not being selected, while Maya
 illustrates a selected visit. Luis Herrera shows the returning-guest form. The guide never presents not-selected as a step on the way to selection.
 
-Its phone is the guest app, so its screens are the app's own in all eight languages, and its
+Its phone is the guest app, so its screens are the app's own in all ten languages, and its
 captions read the same translations. The language
 control also translates playback controls; Arabic and Farsi preserve right-to-left text. New
 presentation copy lives in `guestView.presentation` in `src/locales.ts`. Audio remains in English,
@@ -318,7 +318,7 @@ node packages/presentations/verify.ts
 ```
 
 `verify.ts` checks embedded audio length and playback controls for every presentation,
-every guest narration scene in all eight languages at 320, 390, 600 and 1280 pixels, RTL consent,
+every guest narration scene in all ten languages at 320, 390, 600 and 1280 pixels, RTL consent,
 that each moment of the guest phone looks the same however it is reached, that the phone makes no
 request the guide doesn't answer, and Dev mode. It writes portrait and landscape stills to
 `out/guest-guide/review/` for visual review. It needs local Chromium, but it is a local review

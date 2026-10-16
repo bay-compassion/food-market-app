@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { Locale } from '../../locales';
+import { languages, type Locale } from '../../locales';
 import { NameTag } from '../../models/name-tag';
 import { NameTagCard } from './NameTagCard';
 
@@ -32,7 +32,7 @@ const meta = {
 	component: Tag,
 	parameters: { shell: 'bare' },
 	argTypes: {
-		locale: { control: 'select', options: ['en', 'es', 'tl', 'zh', 'fa', 'ar', 'vi', 'fr'] },
+		locale: { control: 'select', options: languages.map(({ code }) => code) },
 	},
 	args: {
 		firstName: 'Maria',

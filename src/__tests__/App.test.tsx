@@ -42,7 +42,7 @@ import { TermsPage } from '../components/legal/TermsPage';
 import { SignupView } from '../components/routes/SignupView';
 import { StaticLDProvider, type StaticFlagValue } from '../components/StaticLDProvider';
 import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
-import { translations } from '../locales';
+import { languages, translations } from '../locales';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
 import { answerConfirmation } from './render-with-app';
@@ -191,7 +191,9 @@ describe('App', () => {
 		const user = userEvent.setup();
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
+		await waitFor(() =>
+			expect(container.querySelectorAll('.language-option')).toHaveLength(languages.length),
+		);
 
 		await user.click(within(container).getByRole('button', { name: 'Español' }));
 
@@ -231,7 +233,9 @@ describe('App', () => {
 	it('offers the requested language options on the guest page', async () => {
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
+		await waitFor(() =>
+			expect(container.querySelectorAll('.language-option')).toHaveLength(languages.length),
+		);
 
 		expect(container.textContent).toContain('فارسی');
 		expect(container.textContent).toContain('Tagalog');
@@ -239,13 +243,17 @@ describe('App', () => {
 		expect(container.textContent).toContain('中文');
 		expect(container.textContent).toContain('العربية');
 		expect(container.textContent).toContain('Français');
+		expect(container.textContent).toContain('Português');
+		expect(container.textContent).toContain('Русский');
 	});
 
 	it('renders Persian in a right-to-left layout', async () => {
 		const user = userEvent.setup();
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.querySelectorAll('.language-option')).toHaveLength(8));
+		await waitFor(() =>
+			expect(container.querySelectorAll('.language-option')).toHaveLength(languages.length),
+		);
 
 		await user.click(within(container).getByRole('button', { name: 'فارسی' }));
 

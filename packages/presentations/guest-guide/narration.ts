@@ -1,7 +1,7 @@
 /**
  * Guest instructions checked against GuestView, GuestCombinedForm, VisitStore, LateArrival,
  * HelpPage and their current translations. Fictional guest: Maya Rivera, (510) 555-0142.
- * English audio, like the queue desk guide; screens and captions use all eight app locales.
+ * English audio, like the queue desk guide; screens and captions use all ten app locales.
  *
  * `chapter`, on the first line of a section, starts a chapter there for the player's chapter list.
  * Its title is `guestView.presentation.chapters[chapter]` in `src/locales.ts`, in every language.
