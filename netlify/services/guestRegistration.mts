@@ -345,7 +345,22 @@ export async function registerGuest(
 		existingVisit = visit ?? null;
 	}
 
-	const isFirstVisit = existingGuest === null;
+	// A first visit is the record's first visit to any session, not its first appearance: a guest
+	// who signed up early, or claimed a record a worker made, already has a record but no visit.
+	// Only a new visit is flagged, so the record's visit history is read only when one is coming.
+	const hasEarlierVisit =
+		existingGuest !== null &&
+		existingVisit === null &&
+		(
+			await tracedQuery('registration.read_earlier_visit', () =>
+				db
+					.select({ id: visits.id })
+					.from(visits)
+					.where(eq(visits.guestId, existingGuest.id))
+					.limit(1),
+			)
+		).length > 0;
+	const isFirstVisit = !hasEarlierVisit;
 	const deviceCredential =
 		submission.source === 'self' && !existingGuest ? issueDeviceToken() : null;
 	const visitCredential = issueVisitToken();

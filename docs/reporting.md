@@ -32,7 +32,7 @@ Every report is bounded by the **session's registration opening time**, so a dat
 | Report                   | One row per        | Counts                                                                                                        |
 | ------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------- |
 | Session summary          | Session            | Sign-ups, served, no-shows, not placed, workers' additions, and how full the session ran against its capacity |
-| People served by month   | Month              | Sessions held, visits served, unique guests, household members, and first visits                              |
+| People served by month   | Month              | Sessions held, visits served, unique guests, household members, and first-time guests                         |
 | Who was served           | Category and value | Age band, household size, and language of everyone served                                                     |
 | Lottery outcomes by odds | Lottery weight     | Entries, how many were placed, and the placement rate                                                         |
 | Service timing           | Session            | Visits served, median and longest wait, and how many carry no timing                                          |
@@ -45,6 +45,10 @@ Definitions worth being precise about, because grant reports usually are:
   month**. Someone who comes to three sessions in March is one guest and one household there, while
   the `served` column still counts all three visits. Household size is recorded at each visit, and
   the report uses the guest's latest served visit in the month.
+- **First-time guests** in the monthly report are guests whose first served visit ever fell in that
+  month, counted once each. It is read from visit history, not the stored `is_first_visit` flag.
+  Guests are guest records here: a visit a worker adds creates a new record, so someone added at the
+  desk counts as first-time even if they have come before under another record.
 - **Who was served** counts each guest once for the whole period, however many sessions they
   attended, by the age band and household size from their latest served visit in the period.
 - **Lottery outcomes** only includes visits that were self-registered and actually went through a

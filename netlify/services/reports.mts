@@ -56,7 +56,9 @@ function sessionSummary({ start, end }: ReportRange) {
  * `householdMembers` are unduplicated within the month — someone who comes to three sessions in
  * March is one guest and one household, not three — while `served` counts every visit. A guest's
  * household size is the one given at their latest served visit that month: household details are
- * recorded per visit, not on the guest.
+ * recorded per visit, not on the guest. `firstTime` counts guests whose first served visit ever fell
+ * in the month, read from their visit history rather than the stored `is_first_visit` flag: until
+ * October 2026 that flag was false for a guest who had signed up before their first visit.
  */
 function peopleServed({ start, end }: ReportRange) {
 	return sql`
@@ -65,12 +67,18 @@ function peopleServed({ start, end }: ReportRange) {
 				date_trunc('month', e.registration_opens_at) AS month,
 				e.id AS event_id,
 				v.guest_id,
-				v.is_first_visit,
 				v.household_size,
 				e.registration_opens_at AS opens_at
 			FROM market_events e
 			JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
 			WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
+		),
+		first_served AS (
+			SELECT v.guest_id, min(e.registration_opens_at) AS first_at
+			FROM visits v
+			JOIN market_events e ON e.id = v.market_event_id
+			WHERE v.status = 'served' AND v.guest_id IN (SELECT guest_id FROM served)
+			GROUP BY v.guest_id
 		),
 		households AS (
 			SELECT DISTINCT ON (month, guest_id) month, guest_id, household_size
@@ -85,8 +93,9 @@ function peopleServed({ start, end }: ReportRange) {
 				SELECT coalesce(sum(h.household_size), 0)::int
 				FROM households h WHERE h.month = s.month
 			) AS "householdMembers",
-			count(*) FILTER (WHERE s.is_first_visit)::int AS "firstTime"
+			count(DISTINCT s.guest_id) FILTER (WHERE s.opens_at = f.first_at)::int AS "firstTime"
 		FROM served s
+		JOIN first_served f ON f.guest_id = s.guest_id
 		GROUP BY s.month
 		ORDER BY s.month DESC
 	`;

@@ -117,7 +117,7 @@ erDiagram
         text source "self | admin"
         text access_token_hash UK
         date visit_date
-        boolean is_first_visit
+        boolean is_first_visit "the guest record had no visit to any earlier session"
         timestamptz created_at
     }
 
