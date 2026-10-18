@@ -5,7 +5,7 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
-import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
+import { registerGuest, validateSubmission } from '../../services/guestRegistration.mjs';
 import { guestActor } from '../../services/visit-events.mjs';
 
 export const lotteryRegistrationRoutes = createRouter();
@@ -13,9 +13,15 @@ export const lotteryRegistrationRoutes = createRouter();
 lotteryRegistrationRoutes.post('/api/lottery-registration', async (context) => {
 	const body = await jsonBody(context.req.raw);
 
-	const submission = parseSubmission(body);
+	const validation = validateSubmission(body);
 
-	if (!submission || submission.source !== 'self') {
+	if (!validation.success) {
+		return Response.json({ error: validation.error, fields: validation.fields }, { status: 400 });
+	}
+
+	const submission = validation.data;
+
+	if (submission.source !== 'self') {
 		return jsonError('Please provide a valid lottery registration.');
 	}
 

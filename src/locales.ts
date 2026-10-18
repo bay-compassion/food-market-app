@@ -197,6 +197,18 @@ export interface GuestViewTranslations {
 		pronunciationCollapse: string;
 		lotteryLegend: string;
 		questionsLegend: string;
+		/** Under the seniors count: the guest is one of them when they are 55 or older. */
+		seniorsHint: string;
+		/** Under the household count, when its children and seniors add up to more than it. */
+		exceedsHousehold: string;
+		/** Under the children count, when it leaves no adult in the household to shop for it. */
+		noAdult: string;
+		/** Under a count the guest left empty or typed wrongly. `{min}` and `{max}` are the range. */
+		countErrors: {
+			required: string;
+			notWholeNumber: string;
+			outOfRange: string;
+		};
 	};
 	identityIndicator: {
 		cancelForgetInformation: string;
@@ -416,6 +428,9 @@ export type GuestFormCopy = Pick<
 	| 'pronunciationHelp'
 	| 'pronunciationCollapse'
 	| 'lotteryLegend'
+	| 'seniorsHint'
+	| 'exceedsHousehold'
+	| 'noAdult'
 > &
 	Pick<
 		Translation,
@@ -632,6 +647,15 @@ export const translations = {
 				pronunciationCollapse: 'Hide how to say your name',
 				lotteryLegend: 'Lottery entry details',
 				questionsLegend: 'Questions',
+				seniorsHint: 'Include yourself if you’re 55 or older',
+				exceedsHousehold:
+					'Children and seniors together can’t be more than the people in your household.',
+				noAdult: 'Your household must include at least one adult.',
+				countErrors: {
+					required: 'Enter a number.',
+					notWholeNumber: 'Enter a whole number, like 2.',
+					outOfRange: 'Enter a number from {min} to {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Cancel',
@@ -1074,6 +1098,15 @@ export const translations = {
 				pronunciationCollapse: 'Ocultar cómo se pronuncia su nombre',
 				lotteryLegend: 'Datos de inscripción al sorteo',
 				questionsLegend: 'Preguntas',
+				seniorsHint: 'Inclúyase si tiene 55 años o más',
+				exceedsHousehold:
+					'Los niños y las personas mayores juntos no pueden ser más que las personas de su hogar.',
+				noAdult: 'Su hogar debe incluir al menos un adulto.',
+				countErrors: {
+					required: 'Escriba un número.',
+					notWholeNumber: 'Escriba un número entero, como 2.',
+					outOfRange: 'Escriba un número del {min} al {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Cancelar',
@@ -1518,6 +1551,14 @@ export const translations = {
 				pronunciationCollapse: 'پنهان کردن تلفظ نام شما',
 				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
 				questionsLegend: 'پرسش‌ها',
+				seniorsHint: 'اگر ۵۵ سال یا بیشتر دارید، خودتان را هم حساب کنید',
+				exceedsHousehold: 'مجموع کودکان و سالمندان نمی‌تواند از تعداد افراد خانواده شما بیشتر باشد.',
+				noAdult: 'خانواده شما باید دست‌کم یک بزرگسال داشته باشد.',
+				countErrors: {
+					required: 'یک عدد وارد کنید.',
+					notWholeNumber: 'یک عدد صحیح وارد کنید، مثلاً ۲.',
+					outOfRange: 'عددی از {min} تا {max} وارد کنید.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'لغو',
@@ -1957,6 +1998,15 @@ export const translations = {
 				pronunciationCollapse: 'Itago kung paano bigkasin ang iyong pangalan',
 				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
 				questionsLegend: 'Mga tanong',
+				seniorsHint: 'Isama ang sarili kung 55 taong gulang o higit pa',
+				exceedsHousehold:
+					'Hindi puwedeng mas marami ang mga bata at senior kaysa sa mga tao sa inyong sambahayan.',
+				noAdult: 'Dapat may kahit isang nasa hustong gulang sa inyong sambahayan.',
+				countErrors: {
+					required: 'Maglagay ng numero.',
+					notWholeNumber: 'Maglagay ng buong numero, gaya ng 2.',
+					outOfRange: 'Maglagay ng numero mula {min} hanggang {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Kanselahin',
@@ -2400,6 +2450,15 @@ export const translations = {
 				pronunciationCollapse: 'Ẩn cách đọc tên của bạn',
 				lotteryLegend: 'Thông tin tham gia xổ số',
 				questionsLegend: 'Câu hỏi',
+				seniorsHint: 'Bao gồm cả bạn nếu bạn từ 55 tuổi trở lên',
+				exceedsHousehold:
+					'Tổng số trẻ em và người cao tuổi không thể nhiều hơn số người trong hộ gia đình của bạn.',
+				noAdult: 'Hộ gia đình của bạn phải có ít nhất một người lớn.',
+				countErrors: {
+					required: 'Hãy nhập một số.',
+					notWholeNumber: 'Hãy nhập số nguyên, ví dụ 2.',
+					outOfRange: 'Hãy nhập một số từ {min} đến {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Hủy',
@@ -2834,6 +2893,14 @@ export const translations = {
 				pronunciationCollapse: '隐藏名字读音',
 				lotteryLegend: '抽签登记信息',
 				questionsLegend: '问题',
+				seniorsHint: '如果您年满55岁，请包括您自己',
+				exceedsHousehold: '儿童和老年人的总数不能超过您家庭中的人数。',
+				noAdult: '您的家庭中必须至少有一名成年人。',
+				countErrors: {
+					required: '请输入一个数字。',
+					notWholeNumber: '请输入整数，例如 2。',
+					outOfRange: '请输入 {min} 到 {max} 之间的数字。',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: '取消',
@@ -3257,6 +3324,14 @@ export const translations = {
 				pronunciationCollapse: 'إخفاء طريقة نطق اسمك',
 				lotteryLegend: 'تفاصيل التسجيل في القرعة',
 				questionsLegend: 'أسئلة',
+				seniorsHint: 'احسب نفسك إذا كان عمرك 55 عامًا أو أكثر',
+				exceedsHousehold: 'لا يمكن أن يزيد عدد الأطفال وكبار السن معًا عن عدد أفراد أسرتك.',
+				noAdult: 'يجب أن تضم أسرتك شخصًا بالغًا واحدًا على الأقل.',
+				countErrors: {
+					required: 'أدخل رقمًا.',
+					notWholeNumber: 'أدخل عددًا صحيحًا، مثل 2.',
+					outOfRange: 'أدخل رقمًا من {min} إلى {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'إلغاء',
@@ -3691,6 +3766,15 @@ export const translations = {
 				pronunciationCollapse: 'Masquer la prononciation de votre nom',
 				lotteryLegend: 'Détails de l’inscription au tirage au sort',
 				questionsLegend: 'Questions',
+				seniorsHint: 'Comptez-vous si vous avez 55 ans ou plus',
+				exceedsHousehold:
+					'Les enfants et les seniors réunis ne peuvent pas dépasser le nombre de personnes de votre foyer.',
+				noAdult: 'Votre foyer doit compter au moins un adulte.',
+				countErrors: {
+					required: 'Saisissez un nombre.',
+					notWholeNumber: 'Saisissez un nombre entier, par exemple 2.',
+					outOfRange: 'Saisissez un nombre entre {min} et {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Annuler',
@@ -4138,6 +4222,15 @@ export const translations = {
 				pronunciationCollapse: 'Ocultar a pronúncia do seu nome',
 				lotteryLegend: 'Dados da inscrição no sorteio',
 				questionsLegend: 'Perguntas',
+				seniorsHint: 'Inclua você se tiver 55 anos ou mais',
+				exceedsHousehold:
+					'Crianças e idosos juntos não podem ser mais do que as pessoas da sua casa.',
+				noAdult: 'Sua casa precisa incluir pelo menos um adulto.',
+				countErrors: {
+					required: 'Digite um número.',
+					notWholeNumber: 'Digite um número inteiro, como 2.',
+					outOfRange: 'Digite um número de {min} a {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Cancelar',
@@ -4585,6 +4678,15 @@ export const translations = {
 				pronunciationCollapse: 'Скрыть произношение имени',
 				lotteryLegend: 'Данные для участия в жеребьёвке',
 				questionsLegend: 'Вопросы',
+				seniorsHint: 'Включите себя, если вам 55 лет или больше',
+				exceedsHousehold:
+					'Детей и пожилых людей вместе не может быть больше, чем людей в вашей семье.',
+				noAdult: 'В вашей семье должен быть хотя бы один взрослый.',
+				countErrors: {
+					required: 'Введите число.',
+					notWholeNumber: 'Введите целое число, например 2.',
+					outOfRange: 'Введите число от {min} до {max}.',
+				},
 			},
 			identityIndicator: {
 				cancelForgetInformation: 'Отмена',

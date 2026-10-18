@@ -3,6 +3,13 @@ import { z } from 'zod';
 
 import { db } from '../../db/index.mjs';
 import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
+import {
+	HouseholdComposition,
+	householdCounts,
+	type HouseholdCount,
+	type HouseholdCounts,
+	type HouseholdIssue,
+} from '../../src/models/household-composition.js';
 import { QueueNumber } from '../../src/models/queue-number.js';
 import { SessionTimeline } from '../../src/models/session-timeline.js';
 import { ageRanges } from '../../src/services/ageRanges.js';
@@ -27,14 +34,17 @@ import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCreden
 import { recordVisitEvents } from './visit-events.mjs';
 import { placeInLine } from './visitQueue.mjs';
 
-/** How many people a visit can cover, matching the household columns' database constraints. */
-const shopperCountSchema = z.coerce.number().int().min(0).max(30);
+/**
+ * A household count as it arrives. Coercing here would read an empty field as `0`, so the counts
+ * are checked by `HouseholdComposition` instead — the same rules the registration form applies.
+ */
+const householdCountSchema = z.union([z.number(), z.string()]).nullish();
 
 const submissionFields = guestIdentitySchema.extend({
 	ageRange: z.enum(ageRanges),
-	householdSize: z.coerce.number().int().min(1).max(30),
-	childrenCount: shopperCountSchema,
-	seniorsCount: shopperCountSchema,
+	householdSize: householdCountSchema,
+	childrenCount: householdCountSchema,
+	seniorsCount: householdCountSchema,
 	marketEventId: z
 		.string()
 		.nullish()
@@ -50,37 +60,151 @@ const submissionFields = guestIdentitySchema.extend({
 	lotteryWeight: z.unknown().optional().transform(normalizeLotteryWeight),
 });
 
+/**
+ * Reports each of the household's issues against its own field, then hands on the counts as
+ * numbers. The issue's message is its `HouseholdIssue` code, which `describeSubmissionIssues` words.
+ */
+function withHousehold<Output extends HouseholdCounts>(schema: z.ZodType<Output>) {
+	return schema
+		.superRefine((submission, context) => {
+			const { issues } = new HouseholdComposition(submission);
+
+			for (const count of householdCounts) {
+				const issue = issues[count];
+
+				if (issue) {
+					context.addIssue({ code: 'custom', path: [count], message: issue });
+				}
+			}
+		})
+		.transform((submission): Omit<Output, HouseholdCount> & Record<HouseholdCount, number> => ({
+			...submission,
+			...new HouseholdComposition(submission).values,
+		}));
+}
+
 /** A worker adding a guest from the admin console, which has no device credential to offer. */
-const adminSubmissionSchema = submissionFields.extend({
-	source: z.literal('admin'),
-	deviceToken: z
-		.unknown()
-		.optional()
-		.transform(() => null),
-});
+const adminSubmissionSchema = withHousehold(
+	submissionFields.extend({
+		source: z.literal('admin'),
+		deviceToken: z
+			.unknown()
+			.optional()
+			.transform(() => null),
+	}),
+);
 
 /** A guest registering on their own phone, which may carry the credential we issued that browser. */
-const selfSubmissionSchema = submissionFields.extend({
-	source: z
-		.unknown()
-		.optional()
-		.transform(() => 'self' as const),
-	deviceToken: deviceTokenSchema,
-});
+const selfSubmissionSchema = withHousehold(
+	submissionFields.extend({
+		source: z
+			.unknown()
+			.optional()
+			.transform(() => 'self' as const),
+		deviceToken: deviceTokenSchema,
+	}),
+);
+
+export type GuestSubmission =
+	| z.output<typeof adminSubmissionSchema>
+	| z.output<typeof selfSubmissionSchema>;
+
+/** Why a submission was refused: a sentence for a person, and a code per field for a form. */
+export type SubmissionIssues = {
+	error: string;
+	fields: Record<string, string>;
+};
+
+export type SubmissionValidation =
+	| { success: true; data: GuestSubmission }
+	| ({ success: false } & SubmissionIssues);
+
+const fieldNames: Record<string, string> = {
+	firstName: 'First name',
+	lastName: 'Last name',
+	phone: 'Phone number',
+	locale: 'Language',
+	pronunciation: 'Pronunciation',
+	ageRange: 'Age range',
+	householdSize: 'Household size',
+	childrenCount: 'Number of children',
+	seniorsCount: 'Number of seniors',
+	marketEventId: 'Market event',
+	answers: 'Answers',
+	deviceToken: 'Device credential',
+};
+
+const householdIssueText: Record<HouseholdIssue, (field: string, count: HouseholdCount) => string> =
+	{
+		required: (field) => `${field} is required.`,
+		'not-whole-number': (field) => `${field} must be a whole number.`,
+		'out-of-range': (field, count) => {
+			const { min, max } = HouseholdComposition.ranges[count];
+
+			return `${field} must be from ${min} to ${max}.`;
+		},
+		'exceeds-household': () =>
+			'Children and seniors together cannot be more than the household size.',
+		'no-adult': () =>
+			'A household must include at least one adult, since children cannot shop on their own.',
+	};
+
+/** The message a field left out of the request is given, so it reads as missing, not mistyped. */
+const missingField = 'required';
+
+/** Zod's own wording for a missing field is "expected string, received undefined". */
+const reportMissingFields: z.core.$ZodErrorMap = (issue) =>
+	issue.input === undefined ? missingField : undefined;
+
+function isHouseholdCount(field: string): field is HouseholdCount {
+	return (householdCounts as readonly string[]).includes(field);
+}
+
+function isHouseholdIssue(message: string): message is HouseholdIssue {
+	return Object.hasOwn(householdIssueText, message);
+}
+
+/** Words each of zod's issues for a person, and keys its code by the field it concerns. */
+export function describeSubmissionIssues(error: z.ZodError): SubmissionIssues {
+	const sentences: string[] = [];
+	const fields: Record<string, string> = {};
+
+	for (const issue of error.issues) {
+		const field = issue.path.map(String).join('.');
+		const name = fieldNames[field] ?? (field || 'Registration');
+
+		if (isHouseholdCount(field) && isHouseholdIssue(issue.message)) {
+			sentences.push(householdIssueText[issue.message](name, field));
+			fields[field] ??= issue.message;
+		} else if (issue.message === missingField) {
+			sentences.push(`${name} is required.`);
+			fields[field] ??= missingField;
+		} else {
+			sentences.push(`${name}: ${issue.message}`);
+			fields[field] ??= issue.code;
+		}
+	}
+
+	return { error: sentences.join(' '), fields };
+}
 
 /**
- * Admin first: a submission only counts as one when it says so, and everything else — including a
- * caller that omits `source` entirely — is a guest registering for themselves.
+ * Checks a registration, saying what is wrong with it when it is refused. Only a submission that
+ * says `source: 'admin'` is checked as one; everything else — including a caller that omits
+ * `source` entirely — is a guest registering for themselves. Choosing the schema up front, rather
+ * than trying both, keeps a refusal's issues about the fields themselves.
  */
-export const guestSubmissionSchema = z
-	.union([adminSubmissionSchema, selfSubmissionSchema])
-	.refine(
-		({ childrenCount, seniorsCount, householdSize }) =>
-			childrenCount + seniorsCount <= householdSize,
-		{ path: ['householdSize'], error: 'A household cannot be smaller than the people in it.' },
-	);
+export function validateSubmission(value: unknown): SubmissionValidation {
+	const isAdmin =
+		typeof value === 'object' && value !== null && 'source' in value && value.source === 'admin';
+	const result = (isAdmin ? adminSubmissionSchema : selfSubmissionSchema).safeParse(value, {
+		error: reportMissingFields,
+	});
 
-export type GuestSubmission = z.infer<typeof guestSubmissionSchema>;
+	return result.success
+		? { success: true, data: result.data }
+		: { success: false, ...describeSubmissionIssues(result.error) };
+}
 
 export type RegisterGuestResult =
 	| {
@@ -97,7 +221,9 @@ export type RegisterGuestResult =
 	| { ok: false; status: number; error: string };
 
 export function parseSubmission(value: unknown): GuestSubmission | null {
-	return guestSubmissionSchema.safeParse(value).data ?? null;
+	const validation = validateSubmission(value);
+
+	return validation.success ? validation.data : null;
 }
 
 /**

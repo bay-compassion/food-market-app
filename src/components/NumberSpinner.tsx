@@ -23,6 +23,8 @@ export type NumberSpinnerProps = {
 	clearLabel?: string;
 	/** Optional helper text shown under the label, e.g. clarifying what to include in the count. */
 	hint?: string;
+	/** What is wrong with the current value, shown under the field. Marks the input invalid. */
+	error?: string;
 	/** Accessible name for the step-down button, which shows only a glyph. */
 	decrementLabel: string;
 	/** Accessible name for the step-up button. */
@@ -48,6 +50,13 @@ const Hint = styled.p`
 	color: var(--color-text-muted);
 	font-size: 14px;
 	line-height: 1.5;
+`;
+
+const ErrorText = styled.p`
+	margin: -2px 0 0;
+	color: var(--color-error);
+	font-size: 14px;
+	line-height: 1.4;
 `;
 
 /**
@@ -153,11 +162,13 @@ export function NumberSpinner({
 	placeholder,
 	clearLabel,
 	hint,
+	error,
 	decrementLabel,
 	incrementLabel,
 }: NumberSpinnerProps) {
 	const inputId = useId();
 	const labelId = useId();
+	const errorId = useId();
 
 	return (
 		<NumberField.Root
@@ -209,6 +220,7 @@ export function NumberSpinner({
 							onBlur={props.onBlur}
 							onChange={props.onChange}
 							placeholder={placeholder}
+							error={Boolean(error)}
 							endAdornment={
 								clearLabel && value !== '' ? (
 									<InputAdornment position="end">
@@ -223,7 +235,9 @@ export function NumberSpinner({
 									</InputAdornment>
 								) : undefined
 							}
-							slotProps={{ input: props }}
+							slotProps={{
+								input: { ...props, 'aria-describedby': error ? errorId : undefined },
+							}}
 						/>
 					)}
 				/>
@@ -233,6 +247,11 @@ export function NumberSpinner({
 					<StepGlyph direction="up" />
 				</NumberField.Increment>
 			</Group>
+			{error ? (
+				<ErrorText id={errorId} className="number-spinner-error">
+					{error}
+				</ErrorText>
+			) : null}
 		</NumberField.Root>
 	);
 }

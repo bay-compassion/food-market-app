@@ -164,7 +164,7 @@ describe('AddGuestSection', () => {
 		expect(container.querySelector('.add-guest-button')).not.toBeNull();
 	});
 
-	it('opens with empty fields even when this device remembers a guest', async () => {
+	it('opens with empty fields and the default household even when this device remembers a guest', async () => {
 		const user = userEvent.setup();
 		const store = new RootStore();
 
@@ -178,6 +178,8 @@ describe('AddGuestSection', () => {
 		await user.click(container.querySelector('.add-guest-button')!);
 
 		expect(store.registration.guest.firstName).toBe('');
-		expect(store.registration.guest.householdSize).toBe('');
+		expect(store.registration.guest.householdSize).toBe(1);
+		expect(store.registration.guest.childrenCount).toBe(0);
+		expect(store.registration.guest.seniorsCount).toBe(0);
 	});
 });

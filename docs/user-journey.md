@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=6cdbdc103c00, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=c9c3c32b90bd, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=d22a5312a73e, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=a259379b581a, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=6cdbdc103c00, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=bfb847536018, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=70005f15099e, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=a6af245df51b, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=587868cffcac, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=6194cde31582 -->
 
 # Guest journey
 
@@ -241,7 +241,14 @@ flowchart TD
   lottery; the browser separately keeps its own last-entered copy in `localStorage`
   (`bay-compassion.guest-household`) purely to prefill that form next time — it's never sent to the
   server as part of identity, and never read back from a server-side guest profile. Without saved
-  counts, household size defaults to 1 and children and seniors each default to 0. See
+  counts, household size defaults to 1 and children and seniors each default to 0. Every count must
+  be a whole number, and children and seniors together can be no more than the household — the
+  guest counts among the seniors when they are 55 or older. Children cannot shop on their own, so
+  the children must also be fewer than the household. This is a policy check, not proof: a guest can
+  still misreport their household. `HouseholdComposition`
+  ([`src/models/household-composition.ts`](../src/models/household-composition.ts)) holds these
+  rules for both the form, which shows each problem next to its field, and
+  `/api/lottery-registration`, which refuses a submission with a sentence and a code per field. See
   [`data-model.md`](data-model.md) for how this moved off `guests`. Each visit also snapshots the
   normalized phone number so later reconciliation can see earlier values after a guest renews their
   identity.
@@ -279,7 +286,9 @@ flowchart TD
 - **An admin can add a guest directly, at any stage of the session.** The worker fills in the same
   identity and household form components a guest uses, inside a dialog, so the two never drift
   apart; those components write to the shared `RegistrationStore`, which the dialog empties each
-  time it opens so a worker's own remembered details never leak into another guest's record. The
+  time it opens — back to the default household counts — so a worker's own remembered details never
+  leak into another guest's record. When the server refuses the guest, the dashboard shows its
+  reason, since the dialog has already closed. The
   resulting visits are created with `source: admin` — and can be handed to the guest's phone with a
   QR code, as above — and how far the session has progressed decides what the worker may choose — see `admissionsFor` in
   [`src/services/guestAdmission.ts`](../src/services/guestAdmission.ts):

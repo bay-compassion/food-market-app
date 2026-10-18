@@ -2,6 +2,7 @@ import { TextField } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import type { GuestFormCopy } from '../../../locales';
+import { HouseholdComposition, type HouseholdCount } from '../../../models/household-composition';
 import { ageRanges, type AgeRange } from '../../../services/ageRanges';
 import type { SessionQuestion } from '../../../stores/market-session.store';
 import { useRootStore } from '../../../stores/react/store-context';
@@ -36,6 +37,28 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 	const copy = useGuestFormCopy(override);
 	const { registration } = useRootStore();
 	const { guest } = registration;
+	const householdIssues = registration.household.issues;
+
+	/** The household's issue with `count`, worded for whoever is filling the form in. */
+	function errorFor(count: HouseholdCount): string | undefined {
+		const { countErrors } = t.guestView.forms;
+		const { min, max } = HouseholdComposition.ranges[count];
+
+		switch (householdIssues[count]) {
+			case undefined:
+				return undefined;
+			case 'required':
+				return countErrors.required;
+			case 'not-whole-number':
+				return countErrors.notWholeNumber;
+			case 'out-of-range':
+				return countErrors.outOfRange.replace('{min}', String(min)).replace('{max}', String(max));
+			case 'exceeds-household':
+				return copy.exceedsHousehold;
+			case 'no-adult':
+				return copy.noAdult;
+		}
+	}
 
 	const ageRangeLabels: Record<AgeRange, string> = {
 		'0-17': t.ageRange0to17,
@@ -46,10 +69,9 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 		'75+': t.ageRange75plus,
 	};
 
-	/** The three counts differ only in their label, hint, and floor, so they share the rest. */
+	/** The three counts differ only in their label, hint, and range, so they share the rest. */
 	const countProps = {
 		required: true,
-		max: 30,
 		decrementLabel: t.countDecrementLabel,
 		incrementLabel: t.countIncrementLabel,
 	};
@@ -80,23 +102,25 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 					{...countProps}
 					label={copy.household}
 					hint={copy.householdHint}
-					// A household always has at least the guest in it, where the other two counts can
-					// legitimately be nobody.
-					min={1}
+					{...HouseholdComposition.ranges.householdSize}
+					error={errorFor('householdSize')}
 					value={guest.householdSize}
 					onChange={(value) => registration.updateGuest({ householdSize: value })}
 				/>
 				<NumberSpinner
 					{...countProps}
 					label={copy.childrenCount}
-					min={0}
+					{...HouseholdComposition.ranges.childrenCount}
+					error={errorFor('childrenCount')}
 					value={guest.childrenCount}
 					onChange={(value) => registration.updateGuest({ childrenCount: value })}
 				/>
 				<NumberSpinner
 					{...countProps}
 					label={copy.seniorsCount}
-					min={0}
+					hint={copy.seniorsHint}
+					{...HouseholdComposition.ranges.seniorsCount}
+					error={errorFor('seniorsCount')}
 					value={guest.seniorsCount}
 					onChange={(value) => registration.updateGuest({ seniorsCount: value })}
 				/>

@@ -477,6 +477,10 @@ export const adminTranslations = {
 			householdHint: 'Including the guest',
 			childrenCount: 'Number of children they’re shopping for',
 			seniorsCount: 'Number of seniors (55+) they’re shopping for',
+			seniorsHint: 'Including the guest, if they’re 55 or older',
+			exceedsHousehold:
+				'Children and seniors together can’t be more than the people in their household.',
+			noAdult: 'Their household must include at least one adult.',
 		},
 		adminTitle: 'Market Dashboard',
 		allGuests: 'All guests',

@@ -132,6 +132,29 @@ export type AdminApiOptions = {
  * `guestVisitApi.ts`: endpoints, request shapes, and response parsing live here, and the stores
  * and components above deal in domain types rather than in `fetch`.
  */
+/** A request the server refused, carrying the server's own explanation when it gave one. */
+export class AdminRequestError extends Error {
+	constructor(
+		label: string,
+		/** The response's `error`, written for a worker to read. */
+		readonly reason: string | null,
+	) {
+		super(label);
+		this.name = 'AdminRequestError';
+	}
+
+	/** Reads the `{ error }` body the API answers a refusal with, tolerating any other body. */
+	static async from(response: Response, label: string): Promise<AdminRequestError> {
+		const body: unknown = await response.json().catch(() => null);
+		const reason =
+			typeof body === 'object' && body !== null && 'error' in body && typeof body.error === 'string'
+				? body.error
+				: null;
+
+		return new AdminRequestError(label, reason);
+	}
+}
+
 export class AdminApi {
 	private readonly requestHeaders: () => HeadersInit | Promise<HeadersInit>;
 	private readonly request: typeof fetch;
@@ -231,7 +254,14 @@ export class AdminApi {
 			answers: {},
 			source: 'admin',
 		});
-		const { id, guestId } = await this.readJson<AddedGuest>(response, 'guest');
+
+		// The dialog has closed by the time this answers, so the server's reason is all a worker
+		// has to go on when it refuses the guest.
+		if (!response.ok) {
+			throw await AdminRequestError.from(response, 'guest');
+		}
+
+		const { id, guestId } = (await response.json()) as AddedGuest;
 
 		return { id, guestId };
 	}

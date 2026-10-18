@@ -1,6 +1,7 @@
 import { runInAction } from 'mobx';
 
 import type { GuestFormState } from '../components/types.ts';
+import { HouseholdComposition } from '../models/household-composition.ts';
 import type { GuestRegistrationResult } from '../services/guestVisitApi.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import { StorageKey, StorageService } from '../services/storage.service.ts';
@@ -9,6 +10,8 @@ import type { GuestStore } from './guest.store.ts';
 export type RegistrationSubmitResult =
 	| { kind: 'signed-up' }
 	| { kind: 'registered'; registration: GuestRegistrationResult }
+	/** The household counts are not valid; the form shows why next to each field. */
+	| { kind: 'invalid' }
 	| { kind: 'error' };
 
 export type RegistrationStoreOptions = {
@@ -51,6 +54,11 @@ export class RegistrationStore {
 		return pronunciation === this.initialPronunciation ? undefined : pronunciation;
 	}
 
+	/** Who the guest is shopping for, checked by the same rules the server applies. */
+	get household(): HouseholdComposition {
+		return new HouseholdComposition(this.guest);
+	}
+
 	/** Applies an edit from the form. An action, so the write is batched and MobX does not warn
 	 *  about a mutation reaching an observed observable from outside one. */
 	updateGuest(patch: Partial<GuestFormState>): void {
@@ -58,8 +66,9 @@ export class RegistrationStore {
 	}
 
 	/**
-	 * Empties every field. The store is prefilled from whatever this device remembers, which is
-	 * right for a guest registering themselves and wrong for a worker entering someone else.
+	 * Empties every field and puts the household counts back to their defaults. The store is
+	 * prefilled from whatever this device remembers, which is right for a guest registering
+	 * themselves and wrong for a worker entering someone else.
 	 */
 	clear(): void {
 		this.guest = {
@@ -67,9 +76,7 @@ export class RegistrationStore {
 			lastName: '',
 			pronunciation: '',
 			ageRange: '',
-			householdSize: '',
-			childrenCount: '',
-			seniorsCount: '',
+			...HouseholdComposition.defaults,
 			phone: '',
 		};
 		this.registrationAnswers = {};
@@ -98,6 +105,11 @@ export class RegistrationStore {
 		marketEventId: string | null,
 		locale: string,
 	): Promise<RegistrationSubmitResult> {
+		// Signing up early collects no household, so counts left over on this device must not block it.
+		if (context === 'queue' && !this.household.isValid) {
+			return { kind: 'invalid' };
+		}
+
 		this.isSubmitting = true;
 		this.submissionError = false;
 
@@ -157,9 +169,9 @@ export class RegistrationStore {
 			lastName: this.guestStore.identity?.lastName ?? '',
 			pronunciation: this.initialPronunciation,
 			ageRange: savedHousehold?.ageRange ?? '',
-			householdSize: savedHousehold?.householdSize ?? 1,
-			childrenCount: savedHousehold?.childrenCount ?? 0,
-			seniorsCount: savedHousehold?.seniorsCount ?? 0,
+			householdSize: savedHousehold?.householdSize ?? HouseholdComposition.defaults.householdSize,
+			childrenCount: savedHousehold?.childrenCount ?? HouseholdComposition.defaults.childrenCount,
+			seniorsCount: savedHousehold?.seniorsCount ?? HouseholdComposition.defaults.seniorsCount,
 			phone: this.guestStore.identity?.phone ?? '',
 		};
 	}

@@ -5,6 +5,7 @@ import type { Locale } from '../locales.ts';
 import { AdminNavigation } from '../models/admin-navigation.ts';
 import {
 	AdminApi,
+	AdminRequestError,
 	type AdminGuest,
 	type DatabaseGuest,
 	type GuestClaimCode,
@@ -506,9 +507,12 @@ export class AdminStore {
 
 		try {
 			return await action();
-		} catch {
+		} catch (error) {
 			runInAction(() => {
-				this.report({ kind: 'error' });
+				this.report({
+					kind: 'error',
+					reason: error instanceof AdminRequestError ? (error.reason ?? undefined) : undefined,
+				});
 			});
 
 			return onFailure;

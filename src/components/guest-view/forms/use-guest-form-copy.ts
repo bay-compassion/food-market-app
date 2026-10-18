@@ -19,6 +19,9 @@ export function useGuestFormCopy(override?: Partial<GuestFormCopy>): GuestFormCo
 		householdHint: t.householdHint,
 		childrenCount: t.childrenCount,
 		seniorsCount: t.seniorsCount,
+		seniorsHint: t.guestView.forms.seniorsHint,
+		exceedsHousehold: t.guestView.forms.exceedsHousehold,
+		noAdult: t.guestView.forms.noAdult,
 		...override,
 	};
 }

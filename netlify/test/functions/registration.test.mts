@@ -8,10 +8,14 @@ import handler, { config } from '../../functions/registration.mjs';
 import { maxRequestBodyBytes } from '../../lib/http.mjs';
 
 const paths = ['/api/guest-information', '/api/lottery-registration', '/api/guest-claim'];
-const invalidBodyErrors: Record<string, string> = {
-	'/api/guest-information': 'Please provide valid guest information.',
-	'/api/lottery-registration': 'Please provide a valid lottery registration.',
-	'/api/guest-claim': 'Please provide a valid code.',
+const invalidBodyErrors: Record<string, unknown> = {
+	'/api/guest-information': { error: 'Please provide valid guest information.' },
+	// A registration says which fields are wrong, rather than only that something is.
+	'/api/lottery-registration': expect.objectContaining({
+		error: expect.stringContaining('First name is required.'),
+		fields: expect.objectContaining({ firstName: 'required' }),
+	}),
+	'/api/guest-claim': { error: 'Please provide a valid code.' },
 };
 
 afterEach(() => {
@@ -38,7 +42,7 @@ describe('public registration boundary', () => {
 		const response = await handler(request);
 
 		expect(response.status).toBe(400);
-		await expect(response.json()).resolves.toEqual({ error: invalidBodyErrors[path] });
+		await expect(response.json()).resolves.toEqual(invalidBodyErrors[path]);
 	});
 
 	it.each(paths)(

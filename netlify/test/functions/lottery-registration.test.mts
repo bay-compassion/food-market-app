@@ -47,6 +47,22 @@ describe('lottery-registration handler', () => {
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
+	it('says which household count is wrong', async () => {
+		// Arrange
+		const body = submission({ householdSize: 1, childrenCount: 1, seniorsCount: 1 });
+
+		// Act
+		const response = await handler(request('POST', body));
+
+		// Assert
+		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toEqual({
+			error: 'Children and seniors together cannot be more than the household size.',
+			fields: { householdSize: 'exceeds-household' },
+		});
+		expect(db.select).not.toHaveBeenCalled();
+	});
+
 	it('rejects admin-source submissions', async () => {
 		const response = await handler(request('POST', submission({ source: 'admin' })));
 
