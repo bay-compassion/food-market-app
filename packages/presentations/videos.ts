@@ -74,7 +74,7 @@ export const videos = {
 				'A one-minute walkthrough of registration and shopping places at The Bay Compassion.',
 			description:
 				'At this community food market, guests choose their groceries. The new app gives them a registration window before selection rather than a rush to claim the first available places. This walkthrough shows registration, a lottery result, and volunteers welcoming selected guests to shop.',
-			sound: 'Turn the sound on for the soundtrack.',
+			sound: 'The soundtrack starts with playback.',
 		},
 	},
 	'queue-desk': {
@@ -92,7 +92,7 @@ export const videos = {
 			summary: 'A narrated guide for volunteers welcoming guests on market day.',
 			description:
 				'Learn how to call guests, print name tags, keep the line moving, handle late arrivals, add a guest, and close the session.',
-			sound: 'Turn the sound on for the narration. The voice is AI-generated.',
+			sound: 'Narration starts with playback. The voice is AI-generated.',
 		},
 	},
 	'admin-guide': {
@@ -111,7 +111,7 @@ export const videos = {
 			summary: 'A narrated guide for staff running market day from the admin dashboard.',
 			description:
 				'Learn how the schedule sets up each market, how to steer registration and the lottery, add a guest by hand, send a broadcast, find past records and reports, and close the session.',
-			sound: 'Turn the sound on for the narration. The voice is AI-generated.',
+			sound: 'Narration starts with playback. The voice is AI-generated.',
 			screens: 'The phone runs the real admin dashboard, with fictional guests.',
 			portrait: true,
 		},
