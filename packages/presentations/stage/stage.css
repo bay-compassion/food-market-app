@@ -253,8 +253,11 @@ body.watch-title #title > * {
 body.watch #controls {
 	flex-wrap: wrap;
 }
-body.watch #devOpen {
+#devOpen {
 	display: none;
+}
+body.dev #devOpen {
+	display: block;
 }
 body.watch #scrub {
 	order: 1;
@@ -1641,5 +1644,59 @@ body.dev #controls {
 @media (prefers-reduced-motion: reduce) {
 	.spot {
 		animation: none;
+	}
+}
+
+/* Size the stage from the space left by the actual wrapped controls, in either orientation. */
+.presentation-fullscreen body {
+	padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+		max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+}
+.presentation-fullscreen #viewport {
+	width: min(100%, var(--fullscreen-width, 100%)) !important;
+	flex-shrink: 0;
+}
+.presentation-fullscreen #controls {
+	width: 100%;
+	max-width: 1100px;
+	flex-wrap: wrap;
+	flex-shrink: 0;
+}
+
+/* Keep chapter navigation inline on larger screens and behind a disclosure on phones. */
+#chapterMenu,
+#chapterOptions {
+	display: contents;
+}
+#chapterMenuToggle {
+	display: none;
+}
+@media (max-width: 600px) {
+	#chapterMenu {
+		display: block;
+		order: 3;
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+	#controls #chapterMenuToggle {
+		display: block;
+		width: 100%;
+	}
+	#chapterMenuToggle::after {
+		content: ' ▾';
+	}
+	#chapterOptions {
+		display: none;
+	}
+	#chapterMenu.open #chapterOptions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-top: 8px;
+	}
+	#controls #chapters {
+		order: 0;
+		flex: 1;
+		min-width: 0;
 	}
 }

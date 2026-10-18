@@ -207,7 +207,7 @@ const page =
 	'\n<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>' +
 	// The page's script first: it waits for the stage, which comes after it.
 	// Each script starts on its tag's own line: a newline first would make line 1 blank.
-	`\n<script>${pageScript}</script>\n<script>${stageScript}</script>\n`;
+	`\n<script>${pageScript}</script>\n<script>${script('./stage/player-fullscreen.ts')}</script>\n<script>${stageScript}</script>\n`;
 
 mkdirSync(here('./out'), { recursive: true });
 writeFileSync(here(`./out/${video.name}.artifact.html`), page);

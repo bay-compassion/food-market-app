@@ -1,6 +1,6 @@
 /** Browser checks for the published players; run after publish.ts. No frame capture or encoding. */
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -280,6 +280,67 @@ void (async () => {
 	mkdirSync(stills, { recursive: true });
 
 	try {
+		// Serve the published embeds at one origin so the iPhone fallback can expand its iframe.
+		const embedded = await browser.newPage({ viewport: { width: 390, height: 844 } });
+
+		embedded.on('pageerror', (error) => errors.push(`fullscreen: ${error.message}`));
+		await embedded.route('https://presentation.test/**', (route) => {
+			const pathname = new URL(route.request().url()).pathname;
+
+			return route.fulfill({
+				contentType: 'text/html',
+				body: readFileSync(path.join(dir, 'out/site', pathname)),
+			});
+		});
+
+		for (const video of Object.values(videos)) {
+			await embedded.goto(`https://presentation.test/${video.publish.folder}/index.html`);
+			const player = embedded.frameLocator('.player iframe');
+
+			await player.locator('#fullscreen').waitFor();
+			await player.locator('body').evaluate(() => {
+				Object.defineProperty(document, 'fullscreenEnabled', { value: false });
+			});
+			const initial = await embedded.locator('.player iframe').getAttribute('style');
+
+			await player.locator('#fullscreen').click();
+
+			if (await player.locator('#chapterMenuToggle').count()) {
+				await player.locator('#chapterMenuToggle').click();
+			}
+
+			for (const size of [
+				{ width: 390, height: 844 },
+				{ width: 844, height: 390 },
+			]) {
+				await embedded.setViewportSize(size);
+				await embedded.waitForFunction(() => {
+					const rect = document.querySelector('.player iframe')!.getBoundingClientRect();
+
+					return (
+						rect.x === 0 && rect.y === 0 && rect.width === innerWidth && rect.height === innerHeight
+					);
+				});
+				const frame = embedded
+					.frames()
+					.find((frame) => frame.parentFrame() === embedded.mainFrame())!;
+
+				await frame.waitForFunction(() => {
+					const controls = document.querySelector('#controls')!.getBoundingClientRect();
+					const stage = document.querySelector('#viewport')!.getBoundingClientRect();
+
+					return (
+						stage.top >= 0 && stage.bottom <= controls.top && controls.bottom <= innerHeight + 1
+					);
+				});
+			}
+			await embedded.setViewportSize({ width: 390, height: 844 });
+			await player.locator('#fullscreen').click();
+			assert.equal(await embedded.locator('.player iframe').getAttribute('style'), initial ?? '');
+		}
+		await embedded.close();
+		console.log('Mobile embedded full-screen fallback and rotation checked for every walkthrough.');
+
 		const site = await browser.newPage();
 		const root = path.join(dir, 'out/site/index.html');
 
@@ -428,7 +489,7 @@ void (async () => {
 			const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
 			page.on('pageerror', (error) => errors.push(`${name}: ${error.message}`));
-			await page.goto('file://' + path.join(dir, 'out', name + '.html') + '#watch');
+			await page.goto('file://' + path.join(dir, 'out', name + '.html'));
 			await page.waitForFunction(() => window.reel);
 			const audioDuration = await page.evaluate(
 				async () => (await window.reel.soundtrackReady)?.duration ?? 0,
@@ -455,10 +516,67 @@ void (async () => {
 				`${name}: a music toggle exactly when there is a voice track`,
 			);
 			assert.equal(await page.locator('#play').getAttribute('aria-label'), 'Play');
-			await page.locator('#sound').click();
 			await page.waitForFunction(
-				() => document.querySelector('#sound')!.getAttribute('aria-pressed') === 'true',
+				() => !(document.querySelector('#play') as HTMLButtonElement).disabled,
 			);
+			await page.waitForTimeout(350);
+			assert.equal(
+				await page.evaluate(() => window.reel.tl.time()),
+				0,
+				`${name}: no autoplay without a hash`,
+			);
+			assert.equal(
+				await page.locator('#devOpen').isVisible(),
+				false,
+				`${name}: editing controls hidden`,
+			);
+			// Native full screen includes the controls, and exiting preserves the paused playhead.
+			await page.locator('#fullscreen').click();
+			await page.waitForFunction(
+				() =>
+					!!document.fullscreenElement &&
+					document.querySelector('#fullscreen')!.getAttribute('aria-pressed') === 'true',
+			);
+			assert.equal(
+				await page.locator('#fullscreen').getAttribute('aria-label'),
+				'Exit Full Screen',
+			);
+			await page.locator('#fullscreen').click();
+			await page.waitForFunction(
+				() =>
+					!document.fullscreenElement &&
+					document.querySelector('#fullscreen')!.getAttribute('aria-pressed') === 'false',
+			);
+			// Exercise the mobile fallback even when this browser supports native full screen.
+			await page.evaluate(() =>
+				Object.defineProperty(document, 'fullscreenEnabled', { value: false }),
+			);
+			await page.locator('#fullscreen').click();
+			await page.waitForFunction(() =>
+				document.documentElement.classList.contains('presentation-fullscreen'),
+			);
+
+			for (const size of [
+				{ width: 320, height: 740 },
+				{ width: 844, height: 390 },
+			]) {
+				await page.setViewportSize(size);
+				await page.waitForFunction(() => {
+					const stage = document.querySelector('#viewport')!.getBoundingClientRect();
+					const controls = document.querySelector('#controls')!.getBoundingClientRect();
+
+					return (
+						stage.top >= 0 && stage.bottom <= controls.top && controls.bottom <= innerHeight + 1
+					);
+				});
+			}
+			await page.keyboard.press('Escape');
+			assert.equal(await page.locator('#fullscreen').getAttribute('aria-pressed'), 'false');
+			await page.setViewportSize({ width: 390, height: 844 });
+
+			assert.equal(await page.locator('#sound').getAttribute('aria-pressed'), 'true');
+			assert.equal(await page.evaluate(() => window.reel.tl.time()), 0);
+			assert.equal(await page.evaluate(() => document.querySelector('audio')!.paused), true);
 			await page.locator('#play').click();
 			await page.waitForFunction(() => window.reel.tl.time() > 0.3);
 			// The sound comes from a media element, which an iPhone plays with its silent switch on.
@@ -510,10 +628,11 @@ void (async () => {
 				assert.equal(await page.locator('#music').getAttribute('aria-pressed'), 'false');
 				await page.locator('#music').click();
 			}
-			// The volume opens beside the speaker on hover, and is out of the way otherwise.
+			// Check hover on a wide desktop layout; phones use their hardware volume controls.
 			const volumeWidth = () =>
 				page.evaluate(() => document.querySelector('#volume')!.getBoundingClientRect().width);
 
+			await page.setViewportSize({ width: 1280, height: 900 });
 			await page.mouse.move(0, 0);
 			await page.waitForFunction(
 				() => document.querySelector('#volume')!.getBoundingClientRect().width === 0,
@@ -524,6 +643,7 @@ void (async () => {
 			);
 			assert.ok((await volumeWidth()) > 80, `${name}: volume opens from the speaker`);
 			await page.locator('#volume').fill('40');
+			await page.setViewportSize({ width: 390, height: 844 });
 			assert.equal(
 				await page.evaluate(() => document.querySelector('#controls')!.lastElementChild!.id),
 				'devOpen',
@@ -537,6 +657,16 @@ void (async () => {
 			const time = () => page.evaluate(() => window.reel.tl.time());
 
 			if (chapters.length) {
+				assert.equal(await page.locator('#chapter').isVisible(), false);
+				await page.locator('#chapterMenuToggle').click();
+				assert.equal(
+					await page.locator('#chapterMenuToggle').getAttribute('aria-expanded'),
+					'true',
+				);
+				assert.equal(await page.locator('#chapter').isVisible(), true);
+				await page.keyboard.press('Escape');
+				assert.equal(await page.locator('#chapter').isVisible(), false);
+				await page.locator('#chapterMenuToggle').click();
 				const current = chapters.findLastIndex((chapter) => chapter.t <= duration * 0.6);
 
 				await page.locator('#nextChapter').click();

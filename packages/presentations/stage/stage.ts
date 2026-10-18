@@ -530,6 +530,8 @@ function renderCaption(s: { cap: Caption | null }): void {
 
 /** The player's button symbols, drawn in the button's text colour. */
 const ICONS = {
+	fullscreen: '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
+	exitFullscreen: '<path d="M3 8h5V3m13 5h-5V3M8 21v-5H3m13 5v-5h5"/>',
 	play: '<path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/>',
 	pause: '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" stroke="none"/>',
 	restart: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
@@ -624,6 +626,8 @@ function mountPlayer<State>({
 					play: 'Play',
 					pause: 'Pause',
 					restart: 'Restart',
+					fullscreen: 'Full Screen',
+					exitFullscreen: 'Exit Full Screen',
 					soundOn: 'Sound on',
 					soundOff: 'Sound off',
 					noSound: 'No sound',
@@ -649,17 +653,20 @@ function mountPlayer<State>({
 				? '<button type="button" class="icon" id="music" aria-pressed="true"></button>'
 				: '') +
 			'<input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek" />' +
-			'<span id="clock">0:00</span></div>',
+			'<span id="clock">0:00</span>' +
+			'<button type="button" class="icon" id="fullscreen" aria-pressed="false"></button></div>',
 	);
 
 	if (chapters.length) {
 		k('controls').insertAdjacentHTML(
 			'beforeend',
-			'<div id="chapters">' +
+			'<div id="chapterMenu">' +
+				'<button type="button" id="chapterMenuToggle" aria-expanded="false" aria-controls="chapterOptions"></button>' +
+				'<div id="chapterOptions"><div id="chapters">' +
 				'<button type="button" class="icon" id="prevChapter"></button>' +
 				'<select id="chapter"></select>' +
 				'<button type="button" class="icon" id="nextChapter"></button></div>' +
-				'<button type="button" class="icon" id="stepMode" aria-pressed="false"></button>',
+				'<button type="button" class="icon" id="stepMode" aria-pressed="false"></button></div></div>',
 		);
 	}
 
@@ -738,11 +745,16 @@ function mountPlayer<State>({
 	const musicBtn = document.getElementById('music') as HTMLButtonElement | null;
 	const volume = k('volume') as HTMLInputElement;
 	const scrub = k('scrub') as HTMLInputElement;
-	let soundOn = false;
+	let soundOn = location.hash !== '#record' && location.hash !== '#dev';
+	let playerReady = false;
 	let musicOn = true;
 	const clock = k('clock');
 	const fmt = (sec: number) =>
 		Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
+
+	const fullscreen = new window.PresentationFullscreen(() => syncControls());
+
+	k('fullscreen').addEventListener('click', () => void fullscreen.toggle());
 
 	function syncControls() {
 		document.body.classList.toggle(
@@ -752,10 +764,19 @@ function mountPlayer<State>({
 		scrub.value = String(Math.round((tl.time() / END) * 1000));
 		clock.textContent = fmt(tl.time());
 		const L = copy();
+
+		(playBtn as HTMLButtonElement).disabled = !playerReady;
+		(k('restart') as HTMLButtonElement).disabled = !playerReady;
 		const stopped = tl.paused() || tl.progress() === 1;
 
 		setIcon(playBtn, stopped ? 'play' : 'pause', stopped ? L.play : L.pause);
 		setIcon(k('restart'), 'restart', L.restart);
+		setIcon(
+			k('fullscreen'),
+			fullscreen.active ? 'exitFullscreen' : 'fullscreen',
+			fullscreen.active ? L.exitFullscreen : L.fullscreen,
+		);
+		k('fullscreen').setAttribute('aria-pressed', String(fullscreen.active));
 		setIcon(
 			soundBtn,
 			soundOn && soundAvailable ? 'soundOn' : 'soundOff',
@@ -790,6 +811,7 @@ function mountPlayer<State>({
 		if (!chapters.length) {
 			return;
 		}
+		k('chapterMenuToggle').textContent = L.chapter;
 		const select = k('chapter') as HTMLSelectElement;
 
 		if (chapterLocale !== locale) {
@@ -855,7 +877,6 @@ function mountPlayer<State>({
 	function seekTo(time: number) {
 		const playing = !tl.paused() && tl.progress() < 1;
 
-		pendingRestart?.kill();
 		tl.pause();
 		tl.time(Math.max(0, Math.min(END, time)));
 
@@ -879,6 +900,26 @@ function mountPlayer<State>({
 	}
 
 	if (chapters.length) {
+		const toggle = k('chapterMenuToggle');
+		const setMenuOpen = (open: boolean) => {
+			k('chapterMenu').classList.toggle('open', open);
+			toggle.setAttribute('aria-expanded', String(open));
+		};
+
+		toggle.addEventListener('click', () =>
+			setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true'),
+		);
+		k('chapterMenu').addEventListener('keydown', (event) => {
+			if (
+				event.key === 'Escape' &&
+				matchMedia('(max-width: 600px)').matches &&
+				k('chapterMenu').classList.contains('open')
+			) {
+				event.stopPropagation();
+				setMenuOpen(false);
+				toggle.focus();
+			}
+		});
 		k('chapter').addEventListener('change', (event) =>
 			seekChapter(Number((event.target as HTMLSelectElement).value)),
 		);
@@ -896,7 +937,7 @@ function mountPlayer<State>({
 		});
 	}
 	/*
-	 * Browsers start sound only from a click, so it begins off until the viewer turns it on. It plays
+	 * Published players start sound from the viewer's Play click. Playback always waits for that click. It plays
 	 * from a media element rather than from Web Audio alone: an iPhone with its silent switch on
 	 * mutes Web Audio but not a playing media element, and only a media element reaches the lock
 	 * screen and the media keys. The element still plays through a gain node, as an iPhone ignores a
@@ -1063,15 +1104,9 @@ function mountPlayer<State>({
 		}
 	}
 
-	let pendingRestart: gsap.core.Tween | null = null;
-
 	tl.eventCallback('onComplete', () => {
 		syncControls();
 		stopAudio();
-
-		if (!document.body.classList.contains('record') && !document.body.classList.contains('watch')) {
-			pendingRestart = gsap.delayedCall(3, () => tl.restart());
-		}
 	});
 	playBtn.addEventListener('click', () => {
 		if (tl.progress() === 1) {
@@ -1084,13 +1119,13 @@ function mountPlayer<State>({
 		if (tl.paused()) {
 			stopAudio();
 		} else {
-			startAudio();
+			void setSound(soundOn);
 		}
 	});
 	k('restart').addEventListener('click', () => {
 		tl.restart();
 		syncControls();
-		startAudio();
+		void setSound(soundOn);
 	});
 	scrub.addEventListener('input', () => {
 		tl.pause();
@@ -1287,7 +1322,7 @@ function mountPlayer<State>({
 	}
 
 	const record = location.hash === '#record';
-	const watch = location.hash === '#watch';
+	const watch = !record && location.hash !== '#dev';
 
 	if (record) {
 		document.body.classList.add('record');
@@ -1330,9 +1365,11 @@ function mountPlayer<State>({
 		history.replaceState(null, '', '#dev');
 		void startDevMode();
 	});
-	const start = () => (record || dev || watch ? null : tl.play());
-
-	void Promise.all([document.fonts.ready, ready]).then(start);
+	void Promise.all([document.fonts.ready, ready]).then(() => {
+		playerReady = true;
+		render();
+		syncControls();
+	});
 }
 
 const stage = {

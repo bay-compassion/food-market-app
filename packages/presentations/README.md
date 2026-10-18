@@ -89,8 +89,7 @@ the 1920×1080 stage are in `layoutOf()`. In the queue desk video, beats hang of
 `tap(time, key, then)`, and the narration points at something with `spot(time, key)`; `key` names an
 element in the desk's markup (see `marks()`).
 
-Open a built page and press **Dev** in its controls (or add `#dev` to its address) to edit against
-it:
+Open a built page with `#dev` in its address to edit against it:
 
 ```bash
 node packages/presentations/build.ts queue-desk
@@ -102,8 +101,11 @@ side is every beat: its time, what it changes, and the line in its `page.ts` tha
 The current beat follows the playhead, and clicking one jumps there. Scrub until a moment feels
 off, edit that line, rebuild, reload.
 
-Without `#dev` the page plays on its own, with a scrubber and a sound toggle. Leaving the name off
-any script means the market day reel.
+All players start paused, with sound enabled when the viewer presses Play. Their
+Full Screen control uses native full screen where available and expands the published embed to
+fill the viewport otherwise. Exit with the same control or Escape. On phones, chapter navigation
+opens from the Chapter menu. Editing controls are available only in `#dev` mode. Leaving the name
+off any script means the market day reel.
 
 ## Rendering a video
 

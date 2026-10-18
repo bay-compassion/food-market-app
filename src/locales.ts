@@ -138,6 +138,8 @@ export interface GuestPresentationTranslations {
 	play: string;
 	pause: string;
 	restart: string;
+	fullscreen: string;
+	exitFullscreen: string;
 	soundOn: string;
 	soundOff: string;
 	noSound: string;
@@ -549,10 +551,12 @@ export const translations = {
 				summary: 'A short guide for guests on market day.',
 				description:
 					'Learn how to register, read your lottery result, follow your number, and come to the check-in desk.',
-				sound: 'Turn the sound on for English narration. The voice is AI-generated.',
+				sound: 'English narration starts with playback. The voice is AI-generated.',
 				play: 'Play',
 				pause: 'Pause',
 				restart: 'Restart',
+				fullscreen: 'Full Screen',
+				exitFullscreen: 'Exit Full Screen',
 				soundOn: 'Sound on',
 				soundOff: 'Sound off',
 				noSound: 'No sound',
@@ -999,10 +1003,12 @@ export const translations = {
 				description:
 					'Aprenda a inscribirse, consultar el resultado del sorteo, seguir su número y acudir a la mesa de registro.',
 				sound:
-					'Active el sonido para escuchar la narración en inglés. La voz se genera con inteligencia artificial.',
+					'La narración en inglés comienza al reproducir. La voz se genera con inteligencia artificial.',
 				play: 'Reproducir',
 				pause: 'Pausar',
 				restart: 'Reiniciar',
+				fullscreen: 'Pantalla completa',
+				exitFullscreen: 'Salir de pantalla completa',
 				soundOn: 'Sonido activado',
 				soundOff: 'Sonido desactivado',
 				noSound: 'Sin sonido',
@@ -1453,10 +1459,12 @@ export const translations = {
 				summary: 'راهنمایی کوتاه برای مهمانان در روز بازار.',
 				description:
 					'با ثبت‌نام، دیدن نتیجهٔ قرعه‌کشی، پیگیری شمارهٔ خود و رفتن به میز پذیرش آشنا شوید.',
-				sound: 'برای شنیدن روایت انگلیسی، صدا را روشن کنید. صدا با هوش مصنوعی تولید شده است.',
+				sound: 'روایت انگلیسی با پخش شروع می‌شود. صدا با هوش مصنوعی تولید شده است.',
 				play: 'پخش',
 				pause: 'مکث',
 				restart: 'شروع دوباره',
+				fullscreen: 'تمام‌صفحه',
+				exitFullscreen: 'خروج از تمام‌صفحه',
 				soundOn: 'صدا روشن',
 				soundOff: 'صدا خاموش',
 				noSound: 'بدون صدا',
@@ -1899,10 +1907,12 @@ export const translations = {
 				summary: 'Isang maikling gabay para sa mga bisita sa araw ng palengke.',
 				description:
 					'Alamin kung paano magparehistro, tingnan ang resulta ng bunutan, subaybayan ang iyong numero, at pumunta sa check-in desk.',
-				sound: 'Buksan ang tunog para sa pagsasalaysay sa Ingles. Gawa ng AI ang boses.',
+				sound: 'Magsisimula ang pagsasalaysay sa Ingles kapag nag-play. Gawa ng AI ang boses.',
 				play: 'I-play',
 				pause: 'I-pause',
 				restart: 'Magsimulang muli',
+				fullscreen: 'Buong screen',
+				exitFullscreen: 'Lumabas sa buong screen',
 				soundOn: 'May tunog',
 				soundOff: 'Walang tunog',
 				noSound: 'Walang audio',
@@ -2352,10 +2362,12 @@ export const translations = {
 				summary: 'Hướng dẫn ngắn dành cho khách vào ngày chợ.',
 				description:
 					'Tìm hiểu cách đăng ký, xem kết quả bốc thăm, theo dõi số của bạn và đến bàn tiếp đón.',
-				sound: 'Bật âm thanh để nghe lời hướng dẫn bằng tiếng Anh. Giọng nói được tạo bằng AI.',
+				sound: 'Lời hướng dẫn bằng tiếng Anh bắt đầu khi phát. Giọng nói được tạo bằng AI.',
 				play: 'Phát',
 				pause: 'Tạm dừng',
 				restart: 'Bắt đầu lại',
+				fullscreen: 'Toàn màn hình',
+				exitFullscreen: 'Thoát toàn màn hình',
 				soundOn: 'Bật âm thanh',
 				soundOff: 'Tắt âm thanh',
 				noSound: 'Không có âm thanh',
@@ -2795,10 +2807,12 @@ export const translations = {
 				heading: '您在 The Bay Compassion 的到访',
 				summary: '市场开放日的访客简明指南。',
 				description: '了解如何报名、查看抽签结果、关注您的号码以及前往签到处。',
-				sound: '打开声音收听英语解说。声音由人工智能生成。',
+				sound: '播放时开始英语解说。声音由人工智能生成。',
 				play: '播放',
 				pause: '暂停',
 				restart: '重新开始',
+				fullscreen: '全屏',
+				exitFullscreen: '退出全屏',
 				soundOn: '声音已开启',
 				soundOff: '声音已关闭',
 				noSound: '无音频',
@@ -3226,10 +3240,12 @@ export const translations = {
 				summary: 'دليل قصير للضيوف في يوم السوق.',
 				description:
 					'تعرّف على كيفية التسجيل ومعرفة نتيجة القرعة ومتابعة رقمك والتوجه إلى مكتب تسجيل الوصول.',
-				sound: 'شغّل الصوت لسماع الشرح باللغة الإنجليزية. الصوت مولّد بالذكاء الاصطناعي.',
+				sound: 'يبدأ الشرح باللغة الإنجليزية عند التشغيل. الصوت مولّد بالذكاء الاصطناعي.',
 				play: 'تشغيل',
 				pause: 'إيقاف مؤقت',
 				restart: 'البدء من جديد',
+				fullscreen: 'ملء الشاشة',
+				exitFullscreen: 'الخروج من ملء الشاشة',
 				soundOn: 'الصوت مفعّل',
 				soundOff: 'الصوت مغلق',
 				noSound: 'لا يوجد صوت',
@@ -3667,10 +3683,12 @@ export const translations = {
 				description:
 					'Découvrez comment vous inscrire, consulter le résultat du tirage, suivre votre numéro et vous présenter à l’accueil.',
 				sound:
-					'Activez le son pour écouter la narration en anglais. La voix est générée par intelligence artificielle.',
+					'La narration en anglais commence à la lecture. La voix est générée par intelligence artificielle.',
 				play: 'Lire',
 				pause: 'Pause',
 				restart: 'Recommencer',
+				fullscreen: 'Plein écran',
+				exitFullscreen: 'Quitter le plein écran',
 				soundOn: 'Son activé',
 				soundOff: 'Son désactivé',
 				noSound: 'Sans son',
@@ -4123,10 +4141,12 @@ export const translations = {
 				description:
 					'Saiba como se inscrever, ver o resultado do sorteio, acompanhar seu número e ir ao balcão de atendimento.',
 				sound:
-					'Ative o som para ouvir a narração em inglês. A voz é gerada por inteligência artificial.',
+					'A narração em inglês começa com a reprodução. A voz é gerada por inteligência artificial.',
 				play: 'Reproduzir',
 				pause: 'Pausar',
 				restart: 'Recomeçar',
+				fullscreen: 'Tela cheia',
+				exitFullscreen: 'Sair da tela cheia',
 				soundOn: 'Som ativado',
 				soundOff: 'Som desativado',
 				noSound: 'Sem som',
@@ -4579,10 +4599,12 @@ export const translations = {
 				description:
 					'Узнайте, как зарегистрироваться, посмотреть результат жеребьёвки, следить за своим номером и подойти к стойке регистрации.',
 				sound:
-					'Включите звук, чтобы услышать пояснения на английском. Голос создан искусственным интеллектом.',
+					'Пояснения на английском начинаются при воспроизведении. Голос создан искусственным интеллектом.',
 				play: 'Воспроизвести',
 				pause: 'Пауза',
 				restart: 'Начать заново',
+				fullscreen: 'Полный экран',
+				exitFullscreen: 'Выйти из полноэкранного режима',
 				soundOn: 'Звук включён',
 				soundOff: 'Звук выключен',
 				noSound: 'Без звука',
