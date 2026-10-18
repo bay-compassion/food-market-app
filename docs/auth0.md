@@ -60,6 +60,16 @@ Imports do not sync users, passwords, sessions, MFA enrollments, or role assignm
 
 ## Managed scope
 
+### Application Logo
+
+The `The Bay Compassion` entry under `clients` in `tenant/tenant.yaml` sets `logo_uri` to
+`https://app.thebaycompassion.org/bay-compassion-logo.png`, served from
+`public/bay-compassion-logo.png`. Auth0 uses the hosted URL; the Deploy CLI does not upload the
+image. Keep this URL publicly accessible and update it here when the asset moves, then use
+`auth0:plan` and `auth0:import` to sync the application setting. The tenant's `picture_url` uses
+the same asset. These settings are managed through `clients` and `tenant` without enabling
+the separate `branding` resource.
+
 `infrastructure/auth0/config.json` allowlists applications, client grants, APIs, connections,
 database connections, roles, and basic tenant settings. This applies in both directions. It can
 include unrelated resources when they share the same Auth0 tenant, so keep only intended resources
