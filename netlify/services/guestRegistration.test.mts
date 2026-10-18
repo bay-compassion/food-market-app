@@ -581,6 +581,7 @@ describe('registerGuest happy paths', () => {
 		queueResult([]); // no registration questions
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
 		queueResult([]); // no existing visit for this event
+		queueResult([{ id: 'visit-0' }]); // an earlier visit to another session
 		queueResult([openEvent]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning (identity only)
 		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
@@ -602,6 +603,44 @@ describe('registerGuest happy paths', () => {
 			childrenCount: 2,
 			seniorsCount: 1,
 		});
+	});
+
+	it('flags a first visit for a known guest who has never visited, such as an early sign-up', async () => {
+		// Arrange
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+		queueResult([]); // no existing visit for this event
+		queueResult([]); // no visit to any other session either
+		queueResult([openEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
+		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+		// Act
+		await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(insertedVisit()?.isFirstVisit).toBe(true);
+	});
+
+	it('does not flag a first visit for a known guest who visited before', async () => {
+		// Arrange
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+		queueResult([]); // no existing visit for this event
+		queueResult([{ id: 'visit-0' }]); // an earlier visit to another session
+		queueResult([openEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
+		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+		// Act
+		await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(insertedVisit()?.isFirstVisit).toBe(false);
 	});
 
 	it('creates an admin-added guest directly into the waiting queue with no visit token', async () => {
