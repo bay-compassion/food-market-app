@@ -82,6 +82,8 @@ function storeWith(
 			demoRoster: { marketEventId: 'event-1', guests: [] },
 		}),
 		isDemoDataEnabled: vi.fn().mockResolvedValue(true),
+		previewGuestDeletion: vi.fn().mockResolvedValue(null),
+		deleteGuest: vi.fn().mockResolvedValue(undefined),
 		...api,
 	};
 
@@ -619,5 +621,81 @@ describe('AdminStore', () => {
 		// Assert
 		expect(store.isBusy).toBe(false);
 		expect(store.feedback).toEqual({ kind: 'error' });
+	});
+});
+
+describe('AdminStore guest deletion', () => {
+	const preview = {
+		guestId: 'guest-1',
+		firstName: 'Ada',
+		lastName: 'Lovelace',
+		phone: '5105550123',
+		signedUpAt: '2026-09-27T17:00:00.000Z',
+		inOpenSession: false,
+		rows: {
+			visits: 3,
+			visit_events: 0,
+			notification_deliveries: 0,
+			push_subscriptions: 0,
+			sms_subscriptions: 0,
+			sms_opt_outs: 0,
+			guest_claims: 0,
+		},
+	};
+
+	it('opens the dialog with what the server says a deletion would remove', async () => {
+		// Arrange
+		const { store, api } = storeWith({
+			previewGuestDeletion: vi.fn().mockResolvedValue(preview),
+		});
+
+		// Act
+		await store.openGuestDeletion('guest-1');
+
+		// Assert
+		expect(api.previewGuestDeletion).toHaveBeenCalledWith('guest-1');
+		expect(store.guestDeletion).toEqual(preview);
+	});
+
+	it('deletes the guest, closes the dialog, and rereads both guest lists', async () => {
+		// Arrange
+		const { store, api } = storeWith({
+			previewGuestDeletion: vi.fn().mockResolvedValue(preview),
+			deleteGuest: vi.fn().mockResolvedValue(undefined),
+		});
+
+		await store.openGuestDeletion('guest-1');
+		api.listAllGuests.mockClear();
+		api.listSessionGuests.mockClear();
+
+		// Act
+		const deleted = await store.deleteGuest('510-555-0123');
+
+		// Assert
+		expect(deleted).toBe(true);
+		expect(api.deleteGuest).toHaveBeenCalledWith('guest-1', '510-555-0123');
+		expect(store.guestDeletion).toBeNull();
+		expect(store.feedback).toEqual({ kind: 'guest-deleted', name: 'Ada Lovelace' });
+		expect(api.listAllGuests).toHaveBeenCalled();
+		expect(api.listSessionGuests).toHaveBeenCalled();
+	});
+
+	it('keeps the dialog open and reports the server’s reason when it refuses', async () => {
+		// Arrange
+		const reason = 'This guest is in a session that has not ended.';
+		const { store } = storeWith({
+			previewGuestDeletion: vi.fn().mockResolvedValue(preview),
+			deleteGuest: vi.fn().mockRejectedValue(new AdminRequestError('guest_deletion', reason)),
+		});
+
+		await store.openGuestDeletion('guest-1');
+
+		// Act
+		const deleted = await store.deleteGuest('510-555-0123');
+
+		// Assert
+		expect(deleted).toBe(false);
+		expect(store.guestDeletion).toEqual(preview);
+		expect(store.feedback).toEqual({ kind: 'error', reason });
 	});
 });

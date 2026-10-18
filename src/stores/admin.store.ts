@@ -20,6 +20,7 @@ import {
 	type AdminFeedback,
 } from '../services/admin-feedback.ts';
 import { viewsFor, type AdminView } from '../services/admin-views.ts';
+import type { GuestDeletionPreview } from '../services/guest-deletion.ts';
 import { admissionOffersPhoneClaim, type QueuePlacement } from '../services/guestAdmission.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
@@ -69,6 +70,7 @@ export class AdminStore {
 	private _isBusy = false;
 	private _feedback: AdminFeedback | null = null;
 	private _guestClaim: GuestClaim | null = null;
+	private _guestDeletion: GuestDeletionPreview | null = null;
 	/** Guest commands sent and not yet answered. A poll landing meanwhile would undo their status. */
 	private pendingGuestCommands = 0;
 	/**
@@ -121,6 +123,11 @@ export class AdminStore {
 	/** The code on screen for a guest to scan with their phone, if the worker has opened one. */
 	get guestClaim(): GuestClaim | null {
 		return this._guestClaim;
+	}
+
+	/** The guest an admin has asked to delete permanently, while the confirmation dialog is open. */
+	get guestDeletion(): GuestDeletionPreview | null {
+		return this._guestDeletion;
 	}
 
 	/** The screens this worker can open, in navigation order. */
@@ -440,6 +447,47 @@ export class AdminStore {
 
 	dismissGuestClaim(): void {
 		this._guestClaim = null;
+	}
+
+	/** Opens the delete dialog with what deleting this guest would remove, read fresh from the server. */
+	async openGuestDeletion(guestId: string): Promise<void> {
+		try {
+			const preview = await this.api.previewGuestDeletion(guestId);
+
+			runInAction(() => (this._guestDeletion = preview));
+		} catch {
+			runInAction(() => this.report({ kind: 'error' }));
+		}
+	}
+
+	dismissGuestDeletion(): void {
+		this._guestDeletion = null;
+	}
+
+	/**
+	 * Permanently deletes the guest the dialog is open for. `phone` is the number the admin typed;
+	 * the server refuses unless it is the guest's, and refuses a guest still in an open session.
+	 * Resolves to whether the guest was deleted — a refusal leaves the dialog open with its reason.
+	 */
+	async deleteGuest(phone: string): Promise<boolean> {
+		const guest = this._guestDeletion;
+
+		if (!guest) {
+			return false;
+		}
+
+		return this.run(async () => {
+			await this.api.deleteGuest(guest.guestId, phone);
+
+			runInAction(() => {
+				this._guestDeletion = null;
+				this.report({ kind: 'guest-deleted', name: `${guest.firstName} ${guest.lastName}` });
+			});
+			// The deletion has landed; a failed reread must not report it as failed and invite a retry.
+			await Promise.all([this.refreshGuests(), this.refreshSessionGuests()]).catch(() => {});
+
+			return true;
+		}, false);
 	}
 
 	/** Calls the next `count` guests in line. Resolves to the visits called, in queue order. */

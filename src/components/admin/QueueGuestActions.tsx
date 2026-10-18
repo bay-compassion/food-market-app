@@ -19,6 +19,11 @@ export type QueueGuestActionsProps = {
 	 * invite a mis-tap.
 	 */
 	menuOnly?: boolean;
+	/**
+	 * Offers permanent deletion to an admin who holds `delete:guest-data`. Only the guest database
+	 * asks for it: the queue's rows are guests in a live session, whom the server would refuse anyway.
+	 */
+	offerDeletion?: boolean;
 	onRun: (command: VisitCommand) => void;
 };
 
@@ -53,11 +58,15 @@ const Actions = styled.div`
  * A manager (`manage:guest-access`) also gets the QR code that puts this guest on a phone — any
  * guest, at any time, including one already on another phone. It asks first: the code hands over
  * the guest's record and place in line, so the manager has to know who they are handing it to.
+ *
+ * In the guest database, an admin with `delete:guest-data` also gets permanent deletion, which
+ * opens `GuestDeletionDialog` rather than asking here: it needs a typed confirmation.
  */
 export const QueueGuestActions = observer(function QueueGuestActions({
 	guest,
 	disabled,
 	menuOnly,
+	offerDeletion,
 	onRun,
 }: QueueGuestActionsProps) {
 	const t = adminTranslations.en;
@@ -130,6 +139,17 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 								}}
 							>
 								{t.guestClaimShow}
+							</MenuItem>
+						) : null}
+						{offerDeletion && admin.can('delete:guest-data') ? (
+							<MenuItem
+								sx={{ color: 'error.main' }}
+								onClick={() => {
+									closeMenu();
+									void admin.openGuestDeletion(guest.guestId);
+								}}
+							>
+								{t.guestDeleteShow}
 							</MenuItem>
 						) : null}
 					</>

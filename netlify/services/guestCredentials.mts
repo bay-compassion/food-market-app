@@ -1,10 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 
-export function normalizePhone(phone: string) {
-	const digits = phone.replace(/\D/g, '');
-
-	return `+${digits.length === 10 ? `1${digits}` : digits}`;
-}
+// Moved to the shared layer so the browser compares phone numbers exactly as the server does.
+export { normalizePhone } from '../../src/services/phoneFormat.js';
 
 export function issueVisitToken() {
 	const token = randomBytes(32).toString('base64url');

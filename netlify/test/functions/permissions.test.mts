@@ -211,6 +211,20 @@ describe('endpoint permissions', () => {
 			'manage:sessions',
 		],
 		[
+			'previewing a guest’s permanent deletion',
+			guestsHandler,
+			json('https://x/api/admin/guests/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f/deletion', 'GET'),
+			'delete:guest-data',
+		],
+		[
+			'deleting a guest permanently',
+			guestsHandler,
+			json('https://x/api/admin/guests/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f', 'DELETE', {
+				phone: '925-555-0100',
+			}),
+			'delete:guest-data',
+		],
+		[
 			'showing the room display',
 			kioskHandler,
 			json('https://x/api/admin/kiosk', 'GET'),

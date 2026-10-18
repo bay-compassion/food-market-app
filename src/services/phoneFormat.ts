@@ -27,3 +27,19 @@ export function formatUsPhone(value: string): string {
 
 	return '';
 }
+
+/**
+ * A phone number in the one form the database compares by: `+` and its digits, with a ten-digit US
+ * number given its `1`. Shared by the server, which stores it as `normalized_phone`, and the
+ * browser, which checks a typed confirmation against a guest's number before the server does.
+ */
+export function normalizePhone(phone: string): string {
+	const digits = phone.replace(/\D/g, '');
+
+	return `+${digits.length === 10 ? `1${digits}` : digits}`;
+}
+
+/** Whether `typed` is the same phone number as `onFile`, however either is punctuated. */
+export function isSamePhone(typed: string, onFile: string): boolean {
+	return /\d/.test(typed) && normalizePhone(typed) === normalizePhone(onFile);
+}

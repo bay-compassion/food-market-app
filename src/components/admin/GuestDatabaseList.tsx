@@ -94,6 +94,7 @@ export const GuestDatabaseList = observer(function GuestDatabaseList({
 						guest={guest}
 						disabled={busy}
 						menuOnly
+						offerDeletion
 						// A guest with no visit is offered no command, so this only ever runs against a visit.
 						onRun={(command) => guest.status !== null && onRun(guest, command)}
 					/>

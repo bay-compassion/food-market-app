@@ -11,6 +11,7 @@ import { AdminThemeProvider } from './AdminThemeProvider';
 import { AdminViewList } from './AdminViewList';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { GuestClaimDialog } from './GuestClaimDialog';
+import { GuestDeletionDialog } from './GuestDeletionDialog';
 import { SessionStateChip } from './SessionStateChip';
 import type { AdminView } from './types';
 
@@ -144,6 +145,7 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 						{children}
 						{/* Opened from the feedback line after an add, or from any guest's Actions menu. */}
 						<GuestClaimDialog />
+						<GuestDeletionDialog />
 					</section>
 				)}
 			</Dashboard>
