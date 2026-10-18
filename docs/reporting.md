@@ -43,10 +43,10 @@ Definitions worth being precise about, because grant reports usually are:
   never marked served is not counted, and neither is one still waiting.
 - **Unique guests** and **household members** in the monthly report are **unduplicated within the
   month**. Someone who comes to three sessions in March is one guest and one household there, while
-  the `served` column still counts all three visits. Household size is taken from the guest record,
-  so it reflects what they last told us, not what was true at each visit.
+  the `served` column still counts all three visits. Household size is recorded at each visit, and
+  the report uses the guest's latest served visit in the month.
 - **Who was served** counts each guest once for the whole period, however many sessions they
-  attended.
+  attended, by the age band and household size from their latest served visit in the period.
 - **Lottery outcomes** only includes visits that were self-registered and actually went through a
   draw. A guest a worker placed straight into the line never entered the lottery, so counting them
   would report a placement rate the draw had nothing to do with. Visits still `registered` are
