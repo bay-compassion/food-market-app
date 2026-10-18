@@ -11,9 +11,12 @@
     "netlify/**/*.mts",
     "db/**/*.mts",
     // Server-side database scripts: `fake-data.mts` is imported by
-    // `netlify/services/demoScenario.mts`, and `seed-fake-data.mts` drives it from the CLI.
+    // `netlify/services/demoScenario.mts`, `seed-fake-data.mts` drives it from the CLI, and
+    // `delete-guest.mts` answers a guest's deletion request. Both CLIs share `database-connection.mts`.
     "scripts/fake-data.mts",
-    "scripts/seed-fake-data.mts"
+    "scripts/seed-fake-data.mts",
+    "scripts/delete-guest.mts",
+    "scripts/database-connection.mts"
   ],
 
   // Server code imports types and pure domain helpers from `src/services/` — 16 files do, plus

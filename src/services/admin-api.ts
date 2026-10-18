@@ -3,6 +3,7 @@ import type { SessionOverview } from '../stores/market-session.store.ts';
 import type { AgeRange } from './ageRanges.ts';
 import type { DemoRoster } from './demo-preview';
 import type { ServiceProgress } from './demoScenario.ts';
+import type { GuestDeletionPreview } from './guest-deletion.ts';
 import type { ManualAdmission, QueuePlacement } from './guestAdmission.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
 import type { PrintJobSubmission } from './print-jobs.ts';
@@ -274,6 +275,28 @@ export class AdminApi {
 		);
 	}
 
+	/** What permanently deleting a guest would remove, for the admin to read before confirming. */
+	async previewGuestDeletion(guestId: string): Promise<GuestDeletionPreview> {
+		return this.readJson<GuestDeletionPreview>(
+			await this.get(`/api/admin/guests/${encodeURIComponent(guestId)}/deletion`),
+			'guest_deletion',
+		);
+	}
+
+	/**
+	 * Permanently deletes a guest. `phone` is the number the admin typed to confirm, which the server
+	 * checks again; a refusal carries its reason, written for the admin to read.
+	 */
+	async deleteGuest(guestId: string, phone: string): Promise<void> {
+		const response = await this.send('DELETE', `/api/admin/guests/${encodeURIComponent(guestId)}`, {
+			phone,
+		});
+
+		if (!response.ok) {
+			throw await AdminRequestError.from(response, 'guest_deletion');
+		}
+	}
+
 	/**
 	 * A single-use code that lets a guest take their record onto their own phone. Resolves to `null`
 	 * when this worker may not do that for this guest — only a manager may for one who was not just
@@ -344,7 +367,11 @@ export class AdminApi {
 		return this.request(url, { headers: await this.requestHeaders() });
 	}
 
-	private async send(method: 'POST' | 'PATCH', url: string, body: object): Promise<Response> {
+	private async send(
+		method: 'POST' | 'PATCH' | 'DELETE',
+		url: string,
+		body: object,
+	): Promise<Response> {
 		const headers = new Headers(await this.requestHeaders());
 
 		headers.set('Content-Type', 'application/json');

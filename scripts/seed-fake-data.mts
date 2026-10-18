@@ -15,14 +15,17 @@
  * Runs append: use `--reset` for a clean slate.
  */
 
-import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 import { sql } from 'drizzle-orm';
 
+import {
+	isLocalDatabase,
+	reportFailure,
+	resolveConnectionString,
+	useDatabase,
+} from './database-connection.mjs';
 import { buildFakeData, type FakeData } from './fake-data.mjs';
-
-const localHosts = ['localhost', '127.0.0.1', '::1'];
 
 const usage = `Usage: npm run seed -- [options]
 
@@ -61,39 +64,6 @@ function positiveNumber(value: string, name: string) {
 	}
 
 	return parsed;
-}
-
-/**
- * Finds the database the same way the Netlify CLI's own `netlify db` commands do: an explicit
- * `NETLIFY_DB_URL` wins, and otherwise a running `netlify dev` will have recorded the local
- * database it provisioned in `.netlify/state.json`. That entry only exists while `netlify dev`
- * is running — the local database lives inside that process.
- */
-function resolveConnectionString() {
-	if (process.env.NETLIFY_DB_URL) {
-		return process.env.NETLIFY_DB_URL;
-	}
-
-	try {
-		const statePath = new URL('../.netlify/state.json', import.meta.url);
-		const state = JSON.parse(readFileSync(statePath, 'utf8')) as { dbConnectionString?: unknown };
-
-		if (typeof state.dbConnectionString === 'string' && state.dbConnectionString) {
-			return state.dbConnectionString;
-		}
-	} catch {
-		// No local Netlify state — treated the same as not having a database.
-	}
-
-	return null;
-}
-
-function isLocalDatabase(connectionString: string) {
-	try {
-		return localHosts.includes(new URL(connectionString).hostname.replace(/^\[|\]$/g, ''));
-	} catch {
-		return false;
-	}
 }
 
 function chunk<T>(items: T[], size: number) {
@@ -151,10 +121,7 @@ async function main() {
 		);
 	}
 
-	// The database client reads these when it is first imported, so they have to be set before it
-	// is. `server` picks the plain Postgres driver, which is what a local database speaks.
-	process.env.NETLIFY_DB_URL = connectionString;
-	process.env.NETLIFY_DB_DRIVER ??= 'server';
+	useDatabase(connectionString);
 
 	const { db } = await import('../db/index.mjs');
 	const { guests, marketEvents, registrationQuestions, visits } = await import('../db/schema.mjs');
@@ -222,16 +189,6 @@ try {
 	await main();
 	process.exit(0);
 } catch (error) {
-	// Drizzle reports a failed insert as its own `Failed query: ...` and keeps the Postgres error —
-	// the one that actually says what was wrong — on `cause`. Print both, or debugging is guesswork.
-	if (error instanceof Error) {
-		console.error(error.message.split('\n')[0]);
-
-		if (error.cause instanceof Error) {
-			console.error(error.cause.message);
-		}
-	} else {
-		console.error(error);
-	}
+	reportFailure(error);
 	process.exit(1);
 }

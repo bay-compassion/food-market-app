@@ -28,6 +28,7 @@
     "capture:screenshots": "tsx scripts/screenshots/capture-screenshots.mts",
     "sms:smoke": "node --env-file-if-exists=.env --import tsx scripts/smoke-test-sms.mts",
     "seed": "tsx scripts/seed-fake-data.mts",
+    "guest:delete": "tsx scripts/delete-guest.mts",
     "check:translations": "node scripts/check-translations.js",
     "check:diagrams": "node scripts/check-diagrams.js",
     "netlify:prune-deploys": "node scripts/prune-netlify-deploys.js",

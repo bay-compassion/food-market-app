@@ -14,7 +14,9 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { getLogger } from '../../lib/logging.mjs';
 import { tracedQuery } from '../../lib/sentry.mjs';
+import { GuestDeletion } from '../../services/guest-deletion.mjs';
 import {
 	adminProfileSchema,
 	createGuestProfile,
@@ -32,6 +34,9 @@ const visitUpdateSchema = z.object({
 });
 
 const guestIdSchema = z.uuid();
+
+/** The phone number an admin typed to confirm a deletion; the server checks it, not just the form. */
+const guestDeletionSchema = z.object({ phone: z.string().min(1) });
 
 async function currentEventId() {
 	const [event] = await tracedQuery('admin_guests.read_event', () =>
@@ -187,6 +192,47 @@ async function updateGuestDetails(context: Context<AdminEnv>) {
 	return updated ? Response.json(updated) : jsonError('Guest not found.', 404);
 }
 
+async function previewGuestDeletion(context: Context<AdminEnv>) {
+	const guestId = guestIdSchema.safeParse(context.req.param('guestId'));
+
+	if (!guestId.success) {
+		return jsonError('Invalid guest.');
+	}
+
+	const preview = await tracedQuery('admin_guests.deletion_preview', () =>
+		new GuestDeletion(db, guestId.data).preview(),
+	);
+
+	return preview ? Response.json(preview) : jsonError('Guest not found.', 404);
+}
+
+async function deleteGuest(context: Context<AdminEnv>) {
+	const guestId = guestIdSchema.safeParse(context.req.param('guestId'));
+	const confirmation = guestDeletionSchema.safeParse(await jsonBody(context.req.raw));
+
+	if (!guestId.success || !confirmation.success) {
+		return jsonError('Type the guest’s phone number to confirm.');
+	}
+
+	const result = await tracedQuery('admin_guests.delete', () =>
+		new GuestDeletion(db, guestId.data).delete(confirmation.data.phone),
+	);
+
+	if (!result.ok) {
+		return jsonError(result.error, result.status);
+	}
+
+	// The deletion takes the guest's visit history with it, so this line is the only record that it
+	// happened. The id and the worker, never the guest's details.
+	getLogger().info({
+		message: 'guest.deleted',
+		guestId: guestId.data,
+		actor: context.get('actor'),
+	});
+
+	return new Response(null, { status: 204 });
+}
+
 export const guestRoutes = createRouter<AdminEnv>();
 
 guestRoutes.get(
@@ -201,6 +247,13 @@ guestRoutes.all('/guests', methodNotAllowed);
 guestRoutes.patch('/guests/:guestId', withPermission('run:queue'), (context) =>
 	updateGuestDetails(context),
 );
+guestRoutes.delete('/guests/:guestId', withPermission('delete:guest-data'), (context) =>
+	deleteGuest(context),
+);
 guestRoutes.all('/guests/:guestId', methodNotAllowed);
+guestRoutes.get('/guests/:guestId/deletion', withPermission('delete:guest-data'), (context) =>
+	previewGuestDeletion(context),
+);
+guestRoutes.all('/guests/:guestId/deletion', methodNotAllowed);
 
 export default routeHandler(createRouter<AdminEnv>().route('/api/admin', guestRoutes));

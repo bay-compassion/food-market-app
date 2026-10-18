@@ -106,6 +106,25 @@ export interface AdminTranslation {
 	guestClaimReplacesDevice: string;
 	guestClaimShow: string;
 	guestClaimTitle: string;
+	/** The guest's actions-menu item that opens the permanent-deletion dialog. */
+	guestDeleteShow: string;
+	guestDeleteTitle: string;
+	guestDeleteClose: string;
+	/** `{date}` is when the guest signed up, `{digits}` the last four digits of their phone. */
+	guestDeleteIdentity: string;
+	guestDeleteRemoves: string;
+	/** `{count}` is how many visits the guest has on record. */
+	guestDeleteVisits: string;
+	guestDeleteVisitHistory: string;
+	guestDeleteTextConsent: string;
+	guestDeleteIrreversible: string;
+	guestDeleteOutsideApp: string;
+	guestDeleteInOpenSession: string;
+	guestDeletePhoneLabel: string;
+	guestDeletePhoneHint: string;
+	guestDeleteConfirm: string;
+	/** `{name}` is the guest who was deleted. */
+	guestDeleted: string;
 	historySessions: string;
 	householdCount: string;
 	lotteryActions: string;
@@ -544,6 +563,24 @@ export const adminTranslations = {
 			'{name} already uses the app on another phone. Once this is scanned, that phone is signed out and this one takes over their record.',
 		guestClaimShow: 'Show QR Code for Their Phone',
 		guestClaimTitle: 'Set up their phone',
+		guestDeleteShow: 'Delete Guest Permanently',
+		guestDeleteTitle: 'Delete Guest Permanently',
+		guestDeleteClose: 'Close without deleting',
+		guestDeleteIdentity: 'Signed up {date} · phone ending in {digits}',
+		guestDeleteRemoves: 'This removes everything the app stores about them:',
+		guestDeleteVisits: '{count} visits, with their household details and question answers',
+		guestDeleteVisitHistory: 'Each visit’s history, and the text and push messages sent about it',
+		guestDeleteTextConsent: 'Their text-message consent and opt-outs',
+		guestDeleteIrreversible:
+			'This cannot be undone. Past reports will count fewer guests and visits for every period they attended.',
+		guestDeleteOutsideApp:
+			'Copies outside the app — exported spreadsheets, paper sign-in sheets — need deleting separately.',
+		guestDeleteInOpenSession:
+			'This guest is in a session that has not ended. Delete them once the session ends.',
+		guestDeletePhoneLabel: 'Type their phone number to confirm',
+		guestDeletePhoneHint: 'The number on file, which you confirmed with the guest.',
+		guestDeleteConfirm: 'Delete Permanently',
+		guestDeleted: '{name} was deleted permanently.',
 		historySessions: 'Session History',
 		householdCount: 'Household',
 		lotteryActions: 'Lottery Draw',

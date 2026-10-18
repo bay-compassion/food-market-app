@@ -12,6 +12,7 @@ explanation and nothing else.
 | `admin`         | Whoever is responsible for the market and its data | the first five permissions, `view:kiosk`, `print:name-tags` |
 | `kiosk`         | The account a room display signs in as             | `view:kiosk` only                                           |
 | `print-station` | The account a print-station desktop signs in as    | `print:name-tags` only                                      |
+| `data-steward`  | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`            |
 
 Two roles rather than three because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
@@ -26,6 +27,7 @@ or download the whole guest database in one click.
 | `read:reports`        | The reports screen — counts and rates, never a guest's name                                              |
 | `export:guest-data`   | The visit export, which carries guest names and phone numbers                                            |
 | `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
+| `delete:guest-data`   | Permanently deleting a guest and everything about them, after typing their phone number to confirm       |
 | `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
 | `view:kiosk`          | The `/kiosk` room display — queue numbers being called, never a guest's name                             |
 | `print:name-tags`     | The `/printing-station` page — prints the name tags volunteers send: first name and last initial only    |
@@ -55,6 +57,8 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `POST /api/admin/guest-claims`                           | `run:queue`; plus `manage:guest-access` to override     |
 | `GET /api/admin/reports`                                 | `read:reports`                                          |
 | `GET /api/admin/reports?view=export`                     | `export:guest-data`                                     |
+| `GET /api/admin/guests/:id/deletion`                     | `delete:guest-data`                                     |
+| `DELETE /api/admin/guests/:id`                           | `delete:guest-data`                                     |
 | `GET`, `POST /api/admin/demo-data`                       | `manage:demo-data` — and, for `POST`, an env flag too   |
 | `GET /api/admin/kiosk`                                   | `view:kiosk`                                            |
 | `GET /api/admin/visits/:id/events`                       | `run:queue`                                             |
@@ -79,7 +83,7 @@ a token with no permissions, and the moment the server starts checking, they are
 admin area. The reverse order is safe: turning RBAC on with no enforcement deployed just adds a
 claim nothing reads yet, so you can confirm tokens look right and merge afterwards.
 
-1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the eight
+1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the nine
    permissions above.
 2. **Same API → Settings → RBAC Settings.** Turn on _Enable RBAC_ **and** _Add Permissions in the
    Access Token_. The second one is what puts the `permissions` claim in the token; without it
@@ -173,6 +177,25 @@ An override is an account handover, so treat it like one:
 list guests. It is on `admin` in `infrastructure/auth0/tenant/tenant.yaml`. Push that to
 Auth0 before merging the code that checks it; until then an admin's override is refused with a 403
 and nothing else changes.
+
+## Deleting a guest permanently
+
+`delete:guest-data` answers a guest who asks us to delete their information, as the privacy policy
+promises. It lives on its own `data-steward` role rather than on `admin`, so the person who can
+erase a guest is a named choice, not everyone responsible for the market. Give that role to the
+one or two people who handle data requests, alongside `admin`: it extends `export:guest-data`,
+because the guest database it is offered from only loads with that.
+
+In the guest database, a guest's Actions menu offers **Delete Guest Permanently**. The dialog
+shows who they are and what goes with them, and its button stays disabled until the admin types
+the guest's phone number. The server checks that number again, and refuses a guest who has a
+visit in a session that has not ended. Every deletion is logged as `guest.deleted` with the
+guest's id and the admin's Auth0 subject — the only trace left, since the visit history goes with
+it. See [`guest-deletion.md`](guest-deletion.md) for the whole procedure, including what the
+deletion cannot reach.
+
+Push `infrastructure/auth0/tenant/tenant.yaml` to Auth0, then assign `data-steward` to the right
+person. Until it is assigned, nobody is offered the menu item and both endpoints answer 403.
 
 ## The room display
 

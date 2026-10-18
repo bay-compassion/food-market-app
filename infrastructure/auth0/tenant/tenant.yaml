@@ -16,6 +16,10 @@ resourceServers:
         description: The reports screen — aggregates, no names
       - value: export:guest-data
         description: The visit export, with names and phone numbers
+      - value: delete:guest-data
+        description: >-
+          Permanently delete a guest and everything about them, for a guest
+          who asks
       - value: manage:demo-data
         description: Add demo datasets
       - value: manage:guest-access
@@ -206,6 +210,14 @@ roles:
       - permission_name: view:kiosk
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
+    type: tenant
+  - name: data-steward
+    description: >-
+      The person who answers guest data requests — permanently deletes a
+      guest, alongside the admin role
+    permissions:
+      - permission_name: delete:guest-data
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: developer

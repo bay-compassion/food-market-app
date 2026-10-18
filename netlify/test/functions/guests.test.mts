@@ -339,3 +339,41 @@ describe('guests handler PATCH /guests/:guestId (staff details)', () => {
 		expect(db.update).not.toHaveBeenCalled();
 	});
 });
+
+describe('guests handler DELETE /guests/:guestId (delete:guest-data)', () => {
+	const guestPath = '/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f';
+
+	it('requires the typed phone number before touching the database', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+
+		// Act
+		const response = await handler(request('DELETE', { path: guestPath, body: {} }));
+
+		// Assert
+		expect(response.status).toBe(400);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+
+	it('refuses with 409 and deletes nothing when the number is not the guest’s', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([
+			{ firstName: 'Ari', lastName: 'Guest', phone: '(925) 555-0100', createdAt: new Date() },
+		]);
+
+		for (let table = 0; table < 7; table += 1) {
+			queueResult([{ value: 0 }]);
+		}
+		queueResult([]);
+
+		// Act
+		const response = await handler(
+			request('DELETE', { path: guestPath, body: { phone: '925-555-0199' } }),
+		);
+
+		// Assert
+		expect(response.status).toBe(409);
+		expect(db.delete).not.toHaveBeenCalled();
+	});
+});

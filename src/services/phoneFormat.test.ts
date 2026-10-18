@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatUsPhone } from './phoneFormat';
+import { formatUsPhone, isSamePhone } from './phoneFormat';
 
 describe('formatUsPhone', () => {
 	it('formats a complete number', () => {
@@ -30,5 +30,31 @@ describe('formatUsPhone', () => {
 	it('returns an empty string for no digits', () => {
 		expect(formatUsPhone('')).toBe('');
 		expect(formatUsPhone('abc')).toBe('');
+	});
+});
+
+describe('isSamePhone', () => {
+	it('matches the same number however it is punctuated', () => {
+		// Arrange
+		const onFile = '(925) 555-0100';
+
+		// Act
+		const matches = ['9255550100', '925-555-0100', '+1 925 555 0100'].map((typed) =>
+			isSamePhone(typed, onFile),
+		);
+
+		// Assert
+		expect(matches).toEqual([true, true, true]);
+	});
+
+	it('refuses a partial or different number', () => {
+		// Arrange
+		const onFile = '(925) 555-0100';
+
+		// Act
+		const matches = ['555-0100', '925-555-0101', ''].map((typed) => isSamePhone(typed, onFile));
+
+		// Assert
+		expect(matches).toEqual([false, false, false]);
 	});
 });

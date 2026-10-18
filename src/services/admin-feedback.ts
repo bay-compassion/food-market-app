@@ -20,7 +20,8 @@ export type AdminFeedback =
 	/** `offersPhoneClaim` is whether the worker may hand this record to the guest's phone. */
 	| { kind: 'guest-added'; guestId: string; name: string; offersPhoneClaim: boolean }
 	/** This worker may not put that guest on a phone; a manager can. */
-	| { kind: 'guest-claim-refused' };
+	| { kind: 'guest-claim-refused' }
+	| { kind: 'guest-deleted'; name: string };
 
 /** What the dashboard shows for an outcome. */
 export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTranslation): string {
@@ -49,6 +50,8 @@ export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTransl
 			return t.guestAdded.replace('{name}', feedback.name);
 		case 'guest-claim-refused':
 			return t.guestClaimRefused;
+		case 'guest-deleted':
+			return t.guestDeleted.replace('{name}', feedback.name);
 	}
 }
 
@@ -67,6 +70,7 @@ export function adminFeedbackSeverity(feedback: AdminFeedback): NotificationSeve
 		case 'broadcast-queued':
 		case 'demo-loaded':
 		case 'guest-added':
+		case 'guest-deleted':
 			return 'success';
 	}
 }
