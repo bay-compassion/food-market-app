@@ -54,7 +54,9 @@ function sessionSummary({ start, end }: ReportRange) {
 /**
  * One row per month, counted the way grant reports ask for it. `uniqueGuests` and
  * `householdMembers` are unduplicated within the month — someone who comes to three sessions in
- * March is one guest and one household, not three — while `served` counts every visit.
+ * March is one guest and one household, not three — while `served` counts every visit. A guest's
+ * household size is the one given at their latest served visit that month: household details are
+ * recorded per visit, not on the guest.
  */
 function peopleServed({ start, end }: ReportRange) {
 	return sql`
@@ -64,15 +66,15 @@ function peopleServed({ start, end }: ReportRange) {
 				e.id AS event_id,
 				v.guest_id,
 				v.is_first_visit,
-				g.household_size
+				v.household_size,
+				e.registration_opens_at AS opens_at
 			FROM market_events e
 			JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
-			JOIN guests g ON g.id = v.guest_id
 			WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
 		),
 		households AS (
-			SELECT month, guest_id, max(household_size) AS household_size
-			FROM served GROUP BY month, guest_id
+			SELECT DISTINCT ON (month, guest_id) month, guest_id, household_size
+			FROM served ORDER BY month, guest_id, opens_at DESC
 		)
 		SELECT
 			to_char(s.month, 'YYYY-MM') AS "month",
@@ -93,16 +95,17 @@ function peopleServed({ start, end }: ReportRange) {
 /**
  * Who was served, in long form — one row per category and value, so age bands, household sizes,
  * and languages share a table instead of needing three reports. Each guest is counted once no
- * matter how many times they came.
+ * matter how many times they came, described by their latest served visit in the range.
  */
 function guestDemographics({ start, end }: ReportRange) {
 	return sql`
 		WITH served_guests AS (
-			SELECT DISTINCT g.id, g.age_range, g.household_size, g.locale
+			SELECT DISTINCT ON (g.id) g.id, v.age_range, v.household_size, g.locale
 			FROM market_events e
 			JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
 			JOIN guests g ON g.id = v.guest_id
 			WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
+			ORDER BY g.id, e.registration_opens_at DESC
 		),
 		facts AS (
 			SELECT 'age' AS category, age_range AS value FROM served_guests
@@ -218,8 +221,8 @@ export const visitExportHeaders = [
 	'served_at',
 	'guest_first_name',
 	'guest_last_name',
-	'guest_age_range',
-	'guest_household_size',
+	'visit_age_range',
+	'visit_household_size',
 	'visit_children_count',
 	'visit_seniors_count',
 	'guest_phone',
@@ -252,8 +255,8 @@ export async function runVisitExport({ start, end }: ReportRange) {
 			v.served_at AS "served_at",
 			g.first_name AS "guest_first_name",
 			g.last_name AS "guest_last_name",
-			g.age_range AS "guest_age_range",
-			g.household_size AS "guest_household_size",
+			v.age_range AS "visit_age_range",
+			v.household_size AS "visit_household_size",
 			v.children_count AS "visit_children_count",
 			v.seniors_count AS "visit_seniors_count",
 			g.phone AS "guest_phone",
