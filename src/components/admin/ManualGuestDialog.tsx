@@ -91,6 +91,12 @@ const ManualGuestFields = observer(function ManualGuestFields({
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
+
+		// The household fields show what is wrong; saving details alone does not ask for them.
+		if (admissionCreatesVisit(choice.admission) && !registration.household.isValid) {
+			return;
+		}
+
 		onSubmit({
 			...registration.guest,
 			...choice,

@@ -8,7 +8,8 @@ import type { NotificationSeverity } from '../stores/notification.store.ts';
  * `adminFeedbackText`, and how urgently by `adminFeedbackSeverity`.
  */
 export type AdminFeedback =
-	| { kind: 'error' }
+	/** `reason` is the server's explanation, when it refused the request with one. */
+	| { kind: 'error'; reason?: string }
 	| { kind: 'saved' }
 	| { kind: 'session-updated' }
 	| { kind: 'draw-complete' }
@@ -29,7 +30,7 @@ export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTransl
 
 	switch (feedback.kind) {
 		case 'error':
-			return t.error;
+			return feedback.reason ?? t.error;
 		case 'saved':
 			return t.saved;
 		case 'session-updated':

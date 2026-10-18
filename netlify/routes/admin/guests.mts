@@ -21,7 +21,7 @@ import {
 	staffGuestDetailsSchema,
 	updateStaffGuestDetails,
 } from '../../services/guest-information.mjs';
-import { parseSubmission, registerGuest } from '../../services/guestRegistration.mjs';
+import { registerGuest, validateSubmission } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
 
 const visitUpdateSchema = z.object({
@@ -142,9 +142,15 @@ async function createGuest(context: Context<AdminEnv>) {
 			: jsonError('Please provide a valid name and phone number.');
 	}
 
-	const submission = parseSubmission(body);
+	const validation = validateSubmission(body);
 
-	if (!submission || submission.source !== 'admin') {
+	if (!validation.success) {
+		return Response.json({ error: validation.error, fields: validation.fields }, { status: 400 });
+	}
+
+	const submission = validation.data;
+
+	if (submission.source !== 'admin') {
 		return jsonError('Please provide a valid administrative guest registration.');
 	}
 

@@ -72,7 +72,7 @@ describe('RegistrationStore', () => {
 	});
 
 	describe('clear', () => {
-		it('empties the prefilled fields and any answers', () => {
+		it('empties the prefilled fields and any answers, keeping the default household', () => {
 			// Arrange
 			storage.set(StorageKey.GUEST_HOUSEHOLD, { ageRange: '30-44', householdSize: 3 });
 			const store = new RegistrationStore(guestStore, { storage });
@@ -89,9 +89,9 @@ describe('RegistrationStore', () => {
 				lastName: '',
 				pronunciation: '',
 				ageRange: '',
-				householdSize: '',
-				childrenCount: '',
-				seniorsCount: '',
+				householdSize: 1,
+				childrenCount: 0,
+				seniorsCount: 0,
 				phone: '',
 			});
 			expect(store.registrationAnswers).toEqual({});
@@ -257,6 +257,37 @@ describe('RegistrationStore', () => {
 			});
 			expect(store.isSubmitting).toBe(false);
 			expect(store.submissionError).toBe(false);
+		});
+
+		it('refuses to register a household that its children and seniors outnumber', async () => {
+			// Arrange
+			const register = vi.spyOn(guestStore, 'register');
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.updateGuest({ householdSize: 1, childrenCount: 1, seniorsCount: 1 });
+
+			// Act
+			const result = await store.submit('queue', 'event-1', 'en');
+
+			// Assert
+			expect(result).toEqual({ kind: 'invalid' });
+			expect(store.household.issues).toEqual({ householdSize: 'exceeds-household' });
+			expect(register).not.toHaveBeenCalled();
+		});
+
+		it('signs up early even when the household counts left on this device are invalid', async () => {
+			// Arrange
+			const signUp = vi.spyOn(guestStore, 'signUp').mockResolvedValue();
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.updateGuest({ householdSize: 1.5 });
+
+			// Act
+			const result = await store.submit('early', null, 'en');
+
+			// Assert
+			expect(result).toEqual({ kind: 'signed-up' });
+			expect(signUp).toHaveBeenCalledOnce();
 		});
 
 		it('signs up identity-only for the early context, without touching the saved household', async () => {

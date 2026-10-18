@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { adminTranslations } from '../adminLocales';
-import type { AdminApi, AdminGuest } from '../services/admin-api';
+import { AdminRequestError, type AdminApi, type AdminGuest } from '../services/admin-api';
+import { adminFeedbackText } from '../services/admin-feedback';
 import type { Permission } from '../services/permissions';
 import { AdminStore } from './admin.store';
 import type { MarketSessionStore, SessionOverview } from './market-session.store';
@@ -270,6 +271,21 @@ describe('AdminStore', () => {
 			marketEventId: 'past-event',
 			locale: 'en',
 		});
+	});
+
+	it('shows the server’s reason when it refuses a manually added guest', async () => {
+		// Arrange
+		const reason = 'Children and seniors together cannot be more than the household size.';
+		const { store } = storeWith({
+			addGuest: vi.fn().mockRejectedValue(new AdminRequestError('guest', reason)),
+		});
+
+		// Act
+		await store.addGuest({ firstName: 'Ada' } as never, { locale: 'en' });
+
+		// Assert
+		expect(store.feedback).toEqual({ kind: 'error', reason });
+		expect(adminFeedbackText(store.feedback, adminTranslations.en)).toBe(reason);
 	});
 
 	it('names the guest it added and offers to put them on their phone', async () => {

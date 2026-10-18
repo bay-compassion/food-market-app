@@ -12,7 +12,7 @@ vi.mock('./visit-events.mjs', () => ({
 }));
 
 import { parseGuestInformation, saveGuestInformation } from './guest-information.mjs';
-import { parseSubmission, registerGuest } from './guestRegistration.mjs';
+import { parseSubmission, registerGuest, validateSubmission } from './guestRegistration.mjs';
 
 const savedDeviceToken = 'device-token-from-this-browser-12345678901234567890';
 
@@ -108,6 +108,112 @@ describe('parseSubmission', () => {
 	it('rejects a non-object payload', () => {
 		expect(parseSubmission('not an object')).toBeNull();
 		expect(parseSubmission(null)).toBeNull();
+	});
+});
+
+describe('validateSubmission', () => {
+	it('hands on the household counts as numbers', () => {
+		// Arrange
+		const submission = selfSubmission({ householdSize: '3', childrenCount: '1', seniorsCount: 0 });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({
+			success: true,
+			data: { householdSize: 3, childrenCount: 1, seniorsCount: 0 },
+		});
+	});
+
+	it('names the household as too small for its children and seniors', () => {
+		// Arrange
+		const submission = selfSubmission({ householdSize: 2, childrenCount: 2, seniorsCount: 1 });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toEqual({
+			success: false,
+			error: 'Children and seniors together cannot be more than the household size.',
+			fields: { householdSize: 'exceeds-household' },
+		});
+	});
+
+	it('refuses a household of only children', () => {
+		// Arrange
+		const submission = selfSubmission({ householdSize: 1, childrenCount: 1, seniorsCount: 0 });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toEqual({
+			success: false,
+			error:
+				'A household must include at least one adult, since children cannot shop on their own.',
+			fields: { childrenCount: 'no-adult' },
+		});
+	});
+
+	it('names each count that is not a whole number', () => {
+		// Arrange
+		const submission = selfSubmission({ householdSize: 2.5, seniorsCount: '1.5' });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toEqual({
+			success: false,
+			error: 'Household size must be a whole number. Number of seniors must be a whole number.',
+			fields: { householdSize: 'not-whole-number', seniorsCount: 'not-whole-number' },
+		});
+	});
+
+	it('does not read an empty count as zero', () => {
+		// Arrange
+		const submission = selfSubmission({ childrenCount: '' });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toEqual({
+			success: false,
+			error: 'Number of children is required.',
+			fields: { childrenCount: 'required' },
+		});
+	});
+
+	it('names a count outside its range', () => {
+		// Arrange
+		const submission = selfSubmission({ householdSize: 31 });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({
+			success: false,
+			error: 'Household size must be from 1 to 30.',
+		});
+	});
+
+	it('names the field behind any other refusal', () => {
+		// Arrange
+		const submission = selfSubmission({ ageRange: 'not-a-range' });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({
+			success: false,
+			error: expect.stringMatching(/^Age range: /),
+			fields: { ageRange: 'invalid_value' },
+		});
 	});
 });
 
