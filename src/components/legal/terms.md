@@ -2,7 +2,7 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: August 25, 2026
+Last Updated: October 18, 2026
 
 These Terms and Conditions ("Terms") govern your use of this food market guest sign-up app (the "App"), offered by The Bay Compassion ("The Bay Compassion," "we," "us," or "our"), a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. These Terms do not cover our other programs or our main website, thebaycompassion.org.
 
@@ -62,7 +62,7 @@ To the fullest extent permitted by law, The Bay Compassion, its staff, volunteer
 
 ## 7. Third-Party Services
 
-The App relies on third-party providers, including Twilio for text messages, Auth0 for staff and volunteer sign-in, and Netlify, our hosting provider. We are not responsible for the practices or availability of these third-party services, which are governed by their own terms.
+The App relies on third-party providers, including Twilio for text messages, Auth0 for staff and volunteer sign-in, Netlify, our hosting provider, Neon for our database, Sentry for error monitoring, and LaunchDarkly for turning App features on and off. We are not responsible for the practices or availability of these third-party services, which are governed by their own terms.
 
 ---
 

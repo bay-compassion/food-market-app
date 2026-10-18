@@ -2,7 +2,7 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: August 25, 2026
+Last Updated: October 18, 2026
 
 The Bay Compassion ("The Bay Compassion," "we," "us," or "our") is a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. This Privacy Policy explains how we collect, use, share, and protect information through this food market guest sign-up app (the "App"). It does not cover our other programs or our main website, thebaycompassion.org.
 
@@ -69,7 +69,13 @@ Reports we produce for general program tracking, impact analysis, and grant writ
 
 We do not sell your personal information. We do not share, sell, or provide your mobile phone number or messaging consent data to third parties or affiliates for marketing or promotional purposes. We share information only in the following circumstances:
 
-- **Service providers** who help us operate the App on our behalf, including Twilio for text messages, Auth0 for staff and volunteer sign-in, and Netlify, our hosting provider. These providers are limited to using your information only to provide services to us.
+- **Service providers** who help us operate the App on our behalf. These providers are limited to using your information only to provide services to us:
+  - Twilio, which sends our text messages
+  - Auth0, which handles staff and volunteer sign-in
+  - Netlify, which hosts the App
+  - Neon, which stores the App's database as part of Netlify's hosting
+  - Sentry, which records errors in the App so we can fix them. When an error happens, Sentry may receive technical details about it, a random identifier for your browser, and a short recording of the screen. What you type into forms is hidden from the recording, as are the name and phone number on your guest card
+  - LaunchDarkly, which lets us turn App features on and off. It receives no information that identifies you
 - **Legal requirements:** we may disclose information if required by law or subpoena, or to protect the safety of our staff, volunteers, or the community we serve.
 - **Business transfers:** if The Bay Compassion undergoes a merger, reorganization, or transfer of program operations, information may be transferred as part of that transaction, subject to this policy or a successor policy. Mobile phone numbers and messaging consent are excluded from such a transfer.
 
