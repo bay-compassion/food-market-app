@@ -17,7 +17,7 @@
  * trips it just as surely as adding a table does. It means "someone edited this file; check
  * whether the picture still tells the truth." Once you've checked:
  *
- *   npm run check:diagrams -- --update
+ *   pnpm run check:diagrams --update
  *
  * rewrites the fingerprints to the current files. Update the diagram first if it needs it — this
  * command only re-stamps, it can't draw.
@@ -31,8 +31,8 @@
  *
  * Usage:
  *   node scripts/check-diagrams.js
- *   npm run check:diagrams
- *   npm run check:diagrams -- --update
+ *   pnpm run check:diagrams
+ *   pnpm run check:diagrams --update
  */
 
 import { createHash } from 'node:crypto';
@@ -200,7 +200,7 @@ function main() {
 		console.log(
 			`\n${staleDocuments.length} document(s) flagged above. Open each one, compare its diagram ` +
 				'against the changed source file, and fix the diagram if it is now wrong. Then run ' +
-				'`npm run check:diagrams -- --update` to record that it was reviewed.',
+				'`pnpm run check:diagrams --update` to record that it was reviewed.',
 		);
 		process.exit(1);
 	}

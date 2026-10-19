@@ -6,7 +6,7 @@ import { Masthead } from './Masthead';
 
 /**
  * The title block at the top of a docs page. It is a story rather than JSX written into each MDX
- * file for the same reason as the token specimens: `npm run test:storybook` covers it. `!dev` keeps
+ * file for the same reason as the token specimens: `pnpm run test:storybook` covers it. `!dev` keeps
  * it out of the sidebar, since it only means anything at the top of the page it introduces.
  */
 const meta: Meta<MastheadProps> = {

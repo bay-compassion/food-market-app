@@ -124,5 +124,5 @@ storybook-static
 /playwright-report/
 /playwright/.cache/
 
-# Printable app screenshots (npm run capture:screenshots)
+# Printable app screenshots (pnpm run capture:screenshots)
 /screenshots/

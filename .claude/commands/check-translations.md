@@ -4,12 +4,12 @@ allowed-tools: Bash
 ---
 
 This runs `scripts/check-translations.js` — a plain Node script, not something Claude-specific, so
-any agent or a human can run the exact same thing via `npm run check:translations`. This command
+any agent or a human can run the exact same thing via `pnpm run check:translations`. This command
 is just a shortcut for it in Claude Code.
 
-Output of `npm run check:translations`:
+Output of `pnpm run check:translations`:
 
-!`npm run check:translations`
+!`pnpm run check:translations`
 
 Explain the findings (if any) to the user in plain language, grouped by language. Remind them that
 a match isn't automatically wrong — proper names (like "The Bay Compassion", which should not be

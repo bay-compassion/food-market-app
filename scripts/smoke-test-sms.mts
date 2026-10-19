@@ -4,7 +4,7 @@ import { parseArgs } from 'node:util';
 
 import { TwilioSmsTransport } from '../netlify/services/sms-transport.mjs';
 
-const usage = `Usage: npm run sms:smoke -- --to=+15551234567 [--to=+15557654321] --send
+const usage = `Usage: pnpm run sms:smoke --to=+15551234567 [--to=+15557654321] --send
 
 Submits one or two live SMS messages directly through the configured Twilio Messaging Service.
 This bypasses the database, notification queue, market lifecycle, and Async Workloads.

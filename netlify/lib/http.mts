@@ -9,7 +9,7 @@ import { flushSentry, tracedRequest } from './sentry.mjs';
 
 export const maxRequestBodyBytes = 32 * 1024;
 
-export function jsonError(message: string, status = 400) {
+export function jsonError(message: string, status = 400): Response {
 	return Response.json({ error: message }, { status });
 }
 
@@ -47,7 +47,7 @@ export function createRouter<E extends Env = Env>() {
 	return app;
 }
 
-export function methodNotAllowed() {
+export function methodNotAllowed(): Response {
 	return jsonError('Method not allowed', 405);
 }
 

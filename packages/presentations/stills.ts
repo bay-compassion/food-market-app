@@ -5,7 +5,7 @@
  *   node packages/presentations/stills.ts 12 27.5 40
  *   node packages/presentations/stills.ts queue-desk 12 27.5 40
  *
- * Writes `out/<name>/stills/<time>.png`. Needs `npx playwright install chromium` once.
+ * Writes `out/<name>/stills/<time>.png`. Needs `pnpm exec playwright install chromium` once.
  */
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';

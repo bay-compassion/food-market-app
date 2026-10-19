@@ -13,16 +13,16 @@ See the [project overview](../README.md) for the product and walkthroughs.
 ### Run locally
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
-`npm start` runs `netlify dev`, which serves the app and Netlify Functions together. Follow the command output to open the local URL.
+`pnpm start` runs `netlify dev`, which serves the app and Netlify Functions together. Follow the command output to open the local URL.
 
 To work only on the frontend, you can also run:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 This Vite server does not run the Netlify API function, including `/api/admin/guests`.
@@ -33,9 +33,9 @@ A fresh local database is empty, so the queue and the reports have nothing to sh
 `netlify dev` running in another terminal, fill it with a plausible history:
 
 ```bash
-npm run seed                                # 12 past weekly sessions, 120 guests
-npm run seed -- --reset --open-session      # start clean, and open a session for today
-npm run seed -- --help                      # every option
+pnpm run seed                                # 12 past weekly sessions, 120 guests
+pnpm run seed --reset --open-session      # start clean, and open a session for today
+pnpm run seed --help                      # every option
 ```
 
 The history includes the awkward cases worth testing against: oversubscribed sessions, guests a
@@ -45,15 +45,15 @@ script refuses to touch a database that is not on localhost unless you pass `--f
 ### Review document
 
 Copy and design reviews go better on paper, and the people doing them rarely have the app or a code
-editor. `npm run capture:screenshots` builds a PDF for them to mark up. Every word in it is an MDX page in
+editor. `pnpm run capture:screenshots` builds a PDF for them to mark up. Every word in it is an MDX page in
 Storybook that tags itself `review`, with its stories shown inside the app's own bar and footer; the
 one thing the script makes is screenshots of the running app, for screens a story cannot show, which
 a page embeds with `<Screenshot id="…" />`:
 
 ```bash
-npx playwright install chromium             # once
-npm run capture:screenshots                      # → screenshots/review.pdf
-npm run capture:screenshots -- --locale es       # the same document, in Spanish
+pnpm exec playwright install chromium             # once
+pnpm run capture:screenshots                      # → screenshots/review.pdf
+pnpm run capture:screenshots --locale es       # the same document, in Spanish
 ```
 
 See [`docs/screenshots.md`](screenshots.md) for how to write a page, what the screenshots are for, and the
@@ -64,21 +64,21 @@ options.
 Run these commands from the repository root before opening a pull request:
 
 ```bash
-npm run lint
-npm run format:check
-npm run check:diagrams
-npm run test:unit -- --run
-npm run build
+pnpm run lint
+pnpm run format:check
+pnpm run check:diagrams
+pnpm run test:unit --run
+pnpm run build
 ```
 
-Or run all of them at once with `npm run checks`.
+Or run all of them at once with `pnpm run checks`.
 
 See [`docs/testing.md`](testing.md) for why the automated tests matter, especially if you're
 relying on an AI coding agent to make changes.
 
-`npm run check:diagrams` is the odd one out: it doesn't test the app, it flags when a source file
+`pnpm run check:diagrams` is the odd one out: it doesn't test the app, it flags when a source file
 behind one of the diagrams in `docs/` has changed, so the pictures don't quietly drift out of date.
-Review the flagged diagram, then run `npm run check:diagrams -- --update` to record that you did.
+Review the flagged diagram, then run `pnpm run check:diagrams --update` to record that you did.
 
 ## Deployment
 
@@ -116,7 +116,7 @@ Push notifications use standards-based Web Push with VAPID authentication. Gener
 long-lived key pair once:
 
 ```bash
-npx web-push generate-vapid-keys
+pnpm exec web-push generate-vapid-keys
 ```
 
 Add `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` to the Netlify environment. The
@@ -137,7 +137,7 @@ To test the live Twilio transport without creating a guest or changing a market 
 smoke-test message to one or two explicitly named phones:
 
 ```bash
-npm run sms:smoke -- --to=+15551234567 --send
+pnpm run sms:smoke --to=+15551234567 --send
 ```
 
 The command reads `.env`, bypasses the database and workload queue, masks recipients in its output,
@@ -196,7 +196,7 @@ to pull dashboard changes, preview updates, and push reviewed configuration.
 
 The [Reports](reporting.md) screen covers the predefined questions the app anticipates. For
 anything else — a one-off chart, a dashboard to watch over time — this repo supports connecting
-[Metabase](https://www.metabase.com/), either self-hosted with Docker Compose (`npm run
+[Metabase](https://www.metabase.com/), either self-hosted with Docker Compose (`pnpm run
 metabase:up`) or on Metabase Cloud. See [`docs/metabase.md`](metabase.md) for setup and,
 importantly, how to connect it without handing it the app's own database credentials.
 

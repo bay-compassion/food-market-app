@@ -21,7 +21,7 @@ const Figure = styled.figure`
 `;
 
 /**
- * A screenshot of the running app, made by `npm run capture:screenshots`, for a screen a story cannot
+ * A screenshot of the running app, made by `pnpm run capture:screenshots`, for a screen a story cannot
  * show — one a guest only reaches by doing something, such as a dialog opening on top of the page.
  *
  * `id` is the screenshot's id in `scripts/screenshots/screenshot-catalog.mts`. The `review-figure` class is what
@@ -35,7 +35,7 @@ export function Screenshot({ id, alt }: { id: string; alt: string }) {
 		<Figure className="review-figure">
 			{missing ? (
 				<p className="missing">
-					No screenshot of <code>{id}</code> yet. Run <code>npm run capture:screenshots</code> and
+					No screenshot of <code>{id}</code> yet. Run <code>pnpm run capture:screenshots</code> and
 					reload.
 				</p>
 			) : (

@@ -1,0 +1,21 @@
+# pnpm runs a dependency's install script only when it is listed here as true.
+allowBuilds:
+  # Downloads the platform binary Vite, tsx, Storybook, and function bundling run on.
+  esbuild: true
+  # Downloads the binary the Sentry Vite plugin uploads source maps with.
+  '@sentry/cli': true
+  # Print a banner or install shell completion, nothing the project needs.
+  browser-tabs-lock: false
+  contentful: false
+  es5-ext: false
+  netlify-cli: false
+  # Netlify's content layer, pulled in by netlify-cli, which this project does not use.
+  '@netlify/content-engine': false
+  content-engine: false
+  # Native addons that ship prebuilt binaries as optional packages, or are optional themselves.
+  lmdb: false
+  msgpackr-extract: false
+  sharp: false
+  unix-dgram: false
+  # Downloads a Chrome that mdx-mermaid only uses for server-side rendering; Playwright has its own.
+  puppeteer: false

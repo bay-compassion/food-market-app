@@ -22,7 +22,9 @@ export default defineConfig({
 	// This is a mobile-first app (see AGENTS.md); the default project emulates a phone.
 	projects: [{ name: 'mobile-chromium', use: { ...devices['Pixel 7'] } }],
 	webServer: {
-		command: 'npm run dev',
+		// The binary itself, not `pnpm run dev`: pnpm starts a script in a process group of its own,
+		// so Playwright's shutdown, which signals the group it started, would leave Vite running.
+		command: 'node_modules/.bin/vite',
 		url: 'http://localhost:5173',
 		reuseExistingServer: !process.env.CI,
 	},

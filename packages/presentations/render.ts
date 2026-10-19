@@ -7,7 +7,7 @@
  *   node packages/presentations/render.ts market-day-reel --picture-only
  *
  * Writes `out/<name>.mp4`. The steps are the scripts the README describes, run in order; any of
- * them can still be run on its own. Needs macOS, `npx playwright install chromium` once, and — for
+ * them can still be run on its own. Needs macOS, `pnpm exec playwright install chromium` once, and — for
  * the audio steps — GarageBand's loop library.
  */
 import { execFileSync } from 'node:child_process';

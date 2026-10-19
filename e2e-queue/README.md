@@ -3,15 +3,15 @@
 This rig runs the real React app and Netlify Functions using the same Netlify Dev runtime as the
 Vite plugin. Netlify's local Postgres emulator (PGlite, with a Postgres wire-protocol server)
 gets a fresh temporary directory and the repository's existing migrations on every launch.
-It requires Node from `.nvmrc`, `npm ci`, and Chromium (`npx playwright install chromium`).
+It requires Node from `.nvmrc`, `pnpm install`, and Chromium (`pnpm exec playwright install chromium`).
 No Netlify account, Auth0 tenant, Docker, or messaging credentials are needed.
 
 ```bash
-npm run test:e2e:queue                     # unattended
-npm run test:e2e:queue -- --ui             # select, run, and inspect scenarios
-npm run test:e2e:queue -- --debug          # step through a live browser session
-npm run test:e2e:queue -- -g 'guests register' --debug  # one scenario
-npm run test:e2e:queue -- --repeat-each=2   # verify clean repeated runs
+pnpm run test:e2e:queue                     # unattended
+pnpm run test:e2e:queue --ui             # select, run, and inspect scenarios
+pnpm run test:e2e:queue --debug          # step through a live browser session
+pnpm run test:e2e:queue -g 'guests register' --debug  # one scenario
+pnpm run test:e2e:queue --repeat-each=2   # verify clean repeated runs
 ```
 
 ## Interactive use
@@ -75,9 +75,9 @@ leaves them here:
 - `playwright-report/queue/`: HTML report with named steps and attachments.
 
 ```bash
-npx playwright show-report playwright-report/queue
+pnpm exec playwright show-report playwright-report/queue
 ```
 
 Traces can contain the throwaway test tokens and synthetic guest details. The private signing key
 and temporary database are discarded after the run. Existing lightweight tests remain available
-through `npm run test:e2e` and are described in `e2e/README.md`.
+through `pnpm run test:e2e` and are described in `e2e/README.md`.

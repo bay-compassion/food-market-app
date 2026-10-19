@@ -11,9 +11,9 @@
  * that Storybook can serve them when it prints the pages that use them.
  *
  * Usage:
- *   npm run capture:screenshots
- *   npm run capture:screenshots -- --screenshot cancel-asked        (capture one screenshot; no document)
- *   npm run capture:screenshots -- --storybook-url http://localhost:6006 --locale es
+ *   pnpm run capture:screenshots
+ *   pnpm run capture:screenshots --screenshot cancel-asked        (capture one screenshot; no document)
+ *   pnpm run capture:screenshots --storybook-url http://localhost:6006 --locale es
  *
  * See docs/screenshots.md.
  */
@@ -62,7 +62,7 @@ if (values.help) {
 			'  --screenshot <id>      Capture only these screenshots, and build no document; repeatable',
 			'  --no-docs              Capture the screenshots, and build no document',
 			`  --locale <code>        Language of every screen and story (${languages.map((l) => l.code).join(', ')}; default: en)`,
-			'  --app-url <url>        Use an app already running (npm run dev) instead of starting one',
+			'  --app-url <url>        Use an app already running (pnpm run dev) instead of starting one',
 			'  --port <n>             Port to start the app on (default: 5180)',
 			'  --storybook-url <url>  Use a Storybook already running instead of starting one',
 			'  --storybook-port <n>   Port to start Storybook on (default: 6100)',

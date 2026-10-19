@@ -1,4 +1,4 @@
-/** Raster compatibility assets derived from the original Canva SVGs. Run with npx tsx. */
+/** Raster compatibility assets derived from the original Canva SVGs. Run with pnpm exec tsx. */
 import { readFile, writeFile } from 'node:fs/promises';
 
 import { launchChromium } from './screenshots/chromium.mjs';

@@ -8,7 +8,7 @@ import { TypeScale } from './TypeScale';
  * The specimens embedded in the Design System documentation pages.
  *
  * They are ordinary stories rather than components written inline in the MDX, so the specimens are
- * covered by `npm run test:storybook` like anything else. The MDX pages carry the prose and pull
+ * covered by `pnpm run test:storybook` like anything else. The MDX pages carry the prose and pull
  * each specimen in with `<Story of={...} />`. `!dev` keeps them out of the sidebar — they are only
  * meaningful inside the page that explains them.
  */

@@ -52,12 +52,12 @@ accounts) — not the guest data, which is added afterwards as a connection from
 2. `cp metabase/.env.example metabase/.env` and set a real `METABASE_DB_PASSWORD`. This only
    protects Metabase's own app database; don't commit `metabase/.env` (it's already covered by the
    repo's `.gitignore` `.env` pattern).
-3. `npm run metabase:up` starts it in the background. First start pulls the Metabase image, so it
+3. `pnpm run metabase:up` starts it in the background. First start pulls the Metabase image, so it
    can take a minute.
 4. Open <http://localhost:3000> and complete Metabase's setup wizard — this creates your Metabase
    admin account, separate from Auth0 and from `metabase-db`'s password.
 5. Add the app's database as described in [Connecting a database](#connecting-a-database-either-form).
-6. `npm run metabase:down` stops it; your dashboards and questions persist in a Docker volume
+6. `pnpm run metabase:down` stops it; your dashboards and questions persist in a Docker volume
    between restarts. To also delete that volume (wipes all Metabase questions/dashboards, not the
    app's data), run `docker compose -f metabase/docker-compose.yml down -v`.
 
@@ -71,13 +71,13 @@ If the Docker Compose machine stays on (e.g. a market office computer) and you w
 reach it without port-forwarding or a static IP, `metabase/docker-compose.yml` includes an
 optional `cloudflared` service that exposes Metabase at a public https URL via a
 [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
-It's off by default — only the two services above start with `npm run metabase:up`.
+It's off by default — only the two services above start with `pnpm run metabase:up`.
 
 1. In the Cloudflare Zero Trust dashboard, go to **Networks → Tunnels → Create a tunnel**, and
    point it at `http://metabase:3000`. Copy the token shown in the install step.
 2. Set `CLOUDFLARE_TUNNEL_TOKEN` in `metabase/.env` to that token (see `metabase/.env.example`).
 3. Start it with the `tunnel` profile:
-   `docker compose -f metabase/docker-compose.yml --profile tunnel up -d`. `npm run metabase:down`
+   `docker compose -f metabase/docker-compose.yml --profile tunnel up -d`. `pnpm run metabase:down`
    still stops everything, tunnel included.
 
 Anyone with the tunnel's URL can reach your Metabase login — so this doesn't replace limiting who
@@ -116,7 +116,7 @@ if the project uses a different one.)
 **Where you run this depends on which database you mean, and this is the one step in this guide
 that isn't optional to get right:**
 
-- **Local dev database:** `npx netlify db connect -q "<the SQL above>"` is safe — per
+- **Local dev database:** `pnpm exec netlify db connect -q "<the SQL above>"` is safe — per
   [`migrations.md`](migrations.md), this command only touches your local database unless you point
   it at a remote branch, and this doesn't.
 - **Production database:** per [`migrations.md`](migrations.md), **never run `netlify db connect`
@@ -136,7 +136,7 @@ from the connection string for whichever database you created the role against:
 - **SSL** — on. Neon requires it.
 
 To find the app's own connection string for reference (host/port/database only — don't reuse its
-credentials): `npx netlify env:get NETLIFY_DB_URL --context dev` for local, or
+credentials): `pnpm exec netlify env:get NETLIFY_DB_URL --context dev` for local, or
 `--context production` for production. The production form of that command returns a live
 credential with full read/write access to guest data — treat it the same as any other secret in
 [`concepts.md`](concepts.md#secrets--and-why-the-caution-is-worth-the-inconvenience), and prefer

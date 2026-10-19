@@ -70,7 +70,7 @@ account of why we are building the app.
 </table>
 
 Screenshots use fictional data and are generated from the current app and Storybook. Refresh them
-with `npm run capture:portfolio`; see the [portfolio publishing guide](docs/portfolio.md).
+with `pnpm run capture:portfolio`; see the [portfolio publishing guide](docs/portfolio.md).
 
 ## Caring for Guest Information
 
@@ -127,27 +127,27 @@ presentations using fictional guests. No account or backend setup is needed.
 Use Node.js 24 (see [.nvmrc](.nvmrc)):
 
 ```bash
-npm install
-VITE_LAUNCHDARKLY_DISABLED=true npm run dev
+pnpm install
+VITE_LAUNCHDARKLY_DISABLED=true pnpm run dev
 ```
 
 This starts the frontend. API-backed workflows need the Netlify runtime and local configuration;
-see [development and operations](docs/development.md) for `npm start`, fake data, Auth0, deployment,
+see [development and operations](docs/development.md) for `pnpm start`, fake data, Auth0, deployment,
 and notification setup.
 
 To explore components and their states independently:
 
 ```bash
-npx playwright install chromium # once, for browser tests and captures
-npm run storybook              # component workshop on port 6006
+pnpm exec playwright install chromium # once, for browser tests and captures
+pnpm run storybook              # component workshop on port 6006
 ```
 
 ## Verify Changes
 
 ```bash
-npm run checks                 # lint, formatting, diagrams, unit tests, build
-npm run test:storybook         # component rendering and interactions
-npm run test:e2e               # guest browser journeys
+pnpm run checks                 # lint, formatting, diagrams, unit tests, build
+pnpm run test:storybook         # component rendering and interactions
+pnpm run test:e2e               # guest browser journeys
 ```
 
 The [contributor guide](AGENTS.md) covers mobile-first design, localization, state management, and

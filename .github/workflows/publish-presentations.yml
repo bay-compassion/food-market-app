@@ -24,7 +24,7 @@ on:
       - 'public/brand.css'
       - 'public/brand-lockup*.png'
       - 'package.json'
-      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
       - '.nvmrc'
       - '.github/workflows/publish-presentations.yml'
   workflow_dispatch:
@@ -50,14 +50,16 @@ jobs:
         with:
           ref: ${{ github.sha }}
 
+      - uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Configure GitHub Pages
         id: pages
@@ -66,7 +68,7 @@ jobs:
       - uses: ./.github/actions/install-chromium
 
       - name: Refresh portfolio assets
-        run: npm run capture:portfolio
+        run: pnpm run capture:portfolio
 
       # The GSAP pages embed the committed soundtrack, and the guest guide its phone, which
       # Vite builds. Screenshots use Chromium; no speech model, GarageBand library, frame

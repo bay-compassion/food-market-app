@@ -106,10 +106,10 @@ missing translation isn't a small cosmetic gap — it's a guest who can't unders
 A _missing_ language entry is actually hard to ship by accident — this project is written in
 **TypeScript**, a version of JavaScript that checks the "shape" of your data before the code ever
 runs, and both locale files are set up so TypeScript checks that every language has every key.
-`npm run build` fails loudly if one is missing. What TypeScript can't catch is a key that was
+`pnpm run build` fails loudly if one is missing. What TypeScript can't catch is a key that was
 copy-pasted into another language instead of genuinely translated — for that, run
-**`npm run check:translations`** (`scripts/check-translations.js`), which flags any value that's
-still identical to the English text. Like `npm run checks` above, it's a plain script that works
+**`pnpm run check:translations`** (`scripts/check-translations.js`), which flags any value that's
+still identical to the English text. Like `pnpm run checks` above, it's a plain script that works
 the same for any agent or a human, not just Claude Code (which also has **`/check-translations`**
 as a shortcut for it).
 

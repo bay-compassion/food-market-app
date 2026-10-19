@@ -5,7 +5,7 @@ import { mergeConfig, defineConfig, configDefaults } from 'vitest/config';
 import viteConfig from './vite.config';
 
 /**
- * Unit tests, in jsdom, against the app's own Vite config. Run with `npm run test:unit`.
+ * Unit tests, in jsdom, against the app's own Vite config. Run with `pnpm run test:unit`.
  *
  * Story tests live in `vitest.config.ts` instead; see the note there for why the two are never
  * loaded together.

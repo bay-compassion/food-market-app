@@ -10,9 +10,9 @@
  * dashboard makes an admin type.
  *
  * Usage:
- *   npm run guest:delete -- --phone="925-555-0100"                          # find the guest
- *   npm run guest:delete -- --guest-id=<id>                                 # what would go
- *   npm run guest:delete -- --guest-id=<id> --confirm="925-555-0100"        # delete it
+ *   pnpm run guest:delete --phone="925-555-0100"                          # find the guest
+ *   pnpm run guest:delete --guest-id=<id>                                 # what would go
+ *   pnpm run guest:delete --guest-id=<id> --confirm="925-555-0100"        # delete it
  */
 
 import { parseArgs } from 'node:util';
@@ -25,7 +25,7 @@ import {
 	useDatabase,
 } from './database-connection.mjs';
 
-const usage = `Usage: npm run guest:delete -- [options]
+const usage = `Usage: pnpm run guest:delete [options]
 
   --phone=NUMBER     list the guests with this phone number (changes nothing)
   --guest-id=ID      show everything stored about this guest (changes nothing)
@@ -62,7 +62,7 @@ async function main() {
 	const connectionString =
 		resolveConnectionString() ??
 		raise(
-			'No database found. Set NETLIFY_DB_URL, or run `npm start` (`netlify dev`) in another ' +
+			'No database found. Set NETLIFY_DB_URL, or run `pnpm start` (`netlify dev`) in another ' +
 				'terminal to use the local database.',
 		);
 

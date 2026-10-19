@@ -19,7 +19,7 @@ function pluginName(plugin: unknown): string {
 }
 
 /**
- * Where `npm run capture:screenshots` writes its screenshots, served at `/screenshots` so a docs page can embed
+ * Where `pnpm run capture:screenshots` writes its screenshots, served at `/screenshots` so a docs page can embed
  * one with `<Screenshot id="…" />`. The capture names another folder through the environment when it is
  * asked to write elsewhere. It is made here if it is missing: a static folder that does not exist
  * when Storybook starts is one Storybook will not serve when it appears later.
