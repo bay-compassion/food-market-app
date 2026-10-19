@@ -222,6 +222,39 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA warehouse GRANT SELECT ON TABLES TO metabase_
 | Backfill of periods before the warehouse | Every settled period since the first session, 25 a day  |
 | Retirement period for identified records | Not proposed. A separate decision.                      |
 
+## Trial Runs Before Launch
+
+Snapshots of test sessions are worth nothing to a funder, so leave the switch off in production
+until launch. Demo tools can stay on until then. To try the routine before that, use either of
+these. Both are human steps.
+
+**On a deploy preview (nothing to clean up).** A deploy preview has its own database branch, copied
+from production when the branch first deployed, so a trial there never touches production.
+
+1. In the Netlify UI, set `ENABLE_WAREHOUSE_SNAPSHOTS` to `true` for the **Deploy Previews** context
+   only, then redeploy the preview.
+2. On the Functions page for that deploy, open `warehouse-snapshot` and click **Run now**. Scheduled
+   functions run on a schedule only in production, but **Run now** works on a preview.
+3. Read the `warehouse.run` log line, and look at the `warehouse` tables in the preview branch's
+   database.
+4. Remove the variable from the Deploy Previews context when you are done.
+
+**In production (then purge).** Set the variable for production, click **Run now** on the published
+deploy, inspect the tables, then remove the variable and empty the tables. Snapshots reference
+nothing else, so emptying them changes nothing outside the `warehouse` schema:
+
+```sql
+TRUNCATE warehouse.snapshots, warehouse.session_facts, warehouse.period_reach,
+  warehouse.period_composition, warehouse.period_lottery;
+```
+
+Each run writes at most 25 snapshots, so a trial captures only the oldest sessions and periods.
+**Run now** again to see more.
+
+**Before launch, clear out test sessions too.** When snapshots are turned on for real, the first
+runs backfill every ended session still in the database. A demo or test session that is still there
+comes back in the backfill, and only the period counts skip `fake` guests.
+
 ## Turning It On
 
 **These steps are a human's job.** Per [`migrations.md`](migrations.md#rules-for-ai-agents), an AI
@@ -230,9 +263,9 @@ agent must not merge the migration, run SQL against production, or set productio
 1. **Merge the pull request.** The `warehouse` schema's migration applies on the next production
    build, like every other. It is additive: a new schema and five new tables, nothing changed.
 2. **Check two things** the routine cannot undo once it has written:
-   - **Demo data.** Never turn snapshots on in a deploy that has `ENABLE_DEMO_DATA_TOOLS` on.
-     Period counts skip guests marked `fake`, but session and lottery figures come from the live
-     reports, which do not.
+   - **Demo data.** Turn `ENABLE_DEMO_DATA_TOOLS` off, and clear any demo or test sessions out of
+     the database. Period counts skip guests marked `fake`, but session and lottery figures come
+     from the live reports, which do not. If a trial ran in production, run the purge above too.
    - **Placeholder phones.** Linking records by phone is transitive, so a number typed for guests
      who have none, such as the church's, would merge them all into one household. Count normalized
      phones shared by more than a few distinct names, and fix or exclude them first:
@@ -245,8 +278,8 @@ agent must not merge the migration, run SQL against production, or set productio
      ```
 
 3. **Turn it on.** In the Netlify UI, set `ENABLE_WAREHOUSE_SNAPSHOTS` to `true`, scoped to
-   Functions, for the **production** context only. Scheduled functions run only on the published
-   production deploy, so deploy previews never write snapshots.
+   Functions, for the **production** context only. Scheduled functions run on a schedule only on the
+   published production deploy.
 4. **Watch the first runs.** Each run logs `warehouse.run` with how many snapshots it wrote and how
    many remain, 25 a day until the backfill reaches the present.
 
@@ -259,6 +292,7 @@ second. Periods are calendar months, quarters, and years only. Fiscal years wait
 ## Phases
 
 1. **Agree on this document.** Settle the open decisions above.
-2. **Turn it on** as above. The routine is already written and tested.
+2. **Trial runs**, if wanted, then **turn it on** at launch as above. The routine is already written
+   and tested.
 3. **Adopt.** Once the backfill has caught up, funder reports cite warehouse snapshots.
 4. **Retire identified records**, if and when a retention period is adopted.
