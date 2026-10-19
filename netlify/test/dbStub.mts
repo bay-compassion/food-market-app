@@ -67,6 +67,7 @@ function chain() {
 
 export const db = {
 	select: vi.fn(() => chain()),
+	selectDistinct: vi.fn(() => chain()),
 	insert: vi.fn(() => chain()),
 	update: vi.fn(() => chain()),
 	delete: vi.fn(() => chain()),
@@ -81,6 +82,7 @@ export function queueResult(result: unknown) {
 export function resetDbStub() {
 	queue.length = 0;
 	db.select.mockClear();
+	db.selectDistinct.mockClear();
 	db.insert.mockClear();
 	db.update.mockClear();
 	db.delete.mockClear();

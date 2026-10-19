@@ -83,6 +83,8 @@ and Twilio itself keeps blocking a number that replied STOP.
 
 ## What It Does Not Reach
 
+- **The `warehouse` schema.** Its snapshots are counts with no guest id, name, or phone, so there
+  is nothing about the guest in them to delete. See [`data-warehousing.md`](data-warehousing.md).
 - **Database backups.** Neon's point-in-time recovery keeps earlier copies until its retention
   window passes (see the backups TODO in [`migrations.md`](migrations.md)).
 - **Netlify Blobs.** A name tag waiting at the print station and the cached market overview expire
@@ -97,6 +99,8 @@ and Twilio itself keeps blocking a number that replied STOP.
 
 Reports are computed from the visits that remain, so deleting a guest changes past numbers:
 served counts, unique guests, and the "Who was served" breakdown for every period they attended.
-A report already sent to a funder will no longer reproduce exactly. If that matters more than
-removing the visits, the alternative is to anonymize the guest instead — blank their name, phone,
-notes and answers while keeping the visit counts — which the app does not do yet.
+A report already sent to a funder will no longer reproduce exactly from the live screen. Once
+warehouse snapshots are being taken, cite those instead, because a deletion does not change them.
+The other way to keep live numbers stable is to anonymize the guest instead of deleting them —
+blank their name, phone, notes and answers while keeping the visit counts — which the app does not
+do yet.

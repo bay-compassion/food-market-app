@@ -236,6 +236,14 @@ A few things the diagram can't show on its own:
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.
 
+## The warehouse schema
+
+The diagram covers the operational tables in the `public` schema. The same database also holds a
+`warehouse` schema of frozen, aggregate snapshots (`snapshots`, `session_facts`, `period_reach`,
+`period_composition`, `period_lottery`), defined in
+[`../db/warehouse-schema.mts`](../db/warehouse-schema.mts). It holds no guest or visit ids and
+references none of the tables above. See [`data-warehousing.md`](data-warehousing.md).
+
 ## Keeping the diagrams honest
 
 Each diagram document starts with a `diagram-sources` comment listing the files it was drawn from
