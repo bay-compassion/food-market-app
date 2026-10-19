@@ -1,6 +1,6 @@
 import { and, eq, gte, isNotNull, lt, min } from 'drizzle-orm';
 
-import type { db as liveDb } from '../../db/index.mjs';
+import type { db as appDb } from '../../db/index.mjs';
 import { guests, marketEvents, marketLocations, visits } from '../../db/schema.mjs';
 import {
 	periodComposition,
@@ -9,7 +9,6 @@ import {
 	sessionFacts,
 	snapshots,
 } from '../../db/warehouse-schema.mjs';
-import type { WarehouseDb } from '../../db/warehouse.mjs';
 import { GuestReconciliation, type GuestIdentity } from '../../src/models/guest-reconciliation.js';
 import { PeriodReach } from '../../src/models/period-reach.js';
 import { SnapshotSchedule, type DueSnapshot } from '../../src/models/snapshot-schedule.js';
@@ -30,9 +29,10 @@ export const settleDays = 7;
  */
 export const maxSnapshotsPerRun = 25;
 
-type LiveDb = typeof liveDb;
+type Database = typeof appDb;
+type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
-/** Live-database facts shared by every period snapshot in one run, loaded once and only if needed. */
+/** Operational facts shared by every period snapshot in one run, loaded once and only if needed. */
 type GuestHistory = { reconciliation: GuestReconciliation; firstServed: Map<string, Date> };
 
 /**
@@ -55,19 +55,18 @@ function column(row: ReportRow | undefined, key: string): number | null {
 const count = (row: ReportRow | undefined, key: string) => column(row, key) ?? 0;
 
 /**
- * Writes the warehouse snapshots that are due, reading the live database and writing only
- * aggregates. See `docs/data-warehousing.md`.
+ * Writes the warehouse snapshots that are due: reads the operational tables and writes only
+ * aggregates to the `warehouse` schema beside them. See `docs/data-warehousing.md`.
  *
- * Each snapshot is written in its own warehouse transaction, and its insert does nothing when the
- * snapshot already exists, so two overlapping runs or a run retried after a failure cannot write
- * one twice. The warehouse role cannot update or delete, so nothing here tries to.
+ * Each snapshot is written in its own transaction, and its insert does nothing when the snapshot
+ * already exists, so two overlapping runs or a run retried after a failure cannot write one twice.
+ * Nothing here updates or deletes a warehouse row; a correction is a new revision.
  */
 export class WarehouseSnapshotter {
 	private history: GuestHistory | null = null;
 
 	constructor(
-		private readonly live: LiveDb,
-		private readonly warehouse: WarehouseDb,
+		private readonly db: Database,
 		private readonly now: Date = new Date(),
 	) {}
 
@@ -78,15 +77,13 @@ export class WarehouseSnapshotter {
 			return { written: 0, remaining: 0 };
 		}
 
-		const [endedSessions, taken] = await Promise.all([
-			this.live
-				.select({ opensAt: marketEvents.registrationOpensAt })
-				.from(marketEvents)
-				.where(eq(marketEvents.status, 'ended')),
-			this.warehouse
-				.select({ kind: snapshots.kind, periodStart: snapshots.periodStart })
-				.from(snapshots),
-		]);
+		const endedSessions = await this.db
+			.select({ opensAt: marketEvents.registrationOpensAt })
+			.from(marketEvents)
+			.where(eq(marketEvents.status, 'ended'));
+		const taken = await this.db
+			.select({ kind: snapshots.kind, periodStart: snapshots.periodStart })
+			.from(snapshots);
 		const due = new SnapshotSchedule(
 			endedSessions.map((session) => session.opensAt),
 			taken,
@@ -115,7 +112,7 @@ export class WarehouseSnapshotter {
 	 * second location is a failure to report, not something to guess around.
 	 */
 	private async marketTimeZone(): Promise<string | null> {
-		const locations = await this.live
+		const locations = await this.db
 			.select({ timeZone: marketLocations.timeZone })
 			.from(marketLocations);
 
@@ -126,7 +123,7 @@ export class WarehouseSnapshotter {
 		return locations[0]?.timeZone ?? null;
 	}
 
-	/** Every report row is mapped before the warehouse is touched, so a mapping error writes nothing. */
+	/** Every report row is mapped before anything is written, so a mapping error writes nothing. */
 	private async write(snapshot: DueSnapshot): Promise<boolean> {
 		const range = { start: snapshot.start, end: snapshot.end };
 
@@ -178,13 +175,10 @@ export class WarehouseSnapshotter {
 	/** Inserts the snapshot row and its facts together; false when the snapshot already existed. */
 	private insert(
 		snapshot: DueSnapshot,
-		facts: (
-			tx: Parameters<Parameters<WarehouseDb['transaction']>[0]>[0],
-			id: string,
-		) => Promise<void>,
+		facts: (tx: Transaction, id: string) => Promise<void>,
 	): Promise<boolean> {
 		return tracedQuery('warehouse.write_snapshot', () =>
-			this.warehouse.transaction(async (tx) => {
+			this.db.transaction(async (tx) => {
 				const [inserted] = await tx
 					.insert(snapshots)
 					.values({
@@ -210,7 +204,7 @@ export class WarehouseSnapshotter {
 
 	private servedVisits({ start, end }: { start: Date; end: Date }) {
 		return tracedQuery('warehouse.read_served_visits', () =>
-			this.live
+			this.db
 				.select({
 					guestId: visits.guestId,
 					marketEventId: visits.marketEventId,
@@ -238,7 +232,7 @@ export class WarehouseSnapshotter {
 	/**
 	 * Reconciliation reads every guest record and every phone their visits were made with, since
 	 * two records in a period can be linked only through a third outside it. Names and phones stay
-	 * in this function's memory; only counts reach the warehouse.
+	 * in this function's memory; only counts reach the warehouse tables.
 	 */
 	private async guestHistory(): Promise<GuestHistory> {
 		if (this.history) {
@@ -247,7 +241,7 @@ export class WarehouseSnapshotter {
 
 		const [records, visitPhones, firsts] = await tracedQuery('warehouse.read_guest_history', () =>
 			Promise.all([
-				this.live
+				this.db
 					.select({
 						guestId: guests.id,
 						firstName: guests.firstName,
@@ -256,11 +250,11 @@ export class WarehouseSnapshotter {
 					})
 					.from(guests)
 					.where(eq(guests.fake, false)),
-				this.live
+				this.db
 					.selectDistinct({ guestId: visits.guestId, phone: visits.normalizedPhone })
 					.from(visits)
 					.where(isNotNull(visits.normalizedPhone)),
-				this.live
+				this.db
 					.select({
 						guestId: visits.guestId,
 						first: min(marketEvents.registrationOpensAt),

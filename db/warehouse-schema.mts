@@ -1,7 +1,7 @@
 import {
 	doublePrecision,
 	integer,
-	pgTable,
+	pgSchema,
 	primaryKey,
 	text,
 	timestamp,
@@ -12,18 +12,20 @@ import {
 import type { SnapshotKind } from '../src/models/snapshot-schedule.js';
 
 /**
- * The long-term warehouse: frozen, anonymous, aggregate numbers, in a database of its own. See
- * `docs/data-warehousing.md`.
+ * The long-term warehouse: frozen, anonymous, aggregate numbers, in their own `warehouse` Postgres
+ * schema inside the app's database. See `docs/data-warehousing.md`.
  *
  * Nothing here identifies a guest — no names, phones, guest or visit ids, credentials, or free
- * text — and nothing here is ever updated or deleted. The scheduled writer's database role holds
- * `INSERT` and `SELECT` only, so a correction is a new snapshot that names the one it supersedes.
+ * text — and nothing here is ever updated or deleted: a correction is a new snapshot with the next
+ * revision that names the one it supersedes. Nothing references the app's own tables either, so
+ * deleting a guest or a session never reaches a snapshot.
  *
- * These tables are not in `netlify/database/migrations/`, which applies to the app's own database
- * on every deploy. Their migrations live in `db/warehouse-migrations/` and a human applies them.
+ * Kept out of `schema.mts`, which describes the operational tables. The migration that creates
+ * these is hand-written in `netlify/database/migrations/` like every other.
  */
+export const warehouse = pgSchema('warehouse');
 
-export const snapshots = pgTable(
+export const snapshots = warehouse.table(
 	'snapshots',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
@@ -51,7 +53,7 @@ export const snapshots = pgTable(
 );
 
 /** One session as it ended: the Session Summary and Service Timing reports, frozen. */
-export const sessionFacts = pgTable('session_facts', {
+export const sessionFacts = warehouse.table('session_facts', {
 	snapshotId: uuid('snapshot_id')
 		.primaryKey()
 		.references(() => snapshots.id),
@@ -68,7 +70,7 @@ export const sessionFacts = pgTable('session_facts', {
 });
 
 /** How many people and households one period reached, unduplicated within the period. */
-export const periodReach = pgTable('period_reach', {
+export const periodReach = warehouse.table('period_reach', {
 	snapshotId: uuid('snapshot_id')
 		.primaryKey()
 		.references(() => snapshots.id),
@@ -84,7 +86,7 @@ export const periodReach = pgTable('period_reach', {
 });
 
 /** Who a period served, by age band, household size band, and language: one row per value. */
-export const periodComposition = pgTable(
+export const periodComposition = warehouse.table(
 	'period_composition',
 	{
 		snapshotId: uuid('snapshot_id')
@@ -98,7 +100,7 @@ export const periodComposition = pgTable(
 );
 
 /** Lottery entries and placements in a period, by the odds each entry carried. */
-export const periodLottery = pgTable(
+export const periodLottery = warehouse.table(
 	'period_lottery',
 	{
 		snapshotId: uuid('snapshot_id')

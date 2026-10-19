@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe('snapshotWarehouse', () => {
-	it('does nothing until a warehouse connection is configured', async () => {
+	it('does nothing until snapshots are turned on', async () => {
 		// Arrange
 		const env = {};
 

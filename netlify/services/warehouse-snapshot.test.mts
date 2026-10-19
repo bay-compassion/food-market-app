@@ -28,78 +28,62 @@ const summaryRow = {
 	fillRate: 93.3,
 };
 
-/**
- * Stands in for the warehouse database: records each insert by table, and answers the snapshot
- * insert with a fresh id unless `existing` says that snapshot is already there.
- */
-function fakeWarehouse(existing: { kind: string; periodStart: Date }[] = []) {
-	const inserts = new Map<unknown, unknown[]>();
-	let ids = 0;
-	const tx = {
-		insert: (table: unknown) => ({
-			values: (values: Record<string, unknown> | Record<string, unknown>[]) => {
-				const rows = Array.isArray(values) ? values : [values];
-				const duplicate =
-					table === snapshots &&
-					existing.some(
-						(snapshot) =>
-							snapshot.kind === rows[0]!.kind &&
-							snapshot.periodStart.getTime() === (rows[0]!.periodStart as Date).getTime(),
-					);
+/** Every row handed to `insert(table).values(...)` for one table, in order. */
+function insertedInto(table: unknown) {
+	return (db.insert.mock.calls as unknown[][]).flatMap(([inserted], index) => {
+		if (inserted !== table) {
+			return [];
+		}
 
-				if (!duplicate) {
-					inserts.set(table, [...(inserts.get(table) ?? []), ...rows]);
-				}
+		const { values } = db.insert.mock.results[index]!.value as { values: ReturnType<typeof vi.fn> };
 
-				const inserted = table === snapshots && !duplicate ? [{ id: `snapshot-${++ids}` }] : [];
-				const result = Promise.resolve(inserted);
-
-				return Object.assign(result, {
-					onConflictDoNothing: () => ({ returning: () => result }),
-				});
-			},
-		}),
-	};
-	const warehouse = {
-		select: () => ({ from: () => Promise.resolve(existing) }),
-		transaction: (callback: (transaction: typeof tx) => unknown) => callback(tx),
-	};
-
-	return { warehouse: warehouse as never, inserts };
+		return values.mock.calls.flatMap(([rows]) => (Array.isArray(rows) ? rows : [rows]));
+	});
 }
 
-/** The live reads for one location with one ended session and its two snapshotted periods. */
-function queueLiveReads(summary: Record<string, unknown> = summaryRow) {
+const served = [
+	{
+		guestId: 'desk',
+		marketEventId: 'event-1',
+		sessionOpensAt: saturday,
+		ageRange: '30-44',
+		householdSize: 3,
+		childrenCount: 1,
+		seniorsCount: 0,
+		locale: 'es',
+	},
+	{
+		guestId: 'phone',
+		marketEventId: 'event-1',
+		sessionOpensAt: saturday,
+		ageRange: '30-44',
+		householdSize: 3,
+		childrenCount: 1,
+		seniorsCount: 0,
+		locale: 'es',
+	},
+];
+
+/** What a run reads before it writes anything: one location, one ended session, no snapshots. */
+function queueSchedule() {
 	queueResult([{ timeZone: zone }]);
 	queueResult([{ opensAt: saturday }]);
-	// The session: summary, then service timing (nobody timed, so no row).
-	queueResult({ rows: [summary] });
+	queueResult([]);
+}
+
+/**
+ * Every read and write of a run over one ended session, in the order the run makes them: the
+ * session, then September, then the third quarter. Writes answer like Postgres: the snapshot insert
+ * returns its id, and a facts insert returns nothing.
+ */
+function queueRun() {
+	queueSchedule();
+	// The session: summary, then service timing (nobody timed, so no row), then its writes.
+	queueResult({ rows: [summaryRow] });
 	queueResult({ rows: [] });
-
-	const served = [
-		{
-			guestId: 'desk',
-			marketEventId: 'event-1',
-			sessionOpensAt: saturday,
-			ageRange: '30-44',
-			householdSize: 3,
-			childrenCount: 1,
-			seniorsCount: 0,
-			locale: 'es',
-		},
-		{
-			guestId: 'phone',
-			marketEventId: 'event-1',
-			sessionOpensAt: saturday,
-			ageRange: '30-44',
-			householdSize: 3,
-			childrenCount: 1,
-			seniorsCount: 0,
-			locale: 'es',
-		},
-	];
-
-	// September: served visits, lottery, then the guest history read once for the whole run.
+	queueResult([{ id: 'snapshot-1' }]);
+	queueResult([]);
+	// September: served visits, lottery, the guest history read once for the run, then its writes.
 	queueResult(served);
 	queueResult({ rows: [] });
 	queueResult([
@@ -111,9 +95,15 @@ function queueLiveReads(summary: Record<string, unknown> = summaryRow) {
 		{ guestId: 'desk', first: saturday },
 		{ guestId: 'phone', first: saturday },
 	]);
+	queueResult([{ id: 'snapshot-2' }]);
+	queueResult([]);
+	queueResult([]);
 	// The third quarter reuses the history.
 	queueResult(served);
 	queueResult({ rows: [] });
+	queueResult([{ id: 'snapshot-3' }]);
+	queueResult([]);
+	queueResult([]);
 }
 
 afterEach(() => {
@@ -123,20 +113,19 @@ afterEach(() => {
 describe('WarehouseSnapshotter.run', () => {
 	it('freezes a settled session and the periods it falls in', async () => {
 		// Arrange
-		queueLiveReads();
-		const { warehouse, inserts } = fakeWarehouse();
+		queueRun();
 
 		// Act
-		const result = await new WarehouseSnapshotter(db as never, warehouse, now).run();
+		const result = await new WarehouseSnapshotter(db as never, now).run();
 
 		// Assert
 		expect(result).toEqual({ written: 3, remaining: 0 });
-		expect(inserts.get(snapshots)).toMatchObject([
+		expect(insertedInto(snapshots)).toMatchObject([
 			{ kind: 'session', periodStart: saturday, timeZone: zone },
 			{ kind: 'month', periodStart: new Date('2026-09-01T07:00:00.000Z') },
 			{ kind: 'quarter', periodStart: new Date('2026-07-01T07:00:00.000Z') },
 		]);
-		expect(inserts.get(sessionFacts)).toEqual([
+		expect(insertedInto(sessionFacts)).toEqual([
 			{
 				snapshotId: 'snapshot-1',
 				capacity: 30,
@@ -150,7 +139,7 @@ describe('WarehouseSnapshotter.run', () => {
 				untimed: 0,
 			},
 		]);
-		expect(inserts.get(periodReach)![0]).toMatchObject({
+		expect(insertedInto(periodReach)[0]).toMatchObject({
 			snapshotId: 'snapshot-2',
 			visitsServed: 2,
 			uniquePeople: 1,
@@ -158,7 +147,7 @@ describe('WarehouseSnapshotter.run', () => {
 			householdMembers: 3,
 			firstTimePeople: 1,
 		});
-		expect(inserts.get(periodComposition)).toContainEqual({
+		expect(insertedInto(periodComposition)).toContainEqual({
 			snapshotId: 'snapshot-2',
 			category: 'language',
 			value: 'es',
@@ -170,27 +159,27 @@ describe('WarehouseSnapshotter.run', () => {
 		// Arrange
 		const { walkIns: _renamed, ...summary } = summaryRow;
 
-		queueLiveReads(summary);
-		const { warehouse, inserts } = fakeWarehouse();
+		queueSchedule();
+		queueResult({ rows: [summary] });
+		queueResult({ rows: [] });
 
 		// Act
-		const run = new WarehouseSnapshotter(db as never, warehouse, now).run();
+		const run = new WarehouseSnapshotter(db as never, now).run();
 
 		// Assert
 		await expect(run).rejects.toThrow(/walkIns/);
-		expect(inserts.size).toBe(0);
+		expect(db.insert).not.toHaveBeenCalled();
 	});
 
 	it('writes nothing while no location exists', async () => {
 		// Arrange
 		queueResult([]);
-		const { warehouse, inserts } = fakeWarehouse();
 
 		// Act
-		const result = await new WarehouseSnapshotter(db as never, warehouse, now).run();
+		const result = await new WarehouseSnapshotter(db as never, now).run();
 
 		// Assert
 		expect(result).toEqual({ written: 0, remaining: 0 });
-		expect(inserts.size).toBe(0);
+		expect(db.insert).not.toHaveBeenCalled();
 	});
 });
