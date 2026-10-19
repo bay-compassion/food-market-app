@@ -11,7 +11,7 @@ export function readRigState(): RigState {
 	const path = process.env.QUEUE_RIG_STATE;
 
 	if (!path) {
-		throw new Error('Run queue tests through npm run test:e2e:queue.');
+		throw new Error('Run queue tests through pnpm run test:e2e:queue.');
 	}
 	const state = JSON.parse(readFileSync(path, 'utf8')) as RigState;
 

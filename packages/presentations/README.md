@@ -72,7 +72,7 @@ the build blanks out its types with [ts-blank-space](https://github.com/bloomber
 which leaves every line where it was, and inlines each one under a `sourceURL`. So it imports
 nothing at runtime — only `import type`, which disappears — and a page reaches the stage through
 `window.stage`. Its types are checked by `tsconfig.pages.json`; the scripts' by
-`tsconfig.scripts.json`. Both run with `npm run type-check` from the root.
+`tsconfig.scripts.json`. Both run with `pnpm run type-check` from the root.
 
 ## Editing
 
@@ -132,7 +132,7 @@ packages/presentations/out/encode packages/presentations/out/queue-desk/frames \
 
 `capture.ts` takes about five minutes a minute of video; encoding takes under a minute. Pass a
 bitrate as a fifth argument to `encode` for a smaller copy — `2900000` brings the reel under 25 MB.
-The scripts need `npx playwright install chromium` once, and recording and encoding need macOS.
+The scripts need `pnpm exec playwright install chromium` once, and recording and encoding need macOS.
 
 ## Narration
 

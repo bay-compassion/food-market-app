@@ -15,26 +15,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Check formatting
-        run: npm run format:check
+        run: pnpm run format:check
 
       - name: Check diagrams
-        run: npm run check:diagrams
+        run: pnpm run check:diagrams
 
       - name: Test
-        run: npm run test:unit
+        run: pnpm run test:unit
 
   # Every browser test except the `@large` ones, against the Vite dev server with API responses
   # stubbed by each spec. The queue rig (`@large`) runs from `e2e-large.yml` on demand instead.
@@ -45,26 +47,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - uses: ./.github/actions/install-chromium
 
       - name: Test small and medium browser specs
-        run: npm run test:e2e -- --grep-invert @large
+        run: pnpm run test:e2e --grep-invert @large
         env:
           # The app will not start without a client ID. Any value will do: specs that depend on a
           # flag pin it by intercepting LaunchDarkly's requests, and the rest read flag defaults.
           VITE_LAUNCHDARKLY_CLIENT_ID: e2e-placeholder
 
       - name: Capture portfolio assets
-        run: npm run capture:portfolio
+        run: pnpm run capture:portfolio
 
       - name: Upload portfolio images
         uses: actions/upload-artifact@v4
@@ -84,7 +88,7 @@ jobs:
           retention-days: 7
 
   # Every story rendered in headless Chromium, with its `play` function run: the same run as
-  # `npm run test:storybook` and Storybook's testing panel.
+  # `pnpm run test:storybook` and Storybook's testing panel.
   storybook:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -92,16 +96,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - uses: ./.github/actions/install-chromium
 
       - name: Test stories
-        run: npm run test:storybook
+        run: pnpm run test:storybook

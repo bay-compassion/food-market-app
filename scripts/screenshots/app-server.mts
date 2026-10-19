@@ -19,7 +19,7 @@ export class AppServer {
 		private readonly vite?: ViteDevServer,
 	) {}
 
-	/** Adopts an already-running `npm run dev`, which is how you want to work while iterating. */
+	/** Adopts an already-running `pnpm run dev`, which is how you want to work while iterating. */
 	static existing(baseUrl: string): AppServer {
 		return new AppServer(baseUrl.replace(/\/$/, ''));
 	}

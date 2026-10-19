@@ -1,12 +1,12 @@
 # The review document
 
-`npm run capture:screenshots` builds a PDF for people who will mark it up rather than run the app: a
+`pnpm run capture:screenshots` builds a PDF for people who will mark it up rather than run the app: a
 stakeholder who reads a section, writes a copy change in the margin, and hands the pages back. It
 needs no app, Storybook, or code editor on their end.
 
 ```bash
-npx playwright install chromium   # once
-npm run capture:screenshots
+pnpm exec playwright install chromium   # once
+pnpm run capture:screenshots
 open screenshots/review.pdf
 ```
 
@@ -140,8 +140,8 @@ Storybook is started for the pages and shut down as soon as they are printed. Wh
 a page, leave your own running and point the capture at it:
 
 ```bash
-npm run storybook                                                 # in one terminal
-npm run capture:screenshots -- --storybook-url http://localhost:6006
+pnpm run storybook                                                 # in one terminal
+pnpm run capture:screenshots --storybook-url http://localhost:6006
 ```
 
 A Storybook you started yourself serves screenshots from `screenshots/png`. If you write them somewhere else
@@ -151,11 +151,11 @@ Naming a screenshot captures only that one and builds no document, which is what
 quick:
 
 ```bash
-npm run capture:screenshots -- --screenshot cancel-asked
-npm run capture:screenshots -- --help          # lists the screenshots
+pnpm run capture:screenshots --screenshot cancel-asked
+pnpm run capture:screenshots --help          # lists the screenshots
 ```
 
-Likewise for the app, with your own `npm run dev`: `--app-url http://localhost:5173`.
+Likewise for the app, with your own `pnpm run dev`: `--app-url http://localhost:5173`.
 
 ## Options
 
@@ -169,7 +169,7 @@ Likewise for the app, with your own `npm run dev`: `--app-url http://localhost:5
 | `--locale <code>`       | `en`          | Language of every screen and story                               |
 | `--storybook-url <url>` | —             | Use a Storybook already running                                  |
 | `--storybook-port <n>`  | `6100`        | Port to start Storybook on                                       |
-| `--app-url <url>`       | —             | Use an app already running (`npm run dev`)                       |
+| `--app-url <url>`       | —             | Use an app already running (`pnpm run dev`)                      |
 | `--port <n>`            | `5180`        | Port to start the app on                                         |
 | `--settle <ms>`         | `350`         | Pause after each screenshot renders, before it is captured       |
 | `--scale <n>`           | `2`           | Device pixel ratio of the screenshots                            |
@@ -180,6 +180,6 @@ Each section prints its page and figure counts, so a page that came up short of 
 written with shows in the output. A `~` beside a screenshot means its page was taller than can be read
 legibly and shows only the top of it.
 
-Browsers are not part of `npm run checks`, for the same reason `test:e2e` and `test:storybook` are
+Browsers are not part of `pnpm run checks`, for the same reason `test:e2e` and `test:storybook` are
 not: a fresh clone should not need browser binaries. `CHROMIUM_EXECUTABLE_PATH` points the capture
 at a browser of your own, for an environment where Playwright cannot fetch its pinned build.

@@ -83,7 +83,7 @@ export async function requirePermission(
 	request: Request,
 	permission: Permission,
 	verifiedPermissions?: Permission[],
-) {
+): Promise<Response | null> {
 	let permissions = verifiedPermissions;
 
 	try {

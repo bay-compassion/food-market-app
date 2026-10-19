@@ -8,8 +8,8 @@ under `/presentations/market-day-reel/`, `/presentations/guest-guide/`, and
 ## Refresh the Screenshots
 
 ```bash
-npx playwright install chromium # once
-npm run capture:portfolio
+pnpm exec playwright install chromium # once
+pnpm run capture:portfolio
 ```
 
 The command starts isolated Vite and Storybook servers on ports 5198 and 6098 and closes them when
@@ -46,7 +46,7 @@ features.
 
 The social card's `:root` defines `--social-background`, `--social-text`, and `--social-accent`;
 the accent defaults to white from the current teal-and-white brand palette. Update those mappings
-when the brand guidelines change, then run `npm run capture:portfolio` to regenerate the PNG.
+when the brand guidelines change, then run `pnpm run capture:portfolio` to regenerate the PNG.
 The landing page uses `--brand-accent` for decoration and a separate `--focus-color` for visible
 keyboard focus. Amber is a functional visibility cue, not a decorative brand color.
 

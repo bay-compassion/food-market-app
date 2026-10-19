@@ -5,7 +5,7 @@
 A test is a small script that runs part of the app and checks the result against what's expected
 — for example, "if someone submits a malformed device token, the server should reject it,"
 or "an admin action should require login." Every file ending in `.test.ts` in this repo is a
-collection of checks like that. Running `npm run test:unit -- --run` runs all of them and reports
+collection of checks like that. Running `pnpm run test:unit --run` runs all of them and reports
 which passed and which failed.
 
 ## Why this matters more, not less, when you're not the one writing the code
@@ -47,14 +47,14 @@ change to go green.
 ## How to run them
 
 ```bash
-npm run test:unit -- --run
+pnpm run test:unit --run
 ```
 
 This is also one of the four checks listed in [`AGENTS.md`](../AGENTS.md) that should pass before
 any change is considered finished — an agent following that file's instructions should already be
 running it, but it costs nothing to run it yourself and see the same pass/fail summary.
 
-You can also run all four in one go with **`npm run checks`** (`scripts/checks.js`), which prints a
+You can also run all four in one go with **`pnpm run checks`** (`scripts/checks.js`), which prints a
 clear pass/fail summary instead of you having to run and interpret each command yourself. It's a
 plain script, not tied to any particular AI tool — it works the same whether you type it yourself,
 Codex runs it, or Claude Code does. If you're working with Claude Code specifically, typing

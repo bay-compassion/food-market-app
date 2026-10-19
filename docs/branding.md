@@ -64,7 +64,7 @@ remain outside the public repository.
 
 ## Raster Derivatives
 
-Run `npx tsx scripts/generate-brand-assets.mts` to regenerate the compatibility PNGs from the SVGs.
+Run `pnpm exec tsx scripts/generate-brand-assets.mts` to regenerate the compatibility PNGs from the SVGs.
 It requires the project’s Playwright Chromium installation. It produces:
 
 - `bay-compassion-logo.png`: digital icon with opaque white counters and transparent corners, preserving the URL used by Auth0 and other consumers.
@@ -82,4 +82,4 @@ logo to `logo.svg` for its HTML lockups.
 The kit’s photographs have no direct counterpart among the repo’s UI screenshots. They, the
 crests, and the tagline graphic have no automatic editorial placement. The QR artwork and map data
 are functional assets and retain their contents. Unreferenced older `docs/images/` screenshots are
-historical captures; current README and portfolio images are regenerated with `npm run capture:portfolio`.
+historical captures; current README and portfolio images are regenerated with `pnpm run capture:portfolio`.

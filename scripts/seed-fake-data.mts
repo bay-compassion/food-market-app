@@ -3,14 +3,14 @@
 /**
  * Fills a database with fake market history so the admin screens, the reports, and the CSV export
  * have something realistic to show. Written for the throwaway Postgres that `netlify dev`
- * provisions locally, so leave `npm start` running in another terminal — that database lives
+ * provisions locally, so leave `pnpm start` running in another terminal — that database lives
  * inside the dev server process and is only reachable while it is up.
  *
  * Usage:
- *   npm run seed                                # 12 past weekly sessions, 120 guests
- *   npm run seed -- --sessions=26 --guests=300  # a longer history
- *   npm run seed -- --open-session              # also open a session for registration today
- *   npm run seed -- --reset                     # delete every existing row first
+ *   pnpm run seed                                # 12 past weekly sessions, 120 guests
+ *   pnpm run seed --sessions=26 --guests=300  # a longer history
+ *   pnpm run seed --open-session              # also open a session for registration today
+ *   pnpm run seed --reset                     # delete every existing row first
  *
  * Runs append: use `--reset` for a clean slate.
  */
@@ -27,7 +27,7 @@ import {
 } from './database-connection.mjs';
 import { buildFakeData, type FakeData } from './fake-data.mjs';
 
-const usage = `Usage: npm run seed -- [options]
+const usage = `Usage: pnpm run seed [options]
 
   --sessions=N     past weekly sessions to generate (default 12)
   --guests=N       size of the guest pool (default 120)
@@ -108,7 +108,7 @@ async function main() {
 
 	if (!connectionString) {
 		throw new Error(
-			'No database found. Run `npm start` (`netlify dev`) in another terminal so it provisions ' +
+			'No database found. Run `pnpm start` (`netlify dev`) in another terminal so it provisions ' +
 				'the local database, then run this again — or point NETLIFY_DB_URL at a database ' +
 				'yourself.',
 		);

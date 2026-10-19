@@ -5,7 +5,7 @@
  *
  * TypeScript already guarantees every language in src/locales.ts and src/adminLocales.ts has
  * every key (both are declared `satisfies Record<Locale, Translation>`), so a *missing* key
- * can't ship silently — `npm run build` fails first. What this catches instead is a value that's
+ * can't ship silently — `pnpm run build` fails first. What this catches instead is a value that's
  * still character-for-character identical to English, a strong sign it was copied rather than
  * translated.
  *
@@ -18,7 +18,7 @@
  *
  * Usage:
  *   node scripts/check-translations.js
- *   npm run check:translations
+ *   pnpm run check:translations
  */
 
 const KNOWN_EXCEPTIONS = new Set(['The Bay Compassion']);

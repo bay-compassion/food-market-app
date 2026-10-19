@@ -6,7 +6,7 @@
  * script never creates a guest or SMS subscription in production (or in a local database).
  *
  * Usage:
- *   npm run capture:twilio
+ *   pnpm run capture:twilio
  */
 
 import { mkdir } from 'node:fs/promises';

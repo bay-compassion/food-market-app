@@ -11,7 +11,7 @@
  * A narrated video also gets its `voiceTrack`: the same mix with only the voice parts playing.
  *
  * Needs GarageBand's loop library installed (`/Library/Audio/Apple Loops`), macOS's `afconvert`,
- * a built page (for the reel's length), and `npx playwright install chromium` once. The mixing
+ * a built page (for the reel's length), and `pnpm exec playwright install chromium` once. The mixing
  * runs in Chromium's Web Audio engine, which is also what plays the loops back faster for tempo.
  *
  * Apple's licence lets the mixed track ship in the reel; the loops themselves must not be

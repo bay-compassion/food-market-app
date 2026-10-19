@@ -247,8 +247,8 @@ references none of the tables above. See [`data-warehousing.md`](data-warehousin
 ## Keeping the diagrams honest
 
 Each diagram document starts with a `diagram-sources` comment listing the files it was drawn from
-and a fingerprint of each. `npm run check:diagrams` recomputes those fingerprints and fails when one
+and a fingerprint of each. `pnpm run check:diagrams` recomputes those fingerprints and fails when one
 has changed, so a schema edit can't quietly leave this page describing a database that no longer
 exists. After reviewing (and fixing, if needed) the diagram, run
-`npm run check:diagrams -- --update` to record that it was checked. `npm run checks` runs this
+`pnpm run check:diagrams --update` to record that it was checked. `pnpm run checks` runs this
 alongside the other pre-merge checks.

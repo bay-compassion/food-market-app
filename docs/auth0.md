@@ -29,7 +29,7 @@ Shell environment variables take precedence over values loaded from these files.
 ## Pull dashboard changes into the repository
 
 ```bash
-npm run auth0:export
+pnpm run auth0:export
 ```
 
 The command reads the source tenant and writes `infrastructure/auth0/export/tenant.yaml`. The
@@ -48,8 +48,8 @@ deletion if deletion is ever enabled.
 ## Preview and push reviewed changes
 
 ```bash
-npm run auth0:plan
-npm run auth0:import
+pnpm run auth0:plan
+pnpm run auth0:import
 ```
 
 Both commands use only `infrastructure/auth0/tenant/tenant.yaml`, never the unreviewed export.
@@ -88,6 +88,6 @@ whole export to fail. If the app begins using an excluded resource, extend `AUTH
 deliberately and grant the corresponding Management API scopes. Do not combine it with
 `AUTH0_EXCLUDED`.
 
-Run `npm run auth0:export -- --help` to see command help. If an export fails because of a missing
+Run `pnpm run auth0:export --help` to see command help. If an export fails because of a missing
 scope, grant the indicated read scope and rerun; do not treat a failed or partial export as the
 current tenant configuration.

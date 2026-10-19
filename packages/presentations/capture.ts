@@ -6,7 +6,7 @@
  *   node packages/presentations/capture.ts
  *   node packages/presentations/capture.ts queue-desk
  *
- * About five minutes a minute of video. Needs `npx playwright install chromium` once.
+ * About five minutes a minute of video. Needs `pnpm exec playwright install chromium` once.
  */
 import { mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';

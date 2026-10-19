@@ -4,12 +4,12 @@ allowed-tools: Bash
 ---
 
 This runs `scripts/checks.js` — a plain Node script, not something Claude-specific, so any agent
-or a human can run the exact same thing via `npm run checks`. This command is just a shortcut for
+or a human can run the exact same thing via `pnpm run checks`. This command is just a shortcut for
 it in Claude Code.
 
-Output of `npm run checks`:
+Output of `pnpm run checks`:
 
-!`npm run checks`
+!`pnpm run checks`
 
 Summarize the result for the user in plain language. If it failed, do not silently work around
 it — don't delete or loosen a failing test, don't disable a lint rule, and don't change a check's

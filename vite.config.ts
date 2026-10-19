@@ -9,7 +9,7 @@ import { launchDarklySettings } from './src/launchdarkly-settings';
 
 /**
  * Source maps are uploaded to Sentry only when the build has credentials for it — a fresh clone,
- * a local `npm run build`, and the unit test run all have none, and none of them should be
+ * a local `pnpm run build`, and the unit test run all have none, and none of them should be
  * talking to Sentry. Set `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` on the Netlify
  * site to turn minified stack traces back into this repository's source.
  */

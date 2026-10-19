@@ -2,7 +2,7 @@
 
 ## Merging is deploying — for the database too
 
-There is no separate "apply the migration" step in this project. `npm run build` doesn't run
+There is no separate "apply the migration" step in this project. `pnpm run build` doesn't run
 migrations, `package.json` has no `db:migrate` script, and `drizzle.config.ts` only _generates_
 SQL files into `netlify/database/migrations/` — it never applies them. Migrations are applied
 automatically by Netlify's own build system the moment a build runs for a site connected to
@@ -16,7 +16,7 @@ That means:
   the **production** database. There is no manual approval, dry-run, or diff-review step anywhere
   in this repository's own tooling.
 - `.github/workflows/ci.yml` runs lint, format-check, and unit tests on every push, but it never
-  runs `npm run build` and never touches a database. A broken or destructive migration file is
+  runs `pnpm run build` and never touches a database. A broken or destructive migration file is
   **not** caught by CI before merge.
 
 Treat every migration file the same way you'd treat a production `DELETE` statement: something
@@ -93,7 +93,7 @@ any migration that isn't purely additive:
 
 1. Open the PR containing the new migration file.
 2. Wait for the Netlify deploy preview to finish building.
-3. Run `npx netlify db status` (optionally with `--branch` for a specific preview branch) to
+3. Run `pnpm exec netlify db status` (optionally with `--branch` for a specific preview branch) to
    confirm the migration applied cleanly.
 4. Exercise the screens affected by the schema change on the preview URL.
 5. Only merge once the preview build and manual check both look right.
@@ -109,14 +109,14 @@ Before merging any change under `netlify/database/migrations/`, confirm:
       don't have an agent merge it.
 - [ ] If it's destructive, is the drop in a separate, later deploy from its backfill (see the
       backfill-then-drop rule)?
-- [ ] Did you open a PR, let the deploy preview build, and confirm with `npx netlify db status`
+- [ ] Did you open a PR, let the deploy preview build, and confirm with `pnpm exec netlify db status`
       that the migration applied there without error?
 - [ ] Did you manually exercise the affected screens on the preview URL?
 - [ ] Is a **human** — not an AI agent — the one clicking merge?
 
 ## Local commands and their footguns
 
-These are run via `npx netlify db ...` (Netlify CLI) and only ever touch your **local** dev
+These are run via `pnpm exec netlify db ...` (Netlify CLI) and only ever touch your **local** dev
 database or a specific remote branch you name — never production, unless you explicitly point one
 at it:
 
@@ -137,7 +137,7 @@ at it:
 ## Backups and recovery
 
 > **TODO (project owner — fill in before handoff):** Netlify DB is backed by Neon
-> (`@neondatabase/serverless` in `package-lock.json`), which supports point-in-time recovery at
+> (`@neondatabase/serverless` in `pnpm-lock.yaml`), which supports point-in-time recovery at
 > the infrastructure level, but nothing in this repository documents how to use it for this
 > project specifically. Before handing this project off, please fill in:
 >

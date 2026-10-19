@@ -36,30 +36,30 @@ them; Netlify keeps function logs only briefly, so keep your own note from step 
 
 ## If the Dashboard Is Unavailable
 
-`npm run guest:delete` ([`scripts/delete-guest.mts`](../scripts/delete-guest.mts)) runs the same
+`pnpm run guest:delete` ([`scripts/delete-guest.mts`](../scripts/delete-guest.mts)) runs the same
 deletion from a terminal. **It is a human's job:** per [`migrations.md`](migrations.md), an AI
 agent must never run anything against the production database, and that includes this script.
 
 It needs a connection string for the production database with permission to delete rows. Copy it
 from the Neon console (the project owner has access), or run
-`npx netlify env:get NETLIFY_DB_URL --context production`. Either is a live credential to every
+`pnpm exec netlify env:get NETLIFY_DB_URL --context production`. Either is a live credential to every
 guest's data: set it for these commands only and never save it to `.env` or a file.
 
 ```bash
-NETLIFY_DB_URL='<connection string>' npm run guest:delete -- --phone="925-555-0100"
+NETLIFY_DB_URL='<connection string>' pnpm run guest:delete --phone="925-555-0100"
 ```
 
 This lists every guest with that number and changes nothing. Copy the right guest's id.
 
 ```bash
-NETLIFY_DB_URL='<connection string>' npm run guest:delete -- --guest-id=<id>
+NETLIFY_DB_URL='<connection string>' pnpm run guest:delete --guest-id=<id>
 ```
 
 This shows the guest and how many rows each table holds about them, and still changes nothing.
 Check that the first line names the database host you expect.
 
 ```bash
-NETLIFY_DB_URL='<connection string>' npm run guest:delete -- --guest-id=<id> --confirm="925-555-0100"
+NETLIFY_DB_URL='<connection string>' pnpm run guest:delete --guest-id=<id> --confirm="925-555-0100"
 ```
 
 This deletes them. `--confirm` takes the guest's phone number, the same check the dashboard makes.
