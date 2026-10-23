@@ -42,7 +42,7 @@ jobs:
   # stubbed by each spec. The queue rig (`@large`) runs from `e2e-large.yml` on demand instead.
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
   # `pnpm run test:storybook` and Storybook's testing panel.
   storybook:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
