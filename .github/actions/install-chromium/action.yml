@@ -1,7 +1,7 @@
 name: Install Chromium
 description: >
-  Installs Playwright's Chromium and its system dependencies, caching the browser by Playwright
-  version. Run it after `pnpm install`, since the version is read from the installed Playwright.
+  Installs Playwright's Chromium and its system dependencies, caching both by Playwright version.
+  Run it after `pnpm install`, since the version is read from the installed Playwright.
 
 runs:
   using: composite
@@ -19,12 +19,47 @@ runs:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
+    # The system packages Chromium needs come from Ubuntu's mirror, which is sometimes slow enough
+    # to spend a job's whole timeout downloading them. Keep the downloaded `.deb` files instead.
+    # The runner image is part of the key, since it decides which packages are already installed.
+    - name: Cache Chromium system packages
+      id: packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/playwright-deps
+        key: playwright-deps-${{ runner.os }}-${{ env.ImageOS }}-${{ steps.playwright.outputs.version }}
+
+    - name: Install Chromium system packages from the cache
+      if: steps.packages.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        missing=()
+        for deb in ~/.cache/playwright-deps/*.deb; do
+          [ -e "$deb" ] || continue
+          name=$(dpkg-deb --field "$deb" Package)
+          if ! dpkg-query --show --showformat='${Status}' "$name" 2>/dev/null | grep -q 'ok installed'; then
+            missing+=("$deb")
+          fi
+        done
+
+        # Only what the image lacks, so nothing it already has is downgraded. If the image has
+        # changed under the same key, fall back to the mirror rather than fail.
+        if [ ${#missing[@]} -gt 0 ] && ! sudo dpkg --install "${missing[@]}"; then
+          echo "::warning::Cached Chromium packages did not install; using the Ubuntu mirror."
+          pnpm exec playwright install-deps chromium
+        fi
+
+    - name: Install Chromium system packages from the mirror
+      if: steps.packages.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo 'APT::Keep-Downloaded-Packages "true";' |
+          sudo tee /etc/apt/apt.conf.d/99keep-downloaded-packages > /dev/null
+        pnpm exec playwright install-deps chromium
+        mkdir -p ~/.cache/playwright-deps
+        find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec cp {} ~/.cache/playwright-deps/ \;
+
     - name: Install Chromium
       if: steps.browsers.outputs.cache-hit != 'true'
       shell: bash
-      run: pnpm exec playwright install --with-deps chromium
-
-    - name: Install Chromium system dependencies
-      if: steps.browsers.outputs.cache-hit == 'true'
-      shell: bash
-      run: pnpm exec playwright install-deps chromium
+      run: pnpm exec playwright install chromium
