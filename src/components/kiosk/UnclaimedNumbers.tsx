@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
 
 import type { QueueNumber } from '../../models/queue-number';
 import { Bilingual, useKioskLanguages } from './kiosk-languages';
@@ -90,6 +90,7 @@ export function UnclaimedNumbers({ numbers }: UnclaimedNumbersProps) {
 	const native = secondary?.numerals.hasNativeDigits ? secondary : null;
 	const listRef = useRef<HTMLUListElement>(null);
 	const [limit, setLimit] = useState(Number.POSITIVE_INFINITY);
+	const [, remeasure] = useReducer((count: number) => count + 1, 0);
 	const signature = numbers.map((number) => number.label).join(',');
 	const [measuredSignature, setMeasuredSignature] = useState(signature);
 
@@ -118,7 +119,12 @@ export function UnclaimedNumbers({ numbers }: UnclaimedNumbersProps) {
 		if (!list || typeof ResizeObserver === 'undefined') {
 			return;
 		}
-		const observer = new ResizeObserver(() => setLimit(Number.POSITIVE_INFINITY));
+		const observer = new ResizeObserver(() => {
+			setLimit(Number.POSITIVE_INFINITY);
+			// Showing all already, the reset alone changes nothing and React skips the render — so the
+			// list shrinking under a full set (a font loading, the header wrapping) would never refit.
+			remeasure();
+		});
 
 		observer.observe(list);
 

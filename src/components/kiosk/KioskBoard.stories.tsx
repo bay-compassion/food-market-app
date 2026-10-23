@@ -171,6 +171,13 @@ export const BeforeTheMarketOpens: Story = {
 			<KioskMessage message={(copy) => copy.notStarted} />
 		</Display>
 	),
+	play: async ({ canvasElement }) => {
+		const clock = canvasElement.querySelector('header time');
+
+		// The clock shows before the market opens too, and outside the message's live region.
+		await expect(clock).toHaveTextContent(/^\d{1,2}:\d{2}\s[AP]M$/);
+		await expect(clock?.closest('[aria-live]')).toBeNull();
+	},
 };
 
 /** The row of language names along the bottom fills in the one showing now. */

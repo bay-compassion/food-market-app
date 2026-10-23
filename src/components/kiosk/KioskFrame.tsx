@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 
 import { Bilingual, type KioskText } from './kiosk-languages';
+import { KioskHeader } from './KioskHeader';
 import { LanguageIndicator } from './LanguageIndicator';
 
 /**
@@ -13,7 +14,7 @@ export const KioskFrame = styled.main`
 	/* A fixed height, not a minimum: content that doesn't fit must give way, never push the
 	   footer off the bottom of a screen nobody can scroll. */
 	height: 100dvh;
-	padding: 4vmin 5vmin;
+	padding: 3vmin 3vmin;
 	background: var(--color-brand-dark);
 	color: var(--color-on-brand);
 	font-family: var(--font-heading);
@@ -68,6 +69,8 @@ export type KioskMessageProps = {
 export function KioskMessage({ message, action }: KioskMessageProps) {
 	return (
 		<>
+			{/* Outside the live region, so the clock's minutes are never announced. */}
+			<KioskHeader />
 			<Message role="status" aria-live="polite">
 				<p>
 					<Bilingual text={message} />
