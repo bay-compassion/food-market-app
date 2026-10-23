@@ -32,9 +32,14 @@ const Row = styled.li`
 		text-align: start;
 	}
 
-	button:active,
-	button[aria-current='true'] {
+	button:active {
 		background: var(--color-border);
+	}
+
+	/* The open ticket: on a phone the sheet covers the list, but the desk shows both at once. */
+	button[aria-current='true'] {
+		background: var(--color-background);
+		box-shadow: inset 0 0 0 2px var(--color-brand);
 	}
 
 	.number {

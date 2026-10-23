@@ -1,26 +1,19 @@
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 
-import { adminTranslations } from '../../adminLocales';
-import type { ManualGuest } from '../../services/admin-api';
-import { useRootStore } from '../../stores/react/store-context';
+import { wideLayoutQuery } from '../admin/admin-layout';
 import { AdminFeedbackBanner } from '../admin/AdminFeedbackBanner';
 import { GuestClaimDialog } from '../admin/GuestClaimDialog';
-import { ManualGuestDialog } from '../admin/ManualGuestDialog';
-import { useNow } from '../hooks/use-now';
-import { useQueueDesk } from './queue-desk-context';
+import { QueueCallButton } from './QueueCallButton';
 import { QueueDeskHeader } from './QueueDeskHeader';
-import { TicketSection } from './TicketSection';
+import { QueueLists } from './QueueLists';
+import { TicketPane } from './TicketPane';
 import { TicketSheet } from './TicketSheet';
-import { useCloseSession } from './use-close-session';
 
 const Layout = styled.div`
 	display: grid;
 	gap: 12px;
-	/* Room for the call bar fixed along the bottom edge. */
-	padding-bottom: calc(88px + env(safe-area-inset-bottom));
 
 	.admin-feedback {
 		padding: 12px 14px;
@@ -29,124 +22,85 @@ const Layout = styled.div`
 		background: var(--color-surface-soft);
 	}
 
-	.add-guest {
-		min-height: 36px;
-		padding: 0 12px;
-		border: 0;
-		border-radius: var(--radius-pill);
-		color: var(--color-brand);
+	/* Phone: one column, with room for the call bar fixed along the bottom edge. */
+	&[data-layout='phone'] {
+		padding-bottom: calc(88px + env(safe-area-inset-bottom));
+	}
+
+	.call-bar {
+		position: fixed;
+		inset-inline: 0;
+		bottom: 0;
+		padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
 		background: var(--color-background);
-		font-size: 14px;
-		font-weight: 700;
-	}
-`;
+		box-shadow: 0 -8px 24px rgb(30 71 77 / 10%);
 
-const CallBar = styled.div`
-	position: fixed;
-	inset-inline: 0;
-	bottom: 0;
-	padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-	background: var(--color-background);
-	box-shadow: 0 -8px 24px rgb(30 71 77 / 10%);
-
-	> * {
-		max-width: 480px;
-		margin-inline: auto;
+		> * {
+			max-width: 480px;
+			margin-inline: auto;
+		}
 	}
 
-	.MuiButton-root {
-		min-height: 52px;
-		font-size: 17px;
+	/*
+	 * Desk: the line and the open ticket side by side, filling the window, each scrolling on its
+	 * own so a long list never pushes the ticket out of view. The frame's padding is 24px each way.
+	 */
+	&[data-layout='desk'] {
+		grid-template-rows: auto auto minmax(0, 1fr);
+		height: calc(100dvh - 48px);
+	}
+
+	.panes {
+		display: grid;
+		grid-row: 3;
+		grid-template-columns: minmax(0, 1fr) minmax(400px, 520px);
+		gap: 20px;
+		min-height: 0;
+	}
+
+	.line-pane {
+		display: grid;
+		grid-template-rows: minmax(0, 1fr) auto;
+		gap: 12px;
+		min-height: 0;
+	}
+
+	.line-list {
+		overflow-y: auto;
 	}
 `;
 
 /**
- * The queue while service runs: the called and waiting numbers; then no-shows, guests the draw
- * did not place, and the finished ones, each in their own section; and
- * one big button along the bottom edge to call the next guest — which opens their ticket and name
- * tag straight away. Once everyone is through, that button gives its place to closing the session.
+ * The queue while service runs. On a phone, the line fills the screen, a ticket opens as a sheet
+ * over it, and the call button runs along the bottom edge. On a desk-sized screen — the check-in
+ * desk's computer — the open ticket sits in a pane beside the line instead, always in view.
  */
 export const QueueLine = observer(function QueueLine() {
-	const t = adminTranslations.en;
-	const { admin, translations } = useRootStore();
-	const desk = useQueueDesk();
-	const { roster } = desk;
-	// Chips show whole minutes, so a coarse shared clock is enough; the open ticket keeps its own.
-	const now = useNow(30_000);
-	const [addingGuest, setAddingGuest] = useState(false);
-	const canAddGuest = desk.admissions.length > 0;
-
-	const closeSession = useCloseSession();
-
-	function addGuest(guest: ManualGuest) {
-		setAddingGuest(false);
-		void admin.addGuest(guest, { locale: translations.locale });
-	}
+	const isDesk = useMediaQuery(wideLayoutQuery);
 
 	return (
-		<Layout>
+		<Layout data-layout={isDesk ? 'desk' : 'phone'}>
 			<QueueDeskHeader />
 			<AdminFeedbackBanner />
-			<TicketSection
-				title={t.queueDesk.called}
-				guests={roster.called}
-				emptyText={t.queueDesk.noneCalled}
-				now={now}
-			/>
-			<TicketSection
-				title={t.queueDesk.waiting}
-				guests={roster.waiting}
-				emptyText={t.queueDesk.noneWaiting}
-				now={now}
-				action={
-					canAddGuest ? (
-						<button className="add-guest" type="button" onClick={() => setAddingGuest(true)}>
-							+ {t.queueDesk.addGuest}
-						</button>
-					) : null
-				}
-			/>
-			{/* Called guests who never came up are, in effect, at the back of the line. */}
-			<TicketSection title={t.queueDesk.noShows} guests={roster.noShows} now={now} />
-			<TicketSection title={t.queueDesk.notPlaced} guests={roster.notPlaced} now={now} />
-			<TicketSection
-				title={t.queueDesk.done}
-				guests={roster.done}
-				emptyText={t.queueDesk.noneDone}
-				now={now}
-			/>
-			<CallBar>
-				{roster.isComplete ? (
-					<Button
-						type="button"
-						variant="contained"
-						color="error"
-						fullWidth
-						disabled={desk.isBusy}
-						onClick={() => void closeSession()}
-					>
-						{t.closeSession}
-					</Button>
-				) : (
-					<Button
-						type="button"
-						variant="contained"
-						fullWidth
-						disabled={desk.isBusy || roster.waiting.length === 0}
-						onClick={() => void desk.callNext()}
-					>
-						{t.queueDesk.callNext}
-					</Button>
-				)}
-			</CallBar>
-			<TicketSheet />
-			<ManualGuestDialog
-				open={canAddGuest && addingGuest}
-				admissions={desk.admissions}
-				busy={desk.isBusy}
-				onSubmit={addGuest}
-				onClose={() => setAddingGuest(false)}
-			/>
+			{isDesk ? (
+				<div className="panes">
+					<div className="line-pane">
+						<div className="line-list">
+							<QueueLists />
+						</div>
+						<QueueCallButton />
+					</div>
+					<TicketPane />
+				</div>
+			) : (
+				<>
+					<QueueLists />
+					<div className="call-bar">
+						<QueueCallButton />
+					</div>
+					<TicketSheet />
+				</>
+			)}
 			<GuestClaimDialog />
 		</Layout>
 	);

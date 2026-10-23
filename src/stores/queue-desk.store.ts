@@ -288,16 +288,20 @@ export class QueueDeskStore {
 
 	/**
 	 * Serves the guest whose ticket is open and calls the next one, opening their ticket in its
-	 * place — or closing it, when nobody was left to call.
+	 * place — or closing it, when nobody was left to call. The served ticket stays open until then,
+	 * so the desk's ticket pane goes straight from one guest to the next rather than blanking
+	 * between them.
 	 */
 	async serveAndCallNext(guest: QueueGuest): Promise<void> {
-		this._selectedVisitId = null;
-
 		const [called] = await this.admin.serveAndCallNext(guest);
 
-		if (called) {
-			runInAction(() => (this._selectedVisitId = called));
-		}
+		runInAction(() => {
+			if (called) {
+				this._selectedVisitId = called;
+			} else if (this._selectedVisitId === guest.id) {
+				this._selectedVisitId = null;
+			}
+		});
 	}
 
 	/**

@@ -193,6 +193,23 @@ describe('QueueDeskStore', () => {
 		expect(desk.selected?.id).toBe('visit-2');
 	});
 
+	it('keeps the served ticket open while the next guest is being called', async () => {
+		// Arrange
+		const serving = guestWith({ status: 'called' });
+		const { desk } = deskWith({
+			guests: [serving, guestWith({ id: 'visit-2', queuePosition: 2 })],
+			called: ['visit-2'],
+		});
+
+		desk.select(serving);
+
+		// Act
+		void desk.serveAndCallNext(serving);
+
+		// Assert
+		expect(desk.selected?.id).toBe(serving.id);
+	});
+
 	it('closes the ticket after serving when nobody was left to call', async () => {
 		// Arrange
 		const serving = guestWith({ status: 'called' });

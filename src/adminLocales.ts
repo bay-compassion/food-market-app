@@ -389,6 +389,8 @@ export interface QueueDeskTranslation {
 	/** `{number}` is the queue position, `{name}` the guest's full name. */
 	openTicket: string;
 	ticket: string;
+	/** In the desk layout's ticket pane, while no ticket is open. */
+	noTicketOpen: string;
 	unplaced: string;
 	closeTicket: string;
 	nameTag: string;
@@ -884,6 +886,7 @@ export const adminTranslations = {
 			addGuest: 'Add guest',
 			openTicket: 'Open ticket {number}, {name}',
 			ticket: 'Ticket',
+			noTicketOpen: 'Choose a ticket, or call the next guest.',
 			unplaced: 'Not placed',
 			closeTicket: 'Close ticket',
 			nameTag: 'Name tag',
