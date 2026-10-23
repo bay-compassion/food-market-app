@@ -2,7 +2,9 @@ import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 
 import type { QueueBoard } from '../../models/queue-board';
+import { boardColumns } from './board-columns';
 import { Bilingual, useKioskLanguages } from './kiosk-languages';
+import { KioskHeader } from './KioskHeader';
 import { LanguageIndicator } from './LanguageIndicator';
 import { UnclaimedNumbers } from './UnclaimedNumbers';
 
@@ -16,9 +18,9 @@ const announce = keyframes`
 const Layout = styled.div`
 	display: grid;
 	flex: 1;
-	grid-template-columns: 3fr 2fr;
+	grid-template-columns: ${boardColumns.template};
 	grid-template-rows: minmax(0, 1fr);
-	gap: 5vmin;
+	gap: ${boardColumns.gap};
 	min-height: 0;
 
 	@media (orientation: portrait) {
@@ -86,33 +88,6 @@ const NowCalling = styled.section`
 	}
 `;
 
-const Header = styled.header`
-	display: flex;
-	justify-content: space-between;
-	align-items: start;
-	gap: 2vmin 5vmin;
-	padding-bottom: 3vmin;
-	font-size: clamp(1.25rem, 3.5vmin, 2.75rem);
-	font-weight: 500;
-
-	> div > span {
-		display: block;
-	}
-
-	/* Explicit sides: dir="auto" on a right-to-left second line would otherwise flip it. */
-	> :first-child {
-		text-align: left;
-	}
-
-	> :last-child {
-		text-align: right;
-	}
-
-	[role='status'] {
-		color: var(--color-focus);
-	}
-`;
-
 const Footer = styled.footer`
 	padding-top: 3vmin;
 `;
@@ -133,29 +108,28 @@ export type KioskBoardProps = {
  * language's own digits, since guests read one set or the other but not always both.
  */
 export function KioskBoard({ board, reconnecting }: KioskBoardProps) {
-	const { primary, secondary } = useKioskLanguages();
+	const { secondary } = useKioskLanguages();
 	const native = secondary?.numerals.hasNativeDigits ? secondary : null;
 	const { nowCalling, stillWaitingFor } = board;
 
 	return (
 		<>
-			<Header>
-				<div>
-					<span>{primary.marketName}</span>
-					{reconnecting ? (
+			<KioskHeader
+				status={
+					reconnecting ? (
 						<span role="status">
 							<Bilingual text={(copy) => copy.reconnecting} />
 						</span>
-					) : null}
-				</div>
-				<div>
+					) : null
+				}
+				end={
 					<Bilingual
 						text={(copy, numerals) =>
 							copy.waitingCount.replace('{count}', numerals.inline(board.waitingCount))
 						}
 					/>
-				</div>
-			</Header>
+				}
+			/>
 			<Layout>
 				<NowCalling aria-live="polite">
 					<h1>
