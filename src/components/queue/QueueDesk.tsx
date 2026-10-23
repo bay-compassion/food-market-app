@@ -8,6 +8,7 @@ import { adminTranslations } from '../../adminLocales';
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../../auth';
 import { QueueDeskStore } from '../../stores/queue-desk.store';
 import { useRootStore } from '../../stores/react/store-context';
+import { wideLayoutQuery } from '../admin/admin-layout';
 import { KioskUnlockDialog } from '../admin/KioskUnlockDialog';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { NotificationToasts } from '../ui/NotificationToasts';
@@ -18,7 +19,10 @@ export type QueueDeskProps = {
 	getAccessToken: () => Promise<string>;
 };
 
-/** A phone-wide column. Outside the app shell, so it sets its own page background and type. */
+/**
+ * A phone-wide column, or the whole window on a desk-sized screen, where the line and the open
+ * ticket sit side by side. Outside the app shell, so it sets its own page background and type.
+ */
 export const QueueDeskFrame = styled.main`
 	box-sizing: border-box;
 	width: min(100%, 520px);
@@ -28,10 +32,18 @@ export const QueueDeskFrame = styled.main`
 	color: var(--color-text);
 	background: var(--color-background);
 	font-family: var(--font-body);
+
+	@media ${wideLayoutQuery} {
+		width: min(100%, 1280px);
+		padding: 24px;
+	}
 `;
 
+// A message keeps to a phone's width even when the frame fills a desk-sized window.
 const Message = styled.section`
 	display: grid;
+	max-width: 520px;
+	margin-inline: auto;
 	gap: 16px;
 	justify-items: start;
 	padding: 32px 8px;

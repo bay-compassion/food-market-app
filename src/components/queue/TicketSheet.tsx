@@ -3,14 +3,8 @@ import { SwipeableDrawer } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
-import { languages } from '../../locales';
-import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { useQueueDesk } from './queue-desk-context';
-import { TicketActions } from './TicketActions';
-import { TicketGuestDetails } from './TicketGuestDetails';
-import { TicketHistory } from './TicketHistory';
-import { TicketNameTag } from './TicketNameTag';
-import { TicketSummary } from './TicketSummary';
+import { TicketDetails } from './TicketDetails';
 
 // The sheet renders in a portal, outside the queue screen's frame, so it carries its own styles.
 const Sheet = styled(SwipeableDrawer)`
@@ -42,28 +36,16 @@ const Sheet = styled(SwipeableDrawer)`
 		border-radius: var(--radius-pill);
 		background: var(--color-border);
 	}
-
-	.guest-details {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 4px 16px;
-		margin: 0;
-		color: var(--color-text-muted);
-		font-size: 15px;
-	}
 `;
 
 /**
- * The open ticket, risen from the bottom edge: its number and clock, the name tag to write out,
- * what to do next, and what has happened so far. Opening one is how a volunteer works with a
- * guest; the list behind it stays one line per ticket.
+ * The open ticket on a phone, risen from the bottom edge. Opening one is how a volunteer works
+ * with a guest; the list behind it stays one line per ticket.
  */
 export const TicketSheet = observer(function TicketSheet() {
 	const t = adminTranslations.en.queueDesk;
 	const desk = useQueueDesk();
 	const guest = desk.selected;
-	const statusLabels = adminVisitStatusLabels('en');
-	const language = languages.find(({ code }) => code === guest?.locale)?.englishLabel;
 
 	return (
 		<Sheet
@@ -88,15 +70,7 @@ export const TicketSheet = observer(function TicketSheet() {
 						aria-label={t.closeTicket}
 						onClick={() => desk.dismiss()}
 					/>
-					<TicketSummary guest={guest} statusLabel={statusLabels[guest.status]} />
-					<TicketNameTag guest={guest} />
-					<p className="guest-details">
-						<span>{t.household.replace('{count}', String(guest.householdSize))}</span>
-						{language ? <span>{language}</span> : null}
-					</p>
-					<TicketActions guest={guest} />
-					<TicketGuestDetails key={guest.guestId} guest={guest} />
-					<TicketHistory />
+					<TicketDetails guest={guest} />
 				</>
 			) : null}
 		</Sheet>

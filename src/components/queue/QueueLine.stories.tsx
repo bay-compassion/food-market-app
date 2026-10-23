@@ -242,7 +242,8 @@ function SeededQueueLine(args: QueueLineArgs) {
  * The `/queue` screen a volunteer runs the line from on their own phone: numbers only in the
  * lists, one ticket open at a time, and a single button to call the next guest.
  *
- * Check these at the default mobile viewport — that is the device this screen is for.
+ * Check these at the default mobile viewport — a volunteer's phone is what this screen is mostly
+ * for. The stories at the end are the check-in desk's computer, wide enough for the desk layout.
  */
 const meta = {
 	title: 'Staff/Queue Desk/Line',
@@ -433,5 +434,50 @@ export const EveryoneThrough: Story = {
 				name: adminTranslations.en.closeSession,
 			}),
 		).toBeVisible();
+	},
+};
+
+/** A screen as wide as the check-in desk's computer, past the 860px the desk layout starts at. */
+const deskViewport = { viewport: { value: 'ipad12p', isRotated: false } };
+
+/**
+ * On the check-in desk's computer, the line and the open ticket sit side by side: the ticket is a
+ * pane on the page, not a sheet over it, and until one is chosen it says how to open one.
+ */
+export const AtTheDesk: Story = {
+	globals: deskViewport,
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const pane = within(await canvas.findByRole('complementary', { name: t.ticket }));
+
+		await expect(pane.getByText(t.noTicketOpen)).toBeVisible();
+
+		await userEvent.click(
+			await canvas.findByRole('button', {
+				name: t.openTicket.replace('{number}', '1').replace('{name}', 'Maria Santos'),
+			}),
+		);
+
+		await expect(await pane.findByText('Maria S.')).toBeVisible();
+		// The phone's sheet never opens over it.
+		await expect(document.querySelector('.ticket-sheet')).toBeNull();
+	},
+};
+
+/**
+ * Serving the guest at the desk calls the next one, and the pane moves straight from one ticket to
+ * the next.
+ */
+export const ServingAndCallingNextAtTheDesk: Story = {
+	args: { openVisitId: 'guest-called-2' },
+	globals: deskViewport,
+	play: async ({ canvasElement }) => {
+		const pane = within(
+			await within(canvasElement).findByRole('complementary', { name: t.ticket }),
+		);
+
+		await userEvent.click(await pane.findByRole('button', { name: t.serveAndCallNext }));
+
+		await expect(await pane.findByText('Linh N.')).toBeVisible();
 	},
 };
