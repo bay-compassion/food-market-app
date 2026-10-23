@@ -5,6 +5,7 @@ import type { VisitStatusTranslations } from '@/locales.ts';
 import type { LateArrival } from '../../../models/late-arrival';
 import type { NowCalling } from '../../../models/now-calling';
 import type { QueueNumber } from '../../../models/queue-number';
+import { useEarlierCalledNumbers } from '../../hooks/use-earlier-called-numbers';
 import { useLinePositionIndicator } from '../../hooks/use-line-position-indicator';
 import { useNow } from '../../hooks/use-now';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
@@ -48,6 +49,7 @@ export function CalledVisitStatus({
 	lateArrival,
 }: CalledVisitStatusProps) {
 	const indicator = useLinePositionIndicator();
+	const showEarlier = useEarlierCalledNumbers();
 	// Ticks only while the board can still change: once it is fully yellow there is nothing to move.
 	const now = useNow(lateArrival && !lateArrival.isLateAt(Date.now()) ? warmthTickMs : null);
 	const warmth = lateArrival ? lateArrival.warmthAt(now) : 0;
@@ -73,7 +75,11 @@ export function CalledVisitStatus({
 								warmth={warmth}
 							/>
 							{indicator === 'now-calling' && nowCalling ? (
-								<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />
+								<NowCallingIndicator
+									copy={copy.waiting}
+									nowCalling={nowCalling}
+									showEarlier={showEarlier}
+								/>
 							) : null}
 							{/* Only once the board has started to warm: before then a sighted guest sees
 							    nothing, so a screen reader hears nothing either. */}

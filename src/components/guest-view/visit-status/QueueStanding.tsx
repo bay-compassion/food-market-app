@@ -4,6 +4,7 @@ import type { VisitStatusTranslations } from '@/locales.ts';
 
 import type { NowCalling } from '../../../models/now-calling';
 import type { QueueNumber } from '../../../models/queue-number';
+import { useEarlierCalledNumbers } from '../../hooks/use-earlier-called-numbers';
 import { useLinePositionIndicator } from '../../hooks/use-line-position-indicator';
 import { NowCallingIndicator } from './NowCallingIndicator';
 import { QueueNumberBoard } from './QueueNumberBoard';
@@ -64,6 +65,7 @@ export function QueueStanding({
 	className,
 }: QueueStandingProps) {
 	const indicator = useLinePositionIndicator();
+	const showEarlier = useEarlierCalledNumbers();
 
 	return (
 		<StandingCard className={['queue-standing', className].filter(Boolean).join(' ')}>
@@ -75,7 +77,11 @@ export function QueueStanding({
 				note={indicator === 'guests-ahead' && guestsAhead === 0 ? copy.waiting.youAreNext : null}
 			/>
 			{indicator === 'now-calling' && nowCalling ? (
-				<NowCallingIndicator copy={copy.waiting} nowCalling={nowCalling} />
+				<NowCallingIndicator
+					copy={copy.waiting}
+					nowCalling={nowCalling}
+					showEarlier={showEarlier}
+				/>
 			) : null}
 			{guestsAhead !== null && guestsAhead > 0 && indicator === 'guests-ahead' ? (
 				<GuestsAhead className="guests-ahead">

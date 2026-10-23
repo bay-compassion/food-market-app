@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
 
 import { translations } from '../../locales';
+import { EARLIER_CALLED_NUMBERS_FLAG_KEY } from '../hooks/use-earlier-called-numbers';
 import {
 	defaultVisitStatusArgs,
 	SeededVisitStatus,
@@ -163,8 +164,8 @@ export const CancelFailed: Story = {
 	},
 };
 
-/** A worker called a batch: the rest of it sits outlined beside the number the market has reached,
- *  which is the one to compare against. */
+/** A worker called a batch: only the number the market has reached shows, the one to compare
+ *  against. The rest of the batch is the room display's "Already Called" panel, not the phone's. */
 export const WaitingBatchCalled: Story = {
 	args: {
 		visitStatus: 'waiting',
@@ -173,6 +174,20 @@ export const WaitingBatchCalled: Story = {
 		nowCalling: 38,
 		called: [38, 37, 36],
 	},
+	play: async ({ canvas }) => {
+		const board = within(await canvas.findByRole('status'));
+
+		await expect(board.getByText('38')).toBeInTheDocument();
+		await expect(board.queryByText('36')).toBeNull();
+		await expect(board.queryByText('37')).toBeNull();
+	},
+};
+
+/** The same batch with the `guest-earlier-called-numbers` flag on: the rest of it sits outlined
+ *  beside the number the market has reached. */
+export const WaitingBatchCalledEarlierShown: Story = {
+	args: WaitingBatchCalled.args,
+	decorators: withIndicator('now-calling', { [EARLIER_CALLED_NUMBERS_FLAG_KEY]: true }),
 	play: async ({ canvas }) => {
 		const board = within(await canvas.findByRole('status'));
 
