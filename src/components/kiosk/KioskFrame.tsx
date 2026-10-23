@@ -25,7 +25,8 @@ export const KioskFrame = styled.main`
 	}
 `;
 
-const Message = styled.section`
+/** The centred column a one-sentence screen fills; the locked screen sets its form in it too. */
+export const KioskMessageLayout = styled.section`
 	display: flex;
 	flex: 1;
 	flex-direction: column;
@@ -43,44 +44,26 @@ const Message = styled.section`
 		font-weight: 600;
 		line-height: 1.2;
 	}
-
-	button {
-		padding: 2vmin 5vmin;
-		border: 0;
-		border-radius: var(--radius-pill);
-		background: var(--color-on-brand);
-		color: var(--color-brand-dark);
-		font-size: clamp(1.25rem, 3.5vmin, 2.5rem);
-		font-weight: 700;
-		cursor: pointer;
-	}
 `;
 
 export type KioskMessageProps = {
 	message: KioskText;
-	/** A button under the message, for the one state a worker has to act on. */
-	action?: { label: KioskText; onClick: () => void };
 };
 
 /**
  * One sentence filling the display, in English with the rotating language under it, for every
  * state that is not a queue being called.
  */
-export function KioskMessage({ message, action }: KioskMessageProps) {
+export function KioskMessage({ message }: KioskMessageProps) {
 	return (
 		<>
 			{/* Outside the live region, so the clock's minutes are never announced. */}
 			<KioskHeader />
-			<Message role="status" aria-live="polite">
+			<KioskMessageLayout role="status" aria-live="polite">
 				<p>
 					<Bilingual text={message} />
 				</p>
-				{action ? (
-					<button type="button" onClick={action.onClick}>
-						<Bilingual text={action.label} />
-					</button>
-				) : null}
-			</Message>
+			</KioskMessageLayout>
 			{/* The message fills the frame, so this sits along the bottom edge, as on the board. */}
 			<LanguageIndicator />
 		</>

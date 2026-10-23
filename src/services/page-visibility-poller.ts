@@ -10,7 +10,7 @@ export class PageVisibilityPoller {
 
 	constructor(
 		private readonly run: () => void,
-		private readonly intervalMs: number,
+		private intervalMs: number,
 		private readonly onPollingChange: (isPolling: boolean) => void,
 	) {}
 
@@ -29,6 +29,23 @@ export class PageVisibilityPoller {
 		}
 
 		this.syncWithPageVisibility();
+	}
+
+	/**
+	 * Changes how often the callback runs from now on. A poller that is running keeps going on the
+	 * new interval without an extra run in between.
+	 */
+	setIntervalMs(intervalMs: number): void {
+		if (intervalMs === this.intervalMs) {
+			return;
+		}
+
+		this.intervalMs = intervalMs;
+
+		if (this.timer !== null) {
+			clearInterval(this.timer);
+			this.timer = setInterval(this.run, this.intervalMs);
+		}
 	}
 
 	stop(): void {

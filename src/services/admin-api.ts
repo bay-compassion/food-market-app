@@ -5,6 +5,7 @@ import type { DemoRoster } from './demo-preview';
 import type { ServiceProgress } from './demoScenario.ts';
 import type { GuestDeletionPreview } from './guest-deletion.ts';
 import type { ManualAdmission, QueuePlacement } from './guestAdmission.ts';
+import type { KioskUnlockCode } from './kiosk-unlock.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
 import type { PrintJobSubmission } from './print-jobs.ts';
 import type { SessionStatus } from './sessionStateMachine.ts';
@@ -203,6 +204,14 @@ export class AdminApi {
 		);
 
 		return online;
+	}
+
+	/** A code that unlocks a room display for the next five to ten minutes. */
+	async issueKioskUnlockCode(): Promise<KioskUnlockCode> {
+		return this.readJson<KioskUnlockCode>(
+			await this.send('POST', '/api/admin/kiosk/unlock-codes', {}),
+			'kiosk_unlock_code',
+		);
 	}
 
 	/** One visit's history, oldest first. */

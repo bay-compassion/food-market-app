@@ -1,17 +1,18 @@
+import type { KioskUnlockCode } from '../../../src/services/kiosk-unlock.js';
 import { withPermission, type AdminEnv } from '../../lib/http-auth.mjs';
 import { createRouter, methodNotAllowed, routeHandler } from '../../lib/http.mjs';
-import { queueBoard } from '../../services/queue-board.mjs';
+import { KioskAccess } from '../../services/kiosk-access.mjs';
 
 export const kioskRoutes = createRouter<AdminEnv>();
 
 /**
- * The room display's data. Gated on `view:kiosk` rather than left public like `/api/market`: the
- * kiosk signs in as an account holding only this, so a passer-by at the screen holds nothing that
- * can change the queue.
+ * A code for unlocking a room display, read off a worker's phone and typed into the display. The
+ * display itself never signs in, so no worker's account is ever left open on a public screen — see
+ * `KioskAccess` and `/api/kiosk/unlock`.
  */
-kioskRoutes.get('/kiosk', withPermission('view:kiosk'), async () =>
-	Response.json(await queueBoard()),
+kioskRoutes.post('/kiosk/unlock-codes', withPermission('run:queue'), () =>
+	Response.json(KioskAccess.fromEnvironment().issueCode() satisfies KioskUnlockCode),
 );
-kioskRoutes.all('/kiosk', methodNotAllowed);
+kioskRoutes.all('/kiosk/unlock-codes', methodNotAllowed);
 
 export default routeHandler(createRouter().route('/api/admin', kioskRoutes));

@@ -6,13 +6,12 @@ explanation and nothing else.
 
 ## The roles
 
-| Role            | Who it is for                                      | Holds                                                       |
-| --------------- | -------------------------------------------------- | ----------------------------------------------------------- |
-| `worker`        | Volunteers running the market                      | `run:queue`, `view:kiosk`, `print:name-tags`                |
-| `admin`         | Whoever is responsible for the market and its data | the first five permissions, `view:kiosk`, `print:name-tags` |
-| `kiosk`         | The account a room display signs in as             | `view:kiosk` only                                           |
-| `print-station` | The account a print-station desktop signs in as    | `print:name-tags` only                                      |
-| `data-steward`  | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`            |
+| Role            | Who it is for                                      | Holds                                            |
+| --------------- | -------------------------------------------------- | ------------------------------------------------ |
+| `worker`        | Volunteers running the market                      | `run:queue`, `print:name-tags`                   |
+| `admin`         | Whoever is responsible for the market and its data | the first five permissions, `print:name-tags`    |
+| `print-station` | The account a print-station desktop signs in as    | `print:name-tags` only                           |
+| `data-steward`  | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin` |
 
 Two roles rather than three because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
@@ -29,7 +28,6 @@ or download the whole guest database in one click.
 | `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
 | `delete:guest-data`   | Permanently deleting a guest and everything about them, after typing their phone number to confirm       |
 | `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
-| `view:kiosk`          | The `/kiosk` room display — queue numbers being called, never a guest's name                             |
 | `print:name-tags`     | The `/printing-station` page — prints the name tags volunteers send: first name and last initial only    |
 
 The first five sit behind two roles on purpose. Splitting out a third role later — a board member
@@ -46,6 +44,8 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET /api/market`                                        | nothing — the guest app depends on it                   |
 | `POST /api/guest-information`                            | nothing — saves guest identity only                     |
 | `POST /api/lottery-registration`                         | nothing — public self-service lottery entry             |
+| `POST /api/kiosk/unlock`                                 | nothing but a current unlock code                       |
+| `GET /api/kiosk/board`                                   | a kiosk token, not Auth0 — see the room display below   |
 | `GET /api/admin/market?view=history`                     | `run:queue`                                             |
 | `POST /api/admin/market`                                 | `manage:sessions`, except `close_session` → `run:queue` |
 | `/api/admin/schedule` (every method)                     | `manage:sessions`                                       |
@@ -60,7 +60,7 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET /api/admin/guests/:id/deletion`                     | `delete:guest-data`                                     |
 | `DELETE /api/admin/guests/:id`                           | `delete:guest-data`                                     |
 | `GET`, `POST /api/admin/demo-data`                       | `manage:demo-data` — and, for `POST`, an env flag too   |
-| `GET /api/admin/kiosk`                                   | `view:kiosk`                                            |
+| `POST /api/admin/kiosk/unlock-codes`                     | `run:queue`                                             |
 | `GET /api/admin/visits/:id/events`                       | `run:queue`                                             |
 | `POST /api/admin/print-jobs`                             | `run:queue`                                             |
 | `GET /api/admin/print-station`                           | `run:queue`                                             |
@@ -201,39 +201,59 @@ person. Until it is assigned, nobody is offered the menu item and both endpoints
 
 `/kiosk` is a full-screen "now calling" board for a tablet or monitor in the room: the number
 being called, the numbers called earlier that nobody has come up for yet, and how many are still in
-line. It shows queue numbers only, never a name. It is not linked from anywhere a guest can reach,
-but an unlinked URL is not a lock — what keeps the unattended machine from being commandeered is
-who it is signed in as.
+line. It shows queue numbers only, never a name.
 
-1. **Create one Auth0 user per display** (or one shared by every display), e.g.
-   `kiosk-hall@…`, with a long generated password, and give it the `kiosk` role and nothing else.
-2. **On the display, open `/kiosk` and sign in as that user.** Every line on the display is in
-   English, with a second language underneath that rotates through the others, 8 seconds each; a
-   row of language names along the bottom shows which one is up. Add `?lang=es` (any supported
-   language code) to pin the second language, or `?lang=en` for English alone.
-3. **Lock the device to the page** — Chrome's `--kiosk` flag, Guided Access on an iPad, or Screen
-   Pinning on Android — so there is no address bar to type `/admin` into.
+It does not sign in to Auth0. A display stands in a public room for weeks at a time, and an account
+signed in there — above all a worker's own, used "just for a minute" to get it going — would be
+left open to anyone who walks up. Instead a worker **unlocks** it:
 
-Anyone who reaches `/admin` on that machine anyway finds an account with no screens, and every
-admin endpoint answers 403, because `view:kiosk` grants nothing but `GET /api/admin/kiosk`. If the
-device is lost, block the user in Auth0. `worker` and `admin` hold `view:kiosk` as well, so a staff
-member can open the display on their own device to check it.
+1. **On a phone signed in as a worker, choose "Unlock a room display"** — in the menu on `/queue`
+   or on the dashboard's Queue tab, or on that tab's own page before service starts. It shows the
+   display's web address (this site's `/kiosk`) and six digits, so nobody setting a display up has
+   to know the address already.
+2. **On the display, go to that address.** A locked display says so and asks for a code. That
+   screen is a gate for whoever sets the display up, so it is in English alone; the board behind
+   it rotates through every language as usual.
+3. **Type the six digits into the display.** The display trades the code for a kiosk token it keeps
+   in its own browser storage, and starts showing the board. One code works on any number of
+   displays for five to ten minutes.
+4. **Make the display open there by itself, and stay there** — Add to Home Screen on a tablet, or
+   start Chrome at the address with its `--kiosk` flag on a computer; then Guided Access on an iPad
+   or Screen Pinning on Android — so there is no address bar to type `/admin` into, and switching
+   the display on brings back the board without anyone typing the address again.
+
+Every line on the display is in English, with a second language underneath that rotates through
+the others, 8 seconds each; a row of language names along the bottom shows which one is up. Add
+`?lang=es` (any supported language code) to pin the second language, or `?lang=en` for English
+alone.
+
+The token grants `GET /api/kiosk/board` and nothing else; it is not an Auth0 token, and every admin
+endpoint refuses it. It lasts 180 days, after which the display asks for a code again. Both codes
+and tokens are derived from the `KIOSK_SECRET` environment variable — at least 32 random
+characters, e.g. `openssl rand -base64 32` — and nothing about either is stored on the server.
+**To relock every display at once, for a lost tablet say, change `KIOSK_SECRET`** and redeploy.
+Without the variable, no code can be issued and no display unlocked.
+
+Neither `/api/kiosk/unlock` nor `/api/kiosk/board` reads the database until the token checks out,
+so a stray browser polling without one, or someone guessing codes, never keeps the database awake.
+An unlocked display reads the board every 5 seconds from the moment registration opens until the
+session ends, and every 10 minutes otherwise, which lets the database suspend overnight and
+between market days.
 
 The display keeps its screen awake where the browser supports the Screen Wake Lock API, and keeps
-the last board up with a "Reconnecting…" note if a poll fails. If Auth0 cannot renew its token
-silently — its session lapsed, or the user was blocked — it says so and offers a sign-in button
-for a worker.
+the last board up with a "Reconnecting…" note if a poll fails.
 
-Push `infrastructure/auth0/tenant/tenant.yaml` to Auth0 before merging the code that checks
-`view:kiosk`; until then the display is refused with a 403 and nothing else changes.
+The display used to sign in as an Auth0 user holding a `kiosk` role and a `view:kiosk` permission.
+Both are gone from `infrastructure/auth0/tenant/tenant.yaml`; pushing it removes them from the
+tenant, and any `kiosk-…@` users left over can be deleted.
 
 ## The print station
 
 `/printing-station` runs on a desktop at the market with the label printer attached, and prints the
 name tags volunteers send from `/queue` on their phones — with no print dialog, when its browser is
-started for it (see [`name-tag-printing.md`](name-tag-printing.md)). It is set up like the room
-display, and for the same reason: an unattended machine should be able to do its one job and
-nothing else.
+started for it (see [`name-tag-printing.md`](name-tag-printing.md)). It signs in as an account of
+its own, so the unattended machine can do its one job and nothing else. (The room display used to
+work the same way, and now unlocks with a code instead; the print station may follow.)
 
 1. **Create one Auth0 user for the station**, e.g. `print-station@…`, with a long generated
    password, and give it the `print-station` role and nothing else.

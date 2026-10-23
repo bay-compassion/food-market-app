@@ -1,21 +1,18 @@
-import { useAuth0 } from '@auth0/auth0-react';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 
-import { isAuth0Configured } from '../../auth';
 import { languages, type Locale } from '../../locales';
 import { LanguageRotation } from '../../models/language-rotation';
 import { KioskApi } from '../../services/kiosk-api';
 import { KioskStore } from '../../stores/kiosk.store';
-import { useRootStore } from '../../stores/react/store-context';
 import { isLanguage } from '../../stores/translation.store';
 import { useRotationTurn } from '../hooks/use-rotation-turn';
 import { useScreenWakeLock } from '../hooks/use-screen-wake-lock';
-import { RequireAuth } from '../RequireAuth';
 import { KioskLanguage, KioskLanguagesProvider, type KioskLanguages } from './kiosk-languages';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
+import { KioskLockedScreen } from './KioskLockedScreen';
 
 const english = new KioskLanguage('en');
 
@@ -28,10 +25,11 @@ const rotation = LanguageRotation.evenly<Locale>(
 /**
  * The `/kiosk` route: a full-screen "now calling" display for a tablet or monitor in the room.
  *
- * It signs in like the admin area, and is meant to be signed in as an account holding
- * `view:kiosk` alone (see `docs/roles.md`), so the unattended machine carries nothing that can
- * change the queue. It renders outside the app shell — no bar, no menu, no footer — so there is
- * nothing on screen to tap through to.
+ * It never signs in. A worker unlocks it once with a six-digit code from their phone, which the
+ * display trades for a kiosk token it keeps (see `docs/roles.md`), so no worker's account is ever
+ * left open on an unattended screen in a public room. Until then it shows a locked screen, in
+ * English alone. It renders outside the app shell — no bar, no
+ * menu, no footer — so there is nothing on screen to tap through to.
  *
  * Every line is in English, always, with a second language under it that rotates through the
  * rest, 8 seconds each — so a guest who reads any of them sees their own about every 48 seconds —
@@ -41,18 +39,7 @@ const rotation = LanguageRotation.evenly<Locale>(
  * throughout; Arabic and Farsi lines still run right-to-left within themselves (`dir="auto"`), but
  * the screen does not flip every few seconds.
  */
-export function KioskView() {
-	return (
-		<RequireAuth>
-			<KioskScreen />
-		</RequireAuth>
-	);
-}
-
-const KioskScreen = observer(function KioskScreen() {
-	const rootStore = useRootStore();
-	const { isAuthenticated, isLoading, getAccessTokenSilently, loginWithRedirect } = useAuth0();
-	const { pathname, search } = useLocation();
+export const KioskView = observer(function KioskView() {
 	const lang = useSearchParams()[0].get('lang');
 	const activeRotation = useMemo(
 		() => (isLanguage(lang) ? LanguageRotation.fixed<Locale>(lang) : rotation),
@@ -69,45 +56,29 @@ const KioskScreen = observer(function KioskScreen() {
 		}),
 		[activeRotation, rotating, secondaryLocale, durationMs, elapsedMs],
 	);
-	const [store] = useState(
-		() =>
-			new KioskStore({ api: new KioskApi({ requestHeaders: () => rootStore.requestHeaders() }) }),
-	);
-	const canRead = !isAuth0Configured || isAuthenticated;
+	const [store] = useState(() => new KioskStore({ api: new KioskApi() }));
 
 	useScreenWakeLock();
 
 	useEffect(() => {
-		if (isAuth0Configured) {
-			rootStore.setAccessTokenProvider(getAccessTokenSilently);
-		}
-	}, [getAccessTokenSilently, rootStore]);
-
-	useEffect(() => {
-		if (!canRead) {
-			return;
-		}
 		store.start();
 
 		return () => store[Symbol.dispose]();
-	}, [canRead, store]);
+	}, [store]);
+
+	if (store.isLocked) {
+		// A gate in front of the board, in English alone: no rotating language to provide.
+		return (
+			<KioskFrame dir="ltr" lang="en">
+				<KioskLockedScreen store={store} />
+			</KioskFrame>
+		);
+	}
 
 	const board = store.board;
 	let content;
 
-	if (store.failure === 'forbidden') {
-		content = <KioskMessage message={(copy) => copy.notPermitted} />;
-	} else if (store.failure === 'sign_in') {
-		content = (
-			<KioskMessage
-				message={(copy) => copy.signInRequired}
-				action={{
-					label: (copy) => copy.signIn,
-					onClick: () => void loginWithRedirect({ appState: { returnTo: `${pathname}${search}` } }),
-				}}
-			/>
-		);
-	} else if (isLoading || !canRead || store.isLoading) {
+	if (store.isLoading) {
 		content = <KioskMessage message={(copy) => copy.loading} />;
 	} else if (!board) {
 		content = <KioskMessage message={(copy) => copy.reconnecting} />;
@@ -116,7 +87,7 @@ const KioskScreen = observer(function KioskScreen() {
 	} else if (board.phase === 'ended') {
 		content = <KioskMessage message={(copy) => copy.ended} />;
 	} else {
-		content = <KioskBoard board={board} reconnecting={store.failure === 'connection'} />;
+		content = <KioskBoard board={board} reconnecting={store.isReconnecting} />;
 	}
 
 	return (

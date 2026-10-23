@@ -1,12 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { expect, within } from 'storybook/test';
 
+import { adminTranslations } from '../../adminLocales';
 import { languages, translations, type Locale } from '../../locales';
 import { QueueBoard, type QueueBoardState } from '../../models/queue-board';
+import type { KioskUnlockOutcome } from '../../services/kiosk-api';
+import { KioskStore } from '../../stores/kiosk.store';
 import { KioskLanguage, KioskLanguagesProvider } from './kiosk-languages';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
+import { KioskLockedScreen } from './KioskLockedScreen';
 
 type Args = QueueBoardState & { reconnecting: boolean; secondary: Locale };
 
@@ -177,6 +181,55 @@ export const BeforeTheMarketOpens: Story = {
 		// The clock shows before the market opens too, and outside the message's live region.
 		await expect(clock).toHaveTextContent(/^\d{1,2}:\d{2}\s[AP]M$/);
 		await expect(clock?.closest('[aria-live]')).toBeNull();
+	},
+};
+
+/** A display with no token, against an API that refuses every code but `123456`. */
+function LockedDisplay() {
+	const [store] = useState(
+		() =>
+			new KioskStore({
+				api: {
+					queueBoard: async () => ({ ok: false, failure: 'connection' }),
+					unlock: async (code): Promise<KioskUnlockOutcome> =>
+						code === '123456'
+							? { ok: true, token: 'story-token' }
+							: { ok: false, failure: 'wrong_code' },
+				},
+				// In memory, so the story never unlocks the real display in this browser.
+				storage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
+			}),
+	);
+
+	return (
+		<KioskFrame dir="ltr" lang="en">
+			<KioskLockedScreen store={store} />
+		</KioskFrame>
+	);
+}
+
+/**
+ * Locked: no worker has unlocked this display yet, or its token lapsed. A worker types the six
+ * digits from "Unlock a room display" on their phone. A gate in front of the board, so it is in
+ * English alone, whatever `secondary` says.
+ */
+export const Locked: Story = {
+	render: () => <LockedDisplay />,
+	play: async ({ canvasElement, userEvent }) => {
+		const t = adminTranslations.en.kioskUnlock.display;
+		const canvas = within(canvasElement);
+		const field = canvas.getByLabelText(t.codeLabel);
+		const unlock = canvas.getByRole('button', { name: t.unlock });
+
+		await expect(unlock).toBeDisabled();
+		await userEvent.type(field, '00-00-00');
+		await expect(field).toHaveValue('000000');
+		await userEvent.click(unlock);
+		await expect(await canvas.findByRole('alert')).toHaveTextContent(t.wrongCode);
+		await expect(field).toHaveAttribute('aria-invalid', 'true');
+		// No rotating second language, and no row of language names.
+		await expect(canvasElement.querySelector('[lang]:not([lang="en"])')).toBeNull();
+		await expect(canvasElement.querySelector('ol')).toBeNull();
 	},
 };
 

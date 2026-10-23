@@ -3,6 +3,7 @@ import { createMiddleware } from 'hono/factory';
 
 import { grantedPermissions, type Permission } from '../../src/services/permissions.js';
 import type { VisitEventActor } from '../../src/services/visit-events.js';
+import { KioskAccess } from '../services/kiosk-access.mjs';
 import { requirePermission, verifyAuth0Token, workerNameFrom } from './auth.mjs';
 import { authorizedGuest } from './deviceAuth.mjs';
 import { jsonError } from './http.mjs';
@@ -69,6 +70,20 @@ export const withDeviceGuest = createMiddleware<DeviceGuestEnv>(async (context, 
 	}
 
 	context.set('guest', guest);
+	await next();
+});
+
+/**
+ * Admits a room display holding a kiosk token — no Auth0, and no database read, so a request
+ * without one is turned away before anything wakes up. See `KioskAccess`.
+ */
+export const withKioskToken = createMiddleware(async (context, next) => {
+	const match = context.req.header('Authorization')?.match(/^Bearer\s+(\S+)$/);
+
+	if (!match || !(await KioskAccess.fromEnvironment().verify(match[1]!))) {
+		return jsonError('This display needs to be unlocked.', 401);
+	}
+
 	await next();
 });
 

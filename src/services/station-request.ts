@@ -1,6 +1,7 @@
 /**
- * Why an unattended screen — the room display, the print station — could not reach the server.
- * Each asks for something different.
+ * Why the print station, an unattended screen signed in as an account of its own, could not reach
+ * the server. Each asks for something different. (The room display unlocks with a code instead; see
+ * `KioskApi`.)
  */
 export type StationFailure =
 	/** No usable token, or the server refused it: someone has to sign the screen in again. */

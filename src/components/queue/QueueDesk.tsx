@@ -8,6 +8,7 @@ import { adminTranslations } from '../../adminLocales';
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../../auth';
 import { QueueDeskStore } from '../../stores/queue-desk.store';
 import { useRootStore } from '../../stores/react/store-context';
+import { KioskUnlockDialog } from '../admin/KioskUnlockDialog';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { NotificationToasts } from '../ui/NotificationToasts';
 import { QueueDeskProvider } from './queue-desk-context';
@@ -93,6 +94,7 @@ export const QueueDesk = observer(function QueueDesk({ getAccessToken }: QueueDe
 			<QueueDeskFrame dir="ltr" lang="en">
 				{content}
 			</QueueDeskFrame>
+			<KioskUnlockDialog />
 			<ConfirmationDrawer />
 			<NotificationToasts />
 		</QueueDeskProvider>

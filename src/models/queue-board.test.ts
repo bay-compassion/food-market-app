@@ -26,6 +26,19 @@ describe('QueueBoard', () => {
 		expect(phases).toEqual(['not_started', 'not_started', 'calling', 'ended', 'not_started']);
 	});
 
+	it('is idle with no session, one not yet open, or one over — not during registration', () => {
+		// Arrange
+		const statuses = ['scheduled', 'registration_open', 'service_started', 'ended', null] as const;
+
+		// Act
+		const idle = statuses.map(
+			(sessionStatus) => new QueueBoard({ ...calling, sessionStatus }).isIdle,
+		);
+
+		// Assert
+		expect(idle).toEqual([true, false, false, true, true]);
+	});
+
 	it('lists earlier unclaimed numbers without repeating the one on the main board', () => {
 		// Arrange
 		const board = new QueueBoard(calling);

@@ -225,10 +225,10 @@ describe('endpoint permissions', () => {
 			'delete:guest-data',
 		],
 		[
-			'showing the room display',
+			'issuing a code to unlock a room display',
 			kioskHandler,
-			json('https://x/api/admin/kiosk', 'GET'),
-			'view:kiosk',
+			json('https://x/api/admin/kiosk/unlock-codes', 'POST'),
+			'run:queue',
 		],
 	];
 
