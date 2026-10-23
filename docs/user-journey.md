@@ -271,8 +271,11 @@ flowchart TD
   and `calledPriority`, every number at the entrance now in each series. The guest's own number
   heads their card on a dark board, and the `line-position-indicator` flag picks what sits under
   it: the guests-ahead count with its row of figures (`guests-ahead`), a "now calling" row that is
-  the room display in miniature — the main number filled, the rest of a batch outlined beside it,
-  and any `P` numbers as pills (`now-calling`, the default) — or nothing (`none`). The same number heads the `/kiosk` room
+  the room display in miniature — the main number filled and any `P` numbers as pills
+  (`now-calling`, the default) — or nothing (`none`). The room display's "Already Called" numbers,
+  the rest of a batch, sit outlined beside the main number only while the
+  `guest-earlier-called-numbers` flag is on; it is off by default, since a stakeholder thought they
+  would confuse guests. The same number heads the `/kiosk` room
   display (`highestCalledNumber` in `netlify/services/queue-board.mts`), so a guest's phone and
   the screen on the wall never disagree.
   Once called, the whole card is replaced by an "it's your turn" panel rather than a changed status

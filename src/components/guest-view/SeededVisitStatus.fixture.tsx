@@ -11,7 +11,7 @@ import {
 	LINE_POSITION_INDICATOR_FLAG_KEY,
 	type LinePositionIndicator,
 } from '../hooks/use-line-position-indicator';
-import { StaticLDProvider } from '../StaticLDProvider';
+import { StaticLDProvider, type StaticFlagValue } from '../StaticLDProvider';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { GuestVisitState } from './GuestVisitState';
 
@@ -180,11 +180,15 @@ export const defaultVisitStatusArgs: GuestVisitStatusArgs = {
 	submissionError: false,
 };
 
-/** Pins the `line-position-indicator` flag for one story. */
-export function withIndicator(indicator: LinePositionIndicator): Decorator[] {
+/** Pins the `line-position-indicator` flag for one story, plus any other `flags` it needs — one
+ *  provider for all of them, since a nested `StaticLDProvider` replaces the one around it. */
+export function withIndicator(
+	indicator: LinePositionIndicator,
+	flags: Record<string, StaticFlagValue> = {},
+): Decorator[] {
 	return [
 		(Story) => (
-			<StaticLDProvider flags={{ [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}>
+			<StaticLDProvider flags={{ ...flags, [LINE_POSITION_INDICATOR_FLAG_KEY]: indicator }}>
 				<Story />
 			</StaticLDProvider>
 		),

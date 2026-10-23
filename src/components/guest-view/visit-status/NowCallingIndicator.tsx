@@ -76,18 +76,22 @@ const Priority = styled.span`
 export type NowCallingIndicatorProps = {
 	copy: VisitStatusTranslations['waiting'];
 	nowCalling: NowCalling;
+	/** Show the earlier numbers still expected at the entrance; the `guest-earlier-called-numbers`
+	 *  flag, read by the card that lays out the panel. */
+	showEarlier: boolean;
 };
 
 /**
  * The "now calling" row under a waiting guest's number — the room display in miniature. The main
- * number the market has reached is filled, for the guest to compare with their own; numbers called
- * before it that are still expected at the entrance sit outlined beside it, which is how a batch
- * called at once reads; a priority number being called is a pill after them.
+ * number the market has reached is filled, for the guest to compare with their own; with
+ * `showEarlier`, numbers called before it that are still expected at the entrance sit outlined
+ * beside it, which is how a batch called at once reads; a priority number being called is a pill
+ * after them.
  *
  * A polite live region, so a screen reader hears the numbers change as the queue refreshes without
  * being interrupted.
  */
-export function NowCallingIndicator({ copy, nowCalling }: NowCallingIndicatorProps) {
+export function NowCallingIndicator({ copy, nowCalling, showEarlier }: NowCallingIndicatorProps) {
 	const { main, earlier, priority } = nowCalling;
 
 	return (
@@ -97,9 +101,9 @@ export function NowCallingIndicator({ copy, nowCalling }: NowCallingIndicatorPro
 				<NoneCalled>{copy.nowCallingNone}</NoneCalled>
 			) : (
 				<Numbers>
-					{earlier.map((number) => (
-						<Earlier key={number.label}>{number.label}</Earlier>
-					))}
+					{showEarlier
+						? earlier.map((number) => <Earlier key={number.label}>{number.label}</Earlier>)
+						: null}
 					{main ? <Latest>{main.label}</Latest> : null}
 					{priority.map((number) => (
 						<Priority key={number.label}>{number.label}</Priority>
