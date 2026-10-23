@@ -22,6 +22,8 @@ const paths = [
 	'/api/admin/broadcast',
 	'/api/admin/reports',
 	'/api/admin/demo-data',
+	'/api/kiosk/unlock',
+	'/api/kiosk/board',
 ];
 
 beforeEach(() => {
@@ -44,7 +46,8 @@ describe('consolidated API routing', () => {
 		expect(config.path).toEqual([
 			'/api/admin',
 			'/api/admin/*',
-			...paths.filter((path) => !path.startsWith('/api/admin/')),
+			'/api/kiosk/*',
+			...paths.filter((path) => !/^\/api\/(admin|kiosk)\//.test(path)),
 		]);
 	});
 

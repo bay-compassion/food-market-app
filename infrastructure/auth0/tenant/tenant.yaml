@@ -26,8 +26,6 @@ resourceServers:
         description: >-
           Put any guest on a phone with a QR code, replacing a phone they
           already use
-      - value: view:kiosk
-        description: The room display — queue numbers being called, no names
       - value: print:name-tags
         description: >-
           The print station — prints the name tags volunteers send, first name
@@ -207,8 +205,6 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: run:queue
         resource_server_identifier: https://thebaycompassion.org
-      - permission_name: view:kiosk
-        resource_server_identifier: https://thebaycompassion.org
       - permission_name: print:name-tags
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
@@ -225,25 +221,15 @@ roles:
     permissions:
       - permission_name: manage:demo-data
         resource_server_identifier: https://thebaycompassion.org
-      - permission_name: view:kiosk
-        resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: print-station
     description: >-
       The account a print-station desktop signs in as — prints name tags,
       nothing else
-  - name: kiosk
-    description: Kiosk User
-    permissions:
-      - permission_name: view:kiosk
-        resource_server_identifier: https://thebaycompassion.org
-    type: tenant
   - name: worker
     description: Role for non-admin staff users
     permissions:
       - permission_name: run:queue
-        resource_server_identifier: https://thebaycompassion.org
-      - permission_name: view:kiosk
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: print:name-tags
         resource_server_identifier: https://thebaycompassion.org

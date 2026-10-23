@@ -105,7 +105,7 @@ describe('QueueDeskStore', () => {
 
 	it('turns away a worker without run:queue, without reading any guests', async () => {
 		// Arrange
-		const { desk, admin } = deskWith({ permissions: ['view:kiosk'] });
+		const { desk, admin } = deskWith({ permissions: ['print:name-tags'] });
 
 		// Act
 		await desk.start();

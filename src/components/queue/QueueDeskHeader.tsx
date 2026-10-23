@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router';
 
 import { adminTranslations } from '../../adminLocales';
+import { KioskUnlockMenuItem } from '../admin/KioskUnlockMenuItem';
 import { OverflowMenu } from '../admin/OverflowMenu';
 import { useQueueDesk } from './queue-desk-context';
 import { useCloseSession } from './use-close-session';
@@ -59,6 +60,7 @@ export const QueueDeskHeader = observer(function QueueDeskHeader() {
 						<MenuItem component={Link} to="/admin" onClick={closeMenu}>
 							{t.queueDesk.openDashboard}
 						</MenuItem>
+						<KioskUnlockMenuItem closeMenu={closeMenu} />
 						<MenuItem
 							sx={{ color: 'error.main', fontWeight: 700 }}
 							onClick={() => {

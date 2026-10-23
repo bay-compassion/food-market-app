@@ -326,6 +326,35 @@ export interface AdminTranslation {
 	devProgressHalfway: string;
 	devProgressNearlyDone: string;
 	queueDesk: QueueDeskTranslation;
+	kioskUnlock: KioskUnlockTranslation;
+}
+
+/** The code a worker reads off their phone to unlock a room display at `/kiosk`. */
+export interface KioskUnlockTranslation {
+	/** The menu item that asks for a code. */
+	open: string;
+	title: string;
+	/** Above the room display's web address. */
+	goTo: string;
+	/** Above the code, after the address. */
+	typeCode: string;
+	/** Under the code. `{time}` is when it stops working. */
+	instructions: string;
+	/** Replaces the instructions once the code has lapsed with the dialog still open. */
+	expired: string;
+	newCode: string;
+	done: string;
+	failed: string;
+	/** The locked room display itself: a gate in front of the board, so English only. */
+	display: {
+		locked: string;
+		/** Labels the field the six-digit code from a worker's phone goes into. */
+		codeLabel: string;
+		unlock: string;
+		wrongCode: string;
+		/** The code could not be checked: the network or the server. */
+		unlockFailed: string;
+	};
 }
 
 /** The `/queue` screen a volunteer runs the line from on their own phone. */
@@ -921,6 +950,24 @@ export const adminTranslations = {
 				byLottery: 'Lottery draw',
 				bySessionEnding: 'Session ended',
 				bySystem: 'Automatically',
+			},
+		},
+		kioskUnlock: {
+			open: 'Unlock a room display',
+			title: 'Unlock a Room Display',
+			goTo: 'On the display, go to',
+			typeCode: 'Then type this code',
+			instructions: 'It works on any number of displays until {time}.',
+			expired: 'This code has expired.',
+			newCode: 'Get a new code',
+			done: 'Done',
+			failed: 'Couldn’t get a code for the room display. Try again.',
+			display: {
+				locked: 'This display is locked. A staff member needs to unlock it.',
+				codeLabel: 'Unlock code',
+				unlock: 'Unlock',
+				wrongCode: 'That code didn’t work. Get a new one from the queue screen.',
+				unlockFailed: 'Can’t reach the server. Try again.',
 			},
 		},
 	},

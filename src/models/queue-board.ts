@@ -1,7 +1,7 @@
 import type { SessionStatus } from '../services/sessionStateMachine.ts';
 import { QueueNumber } from './queue-number.ts';
 
-/** What `GET /api/admin/kiosk` returns: the session's queue as a room display shows it. */
+/** What `GET /api/kiosk/board` returns: the session's queue as a room display shows it. */
 export type QueueBoardState = {
 	/** The current session's status, or `null` when no session is configured. */
 	sessionStatus: SessionStatus | null;
@@ -40,6 +40,17 @@ export class QueueBoard {
 			default:
 				return 'not_started';
 		}
+	}
+
+	/**
+	 * Whether nothing is going to change for a while: no session, one not yet open, or one over.
+	 * A display can check in rarely then. Registration is not idle — guests' phones are reading
+	 * the market anyway, and service can start at any moment.
+	 */
+	get isIdle(): boolean {
+		const status = this.state.sessionStatus;
+
+		return status === null || status === 'scheduled' || status === 'ended';
 	}
 
 	/**

@@ -302,11 +302,6 @@ export interface KioskTranslations {
 	ended: string;
 	loading: string;
 	reconnecting: string;
-	/** The display's sign-in expired; a worker has to come and sign it in again. */
-	signInRequired: string;
-	signIn: string;
-	/** Signed in, but as an account without `view:kiosk`. */
-	notPermitted: string;
 }
 
 /** The `/help` page: how a market Saturday works, step by step, matching the printed flyer. */
@@ -842,9 +837,6 @@ export const translations = {
 			ended: 'Today’s market has ended. Thank you for coming!',
 			loading: 'Loading the line…',
 			reconnecting: 'Reconnecting…',
-			signInRequired: 'This display was signed out. A staff member needs to sign in again.',
-			signIn: 'Staff sign-in',
-			notPermitted: 'This account can’t show the line display.',
 		},
 		help: {
 			title: 'How it works',
@@ -1297,10 +1289,6 @@ export const translations = {
 			ended: 'El mercado de hoy ha terminado. ¡Gracias por venir!',
 			loading: 'Cargando la fila…',
 			reconnecting: 'Reconectando…',
-			signInRequired:
-				'Se cerró la sesión de esta pantalla. Un miembro del personal debe iniciar sesión de nuevo.',
-			signIn: 'Inicio de sesión del personal',
-			notPermitted: 'Esta cuenta no puede mostrar la pantalla de la fila.',
 		},
 		help: {
 			title: 'Cómo funciona',
@@ -1747,9 +1735,6 @@ export const translations = {
 			ended: 'بازار امروز به پایان رسید. از حضور شما سپاسگزاریم!',
 			loading: 'در حال بارگیری صف…',
 			reconnecting: 'در حال اتصال دوباره…',
-			signInRequired: 'این نمایشگر از حساب خارج شده است. یکی از کارکنان باید دوباره وارد شود.',
-			signIn: 'ورود کارکنان',
-			notPermitted: 'این حساب اجازهٔ نمایش صف را ندارد.',
 		},
 		help: {
 			title: 'چطور کار می‌کند',
@@ -2201,9 +2186,6 @@ export const translations = {
 			ended: 'Tapos na ang market ngayong araw. Salamat sa pagpunta!',
 			loading: 'Nilo-load ang pila…',
 			reconnecting: 'Kumokonekta muli…',
-			signInRequired: 'Na-sign out ang display na ito. Kailangang mag-sign in muli ng isang staff.',
-			signIn: 'Pag-sign in ng staff',
-			notPermitted: 'Hindi maipapakita ng account na ito ang display ng pila.',
 		},
 		help: {
 			title: 'Paano ito gumagana',
@@ -2650,9 +2632,6 @@ export const translations = {
 			ended: 'Chợ hôm nay đã kết thúc. Cảm ơn quý vị đã đến!',
 			loading: 'Đang tải hàng chờ…',
 			reconnecting: 'Đang kết nối lại…',
-			signInRequired: 'Màn hình này đã bị đăng xuất. Nhân viên cần đăng nhập lại.',
-			signIn: 'Nhân viên đăng nhập',
-			notPermitted: 'Tài khoản này không thể hiển thị màn hình hàng chờ.',
 		},
 		help: {
 			title: 'Cách thức hoạt động',
@@ -3086,9 +3065,6 @@ export const translations = {
 			ended: '今天的市场已结束。感谢您的光临！',
 			loading: '正在加载队列…',
 			reconnecting: '正在重新连接…',
-			signInRequired: '此显示屏已退出登录，需要工作人员重新登录。',
-			signIn: '工作人员登录',
-			notPermitted: '此帐户无法显示排队屏幕。',
 		},
 		help: {
 			title: '使用说明',
@@ -3526,9 +3502,6 @@ export const translations = {
 			ended: 'انتهى سوق اليوم. شكرًا لحضوركم!',
 			loading: 'جارٍ تحميل الطابور…',
 			reconnecting: 'جارٍ إعادة الاتصال…',
-			signInRequired: 'تم تسجيل الخروج من هذه الشاشة. يجب أن يسجّل أحد الموظفين الدخول مرة أخرى.',
-			signIn: 'تسجيل دخول الموظفين',
-			notPermitted: 'لا يمكن لهذا الحساب عرض شاشة الطابور.',
 		},
 		help: {
 			title: 'كيف يعمل',
@@ -3979,9 +3952,6 @@ export const translations = {
 			ended: 'Le marché d’aujourd’hui est terminé. Merci d’être venus !',
 			loading: 'Chargement de la file…',
 			reconnecting: 'Reconnexion…',
-			signInRequired: 'Cet écran a été déconnecté. Un membre du personnel doit se reconnecter.',
-			signIn: 'Connexion du personnel',
-			notPermitted: 'Ce compte ne peut pas afficher l’écran de la file.',
 		},
 		help: {
 			title: 'Comment ça marche',
@@ -4432,9 +4402,6 @@ export const translations = {
 			ended: 'O mercado de hoje terminou. Obrigado pela visita!',
 			loading: 'Carregando a fila…',
 			reconnecting: 'Reconectando…',
-			signInRequired: 'Esta tela foi desconectada. Um membro da equipe precisa entrar novamente.',
-			signIn: 'Acesso da equipe',
-			notPermitted: 'Esta conta não pode exibir a tela da fila.',
 		},
 		help: {
 			title: 'Como funciona',
@@ -4886,10 +4853,6 @@ export const translations = {
 			ended: 'Сегодняшний рынок завершён. Спасибо за визит!',
 			loading: 'Загрузка очереди…',
 			reconnecting: 'Повторное подключение…',
-			signInRequired:
-				'На этом экране выполнен выход из системы. Сотруднику необходимо войти снова.',
-			signIn: 'Вход для сотрудников',
-			notPermitted: 'Этот аккаунт не имеет доступа к экрану очереди.',
 		},
 		help: {
 			title: 'Как это работает',

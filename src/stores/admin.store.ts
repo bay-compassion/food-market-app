@@ -22,6 +22,7 @@ import {
 import { viewsFor, type AdminView } from '../services/admin-views.ts';
 import type { GuestDeletionPreview } from '../services/guest-deletion.ts';
 import { admissionOffersPhoneClaim, type QueuePlacement } from '../services/guestAdmission.ts';
+import type { KioskUnlockCode } from '../services/kiosk-unlock.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
 import type { PrintJobSubmission } from '../services/print-jobs.ts';
@@ -70,6 +71,7 @@ export class AdminStore {
 	private _isBusy = false;
 	private _feedback: AdminFeedback | null = null;
 	private _guestClaim: GuestClaim | null = null;
+	private _kioskUnlockCode: KioskUnlockCode | null = null;
 	private _guestDeletion: GuestDeletionPreview | null = null;
 	/** Guest commands sent and not yet answered. A poll landing meanwhile would undo their status. */
 	private pendingGuestCommands = 0;
@@ -123,6 +125,11 @@ export class AdminStore {
 	/** The code on screen for a guest to scan with their phone, if the worker has opened one. */
 	get guestClaim(): GuestClaim | null {
 		return this._guestClaim;
+	}
+
+	/** The room-display unlock code on screen, if a worker asked for one. */
+	get kioskUnlockCode(): KioskUnlockCode | null {
+		return this._kioskUnlockCode;
 	}
 
 	/** The guest an admin has asked to delete permanently, while the confirmation dialog is open. */
@@ -447,6 +454,26 @@ export class AdminStore {
 
 	dismissGuestClaim(): void {
 		this._guestClaim = null;
+	}
+
+	/**
+	 * Asks for a code to type into a room display, from the queue screen or the dashboard. Also how
+	 * the dialog replaces a code that has lapsed while it was open.
+	 */
+	async showKioskUnlockCode(): Promise<void> {
+		try {
+			const code = await this.api.issueKioskUnlockCode();
+
+			runInAction(() => {
+				this._kioskUnlockCode = code;
+			});
+		} catch {
+			this.notifications.error(adminTranslations.en.kioskUnlock.failed);
+		}
+	}
+
+	dismissKioskUnlockCode(): void {
+		this._kioskUnlockCode = null;
 	}
 
 	/** Opens the delete dialog with what deleting this guest would remove, read fresh from the server. */

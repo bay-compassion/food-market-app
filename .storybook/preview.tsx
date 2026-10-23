@@ -128,7 +128,12 @@ const preview: Preview = {
 					],
 					// Staff-facing screens outside the dashboard: the kiosk board and the queue desk.
 					'Staff',
-					['Kiosk', ['Board', 'Language Pill'], 'Queue Desk', ['Line', 'Name Tag Card']],
+					[
+						'Kiosk',
+						['Board', 'Language Pill'],
+						'Queue Desk',
+						['Line', 'Name Tag Card', 'Room Display Code'],
+					],
 					'Admin',
 					// Match adminViews in src/services/admin-views.ts, with shared components last.
 					[

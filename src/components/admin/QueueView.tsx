@@ -9,10 +9,12 @@ import type { ManualAdmission } from '../../services/guestAdmission';
 import { QueueRoster } from '../../services/queue-roster';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
 import { useManualGuestForm } from './AddGuestSection';
+import { KioskUnlockMenuItem } from './KioskUnlockMenuItem';
 import { ManualGuestDialog } from './ManualGuestDialog';
 import { OverflowMenu } from './OverflowMenu';
 import { QueueCallNext } from './QueueCallNext';
 import { QueueGuestRow } from './QueueGuestRow';
+import { QueueNotStarted } from './QueueNotStarted';
 import { QueueSection } from './QueueSection';
 import type { ManualGuest, QueueGuest } from './types';
 
@@ -54,17 +56,6 @@ const Summary = styled.p`
 	}
 `;
 
-const Empty = styled.section`
-	display: grid;
-	gap: 14px;
-	justify-items: start;
-
-	p {
-		color: var(--color-text-subtle);
-		line-height: 1.5;
-	}
-`;
-
 /**
  * The screen a worker actually uses during service. Everything down to the first guest rows is
  * deliberately compact: on a phone this is the only screen they look at, so the controls have to
@@ -98,15 +89,7 @@ export const QueueView = observer(function QueueView({
 	}, []);
 
 	if (!serviceStarted) {
-		return (
-			<Empty className="admin-section queue-empty">
-				<h2>{t.queue}</h2>
-				<p>{t.queueNotStarted}</p>
-				<Button type="button" variant="outlined" onClick={onNavigateCurrentSession}>
-					{t.goToCurrentSession}
-				</Button>
-			</Empty>
-		);
+		return <QueueNotStarted onNavigateCurrentSession={onNavigateCurrentSession} />;
 	}
 
 	const roster = new QueueRoster(guests);
@@ -173,15 +156,18 @@ export const QueueView = observer(function QueueView({
 						/>
 						<OverflowMenu label={t.sessionActions} disabled={busy}>
 							{(closeMenu) => (
-								<MenuItem
-									sx={{ color: 'error.main', fontWeight: 700 }}
-									onClick={() => {
-										closeMenu();
-										onCloseSession();
-									}}
-								>
-									{t.closeSession}
-								</MenuItem>
+								<>
+									<KioskUnlockMenuItem closeMenu={closeMenu} />
+									<MenuItem
+										sx={{ color: 'error.main', fontWeight: 700 }}
+										onClick={() => {
+											closeMenu();
+											onCloseSession();
+										}}
+									>
+										{t.closeSession}
+									</MenuItem>
+								</>
 							)}
 						</OverflowMenu>
 					</>
