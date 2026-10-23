@@ -138,7 +138,7 @@ flowchart TD
     saveIdentity --> registered[Visit created: registered]
     registered --> status
 
-    status --> regClosed[Registration closes<br/>30-second grace period<br/>push: registration_closed]
+    status --> regClosed[Registration closes<br/>10-second grace period<br/>push: registration_closed]
     regClosed --> lotteryPending[lottery_pending:<br/>registration pool frozen]
     lotteryPending --> lottery{Lottery}
     lottery -- selected --> waiting[waiting: guest sees their place in line<br/>and how many are ahead<br/>push/sms: lottery_selected]

@@ -28,7 +28,7 @@ const minuteMs = 60_000;
  */
 export class SessionTimeline {
 	/** How long an in-flight self-service registration may still commit after registration closes. */
-	static readonly gracePeriodMs = 30_000;
+	static readonly gracePeriodMs = 10_000;
 
 	constructor(private readonly session: SessionTiming) {}
 
