@@ -15,7 +15,7 @@ describe('SessionTimeline', () => {
 	it.each([
 		['2026-07-18T15:59:00.000Z', 'scheduled'],
 		['2026-07-18T16:30:00.000Z', 'registration_open'],
-		['2026-07-18T17:00:15.000Z', 'registration_closed'],
+		['2026-07-18T17:00:05.000Z', 'registration_closed'],
 		['2026-07-18T17:01:00.000Z', 'lottery_pending'],
 	] as const)('carries a scheduled session at %s to %s', (now, expected) => {
 		// Act
@@ -44,7 +44,7 @@ describe('SessionTimeline', () => {
 	it.each([
 		['2026-07-18T15:59:00.000Z', false],
 		['2026-07-18T16:30:00.000Z', true],
-		['2026-07-18T17:00:15.000Z', true],
+		['2026-07-18T17:00:05.000Z', true],
 		['2026-07-18T17:01:00.000Z', false],
 	] as const)('at %s accepts self-registration: %s', (now, expected) => {
 		// Act
@@ -85,7 +85,7 @@ describe('SessionTimeline', () => {
 		const drawsAt = timeline({ lotteryDelayMinutes: 15 }).lotteryDrawsAt;
 
 		// Assert
-		expect(drawsAt?.toISOString()).toBe('2026-07-18T17:15:30.000Z');
+		expect(drawsAt?.toISOString()).toBe('2026-07-18T17:15:10.000Z');
 	});
 
 	it('counts auto-close from the actual opening, so Start Now moves it', () => {
@@ -131,7 +131,7 @@ describe('SessionTimeline', () => {
 		// Assert
 		expect(times).toEqual([
 			'2026-07-18T17:00:00.000Z',
-			'2026-07-18T17:00:30.000Z',
+			'2026-07-18T17:00:10.000Z',
 			'2026-07-18T17:00:00.000Z',
 		]);
 	});

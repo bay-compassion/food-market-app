@@ -116,7 +116,7 @@ describe('market session timer workload', () => {
 	it('draws the lottery and dispatches its notifications once pending', async () => {
 		// Arrange
 		const pending = session({ status: 'lottery_pending', lotteryDelayMinutes: 5 });
-		const dueAt = new Date(closesAt.valueOf() + 30_000 + 5 * 60_000);
+		const dueAt = new Date(closesAt.valueOf() + 10_000 + 5 * 60_000);
 
 		queueResult([pending]);
 		vi.mocked(getCurrentEvent).mockResolvedValueOnce(pending);
@@ -136,7 +136,7 @@ describe('market session timer workload', () => {
 	it('does not draw when staff already ran the lottery', async () => {
 		// Arrange
 		const pending = session({ status: 'lottery_pending', lotteryDelayMinutes: 5 });
-		const dueAt = new Date(closesAt.valueOf() + 30_000 + 5 * 60_000);
+		const dueAt = new Date(closesAt.valueOf() + 10_000 + 5 * 60_000);
 
 		queueResult([pending]);
 		vi.mocked(getCurrentEvent).mockResolvedValueOnce({ ...pending, status: 'service_started' });
