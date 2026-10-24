@@ -13,6 +13,8 @@ everything else is either a neutral or a signal.
 ## Brand
 
 Harbor Blue (`#275C63`) fills the top bar, guest hero, primary buttons, and queue-position number.
+The top bar and the large panels use `--color-brand-surface`, which is the same Harbor Blue in light
+mode and a deeper teal in dark mode, so a panel never turns into a wall of pale teal.
 White is the contrast color on Harbor Blue. Lake Blue (`#7EBDC5`) supplies secondary accents with
 dark text; black is the primary text color on white. Hover and soft surface shades are derived
 from this palette. Functional status colors and the amber focus ring keep their existing roles.
@@ -34,6 +36,14 @@ reading a second language.
 ## Signals
 
 <Story of={Specimens.SignalColors} />
+
+## Dark mode
+
+Every token has a dark value, in the `[data-theme='dark']` block of `base.css`; switch the
+toolbar's **Color scheme** to Dark to read them here. A guest gets dark mode from their device or
+from **Appearance** in the app bar menu. Printed pages, the guides and the kiosk board stay light.
+In dark mode `--color-brand` is Lake Blue and `--color-on-brand` is near-black, so a brand-filled
+button keeps its contrast with dark text.
 
 ## Notes on use
 
