@@ -1,6 +1,16 @@
-import { Alert, Button, MenuItem, Paper, Stack, TextField } from '@mui/material';
+import {
+	Alert,
+	Button,
+	FormControl,
+	FormLabel,
+	MenuItem,
+	Paper,
+	Select,
+	Stack,
+	TextField,
+} from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import type { WorkerRole } from '../../services/workers';
 import { useRootStore } from '../../stores/react/store-context';
@@ -11,6 +21,8 @@ export const WorkersView = observer(function WorkersView() {
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [role, setRole] = useState<WorkerRole>('worker');
+	const roleId = useId();
+	const roleLabelId = `${roleId}-label`;
 
 	useEffect(() => {
 		void store.load(0);
@@ -60,16 +72,29 @@ export const WorkersView = observer(function WorkersView() {
 						onChange={(event) => setEmail(event.target.value)}
 						disabled={store.busy}
 					/>
-					<TextField
-						select
-						label="Role"
-						value={role}
-						onChange={(event) => setRole(event.target.value as WorkerRole)}
-						disabled={store.busy}
-					>
-						<MenuItem value="worker">Worker</MenuItem>
-						<MenuItem value="admin">Admin</MenuItem>
-					</TextField>
+					<FormControl fullWidth disabled={store.busy}>
+						<FormLabel id={roleLabelId} htmlFor={roleId}>
+							Role
+						</FormLabel>
+						<Select<WorkerRole>
+							id={roleId}
+							labelId={roleLabelId}
+							native={false}
+							value={role}
+							onChange={(event) => setRole(event.target.value as WorkerRole)}
+							sx={{
+								'& .MuiSelect-select': {
+									display: 'flex',
+									alignItems: 'center',
+									minHeight: 58,
+									boxSizing: 'border-box',
+								},
+							}}
+						>
+							<MenuItem value="worker">Worker</MenuItem>
+							<MenuItem value="admin">Admin</MenuItem>
+						</Select>
+					</FormControl>
 					<p>Workers run the queue. Admins also manage the market, guest data, and staff access.</p>
 					<p>
 						After adding an account, ask the worker to use Forgot Password on the sign-in page. No

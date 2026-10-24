@@ -112,3 +112,24 @@ export const Unavailable: Story = {
 		);
 	},
 };
+
+export const RoleSelection: Story = {
+	play: async ({ canvas }) => {
+		await canvas.findByRole('row', { name: 'owner@example.test' });
+		const role = canvas.getByRole('combobox', { name: /^Role\b/ });
+
+		await userEvent.click(role);
+		const options = await within(document.body).findByRole('listbox');
+
+		await expect(within(options).getAllByRole('option')).toHaveLength(2);
+		await userEvent.click(within(options).getByRole('option', { name: 'Admin' }));
+		await expect(role).toHaveTextContent('Admin');
+		await userEvent.click(role);
+		await userEvent.click(
+			within(await within(document.body).findByRole('listbox')).getByRole('option', {
+				name: 'Worker',
+			}),
+		);
+		await expect(role).toHaveTextContent('Worker');
+	},
+};
