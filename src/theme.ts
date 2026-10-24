@@ -1,6 +1,6 @@
 import FormLabel from '@mui/material/FormLabel';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';
-import { createTheme } from '@mui/material/styles';
+import { createTheme, type ThemeOptions } from '@mui/material/styles';
 // Types only: lets the theme style the date pickers without pulling them into the initial chunk.
 import type {} from '@mui/x-date-pickers/themeAugmentation';
 
@@ -27,7 +27,10 @@ const outlinedRoot = {
 	'&:has(:focus-visible)': focusRing,
 } as const;
 
-const steadyOutline = { borderWidth: 2, borderColor: 'var(--color-border)' } as const;
+const steadyOutline = {
+	borderWidth: 2,
+	borderColor: 'var(--color-border)',
+} as const;
 
 const notchedOutline = {
 	// The label sits above the control, never inside its border, so the notch MUI cuts for a
@@ -40,31 +43,67 @@ const notchedOutline = {
 } as const;
 
 /**
- * The MUI counterpart to the design tokens in `styles/base.css`.
+ * The MUI counterpart to the design tokens in `styles/base.css`, one palette per colour scheme.
  *
- * Keep these values aligned while components are migrated incrementally. MUI needs concrete color
- * values here because it derives contrast and tonal colors when the theme is created.
+ * Keep these values aligned with that file's light and dark tokens. MUI needs concrete color values
+ * here because it derives contrast and tonal colors when the theme is created.
  */
-export const appTheme = createTheme({
-	palette: {
-		primary: {
-			main: '#275c63',
-			dark: '#1e474d',
-			light: '#7ebdc5',
-			contrastText: '#fff',
+const colorSchemes = {
+	light: {
+		palette: {
+			primary: {
+				main: '#275c63',
+				dark: '#1e474d',
+				light: '#7ebdc5',
+				contrastText: '#fff',
+			},
+			background: {
+				default: '#fff',
+				paper: '#fff',
+			},
+			text: {
+				primary: '#000000',
+				secondary: '#3d453f',
+			},
+			error: { main: '#a12622' },
+			success: { main: '#146c34' },
+			warning: { main: '#7a4e00' },
 		},
-		background: {
-			default: '#fff',
-			paper: '#fff',
-		},
-		text: {
-			primary: '#000000',
-			secondary: '#3d453f',
-		},
-		error: { main: '#a12622' },
-		success: { main: '#146c34' },
-		warning: { main: '#7a4e00' },
 	},
+	dark: {
+		palette: {
+			primary: {
+				main: '#7ebdc5',
+				dark: '#5fa3ac',
+				light: '#a9d6dc',
+				contrastText: '#0b2023',
+			},
+			background: {
+				default: '#111615',
+				paper: '#111615',
+			},
+			text: {
+				primary: '#f2f4f3',
+				secondary: '#c4ccc7',
+			},
+			error: { main: '#ff8a80' },
+			success: { main: '#6fcf8f' },
+			warning: { main: '#f0b75a' },
+		},
+	},
+} satisfies ThemeOptions['colorSchemes'];
+
+/**
+ * The options both themes are built from. The dashboard's theme is made from these rather than
+ * from `appTheme` itself, since a theme with CSS variables cannot be fed back into `createTheme`.
+ */
+const appThemeOptions = {
+	// The colours are CSS variables switched by `data-theme` on `<html>`, which is the attribute
+	// `base.css` reads too: `AppThemeProvider` sets it from the device, or pins it to light.
+	// `base.css` owns `color-scheme`, gated to the screen: MUI's would make a printed page dark.
+	cssVariables: { colorSchemeSelector: 'data-theme', disableCssColorScheme: true },
+	colorSchemes,
+	defaultColorScheme: 'light',
 	shape: {
 		borderRadius: 24,
 	},
@@ -175,8 +214,14 @@ export const appTheme = createTheme({
 					padding: '0 16px',
 					// The wrapper draws the ring for the whole control, so the inner element skips its own.
 					'&:focus-visible': { outline: 0 },
-					'&::placeholder': { color: 'var(--color-placeholder)', opacity: 1 },
-					'&.MuiInputBase-inputMultiline': { height: 'auto', padding: 0 },
+					'&::placeholder': {
+						color: 'var(--color-placeholder)',
+						opacity: 1,
+					},
+					'&.MuiInputBase-inputMultiline': {
+						height: 'auto',
+						padding: 0,
+					},
 				},
 			},
 		},
@@ -217,16 +262,21 @@ export const appTheme = createTheme({
 			},
 		},
 	},
-});
+} satisfies ThemeOptions;
+
+export const appTheme = createTheme(appThemeOptions);
 
 /**
  * The market dashboard's theme: the app's own, with button labels left as written. The guest app
  * keeps MUI's capitalised buttons; staff screens put many buttons side by side, where a row of
  * capitals is hard to scan, so their labels are written in title case instead (see `CLAUDE.md`).
  */
-export const adminTheme = createTheme(appTheme, {
+export const adminTheme = createTheme({
+	...appThemeOptions,
 	components: {
+		...appThemeOptions.components,
 		MuiButton: {
+			...appThemeOptions.components.MuiButton,
 			styleOverrides: {
 				root: { textTransform: 'none' },
 			},

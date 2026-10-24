@@ -39,7 +39,7 @@ export const still = (theme: Theme) =>
  */
 export function PhoneApp({ store, route }: { store: RootStore; route: 'home' | 'help' }) {
 	return (
-		<AppThemeProvider>
+		<AppThemeProvider mode="light">
 			<ThemeProvider theme={still}>
 				<StaticLDProvider>
 					<RootStoreProvider store={store}>

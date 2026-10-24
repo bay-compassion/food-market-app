@@ -41,6 +41,33 @@
 	background: var(--color-background);
 	font-synthesis: none;
 }
+/*
+ * Dark mode follows the device, on screen only: anything printed (name tags, QR codes) keeps the
+ * light tokens. A page that must stay light whatever the device says — the guides' phone frames,
+ * Storybook — sets `data-theme="light"` on `<html>`. MUI's theme (`src/theme.ts`) writes the same
+ * attribute, so its own colour variables and these tokens switch together; keep the two aligned.
+ */
+@media screen and (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--color-brand: #7ebdc5;
+		--color-brand-light: #a9d6dc;
+		--color-brand-dark: #b5dde2;
+		--color-on-brand: #0b2023;
+		--color-background: #111615;
+		--color-surface-soft: #1b2627;
+		--color-text: #f2f4f3;
+		--color-text-muted: #c4ccc7;
+		--color-text-subtle: #9fb0a7;
+		--color-border: #8d978f;
+		--color-placeholder: #919c95;
+		--color-focus: #ffb545;
+		--color-error: #ff8a80;
+		--color-success: #6fcf8f;
+		--color-warning: #f0b75a;
+
+		color-scheme: dark;
+	}
+}
 /* Preserve joined letterforms in Arabic and Farsi. */
 [dir='rtl'] {
 	--tracking-heading: 0;
