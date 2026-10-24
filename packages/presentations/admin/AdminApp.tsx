@@ -25,7 +25,7 @@ const accessToken = async () => 'guide';
  */
 export function AdminApp({ store, view }: { store: RootStore; view: AdminView }) {
 	return (
-		<AppThemeProvider>
+		<AppThemeProvider mode="light">
 			<ThemeProvider theme={still}>
 				<StaticLDProvider>
 					<RootStoreProvider store={store}>

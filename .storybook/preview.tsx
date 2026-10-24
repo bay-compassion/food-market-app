@@ -21,6 +21,10 @@ import '../src/styles/app-shell.css';
 import '../src/styles/admin.css';
 import './preview.css';
 
+// Light before any story mounts, as the guides' frames are: a docs page with no story on it never
+// mounts `AppThemeProvider` to set this, and the token specimens read their values before it does.
+document.documentElement.dataset.theme = 'light';
+
 /**
  * Which of the app's page wrappers a story renders inside, set per story with
  * `parameters: { shell: 'admin' }`.
@@ -43,7 +47,10 @@ const preview: Preview = {
 			toolbar: {
 				title: 'Locale',
 				icon: 'globe',
-				items: languages.map((language) => ({ value: language.code, title: language.label })),
+				items: languages.map((language) => ({
+					value: language.code,
+					title: language.label,
+				})),
 				dynamicTitle: true,
 			},
 		},
@@ -59,11 +66,26 @@ const preview: Preview = {
 				dynamicTitle: true,
 			},
 		},
+		colorScheme: {
+			description: 'Keep stories light, or follow the device into dark mode',
+			toolbar: {
+				title: 'Color scheme',
+				icon: 'contrast',
+				items: [
+					{ value: 'light', title: 'Light' },
+					{ value: 'system', title: 'Follow the device' },
+				],
+				dynamicTitle: true,
+			},
+		},
 	},
 
 	initialGlobals: {
 		locale: 'en' satisfies Locale,
 		appFrame: 'off',
+		// Light unless asked, so the review document and the story tests do not change with the
+		// machine they run on. Dark mode is reviewed by following a device set to dark.
+		colorScheme: 'light',
 		// This is a mobile-first product, so a story opens at phone width unless told otherwise.
 		viewport: { value: 'iphone14', isRotated: false },
 	},
@@ -157,7 +179,9 @@ const preview: Preview = {
 		// 'todo' surfaces accessibility findings in the panel without failing the story test run.
 		// Switch a story to 'error' once its violations are cleared to keep them from coming back.
 		a11y: { test: 'todo' },
-		controls: { matchers: { color: /(background|color)$/i, date: /Date$/i } },
+		controls: {
+			matchers: { color: /(background|color)$/i, date: /Date$/i },
+		},
 	},
 
 	decorators: [
@@ -181,7 +205,12 @@ const preview: Preview = {
 		 */
 		(Story, context) =>
 			'locale' in context.initialArgs ? (
-				<Story args={{ ...context.args, locale: context.globals.locale as Locale }} />
+				<Story
+					args={{
+						...context.args,
+						locale: context.globals.locale as Locale,
+					}}
+				/>
 			) : (
 				<Story />
 			),
@@ -246,8 +275,11 @@ const preview: Preview = {
 				},
 			]);
 
+			const colorScheme = context.globals.colorScheme === 'system' ? 'system' : 'light';
+
 			return (
-				<AppThemeProvider>
+				// Keyed on the scheme: the provider reads its mode once, when it mounts.
+				<AppThemeProvider key={colorScheme} mode={colorScheme}>
 					<RootStoreProvider store={store}>
 						<RouterProvider router={router} />
 					</RootStoreProvider>
