@@ -4,6 +4,8 @@ resourceServers:
     allow_offline_access: false
     enforce_policies: true
     scopes:
+      - value: manage:workers
+        description: Manage worker and admin accounts; owners remain managed in Auth0
       - value: run:queue
         description: >-
           Call guests, change visit status, add a guest by hand, close the day's
@@ -195,6 +197,26 @@ roles:
   - name: admin
     description: Admin for Bay Compassion
     permissions:
+      - permission_name: manage:workers
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: export:guest-data
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:guest-access
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:sessions
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:reports
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: run:queue
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
+    type: tenant
+  - name: owner
+    description: Organization owner; managed only in Auth0
+    permissions:
+      - permission_name: manage:workers
+        resource_server_identifier: https://thebaycompassion.org
       - permission_name: export:guest-data
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:guest-access

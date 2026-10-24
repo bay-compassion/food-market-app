@@ -13,6 +13,7 @@ export const adminViews = [
 	'guest-database',
 	'session-history',
 	'reports',
+	'workers',
 	'dev-mode',
 ] as const;
 
@@ -36,6 +37,7 @@ export const viewPermissions: Record<AdminView, Permission> = {
 	'guest-database': 'run:queue',
 	'session-history': 'run:queue',
 	reports: 'read:reports',
+	workers: 'manage:workers',
 	'dev-mode': 'manage:demo-data',
 };
 
@@ -62,5 +64,6 @@ export const adminViewGroup: Record<AdminView, AdminViewGroup | null> = {
 	'guest-database': 'records',
 	'session-history': 'records',
 	reports: 'records',
+	workers: null,
 	'dev-mode': null,
 };

@@ -505,6 +505,7 @@ export const adminTranslations = {
 			'question-bank': 'The questions a session can ask guests when they register.',
 			'guest-database': 'Everyone who has registered or been added by staff.',
 			'session-history': 'Past sessions, and guests served outside the app.',
+			workers: 'Add staff and manage worker and admin access.',
 			reports: 'Basic figures for a date range. Export a CSV for anything more.',
 			'dev-mode': 'Load demo guests and visits to show the app at a chosen moment.',
 		},

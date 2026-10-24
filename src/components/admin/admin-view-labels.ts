@@ -13,5 +13,6 @@ export const adminViewLabels: Record<AdminView, string> = {
 	'guest-database': t.guestDatabase,
 	'session-history': t.historySessions,
 	reports: t.reports,
+	workers: 'Workers',
 	'dev-mode': t.devMode,
 };

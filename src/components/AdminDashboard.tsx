@@ -20,6 +20,7 @@ import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
 import { SessionTab } from './admin/SessionTab';
 import type { AdminView, ManualGuest, QueueGuest } from './admin/types';
+import { WorkersView } from './admin/WorkersView';
 import { PatternQuestionBank } from './schedule/PatternQuestionBank';
 import { ScheduleView } from './schedule/ScheduleView';
 
@@ -186,6 +187,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 					onRun={(guest, command) => void runGuestCommand(guest, command)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
 				/>
+			) : activeView === 'workers' ? (
+				<WorkersView />
 			) : activeView === 'dev-mode' ? (
 				<DevModeView
 					busy={admin.isBusy}
