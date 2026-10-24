@@ -43,7 +43,7 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 		gap: 6px;
 		margin-bottom: 20px;
 		padding-bottom: 14px;
-		border-bottom: 1px solid #e2e6e3;
+		border-bottom: 1px solid var(--color-divider);
 	}
 
 	.admin-title-row {
@@ -70,7 +70,7 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 
 	.admin-no-access {
 		padding: 24px;
-		border: 1.5px solid #c7d2cc;
+		border: 1.5px solid var(--color-border-soft);
 		border-radius: var(--radius-lg);
 		color: var(--color-text-subtle);
 		line-height: 1.5;
@@ -81,7 +81,7 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 		margin-bottom: 16px;
 		padding: 12px 14px;
 		border-radius: var(--radius-sm);
-		background: #eef5f3;
+		background: var(--color-surface-muted);
 		color: var(--color-brand);
 	}
 

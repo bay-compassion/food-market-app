@@ -40,7 +40,7 @@
 .admin-dashboard .progress-card,
 .admin-dashboard .reset-card {
 	padding: 20px;
-	border: 1.5px solid #c7d2cc;
+	border: 1.5px solid var(--color-border-soft);
 	border-radius: var(--radius-lg);
 }
 .admin-dashboard .settings-card > p,
@@ -60,7 +60,7 @@
 	gap: 14px;
 	align-items: center;
 	padding: 14px 0;
-	border-top: 1px solid #dce3df;
+	border-top: 1px solid var(--color-divider);
 }
 .admin-dashboard .guest-row > div {
 	display: grid;
@@ -107,7 +107,7 @@
 	padding: 0 13px;
 	border: 1.5px solid var(--color-border);
 	border-radius: 12px;
-	background: white;
+	background: var(--color-surface);
 	color: var(--color-text);
 }
 .admin-dashboard .field-row {

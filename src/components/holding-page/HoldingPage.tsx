@@ -28,8 +28,8 @@ const Content = styled.main`
 const Notice = styled.section`
 	padding: 32px 22px;
 	border-radius: var(--radius-lg);
-	color: var(--color-on-brand);
-	background: var(--color-brand);
+	color: var(--color-on-brand-surface);
+	background: var(--color-brand-surface);
 
 	> p:not(.eyebrow) {
 		margin-top: 20px;

@@ -16,6 +16,7 @@ import { isFeedbackEnabled, openFeedbackForm } from '../../../sentry-feedback-tr
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { useGuestTourEnabled } from '../../hooks/use-guest-tour-enabled';
+import { ContrastIcon } from '../icons/ContrastIcon';
 import { DashboardIcon } from '../icons/DashboardIcon';
 import { ExploreIcon } from '../icons/ExploreIcon';
 import { FeedbackIcon } from '../icons/FeedbackIcon';
@@ -27,6 +28,7 @@ import { MoreVertIcon } from '../icons/MoreVertIcon';
 import { OpenExternalIcon } from '../icons/OpenExternalIcon';
 import { QrCodeIcon } from '../icons/QrCodeIcon';
 import { SmartphoneIcon } from '../icons/SmartphoneIcon';
+import { ColorModeDialog } from './ColorModeDialog';
 import { DeviceDetailsDialog } from './DeviceDetailsDialog';
 
 /** Secondary navigation and the authenticated staff account, tucked behind one menu. */
@@ -39,6 +41,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 	const [tourRequested, setTourRequested] = useState(false);
 	const tourEnabled = useGuestTourEnabled();
 	const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
+	const [colorModeDialogOpen, setColorModeDialogOpen] = useState(false);
 	const id = useId();
 	const open = Boolean(anchorEl);
 	const horizontal = translations.dir === 'rtl' ? 'left' : 'right';
@@ -82,6 +85,11 @@ export const AppBarMenu = observer(function AppBarMenu() {
 	function openDeviceDialog() {
 		close();
 		setDeviceDialogOpen(true);
+	}
+
+	function openColorModeDialog() {
+		close();
+		setColorModeDialogOpen(true);
 	}
 
 	return (
@@ -156,6 +164,12 @@ export const AppBarMenu = observer(function AppBarMenu() {
 					</ListItemIcon>
 					{t.qrCode}
 				</MenuItem>
+				<MenuItem onClick={openColorModeDialog}>
+					<ListItemIcon>
+						<ContrastIcon fontSize="small" />
+					</ListItemIcon>
+					{t.colorMode.title}
+				</MenuItem>
 				<Divider />
 				{/* Every device has details to show: its install ID exists from the first launch. */}
 				<MenuItem onClick={openDeviceDialog}>
@@ -213,6 +227,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 			</Menu>
 
 			<DeviceDetailsDialog open={deviceDialogOpen} onClose={() => setDeviceDialogOpen(false)} />
+			<ColorModeDialog open={colorModeDialogOpen} onClose={() => setColorModeDialogOpen(false)} />
 		</>
 	);
 });

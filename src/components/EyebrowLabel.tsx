@@ -17,7 +17,8 @@ const Eyebrow = styled.p<{ $tone: EyebrowTone }>`
 	font-weight: 600;
 	letter-spacing: var(--tracking-label);
 	text-transform: uppercase;
-	color: ${({ $tone }) => ($tone === 'brand' ? 'var(--color-brand)' : 'var(--color-on-brand)')};
+	color: ${({ $tone }) =>
+		$tone === 'brand' ? 'var(--color-brand)' : 'var(--color-on-brand-surface)'};
 `;
 
 /** The short rule that precedes the label, drawn in the current text colour. */

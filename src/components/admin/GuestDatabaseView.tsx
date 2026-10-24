@@ -52,7 +52,7 @@ const Section = styled.section`
 	/* The grid draws its own frame; this gives it the card edge the other admin screens have. */
 	.guest-grid {
 		overflow: hidden;
-		border: 1.5px solid #c7d2cc;
+		border: 1.5px solid var(--color-border-soft);
 		border-radius: var(--radius-lg);
 	}
 `;

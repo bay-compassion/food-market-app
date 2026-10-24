@@ -34,7 +34,7 @@ const Brand = styled(Link)`
 		height: 28px;
 		object-fit: contain;
 		border-radius: 50%;
-		box-shadow: 0 0 0 1px var(--color-on-brand);
+		box-shadow: 0 0 0 1px var(--color-on-brand-surface);
 	}
 `;
 
@@ -53,7 +53,7 @@ const LanguagePicker = styled.div`
 	width: 48px;
 	height: 48px;
 	border-radius: 50%;
-	color: var(--color-on-brand);
+	color: inherit;
 
 	&:hover {
 		background: rgb(255 255 255 / 0.08);
@@ -108,7 +108,9 @@ export const AppBar = observer(function AppBar({
 			className="topbar"
 			position="sticky"
 			elevation={0}
-			sx={{ bgcolor: 'var(--color-brand)', color: 'var(--color-on-brand)' }}
+			// MUI paints an app bar in its own dark grey in dark mode unless told to keep its colour.
+			enableColorOnDark
+			sx={{ bgcolor: 'var(--color-brand-surface)', color: 'var(--color-on-brand-surface)' }}
 		>
 			<Toolbar
 				disableGutters

@@ -27,10 +27,15 @@ export const BrandColors: Story = {
 	args: {
 		preview: 'color',
 		tokens: [
-			['--color-brand', 'Top bar, hero, primary buttons, headings on admin screens'],
+			['--color-brand', 'Primary buttons, links, selected chips, headings on admin screens'],
 			['--color-brand-light', 'Lake Blue: secondary accents, with dark text'],
 			['--color-brand-dark', 'Hover state for primary buttons'],
 			['--color-on-brand', 'Text and borders on top of the brand color'],
+			[
+				'--color-brand-surface',
+				'Large brand panels: the top bar, guest hero, holding notice, help intro',
+			],
+			['--color-on-brand-surface', 'Text, icons, and borders on a brand panel'],
 		],
 	},
 };
@@ -44,6 +49,12 @@ export const SurfaceColors: Story = {
 				'--color-surface-soft',
 				'Panels set apart from the page: queue standing, notification opt-in',
 			],
+			['--color-surface', 'A card or input that sits above the page'],
+			['--color-surface-muted', 'Admin tints: table headers, zebra rows, feedback notes'],
+			['--color-surface-strong', 'Progress tracks and flat status pills on admin screens'],
+			['--color-border-soft', 'Outlines of admin cards, tables, and chips'],
+			['--color-divider', 'Rules between rows and sections'],
+			['--color-scrim', 'The backdrop behind a dialog or bottom sheet'],
 		],
 	},
 };
@@ -72,6 +83,7 @@ export const SignalColors: Story = {
 			],
 			['--color-success', 'The success severity of `Alert`'],
 			['--color-warning', 'The warning severity of `Alert`'],
+			['--color-warning-surface', 'Behind a warning note, such as the reports privacy note'],
 		],
 	},
 };

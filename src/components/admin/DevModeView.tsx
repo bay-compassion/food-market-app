@@ -25,7 +25,7 @@ const Section = styled.section`
 		display: grid;
 		gap: 12px;
 		padding: 18px;
-		border: 1.5px solid #c7d2cc;
+		border: 1.5px solid var(--color-border-soft);
 		border-radius: var(--radius-md);
 	}
 

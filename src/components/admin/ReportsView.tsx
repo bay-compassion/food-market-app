@@ -36,8 +36,8 @@ const Section = styled.section`
 		margin-top: 12px;
 		padding: 12px 14px;
 		border-radius: var(--radius-sm);
-		background: #fff1d8;
-		color: #7a4b00;
+		background: var(--color-warning-surface);
+		color: var(--color-warning);
 		line-height: 1.5;
 	}
 `;

@@ -39,7 +39,7 @@ const Icon = styled.div`
 	place-items: center;
 	margin-bottom: 16px;
 	border-radius: 50%;
-	color: white;
+	color: var(--color-on-brand);
 	background: var(--color-brand);
 	font-size: 28px;
 `;

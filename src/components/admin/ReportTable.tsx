@@ -14,7 +14,7 @@ export type ReportTableProps = {
 /* The table scrolls inside its own box so a wide report never scrolls the whole page sideways. */
 const Scroll = styled.div`
 	overflow-x: auto;
-	border: 1.5px solid #c7d2cc;
+	border: 1.5px solid var(--color-border-soft);
 	border-radius: var(--radius-md);
 `;
 
@@ -33,7 +33,7 @@ const Table = styled.table`
 	th {
 		position: sticky;
 		top: 0;
-		background: #f3f6f4;
+		background: var(--color-surface-muted);
 		color: var(--color-brand);
 		font-family: var(--font-heading);
 		font-size: 13px;
@@ -42,7 +42,7 @@ const Table = styled.table`
 	}
 
 	td {
-		border-top: 1px solid #dce3df;
+		border-top: 1px solid var(--color-divider);
 	}
 
 	.numeric {
@@ -50,7 +50,7 @@ const Table = styled.table`
 	}
 
 	tbody tr:nth-of-type(even) {
-		background: #fafcfb;
+		background: var(--color-surface-muted);
 	}
 `;
 

@@ -50,7 +50,7 @@ const DoneSummary = styled.button`
 	gap: 12px;
 	margin-bottom: 16px;
 	padding: 10px 14px;
-	border: 1.5px solid #c7d2cc;
+	border: 1.5px solid var(--color-border-soft);
 	border-radius: var(--radius-md);
 	color: var(--color-text);
 	background: var(--color-background);

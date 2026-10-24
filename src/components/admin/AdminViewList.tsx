@@ -36,7 +36,7 @@ const Nav = styled.nav`
 	* + .ungrouped {
 		margin-top: 10px;
 		padding-top: 10px;
-		border-top: 1px solid #e2e6e3;
+		border-top: 1px solid var(--color-divider);
 	}
 
 	button {

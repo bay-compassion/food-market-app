@@ -10,7 +10,7 @@ import { Drawer } from '@mui/material';
  */
 export const BottomSheet = styled(Drawer)`
 	.MuiBackdrop-root {
-		background: rgb(30 71 77 / 62%);
+		background: var(--color-scrim);
 	}
 
 	.MuiDrawer-paper {

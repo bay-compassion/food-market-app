@@ -60,7 +60,7 @@ const Overview = styled.section`
 		margin-top: 14px;
 		border-radius: var(--radius-pill);
 		overflow: hidden;
-		background: #e4eae7;
+		background: var(--color-surface-strong);
 	}
 
 	.progress-legend {
@@ -93,7 +93,7 @@ const Overview = styled.section`
 	.progress-outside {
 		margin-top: 16px;
 		padding-top: 14px;
-		border-top: 1px solid #dce3df;
+		border-top: 1px solid var(--color-divider);
 		font-size: 13px;
 		line-height: 1.5;
 		color: var(--color-text-subtle);

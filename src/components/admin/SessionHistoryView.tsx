@@ -32,7 +32,7 @@ const Section = styled.section`
 	&& h2 {
 		margin: 0;
 		padding-bottom: 6px;
-		border-bottom: 1px solid #e2e6e3;
+		border-bottom: 1px solid var(--color-divider);
 		color: var(--color-text-subtle);
 		font-family: var(--font-body);
 		font-size: 13px;

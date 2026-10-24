@@ -8,7 +8,7 @@ const Group = styled.div`
 	button {
 		min-height: 40px;
 		padding: 0 14px;
-		border: 1.5px solid #c7d2cc;
+		border: 1.5px solid var(--color-border-soft);
 		border-radius: var(--radius-pill);
 		color: var(--color-text-muted);
 		background: var(--color-background);

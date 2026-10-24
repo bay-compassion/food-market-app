@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import type { ComponentProps } from 'react';
 
 import { Bilingual, type KioskText } from './kiosk-languages';
 import { KioskHeader } from './KioskHeader';
@@ -8,7 +9,7 @@ import { LanguageIndicator } from './LanguageIndicator';
  * The room display's full-screen backdrop. Every size is in viewport units: the screen is read from
  * across a room, so text scales with the display rather than sitting at a phone's pixel sizes.
  */
-export const KioskFrame = styled.main`
+const Backdrop = styled.main`
 	display: flex;
 	flex-direction: column;
 	/* A fixed height, not a minimum: content that doesn't fit must give way, never push the
@@ -24,6 +25,14 @@ export const KioskFrame = styled.main`
 		cursor: none;
 	}
 `;
+
+/**
+ * The backdrop, always in the light scheme: the board is designed in the brand's teal for a room,
+ * and a display browser left in dark mode would otherwise wash it out to the pale dark-mode teal.
+ */
+export function KioskFrame(props: ComponentProps<typeof Backdrop>) {
+	return <Backdrop data-theme="light" {...props} />;
+}
 
 /** The centred column a one-sentence screen fills; the locked screen sets its form in it too. */
 export const KioskMessageLayout = styled.section`

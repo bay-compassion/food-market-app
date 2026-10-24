@@ -369,7 +369,17 @@ export interface AppBarTranslations {
 	deviceDetails: DeviceDetailsTranslations;
 	/** The menu item that replays the guided tour. */
 	takeTour: string;
+	/** The menu item and dialog for choosing light, dark, or the device's own setting. */
+	colorMode: ColorModeTranslations;
 	feedbackForm: FeedbackFormTranslations;
+}
+
+export interface ColorModeTranslations {
+	title: string;
+	close: string;
+	system: string;
+	light: string;
+	dark: string;
 }
 
 /** A push notification's headline and detail. */
@@ -523,6 +533,13 @@ export const translations = {
 				copyError: 'We could not copy that. Please try again.',
 			},
 			takeTour: 'Take the tour',
+			colorMode: {
+				title: 'Appearance',
+				close: 'Close appearance settings',
+				system: 'Match This Device',
+				light: 'Light',
+				dark: 'Dark',
+			},
 			feedbackForm: {
 				formTitle: 'Send feedback',
 				nameLabel: 'Name (optional)',
@@ -971,6 +988,13 @@ export const translations = {
 				copyError: 'No pudimos copiarlo. Inténtelo de nuevo.',
 			},
 			takeTour: 'Ver el recorrido',
+			colorMode: {
+				title: 'Apariencia',
+				close: 'Cerrar ajustes de apariencia',
+				system: 'Igual que el dispositivo',
+				light: 'Claro',
+				dark: 'Oscuro',
+			},
 			feedbackForm: {
 				formTitle: 'Enviar comentarios',
 				nameLabel: 'Nombre (opcional)',
@@ -1424,6 +1448,13 @@ export const translations = {
 				copyError: 'کپی نشد. لطفاً دوباره تلاش کنید.',
 			},
 			takeTour: 'دیدن راهنمای گام‌به‌گام',
+			colorMode: {
+				title: 'ظاهر',
+				close: 'بستن تنظیمات ظاهر',
+				system: 'مطابق تنظیمات دستگاه',
+				light: 'روشن',
+				dark: 'تیره',
+			},
 			feedbackForm: {
 				formTitle: 'ارسال بازخورد',
 				nameLabel: 'نام (اختیاری)',
@@ -1869,6 +1900,13 @@ export const translations = {
 				copyError: 'Hindi namin ito makopya. Pakisubukang muli.',
 			},
 			takeTour: 'Panoorin ang tour',
+			colorMode: {
+				title: 'Hitsura',
+				close: 'Isara ang mga setting ng hitsura',
+				system: 'Katulad ng Device',
+				light: 'Maliwanag',
+				dark: 'Madilim',
+			},
 			feedbackForm: {
 				formTitle: 'Magpadala ng puna',
 				nameLabel: 'Pangalan (opsyonal)',
@@ -2321,6 +2359,13 @@ export const translations = {
 				copyError: 'Không thể sao chép. Vui lòng thử lại.',
 			},
 			takeTour: 'Xem hướng dẫn',
+			colorMode: {
+				title: 'Giao diện',
+				close: 'Đóng cài đặt giao diện',
+				system: 'Theo thiết bị',
+				light: 'Sáng',
+				dark: 'Tối',
+			},
 			feedbackForm: {
 				formTitle: 'Gửi góp ý',
 				nameLabel: 'Tên (không bắt buộc)',
@@ -2765,6 +2810,13 @@ export const translations = {
 				copyError: '无法复制。请重试。',
 			},
 			takeTour: '查看使用导览',
+			colorMode: {
+				title: '外观',
+				close: '关闭外观设置',
+				system: '跟随设备',
+				light: '浅色',
+				dark: '深色',
+			},
 			feedbackForm: {
 				formTitle: '发送反馈',
 				nameLabel: '姓名（选填）',
@@ -3193,6 +3245,13 @@ export const translations = {
 				copyError: 'تعذر النسخ. يرجى المحاولة مرة أخرى.',
 			},
 			takeTour: 'شاهد الجولة التعريفية',
+			colorMode: {
+				title: 'المظهر',
+				close: 'إغلاق إعدادات المظهر',
+				system: 'مطابقة إعداد الجهاز',
+				light: 'فاتح',
+				dark: 'داكن',
+			},
 			feedbackForm: {
 				formTitle: 'إرسال ملاحظات',
 				nameLabel: 'الاسم (اختياري)',
@@ -3632,6 +3691,13 @@ export const translations = {
 				copyError: 'La copie a échoué. Veuillez réessayer.',
 			},
 			takeTour: 'Voir la visite guidée',
+			colorMode: {
+				title: 'Apparence',
+				close: 'Fermer les réglages d’apparence',
+				system: 'Comme l’appareil',
+				light: 'Clair',
+				dark: 'Sombre',
+			},
 			feedbackForm: {
 				formTitle: 'Envoyer un commentaire',
 				nameLabel: 'Nom (facultatif)',
@@ -4087,6 +4153,13 @@ export const translations = {
 				copyError: 'Não foi possível copiar. Tente novamente.',
 			},
 			takeTour: 'Ver o guia',
+			colorMode: {
+				title: 'Aparência',
+				close: 'Fechar configurações de aparência',
+				system: 'Igual ao dispositivo',
+				light: 'Claro',
+				dark: 'Escuro',
+			},
 			feedbackForm: {
 				formTitle: 'Enviar comentário',
 				nameLabel: 'Nome (opcional)',
@@ -4542,6 +4615,13 @@ export const translations = {
 				copyError: 'Не удалось скопировать. Попробуйте ещё раз.',
 			},
 			takeTour: 'Посмотреть инструкцию',
+			colorMode: {
+				title: 'Оформление',
+				close: 'Закрыть настройки оформления',
+				system: 'Как на устройстве',
+				light: 'Светлое',
+				dark: 'Тёмное',
+			},
 			feedbackForm: {
 				formTitle: 'Отправить отзыв',
 				nameLabel: 'Имя (необязательно)',

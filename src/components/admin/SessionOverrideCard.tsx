@@ -15,7 +15,7 @@ const OverrideCard = styled.section`
 		margin-top: 0;
 		padding: 8px;
 		border-radius: var(--radius-md);
-		background: #f3f6f4;
+		background: var(--color-surface-muted);
 	}
 
 	.number-spinner {
@@ -34,7 +34,7 @@ const OverrideCard = styled.section`
 		justify-content: flex-end;
 		margin-top: 18px;
 		padding-top: 18px;
-		border-top: 1px solid #dce3df;
+		border-top: 1px solid var(--color-divider);
 	}
 
 	@media (min-width: 560px) {

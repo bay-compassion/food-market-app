@@ -88,8 +88,7 @@ async function bootstrap() {
 	}
 
 	const app = (
-		// Pinned light, with `data-theme` in `index.html`, until the screens are ready for dark mode.
-		<AppThemeProvider mode="light">
+		<AppThemeProvider>
 			{/**
 			 * `Auth0Provider` is mounted even with no Auth0 configured, so `useAuth0()` is safe to call
 			 * unconditionally: the SDK supplies a context whose `isAuthenticated` is simply always false,

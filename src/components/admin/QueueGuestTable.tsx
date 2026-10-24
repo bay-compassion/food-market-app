@@ -29,7 +29,7 @@ const GuestTable = styled(Table)`
 	}
 
 	.MuiTableRow-root {
-		border-top: 1px solid #dce3df;
+		border-top: 1px solid var(--color-divider);
 	}
 `;
 

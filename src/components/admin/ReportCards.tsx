@@ -22,7 +22,7 @@ const List = styled.ul`
 
 	li {
 		padding: 14px 16px;
-		border: 1.5px solid #c7d2cc;
+		border: 1.5px solid var(--color-border-soft);
 		border-radius: var(--radius-md);
 	}
 

@@ -88,6 +88,29 @@ export const DeviceDetails: Story = {
 	},
 };
 
+/**
+ * Opened from the menu. A choice applies at once, by writing `data-theme` on `<html>`; the story
+ * picks Dark and then Light, leaving the page as it found it for the other stories beside it.
+ */
+export const Appearance: Story = {
+	play: async ({ canvas, userEvent, globals }) => {
+		const t = translations[globals.locale as Locale].appBar;
+
+		await userEvent.click(canvas.getByRole('button', { name: t.openMenu }));
+		const menu = within(await within(document.body).findByRole('menu'));
+
+		await userEvent.click(menu.getByRole('menuitem', { name: t.colorMode.title }));
+		const dialog = within(await within(document.body).findByRole('dialog'));
+
+		await userEvent.click(dialog.getByRole('radio', { name: t.colorMode.dark }));
+		await expect(dialog.getByRole('radio', { name: t.colorMode.dark })).toBeChecked();
+		await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
+
+		await userEvent.click(dialog.getByRole('radio', { name: t.colorMode.light }));
+		await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'));
+	},
+};
+
 export const SignedIn: Story = {
 	parameters: { signedIn: true, picture: '/bay-compassion-logo.png' },
 	play: async ({ canvas, userEvent, globals }) => {
