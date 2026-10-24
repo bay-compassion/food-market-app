@@ -6,16 +6,77 @@ explanation and nothing else.
 
 ## The roles
 
-| Role            | Who it is for                                      | Holds                                            |
-| --------------- | -------------------------------------------------- | ------------------------------------------------ |
-| `worker`        | Volunteers running the market                      | `run:queue`, `print:name-tags`                   |
-| `admin`         | Whoever is responsible for the market and its data | the first five permissions, `print:name-tags`    |
-| `print-station` | The account a print-station desktop signs in as    | `print:name-tags` only                           |
-| `data-steward`  | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin` |
+| Role            | Who it is for                                      | Holds                                                           |
+| --------------- | -------------------------------------------------- | --------------------------------------------------------------- |
+| `worker`        | Volunteers running the market                      | `run:queue`, `print:name-tags`                                  |
+| `admin`         | Whoever is responsible for the market and its data | the first five permissions, `print:name-tags`, `manage:workers` |
+| `owner`         | Organization custodian; managed only in Auth0      | Same as `admin`                                                 |
+| `print-station` | The account a print-station desktop signs in as    | `print:name-tags` only                                          |
+| `data-steward`  | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`                |
 
-Two roles rather than three because the risk being managed is volunteer turnover: people who run
+The worker/admin split exists because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
 or download the whole guest database in one click.
+
+## Managing Workers
+
+The **Workers** screen is available with `manage:workers`, granted to `admin` and the new
+`owner` role. The server also checks the caller's current Auth0 roles on every management
+request: only an unblocked `admin` or `owner` may proceed. Owners hold the same market
+permissions as admins; assigning or removing `owner` is possible only in Auth0.
+
+Admins can add database users, switch ordinary accounts (including accounts without a role) between Worker and Admin, remove
+access, and restore access. Nobody can change their own account. Accounts with `owner` or any
+special role (including `developer`, `data-steward`, and `print-station`) are read-only here.
+Removal blocks the Auth0 account rather than deleting it. The next admin API request checks
+current permissions and blocked status, including for previously issued access tokens. Auth0
+sessions and tokens themselves are not deleted. A role change blocks the account first and
+unblocks it only after assigning its new role; a provider failure can leave it blocked. Refresh
+and retry, or repair the account in Auth0. A failed account creation can leave a blocked account; refresh and restore its access, or repair it in Auth0. No automatic retry repeats a mutation.
+
+New users receive a cryptographically random password that is never returned or logged. Tell
+them to choose **Forgot Password** on the sign-in page to set their own password. The app does
+not send invitations. Configure Auth0's password reset email provider and template before use.
+
+### Deployment Setup
+
+1. Sync the new API permission and the `admin`/`owner` roles from
+   `infrastructure/auth0/tenant/tenant.yaml` using the normal reviewed Auth0 configuration process.
+   Assign `owner` to the organization custodian in Auth0; this code never assigns it.
+2. Create a **dedicated machine-to-machine application**, authorized for the Auth0 Management API
+   with only `read:users`, `create:users`, `update:users`, and `read:roles`.
+   Do not reuse the tenant configuration CLI credentials. Do not grant delete-user, role-editing,
+   client-editing, or tenant-editing scopes. Auth0's role-assignment scope is broad: keep these
+   credentials server-only and rotate them if exposed.
+3. Set Netlify server environment variables `AUTH0_MANAGEMENT_DOMAIN` (the tenant's canonical
+   hostname, without a scheme), `AUTH0_MANAGEMENT_CLIENT_ID`, `AUTH0_MANAGEMENT_CLIENT_SECRET`,
+   and `AUTH0_WORKER_CONNECTION` (the database connection name). Ensure this is the same tenant
+   as the access-token issuer and that both the SPA and worker-management M2M application are enabled for that connection. Never put the
+   M2M secret in a `VITE_` variable. Keep production credentials out of untrusted deploy previews.
+4. Sign in again to pick up `manage:workers`. Verify a worker gets 403, admins can manage
+   ordinary staff, self changes fail, and owners remain read-only.
+
+Without management configuration the Workers API fails closed. Setting the management domain
+also enables live permission checks for **every** Auth0 admin request. Provider errors fail
+closed with 503; there is no fallback to stale token permissions. This adds Management API
+traffic (user plus paginated permissions per admin request); size Auth0 rate limits for the
+market's polling load before rollout. Overlapping authorization checks for the same worker share
+one in-flight read; completed results are discarded immediately. Requests after an access change
+cannot join an older check for that account. Within a warm function, Management API requests are
+serialized and paced using Auth0's rate-limit reset headers. A rate-limited GET can retry twice;
+mutations are never automatically replayed. A long quota window fails closed with an explicit
+rate-limit message. This pacing is local to each warm function, not a tenant-wide distributed
+limiter; other app instances and Auth0 dashboard activity still share the tenant's quota. The
+worker list is paginated ten accounts at a time and reads each account's roles. Permission grants require a fresh access token, while revocations
+constrain existing tokens on the next request. Auth0 changes made simultaneously outside the
+app are not transactional with app mutations; coordinate owner changes in Auth0 accordingly.
+
+Provider operations follow the Auth0 [user role assignment](https://auth0.com/docs/api/management/v2/users/post-user-roles)
+and [user permissions](https://auth0.com/docs/api/management/v2/users/get-permissions) APIs.
+
+Successful changes emit `worker.created` or `worker.access_changed` audit events with the
+actor and role/command, and target subject for access changes. Auth0 tenant logs record provider
+operations. Preserve these through a log drain if long-term audit retention is needed.
 
 ## The permissions
 
@@ -37,10 +98,13 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 (e.g. `demo`) that starts assigned to nobody — see
 [the dev-mode data loader](#the-dev-mode-data-loader) below before granting it to anyone.
 
+`manage:workers` allows staff management and is held only by `admin` and `owner`.
+
 ## What each endpoint requires
 
 | Endpoint                                                 | Requires                                                |
 | -------------------------------------------------------- | ------------------------------------------------------- |
+| `/api/admin/workers`, `/api/admin/workers/:id`           | `manage:workers` plus a current admin or owner role     |
 | `GET /api/market`                                        | nothing — the guest app depends on it                   |
 | `POST /api/guest-information`                            | nothing — saves guest identity only                     |
 | `POST /api/lottery-registration`                         | nothing — public self-service lottery entry             |

@@ -176,6 +176,7 @@ const preview: Preview = {
 						['Database View', 'Guest Grid'],
 						'Session History',
 						'Reports',
+						'Workers',
 						'Dev Mode',
 						'Shared',
 					],

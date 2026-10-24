@@ -3,7 +3,9 @@ import { createMiddleware } from 'hono/factory';
 
 import { grantedPermissions, type Permission } from '../../src/services/permissions.js';
 import type { VisitEventActor } from '../../src/services/visit-events.js';
+import { Auth0Management } from '../services/auth0-management.mjs';
 import { KioskAccess } from '../services/kiosk-access.mjs';
+import { WorkerDirectory } from '../services/worker-directory.mjs';
 import { requirePermission, verifyAuth0Token, workerNameFrom } from './auth.mjs';
 import { authorizedGuest } from './deviceAuth.mjs';
 import { jsonError } from './http.mjs';
@@ -41,6 +43,26 @@ export const withAuth0 = createMiddleware<AdminEnv>(async (context, next) => {
 		context.set('actorName', workerNameFrom(payload));
 	} catch {
 		return jsonError('Authorization required.', 401);
+	}
+
+	// Once management is configured, removals/demotions also constrain already-issued JWTs.
+	// Never cache this result: blocking an account must take effect on its next request.
+	if (Auth0Management.configured) {
+		try {
+			const actor = context.get('actor');
+
+			if (!actor) {
+				return jsonError('Authorization required.', 401);
+			}
+			const current = await new WorkerDirectory().currentPermissions(actor);
+
+			context.set(
+				'permissions',
+				context.get('permissions').filter((permission) => current.includes(permission)),
+			);
+		} catch {
+			return jsonError('Current account access could not be verified. Try again later.', 503);
+		}
 	}
 
 	await next();

@@ -13,12 +13,14 @@ import { NotificationStore } from './notification.store.ts';
 import { RegistrationStore } from './registration.store.ts';
 import { TranslationStore, type Language } from './translation.store.ts';
 import { VisitStore, type VisitStoreOptions } from './visit.store.ts';
+import { WorkersStore } from './workers.store.ts';
 
 export type RootStoreOptions = {
 	storage?: StorageService;
 	browserStorage?: Storage;
 	previewName?: string;
 	admin?: AdminStoreOptions;
+	workers?: { fetch?: typeof fetch };
 	session?: Pick<MarketSessionStoreOptions, 'fetch'>;
 	claim?: GuestClaimStoreOptions;
 	visit?: VisitStoreOptions;
@@ -32,6 +34,7 @@ export class RootStore {
 	readonly storage: StorageService;
 
 	readonly admin: AdminStore;
+	readonly workers: WorkersStore;
 	readonly claim: GuestClaimStore;
 	readonly confirmation: ConfirmationStore;
 	readonly guest: GuestStore;
@@ -68,6 +71,7 @@ export class RootStore {
 			...options.admin,
 		});
 
+		this.workers = new WorkersStore(this, options.workers?.fetch);
 		globalThis.rootStore = this;
 	}
 

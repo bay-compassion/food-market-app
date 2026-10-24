@@ -11,6 +11,8 @@
  */
 
 export const permissions = [
+	/** Admin-only staff account management. Owners stay managed in Auth0. */
+	'manage:workers',
 	/** Run the queue: call guests, change a visit's status, add a guest, close the day's session. */
 	'run:queue',
 	/** Set a session up and steer it: settings, questions, registration lifecycle, broadcasts. */
