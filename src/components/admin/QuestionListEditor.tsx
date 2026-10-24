@@ -41,7 +41,7 @@ const Editor = styled.div`
 		gap: 8px;
 		padding: 12px;
 		border-radius: var(--radius-md);
-		background: #f3f6f4;
+		background: var(--color-surface-muted);
 	}
 
 	.question-row .check-label {

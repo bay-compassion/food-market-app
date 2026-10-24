@@ -40,6 +40,12 @@ const shells = {
 
 type Shell = keyof typeof shells;
 
+const storyColorSchemes = ['light', 'dark', 'system'] as const;
+
+function isStoryColorScheme(value: unknown): value is (typeof storyColorSchemes)[number] {
+	return storyColorSchemes.includes(value as never);
+}
+
 const preview: Preview = {
 	globalTypes: {
 		locale: {
@@ -73,6 +79,7 @@ const preview: Preview = {
 				icon: 'contrast',
 				items: [
 					{ value: 'light', title: 'Light' },
+					{ value: 'dark', title: 'Dark' },
 					{ value: 'system', title: 'Follow the device' },
 				],
 				dynamicTitle: true,
@@ -84,7 +91,7 @@ const preview: Preview = {
 		locale: 'en' satisfies Locale,
 		appFrame: 'off',
 		// Light unless asked, so the review document and the story tests do not change with the
-		// machine they run on. Dark mode is reviewed by following a device set to dark.
+		// machine they run on.
 		colorScheme: 'light',
 		// This is a mobile-first product, so a story opens at phone width unless told otherwise.
 		viewport: { value: 'iphone14', isRotated: false },
@@ -275,7 +282,9 @@ const preview: Preview = {
 				},
 			]);
 
-			const colorScheme = context.globals.colorScheme === 'system' ? 'system' : 'light';
+			const colorScheme = isStoryColorScheme(context.globals.colorScheme)
+				? context.globals.colorScheme
+				: 'light';
 
 			return (
 				// Keyed on the scheme: the provider reads its mode once, when it mounts.

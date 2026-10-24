@@ -18,7 +18,8 @@
 }
 .auth-banner {
 	padding: 12px 20px;
-	color: white;
+	/* The page's own background reads on the error colour in either scheme. */
+	color: var(--color-background);
 	background: var(--color-error);
 	font-size: 14px;
 	line-height: 1.4;
@@ -43,8 +44,8 @@
 .hero {
 	margin-bottom: 20px;
 	padding: 22px 20px;
-	color: var(--color-on-brand);
-	background: var(--color-brand);
+	color: var(--color-on-brand-surface);
+	background: var(--color-brand-surface);
 	border-radius: var(--radius-lg);
 }
 .hero h1 {
@@ -71,9 +72,9 @@
 .language-option {
 	min-height: 44px;
 	padding: 0 16px;
-	border: 2px solid var(--color-on-brand);
+	border: 2px solid var(--color-on-brand-surface);
 	border-radius: 999px;
-	color: var(--color-on-brand);
+	color: var(--color-on-brand-surface);
 	background: transparent;
 	font-size: 15px;
 	font-weight: 700;
@@ -92,7 +93,7 @@
 	align-items: flex-start;
 	gap: 8px;
 	margin-top: 12px;
-	color: var(--color-on-brand);
+	color: var(--color-on-brand-surface);
 	font-size: 14px;
 	line-height: 1.45;
 }

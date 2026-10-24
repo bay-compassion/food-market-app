@@ -19,7 +19,7 @@ const List = styled.ul`
 		align-items: center;
 		gap: 12px;
 		padding: 8px 0;
-		border-top: 1px solid #e2e6e3;
+		border-top: 1px solid var(--color-divider);
 	}
 
 	.guest-text {

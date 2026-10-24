@@ -39,7 +39,8 @@ const Board = styled.div<{ $tone: QueueNumberBoardTone; $darkText: boolean }>`
 	@media (prefers-reduced-motion: reduce) {
 		transition: none;
 	}
-	color: ${({ $darkText }) => ($darkText ? 'var(--color-text)' : 'var(--color-on-brand)')};
+	/* Black rather than the text token, which is light in dark mode: the warmed board is pale in both. */
+	color: ${({ $darkText }) => ($darkText ? '#000' : 'var(--color-on-brand)')};
 
 	> span {
 		display: flex;

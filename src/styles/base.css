@@ -13,22 +13,77 @@
 @import url('/fonts/brand.css');
 @import './brand.css';
 
-:root {
+/*
+ * The colour tokens, light and dark. `data-theme` on `<html>` picks the scheme: `public/color-mode.js`
+ * sets it before the first paint, from the guest's choice in the menu or else the device, and MUI's
+ * theme (`src/theme.ts`) keeps it current. MUI's own colour variables follow the same attribute, so
+ * keep `src/theme.ts` aligned with these values.
+ *
+ * Either value also pins a subtree: the guides' phone frames, Storybook and the kiosk board set
+ * `data-theme="light"`. Dark applies on screen only, so anything printed (name tags, QR codes) keeps
+ * the light tokens.
+ */
+:root,
+[data-theme='light'] {
 	--color-brand: #275c63;
 	--color-brand-light: #7ebdc5;
 	--color-brand-dark: #1e474d;
 	--color-on-brand: #fff;
+	/* A large brand-coloured panel (the app bar, the welcome card), which dark mode deepens. */
+	--color-brand-surface: #275c63;
+	--color-on-brand-surface: #fff;
 	--color-background: #fff;
+	--color-surface: #fff;
 	--color-surface-soft: #eef7f8;
+	--color-surface-muted: #f3f6f4;
+	--color-surface-strong: #e4eae7;
 	--color-text: #000000;
 	--color-text-muted: #3d453f;
 	--color-text-subtle: #60746a;
 	--color-border: #5c655f;
+	--color-border-soft: #c7d2cc;
+	--color-divider: #dce3df;
 	--color-placeholder: #69746d;
 	--color-focus: #ffb545;
 	--color-error: #a12622;
 	--color-success: #146c34;
 	--color-warning: #7a4e00;
+	--color-warning-surface: #fff1d8;
+	--color-scrim: rgb(30 71 77 / 62%);
+
+	color-scheme: light;
+}
+@media screen {
+	[data-theme='dark'] {
+		--color-brand: #7ebdc5;
+		--color-brand-light: #a9d6dc;
+		--color-brand-dark: #b5dde2;
+		--color-on-brand: #0b2023;
+		--color-brand-surface: #1e474d;
+		--color-on-brand-surface: #f2f4f3;
+		--color-background: #111615;
+		--color-surface: #182120;
+		--color-surface-soft: #1b2627;
+		--color-surface-muted: #1a2322;
+		--color-surface-strong: #2a3432;
+		--color-text: #f2f4f3;
+		--color-text-muted: #c4ccc7;
+		--color-text-subtle: #9fb0a7;
+		--color-border: #8d978f;
+		--color-border-soft: #3e4a47;
+		--color-divider: #2c3735;
+		--color-placeholder: #919c95;
+		--color-focus: #ffb545;
+		--color-error: #ff8a80;
+		--color-success: #6fcf8f;
+		--color-warning: #f0b75a;
+		--color-warning-surface: #3a2c10;
+		--color-scrim: rgb(0 0 0 / 70%);
+
+		color-scheme: dark;
+	}
+}
+:root {
 	--tracking-heading: -0.035em;
 	--tracking-label: -0.02em;
 	--radius-sm: 8px;
@@ -37,36 +92,13 @@
 	--radius-pill: 999px;
 
 	font-family: var(--font-body);
-	color: var(--color-text);
 	background: var(--color-background);
 	font-synthesis: none;
 }
-/*
- * Dark mode follows the device, on screen only: anything printed (name tags, QR codes) keeps the
- * light tokens. A page that must stay light whatever the device says — the guides' phone frames,
- * Storybook — sets `data-theme="light"` on `<html>`. MUI's theme (`src/theme.ts`) writes the same
- * attribute, so its own colour variables and these tokens switch together; keep the two aligned.
- */
-@media screen and (prefers-color-scheme: dark) {
-	:root:not([data-theme='light']) {
-		--color-brand: #7ebdc5;
-		--color-brand-light: #a9d6dc;
-		--color-brand-dark: #b5dde2;
-		--color-on-brand: #0b2023;
-		--color-background: #111615;
-		--color-surface-soft: #1b2627;
-		--color-text: #f2f4f3;
-		--color-text-muted: #c4ccc7;
-		--color-text-subtle: #9fb0a7;
-		--color-border: #8d978f;
-		--color-placeholder: #919c95;
-		--color-focus: #ffb545;
-		--color-error: #ff8a80;
-		--color-success: #6fcf8f;
-		--color-warning: #f0b75a;
-
-		color-scheme: dark;
-	}
+/* Text takes the scheme's colour wherever one is set, so a pinned subtree does not inherit the page's. */
+:root,
+[data-theme] {
+	color: var(--color-text);
 }
 /* Preserve joined letterforms in Arabic and Farsi. */
 [dir='rtl'] {

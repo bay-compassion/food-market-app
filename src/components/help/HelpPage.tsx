@@ -28,8 +28,8 @@ const Intro = styled.div`
 	margin-bottom: 28px;
 	padding: 20px;
 	border-radius: var(--radius-md);
-	color: var(--color-on-brand);
-	background: var(--color-brand);
+	color: var(--color-on-brand-surface);
+	background: var(--color-brand-surface);
 	font-size: 18px;
 	line-height: 1.4;
 `;

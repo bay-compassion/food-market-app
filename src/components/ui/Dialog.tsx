@@ -20,7 +20,7 @@ export type DialogProps = {
 
 const Modal = styled(MuiDialog)`
 	.MuiBackdrop-root {
-		background: rgb(30 71 77 / 62%);
+		background: var(--color-scrim);
 	}
 
 	.MuiDialog-paper {

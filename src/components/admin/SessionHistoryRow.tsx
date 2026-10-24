@@ -13,7 +13,7 @@ const Row = styled.li`
 	align-items: center;
 	gap: 12px;
 	padding: 8px 0;
-	border-bottom: 1px solid #e2e6e3;
+	border-bottom: 1px solid var(--color-divider);
 
 	.history-day {
 		display: grid;
@@ -47,7 +47,7 @@ const Row = styled.li`
 	.history-state {
 		padding: 2px 9px;
 		border-radius: var(--radius-pill);
-		background: #edf0ee;
+		background: var(--color-surface-strong);
 		color: var(--color-text-muted);
 		font-size: 12px;
 		font-weight: 700;
