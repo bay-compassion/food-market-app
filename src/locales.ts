@@ -730,7 +730,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'Today’s market is underway',
 				inProgressDescription:
-					'Registration is closed for today. If you haven’t checked in yet, please speak with a market team member.',
+					'Registration is closed for today. Registration will open again next Saturday at 10:30 AM and stay open for 15 minutes, until 10:45 AM. Everyone who signs up has the same chance.',
 			},
 			refreshNotice: {
 				countdown: 'Updating in {seconds}s',
@@ -1187,7 +1187,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'El mercado de hoy está en curso',
 				inProgressDescription:
-					'El registro está cerrado por hoy. Si aún no se ha registrado, hable con un miembro del equipo del mercado.',
+					'El registro está cerrado por hoy. La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta 15 minutos, hasta las 10:45 a. m. Todos los que se inscriben tienen la misma oportunidad.',
 			},
 			refreshNotice: {
 				countdown: 'Se actualizará en {seconds} s',
@@ -1641,7 +1641,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'بازار امروز در حال برگزاری است',
 				inProgressDescription:
-					'ثبت‌نام برای امروز بسته شده است. اگر هنوز ثبت‌نام نکرده‌اید، لطفاً با یکی از اعضای تیم بازار صحبت کنید.',
+					'ثبت‌نام برای امروز بسته شده است. ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و ۱۵ دقیقه، تا ساعت ۱۰:۴۵ صبح، باز می‌ماند. شانس همه کسانی که ثبت‌نام می‌کنند برابر است.',
 			},
 			refreshNotice: {
 				countdown: 'به‌روزرسانی تا {seconds} ثانیه دیگر',
@@ -2096,7 +2096,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
 				inProgressDescription:
-					'Sarado na ang pagpaparehistro para ngayong araw. Kung hindi ka pa nag-check in, makipag-usap sa isang miyembro ng pangkat ng pamilihan.',
+					'Sarado na ang pagpaparehistro para ngayong araw. Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas nang 15 minuto, hanggang 10:45 AM. Pareho ang tsansa ng lahat ng magsa-sign up.',
 			},
 			refreshNotice: {
 				countdown: 'Mag-a-update sa loob ng {seconds}s',
@@ -2551,7 +2551,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
 				inProgressDescription:
-					'Đăng ký đã đóng cho hôm nay. Nếu bạn chưa đăng ký, vui lòng trao đổi với nhân viên chợ.',
+					'Đăng ký đã đóng cho hôm nay. Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài 15 phút, đến 10:45 sáng. Ai đăng ký cũng có cơ hội như nhau.',
 			},
 			refreshNotice: {
 				countdown: 'Cập nhật sau {seconds} giây',
@@ -2995,7 +2995,8 @@ export const translations = {
 			},
 			serviceState: {
 				inProgressHeading: '今天的市场正在进行中',
-				inProgressDescription: '今天的登记已关闭。如果您还未登记，请联系市场工作人员。',
+				inProgressDescription:
+					'今天的登记已关闭。登记将于下周六上午 10:30 再次开放，持续 15 分钟，至上午 10:45。每位登记的人机会均等。',
 			},
 			refreshNotice: {
 				countdown: '{seconds} 秒后更新',
@@ -3433,7 +3434,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'سوق اليوم جارٍ الآن',
 				inProgressDescription:
-					'أُغلق التسجيل لهذا اليوم. إذا لم تكن قد سجّلت الدخول بعد، يرجى التحدث مع أحد أعضاء فريق السوق.',
+					'أُغلق التسجيل لهذا اليوم. سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر 15 دقيقة، حتى الساعة 10:45 صباحًا. لكل من يسجّل الفرصة نفسها.',
 			},
 			refreshNotice: {
 				countdown: 'التحديث خلال {seconds} ثانية',
@@ -3883,7 +3884,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'Le marché d’aujourd’hui est en cours',
 				inProgressDescription:
-					'Les inscriptions sont closes pour aujourd’hui. Si vous ne vous êtes pas encore présenté, veuillez vous adresser à un membre de l’équipe du marché.',
+					'Les inscriptions sont closes pour aujourd’hui. Les inscriptions rouvriront samedi prochain à 10 h 30 et resteront ouvertes 15 minutes, jusqu’à 10 h 45. Toutes les personnes inscrites ont la même chance.',
 			},
 			refreshNotice: {
 				countdown: 'Mise à jour dans {seconds} s',
@@ -4341,7 +4342,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'O mercado de hoje está em andamento',
 				inProgressDescription:
-					'As inscrições de hoje estão encerradas. Se você ainda não se apresentou no balcão, fale com um membro da equipe do mercado.',
+					'As inscrições de hoje estão encerradas. As inscrições abrirão novamente no próximo sábado às 10h30 e ficarão abertas por 15 minutos, até as 10h45. Todos que se inscrevem têm a mesma chance.',
 			},
 			refreshNotice: {
 				countdown: 'Atualização em {seconds}s',
@@ -4798,7 +4799,7 @@ export const translations = {
 			serviceState: {
 				inProgressHeading: 'Сегодняшний рынок уже работает',
 				inProgressDescription:
-					'Регистрация на сегодня закрыта. Если вы ещё не отметились на стойке регистрации, обратитесь к сотруднику рынка.',
+					'Регистрация на сегодня закрыта. Регистрация снова откроется в следующую субботу в 10:30 и продлится 15 минут, до 10:45. У всех, кто зарегистрировался, одинаковые шансы.',
 			},
 			refreshNotice: {
 				countdown: 'Обновление через {seconds} с',
