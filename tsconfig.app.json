@@ -6,7 +6,14 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    // The oldest browser a guest's phone may bring is Safari 15.4 (iOS 15, the last release for
+    // the iPhone 6s and 7), which has ES2022 and none of ES2023's copying array methods
+    // (`toSorted`, `toReversed`, `with`). The bundler lowers syntax for it (`build.target` in
+    // `vite.config.ts`) but adds no polyfills, so this is what keeps a newer method from
+    // type-checking here and then crashing on that phone. `ESNext.Disposable` is only for the
+    // stores' `[Symbol.dispose]()` methods: Safari has no `Symbol.dispose`, so there the method is
+    // keyed `"undefined"`, which still works because every caller looks it up the same way.
+    "lib": ["ES2022", "ESNext.Disposable", "DOM", "DOM.Iterable"],
     "types": [],
 
     // Vite compiles each module on its own and never reads types, so emit is TypeScript's only

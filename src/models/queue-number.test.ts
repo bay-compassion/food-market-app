@@ -74,7 +74,7 @@ describe('QueueNumber', () => {
 		];
 
 		// Act
-		const sorted = numbers.toSorted(QueueNumber.compare).map((number) => number.label);
+		const sorted = [...numbers].sort(QueueNumber.compare).map((number) => number.label);
 
 		// Assert
 		expect(sorted).toEqual(['4', '9', 'P1', 'P2']);

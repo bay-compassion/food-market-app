@@ -76,6 +76,9 @@ export default defineConfig({
 	// bundle a guest downloads on a phone.
 	define: { __SENTRY_DEBUG__: 'false' },
 	build: {
+		// Vite's default is Safari 16.4; guests' older iPhones stop at iOS 15 (see the `lib` note in
+		// `tsconfig.app.json`, which covers the APIs this setting cannot).
+		target: ['chrome111', 'edge111', 'firefox114', 'safari15.4'],
 		// `hidden` emits the maps for the upload without leaving a `sourceMappingURL` behind.
 		sourcemap: uploadsSourceMaps ? 'hidden' : false,
 	},

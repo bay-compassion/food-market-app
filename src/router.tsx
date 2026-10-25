@@ -1,4 +1,5 @@
 import { App } from './App';
+import { AppErrorPage } from './components/app-error/AppErrorPage';
 import { GuestView } from './components/guest-view/GuestView';
 import { QrCodeView } from './components/QrCodeView';
 import { ClaimView } from './components/routes/ClaimView';
@@ -15,64 +16,73 @@ import { createInstrumentedBrowserRouter } from './sentry';
  */
 export const router = createInstrumentedBrowserRouter([
 	{
-		path: '/holding',
-		lazy: async () => ({
-			Component: (await import('./components/holding-page/HoldingPage')).HoldingPage,
-		}),
-	},
-	{
-		element: <App />,
+		// Without this, a screen that throws is replaced by React Router's own fallback: an unstyled
+		// "Unexpected Application Error!" in English on an otherwise blank page. One pathless route
+		// over all of them gives every screen the same localized recovery, including a lazily
+		// loaded one whose chunk failed to download, and an address that matches no route.
+		errorElement: <AppErrorPage />,
 		children: [
-			{ path: '/', element: <GuestView /> },
-			{ path: '/signup', element: <SignupView /> },
-			// A guest reaches this from a worker's QR code while standing at the table.
-			{ path: '/claim', element: <ClaimView /> },
-			{ path: '/qr-code', element: <QrCodeView /> },
 			{
-				path: '/help',
+				path: '/holding',
 				lazy: async () => ({
-					Component: (await import('./components/help/HelpPage')).HelpPage,
+					Component: (await import('./components/holding-page/HoldingPage')).HoldingPage,
 				}),
 			},
 			{
-				path: '/privacy',
+				element: <App />,
+				children: [
+					{ path: '/', element: <GuestView /> },
+					{ path: '/signup', element: <SignupView /> },
+					// A guest reaches this from a worker's QR code while standing at the table.
+					{ path: '/claim', element: <ClaimView /> },
+					{ path: '/qr-code', element: <QrCodeView /> },
+					{
+						path: '/help',
+						lazy: async () => ({
+							Component: (await import('./components/help/HelpPage')).HelpPage,
+						}),
+					},
+					{
+						path: '/privacy',
+						lazy: async () => ({
+							Component: (await import('./components/legal/PrivacyPage')).PrivacyPage,
+						}),
+					},
+					{
+						path: '/terms',
+						lazy: async () => ({
+							Component: (await import('./components/legal/TermsPage')).TermsPage,
+						}),
+					},
+					{
+						path: '/admin/:view?',
+						lazy: async () => ({
+							Component: (await import('./components/AdminRoute')).AdminRoute,
+						}),
+					},
+				],
+			},
+			// Outside the app shell: a volunteer's phone gets the whole screen for the line.
+			{
+				path: '/queue',
 				lazy: async () => ({
-					Component: (await import('./components/legal/PrivacyPage')).PrivacyPage,
+					Component: (await import('./components/queue/QueueRoute')).QueueRoute,
 				}),
 			},
+			// Outside the app shell: a desktop that prints the name tags volunteers send from their phones.
 			{
-				path: '/terms',
+				path: '/printing-station',
 				lazy: async () => ({
-					Component: (await import('./components/legal/TermsPage')).TermsPage,
+					Component: (await import('./components/print-station/PrintStation')).PrintStationRoute,
 				}),
 			},
+			// Outside the app shell: a room display shows no bar, menu, or footer for a passer-by to tap.
 			{
-				path: '/admin/:view?',
+				path: '/kiosk',
 				lazy: async () => ({
-					Component: (await import('./components/AdminRoute')).AdminRoute,
+					Component: (await import('./components/kiosk/KioskView')).KioskView,
 				}),
 			},
 		],
-	},
-	// Outside the app shell: a volunteer's phone gets the whole screen for the line.
-	{
-		path: '/queue',
-		lazy: async () => ({
-			Component: (await import('./components/queue/QueueRoute')).QueueRoute,
-		}),
-	},
-	// Outside the app shell: a desktop that prints the name tags volunteers send from their phones.
-	{
-		path: '/printing-station',
-		lazy: async () => ({
-			Component: (await import('./components/print-station/PrintStation')).PrintStationRoute,
-		}),
-	},
-	// Outside the app shell: a room display shows no bar, menu, or footer for a passer-by to tap.
-	{
-		path: '/kiosk',
-		lazy: async () => ({
-			Component: (await import('./components/kiosk/KioskView')).KioskView,
-		}),
 	},
 ]);

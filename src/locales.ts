@@ -415,6 +415,13 @@ export interface NotificationTranslations {
 	};
 }
 
+/** The page shown in place of a screen that crashed, rather than a blank one. */
+export interface AppErrorTranslations {
+	heading: string;
+	description: string;
+	reload: string;
+}
+
 export interface HoldingPageTranslations {
 	heading: string;
 	instructions: string;
@@ -445,6 +452,7 @@ export type GuestFormCopy = Pick<
 	>;
 
 export interface Translation {
+	appError: AppErrorTranslations;
 	holdingPage: HoldingPageTranslations;
 	appBar: AppBarTranslations;
 	guestView: GuestViewTranslations;
@@ -503,6 +511,12 @@ export interface Translation {
 
 export const translations = {
 	en: {
+		appError: {
+			heading: 'Something Went Wrong',
+			description:
+				'The app hit a problem and couldn’t show this page. Reloading usually fixes it. You can also ask any volunteer.',
+			reload: 'Reload',
+		},
 		holdingPage: {
 			heading: 'New app launches October 31',
 			instructions: 'Keep this QR code and scan it again on October 31.',
@@ -958,6 +972,12 @@ export const translations = {
 		welcome: 'Welcome to the community food market',
 	},
 	es: {
+		appError: {
+			heading: 'Algo salió mal',
+			description:
+				'La app tuvo un problema y no pudo mostrar esta página. Volver a cargarla suele solucionarlo. También puede preguntar a cualquier voluntario.',
+			reload: 'Volver a cargar',
+		},
 		holdingPage: {
 			heading: 'La nueva aplicación se lanza el 31 de octubre',
 			instructions: 'Guarde este código QR y vuelva a escanearlo el 31 de octubre.',
@@ -1418,6 +1438,12 @@ export const translations = {
 		welcome: 'Bienvenido al mercado comunitario de alimentos',
 	},
 	fa: {
+		appError: {
+			heading: 'مشکلی پیش آمد',
+			description:
+				'برنامه با مشکلی روبه‌رو شد و نتوانست این صفحه را نشان دهد. معمولاً بارگذاری دوباره مشکل را حل می‌کند. می‌توانید از هر داوطلبی هم بپرسید.',
+			reload: 'بارگذاری دوباره',
+		},
 		holdingPage: {
 			heading: 'برنامهٔ جدید در ۳۱ اکتبر راه‌اندازی می‌شود',
 			instructions: 'این کد QR را نگه دارید و در ۳۱ اکتبر دوباره اسکن کنید.',
@@ -1870,6 +1896,12 @@ export const translations = {
 		welcome: 'به بازار غذای جامعه خوش آمدید',
 	},
 	tl: {
+		appError: {
+			heading: 'Nagkaproblema',
+			description:
+				'Nagkaproblema ang app at hindi maipakita ang pahinang ito. Kadalasang naaayos ito kapag ni-reload. Maaari rin kayong magtanong sa kahit sinong volunteer.',
+			reload: 'I-reload',
+		},
 		holdingPage: {
 			heading: 'Ilulunsad ang bagong app sa Oktubre 31',
 			instructions: 'Itago ang QR code na ito at i-scan itong muli sa Oktubre 31.',
@@ -2329,6 +2361,12 @@ export const translations = {
 		welcome: 'Maligayang pagdating sa pamilihan ng pagkaing pangkomunidad',
 	},
 	vi: {
+		appError: {
+			heading: 'Đã xảy ra sự cố',
+			description:
+				'Ứng dụng gặp sự cố và không thể hiển thị trang này. Tải lại trang thường sẽ khắc phục được. Bạn cũng có thể hỏi bất kỳ tình nguyện viên nào.',
+			reload: 'Tải lại',
+		},
 		holdingPage: {
 			heading: 'Ứng dụng mới ra mắt ngày 31 tháng 10',
 			instructions: 'Giữ mã QR này và quét lại vào ngày 31 tháng 10.',
@@ -2781,6 +2819,12 @@ export const translations = {
 		welcome: 'Chào mừng đến với chợ thực phẩm cộng đồng',
 	},
 	zh: {
+		appError: {
+			heading: '出了点问题',
+			description:
+				'应用遇到问题，无法显示此页面。重新加载通常可以解决。您也可以询问任何一位志愿者。',
+			reload: '重新加载',
+		},
 		holdingPage: {
 			heading: '新应用将于10月31日上线',
 			instructions: '请保留此二维码，并于10月31日再次扫描。',
@@ -3216,6 +3260,12 @@ export const translations = {
 		welcome: '欢迎来到社区食品市场',
 	},
 	ar: {
+		appError: {
+			heading: 'حدث خطأ ما',
+			description:
+				'واجه التطبيق مشكلة ولم يتمكن من عرض هذه الصفحة. عادةً ما تُحل المشكلة بإعادة التحميل. يمكنك أيضًا سؤال أي متطوع.',
+			reload: 'إعادة التحميل',
+		},
 		holdingPage: {
 			heading: 'إطلاق التطبيق الجديد في ٣١ أكتوبر',
 			instructions: 'احتفظ برمز QR هذا وامسحه مرة أخرى في ٣١ أكتوبر.',
@@ -3661,6 +3711,12 @@ export const translations = {
 		welcome: 'مرحبًا بكم في سوق الطعام المجتمعي',
 	},
 	fr: {
+		appError: {
+			heading: 'Un problème est survenu',
+			description:
+				'L’application a rencontré un problème et n’a pas pu afficher cette page. Recharger la page suffit généralement. Vous pouvez aussi demander à un bénévole.',
+			reload: 'Recharger',
+		},
 		holdingPage: {
 			heading: 'La nouvelle application arrive le 31 octobre',
 			instructions: 'Gardez ce code QR et scannez-le à nouveau le 31 octobre.',
@@ -4123,6 +4179,12 @@ export const translations = {
 		welcome: 'Bienvenue au marché alimentaire communautaire',
 	},
 	pt: {
+		appError: {
+			heading: 'Algo deu errado',
+			description:
+				'O app encontrou um problema e não conseguiu mostrar esta página. Recarregar geralmente resolve. Você também pode perguntar a qualquer voluntário.',
+			reload: 'Recarregar',
+		},
 		holdingPage: {
 			heading: 'O novo aplicativo será lançado em 31 de outubro',
 			instructions: 'Guarde este código QR e escaneie-o novamente em 31 de outubro.',
@@ -4585,6 +4647,12 @@ export const translations = {
 		welcome: 'Boas-vindas ao mercado comunitário de alimentos',
 	},
 	ru: {
+		appError: {
+			heading: 'Что-то пошло не так',
+			description:
+				'В приложении произошла ошибка, и эта страница не открылась. Обычно помогает перезагрузка. Также можно обратиться к любому волонтёру.',
+			reload: 'Перезагрузить',
+		},
 		holdingPage: {
 			heading: 'Новое приложение запустится 31 октября',
 			instructions: 'Сохраните этот QR-код и отсканируйте его снова 31 октября.',
