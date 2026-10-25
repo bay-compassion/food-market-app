@@ -314,7 +314,6 @@ export interface HelpTranslations {
 	/** In order; a step with a `time` is one the guest should do at that time. */
 	steps: HelpStepTranslations[];
 	phoneNotice: { heading: string; body: string };
-	needHelp: { heading: string; body: string };
 }
 
 export interface HelpStepTranslations {
@@ -647,7 +646,7 @@ export const translations = {
 					},
 					help: {
 						title: 'Need a reminder?',
-						body: '“{help}” has every step. You can also ask any volunteer.',
+						body: '“{help}” has every step.',
 					},
 					replay: {
 						title: 'See this again',
@@ -890,7 +889,6 @@ export const translations = {
 				heading: 'Please bring the phone you signed up on.',
 				body: 'We can’t accept screenshots.',
 			},
-			needHelp: { heading: 'Need help?', body: 'Ask any volunteer.' },
 		},
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
@@ -1104,7 +1102,7 @@ export const translations = {
 					},
 					help: {
 						title: '¿Necesita recordarlo?',
-						body: '“{help}” tiene todos los pasos. También puede preguntar a cualquier voluntario.',
+						body: '“{help}” tiene todos los pasos.',
 					},
 					replay: {
 						title: 'Véalo de nuevo',
@@ -1349,7 +1347,6 @@ export const translations = {
 				heading: 'Por favor, traiga el teléfono con el que se inscribió.',
 				body: 'No aceptamos capturas de pantalla.',
 			},
-			needHelp: { heading: '¿Necesita ayuda?', body: 'Pregunte a cualquier voluntario.' },
 		},
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
@@ -1562,7 +1559,7 @@ export const translations = {
 					},
 					help: {
 						title: 'یادآوری لازم دارید؟',
-						body: 'همه مراحل در «{help}» هست. می‌توانید از هر داوطلبی هم بپرسید.',
+						body: 'همه مراحل در «{help}» هست.',
 					},
 					replay: {
 						title: 'دوباره ببینید',
@@ -1802,7 +1799,6 @@ export const translations = {
 				heading: 'لطفاً همان تلفنی را که با آن ثبت‌نام کردید بیاورید.',
 				body: 'اسکرین‌شات پذیرفته نمی‌شود.',
 			},
-			needHelp: { heading: 'کمک لازم دارید؟', body: 'از هر داوطلبی بپرسید.' },
 		},
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
@@ -2014,7 +2010,7 @@ export const translations = {
 					},
 					help: {
 						title: 'Kailangan ng paalala?',
-						body: 'Nasa “{help}” ang bawat hakbang. Maaari rin kayong magtanong sa kahit sinong volunteer.',
+						body: 'Nasa “{help}” ang bawat hakbang.',
 					},
 					replay: {
 						title: 'Panoorin muli',
@@ -2260,7 +2256,6 @@ export const translations = {
 				heading: 'Pakidala ang phone na ginamit ninyo sa pag-sign up.',
 				body: 'Hindi tinatanggap ang screenshot.',
 			},
-			needHelp: { heading: 'Kailangan ng tulong?', body: 'Magtanong sa kahit sinong volunteer.' },
 		},
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
@@ -2473,7 +2468,7 @@ export const translations = {
 					},
 					help: {
 						title: 'Cần nhắc lại?',
-						body: '“{help}” có đầy đủ các bước. Bạn cũng có thể hỏi bất kỳ tình nguyện viên nào.',
+						body: '“{help}” có đầy đủ các bước.',
 					},
 					replay: {
 						title: 'Xem lại',
@@ -2713,7 +2708,6 @@ export const translations = {
 				heading: 'Vui lòng mang theo điện thoại bạn đã dùng để đăng ký.',
 				body: 'Chúng tôi không nhận ảnh chụp màn hình.',
 			},
-			needHelp: { heading: 'Cần giúp đỡ?', body: 'Hãy hỏi bất kỳ tình nguyện viên nào.' },
 		},
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
@@ -2922,7 +2916,7 @@ export const translations = {
 					},
 					help: {
 						title: '需要回顾？',
-						body: '“{help}”里有每一个步骤。您也可以询问任何一位志愿者。',
+						body: '“{help}”里有每一个步骤。',
 					},
 					replay: {
 						title: '再看一次',
@@ -3150,7 +3144,6 @@ export const translations = {
 				},
 			],
 			phoneNotice: { heading: '请携带您登记时使用的手机。', body: '不接受截图。' },
-			needHelp: { heading: '需要帮助？', body: '请询问任何一位志愿者。' },
 		},
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
@@ -3359,7 +3352,7 @@ export const translations = {
 					},
 					help: {
 						title: 'تحتاج إلى تذكير؟',
-						body: 'في «{help}» كل الخطوات. يمكنك أيضًا سؤال أي متطوع.',
+						body: 'في «{help}» كل الخطوات.',
 					},
 					replay: {
 						title: 'شاهدها مرة أخرى',
@@ -3594,7 +3587,6 @@ export const translations = {
 				},
 			],
 			phoneNotice: { heading: 'من فضلك، أحضر الهاتف الذي سجّلت به.', body: 'لا نقبل لقطات الشاشة.' },
-			needHelp: { heading: 'تحتاج مساعدة؟', body: 'اسأل أي متطوع.' },
 		},
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
@@ -3806,7 +3798,7 @@ export const translations = {
 					},
 					help: {
 						title: 'Besoin d’un rappel ?',
-						body: '« {help} » reprend toutes les étapes. Vous pouvez aussi demander à un bénévole.',
+						body: '« {help} » reprend toutes les étapes.',
 					},
 					replay: {
 						title: 'Revoir la visite',
@@ -4054,7 +4046,6 @@ export const translations = {
 				heading: 'Merci d’apporter le téléphone utilisé pour l’inscription.',
 				body: 'Les captures d’écran ne sont pas acceptées.',
 			},
-			needHelp: { heading: 'Besoin d’aide ?', body: 'Demandez à un bénévole.' },
 		},
 		firstName: 'Prénom',
 		formDescription: 'Quelques informations nous aident à préparer votre visite.',
@@ -4268,7 +4259,7 @@ export const translations = {
 					},
 					help: {
 						title: 'Precisa relembrar?',
-						body: '“{help}” tem todas as etapas. Você também pode perguntar a qualquer voluntário.',
+						body: '“{help}” tem todas as etapas.',
 					},
 					replay: {
 						title: 'Veja novamente',
@@ -4514,10 +4505,6 @@ export const translations = {
 				heading: 'Leve o celular usado na inscrição.',
 				body: 'Não aceitamos capturas de tela.',
 			},
-			needHelp: {
-				heading: 'Precisa de ajuda?',
-				body: 'Pergunte a qualquer voluntário.',
-			},
 		},
 		firstName: 'Nome',
 		formDescription: 'Alguns dados nos ajudam a preparar sua visita.',
@@ -4730,7 +4717,7 @@ export const translations = {
 					},
 					help: {
 						title: 'Нужно напоминание?',
-						body: 'В разделе «{help}» описаны все шаги. Также можно обратиться к любому волонтёру.',
+						body: 'В разделе «{help}» описаны все шаги.',
 					},
 					replay: {
 						title: 'Посмотрите ещё раз',
@@ -4971,10 +4958,6 @@ export const translations = {
 			phoneNotice: {
 				heading: 'Возьмите телефон, с которого вы регистрировались.',
 				body: 'Снимки экрана не принимаются.',
-			},
-			needHelp: {
-				heading: 'Нужна помощь?',
-				body: 'Обратитесь к любому волонтёру.',
 			},
 		},
 		firstName: 'Имя',

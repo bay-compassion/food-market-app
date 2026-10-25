@@ -137,6 +137,6 @@ export const lines: NarrationLine[] = [
 		id: 'help',
 		chapter: 'help',
 		pause: 1.0,
-		text: 'Need a reminder? Tap How it works, or ask any volunteer. Thank you for being here.',
+		text: 'Need a reminder? Tap How it works anytime. Thank you for being here.',
 	},
 ];
