@@ -28,7 +28,7 @@
     },
     "identity": {
       "text": "Enter your first and last name, and your cell phone number. Please use your full name, rather than just initials.",
-      "duration": 6.741
+      "duration": 6.751
     },
     "household": {
       "text": "Answer the questions about your household. Include yourself in the total, and tell us how many children and seniors you’re shopping for.",
@@ -36,7 +36,7 @@
     },
     "returning": {
       "text": "If this phone already remembers you, your name and phone are saved. Check your household details for today’s visit.",
-      "duration": 7.093
+      "duration": 7.095
     },
     "join": {
       "text": "When you’ve finished, tap Join the lottery.",
@@ -95,12 +95,12 @@
       "duration": 7.019
     },
     "underway": {
-      "text": "If the market is already underway and you haven’t checked in, speak with a market team member.",
-      "duration": 5.142
+      "text": "If the market is already underway, registration has closed for the day. It opens again next Saturday at ten thirty, and everyone who signs up has the same chance.",
+      "duration": 10.484
     },
     "help": {
-      "text": "Need a reminder? Tap How it works, or ask any volunteer. Thank you for being here.",
-      "duration": 5.089
+      "text": "Need a reminder? Tap How it works anytime. Thank you for being here.",
+      "duration": 4.107
     }
   }
 }

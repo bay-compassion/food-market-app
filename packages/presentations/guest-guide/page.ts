@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				G.serviceState.inProgressHeading,
 				G.serviceState.inProgressDescription,
 			],
-			help: [H.title, H.needHelp.heading, H.needHelp.body],
+			help: [H.title, T.help.title, T.help.body.replace('{help}', H.title)],
 		};
 		const [eyebrow, head, sub] = captions[id];
 
@@ -540,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			for (const [id, heading, sub] of [
 				['title', G.presentation.heading, G.help.introBody],
-				['outro', G.help.needHelp.heading, G.help.needHelp.body],
+				['outro', G.tour.steps.help.title, G.tour.steps.help.body.replace('{help}', G.help.title)],
 			] as const) {
 				const card = k(id);
 

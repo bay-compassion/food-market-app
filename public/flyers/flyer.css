@@ -260,12 +260,3 @@ body {
 .notice p {
 	margin: 0;
 }
-
-.help {
-	margin: 0;
-	padding: 16px 48px 20px;
-	background: var(--surface-soft);
-	text-align: center;
-	font-size: 20px;
-	line-height: 1.35;
-}
