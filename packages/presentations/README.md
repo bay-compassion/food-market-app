@@ -254,8 +254,19 @@ committed.
 The build embeds `soundtrack.m4a`, and a narrated video's `voice.m4a`, as base64 in the page. The
 player turns each into a `blob:` URL and plays it through one hidden `<audio>` element, routed with
 `createMediaElementSource` into a gain node that the volume slider sets; the music toggle swaps the
-element between the two tracks at the same moment. The GSAP timeline keeps the time: the element is
-started and stopped with it and moved to it whenever the two drift more than 0.15 s apart.
+element between the two tracks at the same moment. Play, pause, and deliberate seeks move the
+element with the GSAP timeline. During playback the audio keeps the time: if animation frames fall
+behind by more than 0.15 s, the timeline catches up without seeking and interrupting the soundtrack.
+The player also waits for an outstanding audio play request rather than restarting it each frame.
+
+After building, check delayed audio startup and recovery from dropped animation frames in both
+Chromium and WebKit (Safari's engine):
+
+```bash
+pnpm exec playwright install chromium webkit
+node packages/presentations/verify.ts --playback-only
+node packages/presentations/verify.ts --playback-only --webkit
+```
 
 The sound is a media element, not Web Audio alone, for two reasons. An iPhone with its ring/silent
 switch on mutes Web Audio but plays a media element, so a playing element should keep the guide

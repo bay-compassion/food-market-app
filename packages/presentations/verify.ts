@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { chromium, type Page } from 'playwright';
+import { chromium, webkit, type Page } from 'playwright';
 
 import { languages, translations } from '../../src/locales.ts';
 import { videos } from './videos.ts';
@@ -272,14 +272,87 @@ async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
 	);
 }
 
+/** Delayed media startup and GSAP lag recovery must not repeatedly seek or restart the audio. */
+async function verifyPlaybackRecovery(page: Page, name: string): Promise<void> {
+	const startup = await page.evaluate(async () => {
+		const media = document.querySelector('audio')!;
+		const play = media.play.bind(media);
+		let attempts = 0;
+
+		// Keep the element paused while its play promise is pending, as a slow decoder can do.
+		media.play = () => {
+			attempts++;
+
+			return new Promise<void>((resolve, reject) => {
+				setTimeout(() => void play().then(resolve, reject), 300);
+			});
+		};
+
+		try {
+			document.getElementById('play')!.click();
+			await new Promise((resolve) => setTimeout(resolve, 700));
+
+			return { attempts, playing: !media.paused };
+		} finally {
+			media.play = play;
+			document.getElementById('play')!.click();
+		}
+	});
+
+	assert.equal(startup.attempts, 1, `${name}: one play request while audio is starting`);
+	assert.equal(startup.playing, true, `${name}: delayed audio starts`);
+	await page.locator('#play').click();
+	await page.waitForFunction(() => {
+		const media = document.querySelector('audio')!;
+
+		return (
+			!media.paused && !media.seeking && media.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+		);
+	});
+	const recovery = await page.evaluate(() => {
+		const media = document.querySelector('audio')!;
+		const before = media.currentTime;
+
+		// Reproduce an animation clock left behind by a dropped frame or GSAP's lag smoothing.
+		window.reel.tl.time(Math.max(0, before - 0.6));
+
+		return { before, after: media.currentTime, animation: window.reel.tl.time() };
+	});
+
+	assert.ok(recovery.after >= recovery.before, `${name}: lag recovery does not seek audio back`);
+	assert.ok(
+		Math.abs(recovery.animation - recovery.after) < 0.15,
+		`${name}: animation catches up to uninterrupted audio (${JSON.stringify(recovery)})`,
+	);
+	await page.locator('#play').click();
+}
+
 void (async () => {
-	const browser = await chromium.launch();
+	const browser = await (process.argv.includes('--webkit') ? webkit : chromium).launch();
 	const errors: string[] = [];
 	const stills = path.join(dir, 'out/guest-guide/review');
 
 	mkdirSync(stills, { recursive: true });
 
 	try {
+		if (process.argv.includes('--playback-only')) {
+			for (const name of Object.keys(videos)) {
+				const page = await browser.newPage();
+
+				await page.goto('file://' + path.join(dir, 'out', name + '.html'));
+				await page.locator('#play:enabled').waitFor();
+				await page.evaluate(() => window.reel.soundtrackReady);
+				await page.locator('#play').click();
+				await page.waitForFunction(() => document.querySelector('audio')!.currentTime > 0.3);
+				await page.locator('#play').click();
+				await verifyPlaybackRecovery(page, name);
+				await page.close();
+				console.log(`${name}: delayed audio startup and animation lag recovery checked`);
+			}
+
+			return;
+		}
+
 		// Serve the published embeds at one origin so the iPhone fallback can expand its iframe.
 		const embedded = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
@@ -592,6 +665,7 @@ void (async () => {
 				`${name}: the sound pauses with the video`,
 			);
 			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			await verifyPlaybackRecovery(page, name);
 			// Space plays and pauses, and the arrows skip ten seconds, unless a control has focus.
 			await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
 			await page.evaluate(() => window.reel.seek(20));

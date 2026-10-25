@@ -941,7 +941,7 @@ function mountPlayer<State>({
 	 * from a media element rather than from Web Audio alone: an iPhone with its silent switch on
 	 * mutes Web Audio but not a playing media element, and only a media element reaches the lock
 	 * screen and the media keys. The element still plays through a gain node, as an iPhone ignores a
-	 * media element's own volume. The timeline keeps the time; the element is moved to it on drift.
+	 * media element's own volume. During playback the audio keeps time through slow animation frames.
 	 */
 	const media = document.createElement('audio');
 
@@ -951,8 +951,11 @@ function mountPlayer<State>({
 	let audio: AudioContext | null = null;
 	/** The volume slider's level, which the element plays through. */
 	let level: GainNode | null = null;
+	/** Safari can leave the element paused while a play request is still starting. */
+	let audioStarting: Promise<void> | null = null;
 
 	function stopAudio() {
+		audioStarting = null;
 		media.pause();
 		syncMediaSession();
 	}
@@ -973,12 +976,21 @@ function mountPlayer<State>({
 			media.src = track;
 		}
 		media.currentTime = tl.time();
-		media.play().catch((error: DOMException) => {
-			// Turned away for want of a click; a swap of track interrupting it is an AbortError.
-			if (error.name === 'NotAllowedError') {
-				void setSound(false);
-			}
-		});
+		const starting = media.play();
+
+		audioStarting = starting;
+		void starting
+			.catch((error: DOMException) => {
+				// Turned away for want of a click; a swap of track interrupting it is an AbortError.
+				if (audioStarting === starting && error.name === 'NotAllowedError') {
+					void setSound(false);
+				}
+			})
+			.finally(() => {
+				if (audioStarting === starting) {
+					audioStarting = null;
+				}
+			});
 		syncMediaSession();
 	}
 
@@ -993,7 +1005,7 @@ function mountPlayer<State>({
 
 		// A track a frame shorter than the timeline ends first, and stays ended.
 		if (media.paused) {
-			return media.ended ? undefined : startAudio();
+			return media.ended || audioStarting ? undefined : startAudio();
 		}
 
 		if (
@@ -1001,7 +1013,10 @@ function mountPlayer<State>({
 			media.readyState >= HTMLMediaElement.HAVE_METADATA &&
 			Math.abs(media.currentTime - tl.time()) > 0.15
 		) {
-			media.currentTime = tl.time();
+			// Audio keeps playing through a slow frame. Seeking it back to GSAP's lag-smoothed
+			// clock interrupts decoding, especially on Safari, and can repeat on every recovery.
+			// Catch the animation up instead; deliberate seeks still go through startAudio().
+			tl.time(Math.min(END, media.currentTime));
 		}
 	}
 
@@ -1037,7 +1052,7 @@ function mountPlayer<State>({
 		startAudio();
 		await (musicOn ? soundtrackReady : loadVoiceTrack());
 
-		if (media.paused) {
+		if (media.paused && !audioStarting) {
 			startAudio();
 		}
 	}
@@ -1051,7 +1066,7 @@ function mountPlayer<State>({
 		startAudio();
 		await (musicOn ? soundtrackReady : loadVoiceTrack());
 
-		if (media.paused) {
+		if (media.paused && !audioStarting) {
 			startAudio();
 		}
 	});
