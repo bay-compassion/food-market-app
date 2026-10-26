@@ -5,9 +5,9 @@ import { boardColumns } from './board-columns';
 import { useKioskLanguages } from './kiosk-languages';
 import { KioskClock } from './KioskClock';
 
-/* In landscape, the board's own columns: the clock starts at the "Already Called" panel's left
-   edge, with the far side's text across from it. In portrait the board is one column, so there the
-   clock sits at the centre of three, between equal outer tracks. */
+/* In landscape, the board's own columns: the screen's own note starts at the "Already Called"
+   panel's left edge, with the clock across from it at the far side. In portrait the board is one
+   column, so there the note sits at the centre of three, between equal outer tracks. */
 const Bar = styled.header`
 	display: grid;
 	grid-template-columns: ${boardColumns.template};
@@ -45,6 +45,11 @@ const Side = styled.div`
 	align-items: start;
 	gap: 2vmin;
 
+	/* The note's lines align with each other on the left, across from the right-aligned clock. */
+	> :first-child {
+		text-align: left;
+	}
+
 	@media (orientation: portrait) {
 		display: contents;
 	}
@@ -70,13 +75,13 @@ const Brand = styled.div`
 export type KioskHeaderProps = {
 	/** Under the market's name: a note on the display's own state, such as reconnecting. */
 	status?: ReactNode;
-	/** The right-hand side, opposite the market's name. */
+	/** Beside the clock, at the "Already Called" panel's left edge, such as how many are in line. */
 	end?: ReactNode;
 };
 
 /**
- * The strip across the top of every kiosk screen: the market's logo and name, the time, and
- * whatever the screen has to say at the far side.
+ * The strip across the top of every kiosk screen: the market's logo and name, whatever the screen
+ * has to say, and the time at the far side.
  */
 export function KioskHeader({ status, end }: KioskHeaderProps) {
 	const { primary } = useKioskLanguages();
@@ -91,8 +96,8 @@ export function KioskHeader({ status, end }: KioskHeaderProps) {
 				{status}
 			</div>
 			<Side>
-				<KioskClock />
 				<div>{end}</div>
+				<KioskClock />
 			</Side>
 		</Bar>
 	);

@@ -67,10 +67,10 @@ function renderQueue(guests: QueueGuest[], serviceStarted = true) {
 }
 
 describe('QueueView', () => {
-	it('explains that the queue is not open before service starts', () => {
+	it('points back to the session before service starts', () => {
 		const { container } = renderQueue([], false);
 
-		expect(container.textContent).toContain(adminTranslations.en.queueNotStarted);
+		expect(container.textContent).toContain(adminTranslations.en.goToCurrentSession);
 		expect(container.textContent).not.toContain(adminTranslations.en.callNext);
 	});
 
