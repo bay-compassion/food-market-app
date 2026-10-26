@@ -133,7 +133,9 @@ export const TicketChip = observer(function TicketChip({ guest, now }: TicketChi
 			>
 				<span className="number">{number}</span>
 				<span className="name">{name}</span>
-				<span className="language">{new NameTag(guest).languageCode}</span>
+				<span className="language">
+					{new NameTag({ ...guest, visitId: guest.id, printedAt: new Date(now) }).languageCode}
+				</span>
 				{/* Always drawn, empty when untimed, so the language codes line up down the list. */}
 				<span className="elapsed">
 					{minutes === null

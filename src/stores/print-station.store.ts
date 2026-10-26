@@ -62,12 +62,17 @@ export class PrintStationStore {
 		return this._waiting[0] ?? null;
 	}
 
-	/** The label for the tag printing now. The job carries only the initial, which is all it shows. */
+	/**
+	 * The label for the tag printing now. The job carries only the initial, which is all it shows,
+	 * and is dated when the volunteer sent it.
+	 */
 	get currentTag(): NameTag | null {
 		const job = this.current;
 
 		return job
 			? new NameTag({
+					visitId: job.visitId,
+					printedAt: new Date(job.requestedAt),
 					firstName: job.firstName,
 					lastName: job.lastInitial,
 					pronunciation: job.pronunciation,

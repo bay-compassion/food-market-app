@@ -3,6 +3,10 @@ import { QueueNumber, type QueueNumberSource } from './queue-number.ts';
 
 /** The parts of a visit a name tag is made from. */
 export type NameTagSource = QueueNumberSource & {
+	/** The visit the tag is for. Its tail is the reference code that ties the sticker back to it. */
+	visitId: string;
+	/** When the tag is printed; the label shows its date. */
+	printedAt: Date;
 	firstName: string;
 	lastName: string;
 	/** How to say the name, as the guest or a worker wrote it. Absent or null when nobody has. */
@@ -13,7 +17,7 @@ export type NameTagSource = QueueNumberSource & {
 /**
  * What goes on the sticker a check-in volunteer writes out for a guest they have just called: the
  * first name with a last initial, how to say it when someone wrote that down, their queue number,
- * and the language they registered in.
+ * the language they registered in, the day, and a short reference code for the visit.
  *
  * A value object built from the visit, so the screen that shows it and the label printer that
  * prints it agree on exactly the same text.
@@ -28,7 +32,17 @@ export class NameTag {
 	static readonly label = { widthMm: 101.6, heightMm: 57.15 } as const;
 
 	/** Names longer than this are set smaller, so they still fit across the label. */
-	private static readonly longNameLength = 12;
+	private static readonly longNameLength = 9;
+
+	/** How many characters of the visit id the reference code keeps. */
+	private static readonly referenceLength = 4;
+
+	/** The label is read by English-speaking volunteers, like the rest of the queue desk. */
+	private static readonly dateFormat = new Intl.DateTimeFormat('en-US', {
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric',
+	});
 
 	constructor(private readonly source: NameTagSource) {}
 
@@ -56,6 +70,32 @@ export class NameTag {
 	/** The guest's queue number, or `null` for a visit the draw has not placed. */
 	get number(): QueueNumber | null {
 		return QueueNumber.of(this.source);
+	}
+
+	/**
+	 * How long the number reads, for the type size that keeps it inside its block: `short` for up
+	 * to two characters (`42`, `P1`), `medium` for three (`128`, `P12`), `long` for more.
+	 */
+	get numberLength(): 'short' | 'medium' | 'long' {
+		const length = this.number?.label.length ?? 0;
+
+		return length <= 2 ? 'short' : length === 3 ? 'medium' : 'long';
+	}
+
+	/**
+	 * The last characters of the visit id, uppercased — `7F3A` — so a sticker can be matched to the
+	 * visit it was printed for. Not unique on its own; it narrows a day's visits to one.
+	 */
+	get reference(): string {
+		return this.source.visitId
+			.replace(/[^0-9a-z]/gi, '')
+			.slice(-NameTag.referenceLength)
+			.toUpperCase();
+	}
+
+	/** The day the tag was printed, e.g. `Oct 25, 2026`, in the printing device's time zone. */
+	get date(): string {
+		return NameTag.dateFormat.format(this.source.printedAt);
 	}
 
 	/** The registration language as a short code a volunteer can copy, e.g. `ES`. */

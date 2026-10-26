@@ -327,6 +327,27 @@ export interface AdminTranslation {
 	devProgressNearlyDone: string;
 	queueDesk: QueueDeskTranslation;
 	kioskUnlock: KioskUnlockTranslation;
+	printStationCard: PrintStationCardTranslation;
+}
+
+/** The dashboard's card on setting up the `/printing-station` computer at the market. */
+export interface PrintStationCardTranslation {
+	title: string;
+	online: string;
+	offline: string;
+	intro: string;
+	open: string;
+	/** Under the open button: which computer it belongs on. */
+	openHint: string;
+	setupTitle: string;
+	/** Each step, in order. */
+	steps: string[];
+	commandLabel: string;
+	copy: string;
+	copied: string;
+	copyFailed: string;
+	account: string;
+	guide: string;
 }
 
 /** The code a worker reads off their phone to unlock a room display at `/kiosk`. */
@@ -396,6 +417,10 @@ export interface QueueDeskTranslation {
 	nameTag: string;
 	/** Names the pronunciation line on a name tag. */
 	pronunciation: string;
+	/** Before the name tag's reference code, the tail of the visit id that ties it to the visit. */
+	reference: string;
+	/** Names the reference code for a screen reader and on hover. */
+	referenceHelp: string;
 	printNameTag: string;
 	/** Under the print button: where the tag will come out. */
 	printsAtStation: string;
@@ -892,6 +917,8 @@ export const adminTranslations = {
 			closeTicket: 'Close ticket',
 			nameTag: 'Name tag',
 			pronunciation: 'Pronunciation',
+			reference: 'Ref',
+			referenceHelp: 'Reference code: the end of the visit ID',
 			printNameTag: 'Print name tag',
 			printsAtStation: 'Prints at the print station',
 			printStationIsOffline: 'The print station is offline',
@@ -973,6 +1000,30 @@ export const adminTranslations = {
 				wrongCode: 'That code didn’t work. Get a new one from the queue screen.',
 				unlockFailed: 'Can’t reach the server. Try again.',
 			},
+		},
+		printStationCard: {
+			title: 'Printing Station',
+			online: 'Online',
+			offline: 'Offline',
+			intro:
+				'The computer at the market with the Dymo label printer plugged in. While its page is open, volunteers can print name tags from their phones.',
+			open: 'Open Printing Station',
+			openHint: 'Open this on the printer’s computer, not your phone.',
+			setupTitle: 'First-Time Setup',
+			steps: [
+				'Install Dymo’s LabelWriter software and plug the printer in over USB.',
+				'Load Dymo 30857 name badge labels and make the LabelWriter the default printer.',
+				'Quit Chrome completely, then start it with the command below, leaving out --kiosk-printing.',
+				'Send one tag from a phone and print it through the dialog: the LabelWriter, 30857 paper, margins None, scale 100%.',
+				'Quit Chrome and start it again with the full command. Tags now print with no dialog.',
+			],
+			commandLabel: 'Launch Command (Mac)',
+			copy: 'Copy Command',
+			copied: 'Copied',
+			copyFailed: 'Couldn’t copy the command. Select it and copy it instead.',
+			account:
+				'Sign in on that computer with the print-station account, which can print tags but not change the queue.',
+			guide: 'Full setup guide',
 		},
 	},
 } satisfies Record<'en', AdminTranslation>;

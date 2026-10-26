@@ -73,6 +73,7 @@ export class AdminStore {
 	private _guestClaim: GuestClaim | null = null;
 	private _kioskUnlockCode: KioskUnlockCode | null = null;
 	private _guestDeletion: GuestDeletionPreview | null = null;
+	private _printStationOnline: boolean | null = null;
 	/** Guest commands sent and not yet answered. A poll landing meanwhile would undo their status. */
 	private pendingGuestCommands = 0;
 	/**
@@ -130,6 +131,15 @@ export class AdminStore {
 	/** The room-display unlock code on screen, if a worker asked for one. */
 	get kioskUnlockCode(): KioskUnlockCode | null {
 		return this._kioskUnlockCode;
+	}
+
+	/**
+	 * Whether the print station was checking in at the last look, or `null` when nobody has looked
+	 * or the answer could not be had — a worker without `run:queue` can't ask, and an error says
+	 * nothing about the station itself.
+	 */
+	get printStationOnline(): boolean | null {
+		return this._printStationOnline;
 	}
 
 	/** The guest an admin has asked to delete permanently, while the confirmation dialog is open. */
@@ -239,6 +249,19 @@ export class AdminStore {
 	/** Whether a print station is online to take name tags. */
 	async isPrintStationOnline(): Promise<boolean> {
 		return this.api.isPrintStationOnline();
+	}
+
+	/** Looks again at whether the print station is checking in. Quietly: a failure is no outcome. */
+	async checkPrintStation(): Promise<void> {
+		if (!this.can('run:queue')) {
+			this._printStationOnline = null;
+
+			return;
+		}
+
+		const online = await this.api.isPrintStationOnline().catch(() => null);
+
+		runInAction(() => (this._printStationOnline = online));
 	}
 
 	/** Sends a visit's name tag to the print station. */

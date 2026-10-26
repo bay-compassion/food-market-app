@@ -1,9 +1,20 @@
 # Printing name tags
 
 The volunteer queue screen (`/queue`) shows a name tag on every open ticket: the guest's first name
-and last initial, their place in line, and the language they registered in. **Print name tag**
-under it sends that tag to the print station, a computer at the market with the label printer
+and last initial (with how to say it, when someone wrote that down), their number in a large block
+down the right edge, the language they registered in, the date, and a reference code. **Print name
+tag** under it sends that tag to the print station, a computer at the market with the label printer
 plugged into it, which prints it with no dialog.
+
+The reference code (`Ref 7F3A`) is the last four characters of the visit's id. It ties a sticker
+back to the visit it was printed for: the same code shows on the ticket's tag at `/queue`, and the
+visit's id ends with it. Four hex characters aren't unique on their own,
+but among one day's visits they narrow a sticker to one.
+
+The dashboard's Current Session screen has a **Printing Station** card with the setup steps below,
+the launch command to copy, a button that opens `/printing-station`, and whether a station is
+checking in right now. Sign in to the dashboard on the station's computer and open it from there —
+not from a phone: whatever device has the page open becomes the station and takes the tags.
 
 ## The printer
 
@@ -30,7 +41,7 @@ proportions, so changing labels means changing that one value.
 3. Make the LabelWriter the computer's default printer.
 4. Start the print station's browser with the command below, but leave out `--kiosk-printing`, and
    print one tag through the dialog (send one from a phone). In that dialog, choose the LabelWriter,
-   pick the 30857 paper size, set the margins to none, and, if the dialog shows the printer's own
+   pick the 30857 paper size, set the margins to none and the scale to 100%, and, if the dialog shows the printer's own
    options, choose the roll the labels are on. Chrome saves these in the station's own profile.
 5. Quit the browser and start it again with the full command. From then on it prints with those
    settings and no dialog.
@@ -75,3 +86,8 @@ left. One station per market: two stations would each print every tag.
   LabelWriter before relying on it at a market:** that the tag runs along the label rather than
   being rotated or shrunk onto it, that one tag uses one label rather than two, and that nothing is
   cut off at the label's edges.
+- If the tag prints small, leaving a white border, the driver's paper is likely set portrait while
+  the page is landscape, and Chrome scales the page down to fit. Choose the 30857 paper in landscape,
+  or with the scale at 100%, in the dialog print of step 4.
+- The number prints white on a solid black block. Chrome prints that background (the card sets
+  `print-color-adjust: exact`), but check the block comes out solid rather than streaked.
