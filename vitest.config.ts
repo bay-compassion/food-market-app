@@ -41,8 +41,6 @@ export default defineConfig({
 	test: {
 		name: 'storybook',
 		root: fileURLToPath(new URL('./', import.meta.url)),
-		// Temporary experiment: does running story files one at a time stop the iframe flake?
-		fileParallelism: false,
 		browser: {
 			enabled: true,
 			headless: true,
