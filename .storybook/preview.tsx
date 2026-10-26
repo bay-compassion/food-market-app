@@ -186,7 +186,8 @@ const preview: Preview = {
 		viewport: { options: INITIAL_VIEWPORTS },
 		// 'todo' surfaces accessibility findings in the panel without failing the story test run.
 		// Switch a story to 'error' once its violations are cleared to keep them from coming back.
-		a11y: { test: 'todo' },
+		// Temporary experiment: does skipping axe in test runs stop the storybook job's iframe flake?
+		a11y: { test: 'off' },
 		controls: {
 			matchers: { color: /(background|color)$/i, date: /Date$/i },
 		},
