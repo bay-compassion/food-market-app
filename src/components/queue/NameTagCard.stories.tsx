@@ -5,6 +5,7 @@ import { NameTag } from '../../models/name-tag';
 import { NameTagCard } from './NameTagCard';
 
 type NameTagArgs = {
+	visitId: string;
 	firstName: string;
 	lastName: string;
 	pronunciation: string | null;
@@ -13,19 +14,24 @@ type NameTagArgs = {
 	locale: Locale;
 };
 
+/** A fixed day, so the stories and their screenshots don't change with the calendar. */
+const printedAt = new Date('2026-10-25T12:00:00Z');
+
 function Tag({ printed, ...source }: NameTagArgs & { printed: boolean }) {
 	return (
 		// The printed label sets its own size in millimetres; only the on-screen card takes the width.
 		<div style={{ maxWidth: printed ? undefined : 360, padding: 16 }}>
-			<NameTagCard tag={new NameTag(source)} printed={printed} />
+			<NameTagCard tag={new NameTag({ ...source, printedAt })} printed={printed} />
 		</div>
 	);
 }
 
 /**
  * The name tag a check-in volunteer writes out for a guest they have just called: first name and
- * last initial, how to say it when someone wrote that down, place in line, and the language the guest registered in. Drawn at the printed
- * label's proportions, so the card on screen and the label that prints match.
+ * last initial, how to say it when someone wrote that down, their number, the language they
+ * registered in, the day, and a reference code from the end of the visit id that ties the sticker
+ * back to the visit. Drawn at the printed label's proportions, so the card on screen and the label
+ * that prints match.
  */
 const meta = {
 	title: 'Staff/Queue Desk/Name Tag Card',
@@ -35,6 +41,7 @@ const meta = {
 		locale: { control: 'select', options: languages.map(({ code }) => code) },
 	},
 	args: {
+		visitId: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd7f3a',
 		firstName: 'Maria',
 		lastName: 'Santos',
 		pronunciation: null,
@@ -66,7 +73,6 @@ export const PriorityNumber: Story = {
 	args: { queuePosition: null, priorityNumber: 2 },
 };
 
-/** A guest added by hand outside the draw has no place in line yet. */
 /** How to say the name, under it, for whoever reads the tag aloud. */
 export const WithPronunciation: Story = {
 	args: { firstName: 'Siobhan', lastName: 'Kelly', pronunciation: 'shi-VAWN', locale: 'en' },
@@ -83,6 +89,7 @@ export const LongPronunciation: Story = {
 	},
 };
 
+/** A guest added by hand outside the draw has no place in line yet. */
 export const Unplaced: Story = {
 	args: { queuePosition: null, locale: 'en' },
 };
@@ -93,6 +100,11 @@ export const Unplaced: Story = {
  */
 export const PrintedLabel: Story = {
 	args: { printed: true },
+};
+
+/** A three-digit number on the printed label, stepped down to stay inside its block. */
+export const PrintedThreeDigitNumber: Story = {
+	args: { printed: true, queuePosition: 128 },
 };
 
 /** A long name on the printed label, set smaller to fit. */

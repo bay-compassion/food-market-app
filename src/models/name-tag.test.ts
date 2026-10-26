@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { NameTag, type NameTagSource } from './name-tag';
 
 const maria: NameTagSource = {
+	visitId: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd7f3a',
+	// Midday, so the date is the same in every time zone the tests might run in.
+	printedAt: new Date('2026-10-25T12:00:00Z'),
 	firstName: 'Maria',
 	lastName: 'Garcia',
 	queuePosition: 14,
@@ -91,5 +94,63 @@ describe('NameTag', () => {
 
 		// Assert
 		expect(code).toBe('ZH');
+	});
+
+	it('ends with the visit id’s last four characters as the reference code, uppercased', () => {
+		// Arrange
+		const tags = ['1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd7f3a', 'visit-1'].map(
+			(visitId) => new NameTag({ ...maria, visitId }),
+		);
+
+		// Act
+		const references = tags.map((tag) => tag.reference);
+
+		// Assert
+		expect(references).toEqual(['7F3A', 'SIT1']);
+	});
+
+	it('dates the tag by the day it prints', () => {
+		// Arrange
+		const tag = new NameTag(maria);
+
+		// Act
+		const date = tag.date;
+
+		// Assert
+		expect(date).toBe('Oct 25, 2026');
+	});
+
+	it('steps the number down in size as it grows longer', () => {
+		// Arrange
+		const tags = [
+			{ queuePosition: 9, priorityNumber: null },
+			{ queuePosition: null, priorityNumber: 2 },
+			{ queuePosition: 128, priorityNumber: null },
+			{ queuePosition: null, priorityNumber: 12 },
+			{ queuePosition: 1024, priorityNumber: null },
+			{ queuePosition: null, priorityNumber: null },
+		].map((number) => new NameTag({ ...maria, ...number }));
+
+		// Act
+		const lengths = tags.map((tag) => tag.numberLength);
+
+		// Assert
+		expect(lengths).toEqual(['short', 'short', 'medium', 'medium', 'long', 'short']);
+	});
+
+	it('gives a visit the same reference code wherever it is shown, and another visit a different one', () => {
+		// Arrange
+		const today = '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd7f3a';
+		const lastWeek = '6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b';
+
+		// Act
+		const codes = [
+			NameTag.referenceOf(today),
+			new NameTag(maria).reference,
+			NameTag.referenceOf(lastWeek),
+		];
+
+		// Assert
+		expect(codes).toEqual(['7F3A', '7F3A', 'AE0B']);
 	});
 });

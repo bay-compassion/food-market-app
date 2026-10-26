@@ -6,6 +6,7 @@ import { adminTranslations } from '../../adminLocales';
 import type { ManualAdmission } from '../../services/guestAdmission';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { AddGuestSection } from './AddGuestSection';
+import { PrintStationCard } from './PrintStationCard';
 import { SessionGuestList } from './SessionGuestList';
 import { SessionOverview } from './SessionOverview';
 import { SessionPhaseControls, type SessionPhaseControlsProps } from './SessionPhaseControls';
@@ -73,6 +74,8 @@ export const SessionView = observer(function SessionView({
 
 			{/* A worker can add someone by hand at any stage; only what "adding" means changes. */}
 			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />
+
+			<PrintStationCard />
 
 			{/* A session that never opened has nothing to reset. */}
 			{event && sessionState !== 'scheduled' ? (

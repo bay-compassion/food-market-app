@@ -30,6 +30,9 @@ const Setup = styled.details`
 	}
 `;
 
+/** Where the print station runs, on this deploy. */
+export const printStationUrl = `${typeof window === 'undefined' ? '' : window.location.origin}/printing-station`;
+
 /**
  * The launch command for a browser that prints without a dialog, and keeps polling while the room
  * display covers this window. A page cannot tell whether it was started this way, so it always
@@ -42,7 +45,7 @@ export const printStationLaunchCommand = [
 	'--disable-renderer-backgrounding',
 	'--disable-backgrounding-occluded-windows',
 	'--user-data-dir="$HOME/chrome-print-station"',
-	`${typeof window === 'undefined' ? '' : window.location.origin}/printing-station`,
+	printStationUrl,
 ].join(' ');
 
 export function PrintStationSetup() {

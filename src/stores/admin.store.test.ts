@@ -699,3 +699,52 @@ describe('AdminStore guest deletion', () => {
 		expect(store.feedback).toEqual({ kind: 'error', reason });
 	});
 });
+
+describe('AdminStore print station', () => {
+	it('reports whether the print station is checking in', async () => {
+		// Arrange
+		const { store } = storeWith({ isPrintStationOnline: vi.fn().mockResolvedValue(true) });
+
+		await store.loadPermissions();
+
+		// Act
+		await store.checkPrintStation();
+
+		// Assert
+		expect(store.printStationOnline).toBe(true);
+	});
+
+	it('leaves the station unknown, without a toast, when the check fails', async () => {
+		// Arrange
+		const { store, notifications } = storeWith({
+			isPrintStationOnline: vi
+				.fn()
+				.mockRejectedValue(new AdminRequestError('print_station', 'Forbidden')),
+		});
+		const error = vi.spyOn(notifications, 'error');
+
+		await store.loadPermissions();
+
+		// Act
+		await store.checkPrintStation();
+
+		// Assert
+		expect(store.printStationOnline).toBeNull();
+		expect(error).not.toHaveBeenCalled();
+	});
+
+	it('does not ask for a worker who cannot run the queue', async () => {
+		// Arrange
+		const isPrintStationOnline = vi.fn().mockResolvedValue(true);
+		const { store } = storeWith({ isPrintStationOnline }, {}, async () => ['manage:sessions']);
+
+		await store.loadPermissions();
+
+		// Act
+		await store.checkPrintStation();
+
+		// Assert
+		expect(isPrintStationOnline).not.toHaveBeenCalled();
+		expect(store.printStationOnline).toBeNull();
+	});
+});

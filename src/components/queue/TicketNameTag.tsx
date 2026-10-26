@@ -48,7 +48,7 @@ export const TicketNameTag = observer(function TicketNameTag({ guest }: { guest:
 
 	return (
 		<div className="ticket-name-tag">
-			<NameTagCard tag={new NameTag(guest)} />
+			<NameTagCard tag={new NameTag({ ...guest, visitId: guest.id, printedAt: new Date() })} />
 			<Print>
 				<PrintButton
 					type="button"
