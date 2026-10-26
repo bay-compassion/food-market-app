@@ -6,10 +6,12 @@ down the right edge, the language they registered in, the date, and a reference 
 tag** under it sends that tag to the print station, a computer at the market with the label printer
 plugged into it, which prints it with no dialog.
 
-The reference code (`Ref 7F3A`) is the last four characters of the visit's id. It ties a sticker
-back to the visit it was printed for: the same code shows on the ticket's tag at `/queue`, and the
-visit's id ends with it. Four hex characters aren't unique on their own,
-but among one day's visits they narrow a sticker to one.
+The reference code (`Ref 7F3A`) is the last four characters of the visit's id. It is there to tell
+a genuine tag from one reused from an earlier session: every visit gets its own id, so a sticker
+kept from another market day carries a code that matches none of today's visits, even for the same
+guest. To check a sticker, find the guest on the queue desk's list at `/queue` or the dashboard's
+Queue tab, where each guest shows the code their tag carries, and compare. Four hex characters
+aren't unique on their own, but among one day's visits they narrow a sticker to one.
 
 The dashboard's Current Session screen has a **Printing Station** card with the setup steps below,
 the launch command to copy, a button that opens `/printing-station`, and whether a station is

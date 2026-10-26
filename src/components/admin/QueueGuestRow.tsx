@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
 import { languages } from '../../locales';
+import { NameTag } from '../../models/name-tag';
 import { QueueNumber } from '../../models/queue-number';
 import type { VisitCommand } from '../../services/visitStateMachine';
 import { GuestTableRow } from './GuestTableRow';
@@ -23,7 +24,10 @@ export type QueueGuestRowProps = {
 	onRun: (command: VisitCommand) => void;
 };
 
-/** One guest in the queue: who they are, where they stand, and what a worker can do about it. */
+/**
+ * One guest in the queue: who they are, where they stand, and what a worker can do about it. The
+ * reference code is the one their name tag carries, to check a sticker against.
+ */
 export const QueueGuestRow = observer(function QueueGuestRow({
 	guest,
 	now,
@@ -68,6 +72,9 @@ export const QueueGuestRow = observer(function QueueGuestRow({
 							{t.householdCount} {guest.householdSize}
 						</span>
 						<span>{guestLanguage}</span>
+						<span title={t.queueDesk.referenceHelp}>
+							{t.queueDesk.reference} {NameTag.referenceOf(guest.id)}
+						</span>
 					</div>
 				</div>
 			</TableCell>

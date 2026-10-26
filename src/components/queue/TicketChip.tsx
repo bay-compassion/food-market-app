@@ -90,6 +90,16 @@ const Row = styled.li`
 		text-overflow: ellipsis;
 	}
 
+	/* The code a volunteer checks a sticker against: on the name's line, at a size read at a glance. */
+	.reference {
+		flex: none;
+		color: var(--color-text-muted);
+		font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+	}
+
 	.language {
 		flex: none;
 		padding: 2px 8px;
@@ -110,14 +120,15 @@ const Row = styled.li`
 `;
 
 /**
- * One ticket in a list: its number, who it is, the language to greet them in, how long since they
- * were called, and a tap to open it.
+ * One ticket in a list: its number, who it is with the reference code their name tag carries, the
+ * language to greet them in, how long since they were called, and a tap to open it.
  */
 export const TicketChip = observer(function TicketChip({ guest, now }: TicketChipProps) {
 	const t = adminTranslations.en.queueDesk;
 	const desk = useQueueDesk();
 	const number = QueueNumber.of(guest)?.label ?? '—';
 	const name = `${guest.firstName} ${guest.lastName}`.trim();
+	const tag = new NameTag({ ...guest, visitId: guest.id, printedAt: new Date(now) });
 	const minutes =
 		guest.status === 'called' && guest.calledAt
 			? Math.max(0, Math.floor((now - new Date(guest.calledAt).valueOf()) / 60_000))
@@ -133,9 +144,10 @@ export const TicketChip = observer(function TicketChip({ guest, now }: TicketChi
 			>
 				<span className="number">{number}</span>
 				<span className="name">{name}</span>
-				<span className="language">
-					{new NameTag({ ...guest, visitId: guest.id, printedAt: new Date(now) }).languageCode}
+				<span className="reference" title={t.referenceHelp}>
+					{tag.reference}
 				</span>
+				<span className="language">{tag.languageCode}</span>
 				{/* Always drawn, empty when untimed, so the language codes line up down the list. */}
 				<span className="elapsed">
 					{minutes === null

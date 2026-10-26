@@ -137,4 +137,20 @@ describe('NameTag', () => {
 		// Assert
 		expect(lengths).toEqual(['short', 'short', 'medium', 'medium', 'long', 'short']);
 	});
+
+	it('gives a visit the same reference code wherever it is shown, and another visit a different one', () => {
+		// Arrange
+		const today = '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd7f3a';
+		const lastWeek = '6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b';
+
+		// Act
+		const codes = [
+			NameTag.referenceOf(today),
+			new NameTag(maria).reference,
+			NameTag.referenceOf(lastWeek),
+		];
+
+		// Assert
+		expect(codes).toEqual(['7F3A', '7F3A', 'AE0B']);
+	});
 });

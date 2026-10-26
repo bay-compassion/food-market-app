@@ -83,14 +83,21 @@ export class NameTag {
 	}
 
 	/**
-	 * The last characters of the visit id, uppercased — `7F3A` — so a sticker can be matched to the
-	 * visit it was printed for. Not unique on its own; it narrows a day's visits to one.
+	 * The last characters of a visit id, uppercased — `7F3A` — so a sticker can be matched to the
+	 * visit it was printed for. Each visit has its own id, so a tag kept from an earlier session
+	 * carries a code that matches none of today's visits. Not unique on its own; it narrows a day's
+	 * visits to one. The queue lists show it next to each guest, to check a sticker against.
 	 */
-	get reference(): string {
-		return this.source.visitId
+	static referenceOf(visitId: string): string {
+		return visitId
 			.replace(/[^0-9a-z]/gi, '')
 			.slice(-NameTag.referenceLength)
 			.toUpperCase();
+	}
+
+	/** This tag's reference code: see `NameTag.referenceOf`. */
+	get reference(): string {
+		return NameTag.referenceOf(this.source.visitId);
 	}
 
 	/** The day the tag was printed, e.g. `Oct 25, 2026`, in the printing device's time zone. */
