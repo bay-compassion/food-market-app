@@ -16,6 +16,8 @@ export type DialogProps = {
 	children: ReactNode;
 	/** Buttons for the footer. The footer is not rendered at all when there are none. */
 	actions?: ReactNode;
+	/** Fill the viewport, for content such as a video player that needs every pixel of a phone. */
+	fullScreen?: boolean;
 };
 
 const Modal = styled(MuiDialog)`
@@ -32,6 +34,14 @@ const Modal = styled(MuiDialog)`
 		color: var(--color-text);
 		background: var(--color-background);
 		box-shadow: 0 18px 60px rgb(30 71 77 / 24%);
+	}
+
+	.MuiDialog-paperFullScreen {
+		width: 100%;
+		height: 100dvh;
+		max-height: none;
+		margin: 0;
+		border-radius: 0;
 	}
 `;
 
@@ -89,7 +99,15 @@ const Actions = styled(DialogActions)`
 `;
 
 /** A MUI dialog styled to match the app's established modal surface. */
-export function Dialog({ open, title, closeLabel, onClose, children, actions }: DialogProps) {
+export function Dialog({
+	open,
+	title,
+	closeLabel,
+	onClose,
+	children,
+	actions,
+	fullScreen = false,
+}: DialogProps) {
 	const titleId = `dialog-title-${useId()}`;
 
 	return (
@@ -98,6 +116,7 @@ export function Dialog({ open, title, closeLabel, onClose, children, actions }: 
 			className="dialog"
 			aria-labelledby={titleId}
 			maxWidth={false}
+			fullScreen={fullScreen}
 			transitionDuration={0}
 			onClose={onClose}
 			slotProps={{ paper: { className: 'dialog-panel' } }}

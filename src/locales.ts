@@ -136,7 +136,6 @@ export interface GuestPresentationTranslations {
 	heading: string;
 	summary: string;
 	description: string;
-	sound: string;
 	play: string;
 	pause: string;
 	restart: string;
@@ -579,7 +578,6 @@ export const translations = {
 				summary: 'A short guide for guests on market day.',
 				description:
 					'Learn how to register, read your lottery result, follow your number, and come to the check-in desk.',
-				sound: 'English narration starts with playback. The voice is AI-generated.',
 				play: 'Play',
 				pause: 'Pause',
 				restart: 'Restart',
@@ -1041,8 +1039,6 @@ export const translations = {
 				summary: 'Una breve guía para visitantes el día del mercado.',
 				description:
 					'Aprenda a inscribirse, consultar el resultado del sorteo, seguir su número y acudir a la mesa de registro.',
-				sound:
-					'La narración en inglés comienza al reproducir. La voz se genera con inteligencia artificial.',
 				play: 'Reproducir',
 				pause: 'Pausar',
 				restart: 'Reiniciar',
@@ -1508,7 +1504,6 @@ export const translations = {
 				summary: 'راهنمایی کوتاه برای مهمانان در روز بازار.',
 				description:
 					'با ثبت‌نام، دیدن نتیجهٔ قرعه‌کشی، پیگیری شمارهٔ خود و رفتن به میز پذیرش آشنا شوید.',
-				sound: 'روایت انگلیسی با پخش شروع می‌شود. صدا با هوش مصنوعی تولید شده است.',
 				play: 'پخش',
 				pause: 'مکث',
 				restart: 'شروع دوباره',
@@ -1967,7 +1962,6 @@ export const translations = {
 				summary: 'Isang maikling gabay para sa mga bisita sa araw ng palengke.',
 				description:
 					'Alamin kung paano magparehistro, tingnan ang resulta ng bunutan, subaybayan ang iyong numero, at pumunta sa check-in desk.',
-				sound: 'Magsisimula ang pagsasalaysay sa Ingles kapag nag-play. Gawa ng AI ang boses.',
 				play: 'I-play',
 				pause: 'I-pause',
 				restart: 'Magsimulang muli',
@@ -2433,7 +2427,6 @@ export const translations = {
 				summary: 'Hướng dẫn ngắn dành cho khách vào ngày chợ.',
 				description:
 					'Tìm hiểu cách đăng ký, xem kết quả bốc thăm, theo dõi số của bạn và đến bàn tiếp đón.',
-				sound: 'Lời hướng dẫn bằng tiếng Anh bắt đầu khi phát. Giọng nói được tạo bằng AI.',
 				play: 'Phát',
 				pause: 'Tạm dừng',
 				restart: 'Bắt đầu lại',
@@ -2888,7 +2881,6 @@ export const translations = {
 				heading: '您在 The Bay Compassion 的到访',
 				summary: '市场开放日的访客简明指南。',
 				description: '了解如何报名、查看抽签结果、关注您的号码以及前往签到处。',
-				sound: '播放时开始英语解说。声音由人工智能生成。',
 				play: '播放',
 				pause: '暂停',
 				restart: '重新开始',
@@ -3333,7 +3325,6 @@ export const translations = {
 				summary: 'دليل قصير للضيوف في يوم السوق.',
 				description:
 					'تعرّف على كيفية التسجيل ومعرفة نتيجة القرعة ومتابعة رقمك والتوجه إلى مكتب تسجيل الوصول.',
-				sound: 'يبدأ الشرح باللغة الإنجليزية عند التشغيل. الصوت مولّد بالذكاء الاصطناعي.',
 				play: 'تشغيل',
 				pause: 'إيقاف مؤقت',
 				restart: 'البدء من جديد',
@@ -3786,8 +3777,6 @@ export const translations = {
 				summary: 'Un petit guide pour les visiteurs le jour du marché.',
 				description:
 					'Découvrez comment vous inscrire, consulter le résultat du tirage, suivre votre numéro et vous présenter à l’accueil.',
-				sound:
-					'La narration en anglais commence à la lecture. La voix est générée par intelligence artificielle.',
 				play: 'Lire',
 				pause: 'Pause',
 				restart: 'Recommencer',
@@ -4255,8 +4244,6 @@ export const translations = {
 				summary: 'Um guia breve para visitantes no dia do mercado.',
 				description:
 					'Saiba como se inscrever, ver o resultado do sorteio, acompanhar seu número e ir ao balcão de atendimento.',
-				sound:
-					'A narração em inglês começa com a reprodução. A voz é gerada por inteligência artificial.',
 				play: 'Reproduzir',
 				pause: 'Pausar',
 				restart: 'Recomeçar',
@@ -4721,8 +4708,6 @@ export const translations = {
 				summary: 'Краткое руководство для посетителей в день работы рынка.',
 				description:
 					'Узнайте, как зарегистрироваться, посмотреть результат жеребьёвки, следить за своим номером и подойти к стойке регистрации.',
-				sound:
-					'Пояснения на английском начинаются при воспроизведении. Голос создан искусственным интеллектом.',
 				play: 'Воспроизвести',
 				pause: 'Пауза',
 				restart: 'Начать заново',
