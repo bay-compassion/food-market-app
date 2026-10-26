@@ -131,12 +131,12 @@ export const lines: NarrationLine[] = [
 	{
 		id: 'underway',
 		pause: 0.6,
-		text: 'If the market is already underway and you haven’t checked in, speak with a market team member.',
+		text: 'If the market is already underway, registration has closed for the day. It opens again next Saturday at ten thirty, and everyone who signs up has the same chance.',
 	},
 	{
 		id: 'help',
 		chapter: 'help',
 		pause: 1.0,
-		text: 'Need a reminder? Tap How it works, or ask any volunteer. Thank you for being here.',
+		text: 'Need a reminder? Tap How it works anytime. Thank you for being here.',
 	},
 ];

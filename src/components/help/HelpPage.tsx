@@ -64,14 +64,6 @@ const Notice = styled.p`
 	line-height: 1.45;
 `;
 
-const NeedHelp = styled.p`
-	padding: 16px 18px;
-	border-radius: var(--radius-md);
-	background: var(--color-surface-soft);
-	text-align: center;
-	line-height: 1.45;
-`;
-
 /** How a market Saturday works, from signing up to shopping — the printed flyer, in the app. */
 export const HelpPage = observer(function HelpPage() {
 	const t = useTranslation();
@@ -106,9 +98,6 @@ export const HelpPage = observer(function HelpPage() {
 			<Notice>
 				<strong>{copy.phoneNotice.heading}</strong> {copy.phoneNotice.body}
 			</Notice>
-			<NeedHelp>
-				<strong>{copy.needHelp.heading}</strong> {copy.needHelp.body}
-			</NeedHelp>
 		</Page>
 	);
 });
