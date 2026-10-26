@@ -110,20 +110,10 @@ jobs:
       - uses: ./.github/actions/install-chromium
 
       - name: Test stories
-        # Temporary: passes Chromium's own log through (`pw:browser`), records its network
-        # activity, to name any request that fails, and traces the Vitest orchestrator's iframes.
-        # `timeout` turns a hang into a failure the net-log step can read.
-        # Two shards, each with its own browser and test server: a single session stops connecting
-        # new story iframes after about 56 of them.
+        # Two shards, each in a fresh browser and Vitest server. On CI runners, one session stops
+        # connecting new story iframes after about 56 of them: the next tester reports "Cannot
+        # connect to the server in 60 seconds", which surfaces as "Cannot connect to the iframe"
+        # when files run in parallel. Add a shard if the story count approaches that again.
         run: |
-          timeout 300 pnpm run test:storybook --shard=1/2
-          timeout 300 pnpm run test:storybook --shard=2/2
-        env:
-          CHROMIUM_NET_LOG: ${{ runner.temp }}/chromium-net-log.json
-          CHROMIUM_LOGGING: 'true'
-          DEBUG: pw:browser
-          VITEST_BROWSER_DEBUG: debug
-
-      - name: List failed browser requests
-        if: failure()
-        run: node scripts/net-log-failures.js "${{ runner.temp }}/chromium-net-log.json"
+          pnpm run test:storybook --shard=1/2
+          pnpm run test:storybook --shard=2/2
