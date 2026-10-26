@@ -44,12 +44,18 @@ export default defineConfig({
 		browser: {
 			enabled: true,
 			headless: true,
-			// Temporary: CI sets this to capture Chromium's network errors on a failing run.
-			provider: playwright(
-				process.env.CHROMIUM_NET_LOG
-					? { launchOptions: { args: [`--log-net-log=${process.env.CHROMIUM_NET_LOG}`] } }
-					: {},
-			),
+			// Temporary: CI sets these to capture Chromium's network errors and its own log (renderer
+			// crashes, out-of-memory kills) on a failing run.
+			provider: playwright({
+				launchOptions: {
+					args: [
+						...(process.env.CHROMIUM_NET_LOG
+							? [`--log-net-log=${process.env.CHROMIUM_NET_LOG}`]
+							: []),
+						...(process.env.CHROMIUM_LOGGING ? ['--enable-logging=stderr', '--v=0'] : []),
+					],
+				},
+			}),
 			instances: [{ browser: 'chromium' }],
 		},
 	},

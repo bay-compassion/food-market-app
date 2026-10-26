@@ -58,7 +58,8 @@ for (const event of log.events) {
 
 const rows = [...failures]
 	.map(([id, { code, time }]) => ({ time, error: errorNames.get(code) ?? code, url: urls.get(id) }))
-	.filter(({ error }) => !routine.has(error))
+	// A story page's own load is kept even when aborted: that is the request the failure is about.
+	.filter(({ error, url }) => !routine.has(error) || url?.includes('iframeId='))
 	.sort((first, second) => first.time - second.time);
 
 console.log(`${rows.length} failed requests (routine codes left out):`);
