@@ -130,6 +130,8 @@ export interface GuestTourTranslations {
 
 /** Playback copy for the guest instructional presentation. Narration is in English. */
 export interface GuestPresentationTranslations {
+	watch: string;
+	close: string;
 	title: string;
 	heading: string;
 	summary: string;
@@ -570,6 +572,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'Watch the Guest Guide',
+				close: 'Close guest guide',
 				title: 'Guest Market Guide',
 				heading: 'Your visit to The Bay Compassion',
 				summary: 'A short guide for guests on market day.',
@@ -1030,6 +1034,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'Ver la guía para visitantes',
+				close: 'Cerrar la guía para visitantes',
 				title: 'Guía del mercado para visitantes',
 				heading: 'Su visita a The Bay Compassion',
 				summary: 'Una breve guía para visitantes el día del mercado.',
@@ -1495,6 +1501,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'تماشای راهنمای مهمان',
+				close: 'بستن راهنمای مهمان',
 				title: 'راهنمای بازار برای مهمانان',
 				heading: 'بازدید شما از The Bay Compassion',
 				summary: 'راهنمایی کوتاه برای مهمانان در روز بازار.',
@@ -1952,6 +1960,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'Manood ng Gabay para sa Bisita',
+				close: 'Isara ang gabay para sa bisita',
 				title: 'Gabay sa palengke para sa mga bisita',
 				heading: 'Ang iyong pagbisita sa The Bay Compassion',
 				summary: 'Isang maikling gabay para sa mga bisita sa araw ng palengke.',
@@ -2416,6 +2426,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'Xem hướng dẫn dành cho khách',
+				close: 'Đóng hướng dẫn dành cho khách',
 				title: 'Hướng dẫn chợ dành cho khách',
 				heading: 'Lần ghé thăm The Bay Compassion của bạn',
 				summary: 'Hướng dẫn ngắn dành cho khách vào ngày chợ.',
@@ -2870,6 +2882,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: '观看访客指南',
+				close: '关闭访客指南',
 				title: '访客食品市场指南',
 				heading: '您在 The Bay Compassion 的到访',
 				summary: '市场开放日的访客简明指南。',
@@ -3312,6 +3326,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'شاهد دليل الضيوف',
+				close: 'إغلاق دليل الضيوف',
 				title: 'دليل السوق للضيوف',
 				heading: 'زيارتك إلى The Bay Compassion',
 				summary: 'دليل قصير للضيوف في يوم السوق.',
@@ -3763,6 +3779,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'Voir le guide des visiteurs',
+				close: 'Fermer le guide des visiteurs',
 				title: 'Guide du marché pour les visiteurs',
 				heading: 'Votre visite à The Bay Compassion',
 				summary: 'Un petit guide pour les visiteurs le jour du marché.',
@@ -4230,6 +4248,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'Ver o guia para visitantes',
+				close: 'Fechar o guia para visitantes',
 				title: 'Guia do mercado para visitantes',
 				heading: 'Sua visita à The Bay Compassion',
 				summary: 'Um guia breve para visitantes no dia do mercado.',
@@ -4694,6 +4714,8 @@ export const translations = {
 		},
 		guestView: {
 			presentation: {
+				watch: 'Смотреть руководство для гостей',
+				close: 'Закрыть руководство для гостей',
 				title: 'Руководство для посетителей рынка',
 				heading: 'Ваш визит в The Bay Compassion',
 				summary: 'Краткое руководство для посетителей в день работы рынка.',

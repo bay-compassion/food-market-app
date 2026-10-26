@@ -9,6 +9,7 @@ import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 import { AppFooter } from '../AppFooter';
 import { EyebrowLabel } from '../EyebrowLabel';
+import { GuestGuideButton } from '../GuestGuideButton';
 import { AppBar } from '../ui/app-bar/AppBar';
 import { NotificationToasts } from '../ui/NotificationToasts';
 
@@ -126,6 +127,7 @@ export const HoldingPage = observer(function HoldingPage() {
 					<h1 id="holding-heading">{copy.heading}</h1>
 					<p>{copy.instructions}</p>
 				</Notice>
+				<GuestGuideButton />
 				<CurrentApp aria-labelledby="current-app-heading">
 					<h2 id="current-app-heading">{copy.currentAppHeading}</h2>
 					<p>{copy.currentAppDescription}</p>

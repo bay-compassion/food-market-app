@@ -190,6 +190,12 @@ See [portfolio publishing](../../docs/portfolio.md) for the landing page and scr
 GSAP presentation, with playback, restart, sound, and seek controls. It starts paused and
 plays once. The pages link to each other and offer the presentation as a downloadable HTML file.
 
+The Netlify app's holding page and Market Closed card share `GuestGuideButton`. It opens only
+`/presentations/guest-guide/guest-guide.html` in a sandboxed dialog, on demand, and unmounts it on
+close to stop playback. Keep this standalone player free of portfolio or staff-guide navigation:
+guests must not be sent to its surrounding `index.html` page. Both placements reuse the existing
+GitHub Pages artifact; the Netlify build does not copy or rebuild it.
+
 The **Publish project site** workflow in `.github/workflows/publish-presentations.yml` builds
 and deploys automatically when relevant files change on `main`. Commit and push the source,
 then merge the change; there is no separate `gh-pages` push. It uses GitHub's Pages artifact

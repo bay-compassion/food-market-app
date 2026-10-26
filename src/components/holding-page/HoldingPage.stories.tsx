@@ -38,6 +38,9 @@ export const ComingSoon: Story = {
 			'/holding',
 		);
 		await expect(canvas.queryByRole('combobox')).not.toBeInTheDocument();
+		await expect(
+			canvas.getByRole('button', { name: translations.en.guestView.presentation.watch }),
+		).toBeInTheDocument();
 
 		for (const { code, label } of languages) {
 			await expect(canvas.getByRole('button', { name: label })).toHaveAttribute(

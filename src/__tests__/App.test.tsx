@@ -669,8 +669,10 @@ describe('App', () => {
 		expect(inactiveState.getByText(copy.lotteryDescription)).not.toBeNull();
 		expect(inactiveState.getByText(copy.selectionDescription)).not.toBeNull();
 		expect(inactiveState.queryByRole('link')).toBeNull();
-		// An ended session has nothing left to preregister for, so the button goes with it.
-		expect(inactiveState.queryByRole('button')).toBeNull();
+		// Guests can learn about the next visit without leaving the app.
+		expect(
+			inactiveState.getByRole('button', { name: translations.en.guestView.presentation.watch }),
+		).toBeDefined();
 	});
 
 	it('shows an error when an admin session cannot be verified', async () => {

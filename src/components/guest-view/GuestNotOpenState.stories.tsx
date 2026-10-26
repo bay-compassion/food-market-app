@@ -39,9 +39,11 @@ export const NotOpen: Story = {
 		await expect(canvas.getByText(copy.subheading)).toBeInTheDocument();
 		await expect(canvas.getByText(copy.lotteryDescription)).toBeInTheDocument();
 		await expect(canvas.getByText(copy.selectionDescription)).toBeInTheDocument();
-		// Nothing to act on before the window opens — the card's only link is its help link.
+		// The guide opens inside the app; the card's only link is still its help link.
 		await expect(canvas.getByRole('link')).toHaveAccessibleName(translations.en.help.title);
-		await expect(canvas.queryByRole('button')).not.toBeInTheDocument();
+		await expect(
+			canvas.getByRole('button', { name: translations.en.guestView.presentation.watch }),
+		).toBeInTheDocument();
 		await expect(canvas.getByRole('separator')).toBeInTheDocument();
 	},
 };

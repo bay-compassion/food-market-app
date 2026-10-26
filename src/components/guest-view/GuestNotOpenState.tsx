@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
 import { useTranslation } from '../../stores/react/use-translation';
+import { GuestGuideButton } from '../GuestGuideButton';
 import { GuestStateMessage } from './GuestStateMessage';
 
 const Message = styled(GuestStateMessage)`
@@ -39,6 +40,7 @@ export const GuestNotOpenState = observer(function GuestNotOpenState() {
 			<Details className="inactive-details">
 				<p>{copy.lotteryDescription}</p>
 				<p>{copy.selectionDescription}</p>
+				<GuestGuideButton />
 			</Details>
 		</Message>
 	);
