@@ -111,3 +111,6 @@ jobs:
 
       - name: Test stories
         run: pnpm run test:storybook
+        # Temporary: logs the dependency optimizer's decisions, to catch a mid-run re-bundle.
+        env:
+          DEBUG: vite:deps
