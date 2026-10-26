@@ -41,6 +41,12 @@ export default defineConfig({
 	test: {
 		name: 'storybook',
 		root: fileURLToPath(new URL('./', import.meta.url)),
+		// One shared iframe instead of a fresh one per story file. On CI runners, Vitest's step of
+		// creating and connecting a new iframe for each file intermittently fails ("Cannot connect to
+		// the iframe", "Failed to fetch dynamically imported module"), with no story at fault; see
+		// bay-compassion/food-market-app#260. Every story already renders inside its own fresh
+		// `RootStore` and router from the preview's decorator, so files do not share app state.
+		isolate: false,
 		browser: {
 			enabled: true,
 			headless: true,

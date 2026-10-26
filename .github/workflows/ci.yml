@@ -110,4 +110,21 @@ jobs:
       - uses: ./.github/actions/install-chromium
 
       - name: Test stories
-        run: pnpm run test:storybook
+        # Vitest browser mode intermittently loses the last few story files of a run on CI: their
+        # iframes fail with "Cannot connect to the iframe", "Cannot connect to the server" or
+        # "Failed to fetch dynamically imported module", while every test that ran passed. The
+        # same versions on the same runner image both pass and fail, so it is a race in the test
+        # runner, not in a story (bay-compassion/food-market-app#260). A run that fails with one of
+        # those messages runs once more; any other failure, and a second failure, fails the job.
+        run: |
+          log="$RUNNER_TEMP/storybook.log"
+          set +e
+          pnpm run test:storybook 2>&1 | tee "$log"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ] && grep -qE 'Cannot connect to the (iframe|server)|Failed to fetch dynamically imported module' "$log"; then
+            echo "::warning::The story run hit the Vitest browser-mode iframe race; running it once more."
+            pnpm run test:storybook
+          else
+            exit "$status"
+          fi
