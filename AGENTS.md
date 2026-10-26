@@ -120,6 +120,11 @@
 - `oxlint` uses type-aware checks; treat warnings as worth resolving when they affect changed code.
 - The Mermaid diagrams in `docs/data-model.md`, `docs/session-lifecycle.md`, and `docs/user-journey.md` are maintained by hand and fingerprint the source files they describe. `pnpm run check:diagrams` fails when one of those files changed; update the affected diagram if the change made it wrong, then run `pnpm run check:diagrams --update` to re-stamp. Re-stamping without looking at the diagram defeats the check.
 - The project uses Node 24 (see `.nvmrc`).
+- The oldest browser a guest brings is Safari 15.4 (iOS 15, the last release for the iPhone 6s and
+  7), and the app ships no polyfills. `lib` in `tsconfig.app.json` (ES2022) and `build.target` in
+  `vite.config.ts` hold that floor; don't raise either to make a newer API compile — check the
+  browser versions in Sentry first. DOM types don't track browser versions, so feature-detect a
+  newer DOM API (as `use-language-choice.ts` does for `startViewTransition`).
 - Before handing off a change, run the relevant checks. For web-app changes, prefer:
 
   ```bash
