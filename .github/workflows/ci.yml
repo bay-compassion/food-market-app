@@ -110,16 +110,15 @@ jobs:
       - uses: ./.github/actions/install-chromium
 
       - name: Test stories
-        # Temporary: samples memory every two seconds and passes Chromium's own log through
-        # (`pw:browser`), to show whether a story's renderer crashes or runs out of memory, and
-        # records Chromium's network activity, to name any request that fails.
-        run: |
-          (while true; do echo "memory: $(free -m | awk 'NR==2 { print $3 " MB used, " $7 " MB available" }')"; sleep 2; done) &
-          pnpm run test:storybook
+        # Temporary: passes Chromium's own log through (`pw:browser`), records its network
+        # activity, to name any request that fails, and traces the Vitest orchestrator's iframes.
+        # `timeout` turns a hang into a failure the net-log step can read.
+        run: timeout 300 pnpm run test:storybook
         env:
           CHROMIUM_NET_LOG: ${{ runner.temp }}/chromium-net-log.json
           CHROMIUM_LOGGING: 'true'
           DEBUG: pw:browser
+          VITEST_BROWSER_DEBUG: debug
 
       - name: List failed browser requests
         if: failure()
