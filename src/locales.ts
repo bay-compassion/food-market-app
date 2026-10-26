@@ -303,6 +303,8 @@ export interface KioskTranslations {
 	ended: string;
 	loading: string;
 	reconnecting: string;
+	/** The full screen button's accessible name; the button itself is only an icon. */
+	fullscreen: string;
 }
 
 /** The `/help` page: how a market Saturday works, step by step, matching the printed flyer. */
@@ -868,6 +870,7 @@ export const translations = {
 			ended: 'Today’s market has ended. Thank you for coming!',
 			loading: 'Loading the line…',
 			reconnecting: 'Reconnecting…',
+			fullscreen: 'Full Screen',
 		},
 		help: {
 			title: 'How it works',
@@ -1332,6 +1335,7 @@ export const translations = {
 			ended: 'El mercado de hoy ha terminado. ¡Gracias por venir!',
 			loading: 'Cargando la fila…',
 			reconnecting: 'Reconectando…',
+			fullscreen: 'Pantalla completa',
 		},
 		help: {
 			title: 'Cómo funciona',
@@ -1791,6 +1795,7 @@ export const translations = {
 			ended: 'بازار امروز به پایان رسید. از حضور شما سپاسگزاریم!',
 			loading: 'در حال بارگیری صف…',
 			reconnecting: 'در حال اتصال دوباره…',
+			fullscreen: 'تمام‌صفحه',
 		},
 		help: {
 			title: 'چطور کار می‌کند',
@@ -2255,6 +2260,7 @@ export const translations = {
 			ended: 'Tapos na ang market ngayong araw. Salamat sa pagpunta!',
 			loading: 'Nilo-load ang pila…',
 			reconnecting: 'Kumokonekta muli…',
+			fullscreen: 'Buong screen',
 		},
 		help: {
 			title: 'Paano ito gumagana',
@@ -2714,6 +2720,7 @@ export const translations = {
 			ended: 'Chợ hôm nay đã kết thúc. Cảm ơn quý vị đã đến!',
 			loading: 'Đang tải hàng chờ…',
 			reconnecting: 'Đang kết nối lại…',
+			fullscreen: 'Toàn màn hình',
 		},
 		help: {
 			title: 'Cách thức hoạt động',
@@ -3160,6 +3167,7 @@ export const translations = {
 			ended: '今天的市场已结束。感谢您的光临！',
 			loading: '正在加载队列…',
 			reconnecting: '正在重新连接…',
+			fullscreen: '全屏',
 		},
 		help: {
 			title: '使用说明',
@@ -3610,6 +3618,7 @@ export const translations = {
 			ended: 'انتهى سوق اليوم. شكرًا لحضوركم!',
 			loading: 'جارٍ تحميل الطابور…',
 			reconnecting: 'جارٍ إعادة الاتصال…',
+			fullscreen: 'ملء الشاشة',
 		},
 		help: {
 			title: 'كيف يعمل',
@@ -4072,6 +4081,7 @@ export const translations = {
 			ended: 'Le marché d’aujourd’hui est terminé. Merci d’être venus !',
 			loading: 'Chargement de la file…',
 			reconnecting: 'Reconnexion…',
+			fullscreen: 'Plein écran',
 		},
 		help: {
 			title: 'Comment ça marche',
@@ -4534,6 +4544,7 @@ export const translations = {
 			ended: 'O mercado de hoje terminou. Obrigado pela visita!',
 			loading: 'Carregando a fila…',
 			reconnecting: 'Reconectando…',
+			fullscreen: 'Tela cheia',
 		},
 		help: {
 			title: 'Como funciona',
@@ -4994,6 +5005,7 @@ export const translations = {
 			ended: 'Сегодняшний рынок завершён. Спасибо за визит!',
 			loading: 'Загрузка очереди…',
 			reconnecting: 'Повторное подключение…',
+			fullscreen: 'Полный экран',
 		},
 		help: {
 			title: 'Как это работает',

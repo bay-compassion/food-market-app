@@ -12,6 +12,7 @@ import { useScreenWakeLock } from '../hooks/use-screen-wake-lock';
 import { KioskLanguage, KioskLanguagesProvider, type KioskLanguages } from './kiosk-languages';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
+import { KioskFullscreenButton } from './KioskFullscreenButton';
 import { KioskLockedScreen } from './KioskLockedScreen';
 
 const english = new KioskLanguage('en');
@@ -71,6 +72,7 @@ export const KioskView = observer(function KioskView() {
 		return (
 			<KioskFrame dir="ltr" lang="en">
 				<KioskLockedScreen store={store} />
+				<KioskFullscreenButton />
 			</KioskFrame>
 		);
 	}
@@ -94,6 +96,7 @@ export const KioskView = observer(function KioskView() {
 		<KioskLanguagesProvider value={languagesShown}>
 			<KioskFrame dir="ltr" lang="en">
 				{content}
+				<KioskFullscreenButton />
 			</KioskFrame>
 		</KioskLanguagesProvider>
 	);

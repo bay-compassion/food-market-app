@@ -9,11 +9,6 @@ const Empty = styled.section`
 	display: grid;
 	gap: 14px;
 	justify-items: start;
-
-	p {
-		color: var(--color-text-subtle);
-		line-height: 1.5;
-	}
 `;
 
 /** The dashboard's queue tab before service: the way to the session, and to setting up a display. */
@@ -27,8 +22,6 @@ export const QueueNotStarted = observer(function QueueNotStarted({
 
 	return (
 		<Empty className="admin-section queue-empty">
-			<h2>{t.queue}</h2>
-			<p>{t.queueNotStarted}</p>
 			<Button type="button" variant="outlined" onClick={onNavigateCurrentSession}>
 				{t.goToCurrentSession}
 			</Button>
