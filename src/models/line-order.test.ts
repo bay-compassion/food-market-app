@@ -109,7 +109,7 @@ describe('LineOrder', () => {
 		];
 
 		// Act
-		const order = slots.toSorted(LineOrder.compare).map((slot) => slot.id);
+		const order = [...slots].sort(LineOrder.compare).map((slot) => slot.id);
 
 		// Assert
 		expect(order).toEqual(['first-front', 'second-front', 'main-1', 'main-2', 'unplaced']);

@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 
 import { auth0Settings, returnToPath } from './auth';
+import { AppErrorBoundary } from './components/app-error/AppErrorBoundary';
 import { AppThemeProvider } from './components/AppThemeProvider';
 import { StaticLDProvider } from './components/StaticLDProvider';
 import { installId, withInstallIdHeader } from './install-id';
@@ -108,22 +109,26 @@ async function bootstrap() {
 					})
 				}
 			>
-				<RootStoreProvider store={rootStore}>
-					<RouterProvider router={router} />
-				</RootStoreProvider>
+				<RouterProvider router={router} />
 			</Auth0Provider>
 		</AppThemeProvider>
 	);
 
+	// The store is outermost so that `AppErrorBoundary`'s page can still read the guest's language
+	// when the theme, Auth0, or LaunchDarkly is what failed.
 	const tree = (
 		<StrictMode>
-			<LDProvider>{app}</LDProvider>
+			<RootStoreProvider store={rootStore}>
+				<AppErrorBoundary>
+					<LDProvider>{app}</LDProvider>
+				</AppErrorBoundary>
+			</RootStoreProvider>
 		</StrictMode>
 	);
 
 	rootStore.start();
 	// React 19 swallows render errors once a boundary handles them; these hand both the caught and
-	// the uncaught ones to Sentry without the app owning a boundary of its own.
+	// the uncaught ones to Sentry, so the app's boundaries only have to decide what a guest sees.
 	createRoot(document.getElementById('app')!, {
 		onCaughtError: reactErrorHandler(),
 		onUncaughtError: reactErrorHandler(),

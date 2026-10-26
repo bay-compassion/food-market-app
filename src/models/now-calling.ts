@@ -40,7 +40,7 @@ export class NowCalling {
 		return this.state.called
 			.filter((value) => value !== this.state.nowCalling)
 			.slice(0, NowCalling.earlierLimit)
-			.toSorted((first, second) => first - second)
+			.sort((first, second) => first - second)
 			.map((value) => QueueNumber.main(value));
 	}
 
@@ -48,7 +48,7 @@ export class NowCalling {
 	get priority(): QueueNumber[] {
 		return this.state.calledPriority
 			.map((value) => QueueNumber.priority(value))
-			.toSorted(QueueNumber.compare);
+			.sort(QueueNumber.compare);
 	}
 
 	/** Nobody has been called yet, in either series. */

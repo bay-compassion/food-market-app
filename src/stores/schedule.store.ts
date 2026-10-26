@@ -161,7 +161,7 @@ export class ScheduleStore {
 				location.localDateOf(new Date(registrationOpensAt)),
 			),
 		);
-		const lastSession = [...sessions].toSorted().at(-1);
+		const lastSession = [...sessions].sort().at(-1);
 		const monthEnd = MarketLocation.addDays(
 			`${MarketLocation.addDays(month, 32).slice(0, 7)}-01`,
 			-1,
