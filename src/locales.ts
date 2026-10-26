@@ -512,8 +512,7 @@ export const translations = {
 	en: {
 		appError: {
 			heading: 'Something Went Wrong',
-			description:
-				'The app hit a problem and couldn’t show this page. Reloading usually fixes it. You can also ask any volunteer.',
+			description: 'The app hit a problem and couldn’t show this page. Reloading usually fixes it.',
 			reload: 'Reload',
 		},
 		holdingPage: {
@@ -973,7 +972,7 @@ export const translations = {
 		appError: {
 			heading: 'Algo salió mal',
 			description:
-				'La app tuvo un problema y no pudo mostrar esta página. Volver a cargarla suele solucionarlo. También puede preguntar a cualquier voluntario.',
+				'La app tuvo un problema y no pudo mostrar esta página. Volver a cargarla suele solucionarlo.',
 			reload: 'Volver a cargar',
 		},
 		holdingPage: {
@@ -1438,7 +1437,7 @@ export const translations = {
 		appError: {
 			heading: 'مشکلی پیش آمد',
 			description:
-				'برنامه با مشکلی روبه‌رو شد و نتوانست این صفحه را نشان دهد. معمولاً بارگذاری دوباره مشکل را حل می‌کند. می‌توانید از هر داوطلبی هم بپرسید.',
+				'برنامه با مشکلی روبه‌رو شد و نتوانست این صفحه را نشان دهد. معمولاً بارگذاری دوباره مشکل را حل می‌کند.',
 			reload: 'بارگذاری دوباره',
 		},
 		holdingPage: {
@@ -1895,7 +1894,7 @@ export const translations = {
 		appError: {
 			heading: 'Nagkaproblema',
 			description:
-				'Nagkaproblema ang app at hindi maipakita ang pahinang ito. Kadalasang naaayos ito kapag ni-reload. Maaari rin kayong magtanong sa kahit sinong volunteer.',
+				'Nagkaproblema ang app at hindi maipakita ang pahinang ito. Kadalasang naaayos ito kapag ni-reload.',
 			reload: 'I-reload',
 		},
 		holdingPage: {
@@ -2359,7 +2358,7 @@ export const translations = {
 		appError: {
 			heading: 'Đã xảy ra sự cố',
 			description:
-				'Ứng dụng gặp sự cố và không thể hiển thị trang này. Tải lại trang thường sẽ khắc phục được. Bạn cũng có thể hỏi bất kỳ tình nguyện viên nào.',
+				'Ứng dụng gặp sự cố và không thể hiển thị trang này. Tải lại trang thường sẽ khắc phục được.',
 			reload: 'Tải lại',
 		},
 		holdingPage: {
@@ -2815,8 +2814,7 @@ export const translations = {
 	zh: {
 		appError: {
 			heading: '出了点问题',
-			description:
-				'应用遇到问题，无法显示此页面。重新加载通常可以解决。您也可以询问任何一位志愿者。',
+			description: '应用遇到问题，无法显示此页面。重新加载通常可以解决。',
 			reload: '重新加载',
 		},
 		holdingPage: {
@@ -3257,7 +3255,7 @@ export const translations = {
 		appError: {
 			heading: 'حدث خطأ ما',
 			description:
-				'واجه التطبيق مشكلة ولم يتمكن من عرض هذه الصفحة. عادةً ما تُحل المشكلة بإعادة التحميل. يمكنك أيضًا سؤال أي متطوع.',
+				'واجه التطبيق مشكلة ولم يتمكن من عرض هذه الصفحة. عادةً ما تُحل المشكلة بإعادة التحميل.',
 			reload: 'إعادة التحميل',
 		},
 		holdingPage: {
@@ -3707,7 +3705,7 @@ export const translations = {
 		appError: {
 			heading: 'Un problème est survenu',
 			description:
-				'L’application a rencontré un problème et n’a pas pu afficher cette page. Recharger la page suffit généralement. Vous pouvez aussi demander à un bénévole.',
+				'L’application a rencontré un problème et n’a pas pu afficher cette page. Recharger la page suffit généralement.',
 			reload: 'Recharger',
 		},
 		holdingPage: {
@@ -4174,7 +4172,7 @@ export const translations = {
 		appError: {
 			heading: 'Algo deu errado',
 			description:
-				'O app encontrou um problema e não conseguiu mostrar esta página. Recarregar geralmente resolve. Você também pode perguntar a qualquer voluntário.',
+				'O app encontrou um problema e não conseguiu mostrar esta página. Recarregar geralmente resolve.',
 			reload: 'Recarregar',
 		},
 		holdingPage: {
@@ -4638,7 +4636,7 @@ export const translations = {
 		appError: {
 			heading: 'Что-то пошло не так',
 			description:
-				'В приложении произошла ошибка, и эта страница не открылась. Обычно помогает перезагрузка. Также можно обратиться к любому волонтёру.',
+				'В приложении произошла ошибка, и эта страница не открылась. Обычно помогает перезагрузка.',
 			reload: 'Перезагрузить',
 		},
 		holdingPage: {
