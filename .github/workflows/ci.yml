@@ -111,6 +111,11 @@ jobs:
 
       - name: Test stories
         run: pnpm run test:storybook
-        # Temporary: logs the dependency optimizer's decisions, to catch a mid-run re-bundle.
+        # Temporary: records Chromium's network activity, to name the request that fails when a
+        # story's iframe cannot load.
         env:
-          DEBUG: vite:deps
+          CHROMIUM_NET_LOG: ${{ runner.temp }}/chromium-net-log.json
+
+      - name: List failed browser requests
+        if: failure()
+        run: node scripts/net-log-failures.js "${{ runner.temp }}/chromium-net-log.json"
