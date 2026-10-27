@@ -2,7 +2,6 @@ import { randomBytes } from 'node:crypto';
 
 import { HTTPException } from 'hono/http-exception';
 
-import { grantedPermissions, type Permission } from '../../src/services/permissions.js';
 import type { WorkerAccount, WorkerPage, WorkerRole } from '../../src/services/workers.js';
 import { Auth0Management } from './auth0-management.mjs';
 
@@ -11,7 +10,6 @@ type User = { user_id: string; name?: string; email?: string; blocked?: boolean 
 
 /** Only ordinary staff accounts can be changed. Owners and special-purpose accounts stay in Auth0. */
 export class WorkerDirectory {
-	private static readonly pendingPermissions = new Map<string, Promise<Permission[]>>();
 	constructor(private readonly api = new Auth0Management()) {}
 
 	private userPath(id: string): string {
@@ -41,67 +39,6 @@ export class WorkerDirectory {
 		}
 
 		return actor;
-	}
-
-	/** Coalesce overlapping checks only; completed authorization results are never cached. */
-	currentPermissions(actor: string): Promise<Permission[]> {
-		const key = this.permissionKey(actor);
-		const existing = WorkerDirectory.pendingPermissions.get(key);
-
-		if (existing) {
-			return existing;
-		}
-
-		const pending = this.readCurrentPermissions(actor).finally(() => {
-			if (WorkerDirectory.pendingPermissions.get(key) === pending) {
-				WorkerDirectory.pendingPermissions.delete(key);
-			}
-		});
-
-		WorkerDirectory.pendingPermissions.set(key, pending);
-
-		return pending;
-	}
-
-	private permissionKey(actor: string): string {
-		return JSON.stringify([
-			process.env.AUTH0_MANAGEMENT_DOMAIN,
-			process.env.AUTH0_MANAGEMENT_CLIENT_ID,
-			process.env.AUTH0_AUDIENCE ?? process.env.VITE_AUTH0_AUDIENCE,
-			actor,
-		]);
-	}
-
-	/** Intersect with the signed token at the middleware boundary; never grant fresh powers to it. */
-	private async readCurrentPermissions(actor: string): Promise<Permission[]> {
-		const user = await this.api.call<User>(this.userPath(actor));
-
-		if (user.blocked) {
-			return [];
-		}
-		const all: string[] = [];
-		const audience = process.env.AUTH0_AUDIENCE ?? process.env.VITE_AUTH0_AUDIENCE;
-
-		if (!audience) {
-			throw new HTTPException(503, { message: 'API audience is not configured.' });
-		}
-
-		for (let page = 0; page < 100; page++) {
-			const items = await this.api.call<
-				{ permission_name: string; resource_server_identifier: string }[]
-			>(`${this.userPath(actor)}/permissions?per_page=100&page=${page}`);
-
-			all.push(
-				...items
-					.filter((item) => item.resource_server_identifier === audience)
-					.map((item) => item.permission_name),
-			);
-
-			if (items.length < 100) {
-				return grantedPermissions(all);
-			}
-		}
-		throw new HTTPException(503, { message: 'Could not verify current permissions.' });
 	}
 
 	async list(actor: string, page: number): Promise<WorkerPage> {
@@ -162,16 +99,7 @@ export class WorkerDirectory {
 	}
 
 	private async setBlocked(target: string, blocked: boolean): Promise<void> {
-		const key = this.permissionKey(target);
-
-		WorkerDirectory.pendingPermissions.delete(key);
-
-		try {
-			await this.api.call(this.userPath(target), 'PATCH', { blocked });
-		} finally {
-			// Requests after an access change must not join a check started before it.
-			WorkerDirectory.pendingPermissions.delete(key);
-		}
+		await this.api.call(this.userPath(target), 'PATCH', { blocked });
 	}
 
 	async change(actor: string, target: string, command: WorkerRole | 'remove'): Promise<void> {
