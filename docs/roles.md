@@ -28,9 +28,10 @@ permissions as admins; assigning or removing `owner` is possible only in Auth0.
 Admins can add database users, switch ordinary accounts (including accounts without a role) between Worker and Admin, remove
 access, and restore access. Nobody can change their own account. Accounts with `owner` or any
 special role (including `developer`, `data-steward`, and `print-station`) are read-only here.
-Removal blocks the Auth0 account rather than deleting it. The next admin API request checks
-current permissions and blocked status, including for previously issued access tokens. Auth0
-sessions and tokens themselves are not deleted. A role change blocks the account first and
+Removal blocks the Auth0 account rather than deleting it, so the worker cannot sign in again or
+renew their access token. Admin requests are authorized from the signed access token alone, so a
+token issued before a removal or demotion keeps its permissions until it expires (two hours for
+the dashboard's tokens). Only the Workers API itself rechecks the caller's current Auth0 roles. A role change blocks the account first and
 unblocks it only after assigning its new role; a provider failure can leave it blocked. Refresh
 and retry, or repair the account in Auth0. A failed account creation can leave a blocked account; refresh and restore its access, or repair it in Auth0. No automatic retry repeats a mutation.
 
@@ -56,20 +57,17 @@ not send invitations. Configure Auth0's password reset email provider and templa
 4. Sign in again to pick up `manage:workers`. Verify a worker gets 403, admins can manage
    ordinary staff, self changes fail, and owners remain read-only.
 
-Without management configuration the Workers API fails closed. Setting the management domain
-also enables live permission checks for **every** Auth0 admin request. Provider errors fail
-closed with 503; there is no fallback to stale token permissions. This adds Management API
-traffic (user plus paginated permissions per admin request); size Auth0 rate limits for the
-market's polling load before rollout. Overlapping authorization checks for the same worker share
-one in-flight read; completed results are discarded immediately. Requests after an access change
-cannot join an older check for that account. Within a warm function, Management API requests are
-serialized and paced using Auth0's rate-limit reset headers. A rate-limited GET can retry twice;
-mutations are never automatically replayed. A long quota window fails closed with an explicit
-rate-limit message. This pacing is local to each warm function, not a tenant-wide distributed
-limiter; other app instances and Auth0 dashboard activity still share the tenant's quota. The
-worker list is paginated ten accounts at a time and reads each account's roles. Permission grants require a fresh access token, while revocations
-constrain existing tokens on the next request. Auth0 changes made simultaneously outside the
-app are not transactional with app mutations; coordinate owner changes in Auth0 accordingly.
+Without management configuration the Workers API fails closed. Management API traffic comes
+only from the Workers screen: never call the Management API from a path every admin request
+takes, such as `withAuth0`. The dashboard's polling would exhaust the tenant's Management API
+rate limit ("Global limit has been reached" in the Auth0 logs) and turn every admin request into
+a 503. Within a warm function, Management API requests are serialized and paced using Auth0's
+rate-limit reset headers. A rate-limited GET can retry twice; mutations are never automatically
+replayed. A long quota window fails closed with an explicit rate-limit message. The worker list is
+paginated ten accounts at a time and reads each account's roles. Permission grants and
+revocations both take effect on the worker's next access token. Auth0 changes made
+simultaneously outside the app are not transactional with app mutations; coordinate owner
+changes in Auth0 accordingly.
 
 Provider operations follow the Auth0 [user role assignment](https://auth0.com/docs/api/management/v2/users/post-user-roles)
 and [user permissions](https://auth0.com/docs/api/management/v2/users/get-permissions) APIs.

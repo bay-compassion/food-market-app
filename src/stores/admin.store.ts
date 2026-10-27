@@ -406,17 +406,10 @@ export class AdminStore {
 			this.sessionGuestsRevision += 1;
 		});
 
+		let result: T;
+
 		try {
-			let result: T;
-
-			try {
-				result = await send();
-			} finally {
-				runInAction(() => (this.pendingGuestCommands -= 1));
-			}
-			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
-
-			return result;
+			result = await send();
 		} catch {
 			runInAction(() => {
 				guest.status = previous;
@@ -424,7 +417,21 @@ export class AdminStore {
 			});
 
 			return onFailure;
+		} finally {
+			runInAction(() => (this.pendingGuestCommands -= 1));
 		}
+		await this.rereadQueue();
+
+		return result;
+	}
+
+	/**
+	 * Rereads the session and its line after a queue change has landed. A failed reread must not
+	 * report the change as failed — or put the guest back — and invite a volunteer to repeat it;
+	 * the next poll catches up instead.
+	 */
+	private async rereadQueue(): Promise<void> {
+		await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]).catch(() => {});
 	}
 
 	async addGuest(guest: ManualGuest, context: { marketEventId?: string | null; locale: Locale }) {
@@ -547,7 +554,7 @@ export class AdminStore {
 		return this.run(async () => {
 			const called = await this.api.callNext(count);
 
-			await Promise.all([this.session.getStatus(), this.refreshSessionGuests()]);
+			await this.rereadQueue();
 
 			if (!called.length) {
 				runInAction(() => this.report({ kind: 'no-waiting-guests' }));

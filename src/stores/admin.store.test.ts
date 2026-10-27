@@ -508,6 +508,38 @@ describe('AdminStore', () => {
 		expect(store.feedback).toEqual({ kind: 'error' });
 	});
 
+	it('keeps a guest served when serving them landed but rereading the market failed', async () => {
+		// Arrange
+		const { store } = storeWith(
+			{},
+			{ getStatus: vi.fn().mockRejectedValue(new Error('Current account access')) },
+		);
+		const guest = guestWith({ status: 'called' });
+
+		// Act
+		const called = await store.serveAndCallNext(guest);
+
+		// Assert
+		expect(called).toEqual(['visit-2']);
+		expect(guest.status).toBe('served');
+		expect(store.feedback).toBeNull();
+	});
+
+	it('reports guests as called when calling them landed but rereading the market failed', async () => {
+		// Arrange
+		const { store } = storeWith(
+			{ callNext: vi.fn().mockResolvedValue(['visit-7']) },
+			{ getStatus: vi.fn().mockRejectedValue(new Error('Current account access')) },
+		);
+
+		// Act
+		const called = await store.callNext(1);
+
+		// Assert
+		expect(called).toEqual(['visit-7']);
+		expect(store.feedback).toBeNull();
+	});
+
 	it('resolves to the visits it called', async () => {
 		// Arrange
 		const { store } = storeWith({ callNext: vi.fn().mockResolvedValue(['visit-7']) });
