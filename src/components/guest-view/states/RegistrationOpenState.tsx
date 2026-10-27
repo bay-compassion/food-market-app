@@ -8,7 +8,8 @@ export function RegistrationOpenState() {
 	return (
 		<>
 			<RegistrationCountdown />
-			<Card data-tour="registration-form">
+			{/* Card clips overflow by default, which would stop the form's sticky submit bar sticking. */}
+			<Card data-tour="registration-form" sx={{ overflow: 'visible' }}>
 				<CardContent>
 					{/* At the top rather than the end, where it would sit below the submit button. */}
 					<GuestHelpLink />
