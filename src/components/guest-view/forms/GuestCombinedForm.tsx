@@ -30,6 +30,8 @@ export const GuestCombinedForm = observer(function GuestCombinedForm() {
 			submitLabel={t.submit}
 			submittingLabel={t.submitting}
 			onSubmit={submit}
+			// The form runs to more than a screen on a phone, which left "Join the lottery" out of sight.
+			stickySubmit
 		>
 			{/* A returning guest's name and phone are saved; only the pronunciation is still offered. */}
 			{guest.identity === null ? <GuestInformationForm /> : <PronunciationField />}
