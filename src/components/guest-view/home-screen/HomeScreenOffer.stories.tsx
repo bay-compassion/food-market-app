@@ -6,10 +6,7 @@ import { translations, type Locale } from '../../../locales';
 import { StorageService } from '../../../services/storage.service';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
-import {
-	ANDROID_HOME_SCREEN_INSTALL_FLAG_KEY,
-	IOS_HOME_SCREEN_INSTALL_FLAG_KEY,
-} from '../../hooks/use-home-screen-install-enabled';
+import { HOME_SCREEN_INSTALL_FLAG_KEY } from '../../hooks/use-home-screen-install-enabled';
 import { StaticLDProvider } from '../../StaticLDProvider';
 import { NotificationToasts } from '../../ui/NotificationToasts';
 import { MemoryStorage } from '../memory-storage.fixture';
@@ -17,11 +14,10 @@ import { HomeScreenOffer } from './HomeScreenOffer';
 
 type Args = {
 	mode: 'ios' | 'native' | 'installed' | 'unsupported' | 'desktop';
-	androidEnabled: boolean;
-	iosEnabled: boolean;
+	enabled: boolean;
 };
 
-function Preview({ mode, locale, androidEnabled, iosEnabled }: Args & { locale: Locale }) {
+function Preview({ mode, locale, enabled }: Args & { locale: Locale }) {
 	const [store] = useState(() => {
 		const events = new EventTarget();
 		const root = new RootStore({
@@ -93,8 +89,7 @@ function Preview({ mode, locale, androidEnabled, iosEnabled }: Args & { locale: 
 		<RootStoreProvider store={store}>
 			<StaticLDProvider
 				flags={{
-					[ANDROID_HOME_SCREEN_INSTALL_FLAG_KEY]: androidEnabled,
-					[IOS_HOME_SCREEN_INSTALL_FLAG_KEY]: iosEnabled,
+					[HOME_SCREEN_INSTALL_FLAG_KEY]: enabled,
 				}}
 			>
 				<HomeScreenOffer />
@@ -107,7 +102,7 @@ function Preview({ mode, locale, androidEnabled, iosEnabled }: Args & { locale: 
 const meta = {
 	title: 'Guest/Visit/Add to Home Screen',
 	parameters: { shell: 'guest' },
-	args: { mode: 'ios', androidEnabled: true, iosEnabled: true },
+	args: { mode: 'ios', enabled: true },
 	render: (args, context) => (
 		<Preview
 			key={`${args.mode}-${context.globals.locale}`}
@@ -161,18 +156,11 @@ export const Dismissed: Story = {
 
 export const RightToLeft: Story = { ...IPhone, globals: { locale: 'ar' } };
 
-export const FlagsOff: Story = {
-	args: { androidEnabled: false, iosEnabled: false },
+export const FlagOff: Story = {
+	args: { enabled: false },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByRole('complementary')).not.toBeInTheDocument();
 	},
 };
-export const AndroidOnlyOnIPhone: Story = {
-	...FlagsOff,
-	args: { androidEnabled: true, iosEnabled: false },
-};
-export const IPhoneOnlyOnAndroid: Story = {
-	...FlagsOff,
-	args: { mode: 'native', androidEnabled: false, iosEnabled: true },
-};
-export const DesktopBrowser: Story = { ...FlagsOff, args: { mode: 'desktop' } };
+export const FlagOffOnAndroid: Story = { ...FlagOff, args: { mode: 'native', enabled: false } };
+export const DesktopBrowser: Story = { ...FlagOff, args: { mode: 'desktop' } };

@@ -52,17 +52,15 @@ async function bootstrap() {
 	const sentryUser = isUserInfoEnabled ? new SentryUserReporter(rootStore.guest) : null;
 
 	/**
-	 * Guests are never asked to identify themselves to a third party: `GuestStore` keeps identity
-	 * local to the browser (see its doc comment), and `SentryUserReporter` goes out of its way to
-	 * send a hash rather than the raw device token. This context follows the same rule by sending
-	 * LaunchDarkly nothing at all — `anonymous: true` with no `key` has the SDK generate a random
-	 * one and persist it in local storage, which is enough to bucket a returning guest consistently
-	 * without LaunchDarkly ever holding an identifier that means anything outside itself.
+	 * The SDK generates its own anonymous key for consistent bucketing. The coarse os attribute
+	 * lets LaunchDarkly target Android and iOS within one flag; guest identity, device credentials,
+	 * and the app's install ID are never part of this context.
 	 */
 	const context: LDContext = {
 		kind: 'user',
 		key: '',
 		anonymous: true,
+		os: rootStore.installation.platform,
 	};
 
 	const ldSettings = launchDarklySettings(import.meta.env);

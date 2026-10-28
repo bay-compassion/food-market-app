@@ -83,6 +83,11 @@ Verification: [logging tests](../netlify/lib/logging.test.mts),
 [monitoring settings tests](../src/sentry-settings.test.ts),
 [identity reporter tests](../src/sentry-user.test.ts).
 
+The LaunchDarkly context uses an SDK-generated anonymous key plus a coarse `os` value (`android`,
+`ios`, or `other`) for feature targeting. It does not include guest identity, credentials, or the
+app's install ID. See the initialization context in `src/main.tsx` and the
+[Home Screen rollout configuration](home-screen-installation.md#os-targeting-in-launchdarkly).
+
 ## Consent and Remembered Information Have Explicit Controls
 
 SMS enrollment requires an authenticated device and a literal `consent: true`. Guests can delete

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { AppThemeProvider } from '../components/AppThemeProvider';
 import { HomeScreenOffer } from '../components/guest-view/home-screen/HomeScreenOffer';
-import { IOS_HOME_SCREEN_INSTALL_FLAG_KEY } from '../components/hooks/use-home-screen-install-enabled';
+import { HOME_SCREEN_INSTALL_FLAG_KEY } from '../components/hooks/use-home-screen-install-enabled';
 import { StaticLDProvider } from '../components/StaticLDProvider';
 import { translations } from '../locales';
 import { StorageKey, StorageService } from '../services/storage.service';
@@ -70,7 +70,7 @@ describe('HomeScreenOffer rollout', () => {
 		const tree = (enabled: boolean) => (
 			<AppThemeProvider>
 				<RootStoreProvider store={store}>
-					<StaticLDProvider flags={{ [IOS_HOME_SCREEN_INSTALL_FLAG_KEY]: enabled }}>
+					<StaticLDProvider flags={{ [HOME_SCREEN_INSTALL_FLAG_KEY]: enabled }}>
 						<HomeScreenOffer />
 					</StaticLDProvider>
 				</RootStoreProvider>

@@ -12,26 +12,32 @@ synchronously, while the browser still has user activation. Each captured event 
 The existing manifest and service worker supply the installation metadata; the service worker
 has no fetch handler and does not cache guest screens or API responses for offline use.
 
-## Platform Rollout Flags
+## OS Targeting in LaunchDarkly
 
-Create two boolean flags in LaunchDarkly, enable client-side SDK availability, and give each flag a
-false off variation and a false default rule:
+Create one boolean flag, `guest-home-screen-install`, with client-side SDK availability enabled.
+Keep its off variation and default rule false. The anonymous `user` context includes a coarse `os`
+attribute: `android`, `ios`, or `other`. The SDK continues to generate its own anonymous key;
+no guest identity, device credential, or app install ID is included.
 
-| Key                                 | Guests Who Can See the Offer                               |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `guest-home-screen-install-android` | Android guests with a native install prompt available      |
-| `guest-home-screen-install-ios`     | iOS guests whose Safari version supports the visit handoff |
+Add targeting rules in LaunchDarkly for the same flag:
 
-Enable either flag independently, or apply percentage rollouts and targeting rules to each flag.
-The app reads both with a false fallback, so missing flags, disabled LaunchDarkly, and an unavailable
-client leave the offer hidden. Platform classification runs locally; it does not add guest information
-or a device attribute to the LaunchDarkly context. Desktop browsers remain excluded even when both
-flags are enabled. Browser capability, registration status, and dismissal checks still apply.
+| Context Kind | Attribute | Operator  | Value     | Serve                    |
+| ------------ | --------- | --------- | --------- | ------------------------ |
+| `user`       | `os`      | is one of | `android` | `true` to enable Android |
+| `user`       | `os`      | is one of | `ios`     | `true` to enable iOS     |
 
-Turning a platform flag off removes its offer and closes any open instructions. It does not mark
-the guest as having dismissed the offer. Existing Home Screen apps and pending handoff restoration
-continue to work when either flag is off, so stopping a rollout cannot strand a registered guest.
-Storybook pins the flags per story, independently of the real LaunchDarkly project.
+Enable either rule independently, or configure percentage rollouts for each rule. The SDK sends
+`os` during initialization, so it is available for the first flag evaluation. You can type the
+attribute name manually in the rule editor before it appears in autocomplete. See
+[LaunchDarkly custom attributes](https://launchdarkly.com/docs/home/flags/custom-attributes).
+
+The hook reads the one flag with a false fallback. Missing flags and disabled LaunchDarkly leave
+the offer hidden. Desktop browsers remain excluded locally even if the flag evaluates to true.
+Browser capability, registration status, and dismissal checks still apply.
+
+Turning the flag off removes the offer and closes any open instructions without recording a guest
+dismissal. Existing Home Screen apps and pending handoff restoration continue to work while the
+flag is off. Storybook pins the evaluated flag value per story, independently of the real project.
 
 ## Safari on iPhone
 
