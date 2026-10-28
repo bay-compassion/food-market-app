@@ -1,43 +1,13 @@
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import type { FormEvent, ReactNode } from 'react';
 
-import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
+import { GuestFormSubmitBar } from './GuestFormSubmitBar';
 
 const Form = styled.form`
 	display: grid;
 	gap: 18px;
-
-	/*
-	 * While a field has focus the on-screen keyboard (or iOS's picker wheel) covers the bottom of
-	 * the screen, and a bar pinned there would sit on top of the field being typed into. Dropping it
-	 * back into the flow costs no layout shift: a sticky element already holds its place at the end.
-	 */
-	&:has(input:focus, textarea:focus, select:focus) .submit-bar[data-sticky] {
-		position: static;
-		box-shadow: none;
-	}
-`;
-
-/** The submit button and its error; pinned to the bottom of the screen when `stickySubmit` is set. */
-const SubmitBar = styled.div`
-	display: grid;
-	gap: 18px;
-
-	&[data-sticky] {
-		position: sticky;
-		bottom: 0;
-		z-index: 1;
-		padding-block: 12px calc(12px + env(safe-area-inset-bottom));
-		background: var(--color-surface);
-		box-shadow: 0 -8px 24px rgb(30 71 77 / 10%);
-
-		button[type='submit'] {
-			min-height: 48px;
-		}
-	}
 `;
 
 const Heading = styled.div`
@@ -57,13 +27,6 @@ const Heading = styled.div`
 		font-size: 16px;
 		line-height: 1.55;
 	}
-`;
-
-const SubmissionError = styled.p`
-	margin: 0;
-	color: var(--color-error);
-	font-size: 13px;
-	line-height: 1.4;
 `;
 
 const Privacy = styled.p`
@@ -91,6 +54,9 @@ type GuestFormProps = {
 	/** Keeps the submit button on screen while the guest scrolls, for a form long enough that it
 	 *  would otherwise sit below the fold. Its ancestors must not clip overflow, or it never sticks. */
 	stickySubmit?: boolean;
+	/** Shown in the sticky bar once the form is complete, pointing at the button; `null` until then.
+	 *  Leave it out for a form that has no such moment. */
+	readyHint?: string | null;
 	children: ReactNode;
 };
 
@@ -102,10 +68,10 @@ export const GuestForm = observer(function GuestForm({
 	submittingLabel,
 	onSubmit,
 	stickySubmit = false,
+	readyHint,
 	children,
 }: GuestFormProps) {
 	const t = useTranslation();
-	const { registration } = useRootStore();
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -119,17 +85,12 @@ export const GuestForm = observer(function GuestForm({
 				<p>{description}</p>
 			</Heading>
 			{children}
-			{/* The error sits in the bar, so a guest who taps the pinned button sees it fail. */}
-			<SubmitBar className="submit-bar" data-sticky={stickySubmit || undefined}>
-				{registration.submissionError ? (
-					<SubmissionError className="submission-error" role="alert">
-						{t.submissionError}
-					</SubmissionError>
-				) : null}
-				<Button type="submit" disabled={registration.isSubmitting} size="large">
-					{registration.isSubmitting ? submittingLabel : submitLabel}
-				</Button>
-			</SubmitBar>
+			<GuestFormSubmitBar
+				submitLabel={submitLabel}
+				submittingLabel={submittingLabel}
+				sticky={stickySubmit}
+				readyHint={readyHint}
+			/>
 			<Privacy className="privacy">
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 					<rect x="5" y="10" width="14" height="10" rx="2" />

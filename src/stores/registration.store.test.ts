@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { StorageKey, StorageService } from '../services/storage.service';
 import { GuestStore } from './guest.store';
+import type { SessionQuestion } from './market-session.store';
 import { RegistrationStore } from './registration.store';
 
 describe('RegistrationStore', () => {
@@ -209,6 +210,81 @@ describe('RegistrationStore', () => {
 
 			// Assert
 			expect(signUp.mock.calls[1]![0].pronunciation).toBeUndefined();
+		});
+	});
+
+	describe('isReadyToSubmit', () => {
+		const complete = {
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			pronunciation: '',
+			ageRange: '30-44' as const,
+			householdSize: 2,
+			childrenCount: 0,
+			seniorsCount: 0,
+			phone: '(555) 123-4567',
+		};
+		const requiredQuestion: SessionQuestion = {
+			id: 'q-1',
+			prompt: 'How did you hear?',
+			type: 'text',
+			required: true,
+		};
+		const optionalQuestion: SessionQuestion = {
+			id: 'q-2',
+			prompt: 'Anything else?',
+			type: 'text',
+			required: false,
+		};
+
+		it('is ready once every field is filled in', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.guest = { ...complete };
+
+			// Act
+			const ready = store.isReadyToSubmit([optionalQuestion]);
+
+			// Assert
+			expect(ready).toBe(true);
+		});
+
+		it.each([
+			['a blank first name', { firstName: '  ' }],
+			['a blank last name', { lastName: '' }],
+			['a phone short of ten digits', { phone: '(555) 123-456' }],
+			['no age range', { ageRange: '' as const }],
+			['a household with no adult', { householdSize: 1, childrenCount: 1 }],
+		])('is not ready with %s', (_, patch) => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.guest = { ...complete, ...patch };
+
+			// Act
+			const ready = store.isReadyToSubmit([]);
+
+			// Assert
+			expect(ready).toBe(false);
+		});
+
+		it('waits for an answer to a required question, ignoring whitespace', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.guest = { ...complete };
+			store.setAnswer('q-1', '   ');
+
+			// Act
+			const before = store.isReadyToSubmit([requiredQuestion]);
+
+			store.setAnswer('q-1', 'A flyer');
+			const after = store.isReadyToSubmit([requiredQuestion]);
+
+			// Assert
+			expect(before).toBe(false);
+			expect(after).toBe(true);
 		});
 	});
 

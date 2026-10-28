@@ -206,6 +206,8 @@ export interface GuestViewTranslations {
 		exceedsHousehold: string;
 		/** Under the children count, when it leaves no adult in the household to shop for it. */
 		noAdult: string;
+		/** In the pinned submit bar once every field is filled in, quoting the submit button's label. */
+		readyToSubmit: string;
 		/** Under a count the guest left empty or typed wrongly. `{min}` and `{max}` are the range. */
 		countErrors: {
 			required: string;
@@ -683,6 +685,7 @@ export const translations = {
 				exceedsHousehold:
 					'Children and seniors together can’t be more than the people in your household.',
 				noAdult: 'Your household must include at least one adult.',
+				readyToSubmit: 'All set. Tap “Join the lottery” to enter.',
 				countErrors: {
 					required: 'Enter a number.',
 					notWholeNumber: 'Enter a whole number, like 2.',
@@ -1146,6 +1149,7 @@ export const translations = {
 				exceedsHousehold:
 					'Los niños y las personas mayores juntos no pueden ser más que las personas de su hogar.',
 				noAdult: 'Su hogar debe incluir al menos un adulto.',
+				readyToSubmit: 'Todo listo. Toque «Unirse al sorteo» para participar.',
 				countErrors: {
 					required: 'Escriba un número.',
 					notWholeNumber: 'Escriba un número entero, como 2.',
@@ -1610,6 +1614,7 @@ export const translations = {
 				seniorsHint: 'اگر ۵۵ سال یا بیشتر دارید، خودتان را هم حساب کنید',
 				exceedsHousehold: 'مجموع کودکان و سالمندان نمی‌تواند از تعداد افراد خانواده شما بیشتر باشد.',
 				noAdult: 'خانواده شما باید دست‌کم یک بزرگسال داشته باشد.',
+				readyToSubmit: 'همه‌چیز آماده است. برای شرکت، «پیوستن به قرعه‌کشی» را بزنید.',
 				countErrors: {
 					required: 'یک عدد وارد کنید.',
 					notWholeNumber: 'یک عدد صحیح وارد کنید، مثلاً ۲.',
@@ -2071,6 +2076,7 @@ export const translations = {
 				exceedsHousehold:
 					'Hindi puwedeng mas marami ang mga bata at senior kaysa sa mga tao sa inyong sambahayan.',
 				noAdult: 'Dapat may kahit isang nasa hustong gulang sa inyong sambahayan.',
+				readyToSubmit: 'Handa na. I-tap ang “Sumali sa lottery” para makasali.',
 				countErrors: {
 					required: 'Maglagay ng numero.',
 					notWholeNumber: 'Maglagay ng buong numero, gaya ng 2.',
@@ -2536,6 +2542,7 @@ export const translations = {
 				exceedsHousehold:
 					'Tổng số trẻ em và người cao tuổi không thể nhiều hơn số người trong hộ gia đình của bạn.',
 				noAdult: 'Hộ gia đình của bạn phải có ít nhất một người lớn.',
+				readyToSubmit: 'Đã xong. Nhấn “Tham gia xổ số” để đăng ký.',
 				countErrors: {
 					required: 'Hãy nhập một số.',
 					notWholeNumber: 'Hãy nhập số nguyên, ví dụ 2.',
@@ -2990,6 +2997,7 @@ export const translations = {
 				seniorsHint: '如果您年满55岁，请包括您自己',
 				exceedsHousehold: '儿童和老年人的总数不能超过您家庭中的人数。',
 				noAdult: '您的家庭中必须至少有一名成年人。',
+				readyToSubmit: '已填写完毕。请点击“参加抽签”完成报名。',
 				countErrors: {
 					required: '请输入一个数字。',
 					notWholeNumber: '请输入整数，例如 2。',
@@ -3435,6 +3443,7 @@ export const translations = {
 				seniorsHint: 'احسب نفسك إذا كان عمرك 55 عامًا أو أكثر',
 				exceedsHousehold: 'لا يمكن أن يزيد عدد الأطفال وكبار السن معًا عن عدد أفراد أسرتك.',
 				noAdult: 'يجب أن تضم أسرتك شخصًا بالغًا واحدًا على الأقل.',
+				readyToSubmit: 'كل شيء جاهز. اضغط على «انضم إلى القرعة» للمشاركة.',
 				countErrors: {
 					required: 'أدخل رقمًا.',
 					notWholeNumber: 'أدخل عددًا صحيحًا، مثل 2.',
@@ -3890,6 +3899,8 @@ export const translations = {
 				exceedsHousehold:
 					'Les enfants et les seniors réunis ne peuvent pas dépasser le nombre de personnes de votre foyer.',
 				noAdult: 'Votre foyer doit compter au moins un adulte.',
+				readyToSubmit:
+					'Tout est prêt. Appuyez sur « Participer au tirage au sort » pour vous inscrire.',
 				countErrors: {
 					required: 'Saisissez un nombre.',
 					notWholeNumber: 'Saisissez un nombre entier, par exemple 2.',
@@ -4358,6 +4369,7 @@ export const translations = {
 				exceedsHousehold:
 					'Crianças e idosos juntos não podem ser mais do que as pessoas da sua casa.',
 				noAdult: 'Sua casa precisa incluir pelo menos um adulto.',
+				readyToSubmit: 'Tudo pronto. Toque em “Participar do sorteio” para se inscrever.',
 				countErrors: {
 					required: 'Digite um número.',
 					notWholeNumber: 'Digite um número inteiro, como 2.',
@@ -4823,6 +4835,7 @@ export const translations = {
 				exceedsHousehold:
 					'Детей и пожилых людей вместе не может быть больше, чем людей в вашей семье.',
 				noAdult: 'В вашей семье должен быть хотя бы один взрослый.',
+				readyToSubmit: 'Всё готово. Нажмите «Участвовать в жеребьёвке», чтобы записаться.',
 				countErrors: {
 					required: 'Введите число.',
 					notWholeNumber: 'Введите целое число, например 2.',
