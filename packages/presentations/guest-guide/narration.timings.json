@@ -20,7 +20,7 @@
     },
     "closed": {
       "text": "If the market is closed, come back on Saturday at ten thirty in the morning.",
-      "duration": 4.31
+      "duration": 4.32
     },
     "window": {
       "text": "Sign-up stays open for fifteen minutes. The timer shows how much time is left. There’s no need to rush. Signing up early doesn’t change your chances.",
@@ -36,7 +36,7 @@
     },
     "returning": {
       "text": "If this phone already remembers you, your name and phone are saved. Check your household details for today’s visit.",
-      "duration": 7.095
+      "duration": 7.093
     },
     "join": {
       "text": "When you’ve finished, tap Join the lottery.",
@@ -47,8 +47,8 @@
       "duration": 5.761
     },
     "texts": {
-      "text": "Text updates are optional. To receive them, tap Text Me About Updates, then read and agree to the text message consent and tap Enable text updates.",
-      "duration": 9.887
+      "text": "Text updates are optional. To receive them, tap Click here for text updates, then read and agree to the text message consent and tap Enable text updates.",
+      "duration": 10.185
     },
     "draw": {
       "text": "At ten forty-five, the lottery draws. This page updates on its own and shows your result. Everyone has the same chance, and not everyone gets a number.",
@@ -84,11 +84,11 @@
     },
     "missed": {
       "text": "If your screen says We missed you, and you’re still here, speak with a market team member at the check-in desk.",
-      "duration": 6.112
+      "duration": 6.122
     },
     "finished": {
       "text": "After check-in, your phone says Thank you for coming. Your visit is complete.",
-      "duration": 4.627
+      "duration": 4.626
     },
     "missedWindow": {
       "text": "If you missed sign-up, the page explains that registration has closed. Come back next Saturday at ten thirty.",

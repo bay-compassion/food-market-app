@@ -83,7 +83,7 @@ function LoadedMarketStatus({ status }: { status: Promise<void> }) {
 /** Whichever cards the market status and the guest's visit call for, once both are known. */
 export const GuestMarketStatus = observer(function GuestMarketStatus() {
 	const rootStore = useRootStore();
-	const { guest, session, tour, visit } = rootStore;
+	const { session, tour, visit } = rootStore;
 	const tourEnabled = useGuestTourEnabled();
 
 	// Also re-run when the flag resolves on after LaunchDarkly loads, which may follow the first
@@ -93,14 +93,6 @@ export const GuestMarketStatus = observer(function GuestMarketStatus() {
 			rootStore.resumeTour();
 		}
 	}, [rootStore, tourEnabled]);
-
-	/**
-	 * An identified guest needs the card to establish whose lottery-only form is shown. When market
-	 * status is unavailable or registration is not open, the card also gives an unidentified guest
-	 * a route to save their information independently of a visit.
-	 */
-	const showIdentityCard =
-		guest.isIdentified || session.currentStatus !== SessionStatusEnum.REGISTRATION_OPEN;
 
 	const render = () => {
 		if (!session.isActive) {
@@ -143,7 +135,7 @@ export const GuestMarketStatus = observer(function GuestMarketStatus() {
 
 	return (
 		<>
-			{showIdentityCard ? <GuestIdentityCard /> : null}
+			<GuestIdentityCard />
 			{render()}
 			{/* Mounted only once the market status is in, so the cards the tour points at are too. */}
 			{tourEnabled && tour.isRunning ? (

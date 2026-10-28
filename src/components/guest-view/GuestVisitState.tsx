@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { CancelVisitAction } from './CancelVisitAction';
 import { GuestStatusCard } from './GuestStatusCard';
 import { GuestVisitStatus } from './GuestVisitStatus';
+import { HomeScreenOffer } from './home-screen/HomeScreenOffer';
 import { VisitRefreshNotice } from './visit-status/VisitRefreshNotice';
 
 /** Current-visit card, plus the standalone cancel action kept outside it. */
@@ -17,6 +18,7 @@ export const GuestVisitState = observer(function GuestVisitState() {
 				countdown inside one would fight with the status announcements it exists to deliver.
 			*/}
 			<VisitRefreshNotice />
+			<HomeScreenOffer />
 			<CancelVisitAction />
 		</>
 	);

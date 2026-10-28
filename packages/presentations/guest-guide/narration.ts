@@ -65,7 +65,7 @@ export const lines: NarrationLine[] = [
 	{
 		id: 'texts',
 		pause: 0.8,
-		text: 'Text updates are optional. To receive them, tap Text Me About Updates, then read and agree to the text message consent and tap Enable text updates.',
+		text: 'Text updates are optional. To receive them, tap Click here for text updates, then read and agree to the text message consent and tap Enable text updates.',
 	},
 	{
 		id: 'draw',

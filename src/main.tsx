@@ -14,6 +14,8 @@ import { AppThemeProvider } from './components/AppThemeProvider';
 import { StaticLDProvider } from './components/StaticLDProvider';
 import { installId, withInstallIdHeader } from './install-id';
 import { launchDarklySettings, MISSING_LAUNCHDARKLY_MESSAGE } from './launchdarkly-settings';
+import { HomeScreenHandoff, homeScreenStartPath } from './pwa/home-screen-handoff';
+import { BrowserInstallEnvironment } from './pwa/install-environment';
 import { router } from './router';
 import { enableReplayWhenFlagged, reactErrorHandler } from './sentry';
 import { isUserInfoEnabled, SentryUserReporter } from './sentry-user';
@@ -26,6 +28,14 @@ import './styles/app-shell.css';
 import './styles/admin.css';
 
 async function bootstrap() {
+	// iOS copies this path-scoped cookie on installation, before the new app has localStorage.
+	if (
+		window.location.pathname === homeScreenStartPath &&
+		new BrowserInstallEnvironment().isStandalone
+	) {
+		new HomeScreenHandoff().restore();
+	}
+
 	// Before anything that makes a request is constructed. Sentry has already wrapped `fetch` for
 	// tracing by now, and this wraps its wrapper, so API requests carry both.
 	window.fetch = withInstallIdHeader(
@@ -42,17 +52,15 @@ async function bootstrap() {
 	const sentryUser = isUserInfoEnabled ? new SentryUserReporter(rootStore.guest) : null;
 
 	/**
-	 * Guests are never asked to identify themselves to a third party: `GuestStore` keeps identity
-	 * local to the browser (see its doc comment), and `SentryUserReporter` goes out of its way to
-	 * send a hash rather than the raw device token. This context follows the same rule by sending
-	 * LaunchDarkly nothing at all — `anonymous: true` with no `key` has the SDK generate a random
-	 * one and persist it in local storage, which is enough to bucket a returning guest consistently
-	 * without LaunchDarkly ever holding an identifier that means anything outside itself.
+	 * The SDK generates its own anonymous key for consistent bucketing. The coarse os attribute
+	 * lets LaunchDarkly target Android and iOS within one flag; guest identity, device credentials,
+	 * and the app's install ID are never part of this context.
 	 */
 	const context: LDContext = {
 		kind: 'user',
 		key: '',
 		anonymous: true,
+		os: rootStore.installation.platform,
 	};
 
 	const ldSettings = launchDarklySettings(import.meta.env);

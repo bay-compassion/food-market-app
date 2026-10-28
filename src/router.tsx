@@ -4,6 +4,7 @@ import { GuestView } from './components/guest-view/GuestView';
 import { QrCodeView } from './components/QrCodeView';
 import { ClaimView } from './components/routes/ClaimView';
 import { SignupView } from './components/routes/SignupView';
+import { homeScreenStartPath } from './pwa/home-screen-handoff';
 import { createInstrumentedBrowserRouter } from './sentry';
 
 /**
@@ -32,6 +33,7 @@ export const router = createInstrumentedBrowserRouter([
 				element: <App />,
 				children: [
 					{ path: '/', element: <GuestView /> },
+					{ path: homeScreenStartPath, element: <GuestView /> },
 					{ path: '/signup', element: <SignupView /> },
 					// A guest reaches this from a worker's QR code while standing at the table.
 					{ path: '/claim', element: <ClaimView /> },

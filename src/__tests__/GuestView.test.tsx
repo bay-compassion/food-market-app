@@ -111,7 +111,7 @@ describe('GuestView', () => {
 		expect(screen.queryByRole('button', { name: 'Save my information' })).toBeNull();
 	});
 
-	it('keeps identification available when market status cannot be retrieved', async () => {
+	it('does not offer a separate signup when market status cannot be retrieved', async () => {
 		// Arrange
 		vi.stubGlobal(
 			'fetch',
@@ -128,7 +128,7 @@ describe('GuestView', () => {
 		await renderLoadedGuestView();
 
 		// Assert
-		expect(screen.getByRole('button', { name: 'Save my information' })).toBeDefined();
+		expect(screen.queryByRole('complementary')).toBeNull();
 	});
 
 	it('shows an identified guest with the lottery-only form while registration is open', async () => {

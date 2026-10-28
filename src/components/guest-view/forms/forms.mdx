@@ -1,32 +1,15 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks';
 
-import { Screenshot } from '../../../../.storybook/docs/Screenshot';
-
 import * as LotteryForm from './GuestLotteryForm.stories.tsx';
-import * as InformationForm from './GuestInformationForm.stories.tsx';
 import * as CombinedForm from './GuestCombinedForm.stories.tsx';
 
 <Meta title="Guest Review/Forms" tags={['review']} />
 
 # Forms
 
-There are three ways a guest can provide information. Saving a name and phone number prepares this
-phone for a future visit; it does not enter the lottery. When registration opens, the guest enters the
-lottery with either a full form or a shorter form, depending on what is already saved on the phone.
-
-## Save information before registration opens
-
-The "Save my information" button opens a form for the guest's name and phone number. Those details
-stay on this phone for next time. Saving them does not reserve a place or enter the lottery.
-
-<Story of={InformationForm.Default} />
-
-After submitting, the guest sees a confirmation that their information was saved.
-
-<Screenshot
-	id="identity-saved"
-	alt="The identity form's success message: Your information is saved"
-/>
+Guests enter the lottery when registration opens. A new guest fills in their name, phone number,
+and household details together. On later visits, the phone remembers their information and the guest
+checks their household details before entering again.
 
 ## Enter the lottery without saved information
 
@@ -38,7 +21,7 @@ number on this phone for next time.
 
 ## Enter the lottery with saved information
 
-During registration, a guest who previously saved their information or registered on this phone sees
+During registration, a guest who previously registered on this phone sees
 their name and enters only their household details. The app asks for those details at each market
 because they describe that day's visit.
 

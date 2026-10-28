@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=c704b5b176fc, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=dd087adf62af, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=45ca12597b75, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=a8d6f83e53c3, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=dd087adf62af, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=6b53310ed8e9, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083, src/components/guest-view/GuestVisitState.tsx=c5315940aca3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
 
 # Guest journey
 
@@ -61,7 +61,7 @@ flowchart TD
     hasIdentity -- token only --> activeSession
     hasIdentity -- yes --> identityShown[Show locally saved<br/>name and phone]
     identityShown -. menu .-> identityActions{Identity actions}
-    identityActions -. "Opt Out" .-> revokeSms[DELETE SMS subscription]
+    identityActions -. "Stop Text Updates" .-> revokeSms[DELETE SMS subscription]
     revokeSms --> notificationState
     identityActions -. "Forget Information" .-> confirmForget{Confirm forgetting<br/>saved information?}
     confirmForget -- no --> identityShown
@@ -75,9 +75,9 @@ flowchart TD
     notificationRequest -- pending --> notificationLoading[Show loading indicator]
     notificationRequest -- failed --> notificationError[Show notification status error]
     notificationRequest -- succeeded --> notificationState{SMS consent state?}
-    notificationState -- yes --> notificationEnabled[Show "Notifications Enabled"]
+    notificationState -- yes --> notificationEnabled[Show "Text Updates Are On"]
     notificationState -- prior STOP --> startRequired[Explain that START is required;<br/>show the Twilio sender]
-    notificationState -- no --> notifyButton[Show "Notify Me About Updates"]
+    notificationState -- no --> notifyButton[Show "Click here for text updates"]
     startRequired -. opens .-> smsComposer[Open a prefilled SMS<br/>containing START]
     smsComposer -. returns .-> startRequired
     startRequired -. check again .-> deviceAuth
@@ -90,9 +90,7 @@ flowchart TD
     notifyButton --> activeSession
     notificationError --> activeSession
 
-    activeSession -- no --> inactiveIdentity[Show identity card:<br/>saved identity or offer to save information]
-    inactiveIdentity -. "Save my information" button .-> signupRoute
-    inactiveIdentity --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
+    activeSession -- no --> inactiveScreen([Inactive market card:<br/>next registration window,<br/>lottery, and notification details])
     activeSession -- yes --> hasVisit{Saved visit token<br/>on this device?}
     hasVisit -- yes --> currentVisit{Visit belongs to this market<br/>and is not cancelled?}
     currentVisit -- yes --> status[Visit status or outcome screen]
@@ -102,9 +100,7 @@ flowchart TD
     canRegister -- yes --> cachedIdentity{Cached local<br/>name and phone?}
     cachedIdentity -- no --> combinedForm[Sign-up fields — name, an offer<br/>to add a pronunciation, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
     cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card<br/>and lottery-entry fields:<br/>age range, household size,<br/>children/seniors — or, when this<br/>phone saved them, a summary to<br/>confirm or change]
-    canRegister -- no --> nonOpenIdentity[Show identity card:<br/>saved identity or offer to save information]
-    nonOpenIdentity -. "Save my information" button .-> signupRoute
-    nonOpenIdentity --> phase{Which active phase is<br/>the session in?}
+    canRegister -- no --> phase{Which active phase is<br/>the session in?}
     phase -- registration closed<br/>or lottery pending --> closedScreen([Registration-closed screen])
     phase -- service underway --> inServiceScreen([In-service screen])
 
@@ -138,6 +134,10 @@ flowchart TD
     submit --> saveIdentity
     saveIdentity --> registered[Visit created: registered]
     registered --> status
+    registered -. optional, shared flag targets OS,<br/>supported browser .-> homeScreen[Add to Home Screen:<br/>native install prompt, or Safari instructions]
+    homeScreen -. iOS 17.2+ .-> installHandoff[One-hour cookie scoped to /pwa-start:<br/>existing guest and visit only]
+    installHandoff --> installedApp[New standalone app restores empty storage<br/>and consumes cookie before stores load]
+    installedApp --> status
 
     status --> regClosed[Registration closes<br/>10-second grace period<br/>push: registration_closed]
     regClosed --> lotteryPending[lottery_pending:<br/>registration pool frozen]
@@ -155,6 +155,9 @@ flowchart TD
     confirmCancel -- yes --> cancelled[cancelled]
     cancelled --> canRegister
 ```
+
+The optional [Home Screen installation flow](home-screen-installation.md) preserves an existing
+visit when Safari creates a separate storage area. Unsupported browsers keep the QR-code return path.
 
 ## Things worth knowing about this path
 
@@ -201,9 +204,8 @@ flowchart TD
   there's nothing left to ask, so the guest lands back on `GuestView`, which shows whatever its
   normal status resolution decides (lottery form, visit status, or the current session status). A
   browser with no device token instead sees the identity-only form and, on success, an inline
-  "your information is saved" message on `/signup` itself. The unidentified
-  `GuestIdentityCard` provides the in-app link into this flow; a guest can also land on
-  `/signup` directly, e.g. from a QR code.
+  "your information is saved" message on `/signup` itself. The home screen no longer links to this
+  flow; the legacy `/signup` route remains available directly. Guests normally provide their details in the combined lottery registration form.
   `GuestSignupForm` renders only the identity fields (`GuestInformationForm`, submitted through
   `GuestStore.signUp`, no visit created). `GuestCombinedForm` renders the lottery-entry fields
   (`GuestLotteryForm`) plus the identity fields unless the device already has a cached local
@@ -334,10 +336,9 @@ flowchart TD
   loading indicator while retrieving notification state, a local error if retrieval fails, and a
   single SMS opt-in button before consent that becomes a compact enabled status afterward. The
   identity card's menu lets the guest revoke SMS consent, forget the locally stored identity and
-  device credential, or view and copy that credential as their device ID. A guest without a device
-  credential instead sees a preregistration message and button in the indicator, explicitly
-  clarifying that preregistration does not enter the lottery. Push notification plumbing remains in
-  place, but push controls are not currently shown to guests.
+  device credential, or view and copy that credential as their device ID. A guest without a saved
+  identity sees no identity card; they provide their details when entering the lottery, or receive
+  an identity when a worker adds them. Push notification plumbing remains in place, but push controls are not currently shown to guests.
   Admin broadcasts still reach eligible visits over any subscribed channel whose visit isn't cancelled.
 - **Cancelling is only possible before service.** The cancel button appears only while the visit is
   `registered` or `waiting`, and not at all once the session has ended. It asks first, in the

@@ -83,6 +83,11 @@ Verification: [logging tests](../netlify/lib/logging.test.mts),
 [monitoring settings tests](../src/sentry-settings.test.ts),
 [identity reporter tests](../src/sentry-user.test.ts).
 
+The LaunchDarkly context uses an SDK-generated anonymous key plus a coarse `os` value (`android`,
+`ios`, or `other`) for feature targeting. It does not include guest identity, credentials, or the
+app's install ID. See the initialization context in `src/main.tsx` and the
+[Home Screen rollout configuration](home-screen-installation.md#os-targeting-in-launchdarkly).
+
 ## Consent and Remembered Information Have Explicit Controls
 
 SMS enrollment requires an authenticated device and a literal `consent: true`. Guests can delete
@@ -93,6 +98,13 @@ The guest's forget action clears the saved identity, device credential, and hous
 from that browser. It does not delete the server's guest or visit records, revoke previously issued
 credentials, or remove the separate visit credential and install ID. Describe it as forgetting
 saved personal details on a device, not as account or database deletion.
+
+An optional iPhone Home Screen installation temporarily copies those browser-held credentials and
+remembered details through a one-hour, same-site cookie scoped to the static `/pwa-start` path. It is
+never sent to API paths or placed in a URL. A new standalone app consumes it before the stores load,
+and refuses to overwrite an existing guest or visit. Changing or forgetting the guest clears a pending
+copy in that browser. See [Home Screen installation](home-screen-installation.md) for the data
+allowlist, expiration, platform restrictions, and device verification requirements.
 
 Sources: [SMS enrollment](../netlify/routes/notifications/sms-subscription.mts),
 [provider webhook](../netlify/routes/notifications/twilio-incoming-message.mts),

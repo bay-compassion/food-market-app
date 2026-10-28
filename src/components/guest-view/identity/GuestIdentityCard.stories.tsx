@@ -99,7 +99,7 @@ const meta = {
 		docs: {
 			description: {
 				component:
-					'Shows whether this browser has identified a guest. Identified guests see only the name and phone number saved in client-side storage, while unidentified guests get a path to sign up.',
+					'Shows whether this browser has identified a guest. Identified guests see only the name and phone number saved in client-side storage, and guests without saved information see no card.',
 			},
 		},
 	},
@@ -122,19 +122,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** With no device credential or locally stored identity, the card offers preregistration. */
+/** Guests without a saved identity see only the market state or registration form. */
 export const NotIdentified: Story = {
 	args: { deviceToken: null, identity: null },
 	play: async ({ canvas }) => {
-		const copy = translations.en.guestView.identityIndicator;
-
-		await expect(
-			canvas.getByRole('complementary', { name: copy.unidentifiedHeading }),
-		).toBeInTheDocument();
-		await expect(canvas.getByText(copy.unidentifiedMessage)).toBeInTheDocument();
-		await expect(
-			canvas.getByRole('button', { name: copy.saveInformationAction }),
-		).toBeInTheDocument();
+		await expect(canvas.queryByRole('complementary')).not.toBeInTheDocument();
 	},
 };
 
