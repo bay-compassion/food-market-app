@@ -162,8 +162,14 @@ export function scrollUnderBar(container: HTMLElement, target: HTMLElement | nul
 		return;
 	}
 
-	const bar = container.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
-	const view = window.innerHeight - bar;
+	const view =
+		window.innerHeight - (container.querySelector('header')?.getBoundingClientRect().bottom ?? 0);
+	// What the app pins over the page — the countdown strip under the bar, the submit bar at the
+	// bottom — covers it, so the target has to clear those as well, as it does in the app.
+	const strip = scroller.querySelector<HTMLElement>('.registration-countdown[data-pinned]');
+	const submit = scroller.querySelector<HTMLElement>('.submit-bar[data-sticky]');
+	const above = strip?.offsetHeight ?? 0;
+	const below = target && submit && !submit.contains(target) ? submit.offsetHeight : 0;
 	let offset = 0;
 
 	if (target && scroller.contains(target)) {
@@ -171,8 +177,11 @@ export function scrollUnderBar(container: HTMLElement, target: HTMLElement | nul
 		const bottom = top + target.offsetHeight;
 		const most = Math.max(0, scroller.offsetHeight - view);
 
-		offset = Math.min(Math.max(0, bottom + 16 - view), Math.max(0, top - 16), most);
+		offset = Math.min(Math.max(0, bottom + 16 + below - view), Math.max(0, top - 16 - above), most);
 	}
 
+	// The app's sticky elements pin against the page as it would sit unscrolled, then ride the
+	// transform with it; the stylesheet shifts their insets by the same amount to hold them still.
+	scroller.style.setProperty('--phone-scroll-offset', `${offset}px`);
 	scroller.style.transform = `translateY(${-offset}px)`;
 }
