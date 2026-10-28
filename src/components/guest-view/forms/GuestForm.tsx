@@ -46,8 +46,9 @@ const Privacy = styled.p`
 `;
 
 type GuestFormProps = {
-	title: string;
-	description: string;
+	/** Leave both out for a form whose sections' legends already say what it asks for. */
+	title?: string;
+	description?: string;
 	submitLabel: string;
 	submittingLabel: string;
 	onSubmit: () => Promise<void>;
@@ -83,10 +84,12 @@ export const GuestForm = observer(function GuestForm({
 
 	return (
 		<Form onSubmit={handleSubmit}>
-			<Heading className="form-heading">
-				<h2>{title}</h2>
-				<p>{description}</p>
-			</Heading>
+			{title ? (
+				<Heading className="form-heading">
+					<h2>{title}</h2>
+					{description ? <p>{description}</p> : null}
+				</Heading>
+			) : null}
 			{children}
 			<GuestFormSubmitBar
 				submitLabel={submitLabel}

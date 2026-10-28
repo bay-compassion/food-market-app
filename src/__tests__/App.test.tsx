@@ -222,7 +222,9 @@ describe('App', () => {
 
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await waitFor(() => expect(container.textContent).toContain('Cuéntenos sobre usted'));
+		await waitFor(() =>
+			expect(container.textContent).toContain(translations.es.guestView.forms.informationLegend),
+		);
 
 		expect(container.querySelector('.hero')).toBeNull();
 		expect(container.querySelector<HTMLSelectElement>('#app-bar-language-picker')!.value).toBe(
@@ -258,7 +260,7 @@ describe('App', () => {
 		await user.click(within(container).getByRole('button', { name: 'فارسی' }));
 
 		expect(container.querySelector('.app-shell')!.getAttribute('dir')).toBe('rtl');
-		expect(container.textContent).toContain('درباره خودتان بگویید');
+		expect(container.textContent).toContain(translations.fa.guestView.forms.informationLegend);
 	});
 
 	/** Fills every field of the combined registration form, in the order a guest meets them. */
@@ -621,7 +623,7 @@ describe('App', () => {
 	it('hides the inactive-market explanation while registration is open', async () => {
 		const { container } = await renderWithMarketStatus('registration_open');
 
-		await screen.findByRole('heading', { name: translations.en.formTitle });
+		await screen.findByRole('group', { name: translations.en.guestView.forms.informationLegend });
 
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
 	});

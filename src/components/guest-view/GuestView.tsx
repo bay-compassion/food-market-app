@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { lazy, type ReactNode, Suspense, use, useEffect, useState } from 'react';
 
 import { RegistrationOpenState } from '@/components/guest-view/states/RegistrationOpenState.tsx';
+import { RegistrationCountdown } from '@/components/RegistrationCountdown.tsx';
 import { visitTakesPrecedence } from '@/services/guest-visit-presentation.ts';
 import { SessionStatusEnum } from '@/services/sessionStateMachine.ts';
 
@@ -52,15 +53,24 @@ export const GuestView = observer(function GuestView() {
  * supplies the stores' state itself rather than loading it — the presentations' guest phone.
  */
 export const GuestHome = observer(function GuestHome({ children }: { children: ReactNode }) {
-	const { guest } = useRootStore();
+	const { guest, session, visit } = useRootStore();
 
 	return (
-		<section className="guest-layout">
-			{!guest.isReturningVisitor ? <GuestLanguageHero /> : null}
+		<>
+			{/*
+				Outside the layout's column so it runs the width of the screen under the app bar. A visit
+				card shows its own clock, so this one is for the registration form alone.
+			*/}
+			{visitTakesPrecedence(session.currentStatus, visit.status) ? null : (
+				<RegistrationCountdown pinned />
+			)}
+			<section className="guest-layout">
+				{!guest.isReturningVisitor ? <GuestLanguageHero /> : null}
 
-			{/* Named so it slides up into the introduction's place rather than cross-fading. */}
-			<div className="guest-content">{children}</div>
-		</section>
+				{/* Named so it slides up into the introduction's place rather than cross-fading. */}
+				<div className="guest-content">{children}</div>
+			</section>
+		</>
 	);
 });
 

@@ -22,7 +22,7 @@ try {
 	const registration: ScreenshotStep = {
 		id: 'registration',
 		market: SessionStatusEnum.REGISTRATION_OPEN,
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	};
 	const waiting: ScreenshotStep = {
 		id: 'waiting',

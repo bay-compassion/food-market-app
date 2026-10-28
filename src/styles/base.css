@@ -84,6 +84,8 @@
 	}
 }
 :root {
+	/* The sticky app bar's height, which anything pinned beneath it sits below. */
+	--app-bar-height: 60px;
 	--tracking-heading: -0.035em;
 	--tracking-label: -0.02em;
 	--radius-sm: 8px;

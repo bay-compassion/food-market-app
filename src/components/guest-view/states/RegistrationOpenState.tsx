@@ -1,21 +1,15 @@
-import { Card, CardContent } from '@mui/material';
-
 import { GuestCombinedForm } from '@/components/guest-view/forms/GuestCombinedForm.tsx';
-import { GuestHelpLink } from '@/components/guest-view/GuestHelpLink.tsx';
-import { RegistrationCountdown } from '@/components/RegistrationCountdown.tsx';
 
+/**
+ * The registration form, set straight on the page rather than in a card: it is the screen's one
+ * job, so a frame around it only narrows the fields. Its clock is pinned under the app bar by
+ * `GuestHome`.
+ */
 export function RegistrationOpenState() {
+	// The wrapper is what the tour and the guest guide point at.
 	return (
-		<>
-			<RegistrationCountdown />
-			{/* Card clips overflow by default, which would stop the form's sticky submit bar sticking. */}
-			<Card data-tour="registration-form" sx={{ overflow: 'visible' }}>
-				<CardContent>
-					{/* At the top rather than the end, where it would sit below the submit button. */}
-					<GuestHelpLink />
-					<GuestCombinedForm />
-				</CardContent>
-			</Card>
-		</>
+		<div data-tour="registration-form">
+			<GuestCombinedForm />
+		</div>
 	);
 }

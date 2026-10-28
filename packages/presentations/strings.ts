@@ -15,7 +15,6 @@ export function guestStrings(t: Translation) {
 			...t.guestView,
 			help: t.help,
 			language: t.language,
-			formTitle: t.formTitle,
 			formDescription: t.formDescription,
 			age: t.age,
 			agePlaceholder: t.agePlaceholder,

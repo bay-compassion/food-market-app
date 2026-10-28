@@ -125,9 +125,6 @@ type Story = StoryObj<typeof meta>;
  */
 export const RegistrationForm: Story = {
 	play: async ({ canvas, canvasElement }) => {
-		await expect(
-			canvas.getByRole('heading', { name: translations.en.formTitle }),
-		).toBeInTheDocument();
 		await expect(canvas.getByLabelText(translations.en.firstName)).toBeInTheDocument();
 		await expect(canvas.getByLabelText(translations.en.age)).toBeInTheDocument();
 		await expect(
@@ -194,7 +191,7 @@ export const JoinBeforeConfirming: Story = {
 		await userEvent.click(canvas.getByRole('button', { name: translations.en.submit }));
 
 		await waitFor(() =>
-			expect(canvas.getByRole('textbox', { name: savedHousehold.prompt })).toHaveFocus(),
+			expect(canvas.getByRole('checkbox', { name: savedHousehold.prompt })).toHaveFocus(),
 		);
 		await expect(canvasElement.querySelector('.saved-household')).toBeInTheDocument();
 	},
@@ -323,7 +320,7 @@ export const RightToLeft: Story = {
 	globals: { locale: 'ar' },
 	play: async ({ canvas }) => {
 		await expect(
-			canvas.getByRole('heading', { name: translations.ar.formTitle }),
+			canvas.getByRole('group', { name: translations.ar.guestView.forms.informationLegend }),
 		).toBeInTheDocument();
 	},
 };

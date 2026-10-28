@@ -111,7 +111,7 @@ A screenshot is the state the app is in:
 	server: { notifications: 'opted-out' },
 	overlay: true,
 	interact: async (page, copy) => { … },
-	anchor: (copy) => copy.formTitle,
+	anchor: (copy) => copy.guestView.forms.lotteryLegend,
 },
 ```
 

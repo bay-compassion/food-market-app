@@ -169,6 +169,9 @@ export const SavedHouseholdCard = observer(function SavedHouseholdCard() {
  * browser's own validation — the same way an empty field takes them to it — and told what to do.
  * Visually hidden rather than `hidden`: a control the browser cannot focus fails validation
  * silently. Out of the tab order, since the buttons above are what a guest actually uses.
+ *
+ * A checkbox, since it stands for "confirmed" — and because the browser focuses it to show the
+ * message, which on a phone would bring up the keyboard for a text box.
  */
 function ConfirmationRequired({ message }: { message: string }) {
 	const input = useRef<HTMLInputElement>(null);
@@ -183,9 +186,10 @@ function ConfirmationRequired({ message }: { message: string }) {
 			className="sr-only"
 			style={{ insetBlockEnd: 0, insetInlineStart: '50%' }}
 			aria-label={message}
+			type="checkbox"
 			tabIndex={-1}
 			required
-			value=""
+			checked={false}
 			onChange={() => {}}
 		/>
 	);

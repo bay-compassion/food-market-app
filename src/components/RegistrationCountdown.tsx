@@ -1,3 +1,4 @@
+import { Global } from '@emotion/react';
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 import { type CSSProperties } from 'react';
@@ -6,11 +7,31 @@ import { SessionStatusEnum } from '../services/sessionStateMachine';
 import { useRootStore } from '../stores/react/store-context';
 import { useTranslation } from '../stores/react/use-translation';
 import { useCountdownTimer } from './hooks/use-countdown-timer';
+import { useOnScreenKeyboard } from './hooks/use-on-screen-keyboard';
 
 const transitionThresholdMs = 5 * 60_000;
 
+/** The pinned strip's height, which what the page scrolls to has to clear as well as the app bar. */
+const pinnedHeight = '44px';
+
+/*
+ * Pinned, the clock is a strip under the app bar that stays while the guest scrolls the form. Below
+ * the app bar (1100) and above the form, whose outlined field labels sit at `z-index: 1`.
+ */
 const Countdown = styled.div`
 	margin-bottom: 16px;
+
+	&[data-pinned] {
+		position: sticky;
+		top: var(--app-bar-height);
+		z-index: 2;
+		margin-bottom: 0;
+	}
+
+	/* As the submit bar does: the keyboard leaves too little screen to spend on a pinned strip. */
+	&[data-pinned][data-keyboard] {
+		position: static;
+	}
 `;
 
 /**
@@ -29,6 +50,31 @@ const Clock = styled.div`
 		var(--color-error) calc(var(--registration-countdown-progress) * 100%)
 	);
 	text-align: center;
+
+	[data-pinned] > & {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: ${pinnedHeight};
+		padding: 4px 18px;
+		border-radius: 0;
+		/* Against the app bar, which in light mode is the same colour as the warming clock's start. */
+		border-top: 1px solid rgb(255 255 255 / 30%);
+		box-shadow: 0 2px 6px rgb(0 0 0 / 14%);
+	}
+
+	/*
+	 * Until the last five minutes the strip is pale, so it stands apart from the app bar above it.
+	 * Only then does it take the solid warming colour, with white text, which holds its contrast all
+	 * the way to red — a pale strip blended toward red would pass through shades no text reads on.
+	 */
+	[data-pinned] > &:not([data-warming]) {
+		color: var(--color-brand-dark);
+		background: var(--color-surface-soft);
+		border-top: 0;
+		border-bottom: 1px solid var(--color-border-soft);
+	}
 `;
 
 const Label = styled.span`
@@ -41,6 +87,13 @@ const Label = styled.span`
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 	opacity: 0.85;
+
+	[data-pinned] & {
+		font-size: 15px;
+		text-transform: none;
+		letter-spacing: normal;
+		opacity: 1;
+	}
 `;
 
 const WarningIcon = styled.svg`
@@ -55,6 +108,10 @@ const Digits = styled.span`
 	font-weight: 700;
 	font-variant-numeric: tabular-nums;
 	letter-spacing: 0.02em;
+
+	[data-pinned] & {
+		font-size: 22px;
+	}
 `;
 
 function pad(value: number) {
@@ -77,8 +134,15 @@ function clockText(remainingMs: number): string {
 		: `${pad(minutes)}:${pad(seconds)}`;
 }
 
-/** How long is left to register, counting down, warming toward the danger color as it runs out. */
-export const RegistrationCountdown = observer(function RegistrationCountdown() {
+/**
+ * How long is left to register, counting down, warming toward the danger color as it runs out.
+ * `pinned` makes it a strip that stays under the app bar while the guest scrolls the form.
+ */
+export const RegistrationCountdown = observer(function RegistrationCountdown({
+	pinned = false,
+}: {
+	pinned?: boolean;
+}) {
 	const { session } = useRootStore();
 	const closesAt = session.marketEvent?.registrationClosesAt;
 
@@ -86,13 +150,20 @@ export const RegistrationCountdown = observer(function RegistrationCountdown() {
 		return null;
 	}
 
-	return <ActiveCountdown closesAt={closesAt} />;
+	return <ActiveCountdown closesAt={closesAt} pinned={pinned} />;
 });
 
 /** Mount the timer only while registration is open, keeping its hooks unconditional. */
-const ActiveCountdown = observer(function ActiveCountdown({ closesAt }: { closesAt: Date }) {
+const ActiveCountdown = observer(function ActiveCountdown({
+	closesAt,
+	pinned,
+}: {
+	closesAt: Date;
+	pinned: boolean;
+}) {
 	const t = useTranslation();
 	const remainingMs = useCountdownTimer(closesAt.valueOf());
+	const keyboardOpen = useOnScreenKeyboard();
 
 	if (remainingMs <= 0) {
 		return null;
@@ -115,9 +186,26 @@ const ActiveCountdown = observer(function ActiveCountdown({ closesAt }: { closes
 	);
 
 	return (
-		<Countdown className="registration-countdown" data-tour="registration-countdown">
+		<Countdown
+			className="registration-countdown"
+			data-tour="registration-countdown"
+			data-pinned={pinned || undefined}
+			data-keyboard={(pinned && keyboardOpen) || undefined}
+		>
+			{/*
+				What the browser scrolls to — a field it is taking the guest to, say — has to clear the
+				strip as well as the app bar, or it lands underneath them.
+			*/}
+			{pinned ? (
+				<Global
+					styles={{
+						html: { scrollPaddingTop: `calc(var(--app-bar-height) + ${pinnedHeight} + 16px)` },
+					}}
+				/>
+			) : null}
 			<Clock
 				className="registration-countdown-clock"
+				data-warming={progress > 0 || undefined}
 				style={{ '--registration-countdown-progress': progress } as CSSProperties}
 				aria-hidden="true"
 			>

@@ -103,10 +103,18 @@ test(
 		await page.getByRole('button', { name: 'Show me' }).click();
 
 		const appBarBottom = (await page.locator('.topbar').boundingBox())?.height ?? 0;
+		const clock = page.locator('[data-tour="registration-countdown"]');
+		const clockBox = await clock.boundingBox();
+		// The clock pins itself under the app bar, so what is scrolled to must clear both.
+		const pinnedBottom = (clockBox?.y ?? 0) + (clockBox?.height ?? 0);
 
-		for (const [title, anchor] of [
-			['Sign-up opens', '[data-tour="registration-countdown"]'],
-			['Fill in the form', '[data-tour="registration-form"] .form-heading'],
+		for (const [title, anchor, clearOf] of [
+			['Sign-up opens', clock, appBarBottom],
+			[
+				'Fill in the form',
+				page.locator('[data-tour="registration-form"] legend').first(),
+				pinnedBottom,
+			],
 		] as const) {
 			await page.getByRole('button', { name: 'Next' }).click();
 
@@ -115,11 +123,11 @@ test(
 			await expect(step).toBeVisible();
 			await expect(step).toBeInViewport();
 
-			// Scrolled to, and not left tucked under the sticky app bar.
-			const target = await page.locator(anchor).boundingBox();
+			// Scrolled to, and not left tucked under the sticky app bar or the pinned clock.
+			const target = await anchor.boundingBox();
 
-			expect(target?.y).toBeGreaterThanOrEqual(appBarBottom);
-			await expect(page.locator(anchor)).toBeInViewport();
+			expect(target?.y).toBeGreaterThanOrEqual(clearOf);
+			await expect(anchor).toBeInViewport();
 		}
 	},
 );

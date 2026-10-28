@@ -24,7 +24,8 @@ export const guestTourSteps: readonly GuestTourStepDefinition[] = [
 	{ id: 'welcome' },
 	{ id: 'language', anchor: '[data-tour="language"]', fixed: true, placement: 'bottom' },
 	{ id: 'countdown', anchor: '[data-tour="registration-countdown"]' },
-	{ id: 'form', anchor: '[data-tour="registration-form"] .form-heading' },
+	// The form's first section heading: who the guest is, or for a returning guest, their household.
+	{ id: 'form', anchor: '[data-tour="registration-form"] legend' },
 	{ id: 'textUpdates', anchor: '[data-tour="text-updates"]' },
 	{ id: 'lottery' },
 	{ id: 'line' },

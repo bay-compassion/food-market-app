@@ -114,7 +114,12 @@ export const AppBar = observer(function AppBar({
 		>
 			<Toolbar
 				disableGutters
-				sx={{ minHeight: { xs: 60, sm: 60 }, px: '20px', gap: 1, justifyContent: 'space-between' }}
+				sx={{
+					minHeight: { xs: 'var(--app-bar-height)', sm: 'var(--app-bar-height)' },
+					px: '20px',
+					gap: 1,
+					justifyContent: 'space-between',
+				}}
 			>
 				<Brand to={brandTo}>
 					<img src="/bay-compassion-icon-digital.svg" alt="" />
