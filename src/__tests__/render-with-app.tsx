@@ -2,6 +2,7 @@ import { render, screen, within, type RenderResult } from '@testing-library/reac
 import type { UserEvent } from '@testing-library/user-event';
 import type { ReactElement, ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { vi } from 'vitest';
 
 import { AppThemeProvider } from '../components/AppThemeProvider';
 import { StaticLDProvider, type StaticFlagValue } from '../components/StaticLDProvider';
@@ -76,4 +77,15 @@ export async function answerConfirmation(
 	const sheet = await screen.findByRole('alertdialog');
 
 	await user.click(within(sheet).getByRole('button', { name: label }));
+}
+
+/**
+ * Lets a render under fake timers finish its initial load — resolved fetches, zero-delay timers —
+ * without moving the clock. Not `vi.runOnlyPendingTimersAsync()`: that jumps to the latest pending
+ * timer, and a visit card keeps one waiting for the next midnight to refresh its date, so it fires
+ * every 15-second poll in between. Just after midnight that is thousands of renders, enough to time
+ * the test out.
+ */
+export async function settleInitialLoad(): Promise<void> {
+	await vi.advanceTimersByTimeAsync(0);
 }

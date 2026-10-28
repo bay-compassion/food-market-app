@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GuestView } from '../components/guest-view/GuestView';
 import { RootStore } from '../stores/root.store';
-import { answerConfirmation, renderWithApp } from './render-with-app';
+import { answerConfirmation, renderWithApp, settleInitialLoad } from './render-with-app';
 
 const marketOverview = {
 	event: {
@@ -256,7 +256,7 @@ describe('GuestView', () => {
 		vi.stubGlobal('fetch', fetchMock);
 		await renderLoadedGuestView();
 
-		await vi.runOnlyPendingTimersAsync();
+		await settleInitialLoad();
 
 		const callsBefore = fetchMock.mock.calls.filter(([url]) => url === '/api/visit').length;
 
@@ -280,7 +280,7 @@ describe('GuestView', () => {
 		vi.stubGlobal('fetch', fetchMock);
 		const { unmount } = await renderLoadedGuestView();
 
-		await vi.runOnlyPendingTimersAsync();
+		await settleInitialLoad();
 
 		// Act
 		unmount();
@@ -305,7 +305,7 @@ describe('GuestView', () => {
 		vi.stubGlobal('fetch', fetchMock);
 		const { store } = await renderLoadedGuestView();
 
-		await vi.runOnlyPendingTimersAsync();
+		await settleInitialLoad();
 
 		// Act
 		store[Symbol.dispose]();
