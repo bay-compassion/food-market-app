@@ -34,6 +34,8 @@ type SeededState = {
 	isSubmitting?: boolean;
 	/** A phone that saved the guest's name and phone on an earlier visit. */
 	returningGuest?: boolean;
+	/** A phone that also kept the household from that visit, so nothing is left to fill in. */
+	savedHousehold?: boolean;
 };
 
 type RegistrationFormArgs = SeededState & {
@@ -46,7 +48,7 @@ type RegistrationFormArgs = SeededState & {
  * response goes through, so a story cannot drift into a shape the server could not produce.
  */
 function seededStore(
-	{ askExtraQuestions, submissionError, isSubmitting, returningGuest }: SeededState,
+	{ askExtraQuestions, submissionError, isSubmitting, returningGuest, savedHousehold }: SeededState,
 	locale: Locale,
 ) {
 	// What this phone remembers lives in memory, not the shared window's `localStorage`.
@@ -58,6 +60,15 @@ function seededStore(
 			firstName: 'Siobhan',
 			lastName: 'Kelly',
 			phone: '(510) 555-0123',
+		});
+	}
+
+	if (savedHousehold) {
+		storage.set(StorageKey.GUEST_HOUSEHOLD, {
+			ageRange: '30-44',
+			householdSize: 3,
+			childrenCount: 1,
+			seniorsCount: 0,
 		});
 	}
 
@@ -113,7 +124,7 @@ type Story = StoryObj<typeof meta>;
  * `ReturningGuest` for a phone that already saved the guest's details.
  */
 export const RegistrationForm: Story = {
-	play: async ({ canvas }) => {
+	play: async ({ canvas, canvasElement }) => {
 		await expect(
 			canvas.getByRole('heading', { name: translations.en.formTitle }),
 		).toBeInTheDocument();
@@ -125,7 +136,16 @@ export const RegistrationForm: Story = {
 		await expect(
 			canvas.getByRole('group', { name: translations.en.guestView.forms.lotteryLegend }),
 		).toBeInTheDocument();
-		await expect(canvas.getByRole('button', { name: translations.en.submit })).toBeEnabled();
+		// Nothing is filled in yet, so there is nothing to point at the button.
+		await expect(canvasElement.querySelector('.ready-hint')).toBeEmptyDOMElement();
+
+		// Drawn as "not yet", but never disabled: tapped early, it takes the guest to what's missing.
+		const button = canvas.getByRole('button', { name: translations.en.submit });
+
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-awaiting');
+		await expect(button).toBeEnabled();
+		await userEvent.click(button);
+		await waitFor(() => expect(canvas.getByLabelText(translations.en.firstName)).toHaveFocus());
 	},
 };
 
@@ -146,6 +166,23 @@ export const ReturningGuest: Story = {
 
 		// Focus follows once the panel has finished opening.
 		await waitFor(() => expect(canvas.getByLabelText(forms.pronunciationLabel)).toHaveFocus());
+	},
+};
+
+/**
+ * A returning guest whose phone kept everything from their last visit: every field is already
+ * filled in, so the pinned bar points them straight at the button that enters them, which keeps
+ * pulsing for as long as that stays true.
+ */
+export const ReadyToJoin: Story = {
+	args: { returningGuest: true, savedHousehold: true },
+	play: async ({ canvas, canvasElement }) => {
+		const button = canvas.getByRole('button', { name: translations.en.submit });
+
+		await expect(canvas.getByText(translations.en.guestView.forms.readyToSubmit)).toBeVisible();
+		await expect(canvasElement.querySelector('.submit-bar')).not.toHaveAttribute('data-awaiting');
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-pulse');
+		await expect(getComputedStyle(button).animationIterationCount).toBe('infinite');
 	},
 };
 

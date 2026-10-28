@@ -6,6 +6,7 @@ import type { GuestRegistrationResult } from '../services/guestVisitApi.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import { StorageKey, StorageService } from '../services/storage.service.ts';
 import type { GuestStore } from './guest.store.ts';
+import type { SessionQuestion } from './market-session.store.ts';
 
 export type RegistrationSubmitResult =
 	| { kind: 'signed-up' }
@@ -57,6 +58,28 @@ export class RegistrationStore {
 	/** Who the guest is shopping for, checked by the same rules the server applies. */
 	get household(): HouseholdComposition {
 		return new HouseholdComposition(this.guest);
+	}
+
+	/**
+	 * Whether every field the market registration asks for is filled in — the moment to point the
+	 * guest at the button that actually enters them. A cue, not a gate: the browser and the server
+	 * still have the last word, so a phone counts as complete at a US number's ten digits.
+	 *
+	 * Takes the session's questions because they belong to the session, not to this form.
+	 */
+	isReadyToSubmit(questions: readonly SessionQuestion[]): boolean {
+		const { firstName, lastName, phone, ageRange } = this.guest;
+		const answered = (question: SessionQuestion) =>
+			String(this.registrationAnswers[question.id] ?? '').trim() !== '';
+
+		return (
+			firstName.trim() !== '' &&
+			lastName.trim() !== '' &&
+			phone.replace(/\D/g, '').length >= 10 &&
+			ageRange !== '' &&
+			this.household.isValid &&
+			questions.every((question) => !question.required || answered(question))
+		);
 	}
 
 	/** Applies an edit from the form. An action, so the write is batched and MobX does not warn

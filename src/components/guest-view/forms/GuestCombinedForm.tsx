@@ -32,6 +32,9 @@ export const GuestCombinedForm = observer(function GuestCombinedForm() {
 			onSubmit={submit}
 			// The form runs to more than a screen on a phone, which left "Join the lottery" out of sight.
 			stickySubmit
+			readyHint={
+				registration.isReadyToSubmit(registrationQuestions) ? t.guestView.forms.readyToSubmit : null
+			}
 		>
 			{/* A returning guest's name and phone are saved; only the pronunciation is still offered. */}
 			{guest.identity === null ? <GuestInformationForm /> : <PronunciationField />}
