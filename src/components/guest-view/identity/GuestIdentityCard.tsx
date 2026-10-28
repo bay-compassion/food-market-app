@@ -1,13 +1,13 @@
 import styled from '@emotion/styled';
-import { Alert, Button, Card, CircularProgress } from '@mui/material';
+import { Card } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { Component, type ReactNode, Suspense, use, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useState } from 'react';
 
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { Dialog } from '../../ui/Dialog';
 import { GuestIdentityMenu } from './GuestIdentityMenu';
+import { IdentityNotificationStatus } from './IdentityNotificationStatus';
 import { NotificationOptIn } from './NotificationOptIn';
 
 const IdentityCard = styled(Card)`
@@ -66,11 +66,6 @@ const IdentityCard = styled(Card)`
 		width: 100%;
 	}
 
-	&.guest-identity-unidentified {
-		gap: 12px;
-	}
-
-	.unidentified-message,
 	.notification-loading,
 	.notification-error {
 		margin: 0;
@@ -123,107 +118,11 @@ const IdentityCard = styled(Card)`
 	}
 `;
 
-type NotificationStatusErrorBoundaryProps = {
-	children: ReactNode;
-	fallback: string;
-};
-
-class NotificationStatusErrorBoundary extends Component<
-	NotificationStatusErrorBoundaryProps,
-	{ failed: boolean }
-> {
-	override state = { failed: false };
-
-	static getDerivedStateFromError() {
-		return { failed: true };
-	}
-
-	override render() {
-		if (this.state.failed) {
-			return (
-				<div className="notification-status">
-					<Alert severity="error" variant="standard" className="notification-error">
-						{this.props.fallback}
-					</Alert>
-				</div>
-			);
-		}
-
-		return this.props.children;
-	}
-}
-
-type NotificationStatusProps = {
-	loadSettings: Promise<void>;
-	onOpenDialog: () => void;
-};
-
-const NotificationStatus = observer(function NotificationStatus({
-	loadSettings,
-	onOpenDialog,
-}: NotificationStatusProps) {
-	use(loadSettings);
-
-	const t = useTranslation();
-	const { guest } = useRootStore();
-	const copy = t.guestView.identityIndicator;
-
-	if (!guest.smsConfigured && !guest.smsConsented && !guest.smsOptOutSender) {
-		return null;
-	}
-
-	return (
-		<div className="notification-status">
-			{guest.smsConsented ? (
-				<p className="notifications-enabled" aria-live="polite">
-					<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="m5 12 4 4L19 6" />
-					</svg>
-					{copy.notificationsEnabled}
-				</p>
-			) : (
-				<Button className="app-button" data-tour="text-updates" onClick={onOpenDialog}>
-					{copy.notificationsAction}
-				</Button>
-			)}
-		</div>
-	);
-});
-
-/**
- * "We recognise this device": the name and phone saved in this browser, and the SMS opt-in.
- *
- * It shows only what local storage holds and never retrieves a guest profile from the server. A
- * device without a complete cached identity instead gets a direct path to preregistration.
- */
+/** The identity saved on this phone, shown only after a guest has been added. */
 export const GuestIdentityCard = observer(function GuestIdentityCard() {
-	const t = useTranslation();
 	const { guest } = useRootStore();
-	const { identity } = guest;
-	const copy = t.guestView.identityIndicator;
-	const navigate = useNavigate();
 
-	if (!guest.isIdentified) {
-		return (
-			<IdentityCard
-				role="complementary"
-				className="guest-identity guest-identity-unidentified"
-				aria-label={copy.unidentifiedHeading}
-			>
-				<div>
-					<div className="identity-heading">{copy.unidentifiedHeading}</div>
-					<p className="unidentified-message">{copy.unidentifiedMessage}</p>
-				</div>
-				<Button onClick={() => void navigate('/signup')}>{copy.saveInformationAction}</Button>
-			</IdentityCard>
-		);
-	}
-
-	if (!identity) {
-		return null;
-	}
-
-	return <IdentifiedGuestIdentity />;
+	return guest.isIdentified ? <IdentifiedGuestIdentity /> : null;
 });
 
 const IdentifiedGuestIdentity = observer(function IdentifiedGuestIdentity() {
@@ -273,23 +172,10 @@ const IdentifiedGuestIdentity = observer(function IdentifiedGuestIdentity() {
 					<GuestIdentityMenu />
 				</div>
 
-				<NotificationStatusErrorBoundary fallback={copy.notificationsError}>
-					<Suspense
-						fallback={
-							<div className="notification-status">
-								<p className="notification-loading" role="status">
-									<CircularProgress size={18} aria-hidden="true" />
-									{copy.notificationsLoading}
-								</p>
-							</div>
-						}
-					>
-						<NotificationStatus
-							loadSettings={notificationSettings}
-							onOpenDialog={() => setNotificationsDialogOpen(true)}
-						/>
-					</Suspense>
-				</NotificationStatusErrorBoundary>
+				<IdentityNotificationStatus
+					loadSettings={notificationSettings}
+					onOpenDialog={() => setNotificationsDialogOpen(true)}
+				/>
 			</IdentityCard>
 
 			<Dialog

@@ -94,6 +94,13 @@ from that browser. It does not delete the server's guest or visit records, revok
 credentials, or remove the separate visit credential and install ID. Describe it as forgetting
 saved personal details on a device, not as account or database deletion.
 
+An optional iPhone Home Screen installation temporarily copies those browser-held credentials and
+remembered details through a one-hour, same-site cookie scoped to the static `/pwa-start` path. It is
+never sent to API paths or placed in a URL. A new standalone app consumes it before the stores load,
+and refuses to overwrite an existing guest or visit. Changing or forgetting the guest clears a pending
+copy in that browser. See [Home Screen installation](home-screen-installation.md) for the data
+allowlist, expiration, platform restrictions, and device verification requirements.
+
 Sources: [SMS enrollment](../netlify/routes/notifications/sms-subscription.mts),
 [provider webhook](../netlify/routes/notifications/twilio-incoming-message.mts),
 [forget action](../src/stores/guest.store.ts).

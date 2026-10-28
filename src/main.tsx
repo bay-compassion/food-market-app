@@ -14,6 +14,8 @@ import { AppThemeProvider } from './components/AppThemeProvider';
 import { StaticLDProvider } from './components/StaticLDProvider';
 import { installId, withInstallIdHeader } from './install-id';
 import { launchDarklySettings, MISSING_LAUNCHDARKLY_MESSAGE } from './launchdarkly-settings';
+import { HomeScreenHandoff, homeScreenStartPath } from './pwa/home-screen-handoff';
+import { BrowserInstallEnvironment } from './pwa/install-environment';
 import { router } from './router';
 import { enableReplayWhenFlagged, reactErrorHandler } from './sentry';
 import { isUserInfoEnabled, SentryUserReporter } from './sentry-user';
@@ -26,6 +28,14 @@ import './styles/app-shell.css';
 import './styles/admin.css';
 
 async function bootstrap() {
+	// iOS copies this path-scoped cookie on installation, before the new app has localStorage.
+	if (
+		window.location.pathname === homeScreenStartPath &&
+		new BrowserInstallEnvironment().isStandalone
+	) {
+		new HomeScreenHandoff().restore();
+	}
+
 	// Before anything that makes a request is constructed. Sentry has already wrapped `fetch` for
 	// tracing by now, and this wraps its wrapper, so API requests carry both.
 	window.fetch = withInstallIdHeader(

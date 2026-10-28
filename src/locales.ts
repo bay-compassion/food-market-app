@@ -41,6 +41,7 @@ export interface VisitStatusTranslations {
 	registered: {
 		header: string;
 		details: string;
+		returnInstructions: string;
 	};
 	waiting: {
 		header: string;
@@ -181,7 +182,25 @@ export interface GuestPresentationChapters {
 	help: string;
 }
 
+export interface HomeScreenTranslations {
+	heading: string;
+	description: string;
+	add: string;
+	notNow: string;
+	instructionsTitle: string;
+	instructionsDescription: string;
+	shareStep: string;
+	homeScreenStep: string;
+	addStep: string;
+	openStep: string;
+	optional: string;
+	done: string;
+	close: string;
+	failed: string;
+}
+
 export interface GuestViewTranslations {
+	homeScreen: HomeScreenTranslations;
 	presentation: GuestPresentationTranslations;
 	/** Under the first-visit language picker: the choice is not final, and where to change it. */
 	languageHint: string;
@@ -601,6 +620,23 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'Find Us Easily Next Time',
+				description: 'Add a market icon to your Home Screen so you can return with one tap.',
+				add: 'Add to Home Screen',
+				notNow: 'Not Now',
+				instructionsTitle: 'Add a Market Icon',
+				instructionsDescription: 'Next time, tap the icon to open the market page.',
+				shareStep: 'Tap Share (the square with an upward arrow) in Safari.',
+				homeScreenStep: 'Choose “Add to Home Screen”. You may need to scroll to find it.',
+				addStep: 'Tap “Add”.',
+				openStep: 'Open the new icon now to finish setting it up and see your visit.',
+				optional: 'Your lottery entry is already saved. Adding an icon is optional.',
+				done: 'Got It',
+				close: 'Close Home Screen instructions',
+				failed:
+					'We couldn’t add a Home Screen icon. You can still return by scanning the market QR code.',
+			},
 			presentation: {
 				watch: 'Watch the Guest Guide',
 				close: 'Close guest guide',
@@ -745,14 +781,14 @@ export const translations = {
 				forgetDialogTitle: 'Forget your information?',
 				forgetInformation: 'Forget Information',
 				heading: 'Recognized on this device',
-				notificationsAction: 'Text Me About Updates',
+				notificationsAction: 'Click here for text updates',
 				notificationsDialogTitle: 'Text Message Updates',
-				notificationsEnabled: 'Notifications Enabled',
+				notificationsEnabled: 'Text Updates Are On',
 				notificationsError:
 					'We could not retrieve your notification status. Please try again later.',
 				notificationsLoading: 'Checking notification status…',
 				openIdentityMenu: 'Open identity menu',
-				optOut: 'Opt Out',
+				optOut: 'Stop Text Updates',
 				optOutError: 'We could not opt you out of text updates. Please try again.',
 				saveInformationAction: 'Save my information',
 				unidentifiedHeading: 'Save your information for next time',
@@ -816,7 +852,9 @@ export const translations = {
 				registered: {
 					header: 'You’re in the lottery!',
 					details:
-						'When registration closes, the lottery is drawn and your result appears here. If you signed up for texts, we’ll text you too.',
+						'Your result will appear here at 10:45 AM. If you signed up for text updates, we’ll text you too.',
+					returnInstructions:
+						'If you close this page, scan the market QR code again on this phone to return.',
 				},
 				waiting: {
 					header: 'You got a number!',
@@ -936,7 +974,7 @@ export const translations = {
 					body: 'Enter your first and last name (please, not just initials), cell phone, and a few questions about your household. There’s no rush, so take your time. Then tap the button to enter the lottery.',
 				},
 				{
-					title: 'Tap “Text Me About Updates”',
+					title: 'Click here for text updates',
 					body: 'Optional, but without it you won’t get any texts.',
 				},
 				{
@@ -1080,6 +1118,25 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'Encuéntrenos fácilmente la próxima vez',
+				description:
+					'Añada un icono del mercado a su pantalla de inicio para volver con un solo toque.',
+				add: 'Añadir a la pantalla de inicio',
+				notNow: 'Ahora no',
+				instructionsTitle: 'Añada un icono del mercado',
+				instructionsDescription: 'La próxima vez, toque el icono para abrir la página del mercado.',
+				shareStep: 'Toque Compartir (el cuadrado con una flecha hacia arriba) en Safari.',
+				homeScreenStep:
+					'Elija «Añadir a pantalla de inicio». Quizás deba desplazarse para encontrarlo.',
+				addStep: 'Toque «Añadir».',
+				openStep: 'Abra el nuevo icono ahora para terminar la configuración y ver su visita.',
+				optional: 'Su inscripción en el sorteo ya está guardada. Añadir un icono es opcional.',
+				done: 'Entendido',
+				close: 'Cerrar las instrucciones de la pantalla de inicio',
+				failed:
+					'No pudimos añadir un icono a la pantalla de inicio. Puede volver escaneando el código QR del mercado.',
+			},
 			presentation: {
 				watch: 'Ver la guía para visitantes',
 				close: 'Cerrar la guía para visitantes',
@@ -1225,14 +1282,14 @@ export const translations = {
 				forgetDialogTitle: '¿Olvidar su información?',
 				forgetInformation: 'Olvidar información',
 				heading: 'Reconocido en este dispositivo',
-				notificationsAction: 'Enviarme novedades por SMS',
+				notificationsAction: 'Pulse aquí para recibir mensajes de texto',
 				notificationsDialogTitle: 'Actualizaciones por SMS',
-				notificationsEnabled: 'Notificaciones activadas',
+				notificationsEnabled: 'Los mensajes de texto están activados',
 				notificationsError:
 					'No pudimos consultar el estado de sus notificaciones. Inténtelo de nuevo más tarde.',
 				notificationsLoading: 'Consultando el estado de las notificaciones…',
 				openIdentityMenu: 'Abrir menú de identidad',
-				optOut: 'Cancelar suscripción',
+				optOut: 'Dejar de recibir mensajes de texto',
 				optOutError: 'No pudimos cancelar sus actualizaciones por SMS. Inténtelo de nuevo.',
 				saveInformationAction: 'Guardar mi información',
 				unidentifiedHeading: 'Guarde su información para la próxima vez',
@@ -1298,7 +1355,9 @@ export const translations = {
 				registered: {
 					header: '¡Está participando en el sorteo!',
 					details:
-						'Cuando cierre el registro, se hará el sorteo y su resultado aparecerá aquí. Si se inscribió para recibir mensajes de texto, también le enviaremos un mensaje.',
+						'Su resultado aparecerá aquí a las 10:45 a. m. Si activó los mensajes de texto, también le enviaremos un mensaje.',
+					returnInstructions:
+						'Si cierra esta página, vuelva a escanear el código QR del mercado con este teléfono para regresar.',
 				},
 				waiting: {
 					header: '¡Obtuvo un número!',
@@ -1418,7 +1477,7 @@ export const translations = {
 					body: 'Escriba su nombre y apellido (por favor, no solo iniciales), su celular y unas preguntas sobre su hogar. No hay prisa, tómese su tiempo. Luego toque el botón para participar en el sorteo.',
 				},
 				{
-					title: 'Toque “Enviarme novedades por SMS”',
+					title: 'Pulse aquí para recibir mensajes de texto',
 					body: 'Es opcional, pero sin esto no recibirá mensajes de texto.',
 				},
 				{
@@ -1563,6 +1622,25 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'دفعه بعد راحت‌تر ما را پیدا کنید',
+				description: 'نماد بازار را به صفحه اصلی اضافه کنید تا با یک لمس برگردید.',
+				add: 'افزودن به صفحه اصلی',
+				notNow: 'فعلاً نه',
+				instructionsTitle: 'افزودن نماد بازار',
+				instructionsDescription: 'دفعه بعد با لمس نماد، صفحه بازار را باز کنید.',
+				shareStep: 'در Safari روی اشتراک‌گذاری (مربع با پیکان رو به بالا) بزنید.',
+				homeScreenStep:
+					'«افزودن به صفحه اصلی» را انتخاب کنید. شاید لازم باشد برای پیدا کردن آن به پایین بروید.',
+				addStep: 'روی «افزودن» بزنید.',
+				openStep:
+					'همین حالا نماد جدید را باز کنید تا راه‌اندازی کامل شود و وضعیت مراجعه‌تان را ببینید.',
+				optional: 'ثبت‌نام شما در قرعه‌کشی ذخیره شده است. افزودن نماد اختیاری است.',
+				done: 'متوجه شدم',
+				close: 'بستن راهنمای صفحه اصلی',
+				failed:
+					'نتوانستیم نمادی به صفحه اصلی اضافه کنیم. همچنان می‌توانید با اسکن کد QR بازار برگردید.',
+			},
 			presentation: {
 				watch: 'تماشای راهنمای مهمان',
 				close: 'بستن راهنمای مهمان',
@@ -1706,13 +1784,13 @@ export const translations = {
 				forgetDialogTitle: 'اطلاعات شما فراموش شود؟',
 				forgetInformation: 'فراموش کردن اطلاعات',
 				heading: 'شناسایی‌شده در این دستگاه',
-				notificationsAction: 'به‌روزرسانی‌ها را برایم پیامک کنید',
+				notificationsAction: 'برای دریافت پیامک اینجا بزنید',
 				notificationsDialogTitle: 'به‌روزرسانی‌های پیامکی',
-				notificationsEnabled: 'اعلان‌ها فعال هستند',
+				notificationsEnabled: 'دریافت پیامک فعال است',
 				notificationsError: 'وضعیت اعلان‌های شما دریافت نشد. لطفاً بعداً دوباره تلاش کنید.',
 				notificationsLoading: 'در حال بررسی وضعیت اعلان‌ها…',
 				openIdentityMenu: 'باز کردن منوی هویت',
-				optOut: 'لغو اشتراک',
+				optOut: 'توقف دریافت پیامک',
 				optOutError: 'لغو به‌روزرسانی‌های پیامکی انجام نشد. لطفاً دوباره تلاش کنید.',
 				saveInformationAction: 'ذخیره اطلاعات من',
 				unidentifiedHeading: 'اطلاعات خود را برای دفعه بعد ذخیره کنید',
@@ -1776,7 +1854,9 @@ export const translations = {
 				registered: {
 					header: 'شما در قرعه‌کشی هستید!',
 					details:
-						'وقتی ثبت‌نام بسته شود، قرعه‌کشی انجام می‌شود و نتیجهٔ شما همین‌جا نمایش داده می‌شود. اگر برای دریافت پیامک ثبت‌نام کرده باشید، برایتان پیامک هم می‌فرستیم.',
+						'نتیجه شما ساعت ۱۰:۴۵ صبح اینجا نمایش داده می‌شود. اگر دریافت پیامک را فعال کرده باشید، پیامک هم می‌فرستیم.',
+					returnInstructions:
+						'اگر این صفحه را بستید، برای بازگشت کد QR بازار را دوباره با همین تلفن اسکن کنید.',
 				},
 				waiting: {
 					header: 'شما شماره گرفتید!',
@@ -1895,7 +1975,7 @@ export const translations = {
 					body: 'نام و نام خانوادگی کامل (لطفاً نه فقط حروف اول)، تلفن همراه و پاسخ چند سؤال درباره خانوار را وارد کنید. عجله نکنید. سپس دکمه را بزنید تا در قرعه‌کشی شرکت کنید.',
 				},
 				{
-					title: 'روی «به‌روزرسانی‌ها را برایم پیامک کنید» بزنید',
+					title: 'برای دریافت پیامک اینجا بزنید',
 					body: 'اختیاری است، اما بدون آن پیامکی نمی‌گیرید.',
 				},
 				{
@@ -2039,6 +2119,26 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'Madaling Makabalik sa Susunod',
+				description:
+					'Magdagdag ng icon ng market sa iyong Home Screen para makabalik sa isang pindot.',
+				add: 'Idagdag sa Home Screen',
+				notNow: 'Huwag Muna',
+				instructionsTitle: 'Magdagdag ng Icon ng Market',
+				instructionsDescription: 'Sa susunod, pindutin ang icon para buksan ang pahina ng market.',
+				shareStep: 'Pindutin ang Share (ang parisukat na may pataas na palaso) sa Safari.',
+				homeScreenStep:
+					'Piliin ang “Add to Home Screen”. Maaaring kailangan mong mag-scroll para makita ito.',
+				addStep: 'Pindutin ang “Add”.',
+				openStep:
+					'Buksan ngayon ang bagong icon para tapusin ang pag-set up at makita ang iyong pagbisita.',
+				optional: 'Naka-save na ang iyong pagsali sa lottery. Opsyonal ang pagdagdag ng icon.',
+				done: 'Naintindihan Ko',
+				close: 'Isara ang mga tagubilin sa Home Screen',
+				failed:
+					'Hindi kami nakapagdagdag ng icon sa Home Screen. Maaari ka pa ring bumalik sa pamamagitan ng pag-scan ng QR code ng market.',
+			},
 			presentation: {
 				watch: 'Manood ng Gabay para sa Bisita',
 				close: 'Isara ang gabay para sa bisita',
@@ -2184,14 +2284,14 @@ export const translations = {
 				forgetDialogTitle: 'Kalimutan ang iyong impormasyon?',
 				forgetInformation: 'Kalimutan ang Impormasyon',
 				heading: 'Nakilala sa device na ito',
-				notificationsAction: 'I-text sa Akin ang mga Update',
+				notificationsAction: 'Pindutin dito para sa mga update sa text',
 				notificationsDialogTitle: 'Mga Update sa Text',
-				notificationsEnabled: 'Naka-enable ang mga Abiso',
+				notificationsEnabled: 'Naka-on ang mga Update sa Text',
 				notificationsError:
 					'Hindi namin makuha ang status ng iyong mga abiso. Pakisubukang muli mamaya.',
 				notificationsLoading: 'Sinusuri ang status ng mga abiso…',
 				openIdentityMenu: 'Buksan ang menu ng pagkakakilanlan',
-				optOut: 'Mag-opt Out',
+				optOut: 'Itigil ang mga Update sa Text',
 				optOutError: 'Hindi ka namin maalis sa mga text update. Pakisubukang muli.',
 				saveInformationAction: 'I-save ang aking impormasyon',
 				unidentifiedHeading: 'I-save ang iyong impormasyon para sa susunod',
@@ -2257,7 +2357,9 @@ export const translations = {
 				registered: {
 					header: 'Kasali na kayo sa lottery!',
 					details:
-						'Pagsara ng rehistrasyon, bubunutin ang lottery at lalabas dito ang resulta ninyo. Kung nag-sign up kayo para sa mga text, ite-text din namin kayo.',
+						'Lalabas dito ang iyong resulta nang 10:45 AM. Kung nag-sign up ka para sa mga update sa text, magte-text din kami sa iyo.',
+					returnInstructions:
+						'Kung isasara mo ang pahinang ito, i-scan muli ang QR code ng market gamit ang teleponong ito para makabalik.',
 				},
 				waiting: {
 					header: 'May numero na kayo!',
@@ -2377,7 +2479,7 @@ export const translations = {
 					body: 'Ilagay ang pangalan at apelyido (hindi lang initials, pakiusap), cell phone, at ilang tanong tungkol sa sambahayan. Walang pagmamadali. Pagkatapos, pindutin ang button para sumali sa lottery.',
 				},
 				{
-					title: 'Pindutin ang “I-text sa Akin ang mga Update”',
+					title: 'Pindutin dito para sa mga update sa text',
 					body: 'Opsyonal, pero kung wala ito, hindi kayo makakatanggap ng text.',
 				},
 				{
@@ -2522,6 +2624,23 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'Dễ dàng quay lại lần sau',
+				description: 'Thêm biểu tượng chợ vào Màn hình chính để quay lại chỉ bằng một lần nhấn.',
+				add: 'Thêm vào Màn hình chính',
+				notNow: 'Để sau',
+				instructionsTitle: 'Thêm biểu tượng chợ',
+				instructionsDescription: 'Lần sau, nhấn biểu tượng để mở trang chợ.',
+				shareStep: 'Nhấn Chia sẻ (hình vuông có mũi tên hướng lên) trong Safari.',
+				homeScreenStep: 'Chọn “Thêm vào MH chính”. Bạn có thể cần cuộn để tìm mục này.',
+				addStep: 'Nhấn “Thêm”.',
+				openStep: 'Mở biểu tượng mới ngay để hoàn tất thiết lập và xem lượt của bạn.',
+				optional: 'Đăng ký bốc thăm của bạn đã được lưu. Việc thêm biểu tượng là tùy chọn.',
+				done: 'Đã hiểu',
+				close: 'Đóng hướng dẫn về Màn hình chính',
+				failed:
+					'Không thể thêm biểu tượng vào Màn hình chính. Bạn vẫn có thể quay lại bằng cách quét mã QR của chợ.',
+			},
 			presentation: {
 				watch: 'Xem hướng dẫn dành cho khách',
 				close: 'Đóng hướng dẫn dành cho khách',
@@ -2666,13 +2785,13 @@ export const translations = {
 				forgetDialogTitle: 'Quên thông tin của bạn?',
 				forgetInformation: 'Quên thông tin',
 				heading: 'Đã nhận dạng trên thiết bị này',
-				notificationsAction: 'Gửi cập nhật cho tôi qua SMS',
+				notificationsAction: 'Nhấn vào đây để nhận tin nhắn cập nhật',
 				notificationsDialogTitle: 'Cập nhật qua SMS',
-				notificationsEnabled: 'Đã bật thông báo',
+				notificationsEnabled: 'Đã bật tin nhắn cập nhật',
 				notificationsError: 'Không thể tải trạng thái thông báo của bạn. Vui lòng thử lại sau.',
 				notificationsLoading: 'Đang kiểm tra trạng thái thông báo…',
 				openIdentityMenu: 'Mở menu nhận dạng',
-				optOut: 'Hủy đăng ký',
+				optOut: 'Ngừng nhận tin nhắn cập nhật',
 				optOutError: 'Không thể hủy cập nhật qua SMS. Vui lòng thử lại.',
 				saveInformationAction: 'Lưu thông tin của tôi',
 				unidentifiedHeading: 'Lưu thông tin cho lần sau',
@@ -2736,7 +2855,9 @@ export const translations = {
 				registered: {
 					header: 'Bạn đã tham gia xổ số!',
 					details:
-						'Khi đăng ký kết thúc, chúng tôi sẽ bốc thăm và kết quả của bạn sẽ hiện ở đây. Nếu bạn đã đăng ký nhận tin nhắn, chúng tôi cũng sẽ nhắn tin cho bạn.',
+						'Kết quả của bạn sẽ xuất hiện ở đây lúc 10:45 sáng. Nếu bạn đã đăng ký nhận tin nhắn cập nhật, chúng tôi cũng sẽ nhắn tin cho bạn.',
+					returnInstructions:
+						'Nếu bạn đóng trang này, hãy quét lại mã QR của chợ bằng điện thoại này để quay lại.',
 				},
 				waiting: {
 					header: 'Bạn đã có số!',
@@ -2854,7 +2975,7 @@ export const translations = {
 					body: 'Nhập đầy đủ họ và tên (xin đừng chỉ ghi chữ viết tắt), số điện thoại di động và trả lời vài câu hỏi về hộ gia đình. Không cần vội, cứ từ từ. Sau đó bấm nút để tham gia xổ số.',
 				},
 				{
-					title: 'Bấm “Gửi cập nhật cho tôi qua SMS”',
+					title: 'Nhấn vào đây để nhận tin nhắn cập nhật',
 					body: 'Không bắt buộc, nhưng nếu không bấm, bạn sẽ không nhận được tin nhắn nào.',
 				},
 				{
@@ -2995,6 +3116,22 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: '下次轻松找到我们',
+				description: '将市场图标添加到主屏幕，下次轻点即可返回。',
+				add: '添加到主屏幕',
+				notNow: '暂时不用',
+				instructionsTitle: '添加市场图标',
+				instructionsDescription: '下次轻点图标即可打开市场页面。',
+				shareStep: '在Safari中轻点“分享”（带向上箭头的方框）。',
+				homeScreenStep: '选择“添加到主屏幕”。您可能需要向下滚动才能找到。',
+				addStep: '轻点“添加”。',
+				openStep: '现在打开新图标，完成设置并查看您的到访状态。',
+				optional: '您的抽签登记已经保存。添加图标是可选的。',
+				done: '知道了',
+				close: '关闭主屏幕操作说明',
+				failed: '无法添加主屏幕图标。您仍可扫描市场二维码返回。',
+			},
 			presentation: {
 				watch: '观看访客指南',
 				close: '关闭访客指南',
@@ -3137,13 +3274,13 @@ export const translations = {
 				forgetDialogTitle: '忘记您的信息？',
 				forgetInformation: '忘记信息',
 				heading: '已在此设备上识别',
-				notificationsAction: '通过短信通知我最新消息',
+				notificationsAction: '点击此处接收短信更新',
 				notificationsDialogTitle: '短信更新',
-				notificationsEnabled: '通知已启用',
+				notificationsEnabled: '短信更新已开启',
 				notificationsError: '无法获取您的通知状态。请稍后重试。',
 				notificationsLoading: '正在检查通知状态…',
 				openIdentityMenu: '打开身份菜单',
-				optOut: '取消订阅',
+				optOut: '停止短信更新',
 				optOutError: '无法取消短信更新。请重试。',
 				saveInformationAction: '保存我的信息',
 				unidentifiedHeading: '保存信息，方便下次使用',
@@ -3205,7 +3342,8 @@ export const translations = {
 				registered: {
 					header: '您已参加抽签！',
 					details:
-						'登记截止后将进行抽签，结果会显示在这里。如果您订阅了短信通知，我们也会给您发短信。',
+						'您的抽签结果将于上午10:45在此显示。如果您已开通短信更新，我们也会向您发送短信。',
+					returnInstructions: '如果您关闭了此页面，请用这部手机再次扫描市场的二维码，即可返回。',
 				},
 				waiting: {
 					header: '您拿到号码了！',
@@ -3318,7 +3456,7 @@ export const translations = {
 					body: '请填写您的完整姓名（不要只写首字母）、手机号码，并回答几个关于您家庭的问题。不用着急，慢慢填写。然后点击按钮参加抽签。',
 				},
 				{
-					title: '点击“通过短信通知我最新消息”',
+					title: '点击此处接收短信更新',
 					body: '可选，但如果不点击，您将不会收到任何短信。',
 				},
 				{
@@ -3456,6 +3594,23 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'اعثر علينا بسهولة في المرة القادمة',
+				description: 'أضف أيقونة السوق إلى الشاشة الرئيسية للعودة بلمسة واحدة.',
+				add: 'إضافة إلى الشاشة الرئيسية',
+				notNow: 'ليس الآن',
+				instructionsTitle: 'إضافة أيقونة السوق',
+				instructionsDescription: 'في المرة القادمة، اضغط على الأيقونة لفتح صفحة السوق.',
+				shareStep: 'اضغط على مشاركة (المربع الذي يحتوي على سهم للأعلى) في Safari.',
+				homeScreenStep: 'اختر «إضافة إلى الشاشة الرئيسية». قد تحتاج إلى التمرير للعثور عليه.',
+				addStep: 'اضغط على «إضافة».',
+				openStep: 'افتح الأيقونة الجديدة الآن لإكمال الإعداد وعرض زيارتك.',
+				optional: 'تم حفظ تسجيلك في القرعة بالفعل. إضافة الأيقونة اختيارية.',
+				done: 'فهمت',
+				close: 'إغلاق تعليمات الشاشة الرئيسية',
+				failed:
+					'لم نتمكن من إضافة أيقونة إلى الشاشة الرئيسية. يمكنك العودة بمسح رمز QR الخاص بالسوق.',
+			},
 			presentation: {
 				watch: 'شاهد دليل الضيوف',
 				close: 'إغلاق دليل الضيوف',
@@ -3599,13 +3754,13 @@ export const translations = {
 				forgetDialogTitle: 'هل تريد نسيان معلوماتك؟',
 				forgetInformation: 'نسيان المعلومات',
 				heading: 'تم التعرّف عليك على هذا الجهاز',
-				notificationsAction: 'أرسل لي التحديثات برسائل نصية',
+				notificationsAction: 'اضغط هنا لتلقي التحديثات بالرسائل النصية',
 				notificationsDialogTitle: 'تحديثات الرسائل النصية',
-				notificationsEnabled: 'تم تفعيل الإشعارات',
+				notificationsEnabled: 'التحديثات بالرسائل النصية مفعّلة',
 				notificationsError: 'تعذر استرداد حالة إشعاراتك. يرجى المحاولة مرة أخرى لاحقًا.',
 				notificationsLoading: 'جارٍ التحقق من حالة الإشعارات…',
 				openIdentityMenu: 'فتح قائمة الهوية',
-				optOut: 'إلغاء الاشتراك',
+				optOut: 'إيقاف التحديثات بالرسائل النصية',
 				optOutError: 'تعذر إلغاء اشتراكك في التحديثات النصية. يرجى المحاولة مرة أخرى.',
 				saveInformationAction: 'حفظ معلوماتي',
 				unidentifiedHeading: 'احفظ معلوماتك للمرة القادمة',
@@ -3668,7 +3823,9 @@ export const translations = {
 				registered: {
 					header: 'أنت مشارك في السحب!',
 					details:
-						'عند إغلاق التسجيل، يُجرى السحب وتظهر نتيجتك هنا. إذا اشتركت في الرسائل النصية، فسنرسل إليك رسالة أيضًا.',
+						'ستظهر نتيجتك هنا الساعة ١٠:٤٥ صباحًا. إذا اشتركت في التحديثات بالرسائل النصية، فسنرسل إليك رسالة أيضًا.',
+					returnInstructions:
+						'إذا أغلقت هذه الصفحة، فامسح رمز QR الخاص بالسوق مرة أخرى بهذا الهاتف للعودة.',
 				},
 				waiting: {
 					header: 'حصلت على رقم!',
@@ -3786,7 +3943,7 @@ export const translations = {
 					body: 'أدخل اسمك الأول واسم العائلة (من فضلك، لا الأحرف الأولى فقط)، ورقم هاتفك المحمول، وأجب عن بعض الأسئلة حول أسرتك. لا داعي للعجلة، خذ وقتك. ثم اضغط الزر للمشاركة في القرعة.',
 				},
 				{
-					title: 'اضغط «أرسل لي التحديثات برسائل نصية»',
+					title: 'اضغط هنا لتلقي التحديثات بالرسائل النصية',
 					body: 'اختياري، لكن بدونه لن تصلك أي رسائل نصية.',
 				},
 				{
@@ -3926,6 +4083,28 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'Retrouvez-nous facilement la prochaine fois',
+				description:
+					'Ajoutez une icône du marché à votre écran d’accueil pour revenir d’un seul geste.',
+				add: 'Ajouter à l’écran d’accueil',
+				notNow: 'Pas maintenant',
+				instructionsTitle: 'Ajouter une icône du marché',
+				instructionsDescription:
+					'La prochaine fois, touchez l’icône pour ouvrir la page du marché.',
+				shareStep: 'Dans Safari, touchez Partager (le carré avec une flèche vers le haut).',
+				homeScreenStep:
+					'Choisissez « Sur l’écran d’accueil ». Vous devrez peut-être faire défiler la liste.',
+				addStep: 'Touchez « Ajouter ».',
+				openStep:
+					'Ouvrez la nouvelle icône maintenant pour terminer la configuration et voir votre visite.',
+				optional:
+					'Votre inscription au tirage au sort est déjà enregistrée. L’ajout d’une icône est facultatif.',
+				done: 'Compris',
+				close: 'Fermer les instructions de l’écran d’accueil',
+				failed:
+					'Nous n’avons pas pu ajouter d’icône à l’écran d’accueil. Vous pouvez revenir en scannant le code QR du marché.',
+			},
 			presentation: {
 				watch: 'Voir le guide des visiteurs',
 				close: 'Fermer le guide des visiteurs',
@@ -4071,14 +4250,14 @@ export const translations = {
 				forgetDialogTitle: 'Effacer vos informations ?',
 				forgetInformation: 'Effacer mes informations',
 				heading: 'Reconnu sur cet appareil',
-				notificationsAction: 'M’envoyer les mises à jour par SMS',
+				notificationsAction: 'Cliquez ici pour recevoir les mises à jour par SMS',
 				notificationsDialogTitle: 'Mises à jour par SMS',
-				notificationsEnabled: 'Notifications activées',
+				notificationsEnabled: 'Les mises à jour par SMS sont activées',
 				notificationsError:
 					'Nous n’avons pas pu vérifier l’état de vos notifications. Veuillez réessayer plus tard.',
 				notificationsLoading: 'Vérification de l’état des notifications…',
 				openIdentityMenu: 'Ouvrir le menu d’identité',
-				optOut: 'Se désabonner',
+				optOut: 'Arrêter les mises à jour par SMS',
 				optOutError: 'Nous n’avons pas pu vous désabonner des SMS. Veuillez réessayer.',
 				saveInformationAction: 'Enregistrer mes informations',
 				unidentifiedHeading: 'Enregistrez vos informations pour la prochaine fois',
@@ -4143,7 +4322,9 @@ export const translations = {
 				registered: {
 					header: 'Vous participez au tirage au sort !',
 					details:
-						'À la fermeture des inscriptions, le tirage a lieu et votre résultat s’affiche ici. Si vous êtes inscrit aux SMS, nous vous enverrons aussi un message.',
+						'Votre résultat apparaîtra ici à 10 h 45. Si vous avez activé les mises à jour par SMS, nous vous enverrons aussi un message.',
+					returnInstructions:
+						'Si vous fermez cette page, scannez à nouveau le code QR du marché avec ce téléphone pour revenir.',
 				},
 				waiting: {
 					header: 'Vous avez un numéro !',
@@ -4266,7 +4447,7 @@ export const translations = {
 					body: 'Indiquez vos prénom et nom (pas seulement les initiales, s’il vous plaît), votre portable et quelques questions sur votre foyer. Rien ne presse, prenez votre temps. Puis touchez le bouton pour participer au tirage.',
 				},
 				{
-					title: 'Touchez « M’envoyer les mises à jour par SMS »',
+					title: 'Cliquez ici pour recevoir les mises à jour par SMS',
 					body: 'Facultatif, mais sans cela vous ne recevrez aucun SMS.',
 				},
 				{
@@ -4411,6 +4592,24 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'Encontre-nos facilmente na próxima vez',
+				description: 'Adicione um ícone do mercado à Tela de Início para voltar com um toque.',
+				add: 'Adicionar à Tela de Início',
+				notNow: 'Agora não',
+				instructionsTitle: 'Adicionar um ícone do mercado',
+				instructionsDescription: 'Na próxima vez, toque no ícone para abrir a página do mercado.',
+				shareStep: 'No Safari, toque em Compartilhar (o quadrado com uma seta para cima).',
+				homeScreenStep:
+					'Escolha “Adicionar à Tela de Início”. Talvez seja preciso rolar para encontrar a opção.',
+				addStep: 'Toque em “Adicionar”.',
+				openStep: 'Abra o novo ícone agora para concluir a configuração e ver sua visita.',
+				optional: 'Sua inscrição no sorteio já está salva. Adicionar um ícone é opcional.',
+				done: 'Entendi',
+				close: 'Fechar as instruções da Tela de Início',
+				failed:
+					'Não foi possível adicionar um ícone à Tela de Início. Você ainda pode voltar escaneando o código QR do mercado.',
+			},
 			presentation: {
 				watch: 'Ver o guia para visitantes',
 				close: 'Fechar o guia para visitantes',
@@ -4556,14 +4755,14 @@ export const translations = {
 				forgetDialogTitle: 'Esquecer seus dados?',
 				forgetInformation: 'Esquecer dados',
 				heading: 'Reconhecido neste dispositivo',
-				notificationsAction: 'Receber atualizações por SMS',
+				notificationsAction: 'Clique aqui para receber atualizações por SMS',
 				notificationsDialogTitle: 'Atualizações por SMS',
-				notificationsEnabled: 'Notificações ativadas',
+				notificationsEnabled: 'As atualizações por SMS estão ativadas',
 				notificationsError:
 					'Não foi possível consultar o status das suas notificações. Tente novamente mais tarde.',
 				notificationsLoading: 'Consultando status das notificações…',
 				openIdentityMenu: 'Abrir menu de identificação',
-				optOut: 'Cancelar recebimento',
+				optOut: 'Parar as atualizações por SMS',
 				optOutError: 'Não foi possível cancelar o recebimento de SMS. Tente novamente.',
 				saveInformationAction: 'Salvar meus dados',
 				unidentifiedHeading: 'Salve seus dados para a próxima vez',
@@ -4625,7 +4824,9 @@ export const translations = {
 				registered: {
 					header: 'Você está no sorteio!',
 					details:
-						'Quando as inscrições fecharem, o sorteio será feito e seu resultado aparecerá aqui. Se você se cadastrou para receber mensagens de texto, também enviaremos uma mensagem.',
+						'Seu resultado aparecerá aqui às 10h45. Se você ativou as atualizações por SMS, também enviaremos uma mensagem.',
+					returnInstructions:
+						'Se você fechar esta página, escaneie novamente o código QR do mercado com este telefone para voltar.',
 				},
 				waiting: {
 					header: 'Você recebeu um número!',
@@ -4749,7 +4950,7 @@ export const translations = {
 					body: 'Informe seu nome e sobrenome (não apenas as iniciais), celular e responda a algumas perguntas sobre as pessoas que moram com você. Não precisa ter pressa. Depois, toque no botão para participar do sorteio.',
 				},
 				{
-					title: 'Toque em “Receber atualizações por SMS”',
+					title: 'Clique aqui para receber atualizações por SMS',
 					body: 'É opcional, mas sem isso você não receberá mensagens de texto.',
 				},
 				{
@@ -4893,6 +5094,23 @@ export const translations = {
 			},
 		},
 		guestView: {
+			homeScreen: {
+				heading: 'Легко вернуться в следующий раз',
+				description: 'Добавьте значок рынка на экран «Домой», чтобы возвращаться одним нажатием.',
+				add: 'Добавить на экран «Домой»',
+				notNow: 'Не сейчас',
+				instructionsTitle: 'Добавить значок рынка',
+				instructionsDescription: 'В следующий раз нажмите на значок, чтобы открыть страницу рынка.',
+				shareStep: 'В Safari нажмите «Поделиться» (квадрат со стрелкой вверх).',
+				homeScreenStep: 'Выберите «На экран Домой». Возможно, понадобится прокрутить список.',
+				addStep: 'Нажмите «Добавить».',
+				openStep: 'Откройте новый значок сейчас, чтобы завершить настройку и увидеть свой визит.',
+				optional: 'Ваша регистрация в лотерее уже сохранена. Добавлять значок необязательно.',
+				done: 'Понятно',
+				close: 'Закрыть инструкции для экрана «Домой»',
+				failed:
+					'Не удалось добавить значок на экран «Домой». Вы можете вернуться, отсканировав QR-код рынка.',
+			},
 			presentation: {
 				watch: 'Смотреть руководство для гостей',
 				close: 'Закрыть руководство для гостей',
@@ -5038,13 +5256,13 @@ export const translations = {
 				forgetDialogTitle: 'Удалить ваши данные?',
 				forgetInformation: 'Удалить данные',
 				heading: 'Вы опознаны на этом устройстве',
-				notificationsAction: 'Получать обновления по SMS',
+				notificationsAction: 'Нажмите здесь, чтобы получать СМС',
 				notificationsDialogTitle: 'Обновления по SMS',
-				notificationsEnabled: 'Уведомления включены',
+				notificationsEnabled: 'СМС-уведомления включены',
 				notificationsError: 'Не удалось проверить статус уведомлений. Попробуйте позже.',
 				notificationsLoading: 'Проверка статуса уведомлений…',
 				openIdentityMenu: 'Открыть меню идентификации',
-				optOut: 'Отписаться',
+				optOut: 'Отключить СМС-уведомления',
 				optOutError: 'Не удалось отключить обновления по SMS. Попробуйте ещё раз.',
 				saveInformationAction: 'Сохранить мои данные',
 				unidentifiedHeading: 'Сохраните данные для следующего визита',
@@ -5105,7 +5323,9 @@ export const translations = {
 				registered: {
 					header: 'Вы участвуете в жеребьёвке!',
 					details:
-						'Когда регистрация закроется, пройдёт жеребьёвка, и ваш результат появится здесь. Если вы подписались на SMS, мы также пришлём вам сообщение.',
+						'Ваш результат появится здесь в 10:45 утра. Если вы подключили СМС-уведомления, мы также отправим вам сообщение.',
+					returnInstructions:
+						'Если вы закроете эту страницу, снова отсканируйте QR-код рынка этим телефоном, чтобы вернуться.',
 				},
 				waiting: {
 					header: 'Вы получили номер!',
@@ -5227,7 +5447,7 @@ export const translations = {
 					body: 'Укажите имя и фамилию (пожалуйста, не только инициалы), номер мобильного телефона и ответьте на несколько вопросов о вашей семье. Торопиться не нужно. Затем нажмите кнопку для участия в жеребьёвке.',
 				},
 				{
-					title: 'Нажмите «Получать обновления по SMS»',
+					title: 'Нажмите здесь, чтобы получать СМС',
 					body: 'Это необязательно, но без этого SMS приходить не будут.',
 				},
 				{

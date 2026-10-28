@@ -1,4 +1,5 @@
 export enum StorageKey {
+	PWA_INSTALL_DISMISSED_UNTIL = 'bay-compassion.pwa-install-dismissed-until',
 	GUEST_DEVICE_TOKEN = 'bay-compassion.guest-device-token',
 	GUEST_IDENTITY = 'bay-compassion.guest-identity',
 	/** Last-entered household composition, kept purely to prefill the lottery entry form — never
@@ -14,6 +15,7 @@ export enum StorageKey {
 }
 
 interface StorageKeyMap {
+	[StorageKey.PWA_INSTALL_DISMISSED_UNTIL]: number;
 	[StorageKey.GUEST_DEVICE_TOKEN]: string;
 	[StorageKey.GUEST_IDENTITY]: unknown;
 	[StorageKey.GUEST_HOUSEHOLD]: unknown;

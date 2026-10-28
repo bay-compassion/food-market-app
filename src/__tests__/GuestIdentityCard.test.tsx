@@ -71,11 +71,7 @@ describe('GuestIdentityCard menu', () => {
 		expect(window.localStorage.getItem(StorageKey.GUEST_DEVICE_TOKEN)).not.toBeNull();
 
 		await user.click(screen.getByRole('button', { name: 'Forget Information' }));
-		expect(
-			await screen.findByRole('complementary', {
-				name: 'Save your information for next time',
-			}),
-		).toBeTruthy();
+		expect(screen.queryByRole('complementary')).toBeNull();
 		expect(window.localStorage.getItem(StorageKey.GUEST_DEVICE_TOKEN)).toBeNull();
 		expect(window.localStorage.getItem(StorageKey.GUEST_IDENTITY)).toBeNull();
 		expect(window.localStorage.getItem(StorageKey.GUEST_HOUSEHOLD)).toBeNull();
@@ -106,7 +102,7 @@ describe('GuestIdentityCard menu', () => {
 		await user.click(screen.getByRole('button', { name: 'Open identity menu' }));
 
 		// Act
-		await user.click(screen.getByRole('menuitem', { name: 'Opt Out' }));
+		await user.click(screen.getByRole('menuitem', { name: 'Stop Text Updates' }));
 
 		// Assert
 		await waitFor(() =>

@@ -1,4 +1,4 @@
-import { runInAction } from 'mobx';
+import { reaction, runInAction, type IReactionDisposer } from 'mobx';
 
 import { AdminApi } from '../services/admin-api.ts';
 import type { Permission } from '../services/permissions.ts';
@@ -10,6 +10,7 @@ import { GuestTourStore } from './guest-tour.store.ts';
 import { GuestStore } from './guest.store.ts';
 import { MarketSessionStore, type MarketSessionStoreOptions } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
+import { PwaInstallStore, type PwaInstallStoreOptions } from './pwa-install.store';
 import { RegistrationStore } from './registration.store.ts';
 import { TranslationStore, type Language } from './translation.store.ts';
 import { VisitStore, type VisitStoreOptions } from './visit.store.ts';
@@ -19,6 +20,7 @@ export type RootStoreOptions = {
 	storage?: StorageService;
 	browserStorage?: Storage;
 	previewName?: string;
+	installation?: PwaInstallStoreOptions;
 	admin?: AdminStoreOptions;
 	workers?: { fetch?: typeof fetch };
 	session?: Pick<MarketSessionStoreOptions, 'fetch'>;
@@ -39,12 +41,14 @@ export class RootStore {
 	readonly confirmation: ConfirmationStore;
 	readonly guest: GuestStore;
 	readonly notifications: NotificationStore;
+	readonly installation: PwaInstallStore;
 	readonly registration: RegistrationStore;
 	readonly session: MarketSessionStore;
 	readonly tour: GuestTourStore;
 	readonly visit: VisitStore;
 	readonly translations: TranslationStore;
 	readonly previewName: string | undefined;
+	private readonly forgetInstallHandoff: IReactionDisposer;
 	private getAccessToken: (() => Promise<string>) | null = null;
 	private readPermissions: (() => Promise<Permission[]>) | null = null;
 
@@ -54,6 +58,10 @@ export class RootStore {
 		this.confirmation = new ConfirmationStore();
 		this.notifications = new NotificationStore();
 		this.storage = options.storage ?? new StorageService(options.browserStorage);
+		this.installation = new PwaInstallStore(this.storage, {
+			...options.installation,
+			disabled: !!options.previewName || options.installation?.disabled,
+		});
 		this.guest = new GuestStore({ storage: this.storage });
 		this.guest.notificationsDisabled = !!options.previewName;
 		this.registration = new RegistrationStore(this.guest, { storage: this.storage });
@@ -72,6 +80,11 @@ export class RootStore {
 		});
 
 		this.workers = new WorkersStore(this, options.workers?.fetch);
+		// A pending install must not resurrect a forgotten or replaced guest on a shared phone.
+		this.forgetInstallHandoff = reaction(
+			() => this.guest.deviceId,
+			() => this.installation.clearHandoff(),
+		);
 		globalThis.rootStore = this;
 	}
 
@@ -120,12 +133,15 @@ export class RootStore {
 	}
 
 	start(): void {
+		this.installation.start();
 		void this.guest.initialize();
 		void this.visit.refresh();
 		this.session.startPolling();
 	}
 
 	[Symbol.dispose](): void {
+		this.forgetInstallHandoff();
+		this.installation[Symbol.dispose]();
 		this.session[Symbol.dispose]();
 		this.visit[Symbol.dispose]();
 	}
