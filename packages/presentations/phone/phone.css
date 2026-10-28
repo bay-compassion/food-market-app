@@ -67,8 +67,26 @@ body {
 	}
 }
 
+/*
+ * The app pins its countdown strip under the bar and its submit bar to the bottom with
+ * `position: sticky`, but the guide scrolls by a transform, not by scrolling: a sticky element
+ * holds its place against the page as it sits unscrolled and then moves with it. Pushing its inset
+ * out by however far the page has moved, on the page's own ease, keeps it where the app holds it.
+ */
+.phone-scroll .registration-countdown[data-pinned] {
+	top: calc(var(--app-bar-height) + var(--phone-scroll-offset, 0px));
+	transition: top 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.phone-scroll .submit-bar[data-sticky] {
+	bottom: calc(-1 * var(--phone-scroll-offset, 0px));
+	transition: bottom 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-	.phone-scroll {
+	.phone-scroll,
+	.phone-scroll .registration-countdown[data-pinned],
+	.phone-scroll .submit-bar[data-sticky] {
 		transition: none;
 	}
 
