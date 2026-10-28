@@ -151,7 +151,7 @@ export const screenshots: ScreenshotStep[] = [
 		market: REGISTRATION_OPEN,
 		overlay: true,
 		interact: openTextUpdates,
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	},
 	{
 		id: 'text-updates-agreed',
@@ -162,7 +162,7 @@ export const screenshots: ScreenshotStep[] = [
 			await openTextUpdates(page, copy);
 			await page.getByRole('dialog').getByRole('checkbox').check();
 		},
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	},
 	{
 		id: 'text-updates-failed',
@@ -178,7 +178,7 @@ export const screenshots: ScreenshotStep[] = [
 			await page.getByRole('button', { name: notificationOptIn.enable }).click();
 			await page.getByRole('dialog').getByText(notificationOptIn.error).waitFor();
 		},
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	},
 	{
 		id: 'text-updates-enabled',
@@ -197,7 +197,7 @@ export const screenshots: ScreenshotStep[] = [
 			await openTextUpdates(page, copy);
 			await page.getByRole('dialog').getByText(copy.guestView.notificationOptIn.optedOut).waitFor();
 		},
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	},
 	{
 		id: 'text-updates-loading',
@@ -220,7 +220,7 @@ export const screenshots: ScreenshotStep[] = [
 		server: enabledTexts,
 		overlay: true,
 		interact: openIdentityMenu,
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	},
 	{
 		id: 'device-id',
@@ -233,7 +233,7 @@ export const screenshots: ScreenshotStep[] = [
 			await page.getByRole('menuitem', { name: copy.appBar.deviceDetails.title }).click();
 			await page.getByRole('dialog', { name: copy.appBar.deviceDetails.title }).waitFor();
 		},
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	},
 	{
 		id: 'forget-information',
@@ -248,7 +248,7 @@ export const screenshots: ScreenshotStep[] = [
 			await page.getByRole('menuitem', { name: identityIndicator.forgetInformation }).click();
 			await page.getByRole('dialog', { name: identityIndicator.forgetDialogTitle }).waitFor();
 		},
-		anchor: (copy) => copy.formTitle,
+		anchor: (copy) => copy.guestView.forms.lotteryLegend,
 	},
 	{
 		id: 'qr-poster',

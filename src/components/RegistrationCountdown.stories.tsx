@@ -8,9 +8,10 @@ import { RootStore } from '../stores/root.store';
 import { RegistrationCountdown } from './RegistrationCountdown';
 
 /**
- * The clock shown above the sign-up form while registration is open, counting down to the moment
- * it closes. `GuestView` renders it immediately above `GuestCombinedForm` only when registration
- * is genuinely open, not during a pre-registration window.
+ * The clock shown while registration is open, counting down to the moment it closes. `GuestHome`
+ * pins it as a strip under the app bar for the registration form, only when registration is
+ * genuinely open, not during a pre-registration window; a registered guest's visit card shows it
+ * as a block instead.
  *
  * The background blends from brand to danger color via CSS `color-mix()`, driven by a
  * `--registration-countdown-progress` custom property (`0` = brand, `1` = danger) rather than
@@ -21,6 +22,8 @@ type CountdownArgs = {
 	hoursRemaining: number;
 	minutesRemaining: number;
 	secondsRemaining: number;
+	/** The strip pinned under the app bar, rather than the visit card's block. */
+	pinned?: boolean;
 };
 
 function progressOf(canvasElement: HTMLElement) {
@@ -46,6 +49,7 @@ function RemainingTime({
 	hoursRemaining,
 	minutesRemaining,
 	secondsRemaining,
+	pinned,
 }: CountdownArgs) {
 	const now = Date.now();
 	const closesAt = new Date(
@@ -68,7 +72,7 @@ function RemainingTime({
 
 	return (
 		<RootStoreProvider store={store}>
-			<RegistrationCountdown />
+			<RegistrationCountdown pinned={pinned} />
 		</RootStoreProvider>
 	);
 }
@@ -95,6 +99,29 @@ export const PlentyOfTime: Story = {
 		await expect(canvas.getByText('15:00')).toBeInTheDocument();
 		await expect(progressOf(canvasElement)).toBe(0);
 		await expect(hasIcon(canvasElement)).toBe(false);
+	},
+};
+
+/**
+ * The registration form's strip under the app bar, which stays put while the form scrolls. Pale
+ * until the last five minutes, so it stands apart from the app bar.
+ */
+export const Pinned: Story = {
+	args: { pinned: true },
+	play: async ({ canvas, canvasElement }) => {
+		const countdown = canvasElement.querySelector<HTMLElement>('.registration-countdown');
+
+		await expect(canvas.getByText('15:00')).toBeInTheDocument();
+		await expect(countdown && getComputedStyle(countdown).position).toBe('sticky');
+	},
+};
+
+/** The strip in its last seconds: it warms and gains the warning icon, as the block does. */
+export const PinnedNearlyClosed: Story = {
+	args: { pinned: true, minutesRemaining: 0, secondsRemaining: 10 },
+	play: async ({ canvasElement }) => {
+		await expect(progressOf(canvasElement)).toBeCloseTo(1, 1);
+		await expect(hasIcon(canvasElement)).toBe(true);
 	},
 };
 

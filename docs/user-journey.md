@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=6cdbdc103c00, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=dd087adf62af, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=45ca12597b75, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=c704b5b176fc, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=dd087adf62af, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=45ca12597b75, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083 -->
 
 # Guest journey
 
@@ -69,7 +69,7 @@ flowchart TD
     forgetIdentity --> hasIdentity
     saved -. "Device details" in top nav menu .-> showDeviceId[Device details dialog:<br/>install ID, plus the device<br/>token once registered;<br/>copy each]
     saved -. "Appearance" in top nav menu .-> colorMode[Appearance dialog:<br/>match the device, light,<br/>or dark; remembered<br/>on this device]
-    saved -. "How it works": app bar ? icon,<br/>status cards, menu, or footer .-> helpPage([Help page at /help:<br/>the Saturday steps,<br/>as on the printed flyer])
+    saved -. "How it works": app bar ? icon,<br/>menu, or footer .-> helpPage([Help page at /help:<br/>the Saturday steps,<br/>as on the printed flyer])
     identityShown --> deviceAuth[Authenticate notification status<br/>with the device token]
     deviceAuth --> notificationRequest{Status retrieval}
     notificationRequest -- pending --> notificationLoading[Show loading indicator]
@@ -211,9 +211,7 @@ flowchart TD
   the shared `RegistrationStore`.
 - **`/help` explains a market Saturday step by step.** `HelpPage` is lazily loaded, like the
   legal pages. It is the escape hatch for a guest the home screen leaves unsure, so it is reachable
-  from the app bar's ? icon, the app bar menu, and the footer on every screen, and from a
-  "Not sure what to do?" link (`GuestHelpLink`) in every market and visit card
-  (`GuestStatusCard`), at the top of the registration form's card.
+  from the app bar's ? icon, the app bar menu, and the footer on every screen.
   It carries the same steps as the printed flyers in `public/flyers/`: sign up from anywhere at
   10:30 for 15 minutes, the lottery at 10:45, shopping at 11:30, and bringing the phone used to sign
   up. Its copy is the `help` translation group; change the flyers alongside it.

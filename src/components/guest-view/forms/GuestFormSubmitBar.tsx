@@ -33,7 +33,7 @@ const Bar = styled.div`
 		z-index: 1;
 		gap: 10px;
 		padding-block: 12px calc(12px + env(safe-area-inset-bottom));
-		/* The registration card's own background (MUI's paper), so the bar reads as part of it. */
+		/* The page's own background, so the bar reads as part of the form it sits under. */
 		background: var(--color-background);
 
 		button[type='submit'] {
@@ -59,7 +59,7 @@ const Bar = styled.div`
 
 	/*
 	 * Only while the form scrolls under the bar does it cast a shadow, upward, to mark the edge; at
-	 * rest at the end of the form it is the card's own white, with nothing setting it apart.
+	 * rest at the end of the form it is the page's own white, with nothing setting it apart.
 	 */
 	&[data-sticky][data-pinned] {
 		box-shadow: 0 -14px 16px -12px rgb(30 71 77 / 18%);

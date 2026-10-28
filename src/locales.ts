@@ -185,8 +185,6 @@ export interface GuestViewTranslations {
 	presentation: GuestPresentationTranslations;
 	/** Under the first-visit language picker: the choice is not final, and where to change it. */
 	languageHint: string;
-	/** Leads into the link to the help page, for a guest the home screen leaves unsure. */
-	helpPrompt: string;
 	tour: GuestTourTranslations;
 	forms: {
 		informationLegend: string;
@@ -514,8 +512,8 @@ export interface Translation {
 	countIncrementLabel: string;
 	chooseAnswer: string;
 	firstName: string;
+	/** No longer on the form itself; the guest guide's captions still describe the form with it. */
 	formDescription: string;
-	formTitle: string;
 	guest: string;
 	household: string;
 	householdHint: string;
@@ -647,7 +645,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'You can change your language anytime at the top of the screen.',
-			helpPrompt: 'Not sure what to do?',
 			tour: {
 				progress: '{current} of {total}',
 				start: 'Show me',
@@ -960,7 +957,6 @@ export const translations = {
 		},
 		firstName: 'First name',
 		formDescription: 'A few details help us prepare your visit.',
-		formTitle: 'Tell us about you',
 		guest: 'Guest',
 		household: 'Number of people in your household',
 		householdHint: 'Include yourself',
@@ -1129,7 +1125,6 @@ export const translations = {
 			},
 			languageHint:
 				'Puede cambiar el idioma en cualquier momento en la parte superior de la pantalla.',
-			helpPrompt: '¿No sabe qué hacer?',
 			tour: {
 				progress: '{current} de {total}',
 				start: 'Muéstreme',
@@ -1444,7 +1439,6 @@ export const translations = {
 		},
 		firstName: 'Nombre',
 		formDescription: 'Unos detalles nos ayudan a preparar su visita.',
-		formTitle: 'Cuéntenos sobre usted',
 		guest: 'Invitado',
 		household: 'Número de personas en su hogar',
 		householdHint: 'Inclúyase',
@@ -1613,7 +1607,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'هر زمان بخواهید می‌توانید زبان را از بالای صفحه تغییر دهید.',
-			helpPrompt: 'نمی‌دانید چه کار کنید؟',
 			tour: {
 				progress: '{current} از {total}',
 				start: 'نشانم بده',
@@ -1923,7 +1916,6 @@ export const translations = {
 		},
 		firstName: 'نام',
 		formDescription: 'چند اطلاعات به ما کمک می‌کند تا برای بازدید شما آماده شویم.',
-		formTitle: 'درباره خودتان بگویید',
 		guest: 'مهمان',
 		household: 'تعداد افراد خانواده شما',
 		householdHint: 'خودتان را هم حساب کنید',
@@ -2091,7 +2083,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'Maaari mong palitan ang wika anumang oras sa itaas ng screen.',
-			helpPrompt: 'Hindi sigurado kung ano ang gagawin?',
 			tour: {
 				progress: '{current} sa {total}',
 				start: 'Ipakita',
@@ -2407,7 +2398,6 @@ export const translations = {
 		},
 		firstName: 'Pangalan',
 		formDescription: 'Makakatulong ang ilang detalye upang maihanda namin ang inyong pagbisita.',
-		formTitle: 'Sabihin sa amin ang tungkol sa iyo',
 		guest: 'Bisita',
 		household: 'Bilang ng mga tao sa inyong sambahayan',
 		householdHint: 'Isama ang sarili',
@@ -2576,7 +2566,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'Bạn có thể đổi ngôn ngữ bất cứ lúc nào ở phía trên màn hình.',
-			helpPrompt: 'Chưa biết phải làm gì?',
 			tour: {
 				progress: '{current} / {total}',
 				start: 'Xem ngay',
@@ -2886,7 +2875,6 @@ export const translations = {
 		},
 		firstName: 'Tên',
 		formDescription: 'Một vài thông tin giúp chúng tôi chuẩn bị cho chuyến thăm của bạn.',
-		formTitle: 'Hãy cho chúng tôi biết về bạn',
 		guest: 'Khách',
 		household: 'Số người trong hộ gia đình của bạn',
 		householdHint: 'Bao gồm cả bạn',
@@ -3050,7 +3038,6 @@ export const translations = {
 				},
 			},
 			languageHint: '您可以随时在屏幕顶部更改语言。',
-			helpPrompt: '不知道该怎么做？',
 			tour: {
 				progress: '第 {current} 步，共 {total} 步',
 				start: '开始',
@@ -3349,7 +3336,6 @@ export const translations = {
 		},
 		firstName: '名字',
 		formDescription: '一些基本信息能帮助我们为您的到访做好准备。',
-		formTitle: '请告诉我们您的信息',
 		guest: '访客',
 		household: '您家庭中的人数',
 		householdHint: '包括您自己',
@@ -3514,7 +3500,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'يمكنك تغيير اللغة في أي وقت من أعلى الشاشة.',
-			helpPrompt: 'لست متأكدًا مما عليك فعله؟',
 			tour: {
 				progress: '{current} من {total}',
 				start: 'أرني',
@@ -3819,7 +3804,6 @@ export const translations = {
 		},
 		firstName: 'الاسم الأول',
 		formDescription: 'تساعدنا بعض التفاصيل على الاستعداد لزيارتك.',
-		formTitle: 'أخبرنا عنك',
 		guest: 'ضيف',
 		household: 'عدد الأشخاص في أسرتك',
 		householdHint: 'بما في ذلك أنت',
@@ -3986,7 +3970,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'Vous pouvez changer de langue à tout moment en haut de l’écran.',
-			helpPrompt: 'Vous ne savez pas quoi faire ?',
 			tour: {
 				progress: '{current} sur {total}',
 				start: 'Montrez-moi',
@@ -4304,7 +4287,6 @@ export const translations = {
 		},
 		firstName: 'Prénom',
 		formDescription: 'Quelques informations nous aident à préparer votre visite.',
-		formTitle: 'Parlez-nous de vous',
 		guest: 'Invité',
 		household: 'Nombre de personnes dans votre foyer',
 		householdHint: 'Comptez-vous aussi',
@@ -4473,7 +4455,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'Você pode mudar o idioma a qualquer momento no topo da tela.',
-			helpPrompt: 'Não sabe o que fazer?',
 			tour: {
 				progress: '{current} de {total}',
 				start: 'Quero ver',
@@ -4789,7 +4770,6 @@ export const translations = {
 		},
 		firstName: 'Nome',
 		formDescription: 'Alguns dados nos ajudam a preparar sua visita.',
-		formTitle: 'Conte sobre você',
 		guest: 'Visitante',
 		household: 'Número de pessoas que moram com você',
 		householdHint: 'Inclua você',
@@ -4957,7 +4937,6 @@ export const translations = {
 				},
 			},
 			languageHint: 'Вы можете изменить язык вверху экрана в любое время.',
-			helpPrompt: 'Не знаете, что делать?',
 			tour: {
 				progress: '{current} из {total}',
 				start: 'Покажите мне',
@@ -5269,7 +5248,6 @@ export const translations = {
 		},
 		firstName: 'Имя',
 		formDescription: 'Несколько сведений помогут нам подготовиться к вашему визиту.',
-		formTitle: 'Расскажите о себе',
 		guest: 'Посетитель',
 		household: 'Количество человек в вашей семье',
 		householdHint: 'Включая вас',

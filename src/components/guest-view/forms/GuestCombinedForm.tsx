@@ -25,8 +25,6 @@ export const GuestCombinedForm = observer(function GuestCombinedForm() {
 
 	return (
 		<GuestForm
-			title={t.formTitle}
-			description={t.formDescription}
 			submitLabel={t.submit}
 			submittingLabel={t.submitting}
 			onSubmit={submit}

@@ -10,8 +10,11 @@ import { GuestTourTooltip } from './GuestTourTooltip';
 /** Above the sticky MUI app bar (1100), below MUI's menus and dialogs (1300). */
 const zIndex = 1250;
 
-/** The sticky app bar's height and a little air, so a scrolled-to step is not tucked beneath it. */
-const scrollOffset = 76;
+/**
+ * The sticky app bar's height, the registration clock pinned beneath it, and a little air, so a
+ * scrolled-to step is not tucked beneath them.
+ */
+const scrollOffset = 120;
 
 /**
  * Whether the screen shows this step's anchor: the home screen renders different cards in
