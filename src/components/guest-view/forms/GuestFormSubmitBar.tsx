@@ -2,10 +2,12 @@ import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
+import { useRef, type ReactNode } from 'react';
 
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { useOnScreenKeyboard } from '../../hooks/use-on-screen-keyboard';
+import { usePinnedOverContent } from '../../hooks/use-pinned-over-content';
 
 /*
  * One beat per cycle, then a rest: the movement takes the first part of the cycle and the button is
@@ -13,12 +15,12 @@ import { useOnScreenKeyboard } from '../../hooks/use-on-screen-keyboard';
  */
 const swell = keyframes`
 	0%, 45%, 100% { transform: scale(1); filter: none; }
-	20% { transform: scale(1.06); filter: drop-shadow(0 0 10px var(--color-brand)); }
+	20% { transform: scale(1.04); filter: drop-shadow(0 0 7px var(--color-brand)); }
 `;
 
 const ring = keyframes`
-	0% { transform: scale(1); opacity: 0.9; }
-	50%, 100% { transform: scale(1.18, 2); opacity: 0; }
+	0% { transform: scale(1); opacity: 0.7; }
+	50%, 100% { transform: scale(1.14, 1.8); opacity: 0; }
 `;
 
 const Bar = styled.div`
@@ -31,8 +33,8 @@ const Bar = styled.div`
 		z-index: 1;
 		gap: 10px;
 		padding-block: 12px calc(12px + env(safe-area-inset-bottom));
-		background: var(--color-surface);
-		box-shadow: 0 -8px 24px rgb(30 71 77 / 10%);
+		/* The registration card's own background (MUI's paper), so the bar reads as part of it. */
+		background: var(--color-background);
 
 		button[type='submit'] {
 			min-height: 48px;
@@ -52,9 +54,21 @@ const Bar = styled.div`
 
 	/* Once every field is filled in, a brand edge draws the eye down to the button. */
 	&[data-sticky][data-ready] {
+		box-shadow: 0 -3px 0 var(--color-brand);
+	}
+
+	/*
+	 * Only while the form scrolls under the bar does it cast a shadow, upward, to mark the edge; at
+	 * rest at the end of the form it is the card's own white, with nothing setting it apart.
+	 */
+	&[data-sticky][data-pinned] {
+		box-shadow: 0 -14px 16px -12px rgb(30 71 77 / 18%);
+	}
+
+	&[data-sticky][data-pinned][data-ready] {
 		box-shadow:
 			0 -3px 0 var(--color-brand),
-			0 -8px 24px rgb(30 71 77 / 10%);
+			0 -14px 16px -12px rgb(30 71 77 / 18%);
 	}
 
 	/*
@@ -99,34 +113,6 @@ const Bar = styled.div`
 	}
 `;
 
-/*
- * Always rendered, empty until the form is ready, so screen readers already know it as a live
- * region when the text arrives; inserting a region and its text together often goes unannounced.
- */
-const ReadyHint = styled.p`
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 6px;
-	margin: 0;
-	color: var(--color-brand);
-	font-size: 15px;
-	font-weight: 700;
-	line-height: 1.35;
-	text-align: center;
-
-	&:empty {
-		/* Cancels the bar's gap, so the empty hint takes no room. */
-		margin-block-end: -10px;
-	}
-
-	svg {
-		flex: 0 0 auto;
-		width: 18px;
-		height: 18px;
-	}
-`;
-
 const SubmissionError = styled.p`
 	margin: 0;
 	color: var(--color-error);
@@ -138,54 +124,46 @@ type GuestFormSubmitBarProps = {
 	submitLabel: string;
 	submittingLabel: string;
 	sticky: boolean;
-	readyHint: string | null | undefined;
+	/** Whether the form is complete; `undefined` for a form that has no such moment. */
+	ready: boolean | undefined;
+	/** What is left before the form is ready, shown until it is. */
+	progress?: ReactNode;
 };
 
 /**
- * The guest form's submit button, with the submission error and, for the market registration, the
- * hint that the form is complete. The error sits here so a guest who taps a pinned button sees it
- * fail; the hint sits here because the button is what it points at.
+ * The guest form's submit button, with the submission error and, for the market registration, what
+ * is left before the form is complete. The error sits here so a guest who taps a pinned button sees
+ * it fail; the checklist sits here because the button is what it leads to.
  */
 export const GuestFormSubmitBar = observer(function GuestFormSubmitBar({
 	submitLabel,
 	submittingLabel,
 	sticky,
-	readyHint,
+	ready,
+	progress,
 }: GuestFormSubmitBarProps) {
 	const t = useTranslation();
 	const { registration } = useRootStore();
 	const keyboardOpen = useOnScreenKeyboard();
-	const isReady = Boolean(readyHint);
+	const bar = useRef<HTMLDivElement>(null);
+	const pinned = usePinnedOverContent(bar);
+	const isReady = ready === true;
 
 	return (
 		<Bar
+			ref={bar}
 			className="submit-bar"
 			data-sticky={sticky || undefined}
+			// The keyboard puts the bar back in the flow, where there is nothing under it to mark.
+			data-pinned={(pinned && !keyboardOpen) || undefined}
 			data-keyboard={keyboardOpen || undefined}
 			data-ready={isReady || undefined}
-			// Only a form that has a ready moment (one passing `readyHint`) can be awaiting it.
-			data-awaiting={readyHint === null || undefined}
+			// Only a form that has a ready moment (one passing `ready`) can be awaiting it.
+			data-awaiting={ready === false || undefined}
 			// Not while submitting: a disabled button that keeps beckoning would invite a second tap.
 			data-pulse={(isReady && !keyboardOpen && !registration.isSubmitting) || undefined}
 		>
-			{readyHint !== undefined ? (
-				<ReadyHint className="ready-hint" aria-live="polite">
-					{readyHint ? (
-						<>
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2.5"
-								aria-hidden="true"
-							>
-								<path d="M5 12.5l4.5 4.5L19 7.5" />
-							</svg>
-							{readyHint}
-						</>
-					) : null}
-				</ReadyHint>
-			) : null}
+			{isReady ? null : progress}
 			{registration.submissionError ? (
 				<SubmissionError className="submission-error" role="alert">
 					{t.submissionError}

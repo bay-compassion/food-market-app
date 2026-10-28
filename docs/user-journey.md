@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=6cdbdc103c00, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=07d4c1ffb577, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=45ca12597b75, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=6cdbdc103c00, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=dd087adf62af, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=45ca12597b75, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083 -->
 
 # Guest journey
 
@@ -101,7 +101,7 @@ flowchart TD
 
     canRegister -- yes --> cachedIdentity{Cached local<br/>name and phone?}
     cachedIdentity -- no --> combinedForm[Sign-up fields — name, an offer<br/>to add a pronunciation, phone —<br/>plus lottery-entry fields — age range,<br/>household size, children/seniors —<br/>shown together, one submit]
-    cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card,<br/>an offer to add a pronunciation,<br/>and lottery-entry fields:<br/>age range, household size,<br/>children/seniors]
+    cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card<br/>and lottery-entry fields:<br/>age range, household size,<br/>children/seniors — or, when this<br/>phone saved them, a summary to<br/>confirm or change]
     canRegister -- no --> nonOpenIdentity[Show identity card:<br/>saved identity or offer to save information]
     nonOpenIdentity -. "Save my information" button .-> signupRoute
     nonOpenIdentity --> phase{Which active phase is<br/>the session in?}
@@ -241,7 +241,12 @@ flowchart TD
   guest's identity.** `GuestLotteryForm` asks for these details each time a guest enters a session's
   lottery; the browser separately keeps its own last-entered copy in `localStorage`
   (`bay-compassion.guest-household`) purely to prefill that form next time — it's never sent to the
-  server as part of identity, and never read back from a server-side guest profile. Without saved
+  server as part of identity, and never read back from a server-side guest profile. A prefilled
+  household is shown as a summary the guest must confirm ("Yes, still right") before the submit
+  bar counts the form as ready. "Change" edits a draft in a dialog: "Update", enabled once
+  something changed, puts it in the form and confirms it; "Cancel" returns to the summary. The
+  confirmation is per visit and never saved,
+  and the bar also waits for every one of the session's questions, optional ones included. Without saved
   counts, household size defaults to 1 and children and seniors each default to 0. Every count must
   be a whole number, and children and seniors together can be no more than the household — the
   guest counts among the seniors when they are 55 or older. Children cannot shop on their own, so

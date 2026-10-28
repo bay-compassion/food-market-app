@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
-import { expect, userEvent, waitFor } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { translations, type Locale } from '../../../locales';
 import { StorageKey, StorageService } from '../../../services/storage.service';
@@ -136,9 +136,6 @@ export const RegistrationForm: Story = {
 		await expect(
 			canvas.getByRole('group', { name: translations.en.guestView.forms.lotteryLegend }),
 		).toBeInTheDocument();
-		// Nothing is filled in yet, so there is nothing to point at the button.
-		await expect(canvasElement.querySelector('.ready-hint')).toBeEmptyDOMElement();
-
 		// Drawn as "not yet", but never disabled: tapped early, it takes the guest to what's missing.
 		const button = canvas.getByRole('button', { name: translations.en.submit });
 
@@ -150,9 +147,9 @@ export const RegistrationForm: Story = {
 };
 
 /**
- * A returning guest: their name and phone are saved on this phone and not asked for again, but
- * they are still offered a way to say how their name is pronounced. The field stays folded away
- * until they take the offer up.
+ * A returning guest: their name and phone are saved on this phone, shown in the identity card
+ * above, and not asked for again — nor is how their name is pronounced. Only the lottery-entry
+ * fields remain.
  */
 export const ReturningGuest: Story = {
 	args: { returningGuest: true },
@@ -160,29 +157,137 @@ export const ReturningGuest: Story = {
 		const forms = translations.en.guestView.forms;
 
 		await expect(canvas.queryByLabelText(translations.en.firstName)).toBeNull();
-		await expect(canvas.queryByLabelText(forms.pronunciationLabel)).toBeNull();
-
-		await userEvent.click(canvas.getByRole('button', { name: forms.pronunciationOffer }));
-
-		// Focus follows once the panel has finished opening.
-		await waitFor(() => expect(canvas.getByLabelText(forms.pronunciationLabel)).toHaveFocus());
+		await expect(canvas.queryByRole('button', { name: forms.pronunciationOffer })).toBeNull();
+		await expect(canvas.getByLabelText(translations.en.age)).toBeInTheDocument();
 	},
 };
 
 /**
- * A returning guest whose phone kept everything from their last visit: every field is already
- * filled in, so the pinned bar points them straight at the button that enters them, which keeps
- * pulsing for as long as that stays true.
+ * A returning guest whose phone kept everything from their last visit. Every field is filled in,
+ * but a prefilled form is not a finished one: the saved household is shown as a summary for them
+ * to confirm, and the pinned bar lists what is left. Join waits, drawn as "not yet".
+ */
+export const ConfirmSavedHousehold: Story = {
+	args: { returningGuest: true, savedHousehold: true },
+	play: async ({ canvas, canvasElement }) => {
+		const { savedHousehold, joinSteps } = translations.en.guestView.forms;
+
+		await expect(canvas.getByRole('heading', { name: savedHousehold.heading })).toBeVisible();
+		await expect(canvas.queryByLabelText(translations.en.age)).toBeNull();
+		await expect(canvas.getByRole('list', { name: joinSteps.label })).toHaveTextContent(
+			joinSteps.confirmHousehold,
+		);
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-awaiting');
+		await expect(canvasElement.querySelector('.submit-bar')).not.toHaveAttribute('data-pulse');
+	},
+};
+
+/**
+ * Join tapped before confirming: the browser's own validation takes the guest to the summary, the
+ * same way it takes a guest to an empty field.
+ */
+export const JoinBeforeConfirming: Story = {
+	args: { returningGuest: true, savedHousehold: true },
+	play: async ({ canvas, canvasElement }) => {
+		const { savedHousehold } = translations.en.guestView.forms;
+
+		await userEvent.click(canvas.getByRole('button', { name: translations.en.submit }));
+
+		await waitFor(() =>
+			expect(canvas.getByRole('textbox', { name: savedHousehold.prompt })).toHaveFocus(),
+		);
+		await expect(canvasElement.querySelector('.saved-household')).toBeInTheDocument();
+	},
+};
+
+/**
+ * Once the guest says the household is still right, the summary folds to one line and, with
+ * nothing else asked, the pinned bar points them at the button, which keeps pulsing for as long as
+ * that stays true.
  */
 export const ReadyToJoin: Story = {
 	args: { returningGuest: true, savedHousehold: true },
 	play: async ({ canvas, canvasElement }) => {
+		const { savedHousehold } = translations.en.guestView.forms;
+
+		await userEvent.click(canvas.getByRole('button', { name: savedHousehold.confirm }));
+
 		const button = canvas.getByRole('button', { name: translations.en.submit });
 
-		await expect(canvas.getByText(translations.en.guestView.forms.readyToSubmit)).toBeVisible();
+		await expect(canvas.getByText(savedHousehold.confirmed)).toBeVisible();
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-ready');
 		await expect(canvasElement.querySelector('.submit-bar')).not.toHaveAttribute('data-awaiting');
 		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-pulse');
 		await expect(getComputedStyle(button).animationIterationCount).toBe('infinite');
+	},
+};
+
+/**
+ * "Change" opens the saved household in a dialog. "Update" waits for a change; once it is made,
+ * "Update" puts it in the form and confirms the household, so the pinned bar is ready.
+ */
+export const ChangeSavedHousehold: Story = {
+	args: { returningGuest: true, savedHousehold: true },
+	play: async ({ canvas, canvasElement }) => {
+		const { savedHousehold } = translations.en.guestView.forms;
+		const page = within(document.body);
+
+		await userEvent.click(canvas.getByRole('button', { name: savedHousehold.change }));
+
+		const dialog = await page.findByRole('dialog', { name: savedHousehold.changeHeading });
+		const update = within(dialog).getByRole('button', { name: savedHousehold.update });
+
+		await expect(within(dialog).getByLabelText(translations.en.age)).toHaveValue('30-44');
+		await expect(update).toBeDisabled();
+		// The form behind is still waiting for the guest: no change has been made yet.
+		await expect(canvasElement.querySelector('.submit-bar')).not.toHaveAttribute('data-pulse');
+
+		await userEvent.selectOptions(within(dialog).getByLabelText(translations.en.age), '45-59');
+		await expect(update).toBeEnabled();
+		await userEvent.click(update);
+
+		await waitFor(() => expect(page.queryByRole('dialog')).toBeNull());
+		await expect(canvas.getByText(savedHousehold.confirmed)).toBeVisible();
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-pulse');
+	},
+};
+
+/** "Cancel" drops the changes and puts the guest back at the summary, still to confirm. */
+export const CancelChangingSavedHousehold: Story = {
+	args: { returningGuest: true, savedHousehold: true },
+	play: async ({ canvas }) => {
+		const { savedHousehold } = translations.en.guestView.forms;
+		const page = within(document.body);
+
+		await userEvent.click(canvas.getByRole('button', { name: savedHousehold.change }));
+
+		const dialog = await page.findByRole('dialog', { name: savedHousehold.changeHeading });
+
+		await userEvent.selectOptions(within(dialog).getByLabelText(translations.en.age), '45-59');
+		await userEvent.click(within(dialog).getByRole('button', { name: savedHousehold.cancel }));
+
+		await waitFor(() => expect(page.queryByRole('dialog')).toBeNull());
+		await expect(canvas.getByRole('heading', { name: savedHousehold.heading })).toBeVisible();
+		await expect(canvas.getByText(translations.en.ageRange30to44)).toBeVisible();
+	},
+};
+
+/**
+ * A returning guest with this week's questions: confirming the household is not enough until each
+ * question has an answer, optional ones too.
+ */
+export const ReturningGuestWithQuestions: Story = {
+	args: { returningGuest: true, savedHousehold: true, askExtraQuestions: true },
+	play: async ({ canvas, canvasElement }) => {
+		const { savedHousehold, joinSteps } = translations.en.guestView.forms;
+
+		await userEvent.click(canvas.getByRole('button', { name: savedHousehold.confirm }));
+
+		const steps = canvas.getByRole('list', { name: joinSteps.label });
+
+		await expect(steps).toHaveTextContent(joinSteps.householdConfirmed);
+		await expect(steps).toHaveTextContent(joinSteps.answerQuestions);
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-awaiting');
 	},
 };
 

@@ -70,6 +70,41 @@ describe('RegistrationStore', () => {
 			expect(store.guest.childrenCount).toBe(1);
 			expect(store.guest.seniorsCount).toBe(0);
 		});
+
+		it('asks a guest with a saved household to confirm it, and one without to fill it in', () => {
+			// Arrange
+			const fresh = new RegistrationStore(guestStore, { storage });
+
+			storage.set(StorageKey.GUEST_HOUSEHOLD, {
+				ageRange: '30-44',
+				householdSize: 3,
+				childrenCount: 1,
+				seniorsCount: 0,
+			});
+
+			// Act
+			const returning = new RegistrationStore(guestStore, { storage });
+
+			// Assert
+			expect(fresh.savedHouseholdReview).toBe('none');
+			expect(returning.savedHouseholdReview).toBe('pending');
+		});
+
+		it('opens a saved household the rules no longer accept for editing', () => {
+			// Arrange
+			storage.set(StorageKey.GUEST_HOUSEHOLD, {
+				ageRange: '30-44',
+				householdSize: 1,
+				childrenCount: 1,
+				seniorsCount: 0,
+			});
+
+			// Act
+			const store = new RegistrationStore(guestStore, { storage });
+
+			// Assert
+			expect(store.savedHouseholdReview).toBe('editing');
+		});
 	});
 
 	describe('clear', () => {
@@ -96,6 +131,7 @@ describe('RegistrationStore', () => {
 				phone: '',
 			});
 			expect(store.registrationAnswers).toEqual({});
+			expect(store.savedHouseholdReview).toBe('none');
 		});
 	});
 
@@ -237,7 +273,21 @@ describe('RegistrationStore', () => {
 			required: false,
 		};
 
-		it('is ready once every field is filled in', () => {
+		it('is ready once every field is filled in and every question answered', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.guest = { ...complete };
+			store.setAnswer('q-2', 'No');
+
+			// Act
+			const ready = store.isReadyToSubmit([optionalQuestion]);
+
+			// Assert
+			expect(ready).toBe(true);
+		});
+
+		it('waits for an answer to an optional question too', () => {
 			// Arrange
 			const store = new RegistrationStore(guestStore, { storage });
 
@@ -247,7 +297,30 @@ describe('RegistrationStore', () => {
 			const ready = store.isReadyToSubmit([optionalQuestion]);
 
 			// Assert
-			expect(ready).toBe(true);
+			expect(ready).toBe(false);
+		});
+
+		it('waits for a returning guest to confirm the household saved from last time', () => {
+			// Arrange
+			storage.set(StorageKey.GUEST_HOUSEHOLD, {
+				ageRange: '30-44',
+				householdSize: 2,
+				childrenCount: 0,
+				seniorsCount: 0,
+			});
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.updateGuest({ firstName: 'Ada', lastName: 'Lovelace', phone: '(555) 123-4567' });
+
+			// Act
+			const before = store.isReadyToSubmit([]);
+
+			store.confirmSavedHousehold();
+			const after = store.isReadyToSubmit([]);
+
+			// Assert
+			expect(before).toBe(false);
+			expect(after).toBe(true);
 		});
 
 		it.each([
@@ -285,6 +358,96 @@ describe('RegistrationStore', () => {
 			// Assert
 			expect(before).toBe(false);
 			expect(after).toBe(true);
+		});
+	});
+
+	describe('changing the saved household', () => {
+		const savedHousehold = {
+			ageRange: '30-44',
+			householdSize: 2,
+			childrenCount: 0,
+			seniorsCount: 0,
+		};
+
+		beforeEach(() => {
+			storage.set(StorageKey.GUEST_HOUSEHOLD, savedHousehold);
+		});
+
+		it('starts a draft from the form without touching the form or confirming it', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			// Act
+			store.startHouseholdChange();
+			store.updateHouseholdDraft({ householdSize: 4 });
+
+			// Assert
+			expect(store.householdDraft).toEqual({ ...savedHousehold, householdSize: 4 });
+			expect(store.guest.householdSize).toBe(2);
+			expect(store.savedHouseholdReview).toBe('pending');
+		});
+
+		it('cannot apply a draft until something in it changes', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.startHouseholdChange();
+
+			// Act
+			const before = store.canApplyHouseholdDraft;
+
+			store.updateHouseholdDraft({ childrenCount: 1 });
+			const after = store.canApplyHouseholdDraft;
+
+			// Assert
+			expect(before).toBe(false);
+			expect(after).toBe(true);
+		});
+
+		it('cannot apply a changed draft the rules do not accept', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.startHouseholdChange();
+
+			// Act
+			store.updateHouseholdDraft({ childrenCount: 2 });
+
+			// Assert
+			expect(store.isHouseholdDraftDirty).toBe(true);
+			expect(store.canApplyHouseholdDraft).toBe(false);
+		});
+
+		it('puts an applied draft in the form and confirms the household', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.startHouseholdChange();
+			store.updateHouseholdDraft({ householdSize: 4, seniorsCount: 1 });
+
+			// Act
+			store.applyHouseholdDraft();
+
+			// Assert
+			expect(store.guest).toMatchObject({ householdSize: 4, seniorsCount: 1 });
+			expect(store.householdDraft).toBeNull();
+			expect(store.savedHouseholdReview).toBe('confirmed');
+		});
+
+		it('drops a cancelled draft, leaving the household still to confirm', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.startHouseholdChange();
+			store.updateHouseholdDraft({ householdSize: 4 });
+
+			// Act
+			store.cancelHouseholdChange();
+
+			// Assert
+			expect(store.householdDraft).toBeNull();
+			expect(store.guest.householdSize).toBe(2);
+			expect(store.savedHouseholdReview).toBe('pending');
 		});
 	});
 
@@ -331,6 +494,8 @@ describe('RegistrationStore', () => {
 				childrenCount: 0,
 				seniorsCount: 0,
 			});
+			// Saved for next time, and so next time's to confirm.
+			expect(store.savedHouseholdReview).toBe('pending');
 			expect(store.isSubmitting).toBe(false);
 			expect(store.submissionError).toBe(false);
 		});
