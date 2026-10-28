@@ -45,7 +45,7 @@ import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import { languages, translations } from '../locales';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
-import { answerConfirmation } from './render-with-app';
+import { answerConfirmation, settleInitialLoad } from './render-with-app';
 
 /**
  * An unsigned access token carrying permissions, which is all the admin screens read it for.
@@ -603,7 +603,7 @@ describe('App', () => {
 		vi.useFakeTimers();
 		await renderWithVisit({ id: 'visit-1', status: 'called', queuePosition: 2, aheadOfYou: null });
 
-		await vi.runOnlyPendingTimersAsync();
+		await settleInitialLoad();
 
 		const callsAfterLoad = vi
 			.mocked(fetch)
