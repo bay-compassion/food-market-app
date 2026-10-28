@@ -206,8 +206,37 @@ export interface GuestViewTranslations {
 		exceedsHousehold: string;
 		/** Under the children count, when it leaves no adult in the household to shop for it. */
 		noAdult: string;
-		/** In the pinned submit bar once every field is filled in, quoting the submit button's label. */
-		readyToSubmit: string;
+		/** The card a returning guest sees in place of the household fields this phone saved. */
+		savedHousehold: {
+			/** Small label above the heading: where the values came from. */
+			eyebrow: string;
+			heading: string;
+			/** Button: the saved household is still right. Quoted by `prompt`. */
+			confirm: string;
+			/** Button: open the fields to change them. Quoted by `prompt`. */
+			change: string;
+			/** The collapsed card, once the guest has confirmed. */
+			confirmed: string;
+			/** The browser's validation message when the guest taps "Join" before answering. */
+			prompt: string;
+			/** Title of the dialog "Change" opens. */
+			changeHeading: string;
+			/** Dialog button: put the changes in the form, which also confirms the household. */
+			update: string;
+			/** Dialog button: drop the changes and go back to the summary. */
+			cancel: string;
+			/** Accessible name of the dialog's close button. */
+			close: string;
+		};
+		/** The pinned bar's checklist for a returning guest, until everything is done. */
+		joinSteps: {
+			/** Accessible name of the list. */
+			label: string;
+			confirmHousehold: string;
+			householdConfirmed: string;
+			answerQuestions: string;
+			questionsAnswered: string;
+		};
 		/** Under a count the guest left empty or typed wrongly. `{min}` and `{max}` are the range. */
 		countErrors: {
 			required: string;
@@ -685,7 +714,25 @@ export const translations = {
 				exceedsHousehold:
 					'Children and seniors together can’t be more than the people in your household.',
 				noAdult: 'Your household must include at least one adult.',
-				readyToSubmit: 'All set. Tap “Join the lottery” to enter.',
+				savedHousehold: {
+					eyebrow: 'From your last visit',
+					heading: 'Is this still right?',
+					confirm: 'Yes, still right',
+					change: 'Change',
+					confirmed: 'Household confirmed',
+					prompt: 'Check your household, then tap “Yes, still right” or “Change”.',
+					changeHeading: 'Update Your Household',
+					update: 'Update',
+					cancel: 'Cancel',
+					close: 'Close',
+				},
+				joinSteps: {
+					label: 'Before you join',
+					confirmHousehold: 'Confirm your household',
+					householdConfirmed: 'Household confirmed',
+					answerQuestions: 'Answer this week’s questions',
+					questionsAnswered: 'Questions answered',
+				},
 				countErrors: {
 					required: 'Enter a number.',
 					notWholeNumber: 'Enter a whole number, like 2.',
@@ -1149,7 +1196,25 @@ export const translations = {
 				exceedsHousehold:
 					'Los niños y las personas mayores juntos no pueden ser más que las personas de su hogar.',
 				noAdult: 'Su hogar debe incluir al menos un adulto.',
-				readyToSubmit: 'Todo listo. Toque «Unirse al sorteo» para participar.',
+				savedHousehold: {
+					eyebrow: 'De su última visita',
+					heading: '¿Sigue siendo correcto?',
+					confirm: 'Sí, es correcto',
+					change: 'Cambiar',
+					confirmed: 'Hogar confirmado',
+					prompt: 'Revise los datos de su hogar y toque «Sí, es correcto» o «Cambiar».',
+					changeHeading: 'Actualice los datos de su hogar',
+					update: 'Actualizar',
+					cancel: 'Cancelar',
+					close: 'Cerrar',
+				},
+				joinSteps: {
+					label: 'Antes de unirse',
+					confirmHousehold: 'Confirme su hogar',
+					householdConfirmed: 'Hogar confirmado',
+					answerQuestions: 'Responda las preguntas de esta semana',
+					questionsAnswered: 'Preguntas respondidas',
+				},
 				countErrors: {
 					required: 'Escriba un número.',
 					notWholeNumber: 'Escriba un número entero, como 2.',
@@ -1614,7 +1679,25 @@ export const translations = {
 				seniorsHint: 'اگر ۵۵ سال یا بیشتر دارید، خودتان را هم حساب کنید',
 				exceedsHousehold: 'مجموع کودکان و سالمندان نمی‌تواند از تعداد افراد خانواده شما بیشتر باشد.',
 				noAdult: 'خانواده شما باید دست‌کم یک بزرگسال داشته باشد.',
-				readyToSubmit: 'همه‌چیز آماده است. برای شرکت، «پیوستن به قرعه‌کشی» را بزنید.',
+				savedHousehold: {
+					eyebrow: 'از مراجعهٔ قبلی شما',
+					heading: 'آیا این اطلاعات هنوز درست است؟',
+					confirm: 'بله، درست است',
+					change: 'تغییر',
+					confirmed: 'اطلاعات خانوار تأیید شد',
+					prompt: 'اطلاعات خانوار خود را بررسی کنید و سپس «بله، درست است» یا «تغییر» را بزنید.',
+					changeHeading: 'به‌روزرسانی اطلاعات خانوار',
+					update: 'به‌روزرسانی',
+					cancel: 'لغو',
+					close: 'بستن',
+				},
+				joinSteps: {
+					label: 'پیش از پیوستن',
+					confirmHousehold: 'اطلاعات خانوار را تأیید کنید',
+					householdConfirmed: 'اطلاعات خانوار تأیید شد',
+					answerQuestions: 'به پرسش‌های این هفته پاسخ دهید',
+					questionsAnswered: 'به پرسش‌ها پاسخ داده شد',
+				},
 				countErrors: {
 					required: 'یک عدد وارد کنید.',
 					notWholeNumber: 'یک عدد صحیح وارد کنید، مثلاً ۲.',
@@ -2076,7 +2159,25 @@ export const translations = {
 				exceedsHousehold:
 					'Hindi puwedeng mas marami ang mga bata at senior kaysa sa mga tao sa inyong sambahayan.',
 				noAdult: 'Dapat may kahit isang nasa hustong gulang sa inyong sambahayan.',
-				readyToSubmit: 'Handa na. I-tap ang “Sumali sa lottery” para makasali.',
+				savedHousehold: {
+					eyebrow: 'Mula sa huli mong pagbisita',
+					heading: 'Tama pa ba ito?',
+					confirm: 'Oo, tama pa',
+					change: 'Baguhin',
+					confirmed: 'Nakumpirma ang sambahayan',
+					prompt: 'Suriin ang iyong sambahayan, saka i-tap ang “Oo, tama pa” o “Baguhin”.',
+					changeHeading: 'I-update ang iyong sambahayan',
+					update: 'I-update',
+					cancel: 'Kanselahin',
+					close: 'Isara',
+				},
+				joinSteps: {
+					label: 'Bago sumali',
+					confirmHousehold: 'Kumpirmahin ang iyong sambahayan',
+					householdConfirmed: 'Nakumpirma ang sambahayan',
+					answerQuestions: 'Sagutin ang mga tanong ngayong linggo',
+					questionsAnswered: 'Nasagot na ang mga tanong',
+				},
 				countErrors: {
 					required: 'Maglagay ng numero.',
 					notWholeNumber: 'Maglagay ng buong numero, gaya ng 2.',
@@ -2542,7 +2643,25 @@ export const translations = {
 				exceedsHousehold:
 					'Tổng số trẻ em và người cao tuổi không thể nhiều hơn số người trong hộ gia đình của bạn.',
 				noAdult: 'Hộ gia đình của bạn phải có ít nhất một người lớn.',
-				readyToSubmit: 'Đã xong. Nhấn “Tham gia xổ số” để đăng ký.',
+				savedHousehold: {
+					eyebrow: 'Từ lần đến trước của bạn',
+					heading: 'Thông tin này còn đúng không?',
+					confirm: 'Có, vẫn đúng',
+					change: 'Thay đổi',
+					confirmed: 'Đã xác nhận hộ gia đình',
+					prompt: 'Hãy kiểm tra thông tin hộ gia đình, rồi nhấn “Có, vẫn đúng” hoặc “Thay đổi”.',
+					changeHeading: 'Cập nhật hộ gia đình',
+					update: 'Cập nhật',
+					cancel: 'Hủy',
+					close: 'Đóng',
+				},
+				joinSteps: {
+					label: 'Trước khi tham gia',
+					confirmHousehold: 'Xác nhận hộ gia đình',
+					householdConfirmed: 'Đã xác nhận hộ gia đình',
+					answerQuestions: 'Trả lời câu hỏi tuần này',
+					questionsAnswered: 'Đã trả lời câu hỏi',
+				},
 				countErrors: {
 					required: 'Hãy nhập một số.',
 					notWholeNumber: 'Hãy nhập số nguyên, ví dụ 2.',
@@ -2997,7 +3116,25 @@ export const translations = {
 				seniorsHint: '如果您年满55岁，请包括您自己',
 				exceedsHousehold: '儿童和老年人的总数不能超过您家庭中的人数。',
 				noAdult: '您的家庭中必须至少有一名成年人。',
-				readyToSubmit: '已填写完毕。请点击“参加抽签”完成报名。',
+				savedHousehold: {
+					eyebrow: '来自您上次到访',
+					heading: '这些信息还正确吗？',
+					confirm: '是的，仍然正确',
+					change: '修改',
+					confirmed: '家庭信息已确认',
+					prompt: '请核对您的家庭信息，然后点击“是的，仍然正确”或“修改”。',
+					changeHeading: '更新家庭信息',
+					update: '更新',
+					cancel: '取消',
+					close: '关闭',
+				},
+				joinSteps: {
+					label: '参加前',
+					confirmHousehold: '确认家庭信息',
+					householdConfirmed: '家庭信息已确认',
+					answerQuestions: '回答本周的问题',
+					questionsAnswered: '问题已回答',
+				},
 				countErrors: {
 					required: '请输入一个数字。',
 					notWholeNumber: '请输入整数，例如 2。',
@@ -3443,7 +3580,25 @@ export const translations = {
 				seniorsHint: 'احسب نفسك إذا كان عمرك 55 عامًا أو أكثر',
 				exceedsHousehold: 'لا يمكن أن يزيد عدد الأطفال وكبار السن معًا عن عدد أفراد أسرتك.',
 				noAdult: 'يجب أن تضم أسرتك شخصًا بالغًا واحدًا على الأقل.',
-				readyToSubmit: 'كل شيء جاهز. اضغط على «انضم إلى القرعة» للمشاركة.',
+				savedHousehold: {
+					eyebrow: 'من زيارتك السابقة',
+					heading: 'هل لا تزال هذه المعلومات صحيحة؟',
+					confirm: 'نعم، لا تزال صحيحة',
+					change: 'تغيير',
+					confirmed: 'تم تأكيد بيانات الأسرة',
+					prompt: 'راجع بيانات أسرتك، ثم اضغط على «نعم، لا تزال صحيحة» أو «تغيير».',
+					changeHeading: 'تحديث بيانات أسرتك',
+					update: 'تحديث',
+					cancel: 'إلغاء',
+					close: 'إغلاق',
+				},
+				joinSteps: {
+					label: 'قبل الانضمام',
+					confirmHousehold: 'أكّد بيانات أسرتك',
+					householdConfirmed: 'تم تأكيد بيانات الأسرة',
+					answerQuestions: 'أجب عن أسئلة هذا الأسبوع',
+					questionsAnswered: 'تمت الإجابة عن الأسئلة',
+				},
 				countErrors: {
 					required: 'أدخل رقمًا.',
 					notWholeNumber: 'أدخل عددًا صحيحًا، مثل 2.',
@@ -3899,8 +4054,25 @@ export const translations = {
 				exceedsHousehold:
 					'Les enfants et les seniors réunis ne peuvent pas dépasser le nombre de personnes de votre foyer.',
 				noAdult: 'Votre foyer doit compter au moins un adulte.',
-				readyToSubmit:
-					'Tout est prêt. Appuyez sur « Participer au tirage au sort » pour vous inscrire.',
+				savedHousehold: {
+					eyebrow: 'De votre dernière visite',
+					heading: 'Est-ce toujours exact ?',
+					confirm: 'Oui, c’est exact',
+					change: 'Modifier',
+					confirmed: 'Foyer confirmé',
+					prompt: 'Vérifiez votre foyer, puis appuyez sur « Oui, c’est exact » ou « Modifier ».',
+					changeHeading: 'Mettre à jour votre foyer',
+					update: 'Mettre à jour',
+					cancel: 'Annuler',
+					close: 'Fermer',
+				},
+				joinSteps: {
+					label: 'Avant de participer',
+					confirmHousehold: 'Confirmez votre foyer',
+					householdConfirmed: 'Foyer confirmé',
+					answerQuestions: 'Répondez aux questions de la semaine',
+					questionsAnswered: 'Questions complétées',
+				},
 				countErrors: {
 					required: 'Saisissez un nombre.',
 					notWholeNumber: 'Saisissez un nombre entier, par exemple 2.',
@@ -4369,7 +4541,25 @@ export const translations = {
 				exceedsHousehold:
 					'Crianças e idosos juntos não podem ser mais do que as pessoas da sua casa.',
 				noAdult: 'Sua casa precisa incluir pelo menos um adulto.',
-				readyToSubmit: 'Tudo pronto. Toque em “Participar do sorteio” para se inscrever.',
+				savedHousehold: {
+					eyebrow: 'Da sua última visita',
+					heading: 'Isto ainda está correto?',
+					confirm: 'Sim, está correto',
+					change: 'Alterar',
+					confirmed: 'Domicílio confirmado',
+					prompt: 'Confira os dados do seu domicílio e toque em “Sim, está correto” ou “Alterar”.',
+					changeHeading: 'Atualize seu domicílio',
+					update: 'Atualizar',
+					cancel: 'Cancelar',
+					close: 'Fechar',
+				},
+				joinSteps: {
+					label: 'Antes de participar',
+					confirmHousehold: 'Confirme seu domicílio',
+					householdConfirmed: 'Domicílio confirmado',
+					answerQuestions: 'Responda às perguntas desta semana',
+					questionsAnswered: 'Perguntas respondidas',
+				},
 				countErrors: {
 					required: 'Digite um número.',
 					notWholeNumber: 'Digite um número inteiro, como 2.',
@@ -4835,7 +5025,25 @@ export const translations = {
 				exceedsHousehold:
 					'Детей и пожилых людей вместе не может быть больше, чем людей в вашей семье.',
 				noAdult: 'В вашей семье должен быть хотя бы один взрослый.',
-				readyToSubmit: 'Всё готово. Нажмите «Участвовать в жеребьёвке», чтобы записаться.',
+				savedHousehold: {
+					eyebrow: 'С вашего прошлого визита',
+					heading: 'Всё ещё верно?',
+					confirm: 'Да, всё верно',
+					change: 'Изменить',
+					confirmed: 'Данные о семье подтверждены',
+					prompt: 'Проверьте данные о семье и нажмите «Да, всё верно» или «Изменить».',
+					changeHeading: 'Обновите данные о семье',
+					update: 'Обновить',
+					cancel: 'Отмена',
+					close: 'Закрыть',
+				},
+				joinSteps: {
+					label: 'Перед записью',
+					confirmHousehold: 'Подтвердите данные о семье',
+					householdConfirmed: 'Данные о семье подтверждены',
+					answerQuestions: 'Ответьте на вопросы этой недели',
+					questionsAnswered: 'Ответы даны',
+				},
 				countErrors: {
 					required: 'Введите число.',
 					notWholeNumber: 'Введите целое число, например 2.',

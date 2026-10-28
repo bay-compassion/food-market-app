@@ -2,13 +2,13 @@ import { TextField } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import type { GuestFormCopy } from '../../../locales';
-import { HouseholdComposition, type HouseholdCount } from '../../../models/household-composition';
-import { ageRanges, type AgeRange } from '../../../services/ageRanges';
 import type { SessionQuestion } from '../../../stores/market-session.store';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
-import { NumberSpinner } from '../../NumberSpinner';
+import { ChangeHouseholdDialog } from './ChangeHouseholdDialog';
 import { FormSection } from './FormSection';
+import { HouseholdFields } from './HouseholdFields';
+import { SavedHouseholdCard } from './SavedHouseholdCard';
 import { useGuestFormCopy } from './use-guest-form-copy';
 
 export type GuestLotteryFormProps = {
@@ -36,94 +36,26 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 	const t = useTranslation();
 	const copy = useGuestFormCopy(override);
 	const { registration } = useRootStore();
-	const { guest } = registration;
-	const householdIssues = registration.household.issues;
-
-	/** The household's issue with `count`, worded for whoever is filling the form in. */
-	function errorFor(count: HouseholdCount): string | undefined {
-		const { countErrors } = t.guestView.forms;
-		const { min, max } = HouseholdComposition.ranges[count];
-
-		switch (householdIssues[count]) {
-			case undefined:
-				return undefined;
-			case 'required':
-				return countErrors.required;
-			case 'not-whole-number':
-				return countErrors.notWholeNumber;
-			case 'out-of-range':
-				return countErrors.outOfRange.replace('{min}', String(min)).replace('{max}', String(max));
-			case 'exceeds-household':
-				return copy.exceedsHousehold;
-			case 'no-adult':
-				return copy.noAdult;
-		}
-	}
-
-	const ageRangeLabels: Record<AgeRange, string> = {
-		'0-17': t.ageRange0to17,
-		'18-29': t.ageRange18to29,
-		'30-44': t.ageRange30to44,
-		'45-59': t.ageRange45to59,
-		'60-74': t.ageRange60to74,
-		'75+': t.ageRange75plus,
-	};
-
-	/** The three counts differ only in their label, hint, and range, so they share the rest. */
-	const countProps = {
-		required: true,
-		decrementLabel: t.countDecrementLabel,
-		incrementLabel: t.countIncrementLabel,
-	};
+	// A household saved from last time is a summary to confirm, not fields to fill in again.
+	const showSavedHousehold =
+		registration.savedHouseholdReview === 'pending' ||
+		registration.savedHouseholdReview === 'confirmed';
 
 	return (
 		<>
 			<FormSection legend={copy.lotteryLegend}>
-				<TextField
-					label={t.age}
-					select
-					slotProps={{ select: { native: true } }}
-					value={guest.ageRange}
-					onChange={(event) =>
-						registration.updateGuest({ ageRange: event.target.value as AgeRange | '' })
-					}
-					required
-				>
-					<option value="" disabled>
-						{copy.agePlaceholder}
-					</option>
-					{ageRanges.map((range) => (
-						<option key={range} value={range}>
-							{ageRangeLabels[range]}
-						</option>
-					))}
-				</TextField>
-				<NumberSpinner
-					{...countProps}
-					label={copy.household}
-					hint={copy.householdHint}
-					{...HouseholdComposition.ranges.householdSize}
-					error={errorFor('householdSize')}
-					value={guest.householdSize}
-					onChange={(value) => registration.updateGuest({ householdSize: value })}
-				/>
-				<NumberSpinner
-					{...countProps}
-					label={copy.childrenCount}
-					{...HouseholdComposition.ranges.childrenCount}
-					error={errorFor('childrenCount')}
-					value={guest.childrenCount}
-					onChange={(value) => registration.updateGuest({ childrenCount: value })}
-				/>
-				<NumberSpinner
-					{...countProps}
-					label={copy.seniorsCount}
-					hint={copy.seniorsHint}
-					{...HouseholdComposition.ranges.seniorsCount}
-					error={errorFor('seniorsCount')}
-					value={guest.seniorsCount}
-					onChange={(value) => registration.updateGuest({ seniorsCount: value })}
-				/>
+				{showSavedHousehold ? (
+					<>
+						<SavedHouseholdCard />
+						<ChangeHouseholdDialog />
+					</>
+				) : (
+					<HouseholdFields
+						values={registration.guest}
+						onChange={(patch) => registration.updateGuest(patch)}
+						copy={override}
+					/>
+				)}
 			</FormSection>
 			{registrationQuestions.length > 0 ? (
 				<FormSection legend={t.guestView.forms.questionsLegend}>

@@ -54,9 +54,11 @@ type GuestFormProps = {
 	/** Keeps the submit button on screen while the guest scrolls, for a form long enough that it
 	 *  would otherwise sit below the fold. Its ancestors must not clip overflow, or it never sticks. */
 	stickySubmit?: boolean;
-	/** Shown in the sticky bar once the form is complete, pointing at the button; `null` until then.
-	 *  Leave it out for a form that has no such moment. */
-	readyHint?: string | null;
+	/** Whether the form is complete, so the bar points at the button. Leave it out for a form that
+	 *  has no such moment. */
+	ready?: boolean;
+	/** What is left before the form is ready, shown in the bar until it is. */
+	progress?: ReactNode;
 	children: ReactNode;
 };
 
@@ -68,7 +70,8 @@ export const GuestForm = observer(function GuestForm({
 	submittingLabel,
 	onSubmit,
 	stickySubmit = false,
-	readyHint,
+	ready,
+	progress,
 	children,
 }: GuestFormProps) {
 	const t = useTranslation();
@@ -89,7 +92,8 @@ export const GuestForm = observer(function GuestForm({
 				submitLabel={submitLabel}
 				submittingLabel={submittingLabel}
 				sticky={stickySubmit}
-				readyHint={readyHint}
+				ready={ready}
+				progress={progress}
 			/>
 			<Privacy className="privacy">
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
