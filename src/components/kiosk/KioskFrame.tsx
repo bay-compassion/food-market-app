@@ -13,7 +13,9 @@ const Backdrop = styled.main`
 	display: flex;
 	flex-direction: column;
 	/* A fixed height, not a minimum: content that doesn't fit must give way, never push the
-	   footer off the bottom of a screen nobody can scroll. */
+	   footer off the bottom of a screen nobody can scroll. 100vh first is the fallback for
+	   browsers without dynamic viewport units, which drop the 100dvh line. */
+	height: 100vh;
 	height: 100dvh;
 	padding: 3vmin 3vmin;
 	background: var(--color-brand-dark);
