@@ -225,6 +225,8 @@ export interface GuestViewTranslations {
 		exceedsHousehold: string;
 		/** Under the children count, when it leaves no adult in the household to shop for it. */
 		noAdult: string;
+		/** Under a first or last name that is only initials, such as "J." */
+		initialsOnly: string;
 		/** The card a returning guest sees in place of the household fields this phone saved. */
 		savedHousehold: {
 			/** Small label above the heading: where the values came from. */
@@ -499,6 +501,7 @@ export type GuestFormCopy = Pick<
 	| 'seniorsHint'
 	| 'exceedsHousehold'
 	| 'noAdult'
+	| 'initialsOnly'
 > &
 	Pick<
 		Translation,
@@ -755,6 +758,7 @@ export const translations = {
 				exceedsHousehold:
 					'Children and seniors together can’t be more than the people in your household.',
 				noAdult: 'Your household must include at least one adult.',
+				initialsOnly: 'Write out the whole name, not just the first letter.',
 				savedHousehold: {
 					eyebrow: 'From your last visit',
 					heading: 'Is this still right?',
@@ -1265,6 +1269,7 @@ export const translations = {
 				exceedsHousehold:
 					'Los niños y las personas mayores juntos no pueden ser más que las personas de su hogar.',
 				noAdult: 'Su hogar debe incluir al menos un adulto.',
+				initialsOnly: 'Escriba el nombre entero, no solo la primera letra.',
 				savedHousehold: {
 					eyebrow: 'De su última visita',
 					heading: '¿Sigue siendo correcto?',
@@ -1776,6 +1781,7 @@ export const translations = {
 				seniorsHint: 'اگر ۵۵ سال یا بیشتر دارید، خودتان را هم حساب کنید',
 				exceedsHousehold: 'مجموع کودکان و سالمندان نمی‌تواند از تعداد افراد خانواده شما بیشتر باشد.',
 				noAdult: 'خانواده شما باید دست‌کم یک بزرگسال داشته باشد.',
+				initialsOnly: 'نام را کامل بنویسید، نه فقط حرف اول آن را.',
 				savedHousehold: {
 					eyebrow: 'از مراجعهٔ قبلی شما',
 					heading: 'آیا این اطلاعات هنوز درست است؟',
@@ -2285,6 +2291,7 @@ export const translations = {
 				exceedsHousehold:
 					'Hindi puwedeng mas marami ang mga bata at senior kaysa sa mga tao sa inyong sambahayan.',
 				noAdult: 'Dapat may kahit isang nasa hustong gulang sa inyong sambahayan.',
+				initialsOnly: 'Isulat nang buo ang pangalan, hindi lang ang unang titik.',
 				savedHousehold: {
 					eyebrow: 'Mula sa huli mong pagbisita',
 					heading: 'Tama pa ba ito?',
@@ -2796,6 +2803,7 @@ export const translations = {
 				exceedsHousehold:
 					'Tổng số trẻ em và người cao tuổi không thể nhiều hơn số người trong hộ gia đình của bạn.',
 				noAdult: 'Hộ gia đình của bạn phải có ít nhất một người lớn.',
+				initialsOnly: 'Vui lòng viết đầy đủ tên, không chỉ chữ cái đầu.',
 				savedHousehold: {
 					eyebrow: 'Từ lần đến trước của bạn',
 					heading: 'Thông tin này còn đúng không?',
@@ -3293,6 +3301,7 @@ export const translations = {
 				seniorsHint: '如果您年满55岁，请包括您自己',
 				exceedsHousehold: '儿童和老年人的总数不能超过您家庭中的人数。',
 				noAdult: '您的家庭中必须至少有一名成年人。',
+				initialsOnly: '请完整填写，不要只写第一个字母。',
 				savedHousehold: {
 					eyebrow: '来自您上次到访',
 					heading: '这些信息还正确吗？',
@@ -3782,6 +3791,7 @@ export const translations = {
 				seniorsHint: 'احسب نفسك إذا كان عمرك 55 عامًا أو أكثر',
 				exceedsHousehold: 'لا يمكن أن يزيد عدد الأطفال وكبار السن معًا عن عدد أفراد أسرتك.',
 				noAdult: 'يجب أن تضم أسرتك شخصًا بالغًا واحدًا على الأقل.',
+				initialsOnly: 'اكتب الاسم كاملًا، وليس الحرف الأول فقط.',
 				savedHousehold: {
 					eyebrow: 'من زيارتك السابقة',
 					heading: 'هل لا تزال هذه المعلومات صحيحة؟',
@@ -4286,6 +4296,7 @@ export const translations = {
 				exceedsHousehold:
 					'Les enfants et les seniors réunis ne peuvent pas dépasser le nombre de personnes de votre foyer.',
 				noAdult: 'Votre foyer doit compter au moins un adulte.',
+				initialsOnly: 'Écrivez le nom en entier, pas seulement la première lettre.',
 				savedHousehold: {
 					eyebrow: 'De votre dernière visite',
 					heading: 'Est-ce toujours exact ?',
@@ -4800,6 +4811,7 @@ export const translations = {
 				exceedsHousehold:
 					'Crianças e idosos juntos não podem ser mais do que as pessoas da sua casa.',
 				noAdult: 'Sua casa precisa incluir pelo menos um adulto.',
+				initialsOnly: 'Escreva o nome inteiro, não apenas a primeira letra.',
 				savedHousehold: {
 					eyebrow: 'Da sua última visita',
 					heading: 'Isto ainda está correto?',
@@ -5310,6 +5322,7 @@ export const translations = {
 				exceedsHousehold:
 					'Детей и пожилых людей вместе не может быть больше, чем людей в вашей семье.',
 				noAdult: 'В вашей семье должен быть хотя бы один взрослый.',
+				initialsOnly: 'Напишите полностью, а не только первую букву.',
 				savedHousehold: {
 					eyebrow: 'С вашего прошлого визита',
 					heading: 'Всё ещё верно?',

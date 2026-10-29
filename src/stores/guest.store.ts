@@ -1,6 +1,7 @@
 import { runInAction } from 'mobx';
 
 import { installId } from '../install-id.ts';
+import { GuestName } from '../models/guest-name.ts';
 import {
 	submitGuestRegistration,
 	submitGuestSignup,
@@ -96,6 +97,19 @@ export class GuestStore {
 	 */
 	get identity(): GuestIdentity | null {
 		return this._identity;
+	}
+
+	/**
+	 * Whether this phone saved a name the market no longer accepts — initials only, from before the
+	 * rule. The registration form asks for the name again rather than sending one the server refuses.
+	 */
+	get hasIncompleteName(): boolean {
+		const identity = this._identity;
+
+		return (
+			identity !== null &&
+			!(new GuestName(identity.firstName).isValid && new GuestName(identity.lastName).isValid)
+		);
 	}
 
 	get displayedName() {

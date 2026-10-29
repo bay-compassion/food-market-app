@@ -33,8 +33,9 @@ export const GuestCombinedForm = observer(function GuestCombinedForm() {
 			ready={registration.isReadyToSubmit(registrationQuestions)}
 			progress={<GuestJoinSteps questions={registrationQuestions} />}
 		>
-			{/* A returning guest's name and phone are saved and shown above; they are not asked again. */}
-			{guest.identity === null ? <GuestInformationForm /> : null}
+			{/* A returning guest's name and phone are saved and shown above; they are not asked again,
+			    unless the saved name is only initials, which the server now refuses. */}
+			{guest.identity === null || guest.hasIncompleteName ? <GuestInformationForm /> : null}
 			<GuestLotteryForm registrationQuestions={registrationQuestions} />
 		</GuestForm>
 	);

@@ -1,4 +1,3 @@
-import { TextField } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import type { GuestFormCopy } from '../../../locales';
@@ -6,6 +5,7 @@ import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { PhoneField } from '../../PhoneField';
 import { FormSection } from './FormSection';
+import { GuestNameField } from './GuestNameField';
 import { PronunciationField } from './PronunciationField';
 import { useGuestFormCopy } from './use-guest-form-copy';
 
@@ -30,26 +30,18 @@ export const GuestInformationForm = observer(function GuestInformationForm({
 
 	return (
 		<FormSection legend={copy.informationLegend}>
-			<PronunciationField copy={override}>
-				<TextField
-					label={t.firstName}
-					value={registration.guest.firstName}
-					onChange={(event) => registration.updateGuest({ firstName: event.target.value })}
-					// Trimmed on the way out rather than on every keystroke: trimming as the guest types
-					// would eat the space the moment it was pressed, leaving no way to enter a name in two
-					// words. The server trims these fields again before storing them.
-					onBlur={(event) => registration.updateGuest({ firstName: event.target.value.trim() })}
-					required
-					autoComplete="given-name"
-				/>
-			</PronunciationField>
-			<TextField
+			<GuestNameField
+				field="firstName"
+				label={t.firstName}
+				autoComplete="given-name"
+				initialsMessage={copy.initialsOnly}
+				attach={(field) => <PronunciationField copy={override}>{field}</PronunciationField>}
+			/>
+			<GuestNameField
+				field="lastName"
 				label={t.lastName}
-				value={registration.guest.lastName}
-				onChange={(event) => registration.updateGuest({ lastName: event.target.value })}
-				onBlur={(event) => registration.updateGuest({ lastName: event.target.value.trim() })}
-				required
 				autoComplete="family-name"
+				initialsMessage={copy.initialsOnly}
 			/>
 			<PhoneField
 				label={t.phone}

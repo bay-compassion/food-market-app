@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { db } from '../../db/index.mjs';
 import { guests } from '../../db/schema.mjs';
 import { languages, type Locale } from '../../src/locales.js';
+import { GuestName } from '../../src/models/guest-name.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import { hashDeviceToken, issueDeviceToken, normalizePhone } from './guestCredentials.mjs';
 
@@ -11,8 +12,16 @@ export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export const guestLocales = languages.map(({ code }) => code) as [Locale, ...Locale[]];
 
-/** A guest's own name, as they typed it. */
-export const guestNameSchema = z.string().trim().min(1).max(100);
+/** A guest's own name, as they typed it, checked by the same rule the registration form applies. */
+export const guestNameSchema = z
+	.string()
+	.trim()
+	.min(1)
+	.max(100)
+	.refine(
+		(name) => new GuestName(name).issue !== 'initials-only',
+		'Write out the whole name, not just the first letter.',
+	);
 
 /** Optional free text, trimmed; an empty value clears what was there. */
 function optionalTextSchema(max: number) {

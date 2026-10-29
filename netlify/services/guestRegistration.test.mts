@@ -215,6 +215,33 @@ describe('validateSubmission', () => {
 			fields: { ageRange: 'invalid_value' },
 		});
 	});
+
+	it('names a name given only as initials', () => {
+		// Arrange
+		const submission = selfSubmission({ firstName: 'A.', lastName: 'G' });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({
+			success: false,
+			error:
+				'First name: Write out the whole name, not just the first letter. Last name: Write out the whole name, not just the first letter.',
+			fields: { firstName: 'custom', lastName: 'custom' },
+		});
+	});
+
+	it('refuses initials from a worker adding a guest, too', () => {
+		// Arrange
+		const submission = selfSubmission({ source: 'admin', lastName: 'G.' });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({ success: false, fields: { lastName: 'custom' } });
+	});
 });
 
 describe('registerGuest eligibility', () => {
@@ -892,6 +919,11 @@ describe('parseGuestInformation', () => {
 	it('rejects a missing first or last name', () => {
 		expect(parseGuestInformation(signupSubmission({ firstName: '' }))).toBeNull();
 		expect(parseGuestInformation(signupSubmission({ lastName: '' }))).toBeNull();
+	});
+
+	it('rejects a first or last name given only as initials', () => {
+		expect(parseGuestInformation(signupSubmission({ firstName: 'A.' }))).toBeNull();
+		expect(parseGuestInformation(signupSubmission({ lastName: 'G' }))).toBeNull();
 	});
 
 	it('rejects a non-object payload', () => {

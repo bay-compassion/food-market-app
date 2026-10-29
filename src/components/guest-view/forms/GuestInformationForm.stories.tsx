@@ -87,6 +87,47 @@ export const AddingAPronunciation: Story = {
 	},
 };
 
+/**
+ * A name given only as initials is refused, since workers call a guest by name. The message waits
+ * until the guest leaves the field, so the first letter of a name being typed is not scolded, then
+ * clears as soon as the name is whole. The field stays invalid meanwhile, so tapping submit brings
+ * the guest back to it.
+ */
+export const InitialsOnly: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const message = translations.en.guestView.forms.initialsOnly;
+		const firstName = canvas.getByLabelText(translations.en.firstName);
+
+		await userEvent.type(firstName, 'J.');
+		await expect(canvas.queryByText(message)).toBeNull();
+
+		await userEvent.tab();
+		await expect(canvas.getByText(message)).toBeInTheDocument();
+		await expect(firstName).toBeInvalid();
+
+		await userEvent.clear(firstName);
+		await userEvent.type(firstName, 'Jo');
+		await expect(canvas.queryByText(message)).toBeNull();
+		await expect(firstName).toBeValid();
+	},
+};
+
+/**
+ * Tapping submit with an initial still in the field shows why it was refused, without the guest
+ * having left the field first — the way a returning guest whose saved name is an initial finds out.
+ */
+export const InitialsOnlyOnSubmit: Story = {
+	play: async ({ canvas, canvasElement, userEvent }) => {
+		const message = translations.en.guestView.forms.initialsOnly;
+
+		await userEvent.type(canvas.getByLabelText(translations.en.lastName), 'R');
+		await expect(canvas.queryByText(message)).toBeNull();
+
+		canvasElement.querySelector('form')!.requestSubmit();
+		await expect(await canvas.findByText(message)).toBeInTheDocument();
+	},
+};
+
 /** The phone field formats digits as they are typed, rather than asking for the punctuation. */
 export const PhoneFormatting: Story = {
 	play: async ({ canvas, userEvent }) => {
