@@ -38,7 +38,6 @@ export const Registered: Story = {
 		await expect(
 			await canvas.findByText(translations.en.guestView.visitStatus.registered.header),
 		).toBeInTheDocument();
-		await expect(canvas.getByText(translations.en.registrationClosesIn)).toBeInTheDocument();
 		await expect(
 			canvas.getByText(translations.en.guestView.visitStatus.registered.returnInstructions),
 		).toBeInTheDocument();

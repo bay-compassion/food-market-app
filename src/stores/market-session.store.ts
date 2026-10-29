@@ -1,5 +1,7 @@
 import { runInAction } from 'mobx';
 
+import { NextRegistration, type NextRegistrationWindow } from '../models/next-registration.ts';
+import { RegistrationClock } from '../models/registration-clock.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
 import { type SessionCommand, SessionStatusEnum } from '../services/sessionStateMachine.ts';
@@ -36,6 +38,8 @@ export type MarketEventTiming = Pick<SessionEvent, 'id' | 'status'> & {
 
 export type SessionOverview = {
 	event: SessionEvent | null;
+	/** When registration next opens, for the guest's copy; absent from older responses. */
+	nextRegistration?: NextRegistrationWindow | null;
 	questions: SessionQuestion[];
 	counts: Partial<Record<VisitStatus, number>>;
 };
@@ -59,6 +63,11 @@ export type MarketSessionStoreOptions = {
 	requestHeaders?: () => HeadersInit | Promise<HeadersInit>;
 	/** Sends the store's requests. Injected by a story or test so a fake never touches `window`. */
 	fetch?: typeof fetch;
+	/**
+	 * Tell the next registration without a date — "next Saturday" — for the guides and videos,
+	 * which are watched on any day and must not name one that has passed.
+	 */
+	undatedNextRegistration?: boolean;
 };
 
 const defaultPollIntervalMs = 5_000;
@@ -75,6 +84,7 @@ export class MarketSessionStore {
 	private readonly pollIntervalMs: number;
 	private readonly requestHeaders: () => HeadersInit | Promise<HeadersInit>;
 	private readonly fetch: typeof fetch;
+	private readonly undatedNextRegistration: boolean;
 
 	get currentState(): SessionOverview | null {
 		return this._currentState;
@@ -109,6 +119,27 @@ export class MarketSessionStore {
 			: null;
 	}
 
+	/**
+	 * When registration next opens, as the guest's copy tells it: dated from the schedule, "every
+	 * Saturday" when the server has none to say — or "next Saturday" in a guide, which must not date it.
+	 */
+	get nextRegistration(): NextRegistration {
+		const window = this._currentState?.nextRegistration;
+
+		if (this.undatedNextRegistration) {
+			return NextRegistration.next;
+		}
+
+		return window ? new NextRegistration(window) : NextRegistration.every;
+	}
+
+	/** The guest's countdown strip, or `null` when there is no market to count toward. */
+	get registrationClock(): RegistrationClock | null {
+		const event = this.marketEvent;
+
+		return event ? new RegistrationClock(event) : null;
+	}
+
 	get error(): Error | null {
 		return this._error;
 	}
@@ -130,11 +161,13 @@ export class MarketSessionStore {
 		this.requestHeaders = options.requestHeaders ?? (() => ({}));
 		// Bound, because a bare `fetch` called as a method throws "Illegal invocation".
 		this.fetch = options.fetch ?? ((...request) => fetch(...request));
+		this.undatedNextRegistration = options.undatedNextRegistration ?? false;
 
 		return makeReactive(this, {
 			pollIntervalMs: false,
 			requestHeaders: false,
 			fetch: false,
+			undatedNextRegistration: false,
 			pagePoller: false,
 			statusRequest: false,
 			requestRevision: false,

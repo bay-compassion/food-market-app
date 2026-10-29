@@ -16,6 +16,8 @@ export type GuestVisitStatusPanelProps = {
 	heading: string;
 	description?: string;
 	details?: ReactNode;
+	/** Below the description, inside the panel's height rather than added to it. */
+	children?: ReactNode;
 	tone?: GuestVisitStatusTone;
 	iconClassName?: string;
 };
@@ -66,6 +68,7 @@ export function GuestVisitStatusPanel({
 	heading,
 	description,
 	details,
+	children,
 	tone = 'brand',
 	iconClassName,
 }: GuestVisitStatusPanelProps) {
@@ -81,6 +84,7 @@ export function GuestVisitStatusPanel({
 			<h2>{heading}</h2>
 			{details}
 			{description ? <p>{description}</p> : null}
+			{children}
 		</Panel>
 	);
 }

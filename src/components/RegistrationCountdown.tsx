@@ -1,79 +1,81 @@
 import { Global } from '@emotion/react';
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
-import { type CSSProperties } from 'react';
+import { type CSSProperties, useEffect } from 'react';
 
-import { SessionStatusEnum } from '../services/sessionStateMachine';
+import type { RegistrationClock, RegistrationClockPhase } from '../models/registration-clock';
 import { useRootStore } from '../stores/react/store-context';
 import { useTranslation } from '../stores/react/use-translation';
-import { useCountdownTimer } from './hooks/use-countdown-timer';
+import { useNow } from './hooks/use-now';
 import { useOnScreenKeyboard } from './hooks/use-on-screen-keyboard';
+import { RegistrationCountdownIcon } from './RegistrationCountdownIcon';
 
-const transitionThresholdMs = 5 * 60_000;
+/** How often to ask the server again while it has yet to say registration is open. */
+const openingRetryMs = 1_000;
 
-/** The pinned strip's height, which what the page scrolls to has to clear as well as the app bar. */
-const pinnedHeight = '44px';
+/** The strip's height, which what the page scrolls to has to clear as well as the app bar. */
+const stripHeight = '44px';
 
 /*
- * Pinned, the clock is a strip under the app bar that stays while the guest scrolls the form. Below
- * the app bar (1100) and above the form, whose outlined field labels sit at `z-index: 1`.
+ * A strip under the app bar that stays while the guest scrolls. Below the app bar (1100) and above
+ * the form, whose outlined field labels sit at `z-index: 1`.
  */
 const Countdown = styled.div`
-	margin-bottom: 16px;
-
-	&[data-pinned] {
-		position: sticky;
-		top: var(--app-bar-height);
-		z-index: 2;
-		margin-bottom: 0;
-	}
+	position: sticky;
+	top: var(--app-bar-height);
+	z-index: 2;
 
 	/* As the submit bar does: the keyboard leaves too little screen to spend on a pinned strip. */
-	&[data-pinned][data-keyboard] {
+	&[data-keyboard] {
 		position: static;
 	}
 `;
 
 /**
- * `longer hue` routes the blend around through amber rather than the shorter arc through purple,
- * so the color reads as warming up rather than shifting hue at random.
+ * Each phase has a look of its own, so the countdown to opening never reads as the one to closing:
+ *
+ * - Waiting to open: the soft surface, with an hourglass.
+ * - Just opened: solid success green, with a check, between the two countdowns.
+ * - Closing: pale like the app's other surfaces until the last five minutes, then the solid warming
+ *   colour with white text, which holds its contrast all the way to red — a pale strip blended
+ *   toward red would pass through shades no text reads on. `longer hue` routes the blend around
+ *   through amber rather than the shorter arc through purple, so it reads as warming up.
  */
 const Clock = styled.div`
-	display: grid;
-	gap: 2px;
-	padding: 14px 18px;
-	border-radius: var(--radius-md);
-	color: var(--color-on-brand);
-	background: color-mix(
-		in oklch longer hue,
-		var(--color-brand),
-		var(--color-error) calc(var(--registration-countdown-progress) * 100%)
-	);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: ${stripHeight};
+	padding: 4px 18px;
+	color: var(--color-brand-dark);
+	background: var(--color-surface-soft);
+	border-bottom: 1px solid var(--color-border-soft);
+	box-shadow: 0 2px 6px rgb(0 0 0 / 14%);
 	text-align: center;
 
-	[data-pinned] > & {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-		min-height: ${pinnedHeight};
-		padding: 4px 18px;
-		border-radius: 0;
-		/* Against the app bar, which in light mode is the same colour as the warming clock's start. */
-		border-top: 1px solid rgb(255 255 255 / 30%);
-		box-shadow: 0 2px 6px rgb(0 0 0 / 14%);
+	&[data-phase='opens'],
+	&[data-phase='opening'] {
+		color: var(--color-text-muted);
+		background: var(--color-surface);
 	}
 
-	/*
-	 * Until the last five minutes the strip is pale, so it stands apart from the app bar above it.
-	 * Only then does it take the solid warming colour, with white text, which holds its contrast all
-	 * the way to red — a pale strip blended toward red would pass through shades no text reads on.
-	 */
-	[data-pinned] > &:not([data-warming]) {
-		color: var(--color-brand-dark);
-		background: var(--color-surface-soft);
-		border-top: 0;
-		border-bottom: 1px solid var(--color-border-soft);
+	&[data-phase='opened'] {
+		color: var(--color-on-brand);
+		background: var(--color-success);
+		border-bottom: 0;
+	}
+
+	&[data-warming] {
+		color: var(--color-on-brand);
+		background: color-mix(
+			in oklch longer hue,
+			var(--color-brand),
+			var(--color-error) calc(var(--registration-countdown-progress) * 100%)
+		);
+		/* Against the app bar, which in light mode is the same colour as the warming clock's start. */
+		border-top: 1px solid rgb(255 255 255 / 30%);
+		border-bottom: 0;
 	}
 `;
 
@@ -82,36 +84,16 @@ const Label = styled.span`
 	align-items: center;
 	justify-content: center;
 	gap: 4px;
-	font-size: 12px;
+	font-size: 15px;
 	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	opacity: 0.85;
-
-	[data-pinned] & {
-		font-size: 15px;
-		text-transform: none;
-		letter-spacing: normal;
-		opacity: 1;
-	}
-`;
-
-const WarningIcon = styled.svg`
-	flex: 0 0 auto;
-	width: 14px;
-	height: 14px;
 `;
 
 const Digits = styled.span`
 	font-family: var(--font-heading);
-	font-size: 38px;
+	font-size: 22px;
 	font-weight: 700;
 	font-variant-numeric: tabular-nums;
 	letter-spacing: 0.02em;
-
-	[data-pinned] & {
-		font-size: 22px;
-	}
 `;
 
 function pad(value: number) {
@@ -135,105 +117,112 @@ function clockText(remainingMs: number): string {
 }
 
 /**
- * How long is left to register, counting down, warming toward the danger color as it runs out.
- * `pinned` makes it a strip that stays under the app bar while the guest scrolls the form.
+ * A strip pinned under the app bar for the registration window: counting down to opening in its
+ * last ten minutes, saying so the moment it opens, then counting down to closing, warming toward
+ * the danger color as it runs out.
  */
-export const RegistrationCountdown = observer(function RegistrationCountdown({
-	pinned = false,
-}: {
-	pinned?: boolean;
-}) {
-	const { session } = useRootStore();
-	const closesAt = session.marketEvent?.registrationClosesAt;
+export const RegistrationCountdown = observer(function RegistrationCountdown() {
+	const clock = useRootStore().session.registrationClock;
 
-	if (session.currentStatus !== SessionStatusEnum.REGISTRATION_OPEN || !closesAt) {
-		return null;
-	}
-
-	return <ActiveCountdown closesAt={closesAt} pinned={pinned} />;
+	return clock ? <ActiveCountdown clock={clock} /> : null;
 });
 
-/** Mount the timer only while registration is open, keeping its hooks unconditional. */
-const ActiveCountdown = observer(function ActiveCountdown({
-	closesAt,
-	pinned,
-}: {
-	closesAt: Date;
-	pinned: boolean;
-}) {
-	const t = useTranslation();
-	const remainingMs = useCountdownTimer(closesAt.valueOf());
+/** Mount the timer only while there is a market to count toward, keeping its hooks unconditional. */
+const ActiveCountdown = observer(function ActiveCountdown({ clock }: { clock: RegistrationClock }) {
+	const { session } = useRootStore();
+	const phase = clock.phaseAt(useNow(1_000));
 	const keyboardOpen = useOnScreenKeyboard();
+	const opening = phase.kind === 'opening';
 
-	if (remainingMs <= 0) {
+	// The poll comes round every few seconds; asking at once, and again until the server agrees,
+	// keeps the strip from sitting on "opening" while the guest waits for the form.
+	useEffect(() => {
+		if (!opening) {
+			return;
+		}
+
+		const ask = () => void session.getStatus().catch(() => undefined);
+
+		ask();
+		const timer = setInterval(ask, openingRetryMs);
+
+		return () => clearInterval(timer);
+	}, [opening, session]);
+
+	if (phase.kind === 'hidden') {
 		return null;
 	}
-
-	/**
-	 * How far into the color transition the clock is: `0` at or above the threshold, `1` at zero
-	 * remaining. It is handed to CSS as a custom property so the blend is computed by
-	 * `color-mix()` rather than snapped between fixed swatches.
-	 */
-	const progress = Math.min(1, Math.max(0, 1 - remainingMs / transitionThresholdMs));
-	/**
-	 * A screen reader announcing the clock every second would be unusable, so the accessible text
-	 * is kept to whole minutes — it changes once a minute even though the visible clock ticks every
-	 * second (and is hidden from assistive technology).
-	 */
-	const accessibleText = t.registrationClosesInMinutes.replace(
-		'{minutes}',
-		String(Math.ceil(remainingMs / 60_000)),
-	);
 
 	return (
 		<Countdown
 			className="registration-countdown"
 			data-tour="registration-countdown"
-			data-pinned={pinned || undefined}
-			data-keyboard={(pinned && keyboardOpen) || undefined}
+			data-keyboard={keyboardOpen || undefined}
 		>
 			{/*
 				What the browser scrolls to — a field it is taking the guest to, say — has to clear the
 				strip as well as the app bar, or it lands underneath them.
 			*/}
-			{pinned ? (
-				<Global
-					styles={{
-						html: { scrollPaddingTop: `calc(var(--app-bar-height) + ${pinnedHeight} + 16px)` },
-					}}
-				/>
-			) : null}
+			<Global
+				styles={{
+					html: { scrollPaddingTop: `calc(var(--app-bar-height) + ${stripHeight} + 16px)` },
+				}}
+			/>
+			<PhaseContent phase={phase} />
+		</Countdown>
+	);
+});
+
+function PhaseContent({ phase }: { phase: Exclude<RegistrationClockPhase, { kind: 'hidden' }> }) {
+	const t = useTranslation();
+	const progress = phase.kind === 'closes' ? phase.progress : 0;
+	const icon =
+		phase.kind === 'opened'
+			? 'opened'
+			: phase.kind === 'closes'
+				? progress > 0
+					? 'warning'
+					: null
+				: 'waiting';
+	const label = {
+		opens: t.registrationOpensIn,
+		opening: t.registrationOpening,
+		opened: t.registrationOpened,
+		closes: t.registrationClosesIn,
+	}[phase.kind];
+	const remainingMs = 'remainingMs' in phase ? phase.remainingMs : null;
+
+	/**
+	 * A screen reader announcing the clock every second would be unusable, so the accessible text
+	 * is kept to whole minutes — it changes once a minute even though the visible clock ticks every
+	 * second (and is hidden from assistive technology).
+	 */
+	const accessibleText =
+		remainingMs === null
+			? label
+			: (phase.kind === 'opens'
+					? t.registrationOpensInMinutes
+					: t.registrationClosesInMinutes
+				).replace('{minutes}', String(Math.ceil(remainingMs / 60_000)));
+
+	return (
+		<>
 			<Clock
 				className="registration-countdown-clock"
+				data-phase={phase.kind}
 				data-warming={progress > 0 || undefined}
 				style={{ '--registration-countdown-progress': progress } as CSSProperties}
 				aria-hidden="true"
 			>
 				<Label className="registration-countdown-label">
-					{/*
-						A color blend alone doesn't reliably read as "time is running out" for red-green
-						color blindness, so the icon is a redundant, non-color signal for the same
-						information — present once the transition has started, gone otherwise.
-					*/}
-					{progress > 0 ? (
-						<WarningIcon
-							className="registration-countdown-icon"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							aria-hidden="true"
-						>
-							<path d="M12 3 2 20h20L12 3Z" strokeLinejoin="round" strokeLinecap="round" />
-							<path d="M12 10v4" strokeLinecap="round" />
-							<path d="M12 17h.01" strokeLinecap="round" />
-						</WarningIcon>
-					) : null}
-					{t.registrationClosesIn}
+					{icon ? <RegistrationCountdownIcon kind={icon} /> : null}
+					{label}
 				</Label>
-				<Digits className="registration-countdown-digits">{clockText(remainingMs)}</Digits>
+				{remainingMs === null ? null : (
+					<Digits className="registration-countdown-digits">{clockText(remainingMs)}</Digits>
+				)}
 			</Clock>
 			<span className="sr-only">{accessibleText}</span>
-		</Countdown>
+		</>
 	);
-});
+}

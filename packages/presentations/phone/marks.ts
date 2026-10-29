@@ -166,7 +166,7 @@ export function scrollUnderBar(container: HTMLElement, target: HTMLElement | nul
 		window.innerHeight - (container.querySelector('header')?.getBoundingClientRect().bottom ?? 0);
 	// What the app pins over the page — the countdown strip under the bar, the submit bar at the
 	// bottom — covers it, so the target has to clear those as well, as it does in the app.
-	const strip = scroller.querySelector<HTMLElement>('.registration-countdown[data-pinned]');
+	const strip = scroller.querySelector<HTMLElement>('.registration-countdown');
 	const submit = scroller.querySelector<HTMLElement>('.submit-bar[data-sticky]');
 	const above = strip?.offsetHeight ?? 0;
 	const below = target && submit && !submit.contains(target) ? submit.offsetHeight : 0;

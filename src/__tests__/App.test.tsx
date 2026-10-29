@@ -35,6 +35,7 @@ import { authReturnUrl } from '../auth';
 import { AdminAuthView } from '../components/AdminAuthView';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { GuestView } from '../components/guest-view/GuestView';
+import { unscheduled } from '../components/guest-view/unscheduled-next-registration.fixture';
 import { HelpPage } from '../components/help/HelpPage';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../components/hooks/use-line-position-indicator';
 import { PrivacyPage } from '../components/legal/PrivacyPage';
@@ -563,7 +564,7 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.textContent).toContain(copy.header));
 
-		expect(container.textContent).toContain(copy.details);
+		expect(container.textContent).toContain(unscheduled(copy.details));
 		expect(container.textContent).not.toContain('You got a number!');
 	});
 
@@ -644,7 +645,7 @@ describe('App', () => {
 
 		await screen.findByRole('heading', { name: copy.heading });
 
-		expect(container.textContent).toContain(copy.description);
+		expect(container.textContent).toContain(unscheduled(copy.description));
 		expect(container.textContent).not.toContain(
 			translations.en.guestView.scheduleInformation.heading,
 		);
@@ -657,7 +658,7 @@ describe('App', () => {
 
 		await screen.findByRole('heading', { name: copy.heading });
 
-		expect(container.textContent).toContain(copy.description);
+		expect(container.textContent).toContain(unscheduled(copy.description));
 	});
 
 	it('shows the full inactive-market explanation when the session is inactive', async () => {
@@ -667,7 +668,7 @@ describe('App', () => {
 		const heading = await screen.findByRole('heading', { name: copy.heading });
 		const inactiveState = within(heading.parentElement!);
 
-		expect(inactiveState.getByText(copy.subheading)).not.toBeNull();
+		expect(inactiveState.getByText(unscheduled(copy.subheading))).not.toBeNull();
 		expect(inactiveState.getByText(copy.lotteryDescription)).not.toBeNull();
 		expect(inactiveState.getByText(copy.selectionDescription)).not.toBeNull();
 		expect(inactiveState.queryByRole('link')).toBeNull();

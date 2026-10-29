@@ -4,6 +4,7 @@ import { expect } from 'storybook/test';
 import { translations } from '../../locales';
 import { GuestServiceState } from './GuestServiceState';
 import { GuestStatusCard } from './GuestStatusCard';
+import { unscheduled } from './unscheduled-next-registration.fixture';
 
 /**
  * Shown when there is no current-market visit to present and the market is underway. Wrapped in
@@ -32,7 +33,7 @@ export const InProgress: Story = {
 		const copy = translations.en.guestView.serviceState;
 
 		await expect(canvas.getByRole('heading', { name: copy.inProgressHeading })).toBeInTheDocument();
-		await expect(canvas.getByText(copy.inProgressDescription)).toBeInTheDocument();
+		await expect(canvas.getByText(unscheduled(copy.inProgressDescription))).toBeInTheDocument();
 	},
 };
 

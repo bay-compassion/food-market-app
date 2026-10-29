@@ -176,7 +176,11 @@ export class PhoneDevice implements PhoneHandle {
 		this.server = new PhoneServer(scene);
 
 		const storage = storageFor(scene);
-		const store = new RootStore({ browserStorage: storage });
+		// Undated: the guide is watched on any day, so it says "next Saturday" rather than a date.
+		const store = new RootStore({
+			browserStorage: storage,
+			session: { undatedNextRegistration: true },
+		});
 
 		// Everything the screen would otherwise load once it is up, loaded before it draws.
 		store.session.applyServerState(this.server.overview);

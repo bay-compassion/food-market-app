@@ -166,6 +166,10 @@ describe('blob-backed public market overview', () => {
 		queueResult([{ ...event, status: 'registration_closed' }]);
 		queueResult([]);
 		queueResult([]);
+		queueResult([
+			{ id: event.locationId, name: 'The Bay Church', timeZone: 'America/Los_Angeles' },
+		]);
+		queueResult([]); // no recurrence pattern, so no next registration to name
 
 		const response = await publicHandler(new Request('https://example.com/api/market'));
 

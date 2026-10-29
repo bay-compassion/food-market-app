@@ -1,9 +1,17 @@
 import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { marketEvents, registrationQuestions, visits } from '../../db/schema.mjs';
+import {
+	marketEvents,
+	recurrencePatterns,
+	registrationQuestions,
+	visits,
+} from '../../db/schema.mjs';
+import type { NextRegistrationWindow } from '../../src/models/next-registration.js';
+import { RecurrencePattern } from '../../src/models/recurrence-pattern.js';
 import { SessionTimeline } from '../../src/models/session-timeline.js';
 import { tracedQuery } from '../lib/sentry.mjs';
+import { locationById } from './marketLocation.mjs';
 import { requestNotificationDispatch } from './notificationDispatch.mjs';
 import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
@@ -128,6 +136,48 @@ export async function getCurrentEvent() {
 	return event;
 }
 
+/**
+ * When registration next opens, for the guest's copy to name the day: the session itself while it
+ * is still to open, otherwise the pattern's next occurrence after it. That next session is only
+ * created once this one ends, so on market day it is worked out rather than looked up. `null` for a
+ * one-off session with no pattern to follow.
+ */
+async function nextRegistrationAfter(
+	event: MarketEventRow,
+): Promise<NextRegistrationWindow | null> {
+	const location = await locationById(db, event.locationId);
+
+	if (event.status === 'scheduled') {
+		return {
+			registrationOpensAt: event.registrationOpensAt.toISOString(),
+			registrationClosesAt: event.registrationClosesAt.toISOString(),
+			timeZone: location.timeZone,
+		};
+	}
+
+	const [patternRow] = await tracedQuery('market_session.next_registration_pattern', () =>
+		db
+			.select()
+			.from(recurrencePatterns)
+			.where(eq(recurrencePatterns.locationId, event.locationId))
+			.limit(1),
+	);
+
+	if (!patternRow) {
+		return null;
+	}
+
+	const next = new RecurrencePattern(patternRow, location).nextOccurrence(
+		event.registrationOpensAt,
+	);
+
+	return {
+		registrationOpensAt: next.registrationOpensAt.toISOString(),
+		registrationClosesAt: next.registrationClosesAt.toISOString(),
+		timeZone: location.timeZone,
+	};
+}
+
 export async function marketOverview() {
 	const event = await getCurrentEvent();
 
@@ -159,6 +209,7 @@ export async function marketOverview() {
 			lotteryDrawsAt: timeline.lotteryDrawsAt,
 			autoClosesAt: timeline.autoClosesAt,
 		},
+		nextRegistration: await nextRegistrationAfter(event),
 		questions,
 		counts: Object.fromEntries(rows.map((row) => [row.status, row.count])),
 	};

@@ -5,14 +5,44 @@
  */
 import type { AdminTranslation } from '../../src/adminLocales.ts';
 import type { Locale, Translation } from '../../src/locales.ts';
+import { NextRegistration } from '../../src/models/next-registration.ts';
+
+/**
+ * `copy` with every sentence about the next registration filled in undated — "next Saturday at
+ * 10:30" — as the guide's phone shows it: the guide is watched on any day, so it never names one.
+ */
+function undated<T>(
+	copy: T,
+	phrases: Translation['guestView']['nextRegistration'],
+	locale: Locale,
+): T {
+	if (typeof copy === 'string') {
+		return (
+			copy.includes('{when}') ? NextRegistration.next.fill(copy, phrases, locale, new Date()) : copy
+		) as T;
+	}
+
+	if (Array.isArray(copy)) {
+		return copy.map((item: unknown) => undated(item, phrases, locale)) as T;
+	}
+
+	if (copy && typeof copy === 'object') {
+		return Object.fromEntries(
+			Object.entries(copy).map(([key, value]) => [key, undated(value, phrases, locale)]),
+		) as T;
+	}
+
+	return copy;
+}
 
 /** Only the copy the guest phones and the room display show, for one language. */
-export function guestStrings(t: Translation) {
-	const visit = t.guestView.visitStatus;
+export function guestStrings(t: Translation, locale: Locale) {
+	const guestView = undated(t.guestView, t.guestView.nextRegistration, locale);
+	const visit = guestView.visitStatus;
 
 	return {
 		guide: {
-			...t.guestView,
+			...guestView,
 			help: t.help,
 			language: t.language,
 			formDescription: t.formDescription,

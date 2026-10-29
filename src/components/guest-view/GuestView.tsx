@@ -53,17 +53,12 @@ export const GuestView = observer(function GuestView() {
  * supplies the stores' state itself rather than loading it — the presentations' guest phone.
  */
 export const GuestHome = observer(function GuestHome({ children }: { children: ReactNode }) {
-	const { guest, session, visit } = useRootStore();
+	const { guest } = useRootStore();
 
 	return (
 		<>
-			{/*
-				Outside the layout's column so it runs the width of the screen under the app bar. A visit
-				card shows its own clock, so this one is for the registration form alone.
-			*/}
-			{visitTakesPrecedence(session.currentStatus, visit.status) ? null : (
-				<RegistrationCountdown pinned />
-			)}
+			{/* Outside the layout's column so it runs the width of the screen under the app bar. */}
+			<RegistrationCountdown />
 			<section className="guest-layout">
 				{!guest.isReturningVisitor ? <GuestLanguageHero /> : null}
 
