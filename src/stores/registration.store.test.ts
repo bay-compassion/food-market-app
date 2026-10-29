@@ -326,6 +326,8 @@ describe('RegistrationStore', () => {
 		it.each([
 			['a blank first name', { firstName: '  ' }],
 			['a blank last name', { lastName: '' }],
+			['a first name given only as an initial', { firstName: 'A.' }],
+			['a last name given only as an initial', { lastName: 'L' }],
 			['a phone short of ten digits', { phone: '(555) 123-456' }],
 			['no age range', { ageRange: '' as const }],
 			['a household with no adult', { householdSize: 1, childrenCount: 1 }],
@@ -505,6 +507,7 @@ describe('RegistrationStore', () => {
 			const register = vi.spyOn(guestStore, 'register');
 			const store = new RegistrationStore(guestStore, { storage });
 
+			store.updateGuest({ firstName: 'Ada', lastName: 'Lovelace', phone: '555-123-4567' });
 			store.updateGuest({ householdSize: 1, childrenCount: 1, seniorsCount: 1 });
 
 			// Act
@@ -521,6 +524,7 @@ describe('RegistrationStore', () => {
 			const signUp = vi.spyOn(guestStore, 'signUp').mockResolvedValue();
 			const store = new RegistrationStore(guestStore, { storage });
 
+			store.updateGuest({ firstName: 'Ada', lastName: 'Lovelace', phone: '555-123-4567' });
 			store.updateGuest({ householdSize: 1.5 });
 
 			// Act
@@ -530,6 +534,27 @@ describe('RegistrationStore', () => {
 			expect(result).toEqual({ kind: 'signed-up' });
 			expect(signUp).toHaveBeenCalledOnce();
 		});
+
+		it.each(['queue', 'early'] as const)(
+			'refuses a name given only as initials when the context is %s',
+			async (context) => {
+				// Arrange
+				const register = vi.spyOn(guestStore, 'register');
+				const signUp = vi.spyOn(guestStore, 'signUp');
+				const store = new RegistrationStore(guestStore, { storage });
+
+				store.updateGuest({ firstName: 'Ada', lastName: 'L.', phone: '555-123-4567' });
+
+				// Act
+				const result = await store.submit(context, 'event-1', 'en');
+
+				// Assert
+				expect(result).toEqual({ kind: 'invalid' });
+				expect(store.nameIssues).toEqual({ firstName: null, lastName: 'initials-only' });
+				expect(register).not.toHaveBeenCalled();
+				expect(signUp).not.toHaveBeenCalled();
+			},
+		);
 
 		it('signs up identity-only for the early context, without touching the saved household', async () => {
 			// Arrange
@@ -558,6 +583,8 @@ describe('RegistrationStore', () => {
 			// Arrange
 			vi.spyOn(guestStore, 'register').mockRejectedValue(new Error('network'));
 			const store = new RegistrationStore(guestStore, { storage });
+
+			store.updateGuest({ firstName: 'Ada', lastName: 'Lovelace', phone: '555-123-4567' });
 
 			// Act
 			const result = await store.submit('queue', null, 'en');

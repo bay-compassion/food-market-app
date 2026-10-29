@@ -22,6 +22,7 @@ export function useGuestFormCopy(override?: Partial<GuestFormCopy>): GuestFormCo
 		seniorsHint: t.guestView.forms.seniorsHint,
 		exceedsHousehold: t.guestView.forms.exceedsHousehold,
 		noAdult: t.guestView.forms.noAdult,
+		initialsOnly: t.guestView.forms.initialsOnly,
 		...override,
 	};
 }

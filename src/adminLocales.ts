@@ -557,6 +557,7 @@ export const adminTranslations = {
 			exceedsHousehold:
 				'Children and seniors together can’t be more than the people in their household.',
 			noAdult: 'Their household must include at least one adult.',
+			initialsOnly: 'Write out the whole name, not just the first letter.',
 		},
 		adminTitle: 'Market Dashboard',
 		allGuests: 'All guests',

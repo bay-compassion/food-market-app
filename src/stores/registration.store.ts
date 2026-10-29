@@ -1,6 +1,7 @@
 import { runInAction } from 'mobx';
 
 import type { GuestFormState } from '../components/types.ts';
+import { GuestName, type GuestNameIssue } from '../models/guest-name.ts';
 import { HouseholdComposition } from '../models/household-composition.ts';
 import type { GuestRegistrationResult } from '../services/guestVisitApi.ts';
 import { makeReactive } from '../services/make-reactive.ts';
@@ -11,7 +12,7 @@ import type { SessionQuestion } from './market-session.store.ts';
 export type RegistrationSubmitResult =
 	| { kind: 'signed-up' }
 	| { kind: 'registered'; registration: GuestRegistrationResult }
-	/** The household counts are not valid; the form shows why next to each field. */
+	/** A name or the household counts are not valid; the form shows why next to each field. */
 	| { kind: 'invalid' }
 	| { kind: 'error' };
 
@@ -79,6 +80,20 @@ export class RegistrationStore {
 		const pronunciation = this.guest.pronunciation.trim();
 
 		return pronunciation === this.initialPronunciation ? undefined : pronunciation;
+	}
+
+	/** What is wrong with each of the guest's names, by the same rule the server applies. */
+	get nameIssues(): Record<'firstName' | 'lastName', GuestNameIssue | null> {
+		return {
+			firstName: new GuestName(this.guest.firstName).issue,
+			lastName: new GuestName(this.guest.lastName).issue,
+		};
+	}
+
+	get hasValidNames(): boolean {
+		const { firstName, lastName } = this.nameIssues;
+
+		return firstName === null && lastName === null;
 	}
 
 	/** Who the guest is shopping for, checked by the same rules the server applies. */
@@ -170,11 +185,10 @@ export class RegistrationStore {
 	 * Takes the session's questions because they belong to the session, not to this form.
 	 */
 	isReadyToSubmit(questions: readonly SessionQuestion[]): boolean {
-		const { firstName, lastName, phone, ageRange } = this.guest;
+		const { phone, ageRange } = this.guest;
 
 		return (
-			firstName.trim() !== '' &&
-			lastName.trim() !== '' &&
+			this.hasValidNames &&
 			phone.replace(/\D/g, '').length >= 10 &&
 			ageRange !== '' &&
 			this.household.isValid &&
@@ -232,7 +246,7 @@ export class RegistrationStore {
 		locale: string,
 	): Promise<RegistrationSubmitResult> {
 		// Signing up early collects no household, so counts left over on this device must not block it.
-		if (context === 'queue' && !this.household.isValid) {
+		if (!this.hasValidNames || (context === 'queue' && !this.household.isValid)) {
 			return { kind: 'invalid' };
 		}
 
