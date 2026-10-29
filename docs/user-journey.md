@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=a8d6f83e53c3, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=dd087adf62af, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=6b53310ed8e9, src/stores/market-session.store.ts=bfc76d8dc661, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083, src/components/guest-view/GuestVisitState.tsx=c5315940aca3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=2615ddc31ee9, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=c3c56a956ed2, src/stores/registration.store.ts=dd087adf62af, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=7508c823e248, src/stores/market-session.store.ts=aa8f488d0312, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=880d6bd3195b, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083, src/components/guest-view/GuestVisitState.tsx=c5315940aca3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
 
 # Guest journey
 
@@ -234,7 +234,7 @@ visit when Safari creates a separate storage area. Unsupported browsers keep the
   again while registration remains open. A visit from another market cannot override today's
   screen. When there is no visit to present, `registration_closed` and `lottery_pending` share one
   card — both phases only reach a guest who never registered, so both apologize for the missed
-  window and point at next Saturday. There is no separate client-side card-state or session-phase
+  window and say when registration next opens. There is no separate client-side card-state or session-phase
   model beyond those server-owned statuses.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — is entered fresh at every visit and lives only on `visits`, not on the
@@ -268,8 +268,12 @@ visit when Safari creates a separate storage area. Unsupported browsers keep the
   application-level `MarketSessionStore` re-checks `/api/market` every five seconds while the page
   is visible. It pauses while the page is hidden or suspended, then refreshes immediately when the
   guest returns. Both the guest and admin screens observe that same state, so a guest sitting on
-  the closed screen sees registration open without reloading, and the form countdown receives a
-  new `registrationClosesAt` if an admin closes registration early or extends the window.
+  the closed screen sees registration open without reloading, and the countdown strip receives a
+  new `registrationClosesAt` if an admin closes registration early or extends the window. That strip,
+  pinned under the app bar above the form or the guest's lottery card, takes its phase from
+  `RegistrationClock`: counting down to opening in the last ten minutes before it, "opening…" until
+  the server agrees (asked again every second), "Registration is open" for ten seconds, then
+  counting down to closing.
 - **A waiting guest is told where they stand.** `/api/visit` returns their number — `queue_position`,
   or `priority_number` (`P1`, …) for a guest a worker put at the front — and how many waiting guests
   are ahead of them, so they can judge whether to stay by the door or sit down. It also returns

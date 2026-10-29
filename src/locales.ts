@@ -1,5 +1,7 @@
 import { outdent } from 'outdent';
 
+import type { NextRegistrationPhrases } from './models/next-registration.ts';
+
 /**
  * `label` is the language's own name, for a guest choosing it; `englishLabel` is what an
  * English-reading worker sees on the admin screens.
@@ -294,6 +296,8 @@ export interface GuestViewTranslations {
 		heading: string;
 		body: string;
 	};
+	/** What a sentence's `{when}` is built from; see `NextRegistration`. */
+	nextRegistration: NextRegistrationPhrases;
 	notOpenState: {
 		heading: string;
 		subheading: string;
@@ -551,6 +555,10 @@ export interface Translation {
 	qrCodeTitle: string;
 	registrationClosesIn: string;
 	registrationClosesInMinutes: string;
+	registrationOpensIn: string;
+	registrationOpensInMinutes: string;
+	registrationOpening: string;
+	registrationOpened: string;
 	submissionError: string;
 	submit: string;
 	submitting: string;
@@ -813,10 +821,16 @@ export const translations = {
 					Everyone will have a fair chance to enter the queue lottery.
 				`,
 			},
+			nextRegistration: {
+				today: 'today at {time}',
+				dated: '{relative}, on {date}, at {time}',
+				next: 'next Saturday at {time}',
+				every: 'every Saturday at {time}',
+			},
 			notOpenState: {
 				heading: 'The Market Is Closed',
 				subheading:
-					'Registration will open again next Saturday at 10:30 AM and stay open for 15 minutes, until 10:45 AM.',
+					'Registration will open again {when} and stay open for {minutes} minutes, until {closeTime}.',
 				lotteryDescription:
 					'Because supplies are limited, the market uses a lottery system to randomly select shoppers each week. You may register for the lottery from anywhere, at any time during the 15 minutes from 10:30 AM to 10:45 AM on Saturday. Registering early does not affect your chances of being selected, so there is no need to rush.',
 				selectionDescription:
@@ -825,12 +839,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Registration has closed',
 				description:
-					'We’re sorry — you missed today’s sign-up window. Registration opens again next Saturday at 10:30 AM, and everyone who registers has an equal chance in the lottery.',
+					'We’re sorry — you missed today’s sign-up window. Registration opens again {when}, and everyone who registers has an equal chance in the lottery.',
 			},
 			serviceState: {
 				inProgressHeading: 'Today’s market is underway',
 				inProgressDescription:
-					'Registration is closed for today. Registration will open again next Saturday at 10:30 AM and stay open for 15 minutes, until 10:45 AM. Everyone who signs up has the same chance.',
+					'Registration is closed for today. Registration will open again {when} and stay open for {minutes} minutes, until {closeTime}. Everyone who signs up has the same chance.',
 			},
 			refreshNotice: {
 				countdown: 'Updating in {seconds}s',
@@ -876,13 +890,12 @@ export const translations = {
 				},
 				served: {
 					header: 'Thank you for coming',
-					details:
-						'Your visit today is complete. Registration opens again next Saturday at 10:30 AM.',
+					details: 'Your visit today is complete. Registration opens again {when}.',
 				},
 				not_placed: {
 					header: 'Sorry, not this time',
 					details:
-						'You weren’t picked in today’s lottery. It’s completely random, and supplies are limited. We hope to see you next Saturday. Registration opens at 10:30 AM.',
+						'You weren’t picked in today’s lottery. It’s completely random, and supplies are limited. We hope to see you again. Registration opens {when}.',
 				},
 				no_show: {
 					header: 'Your number was called',
@@ -892,7 +905,7 @@ export const translations = {
 				cancelled: {
 					header: 'Your visit is cancelled',
 					details:
-						'You won’t be called today. If this happened by mistake, please see a team member. Registration opens again next Saturday at 10:30 AM.',
+						'You won’t be called today. If this happened by mistake, please see a team member. Registration opens again {when}.',
 				},
 				cancelAction: 'Cancel this visit',
 				cancelConfirmation: 'Cancel your place in the queue for this visit?',
@@ -1050,6 +1063,10 @@ export const translations = {
 		qrCodeTitle: 'Scan to check in',
 		registrationClosesIn: 'Registration closes in',
 		registrationClosesInMinutes: 'Registration closes in {minutes} min',
+		registrationOpensIn: 'Registration opens in',
+		registrationOpensInMinutes: 'Registration opens in {minutes} min',
+		registrationOpening: 'Registration is opening…',
+		registrationOpened: 'Registration is open',
 		submissionError: 'We could not save your check-in. Please try again.',
 		submit: 'Join the lottery',
 		submitting: 'Joining the lottery…',
@@ -1315,10 +1332,16 @@ export const translations = {
 					Todos tendrán una oportunidad justa de participar en el sorteo de la fila.
 				`,
 			},
+			nextRegistration: {
+				today: 'hoy a las {time}',
+				dated: '{relative}, el {date}, a las {time}',
+				next: 'el próximo sábado a las {time}',
+				every: 'todos los sábados a las {time}',
+			},
 			notOpenState: {
 				heading: 'El mercado está cerrado',
 				subheading:
-					'La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta 15 minutos, hasta las 10:45 a. m.',
+					'La inscripción volverá a abrir {when} y permanecerá abierta {minutes} minutos, hasta las {closeTime}.',
 				lotteryDescription:
 					'Debido a que los suministros son limitados, el mercado utiliza un sistema de lotería para seleccionar al azar a las personas que podrán comprar cada semana. Puede inscribirse en la lotería desde cualquier lugar, en cualquier momento durante los 15 minutos entre las 10:30 a. m. y las 10:45 a. m. del sábado. Inscribirse temprano no afecta sus probabilidades de ser seleccionado, por lo que no hay prisa.',
 				selectionDescription:
@@ -1327,12 +1350,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'El registro ha cerrado',
 				description:
-					'Lo sentimos: no alcanzó a inscribirse dentro del horario de hoy. El registro volverá a abrir el próximo sábado a las 10:30 a. m., y todas las personas que se inscriban tienen las mismas probabilidades en el sorteo.',
+					'Lo sentimos: no alcanzó a inscribirse dentro del horario de hoy. El registro volverá a abrir {when}, y todas las personas que se inscriban tienen las mismas probabilidades en el sorteo.',
 			},
 			serviceState: {
 				inProgressHeading: 'El mercado de hoy está en curso',
 				inProgressDescription:
-					'El registro está cerrado por hoy. La inscripción volverá a abrir el próximo sábado a las 10:30 a. m. y permanecerá abierta 15 minutos, hasta las 10:45 a. m. Todos los que se inscriben tienen la misma oportunidad.',
+					'El registro está cerrado por hoy. La inscripción volverá a abrir {when} y permanecerá abierta {minutes} minutos, hasta las {closeTime}. Todos los que se inscriben tienen la misma oportunidad.',
 			},
 			refreshNotice: {
 				countdown: 'Se actualizará en {seconds} s',
@@ -1379,13 +1402,12 @@ export const translations = {
 				},
 				served: {
 					header: 'Gracias por venir',
-					details:
-						'Su visita de hoy ha terminado. El registro volverá a abrir el próximo sábado a las 10:30 a. m.',
+					details: 'Su visita de hoy ha terminado. El registro volverá a abrir {when}.',
 				},
 				not_placed: {
 					header: 'Lo sentimos, esta vez no',
 					details:
-						'No fue elegido en el sorteo de hoy. Es completamente al azar y los suministros son limitados. Esperamos verle el próximo sábado. El registro abre a las 10:30 a. m.',
+						'No fue elegido en el sorteo de hoy. Es completamente al azar y los suministros son limitados. Esperamos volver a verle. El registro abre {when}.',
 				},
 				no_show: {
 					header: 'Llamamos su número',
@@ -1395,7 +1417,7 @@ export const translations = {
 				cancelled: {
 					header: 'Su visita está cancelada',
 					details:
-						'Hoy no le llamaremos. Si esto fue un error, hable con un miembro del equipo. El registro volverá a abrir el próximo sábado a las 10:30 a. m.',
+						'Hoy no le llamaremos. Si esto fue un error, hable con un miembro del equipo. El registro volverá a abrir {when}.',
 				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
@@ -1554,6 +1576,10 @@ export const translations = {
 		qrCodeTitle: 'Escanee para registrarse',
 		registrationClosesIn: 'El registro cierra en',
 		registrationClosesInMinutes: 'El registro cierra en {minutes} min',
+		registrationOpensIn: 'El registro abre en',
+		registrationOpensInMinutes: 'El registro abre en {minutes} min',
+		registrationOpening: 'El registro está abriendo…',
+		registrationOpened: 'El registro está abierto',
 		submissionError: 'No pudimos guardar su registro. Inténtelo de nuevo.',
 		submit: 'Unirse al sorteo',
 		submitting: 'Uniéndose al sorteo…',
@@ -1815,10 +1841,16 @@ export const translations = {
 					همه فرصتی برابر برای ورود به قرعه‌کشی صف خواهند داشت.
 				`,
 			},
+			nextRegistration: {
+				today: 'امروز ساعت {time}',
+				dated: '{relative}، {date}، ساعت {time}',
+				next: 'شنبهٔ آینده ساعت {time}',
+				every: 'هر شنبه ساعت {time}',
+			},
 			notOpenState: {
 				heading: 'بازار بسته است',
 				subheading:
-					'ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و ۱۵ دقیقه، تا ساعت ۱۰:۴۵ صبح، باز می‌ماند.',
+					'ثبت‌نام {when} دوباره آغاز می‌شود و {minutes} دقیقه، تا ساعت {closeTime}، باز می‌ماند.',
 				lotteryDescription:
 					'به دلیل محدود بودن اقلام، بازار برای انتخاب تصادفی خریداران هر هفته از سیستم قرعه‌کشی استفاده می‌کند. می‌توانید از هر جایی و در هر زمانی از بازه ۱۵ دقیقه‌ای روز شنبه، از ساعت ۱۰:۳۰ تا ۱۰:۴۵ صبح، برای قرعه‌کشی ثبت‌نام کنید. ثبت‌نام زودتر تأثیری بر شانس انتخاب شدن شما ندارد، بنابراین نیازی به عجله نیست.',
 				selectionDescription:
@@ -1827,12 +1859,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'ثبت‌نام بسته شده است',
 				description:
-					'متأسفیم؛ شما بازه ثبت‌نام امروز را از دست دادید. ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و همه کسانی که ثبت‌نام کنند شانس برابری در قرعه‌کشی دارند.',
+					'متأسفیم؛ شما بازه ثبت‌نام امروز را از دست دادید. ثبت‌نام {when} دوباره آغاز می‌شود و همه کسانی که ثبت‌نام کنند شانس برابری در قرعه‌کشی دارند.',
 			},
 			serviceState: {
 				inProgressHeading: 'بازار امروز در حال برگزاری است',
 				inProgressDescription:
-					'ثبت‌نام برای امروز بسته شده است. ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود و ۱۵ دقیقه، تا ساعت ۱۰:۴۵ صبح، باز می‌ماند. شانس همه کسانی که ثبت‌نام می‌کنند برابر است.',
+					'ثبت‌نام برای امروز بسته شده است. ثبت‌نام {when} دوباره آغاز می‌شود و {minutes} دقیقه، تا ساعت {closeTime}، باز می‌ماند. شانس همه کسانی که ثبت‌نام می‌کنند برابر است.',
 			},
 			refreshNotice: {
 				countdown: 'به‌روزرسانی تا {seconds} ثانیه دیگر',
@@ -1878,13 +1910,12 @@ export const translations = {
 				},
 				served: {
 					header: 'از حضورتان سپاسگزاریم',
-					details:
-						'بازدید امروز شما به پایان رسید. ثبت‌نام شنبه آینده ساعت ۱۰:۳۰ صبح دوباره آغاز می‌شود.',
+					details: 'بازدید امروز شما به پایان رسید. ثبت‌نام {when} دوباره آغاز می‌شود.',
 				},
 				not_placed: {
 					header: 'متأسفیم، این بار نه',
 					details:
-						'شما در قرعه‌کشی امروز انتخاب نشدید. قرعه‌کشی کاملاً تصادفی است و اقلام محدود است. امیدواریم شنبهٔ آینده شما را ببینیم. ثبت‌نام ساعت ۱۰:۳۰ صبح باز می‌شود.',
+						'شما در قرعه‌کشی امروز انتخاب نشدید. قرعه‌کشی کاملاً تصادفی است و اقلام محدود است. امیدواریم دوباره شما را ببینیم. ثبت‌نام {when} باز می‌شود.',
 				},
 				no_show: {
 					header: 'شمارهٔ شما فراخوانده شد',
@@ -1894,7 +1925,7 @@ export const translations = {
 				cancelled: {
 					header: 'بازدید شما لغو شده است',
 					details:
-						'امروز شمارهٔ شما فراخوانده نمی‌شود. اگر این اشتباهی رخ داده است، لطفاً با یکی از اعضای تیم صحبت کنید. ثبت‌نام شنبهٔ آینده ساعت ۱۰:۳۰ صبح دوباره باز می‌شود.',
+						'امروز شمارهٔ شما فراخوانده نمی‌شود. اگر این اشتباهی رخ داده است، لطفاً با یکی از اعضای تیم صحبت کنید. ثبت‌نام {when} دوباره باز می‌شود.',
 				},
 				cancelAction: 'لغو این بازدید',
 				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
@@ -2051,6 +2082,10 @@ export const translations = {
 		qrCodeTitle: 'برای ثبت‌نام اسکن کنید',
 		registrationClosesIn: 'زمان باقی‌مانده برای ثبت‌نام',
 		registrationClosesInMinutes: 'ثبت‌نام تا {minutes} دقیقه دیگر بسته می‌شود',
+		registrationOpensIn: 'زمان باقی‌مانده تا شروع ثبت‌نام',
+		registrationOpensInMinutes: 'ثبت‌نام تا {minutes} دقیقه دیگر باز می‌شود',
+		registrationOpening: 'ثبت‌نام در حال باز شدن است…',
+		registrationOpened: 'ثبت‌نام باز است',
 		submissionError: 'ثبت‌نام شما ذخیره نشد. لطفاً دوباره تلاش کنید.',
 		submit: 'پیوستن به قرعه‌کشی',
 		submitting: 'در حال پیوستن به قرعه‌کشی…',
@@ -2317,10 +2352,16 @@ export const translations = {
 					Magkakaroon ang lahat ng patas na pagkakataon na makasali sa lottery ng pila.
 				`,
 			},
+			nextRegistration: {
+				today: 'ngayong araw nang {time}',
+				dated: '{relative}, {date}, nang {time}',
+				next: 'sa susunod na Sabado nang {time}',
+				every: 'tuwing Sabado nang {time}',
+			},
 			notOpenState: {
 				heading: 'Sarado ang Pamilihan',
 				subheading:
-					'Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas nang 15 minuto, hanggang 10:45 AM.',
+					'Magbubukas muli ang pagpaparehistro {when} at mananatiling bukas nang {minutes} minuto, hanggang {closeTime}.',
 				lotteryDescription:
 					'Dahil limitado ang mga supply, gumagamit ang pamilihan ng sistema ng lottery upang random na pumili ng mga mamimili bawat linggo. Maaari kang magparehistro sa lottery kahit saan, anumang oras sa loob ng 15 minuto mula 10:30 AM hanggang 10:45 AM tuwing Sabado. Hindi naaapektuhan ng maagang pagpaparehistro ang iyong pagkakataong mapili, kaya hindi kailangang magmadali.',
 				selectionDescription:
@@ -2329,12 +2370,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Sarado na ang pagpaparehistro',
 				description:
-					'Pasensya na po — hindi na kayo umabot sa oras ng pagpaparehistro ngayong araw. Muling magbubukas ang pagpaparehistro sa Sabado nang 10:30 AM, at pantay ang pagkakataon sa lottery ng lahat ng magpaparehistro.',
+					'Pasensya na po — hindi na kayo umabot sa oras ng pagpaparehistro ngayong araw. Muling magbubukas ang pagpaparehistro {when}, at pantay ang pagkakataon sa lottery ng lahat ng magpaparehistro.',
 			},
 			serviceState: {
 				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
 				inProgressDescription:
-					'Sarado na ang pagpaparehistro para ngayong araw. Magbubukas muli ang pagpaparehistro sa susunod na Sabado nang 10:30 AM at mananatiling bukas nang 15 minuto, hanggang 10:45 AM. Pareho ang tsansa ng lahat ng magsa-sign up.',
+					'Sarado na ang pagpaparehistro para ngayong araw. Magbubukas muli ang pagpaparehistro {when} at mananatiling bukas nang {minutes} minuto, hanggang {closeTime}. Pareho ang tsansa ng lahat ng magsa-sign up.',
 			},
 			refreshNotice: {
 				countdown: 'Mag-a-update sa loob ng {seconds}s',
@@ -2382,12 +2423,12 @@ export const translations = {
 				served: {
 					header: 'Salamat po sa pagpunta',
 					details:
-						'Tapos na po ang inyong pagbisita ngayong araw. Muling magbubukas ang pagpaparehistro sa Sabado nang 10:30 AM.',
+						'Tapos na po ang inyong pagbisita ngayong araw. Muling magbubukas ang pagpaparehistro {when}.',
 				},
 				not_placed: {
 					header: 'Pasensya na po, hindi ngayon',
 					details:
-						'Hindi kayo napili sa lottery ngayong araw. Ganap itong random, at limitado ang mga supply. Sana makita namin kayo sa susunod na Sabado. Magbubukas ang rehistrasyon nang 10:30 AM.',
+						'Hindi kayo napili sa lottery ngayong araw. Ganap itong random, at limitado ang mga supply. Sana makita namin kayo muli. Magbubukas ang rehistrasyon {when}.',
 				},
 				no_show: {
 					header: 'Tinawag na ang inyong numero',
@@ -2397,7 +2438,7 @@ export const translations = {
 				cancelled: {
 					header: 'Kinansela ang inyong pagbisita',
 					details:
-						'Hindi na po kayo tatawagin ngayong araw. Kung nagkamali ito, makipag-usap po sa isang miyembro ng pangkat. Muling magbubukas ang rehistrasyon sa susunod na Sabado nang 10:30 AM.',
+						'Hindi na po kayo tatawagin ngayong araw. Kung nagkamali ito, makipag-usap po sa isang miyembro ng pangkat. Muling magbubukas ang rehistrasyon {when}.',
 				},
 				cancelAction: 'Kanselahin ang pagbisitang ito',
 				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
@@ -2556,6 +2597,10 @@ export const translations = {
 		qrCodeTitle: 'I-scan para mag-check in',
 		registrationClosesIn: 'Magsasara ang pagpaparehistro sa loob ng',
 		registrationClosesInMinutes: 'Magsasara ang pagpaparehistro sa loob ng {minutes} min',
+		registrationOpensIn: 'Magbubukas ang pagpaparehistro sa loob ng',
+		registrationOpensInMinutes: 'Magbubukas ang pagpaparehistro sa loob ng {minutes} min',
+		registrationOpening: 'Nagbubukas na ang pagpaparehistro…',
+		registrationOpened: 'Bukas na ang pagpaparehistro',
 		submissionError: 'Hindi namin na-save ang inyong check-in. Pakisubukang muli.',
 		submit: 'Sumali sa lottery',
 		submitting: 'Sumasali sa lottery…',
@@ -2816,10 +2861,15 @@ export const translations = {
 					Mọi người đều có cơ hội công bằng để tham gia bốc thăm vào hàng đợi.
 				`,
 			},
+			nextRegistration: {
+				today: 'lúc {time} hôm nay',
+				dated: '{relative}, vào {date}, lúc {time}',
+				next: 'vào thứ Bảy tuần sau lúc {time}',
+				every: 'vào thứ Bảy hằng tuần lúc {time}',
+			},
 			notOpenState: {
 				heading: 'Chợ hiện đang đóng cửa',
-				subheading:
-					'Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài 15 phút, đến 10:45 sáng.',
+				subheading: 'Đăng ký sẽ mở lại {when} và kéo dài {minutes} phút, đến {closeTime}.',
 				lotteryDescription:
 					'Do nguồn cung có hạn, chợ sử dụng hệ thống xổ số để chọn ngẫu nhiên người mua sắm mỗi tuần. Bạn có thể đăng ký tham gia xổ số từ bất cứ đâu, vào bất kỳ lúc nào trong 15 phút từ 10:30 đến 10:45 sáng thứ Bảy. Đăng ký sớm không làm tăng cơ hội được chọn, vì vậy bạn không cần vội.',
 				selectionDescription:
@@ -2828,12 +2878,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Đăng ký đã đóng',
 				description:
-					'Chúng tôi rất tiếc — bạn đã lỡ khung giờ đăng ký hôm nay. Đăng ký sẽ mở lại vào thứ Bảy tuần sau lúc 10:30 sáng, và mọi người đăng ký đều có cơ hội như nhau trong đợt xổ số.',
+					'Chúng tôi rất tiếc — bạn đã lỡ khung giờ đăng ký hôm nay. Đăng ký sẽ mở lại {when}, và mọi người đăng ký đều có cơ hội như nhau trong đợt xổ số.',
 			},
 			serviceState: {
 				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
 				inProgressDescription:
-					'Đăng ký đã đóng cho hôm nay. Đăng ký sẽ mở lại vào 10:30 sáng thứ Bảy tới và kéo dài 15 phút, đến 10:45 sáng. Ai đăng ký cũng có cơ hội như nhau.',
+					'Đăng ký đã đóng cho hôm nay. Đăng ký sẽ mở lại {when} và kéo dài {minutes} phút, đến {closeTime}. Ai đăng ký cũng có cơ hội như nhau.',
 			},
 			refreshNotice: {
 				countdown: 'Cập nhật sau {seconds} giây',
@@ -2878,13 +2928,12 @@ export const translations = {
 				},
 				served: {
 					header: 'Cảm ơn bạn đã đến',
-					details:
-						'Lượt mua sắm hôm nay của bạn đã hoàn tất. Đăng ký sẽ mở lại vào thứ Bảy tuần sau lúc 10:30 sáng.',
+					details: 'Lượt mua sắm hôm nay của bạn đã hoàn tất. Đăng ký sẽ mở lại {when}.',
 				},
 				not_placed: {
 					header: 'Rất tiếc, lần này chưa được',
 					details:
-						'Bạn không được chọn trong đợt xổ số hôm nay. Việc chọn hoàn toàn ngẫu nhiên và nguồn cung có hạn. Mong gặp lại bạn vào thứ Bảy tuần sau. Đăng ký mở lúc 10:30 sáng.',
+						'Bạn không được chọn trong đợt xổ số hôm nay. Việc chọn hoàn toàn ngẫu nhiên và nguồn cung có hạn. Mong gặp lại bạn. Đăng ký mở {when}.',
 				},
 				no_show: {
 					header: 'Số của bạn đã được gọi',
@@ -2894,7 +2943,7 @@ export const translations = {
 				cancelled: {
 					header: 'Lượt của bạn đã bị hủy',
 					details:
-						'Hôm nay bạn sẽ không được gọi. Nếu có nhầm lẫn, vui lòng gặp nhân viên. Đăng ký sẽ mở lại vào thứ Bảy tuần sau lúc 10:30 sáng.',
+						'Hôm nay bạn sẽ không được gọi. Nếu có nhầm lẫn, vui lòng gặp nhân viên. Đăng ký sẽ mở lại {when}.',
 				},
 				cancelAction: 'Hủy lượt ghé này',
 				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
@@ -3051,6 +3100,10 @@ export const translations = {
 		qrCodeTitle: 'Quét để đăng ký',
 		registrationClosesIn: 'Đăng ký sẽ đóng sau',
 		registrationClosesInMinutes: 'Đăng ký sẽ đóng sau {minutes} phút',
+		registrationOpensIn: 'Đăng ký sẽ mở sau',
+		registrationOpensInMinutes: 'Đăng ký sẽ mở sau {minutes} phút',
+		registrationOpening: 'Đăng ký đang mở…',
+		registrationOpened: 'Đăng ký đã mở',
 		submissionError: 'Chúng tôi không thể lưu đăng ký của bạn. Vui lòng thử lại.',
 		submit: 'Tham gia xổ số',
 		submitting: 'Đang tham gia xổ số…',
@@ -3304,9 +3357,15 @@ export const translations = {
 					每个人都将有公平的机会参加排队抽签。
 				`,
 			},
+			nextRegistration: {
+				today: '今天{time}',
+				dated: '{relative}（{date}）{time}',
+				next: '下周六{time}',
+				every: '每周六{time}',
+			},
 			notOpenState: {
 				heading: '市场已关闭',
-				subheading: '登记将于下周六上午 10:30 再次开放，持续 15 分钟，至上午 10:45。',
+				subheading: '登记将于{when}再次开放，持续 {minutes} 分钟，至 {closeTime}。',
 				lotteryDescription:
 					'由于物资有限，市场每周通过抽签随机选出购物者。您可以在周六上午 10:30 至 10:45 的 15 分钟内，随时随地登记参加抽签。提前登记不会增加被选中的机会，因此无需着急。',
 				selectionDescription:
@@ -3315,12 +3374,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: '登记已结束',
 				description:
-					'很抱歉，您错过了今天的登记时段。登记将于下周六上午 10:30 重新开放，所有登记的人在抽签中机会均等。',
+					'很抱歉，您错过了今天的登记时段。登记将于{when}重新开放，所有登记的人在抽签中机会均等。',
 			},
 			serviceState: {
 				inProgressHeading: '今天的市场正在进行中',
 				inProgressDescription:
-					'今天的登记已关闭。登记将于下周六上午 10:30 再次开放，持续 15 分钟，至上午 10:45。每位登记的人机会均等。',
+					'今天的登记已关闭。登记将于{when}再次开放，持续 {minutes} 分钟，至 {closeTime}。每位登记的人机会均等。',
 			},
 			refreshNotice: {
 				countdown: '{seconds} 秒后更新',
@@ -3363,12 +3422,12 @@ export const translations = {
 				},
 				served: {
 					header: '感谢您的到来',
-					details: '您今天的到访已完成。登记将于下周六上午 10:30 重新开放。',
+					details: '您今天的到访已完成。登记将于{when}重新开放。',
 				},
 				not_placed: {
 					header: '很抱歉，这次没有抽中',
 					details:
-						'您在今天的抽签中没有被抽中。抽签完全随机，而且物资有限。希望下周六再见到您。登记于上午 10:30 开放。',
+						'您在今天的抽签中没有被抽中。抽签完全随机，而且物资有限。希望再次见到您。登记将于{when}开放。',
 				},
 				no_show: {
 					header: '已叫到您的号码',
@@ -3377,8 +3436,7 @@ export const translations = {
 				},
 				cancelled: {
 					header: '您的到访已取消',
-					details:
-						'今天不会再叫您的号码。如果这是误操作，请联系工作人员。登记将于下周六上午 10:30 重新开放。',
+					details: '今天不会再叫您的号码。如果这是误操作，请联系工作人员。登记将于{when}重新开放。',
 				},
 				cancelAction: '取消本次到访',
 				cancelConfirmation: '要取消本次到访的排队位置吗？',
@@ -3527,6 +3585,10 @@ export const translations = {
 		qrCodeTitle: '扫码登记',
 		registrationClosesIn: '距登记关闭还剩',
 		registrationClosesInMinutes: '登记将在 {minutes} 分钟后关闭',
+		registrationOpensIn: '距登记开始还剩',
+		registrationOpensInMinutes: '登记将在 {minutes} 分钟后开始',
+		registrationOpening: '登记即将开始…',
+		registrationOpened: '登记已开始',
 		submissionError: '无法保存您的登记信息。请重试。',
 		submit: '参加抽签',
 		submitting: '正在参加抽签…',
@@ -3784,10 +3846,15 @@ export const translations = {
 					سيحصل الجميع على فرصة عادلة للدخول في قرعة قائمة الانتظار.
 				`,
 			},
+			nextRegistration: {
+				today: 'اليوم الساعة {time}',
+				dated: '{relative}، يوم {date}، الساعة {time}',
+				next: 'يوم السبت المقبل الساعة {time}',
+				every: 'كل يوم سبت الساعة {time}',
+			},
 			notOpenState: {
 				heading: 'السوق مغلق',
-				subheading:
-					'سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر 15 دقيقة، حتى الساعة 10:45 صباحًا.',
+				subheading: 'سيفتح التسجيل مجددًا {when} ويستمر {minutes} دقيقة، حتى الساعة {closeTime}.',
 				lotteryDescription:
 					'نظرًا لمحدودية الإمدادات، يستخدم السوق نظام القرعة لاختيار المتسوقين عشوائيًا كل أسبوع. يمكنك التسجيل في القرعة من أي مكان وفي أي وقت خلال الدقائق الخمس عشرة من 10:30 إلى 10:45 صباحًا يوم السبت. لا يؤثر التسجيل المبكر في فرص اختيارك، لذلك لا داعي للعجلة.',
 				selectionDescription:
@@ -3796,12 +3863,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'أُغلق التسجيل',
 				description:
-					'نأسف — لقد فاتتك فترة التسجيل اليوم. سيُفتح التسجيل مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا، ولكل من يسجّل فرصة متساوية في القرعة.',
+					'نأسف — لقد فاتتك فترة التسجيل اليوم. سيُفتح التسجيل مرة أخرى {when}، ولكل من يسجّل فرصة متساوية في القرعة.',
 			},
 			serviceState: {
 				inProgressHeading: 'سوق اليوم جارٍ الآن',
 				inProgressDescription:
-					'أُغلق التسجيل لهذا اليوم. سيفتح التسجيل مجددًا يوم السبت المقبل الساعة 10:30 صباحًا ويستمر 15 دقيقة، حتى الساعة 10:45 صباحًا. لكل من يسجّل الفرصة نفسها.',
+					'أُغلق التسجيل لهذا اليوم. سيفتح التسجيل مجددًا {when} ويستمر {minutes} دقيقة، حتى الساعة {closeTime}. لكل من يسجّل الفرصة نفسها.',
 			},
 			refreshNotice: {
 				countdown: 'التحديث خلال {seconds} ثانية',
@@ -3846,13 +3913,12 @@ export const translations = {
 				},
 				served: {
 					header: 'شكرًا لحضورك',
-					details:
-						'اكتملت زيارتك اليوم. سيُفتح التسجيل مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا.',
+					details: 'اكتملت زيارتك اليوم. سيُفتح التسجيل مرة أخرى {when}.',
 				},
 				not_placed: {
 					header: 'نأسف، ليس هذه المرة',
 					details:
-						'لم يتم اختيارك في قرعة اليوم. القرعة عشوائية تمامًا، والإمدادات محدودة. نأمل أن نراك يوم السبت المقبل. يُفتح التسجيل الساعة 10:30 صباحًا.',
+						'لم يتم اختيارك في قرعة اليوم. القرعة عشوائية تمامًا، والإمدادات محدودة. نأمل أن نراك مجددًا. يُفتح التسجيل {when}.',
 				},
 				no_show: {
 					header: 'تم النداء على رقمك',
@@ -3862,7 +3928,7 @@ export const translations = {
 				cancelled: {
 					header: 'زيارتك ملغاة',
 					details:
-						'لن يتم النداء عليك اليوم. إذا حدث هذا عن طريق الخطأ، يرجى التحدث مع أحد أعضاء الفريق. سيُفتح التسجيل مرة أخرى يوم السبت المقبل الساعة 10:30 صباحًا.',
+						'لن يتم النداء عليك اليوم. إذا حدث هذا عن طريق الخطأ، يرجى التحدث مع أحد أعضاء الفريق. سيُفتح التسجيل مرة أخرى {when}.',
 				},
 				cancelAction: 'إلغاء هذه الزيارة',
 				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
@@ -4015,6 +4081,10 @@ export const translations = {
 		qrCodeTitle: 'امسح للتسجيل',
 		registrationClosesIn: 'يُغلق التسجيل خلال',
 		registrationClosesInMinutes: 'يُغلق التسجيل خلال {minutes} دقيقة',
+		registrationOpensIn: 'يُفتح التسجيل خلال',
+		registrationOpensInMinutes: 'يُفتح التسجيل خلال {minutes} دقيقة',
+		registrationOpening: 'جارٍ فتح التسجيل…',
+		registrationOpened: 'التسجيل مفتوح الآن',
 		submissionError: 'تعذر حفظ تسجيلك. يرجى المحاولة مرة أخرى.',
 		submit: 'انضم إلى القرعة',
 		submitting: 'جارٍ الانضمام إلى القرعة…',
@@ -4282,10 +4352,16 @@ export const translations = {
 					Tout le monde aura une chance égale de participer au tirage au sort de la file.
 				`,
 			},
+			nextRegistration: {
+				today: 'aujourd’hui à {time}',
+				dated: '{relative}, le {date}, à {time}',
+				next: 'samedi prochain à {time}',
+				every: 'chaque samedi à {time}',
+			},
 			notOpenState: {
 				heading: 'Le marché est fermé',
 				subheading:
-					'Les inscriptions rouvriront samedi prochain à 10 h 30 et resteront ouvertes 15 minutes, jusqu’à 10 h 45.',
+					'Les inscriptions rouvriront {when} et resteront ouvertes {minutes} minutes, jusqu’à {closeTime}.',
 				lotteryDescription:
 					'Les provisions étant limitées, le marché utilise un tirage au sort pour choisir les personnes qui peuvent faire leurs courses chaque semaine. Vous pouvez vous inscrire au tirage au sort d’où vous voulez, à tout moment pendant les 15 minutes de 10 h 30 à 10 h 45, le samedi. S’inscrire tôt n’augmente pas vos chances d’être choisi, il n’est donc pas nécessaire de vous presser.',
 				selectionDescription:
@@ -4294,12 +4370,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Les inscriptions sont closes',
 				description:
-					'Désolés — vous avez manqué le créneau d’inscription d’aujourd’hui. Les inscriptions rouvrent samedi prochain à 10 h 30, et chaque personne inscrite a la même chance au tirage au sort.',
+					'Désolés — vous avez manqué le créneau d’inscription d’aujourd’hui. Les inscriptions rouvrent {when}, et chaque personne inscrite a la même chance au tirage au sort.',
 			},
 			serviceState: {
 				inProgressHeading: 'Le marché d’aujourd’hui est en cours',
 				inProgressDescription:
-					'Les inscriptions sont closes pour aujourd’hui. Les inscriptions rouvriront samedi prochain à 10 h 30 et resteront ouvertes 15 minutes, jusqu’à 10 h 45. Toutes les personnes inscrites ont la même chance.',
+					'Les inscriptions sont closes pour aujourd’hui. Les inscriptions rouvriront {when} et resteront ouvertes {minutes} minutes, jusqu’à {closeTime}. Toutes les personnes inscrites ont la même chance.',
 			},
 			refreshNotice: {
 				countdown: 'Mise à jour dans {seconds} s',
@@ -4346,13 +4422,12 @@ export const translations = {
 				},
 				served: {
 					header: 'Merci d’être venu',
-					details:
-						'Votre visite d’aujourd’hui est terminée. Les inscriptions rouvrent samedi prochain à 10 h 30.',
+					details: 'Votre visite d’aujourd’hui est terminée. Les inscriptions rouvrent {when}.',
 				},
 				not_placed: {
 					header: 'Désolés, pas cette fois',
 					details:
-						'Vous n’avez pas été tiré au sort aujourd’hui. Le tirage est entièrement aléatoire et les provisions sont limitées. Nous espérons vous revoir samedi prochain. Les inscriptions ouvrent à 10 h 30.',
+						'Vous n’avez pas été tiré au sort aujourd’hui. Le tirage est entièrement aléatoire et les provisions sont limitées. Nous espérons vous revoir. Les inscriptions ouvrent {when}.',
 				},
 				no_show: {
 					header: 'Votre numéro a été appelé',
@@ -4362,7 +4437,7 @@ export const translations = {
 				cancelled: {
 					header: 'Votre visite est annulée',
 					details:
-						'Vous ne serez pas appelé aujourd’hui. S’il s’agit d’une erreur, adressez-vous à un membre de l’équipe. Les inscriptions rouvrent samedi prochain à 10 h 30.',
+						'Vous ne serez pas appelé aujourd’hui. S’il s’agit d’une erreur, adressez-vous à un membre de l’équipe. Les inscriptions rouvrent {when}.',
 				},
 				cancelAction: 'Annuler cette visite',
 				cancelConfirmation: 'Annuler votre place dans la file pour cette visite ?',
@@ -4524,6 +4599,10 @@ export const translations = {
 		qrCodeTitle: 'Scannez pour vous inscrire',
 		registrationClosesIn: 'Fin des inscriptions dans',
 		registrationClosesInMinutes: 'Fin des inscriptions dans {minutes} min',
+		registrationOpensIn: 'Ouverture des inscriptions dans',
+		registrationOpensInMinutes: 'Ouverture des inscriptions dans {minutes} min',
+		registrationOpening: 'Ouverture des inscriptions…',
+		registrationOpened: 'Les inscriptions sont ouvertes',
 		submissionError: 'Nous n’avons pas pu enregistrer votre inscription. Veuillez réessayer.',
 		submit: 'Participer au tirage au sort',
 		submitting: 'Inscription au tirage au sort…',
@@ -4784,10 +4863,16 @@ export const translations = {
 				heading: 'As inscrições abrem todo sábado às 10h30',
 				body: 'As inscrições ainda não estão abertas. Volte no sábado às 10h30.\nTodos terão uma chance justa de participar do sorteio para entrar na fila.',
 			},
+			nextRegistration: {
+				today: 'hoje às {time}',
+				dated: '{relative}, no {date}, às {time}',
+				next: 'no próximo sábado às {time}',
+				every: 'todos os sábados às {time}',
+			},
 			notOpenState: {
 				heading: 'O mercado está fechado',
 				subheading:
-					'As inscrições abrirão novamente no próximo sábado às 10h30 e ficarão abertas por 15 minutos, até as 10h45.',
+					'As inscrições abrirão novamente {when} e ficarão abertas por {minutes} minutos, até as {closeTime}.',
 				lotteryDescription:
 					'Como os alimentos são limitados, o mercado usa um sorteio para selecionar aleatoriamente quem poderá fazer compras a cada semana. Você pode se inscrever de qualquer lugar, a qualquer momento durante os 15 minutos entre 10h30 e 10h45 de sábado. Inscrever-se mais cedo não altera suas chances de ser selecionado, então não precisa ter pressa.',
 				selectionDescription:
@@ -4796,12 +4881,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'As inscrições foram encerradas',
 				description:
-					'Sentimos muito — você perdeu o horário de inscrição de hoje. As inscrições abrem novamente no próximo sábado às 10h30, e todos os inscritos têm a mesma chance no sorteio.',
+					'Sentimos muito — você perdeu o horário de inscrição de hoje. As inscrições abrem novamente {when}, e todos os inscritos têm a mesma chance no sorteio.',
 			},
 			serviceState: {
 				inProgressHeading: 'O mercado de hoje está em andamento',
 				inProgressDescription:
-					'As inscrições de hoje estão encerradas. As inscrições abrirão novamente no próximo sábado às 10h30 e ficarão abertas por 15 minutos, até as 10h45. Todos que se inscrevem têm a mesma chance.',
+					'As inscrições de hoje estão encerradas. As inscrições abrirão novamente {when} e ficarão abertas por {minutes} minutos, até as {closeTime}. Todos que se inscrevem têm a mesma chance.',
 			},
 			refreshNotice: {
 				countdown: 'Atualização em {seconds}s',
@@ -4848,13 +4933,12 @@ export const translations = {
 				},
 				served: {
 					header: 'Obrigado pela visita',
-					details:
-						'Sua visita de hoje foi concluída. As inscrições abrem novamente no próximo sábado às 10h30.',
+					details: 'Sua visita de hoje foi concluída. As inscrições abrem novamente {when}.',
 				},
 				not_placed: {
 					header: 'Sentimos muito, não desta vez',
 					details:
-						'Você não foi sorteado hoje. O sorteio é totalmente aleatório e os alimentos são limitados. Esperamos ver você no próximo sábado. As inscrições abrem às 10h30.',
+						'Você não foi sorteado hoje. O sorteio é totalmente aleatório e os alimentos são limitados. Esperamos ver você novamente. As inscrições abrem {when}.',
 				},
 				no_show: {
 					header: 'Seu número foi chamado',
@@ -4864,7 +4948,7 @@ export const translations = {
 				cancelled: {
 					header: 'Sua visita está cancelada',
 					details:
-						'Você não será chamado hoje. Se isso aconteceu por engano, fale com um membro da equipe. As inscrições abrem novamente no próximo sábado às 10h30.',
+						'Você não será chamado hoje. Se isso aconteceu por engano, fale com um membro da equipe. As inscrições abrem novamente {when}.',
 				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: 'Cancelar seu lugar na fila para esta visita?',
@@ -5026,6 +5110,10 @@ export const translations = {
 		qrCodeTitle: 'Escaneie para se apresentar',
 		registrationClosesIn: 'As inscrições encerram em',
 		registrationClosesInMinutes: 'As inscrições encerram em {minutes} min',
+		registrationOpensIn: 'As inscrições abrem em',
+		registrationOpensInMinutes: 'As inscrições abrem em {minutes} min',
+		registrationOpening: 'As inscrições estão abrindo…',
+		registrationOpened: 'As inscrições estão abertas',
 		submissionError: 'Não foi possível salvar sua entrada. Tente novamente.',
 		submit: 'Participar do sorteio',
 		submitting: 'Entrando no sorteio…',
@@ -5284,10 +5372,16 @@ export const translations = {
 				heading: 'Регистрация открывается каждую субботу в 10:30',
 				body: 'Регистрация ещё не открыта. Вернитесь в субботу в 10:30.\nУ всех будут равные шансы участвовать в жеребьёвке мест в очереди.',
 			},
+			nextRegistration: {
+				today: 'сегодня в {time}',
+				dated: '{relative} ({date}) в {time}',
+				next: 'в следующую субботу в {time}',
+				every: 'каждую субботу в {time}',
+			},
 			notOpenState: {
 				heading: 'Рынок закрыт',
 				subheading:
-					'Регистрация снова откроется в следующую субботу в 10:30 и продлится 15 минут, до 10:45.',
+					'Регистрация снова откроется {when} и продлится {minutes} минут, до {closeTime}.',
 				lotteryDescription:
 					'Запасы продуктов ограничены, поэтому каждую неделю рынок случайным образом выбирает покупателей с помощью жеребьёвки. Зарегистрироваться можно откуда угодно в течение 15 минут с 10:30 до 10:45 в субботу. Ранняя регистрация не влияет на шансы быть выбранным, поэтому торопиться не нужно.',
 				selectionDescription:
@@ -5296,12 +5390,12 @@ export const translations = {
 			registrationClosedState: {
 				heading: 'Регистрация закрыта',
 				description:
-					'К сожалению, вы пропустили сегодняшнюю регистрацию. Регистрация снова откроется в следующую субботу в 10:30. У всех зарегистрированных равные шансы в жеребьёвке.',
+					'К сожалению, вы пропустили сегодняшнюю регистрацию. Регистрация снова откроется {when}. У всех зарегистрированных равные шансы в жеребьёвке.',
 			},
 			serviceState: {
 				inProgressHeading: 'Сегодняшний рынок уже работает',
 				inProgressDescription:
-					'Регистрация на сегодня закрыта. Регистрация снова откроется в следующую субботу в 10:30 и продлится 15 минут, до 10:45. У всех, кто зарегистрировался, одинаковые шансы.',
+					'Регистрация на сегодня закрыта. Регистрация снова откроется {when} и продлится {minutes} минут, до {closeTime}. У всех, кто зарегистрировался, одинаковые шансы.',
 			},
 			refreshNotice: {
 				countdown: 'Обновление через {seconds} с',
@@ -5347,13 +5441,12 @@ export const translations = {
 				},
 				served: {
 					header: 'Спасибо за визит',
-					details:
-						'Ваш сегодняшний визит завершён. Регистрация снова откроется в следующую субботу в 10:30.',
+					details: 'Ваш сегодняшний визит завершён. Регистрация снова откроется {when}.',
 				},
 				not_placed: {
 					header: 'К сожалению, не в этот раз',
 					details:
-						'Вас не выбрали в сегодняшней жеребьёвке. Она полностью случайна, а запасы продуктов ограничены. Надеемся увидеть вас в следующую субботу. Регистрация открывается в 10:30.',
+						'Вас не выбрали в сегодняшней жеребьёвке. Она полностью случайна, а запасы продуктов ограничены. Надеемся увидеть вас снова. Регистрация открывается {when}.',
 				},
 				no_show: {
 					header: 'Ваш номер вызвали',
@@ -5363,7 +5456,7 @@ export const translations = {
 				cancelled: {
 					header: 'Ваш визит отменён',
 					details:
-						'Сегодня вас не вызовут. Если это произошло по ошибке, обратитесь к сотруднику. Регистрация снова откроется в следующую субботу в 10:30.',
+						'Сегодня вас не вызовут. Если это произошло по ошибке, обратитесь к сотруднику. Регистрация снова откроется {when}.',
 				},
 				cancelAction: 'Отменить этот визит',
 				cancelConfirmation: 'Отменить ваше место в очереди для этого визита?',
@@ -5523,6 +5616,10 @@ export const translations = {
 		qrCodeTitle: 'Отсканируйте для регистрации',
 		registrationClosesIn: 'Регистрация закроется через',
 		registrationClosesInMinutes: 'Регистрация закроется через {minutes} мин',
+		registrationOpensIn: 'Регистрация откроется через',
+		registrationOpensInMinutes: 'Регистрация откроется через {minutes} мин',
+		registrationOpening: 'Регистрация открывается…',
+		registrationOpened: 'Регистрация открыта',
 		submissionError: 'Не удалось сохранить вашу регистрацию. Попробуйте ещё раз.',
 		submit: 'Участвовать в жеребьёвке',
 		submitting: 'Регистрация на жеребьёвку…',

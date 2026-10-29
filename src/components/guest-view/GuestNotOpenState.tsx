@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { useTranslation } from '../../stores/react/use-translation';
 import { GuestGuideButton } from '../GuestGuideButton';
+import { useNextRegistrationText } from '../hooks/use-next-registration-text';
 import { GuestStateMessage } from './GuestStateMessage';
 
 const Message = styled(GuestStateMessage)`
@@ -33,9 +34,14 @@ const Divider = styled.hr`
 export const GuestNotOpenState = observer(function GuestNotOpenState() {
 	const t = useTranslation();
 	const copy = t.guestView.notOpenState;
+	const nextRegistration = useNextRegistrationText();
 
 	return (
-		<Message className="inactive-message" heading={copy.heading} description={copy.subheading}>
+		<Message
+			className="inactive-message"
+			heading={copy.heading}
+			description={nextRegistration(copy.subheading)}
+		>
 			<Divider />
 			<Details className="inactive-details">
 				<p>{copy.lotteryDescription}</p>

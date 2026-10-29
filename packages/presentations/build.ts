@@ -26,7 +26,7 @@ import blankSpace from 'ts-blank-space';
 import { build as vite } from 'vite';
 
 import { adminTranslations } from '../../src/adminLocales.ts';
-import { translations } from '../../src/locales.ts';
+import { type Locale, translations } from '../../src/locales.ts';
 import { brandCss, brandLockup } from './branding.ts';
 import { brandFontCss } from './fonts.ts';
 import type { NarrationLine, NarrationTimings, TimedLine, Voice } from './stage/reel.ts';
@@ -167,7 +167,7 @@ async function frame(): Promise<string> {
 }
 
 const strings = Object.fromEntries(
-	Object.entries(translations).map(([locale, t]) => [locale, guestStrings(t)]),
+	Object.entries(translations).map(([locale, t]) => [locale, guestStrings(t, locale as Locale)]),
 );
 const svg = (path: string) =>
 	'data:image/svg+xml;base64,' + readFileSync(here(path)).toString('base64');

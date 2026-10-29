@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=f8a73dac3aa8, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=00be73bf6624 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=6aebfd4c6059, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=00be73bf6624 -->
 
 # Session lifecycle
 
@@ -80,7 +80,9 @@ Two optional offsets on a session drive its automatic steps:
 ## What each state means
 
 - **`scheduled`** — the next session: a future registration window is set and will open on its own
-  when the time arrives. Guests see when it opens. It has not opened, so it cannot be reset — a
+  when the time arrives. Guests see when it opens. The overview's `nextRegistration` names that
+  window; on market day, before this session exists, it is the pattern's next occurrence, so the
+  guest's copy can give the date rather than "next Saturday". It has not opened, so it cannot be reset — a
   one-off session is deleted instead.
 - **`registration_open`** — guests can register. Each registration creates a `visits` row with
   status `registered`.

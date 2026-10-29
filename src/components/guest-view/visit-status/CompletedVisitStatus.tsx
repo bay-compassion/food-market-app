@@ -1,5 +1,8 @@
+import { observer } from 'mobx-react-lite';
+
 import type { VisitStatusTranslations } from '@/locales.ts';
 
+import { useNextRegistrationText } from '../../hooks/use-next-registration-text';
 import type { GuestVisitStatusTone } from './GuestVisitStatusPanel';
 import { GuestVisitStatusPanel } from './GuestVisitStatusPanel';
 
@@ -23,9 +26,16 @@ export type CompletedVisitStatusProps = {
 	copy: VisitStatusTranslations[CompletedVisitStatusKey];
 };
 
-/** A visit that has reached an outcome: no queue details or actions remain. */
-export function CompletedVisitStatus({ status, copy }: CompletedVisitStatusProps) {
+/**
+ * A visit that has reached an outcome: no queue details or actions remain, only when registration
+ * next opens.
+ */
+export const CompletedVisitStatus = observer(function CompletedVisitStatus({
+	status,
+	copy,
+}: CompletedVisitStatusProps) {
 	const { icon, tone } = outcomeMarks[status];
+	const nextRegistration = useNextRegistrationText();
 
 	return (
 		<GuestVisitStatusPanel
@@ -33,7 +43,7 @@ export function CompletedVisitStatus({ status, copy }: CompletedVisitStatusProps
 			iconClassName="outcome-mark"
 			tone={tone}
 			heading={copy.header}
-			description={copy.details}
+			description={nextRegistration(copy.details)}
 		/>
 	);
-}
+});

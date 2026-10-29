@@ -12,7 +12,7 @@ vi.mock('./sessionTimers.mjs', () => ({
 	upcomingSessionTimers: ['registration_close', 'auto_close'],
 }));
 
-import { getCurrentEvent } from './marketSession.mjs';
+import { getCurrentEvent, marketOverview } from './marketSession.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
 import { scheduleSessionTimersQuietly } from './sessionTimers.mjs';
 
@@ -153,5 +153,71 @@ describe('getCurrentEvent auto-close', () => {
 
 		// Assert
 		expect(event).toBeNull();
+	});
+});
+
+describe('marketOverview next registration', () => {
+	const location = { id: 'location-1', name: 'The Bay Church', timeZone: 'America/Los_Angeles' };
+	const pattern = {
+		id: 'pattern-1',
+		locationId: 'location-1',
+		startsOn: '2026-09-19',
+		registrationOpensAt: '10:30:00',
+		registrationDurationMinutes: 15,
+		capacity: 30,
+		lotteryDelayMinutes: null,
+		autoCloseAfterMinutes: 720,
+	};
+
+	it('names the session itself while it has yet to open', async () => {
+		// Arrange
+		const scheduled = baseEvent({
+			status: 'scheduled',
+			registrationOpensAt: new Date(Date.now() + 3_600_000),
+			registrationClosesAt: new Date(Date.now() + 4_500_000),
+		});
+
+		queueResult([scheduled]); // latest active event
+		queueResult([]); // questions
+		queueResult([]); // counts
+		queueResult([location]);
+
+		// Act
+		const overview = await marketOverview();
+
+		// Assert
+		expect(overview.nextRegistration).toEqual({
+			registrationOpensAt: scheduled.registrationOpensAt.toISOString(),
+			registrationClosesAt: scheduled.registrationClosesAt.toISOString(),
+			timeZone: 'America/Los_Angeles',
+		});
+	});
+
+	it('works out the pattern’s next occurrence on market day, before that session exists', async () => {
+		// Arrange
+		const today = baseEvent({
+			status: 'service_started',
+			registrationOpensAt: new Date('2026-10-31T17:30:00.000Z'),
+			registrationClosesAt: new Date('2026-10-31T17:45:00.000Z'),
+			recurrencePatternId: 'pattern-1',
+		});
+
+		vi.useFakeTimers({ now: new Date('2026-10-31T19:00:00.000Z'), toFake: ['Date'] });
+		queueResult([today]); // latest active event
+		queueResult([]); // questions
+		queueResult([]); // counts
+		queueResult([location]);
+		queueResult([pattern]);
+
+		// Act
+		const overview = await marketOverview();
+
+		// Assert
+		vi.useRealTimers();
+		expect(overview.nextRegistration).toEqual({
+			registrationOpensAt: '2026-11-07T18:30:00.000Z',
+			registrationClosesAt: '2026-11-07T18:45:00.000Z',
+			timeZone: 'America/Los_Angeles',
+		});
 	});
 });

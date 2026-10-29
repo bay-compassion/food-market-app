@@ -23,7 +23,7 @@ export type RootStoreOptions = {
 	installation?: PwaInstallStoreOptions;
 	admin?: AdminStoreOptions;
 	workers?: { fetch?: typeof fetch };
-	session?: Pick<MarketSessionStoreOptions, 'fetch'>;
+	session?: Pick<MarketSessionStoreOptions, 'fetch' | 'undatedNextRegistration'>;
 	claim?: GuestClaimStoreOptions;
 	visit?: VisitStoreOptions;
 };
