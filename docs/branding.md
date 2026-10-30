@@ -40,20 +40,26 @@ from the palette. Functional status colors and the amber keyboard-focus ring ret
 meaning. App tokens live in `src/styles/base.css`; concrete MUI palette values in `src/theme.ts`
 must stay aligned. Static flyers and presentation styles carry equivalent values.
 
-Headings, structural labels, buttons, and counts use **Area Normal** (ExtraBold 800 and Black 900).
-App headings and labels use tighter tracking through `--tracking-heading` and `--tracking-label`
-in `src/styles/base.css`; RTL containers reset these to zero to preserve joined letterforms.
-Document headings and brand lockups keep their own spacing.
-Body text uses **DM Sans** (400–900, plus regular italic). Existing heading weights below 800
-resolve to the supplied ExtraBold face; no artificial bold is needed. Both families are self-hosted
-as WOFF2 in `public/fonts/`, with `font-display: swap`. The shared stylesheet is
-`public/fonts/brand.css`, imported by the app and linked by static pages. Standalone presentation
+The brand name is set in **Area Normal** (ExtraBold 800 and Black 900) through `--font-brand`: the
+app bar's market name and the brand lockups. Flyers and presentations also use Area for their
+headings, through `--font-heading` in `public/fonts/brand.css`. The app overrides `--font-heading`
+in `src/styles/base.css` with **Roboto Condensed** for its headings, labels, buttons, and counts:
+Area was used there for a short time and was reverted because its wide letterforms pushed text out
+of its containers. App tracking lives in `--tracking-heading`, `--tracking-label`, and
+`--tracking-brand` in `src/styles/base.css`; RTL containers reset these to zero to preserve joined
+letterforms.
+Body text uses **Roboto** (400, 500, 700). The kit’s DM Sans was used for body text for a short
+time and was reverted: it was harder to read at body sizes and pushed translated strings out of
+their containers. Area is self-hosted as WOFF2 in `public/fonts/`, with
+`font-display: swap`. The shared stylesheet is `public/fonts/brand.css`, imported by the app and
+linked by static pages; it also sets `--font-body`, `--font-heading`, and `--font-brand`. Standalone presentation
 builds embed the same font declarations and binary files.
 
-Area falls back to DM Sans. Body text falls back to Roboto, then Arial and the system sans-serif;
-Arabic/Farsi and Chinese use Noto Sans Arabic and Noto Sans SC where available. Roboto and Noto
-web fallbacks are loaded from Google Fonts; the primary brand fonts need no external font service.
-The original DM Sans files include the SIL Open Font License, preserved as
+Area falls back to Roboto. Body text falls back to Arial and the system sans-serif; Arabic/Farsi
+and Chinese use Noto Sans Arabic and Noto Sans SC where available. Roboto and Noto are loaded from
+Google Fonts, and the app loads Roboto Condensed there too. The DM Sans files and their `@font-face` rules remain in `public/fonts/`, unused,
+so the body font can be switched back by editing `--font-body`; browsers download a declared face
+only when text uses it. The original DM Sans files include the SIL Open Font License, preserved as
 `public/fonts/dm-sans-ofl.txt`. The organization confirmed Area’s website use is licensed.
 SVG logo lettering is outlined and requires no font file.
 

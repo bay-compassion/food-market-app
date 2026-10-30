@@ -6,36 +6,41 @@ import * as Specimens from './DesignTokens.stories';
 
 # Typography
 
-Two families, split by job. Area Normal carries anything structural — headings, labels,
-buttons, counts — and always uppercase. DM Sans carries everything a person actually reads in
+Two families, split by job. Roboto Condensed carries anything structural — headings, labels,
+buttons, counts — and always uppercase. Roboto carries everything a person actually reads in
 sentences.
 
 The split is what gives the app its voice, and it is easy to break by accident: a heading set in
-the body font reads as a paragraph, and a paragraph set in Area uppercase becomes unreadable
+the body font reads as a paragraph, and a paragraph set in Condensed uppercase becomes unreadable
 at the length guests are asked to read.
 
 ## Headings — `--font-heading`
 
-Area Normal ExtraBold (800), with Black (900) available for stronger emphasis. Sizes are set per context rather than by a global scale,
+Roboto Condensed, uppercase, weight 700. Sizes are set per context rather than by a global scale,
 because a heading on the guest hero and a heading on an admin section are doing different jobs.
 
 <Story of={Specimens.HeadingScale} />
 
 App headings use `--tracking-heading` and labels use `--tracking-label`, defined in
-`src/styles/base.css`. These tighter settings reduce wrapping with Area’s wide letterforms;
-Arabic and Farsi reset them to zero to preserve joined letters. Brand lockups and document
-headings keep their own spacing.
+`src/styles/base.css`; Arabic and Farsi reset them to zero to preserve joined letters.
+
+## The Brand Name — `--font-brand`
+
+The market's name in the app bar, and the brand lockup on documents, are set in the brand kit's
+Area Normal ExtraBold (800). Nothing else in the app is. Area was briefly the heading font too, and
+went back to Roboto Condensed: its wide letterforms pushed headings, labels, and buttons out of
+their containers, most of all in translation.
 
 ## Body — `--font-body`
 
-DM Sans, sentence case, weight 400. Line height sits between 1.5 and 1.65 — generous, because a
+Roboto, sentence case, weight 400. Line height sits between 1.5 and 1.65 — generous, because a
 large share of guests are reading a translation of a second language on a phone outdoors.
 
 <Story of={Specimens.BodyScale} />
 
 ## Numbers
 
-One number in the app is set large on purpose: the guest's place in the queue. It is Area Normal at
+One number in the app is set large on purpose: the guest's place in the queue. It is Condensed at
 44px in the brand color, and it is the only thing on the screen at that size, so a guest can check
 their position at arm's length without reading anything else.
 
@@ -48,10 +53,13 @@ their position at arm's length without reading anything else.
 - Never set body copy in uppercase. Arabic and Farsi have no case at all, so uppercase styling
   silently does nothing there — a distinction that exists only in English is not a distinction the
   design can rely on.
-- Both primary families are self-hosted as WOFF2 through `public/fonts/brand.css`, using
-  `font-display: swap`. Area falls back to DM Sans; DM Sans falls back to Roboto, then Arial
-  and the system sans-serif. Noto Sans Arabic and Noto Sans SC cover script-specific fallbacks.
-- Area ships in weights 800 and 900; requests for lighter heading weights use the supplied 800
-  face. DM Sans has static weights 400–900 and a regular italic face.
-- The app preloads the regular body face and ExtraBold heading face. Presentations embed their
+- Roboto (400, 500, 700) and Roboto Condensed (500, 600, 700) are loaded from Google Fonts in
+  `base.css`, then fall back to Arial and the system sans-serif. Area is self-hosted as WOFF2
+  through `public/fonts/brand.css`, using `font-display: swap`, and falls back to Roboto. Noto Sans Arabic and Noto Sans SC cover
+  script-specific fallbacks.
+- Area ships in weights 800 and 900.
+- Body text was briefly set in the brand kit's DM Sans and went back to Roboto, which reads better
+  at small sizes and fits translated strings that DM Sans pushed out of their containers. Its
+  files and `@font-face` rules are still in `public/fonts/`, unused, so it is never downloaded.
+- The app preloads Area's ExtraBold face for the app bar. Presentations embed their
   fonts so standalone pages do not need the app’s asset server.

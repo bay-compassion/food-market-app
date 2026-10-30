@@ -1,4 +1,5 @@
-/* Supplied brand fonts. DM Sans license: dm-sans-ofl.txt. See docs/branding.md. */
+/* Supplied brand fonts. DM Sans license: dm-sans-ofl.txt. Body text uses Roboto; DM Sans is
+   declared but unused, so browsers never download it. See docs/branding.md. */
 @font-face {
 	font-family: 'Area Normal';
 	src: url('/fonts/area-normal-extrabold.woff2') format('woff2');
@@ -64,7 +65,8 @@
 }
 
 :root {
-	--font-body: 'DM Sans', Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
-	--font-heading:
-		'Area Normal', 'DM Sans', Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
+	--font-body: Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
+	--font-heading: 'Area Normal', Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
+	/* The brand name in type. The app sets its own headings in Roboto Condensed, but keeps this. */
+	--font-brand: 'Area Normal', Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
 }
