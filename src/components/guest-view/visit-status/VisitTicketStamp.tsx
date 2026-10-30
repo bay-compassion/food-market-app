@@ -30,13 +30,14 @@ const Stamp = styled.div`
 	display: grid;
 	grid-template-columns: auto auto;
 	align-items: center;
+	justify-self: stretch;
 	justify-content: center;
 	column-gap: 14px;
-	margin: 0 auto 20px;
 	padding: 12px 22px;
 	border: 2px dashed color-mix(in srgb, var(--color-border) 60%, transparent);
 	border-radius: var(--radius-md);
 	color: var(--color-text);
+	background: var(--color-background);
 	font-family: var(--font-heading);
 	font-weight: 700;
 	line-height: 1.15;

@@ -42,6 +42,10 @@ export interface VisitStatusTranslations {
 	};
 	registered: {
 		header: string;
+		/** Heads when the lottery result arrives, the one thing a registered guest waits for. */
+		resultLabel: string;
+		resultTime: string;
+		resultWhere: string;
 		details: string;
 		returnInstructions: string;
 	};
@@ -54,6 +58,8 @@ export interface VisitStatusTranslations {
 		nowCallingNone: string;
 	};
 	called: {
+		/** The card's masthead, over the larger `header`. */
+		eyebrow: string;
 		header: string;
 		/** Replaces `header` at the same moment `detailsLate` replaces `details`. */
 		headerLate: string;
@@ -312,20 +318,27 @@ export interface GuestViewTranslations {
 		/** The masthead's opening line under "Every Saturday", when the schedule names no date. */
 		opensUndated: string;
 		scheduleHeading: string;
-		/** A market Saturday in order — register, the draw, shopping — each at its usual time. */
-		steps: { time: string; title: string; body: string }[];
+		/** Heads the same steps on a visit card, marked off as the guest's Saturday goes by. */
+		todayHeading: string;
+		/** Tags the step the guest is in now: making their way to the market. */
+		markerNow: string;
+		/** Tags the step the guest is waiting for: the draw. */
+		markerNext: string;
+		/**
+		 * A market Saturday in order — register, the draw, travel, shopping. A step with a `time`
+		 * happens then; making your way to the market is the stretch between two, so it has none.
+		 */
+		steps: { time?: string; title: string; body: string }[];
 		supplyNote: string;
 		addToCalendar: string;
 		/** The event's name in the guest's calendar. */
 		calendarEventTitle: string;
 	};
+	/** A guest with no visit once registration has closed: during the draw and while shopping. */
 	registrationClosedState: {
 		heading: string;
+		headline: string;
 		description: string;
-	};
-	serviceState: {
-		inProgressHeading: string;
-		inProgressDescription: string;
 	};
 	refreshNotice: {
 		countdown: string;
@@ -848,6 +861,9 @@ export const translations = {
 				heading: 'The Market Is Closed',
 				subheading: 'Registration opens again {when}.',
 				scheduleHeading: 'Every Saturday',
+				todayHeading: 'Today',
+				markerNow: 'Now',
+				markerNext: 'Up Next',
 				steps: [
 					{
 						time: '10:30 AM',
@@ -860,9 +876,13 @@ export const translations = {
 						body: 'If you are selected, you get a number here in the app, and by text message if you agreed to texts.',
 					},
 					{
+						title: 'Make Your Way to the Market',
+						body: 'If you got a number, head to the market. You’ll see your turn come up here in the app.',
+					},
+					{
 						time: '11:30 AM',
 						title: 'Shopping Begins',
-						body: 'The time between the draw and shopping lets you travel to the market.',
+						body: 'Numbers are called in order at the market entrance.',
 					},
 				],
 				supplyNote: 'Supplies are limited, so not everyone gets a number each week.',
@@ -873,14 +893,10 @@ export const translations = {
 				opensUndated: 'Opens at {time}',
 			},
 			registrationClosedState: {
-				heading: 'Registration has closed',
+				heading: 'Registration Has Closed',
+				headline: 'You Missed Today’s Sign-Up',
 				description:
-					'We’re sorry — you missed today’s sign-up window. Registration opens again {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'Today’s market is underway',
-				inProgressDescription:
-					'Registration is closed for today. Registration will open again {when} and stay open for {minutes} minutes, until {closeTime}.',
+					'We’re sorry — today’s sign-up window has closed. We hope to see you next time.',
 			},
 			refreshNotice: {
 				countdown: 'Updating in {seconds}s',
@@ -894,20 +910,22 @@ export const translations = {
 					registered: 'Registered',
 					waiting: 'Waiting',
 					called: 'Called',
-					served: 'Served',
-					not_placed: 'Not placed',
-					no_show: 'No show',
+					served: 'Checked In',
+					not_placed: 'Not Placed',
+					no_show: 'No Show',
 					cancelled: 'Cancelled',
 				},
 				registered: {
-					header: 'You’re in the lottery!',
-					details:
-						'Your result will appear here at 10:45 AM. If you signed up for text updates, we’ll text you too.',
+					header: 'You’re in the Lottery',
+					resultLabel: 'Your Result',
+					resultTime: 'Today at 10:45 AM',
+					resultWhere: 'It will appear right here.',
+					details: 'If you signed up for text updates, we’ll text you too.',
 					returnInstructions:
 						'If you close this page, scan the market QR code again on this phone to return.',
 				},
 				waiting: {
-					header: 'You got a number!',
+					header: 'You Got a Number',
 					details:
 						'Head to the market now if you’re not already on-site. We’ll tell you here when it’s your turn.',
 					guestsAheadLabel: 'Guests ahead of you',
@@ -916,32 +934,34 @@ export const translations = {
 					nowCallingNone: 'Calling starts at 11:30 AM',
 				},
 				called: {
-					header: 'Come to check-in now',
-					headerLate: 'Please hurry to check-in',
-					details: 'It’s your turn. Bring this phone to the check-in desk.',
+					eyebrow: 'It’s Your Turn',
+					header: 'Come to Check-In Now',
+					headerLate: 'Please Hurry to Check-In',
+					details: 'Bring this phone to the check-in desk.',
 					detailsLate:
 						'Your number was called. Others are waiting behind you, so please come to the check-in desk now.',
 					calledMinutesAgoOne: 'Called 1 minute ago',
 					calledMinutesAgoOther: 'Called {minutes} minutes ago',
 				},
 				served: {
-					header: 'Thank you for coming',
-					details: 'Your visit today is complete. Registration opens again {when}.',
+					header: 'Enjoy Your Shopping',
+					details:
+						'You’re all set. Head inside and shop at your own pace. Thank you for coming today.',
 				},
 				not_placed: {
-					header: 'Sorry, not this time',
+					header: 'Sorry, Not This Time',
 					details:
-						'You weren’t picked in today’s lottery. It’s completely random, and supplies are limited. We hope to see you again. Registration opens {when}.',
+						'You weren’t picked in today’s lottery. It’s completely random, and supplies are limited. We hope to see you again.',
 				},
 				no_show: {
-					header: 'Your number was called',
+					header: 'Your Number Was Called',
 					details:
 						'We couldn’t find you at the check-in desk. If you’re still at the market, please go there now and ask a team member for help.',
 				},
 				cancelled: {
-					header: 'Your visit is cancelled',
+					header: 'Your Visit Is Cancelled',
 					details:
-						'You won’t be called today. If this happened by mistake, please see a team member. Registration opens again {when}.',
+						'You won’t be called today. If this happened by mistake, please see a team member.',
 				},
 				cancelAction: 'Cancel this visit',
 				cancelConfirmation: 'Cancel your place in the queue for this visit?',
@@ -1379,6 +1399,9 @@ export const translations = {
 				heading: 'El mercado está cerrado',
 				subheading: 'La inscripción vuelve a abrir {when}.',
 				scheduleHeading: 'Todos los sábados',
+				todayHeading: 'Hoy',
+				markerNow: 'Ahora',
+				markerNext: 'A continuación',
 				steps: [
 					{
 						time: '10:30 a. m.',
@@ -1391,9 +1414,13 @@ export const translations = {
 						body: 'Si es seleccionado, recibirá un número aquí en la aplicación, y por mensaje de texto si aceptó recibirlos.',
 					},
 					{
+						title: 'Diríjase al mercado',
+						body: 'Si obtuvo un número, diríjase al mercado. Verá aquí en la aplicación cuándo se acerca su turno.',
+					},
+					{
 						time: '11:30 a. m.',
 						title: 'Comienzan las compras',
-						body: 'El tiempo entre el sorteo y las compras le permite llegar al mercado.',
+						body: 'Los números se llaman en orden en la entrada del mercado.',
 					},
 				],
 				supplyNote:
@@ -1406,13 +1433,9 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'El registro ha cerrado',
+				headline: 'Se perdió la inscripción de hoy',
 				description:
-					'Lo sentimos: no alcanzó a inscribirse dentro del horario de hoy. El registro volverá a abrir {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'El mercado de hoy está en curso',
-				inProgressDescription:
-					'El registro está cerrado por hoy. La inscripción volverá a abrir {when} y permanecerá abierta {minutes} minutos, hasta las {closeTime}.',
+					'Lo sentimos: el horario de inscripción de hoy ya cerró. Esperamos verle la próxima vez.',
 			},
 			refreshNotice: {
 				countdown: 'Se actualizará en {seconds} s',
@@ -1427,20 +1450,22 @@ export const translations = {
 					registered: 'Registrado',
 					waiting: 'En espera',
 					called: 'Llamado',
-					served: 'Atendido',
+					served: 'Registro completado',
 					not_placed: 'Sin lugar',
 					no_show: 'No se presentó',
 					cancelled: 'Cancelado',
 				},
 				registered: {
-					header: '¡Está participando en el sorteo!',
-					details:
-						'Su resultado aparecerá aquí a las 10:45 a. m. Si activó los mensajes de texto, también le enviaremos un mensaje.',
+					header: 'Está participando en el sorteo',
+					resultLabel: 'Su resultado',
+					resultTime: 'Hoy a las 10:45 a. m.',
+					resultWhere: 'Aparecerá aquí mismo.',
+					details: 'Si activó los mensajes de texto, también le enviaremos un mensaje.',
 					returnInstructions:
 						'Si cierra esta página, vuelva a escanear el código QR del mercado con este teléfono para regresar.',
 				},
 				waiting: {
-					header: '¡Obtuvo un número!',
+					header: 'Obtuvo un número',
 					details:
 						'Diríjase al mercado ahora si todavía no está aquí. Le avisaremos aquí cuando sea su turno.',
 					guestsAheadLabel: 'Invitados delante de usted',
@@ -1449,22 +1474,23 @@ export const translations = {
 					nowCallingNone: 'Los llamados empiezan a las 11:30 a. m.',
 				},
 				called: {
+					eyebrow: 'Es su turno',
 					header: 'Acérquese al registro ahora',
 					headerLate: 'Por favor, venga pronto al registro',
-					details: 'Es su turno. Traiga este teléfono a la mesa de registro.',
+					details: 'Traiga este teléfono a la mesa de registro.',
 					detailsLate:
 						'Ya llamamos su número. Otras personas esperan detrás de usted, así que por favor acérquese a la mesa de registro ahora.',
 					calledMinutesAgoOne: 'Le llamamos hace 1 minuto',
 					calledMinutesAgoOther: 'Le llamamos hace {minutes} minutos',
 				},
 				served: {
-					header: 'Gracias por venir',
-					details: 'Su visita de hoy ha terminado. El registro volverá a abrir {when}.',
+					header: 'Disfrute sus compras',
+					details: 'Todo está listo. Pase y haga sus compras con calma. Gracias por venir hoy.',
 				},
 				not_placed: {
 					header: 'Lo sentimos, esta vez no',
 					details:
-						'No fue elegido en el sorteo de hoy. Es completamente al azar y los suministros son limitados. Esperamos volver a verle. El registro abre {when}.',
+						'No fue elegido en el sorteo de hoy. Es completamente al azar y los suministros son limitados. Esperamos volver a verle.',
 				},
 				no_show: {
 					header: 'Llamamos su número',
@@ -1473,8 +1499,7 @@ export const translations = {
 				},
 				cancelled: {
 					header: 'Su visita está cancelada',
-					details:
-						'Hoy no le llamaremos. Si esto fue un error, hable con un miembro del equipo. El registro volverá a abrir {when}.',
+					details: 'Hoy no le llamaremos. Si esto fue un error, hable con un miembro del equipo.',
 				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
@@ -1910,6 +1935,9 @@ export const translations = {
 				heading: 'بازار بسته است',
 				subheading: 'ثبت‌نام {when} دوباره آغاز می‌شود.',
 				scheduleHeading: 'هر شنبه',
+				todayHeading: 'امروز',
+				markerNow: 'اکنون',
+				markerNext: 'مرحله بعد',
 				steps: [
 					{
 						time: '۱۰:۳۰ صبح',
@@ -1922,9 +1950,13 @@ export const translations = {
 						body: 'اگر انتخاب شوید، در همین برنامه یک شماره دریافت می‌کنید، و اگر با دریافت پیامک موافقت کرده باشید، از طریق پیامک نیز.',
 					},
 					{
+						title: 'به بازار بیایید',
+						body: 'اگر شماره گرفتید، به بازار بیایید. نزدیک شدن نوبتتان را همین‌جا در برنامه می‌بینید.',
+					},
+					{
 						time: '۱۱:۳۰ صبح',
 						title: 'آغاز خرید',
-						body: 'فاصله میان قرعه‌کشی و خرید به شما فرصت می‌دهد تا به بازار برسید.',
+						body: 'شماره‌ها به ترتیب در ورودی بازار خوانده می‌شوند.',
 					},
 				],
 				supplyNote: 'اقلام محدود است، بنابراین هر هفته به همه شماره نمی‌رسد.',
@@ -1936,13 +1968,8 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'ثبت‌نام بسته شده است',
-				description:
-					'متأسفیم؛ شما بازه ثبت‌نام امروز را از دست دادید. ثبت‌نام {when} دوباره آغاز می‌شود.',
-			},
-			serviceState: {
-				inProgressHeading: 'بازار امروز در حال برگزاری است',
-				inProgressDescription:
-					'ثبت‌نام برای امروز بسته شده است. ثبت‌نام {when} دوباره آغاز می‌شود و {minutes} دقیقه، تا ساعت {closeTime}، باز می‌ماند.',
+				headline: 'ثبت‌نام امروز را از دست دادید',
+				description: 'متأسفیم؛ بازه ثبت‌نام امروز بسته شده است. امیدواریم دفعه بعد شما را ببینیم.',
 			},
 			refreshNotice: {
 				countdown: 'به‌روزرسانی تا {seconds} ثانیه دیگر',
@@ -1956,20 +1983,22 @@ export const translations = {
 					registered: 'ثبت‌شده',
 					waiting: 'در انتظار',
 					called: 'فراخوانده‌شده',
-					served: 'خدمت‌رسانی‌شده',
+					served: 'پذیرش‌شده',
 					not_placed: 'انتخاب‌نشده',
 					no_show: 'غایب',
 					cancelled: 'لغوشده',
 				},
 				registered: {
-					header: 'شما در قرعه‌کشی هستید!',
-					details:
-						'نتیجه شما ساعت ۱۰:۴۵ صبح اینجا نمایش داده می‌شود. اگر دریافت پیامک را فعال کرده باشید، پیامک هم می‌فرستیم.',
+					header: 'شما در قرعه‌کشی هستید',
+					resultLabel: 'نتیجه شما',
+					resultTime: 'امروز ساعت ۱۰:۴۵ صبح',
+					resultWhere: 'همین‌جا نمایش داده می‌شود.',
+					details: 'اگر دریافت پیامک را فعال کرده باشید، پیامک هم می‌فرستیم.',
 					returnInstructions:
 						'اگر این صفحه را بستید، برای بازگشت کد QR بازار را دوباره با همین تلفن اسکن کنید.',
 				},
 				waiting: {
-					header: 'شما شماره گرفتید!',
+					header: 'شما شماره گرفتید',
 					details:
 						'اگر هنوز در محل نیستید، همین حالا به بازار بیایید. وقتی نوبت شما شد، همین‌جا به شما اطلاع می‌دهیم.',
 					guestsAheadLabel: 'مهمانان جلوتر از شما',
@@ -1978,22 +2007,23 @@ export const translations = {
 					nowCallingNone: 'فراخوانی ساعت ۱۱:۳۰ صبح شروع می‌شود',
 				},
 				called: {
+					eyebrow: 'نوبت شماست',
 					header: 'همین حالا به پذیرش بیایید',
 					headerLate: 'لطفاً زودتر به پذیرش بیایید',
-					details: 'نوبت شماست. همین گوشی را به میز پذیرش بیاورید.',
+					details: 'همین گوشی را به میز پذیرش بیاورید.',
 					detailsLate:
 						'شمارهٔ شما فراخوانده شد. دیگران پشت سر شما منتظرند، پس لطفاً همین حالا به میز پذیرش بیایید.',
 					calledMinutesAgoOne: 'یک دقیقه پیش فراخوانده شدید',
 					calledMinutesAgoOther: '{minutes} دقیقه پیش فراخوانده شدید',
 				},
 				served: {
-					header: 'از حضورتان سپاسگزاریم',
-					details: 'بازدید امروز شما به پایان رسید. ثبت‌نام {when} دوباره آغاز می‌شود.',
+					header: 'از خریدتان لذت ببرید',
+					details: 'همه‌چیز آماده است. وارد شوید و با آرامش خرید کنید. از حضورتان امروز سپاسگزاریم.',
 				},
 				not_placed: {
 					header: 'متأسفیم، این بار نه',
 					details:
-						'شما در قرعه‌کشی امروز انتخاب نشدید. قرعه‌کشی کاملاً تصادفی است و اقلام محدود است. امیدواریم دوباره شما را ببینیم. ثبت‌نام {when} باز می‌شود.',
+						'شما در قرعه‌کشی امروز انتخاب نشدید. قرعه‌کشی کاملاً تصادفی است و اقلام محدود است. امیدواریم دوباره شما را ببینیم.',
 				},
 				no_show: {
 					header: 'شمارهٔ شما فراخوانده شد',
@@ -2003,7 +2033,7 @@ export const translations = {
 				cancelled: {
 					header: 'بازدید شما لغو شده است',
 					details:
-						'امروز شمارهٔ شما فراخوانده نمی‌شود. اگر این اشتباهی رخ داده است، لطفاً با یکی از اعضای تیم صحبت کنید. ثبت‌نام {when} دوباره باز می‌شود.',
+						'امروز شمارهٔ شما فراخوانده نمی‌شود. اگر این اشتباهی رخ داده است، لطفاً با یکی از اعضای تیم صحبت کنید.',
 				},
 				cancelAction: 'لغو این بازدید',
 				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
@@ -2441,6 +2471,9 @@ export const translations = {
 				heading: 'Sarado ang Pamilihan',
 				subheading: 'Magbubukas muli ang pagpaparehistro {when}.',
 				scheduleHeading: 'Tuwing Sabado',
+				todayHeading: 'Ngayong Araw',
+				markerNow: 'Ngayon',
+				markerNext: 'Susunod',
 				steps: [
 					{
 						time: '10:30 AM',
@@ -2453,9 +2486,13 @@ export const translations = {
 						body: 'Kung mapipili ka, bibigyan ka ng numero dito sa app, at sa text message kung pumayag kang tumanggap ng mga text.',
 					},
 					{
+						title: 'Pumunta sa Pamilihan',
+						body: 'Kung may numero kayo, pumunta na sa pamilihan. Makikita ninyo rito sa app kapag malapit na ang inyong turno.',
+					},
+					{
 						time: '11:30 AM',
 						title: 'Simula ng Pamimili',
-						body: 'Ang oras sa pagitan ng bunutan at pamimili ay para makapunta ka sa pamilihan.',
+						body: 'Tinatawag ang mga numero nang sunod-sunod sa pasukan ng pamilihan.',
 					},
 				],
 				supplyNote:
@@ -2468,13 +2505,9 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'Sarado na ang pagpaparehistro',
+				headline: 'Hindi kayo umabot sa pagpaparehistro ngayon',
 				description:
-					'Pasensya na po — hindi na kayo umabot sa oras ng pagpaparehistro ngayong araw. Muling magbubukas ang pagpaparehistro {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
-				inProgressDescription:
-					'Sarado na ang pagpaparehistro para ngayong araw. Magbubukas muli ang pagpaparehistro {when} at mananatiling bukas nang {minutes} minuto, hanggang {closeTime}.',
+					'Pasensya na po — sarado na ang oras ng pagpaparehistro ngayong araw. Sana makita namin kayo sa susunod.',
 			},
 			refreshNotice: {
 				countdown: 'Mag-a-update sa loob ng {seconds}s',
@@ -2489,20 +2522,22 @@ export const translations = {
 					registered: 'Nakarehistro',
 					waiting: 'Naghihintay',
 					called: 'Tinawag',
-					served: 'Napagsilbihan',
+					served: 'Naka-check in',
 					not_placed: 'Hindi napili',
 					no_show: 'Hindi dumating',
 					cancelled: 'Kinansela',
 				},
 				registered: {
-					header: 'Kasali na kayo sa lottery!',
-					details:
-						'Lalabas dito ang iyong resulta nang 10:45 AM. Kung nag-sign up ka para sa mga update sa text, magte-text din kami sa iyo.',
+					header: 'Kasali na kayo sa lottery',
+					resultLabel: 'Ang inyong resulta',
+					resultTime: 'Ngayong araw nang 10:45 AM',
+					resultWhere: 'Lalabas ito mismo rito.',
+					details: 'Kung nag-sign up kayo para sa mga update sa text, magte-text din kami sa inyo.',
 					returnInstructions:
 						'Kung isasara mo ang pahinang ito, i-scan muli ang QR code ng market gamit ang teleponong ito para makabalik.',
 				},
 				waiting: {
-					header: 'May numero na kayo!',
+					header: 'May numero na kayo',
 					details:
 						'Pumunta na po kayo sa pamilihan ngayon kung wala pa kayo rito. Sasabihin namin dito kapag oras na ninyo.',
 					guestsAheadLabel: 'Mga bisita bago kayo',
@@ -2511,23 +2546,24 @@ export const translations = {
 					nowCallingNone: 'Magsisimula ang pagtawag nang 11:30 AM',
 				},
 				called: {
+					eyebrow: 'Kayo na po',
 					header: 'Pumunta na sa check-in ngayon',
 					headerLate: 'Magmadali po sa check-in',
-					details: 'Kayo na po. Dalhin ang teleponong ito sa mesa ng check-in.',
+					details: 'Dalhin ang teleponong ito sa mesa ng check-in.',
 					detailsLate:
 						'Tinawag na po ang inyong numero. May mga naghihintay sa likod ninyo, kaya pumunta na po kayo sa mesa ng check-in ngayon.',
 					calledMinutesAgoOne: 'Tinawag kayo 1 minuto na ang nakalipas',
 					calledMinutesAgoOther: 'Tinawag kayo {minutes} minuto na ang nakalipas',
 				},
 				served: {
-					header: 'Salamat po sa pagpunta',
+					header: 'Mag-enjoy sa pamimili',
 					details:
-						'Tapos na po ang inyong pagbisita ngayong araw. Muling magbubukas ang pagpaparehistro {when}.',
+						'Handa na po kayo. Pumasok na at mamili nang hindi nagmamadali. Salamat po sa pagpunta ngayong araw.',
 				},
 				not_placed: {
 					header: 'Pasensya na po, hindi ngayon',
 					details:
-						'Hindi kayo napili sa lottery ngayong araw. Ganap itong random, at limitado ang mga supply. Sana makita namin kayo muli. Magbubukas ang rehistrasyon {when}.',
+						'Hindi kayo napili sa lottery ngayong araw. Ganap itong random, at limitado ang mga supply. Sana makita namin kayo muli.',
 				},
 				no_show: {
 					header: 'Tinawag na ang inyong numero',
@@ -2537,7 +2573,7 @@ export const translations = {
 				cancelled: {
 					header: 'Kinansela ang inyong pagbisita',
 					details:
-						'Hindi na po kayo tatawagin ngayong araw. Kung nagkamali ito, makipag-usap po sa isang miyembro ng pangkat. Muling magbubukas ang rehistrasyon {when}.',
+						'Hindi na po kayo tatawagin ngayong araw. Kung nagkamali ito, makipag-usap po sa isang miyembro ng pangkat.',
 				},
 				cancelAction: 'Kanselahin ang pagbisitang ito',
 				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
@@ -2971,6 +3007,9 @@ export const translations = {
 				heading: 'Chợ hiện đang đóng cửa',
 				subheading: 'Đăng ký sẽ mở lại {when}.',
 				scheduleHeading: 'Mỗi thứ Bảy',
+				todayHeading: 'Hôm nay',
+				markerNow: 'Bây giờ',
+				markerNext: 'Tiếp theo',
 				steps: [
 					{
 						time: '10:30 sáng',
@@ -2983,9 +3022,13 @@ export const translations = {
 						body: 'Nếu được chọn, bạn sẽ nhận được một số thứ tự ngay trong ứng dụng, và qua tin nhắn nếu bạn đã đồng ý nhận tin nhắn.',
 					},
 					{
+						title: 'Đến chợ',
+						body: 'Nếu bạn có số, hãy đến chợ. Bạn sẽ thấy lượt của mình đến gần ngay trong ứng dụng.',
+					},
+					{
 						time: '11:30 sáng',
 						title: 'Bắt đầu mua sắm',
-						body: 'Khoảng thời gian giữa xổ số và giờ mua sắm giúp bạn kịp đến chợ.',
+						body: 'Các số được gọi theo thứ tự tại lối vào chợ.',
 					},
 				],
 				supplyNote: 'Nguồn cung có hạn, nên không phải ai cũng nhận được số mỗi tuần.',
@@ -2997,13 +3040,9 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'Đăng ký đã đóng',
+				headline: 'Bạn đã lỡ đăng ký hôm nay',
 				description:
-					'Chúng tôi rất tiếc — bạn đã lỡ khung giờ đăng ký hôm nay. Đăng ký sẽ mở lại {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
-				inProgressDescription:
-					'Đăng ký đã đóng cho hôm nay. Đăng ký sẽ mở lại {when} và kéo dài {minutes} phút, đến {closeTime}.',
+					'Chúng tôi rất tiếc — khung giờ đăng ký hôm nay đã đóng. Mong gặp lại bạn lần sau.',
 			},
 			refreshNotice: {
 				countdown: 'Cập nhật sau {seconds} giây',
@@ -3017,20 +3056,22 @@ export const translations = {
 					registered: 'Đã đăng ký',
 					waiting: 'Đang chờ',
 					called: 'Đã gọi',
-					served: 'Đã phục vụ',
+					served: 'Đã tiếp nhận',
 					not_placed: 'Không được chọn',
 					no_show: 'Không đến',
 					cancelled: 'Đã hủy',
 				},
 				registered: {
-					header: 'Bạn đã tham gia xổ số!',
-					details:
-						'Kết quả của bạn sẽ xuất hiện ở đây lúc 10:45 sáng. Nếu bạn đã đăng ký nhận tin nhắn cập nhật, chúng tôi cũng sẽ nhắn tin cho bạn.',
+					header: 'Bạn đã tham gia xổ số',
+					resultLabel: 'Kết quả của bạn',
+					resultTime: 'Hôm nay lúc 10:45 sáng',
+					resultWhere: 'Kết quả sẽ hiện ngay tại đây.',
+					details: 'Nếu bạn đã đăng ký nhận tin nhắn cập nhật, chúng tôi cũng sẽ nhắn tin cho bạn.',
 					returnInstructions:
 						'Nếu bạn đóng trang này, hãy quét lại mã QR của chợ bằng điện thoại này để quay lại.',
 				},
 				waiting: {
-					header: 'Bạn đã có số!',
+					header: 'Bạn đã có số',
 					details: 'Hãy đến chợ ngay nếu bạn chưa có mặt. Chúng tôi sẽ báo ở đây khi đến lượt bạn.',
 					guestsAheadLabel: 'Số khách trước bạn',
 					youAreNext: 'Bạn là người tiếp theo',
@@ -3038,22 +3079,24 @@ export const translations = {
 					nowCallingNone: 'Bắt đầu gọi số lúc 11:30 sáng',
 				},
 				called: {
+					eyebrow: 'Đến lượt bạn',
 					header: 'Hãy đến bàn tiếp nhận ngay',
 					headerLate: 'Vui lòng nhanh đến bàn tiếp nhận',
-					details: 'Đã đến lượt bạn. Hãy mang theo điện thoại này đến bàn tiếp nhận.',
+					details: 'Hãy mang theo điện thoại này đến bàn tiếp nhận.',
 					detailsLate:
 						'Số của bạn đã được gọi. Những người khác đang chờ sau bạn, vì vậy vui lòng đến bàn tiếp nhận ngay bây giờ.',
 					calledMinutesAgoOne: 'Đã gọi bạn 1 phút trước',
 					calledMinutesAgoOther: 'Đã gọi bạn {minutes} phút trước',
 				},
 				served: {
-					header: 'Cảm ơn bạn đã đến',
-					details: 'Lượt mua sắm hôm nay của bạn đã hoàn tất. Đăng ký sẽ mở lại {when}.',
+					header: 'Chúc bạn mua sắm vui vẻ',
+					details:
+						'Bạn đã sẵn sàng. Hãy vào trong và mua sắm thong thả. Cảm ơn bạn đã đến hôm nay.',
 				},
 				not_placed: {
 					header: 'Rất tiếc, lần này chưa được',
 					details:
-						'Bạn không được chọn trong đợt xổ số hôm nay. Việc chọn hoàn toàn ngẫu nhiên và nguồn cung có hạn. Mong gặp lại bạn. Đăng ký mở {when}.',
+						'Bạn không được chọn trong đợt xổ số hôm nay. Việc chọn hoàn toàn ngẫu nhiên và nguồn cung có hạn. Mong gặp lại bạn.',
 				},
 				no_show: {
 					header: 'Số của bạn đã được gọi',
@@ -3062,8 +3105,7 @@ export const translations = {
 				},
 				cancelled: {
 					header: 'Lượt của bạn đã bị hủy',
-					details:
-						'Hôm nay bạn sẽ không được gọi. Nếu có nhầm lẫn, vui lòng gặp nhân viên. Đăng ký sẽ mở lại {when}.',
+					details: 'Hôm nay bạn sẽ không được gọi. Nếu có nhầm lẫn, vui lòng gặp nhân viên.',
 				},
 				cancelAction: 'Hủy lượt ghé này',
 				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
@@ -3488,6 +3530,9 @@ export const translations = {
 				heading: '市场已关闭',
 				subheading: '登记将于{when}再次开放。',
 				scheduleHeading: '每周六',
+				todayHeading: '今天',
+				markerNow: '现在',
+				markerNext: '下一步',
 				steps: [
 					{
 						time: '上午 10:30',
@@ -3499,7 +3544,11 @@ export const translations = {
 						title: '抽签',
 						body: '如果您获选，应用中会显示您的号码；如果您同意接收短信，也会收到短信通知。',
 					},
-					{ time: '上午 11:30', title: '开始购物', body: '抽签与购物之间的时间，方便您前往市场。' },
+					{
+						title: '前往市场',
+						body: '如果您拿到号码，请前往市场。您可以在应用中看到轮到您的进度。',
+					},
+					{ time: '上午 11:30', title: '开始购物', body: '在市场入口按顺序叫号。' },
 				],
 				supplyNote: '由于物资有限，并非每个人每周都能获得号码。',
 				addToCalendar: '添加到日历',
@@ -3510,12 +3559,8 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: '登记已结束',
-				description: '很抱歉，您错过了今天的登记时段。登记将于{when}重新开放。',
-			},
-			serviceState: {
-				inProgressHeading: '今天的市场正在进行中',
-				inProgressDescription:
-					'今天的登记已关闭。登记将于{when}再次开放，持续 {minutes} 分钟，至 {closeTime}。',
+				headline: '您错过了今天的登记',
+				description: '很抱歉，今天的登记时段已经结束。希望下次再见到您。',
 			},
 			refreshNotice: {
 				countdown: '{seconds} 秒后更新',
@@ -3529,19 +3574,21 @@ export const translations = {
 					registered: '已登记',
 					waiting: '等待中',
 					called: '已叫号',
-					served: '已服务',
+					served: '已签到',
 					not_placed: '未入选',
 					no_show: '未到场',
 					cancelled: '已取消',
 				},
 				registered: {
-					header: '您已参加抽签！',
-					details:
-						'您的抽签结果将于上午10:45在此显示。如果您已开通短信更新，我们也会向您发送短信。',
+					header: '您已参加抽签',
+					resultLabel: '您的结果',
+					resultTime: '今天上午10:45',
+					resultWhere: '结果会显示在这里。',
+					details: '如果您已开通短信更新，我们也会向您发送短信。',
 					returnInstructions: '如果您关闭了此页面，请用这部手机再次扫描市场的二维码，即可返回。',
 				},
 				waiting: {
-					header: '您拿到号码了！',
+					header: '您拿到号码了',
 					details: '如果您还不在现场，请现在前往市场。轮到您时，我们会在这里通知您。',
 					guestsAheadLabel: '您前面的访客',
 					youAreNext: '下一位就是您',
@@ -3549,21 +3596,21 @@ export const translations = {
 					nowCallingNone: '上午 11:30 开始叫号',
 				},
 				called: {
+					eyebrow: '轮到您了',
 					header: '请现在到签到台',
 					headerLate: '请尽快到签到台',
-					details: '轮到您了。请带着这部手机到签到台。',
+					details: '请带着这部手机到签到台。',
 					detailsLate: '已经叫到您的号码。后面还有其他人在等候，请现在到签到台来。',
 					calledMinutesAgoOne: '1 分钟前已叫到您',
 					calledMinutesAgoOther: '{minutes} 分钟前已叫到您',
 				},
 				served: {
-					header: '感谢您的到来',
-					details: '您今天的到访已完成。登记将于{when}重新开放。',
+					header: '祝您购物愉快',
+					details: '一切就绪。请进入市场，慢慢挑选。感谢您今天的到来。',
 				},
 				not_placed: {
 					header: '很抱歉，这次没有抽中',
-					details:
-						'您在今天的抽签中没有被抽中。抽签完全随机，而且物资有限。希望再次见到您。登记将于{when}开放。',
+					details: '您在今天的抽签中没有被抽中。抽签完全随机，而且物资有限。希望再次见到您。',
 				},
 				no_show: {
 					header: '已叫到您的号码',
@@ -3572,7 +3619,7 @@ export const translations = {
 				},
 				cancelled: {
 					header: '您的到访已取消',
-					details: '今天不会再叫您的号码。如果这是误操作，请联系工作人员。登记将于{when}重新开放。',
+					details: '今天不会再叫您的号码。如果这是误操作，请联系工作人员。',
 				},
 				cancelAction: '取消本次到访',
 				cancelConfirmation: '要取消本次到访的排队位置吗？',
@@ -3993,6 +4040,9 @@ export const translations = {
 				heading: 'السوق مغلق',
 				subheading: 'سيفتح التسجيل مجددًا {when}.',
 				scheduleHeading: 'كل يوم سبت',
+				todayHeading: 'اليوم',
+				markerNow: 'الآن',
+				markerNext: 'التالي',
 				steps: [
 					{
 						time: '10:30 صباحًا',
@@ -4005,9 +4055,13 @@ export const translations = {
 						body: 'إذا تم اختيارك، فسيظهر لك رقم هنا في التطبيق، وبرسالة نصية إذا وافقت على تلقي الرسائل.',
 					},
 					{
+						title: 'توجّه إلى السوق',
+						body: 'إذا حصلت على رقم، فتوجّه إلى السوق. سترى اقتراب دورك هنا في التطبيق.',
+					},
+					{
 						time: '11:30 صباحًا',
 						title: 'بدء التسوق',
-						body: 'الوقت بين القرعة والتسوق يتيح لك الوصول إلى السوق.',
+						body: 'يُنادى على الأرقام بالترتيب عند مدخل السوق.',
 					},
 				],
 				supplyNote: 'الإمدادات محدودة، لذلك لا يحصل الجميع على رقم كل أسبوع.',
@@ -4019,12 +4073,8 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'أُغلق التسجيل',
-				description: 'نأسف — لقد فاتتك فترة التسجيل اليوم. سيُفتح التسجيل مرة أخرى {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'سوق اليوم جارٍ الآن',
-				inProgressDescription:
-					'أُغلق التسجيل لهذا اليوم. سيفتح التسجيل مجددًا {when} ويستمر {minutes} دقيقة، حتى الساعة {closeTime}.',
+				headline: 'فاتك تسجيل اليوم',
+				description: 'نأسف — انتهت فترة التسجيل اليوم. نأمل أن نراك في المرة القادمة.',
 			},
 			refreshNotice: {
 				countdown: 'التحديث خلال {seconds} ثانية',
@@ -4038,20 +4088,22 @@ export const translations = {
 					registered: 'مسجل',
 					waiting: 'قيد الانتظار',
 					called: 'تم استدعاؤه',
-					served: 'تمت خدمته',
+					served: 'تم تسجيل الوصول',
 					not_placed: 'لم يتم اختياره',
 					no_show: 'لم يحضر',
 					cancelled: 'ملغاة',
 				},
 				registered: {
-					header: 'أنت مشارك في السحب!',
-					details:
-						'ستظهر نتيجتك هنا الساعة ١٠:٤٥ صباحًا. إذا اشتركت في التحديثات بالرسائل النصية، فسنرسل إليك رسالة أيضًا.',
+					header: 'أنت مشارك في السحب',
+					resultLabel: 'نتيجتك',
+					resultTime: 'اليوم الساعة 10:45 صباحًا',
+					resultWhere: 'ستظهر هنا مباشرة.',
+					details: 'إذا اشتركت في التحديثات بالرسائل النصية، فسنرسل إليك رسالة أيضًا.',
 					returnInstructions:
 						'إذا أغلقت هذه الصفحة، فامسح رمز QR الخاص بالسوق مرة أخرى بهذا الهاتف للعودة.',
 				},
 				waiting: {
-					header: 'حصلت على رقم!',
+					header: 'حصلت على رقم',
 					details: 'توجّه إلى السوق الآن إذا لم تكن هنا بالفعل. سنخبرك هنا عندما يحين دورك.',
 					guestsAheadLabel: 'الضيوف الذين أمامك',
 					youAreNext: 'أنت التالي',
@@ -4059,22 +4111,23 @@ export const translations = {
 					nowCallingNone: 'يبدأ النداء الساعة 11:30 صباحًا',
 				},
 				called: {
+					eyebrow: 'حان دورك',
 					header: 'تعال إلى تسجيل الوصول الآن',
 					headerLate: 'يرجى الإسراع إلى تسجيل الوصول',
-					details: 'حان دورك. أحضر هذا الهاتف إلى مكتب تسجيل الوصول.',
+					details: 'أحضر هذا الهاتف إلى مكتب تسجيل الوصول.',
 					detailsLate:
 						'تم النداء على رقمك. هناك آخرون ينتظرون خلفك، لذا يرجى التوجه إلى مكتب تسجيل الوصول الآن.',
 					calledMinutesAgoOne: 'تم استدعاؤك قبل دقيقة واحدة',
 					calledMinutesAgoOther: 'تم استدعاؤك قبل {minutes} دقيقة',
 				},
 				served: {
-					header: 'شكرًا لحضورك',
-					details: 'اكتملت زيارتك اليوم. سيُفتح التسجيل مرة أخرى {when}.',
+					header: 'استمتع بالتسوق',
+					details: 'كل شيء جاهز. تفضّل بالدخول وتسوّق على مهلك. شكرًا لحضورك اليوم.',
 				},
 				not_placed: {
 					header: 'نأسف، ليس هذه المرة',
 					details:
-						'لم يتم اختيارك في قرعة اليوم. القرعة عشوائية تمامًا، والإمدادات محدودة. نأمل أن نراك مجددًا. يُفتح التسجيل {when}.',
+						'لم يتم اختيارك في قرعة اليوم. القرعة عشوائية تمامًا، والإمدادات محدودة. نأمل أن نراك مجددًا.',
 				},
 				no_show: {
 					header: 'تم النداء على رقمك',
@@ -4084,7 +4137,7 @@ export const translations = {
 				cancelled: {
 					header: 'زيارتك ملغاة',
 					details:
-						'لن يتم النداء عليك اليوم. إذا حدث هذا عن طريق الخطأ، يرجى التحدث مع أحد أعضاء الفريق. سيُفتح التسجيل مرة أخرى {when}.',
+						'لن يتم النداء عليك اليوم. إذا حدث هذا عن طريق الخطأ، يرجى التحدث مع أحد أعضاء الفريق.',
 				},
 				cancelAction: 'إلغاء هذه الزيارة',
 				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
@@ -4519,6 +4572,9 @@ export const translations = {
 				heading: 'Le marché est fermé',
 				subheading: 'Les inscriptions rouvriront {when}.',
 				scheduleHeading: 'Tous les samedis',
+				todayHeading: 'Aujourd’hui',
+				markerNow: 'Maintenant',
+				markerNext: 'Prochaine étape',
 				steps: [
 					{
 						time: '10 h 30',
@@ -4531,9 +4587,13 @@ export const translations = {
 						body: 'Si vous êtes choisi, vous recevez un numéro ici, dans l’application, et par SMS si vous avez accepté les SMS.',
 					},
 					{
+						title: 'Rendez-vous au marché',
+						body: 'Si vous avez un numéro, rendez-vous au marché. Vous verrez votre tour approcher ici, dans l’application.',
+					},
+					{
 						time: '11 h 30',
 						title: 'Début des courses',
-						body: 'Le temps entre le tirage et les courses vous permet de venir au marché.',
+						body: 'Les numéros sont appelés dans l’ordre à l’entrée du marché.',
 					},
 				],
 				supplyNote:
@@ -4546,13 +4606,9 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'Les inscriptions sont closes',
+				headline: 'Vous avez manqué l’inscription d’aujourd’hui',
 				description:
-					'Désolés — vous avez manqué le créneau d’inscription d’aujourd’hui. Les inscriptions rouvrent {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'Le marché d’aujourd’hui est en cours',
-				inProgressDescription:
-					'Les inscriptions sont closes pour aujourd’hui. Les inscriptions rouvriront {when} et resteront ouvertes {minutes} minutes, jusqu’à {closeTime}.',
+					'Désolés — le créneau d’inscription d’aujourd’hui est terminé. Nous espérons vous voir la prochaine fois.',
 			},
 			refreshNotice: {
 				countdown: 'Mise à jour dans {seconds} s',
@@ -4567,20 +4623,23 @@ export const translations = {
 					registered: 'Inscrit',
 					waiting: 'En attente',
 					called: 'Appelé',
-					served: 'Servi',
+					served: 'Enregistré',
 					not_placed: 'Non retenu',
 					no_show: 'Absent',
 					cancelled: 'Annulé',
 				},
 				registered: {
-					header: 'Vous participez au tirage au sort !',
+					header: 'Vous participez au tirage au sort',
+					resultLabel: 'Votre résultat',
+					resultTime: 'Aujourd’hui à 10 h 45',
+					resultWhere: 'Il s’affichera ici même.',
 					details:
-						'Votre résultat apparaîtra ici à 10 h 45. Si vous avez activé les mises à jour par SMS, nous vous enverrons aussi un message.',
+						'Si vous avez activé les mises à jour par SMS, nous vous enverrons aussi un message.',
 					returnInstructions:
 						'Si vous fermez cette page, scannez à nouveau le code QR du marché avec ce téléphone pour revenir.',
 				},
 				waiting: {
-					header: 'Vous avez un numéro !',
+					header: 'Vous avez un numéro',
 					details:
 						'Rendez-vous au marché maintenant si vous n’y êtes pas déjà. Nous vous indiquerons ici quand ce sera votre tour.',
 					guestsAheadLabel: 'Personnes devant vous',
@@ -4589,22 +4648,24 @@ export const translations = {
 					nowCallingNone: 'Les appels commencent à 11 h 30',
 				},
 				called: {
+					eyebrow: 'C’est votre tour',
 					header: 'Présentez-vous à l’accueil',
 					headerLate: 'Venez vite à l’accueil',
-					details: 'C’est votre tour. Apportez ce téléphone à l’accueil.',
+					details: 'Apportez ce téléphone à l’accueil.',
 					detailsLate:
 						'Votre numéro a été appelé. D’autres personnes attendent après vous, alors veuillez vous présenter à l’accueil maintenant.',
 					calledMinutesAgoOne: 'Appelé il y a 1 minute',
 					calledMinutesAgoOther: 'Appelé il y a {minutes} minutes',
 				},
 				served: {
-					header: 'Merci d’être venu',
-					details: 'Votre visite d’aujourd’hui est terminée. Les inscriptions rouvrent {when}.',
+					header: 'Bonnes courses',
+					details:
+						'Tout est en ordre. Entrez et faites vos courses à votre rythme. Merci d’être venu aujourd’hui.',
 				},
 				not_placed: {
 					header: 'Désolés, pas cette fois',
 					details:
-						'Vous n’avez pas été tiré au sort aujourd’hui. Le tirage est entièrement aléatoire et les provisions sont limitées. Nous espérons vous revoir. Les inscriptions ouvrent {when}.',
+						'Vous n’avez pas été tiré au sort aujourd’hui. Le tirage est entièrement aléatoire et les provisions sont limitées. Nous espérons vous revoir.',
 				},
 				no_show: {
 					header: 'Votre numéro a été appelé',
@@ -4614,7 +4675,7 @@ export const translations = {
 				cancelled: {
 					header: 'Votre visite est annulée',
 					details:
-						'Vous ne serez pas appelé aujourd’hui. S’il s’agit d’une erreur, adressez-vous à un membre de l’équipe. Les inscriptions rouvrent {when}.',
+						'Vous ne serez pas appelé aujourd’hui. S’il s’agit d’une erreur, adressez-vous à un membre de l’équipe.',
 				},
 				cancelAction: 'Annuler cette visite',
 				cancelConfirmation: 'Annuler votre place dans la file pour cette visite ?',
@@ -5052,6 +5113,9 @@ export const translations = {
 				heading: 'O mercado está fechado',
 				subheading: 'As inscrições abrirão novamente {when}.',
 				scheduleHeading: 'Todo sábado',
+				todayHeading: 'Hoje',
+				markerNow: 'Agora',
+				markerNext: 'A seguir',
 				steps: [
 					{
 						time: '10h30',
@@ -5064,9 +5128,13 @@ export const translations = {
 						body: 'Se for selecionado, você recebe um número aqui no aplicativo, e por SMS se tiver autorizado mensagens de texto.',
 					},
 					{
+						title: 'Vá até o mercado',
+						body: 'Se você recebeu um número, vá até o mercado. Você verá aqui no aplicativo quando sua vez estiver chegando.',
+					},
+					{
 						time: '11h30',
 						title: 'Início das compras',
-						body: 'O tempo entre o sorteio e as compras permite que você chegue ao mercado.',
+						body: 'Os números são chamados em ordem na entrada do mercado.',
 					},
 				],
 				supplyNote: 'Os alimentos são limitados, então nem todos recebem um número a cada semana.',
@@ -5078,13 +5146,9 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'As inscrições foram encerradas',
+				headline: 'Você perdeu a inscrição de hoje',
 				description:
-					'Sentimos muito — você perdeu o horário de inscrição de hoje. As inscrições abrem novamente {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'O mercado de hoje está em andamento',
-				inProgressDescription:
-					'As inscrições de hoje estão encerradas. As inscrições abrirão novamente {when} e ficarão abertas por {minutes} minutos, até as {closeTime}.',
+					'Sentimos muito — o horário de inscrição de hoje foi encerrado. Esperamos ver você na próxima vez.',
 			},
 			refreshNotice: {
 				countdown: 'Atualização em {seconds}s',
@@ -5099,20 +5163,22 @@ export const translations = {
 					registered: 'Inscrito',
 					waiting: 'Aguardando',
 					called: 'Chamado',
-					served: 'Atendido',
+					served: 'Check-in feito',
 					not_placed: 'Sem lugar na fila',
 					no_show: 'Não compareceu',
 					cancelled: 'Cancelado',
 				},
 				registered: {
-					header: 'Você está no sorteio!',
-					details:
-						'Seu resultado aparecerá aqui às 10h45. Se você ativou as atualizações por SMS, também enviaremos uma mensagem.',
+					header: 'Você está no sorteio',
+					resultLabel: 'Seu resultado',
+					resultTime: 'Hoje às 10h45',
+					resultWhere: 'Ele aparecerá aqui mesmo.',
+					details: 'Se você ativou as atualizações por SMS, também enviaremos uma mensagem.',
 					returnInstructions:
 						'Se você fechar esta página, escaneie novamente o código QR do mercado com este telefone para voltar.',
 				},
 				waiting: {
-					header: 'Você recebeu um número!',
+					header: 'Você recebeu um número',
 					details:
 						'Vá ao mercado agora se ainda não estiver aqui. Avisaremos aqui quando for sua vez.',
 					guestsAheadLabel: 'Pessoas à sua frente',
@@ -5121,22 +5187,23 @@ export const translations = {
 					nowCallingNone: 'As chamadas começam às 11h30',
 				},
 				called: {
+					eyebrow: 'É a sua vez',
 					header: 'Venha ao atendimento agora',
 					headerLate: 'Por favor, venha logo ao atendimento',
-					details: 'É a sua vez. Traga este celular ao balcão de atendimento.',
+					details: 'Traga este celular ao balcão de atendimento.',
 					detailsLate:
 						'Seu número foi chamado. Há outras pessoas esperando atrás de você, então vá ao balcão de atendimento agora.',
 					calledMinutesAgoOne: 'Chamado há 1 minuto',
 					calledMinutesAgoOther: 'Chamado há {minutes} minutos',
 				},
 				served: {
-					header: 'Obrigado pela visita',
-					details: 'Sua visita de hoje foi concluída. As inscrições abrem novamente {when}.',
+					header: 'Boas compras',
+					details: 'Tudo pronto. Entre e faça suas compras com calma. Obrigado pela visita hoje.',
 				},
 				not_placed: {
 					header: 'Sentimos muito, não desta vez',
 					details:
-						'Você não foi sorteado hoje. O sorteio é totalmente aleatório e os alimentos são limitados. Esperamos ver você novamente. As inscrições abrem {when}.',
+						'Você não foi sorteado hoje. O sorteio é totalmente aleatório e os alimentos são limitados. Esperamos ver você novamente.',
 				},
 				no_show: {
 					header: 'Seu número foi chamado',
@@ -5146,7 +5213,7 @@ export const translations = {
 				cancelled: {
 					header: 'Sua visita está cancelada',
 					details:
-						'Você não será chamado hoje. Se isso aconteceu por engano, fale com um membro da equipe. As inscrições abrem novamente {when}.',
+						'Você não será chamado hoje. Se isso aconteceu por engano, fale com um membro da equipe.',
 				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: 'Cancelar seu lugar na fila para esta visita?',
@@ -5582,6 +5649,9 @@ export const translations = {
 				heading: 'Рынок закрыт',
 				subheading: 'Регистрация снова откроется {when}.',
 				scheduleHeading: 'Каждую субботу',
+				todayHeading: 'Сегодня',
+				markerNow: 'Сейчас',
+				markerNext: 'Далее',
 				steps: [
 					{
 						time: '10:30',
@@ -5594,9 +5664,13 @@ export const translations = {
 						body: 'Если вас выберут, вы получите номер здесь, в приложении, и по SMS, если вы согласились их получать.',
 					},
 					{
+						title: 'Направляйтесь на рынок',
+						body: 'Если вы получили номер, направляйтесь на рынок. Здесь, в приложении, вы увидите, как приближается ваша очередь.',
+					},
+					{
 						time: '11:30',
 						title: 'Начало покупок',
-						body: 'Время между жеребьёвкой и покупками позволяет добраться до рынка.',
+						body: 'Номера вызывают по порядку у входа на рынок.',
 					},
 				],
 				supplyNote: 'Запасы ограничены, поэтому каждую неделю номер получают не все.',
@@ -5608,13 +5682,9 @@ export const translations = {
 			},
 			registrationClosedState: {
 				heading: 'Регистрация закрыта',
+				headline: 'Вы пропустили сегодняшнюю регистрацию',
 				description:
-					'К сожалению, вы пропустили сегодняшнюю регистрацию. Регистрация снова откроется {when}.',
-			},
-			serviceState: {
-				inProgressHeading: 'Сегодняшний рынок уже работает',
-				inProgressDescription:
-					'Регистрация на сегодня закрыта. Регистрация снова откроется {when} и продлится {minutes} минут, до {closeTime}.',
+					'К сожалению, время регистрации на сегодня закончилось. Надеемся увидеть вас в следующий раз.',
 			},
 			refreshNotice: {
 				countdown: 'Обновление через {seconds} с',
@@ -5628,20 +5698,22 @@ export const translations = {
 					registered: 'Зарегистрирован',
 					waiting: 'Ожидает',
 					called: 'Вызван',
-					served: 'Обслужен',
+					served: 'Отмечен на входе',
 					not_placed: 'Без места в очереди',
 					no_show: 'Не явился',
 					cancelled: 'Отменён',
 				},
 				registered: {
-					header: 'Вы участвуете в жеребьёвке!',
-					details:
-						'Ваш результат появится здесь в 10:45 утра. Если вы подключили СМС-уведомления, мы также отправим вам сообщение.',
+					header: 'Вы участвуете в жеребьёвке',
+					resultLabel: 'Ваш результат',
+					resultTime: 'Сегодня в 10:45',
+					resultWhere: 'Он появится прямо здесь.',
+					details: 'Если вы подключили СМС-уведомления, мы также отправим вам сообщение.',
 					returnInstructions:
 						'Если вы закроете эту страницу, снова отсканируйте QR-код рынка этим телефоном, чтобы вернуться.',
 				},
 				waiting: {
-					header: 'Вы получили номер!',
+					header: 'Вы получили номер',
 					details:
 						'Если вы ещё не на месте, отправляйтесь на рынок сейчас. Мы сообщим здесь, когда подойдёт ваша очередь.',
 					guestsAheadLabel: 'Посетителей перед вами',
@@ -5650,22 +5722,23 @@ export const translations = {
 					nowCallingNone: 'Вызов начнётся в 11:30',
 				},
 				called: {
+					eyebrow: 'Ваша очередь',
 					header: 'Подойдите к регистрации',
 					headerLate: 'Пожалуйста, поторопитесь',
-					details: 'Ваша очередь. Возьмите этот телефон с собой к стойке регистрации.',
+					details: 'Возьмите этот телефон с собой к стойке регистрации.',
 					detailsLate:
 						'Ваш номер уже вызвали. За вами ждут другие люди, поэтому, пожалуйста, подойдите к стойке регистрации сейчас.',
 					calledMinutesAgoOne: 'Вызов был 1 минуту назад',
 					calledMinutesAgoOther: 'С момента вызова прошло минут: {minutes}',
 				},
 				served: {
-					header: 'Спасибо за визит',
-					details: 'Ваш сегодняшний визит завершён. Регистрация снова откроется {when}.',
+					header: 'Приятных покупок',
+					details: 'Всё готово. Проходите и делайте покупки не спеша. Спасибо, что пришли сегодня.',
 				},
 				not_placed: {
 					header: 'К сожалению, не в этот раз',
 					details:
-						'Вас не выбрали в сегодняшней жеребьёвке. Она полностью случайна, а запасы продуктов ограничены. Надеемся увидеть вас снова. Регистрация открывается {when}.',
+						'Вас не выбрали в сегодняшней жеребьёвке. Она полностью случайна, а запасы продуктов ограничены. Надеемся увидеть вас снова.',
 				},
 				no_show: {
 					header: 'Ваш номер вызвали',
@@ -5674,8 +5747,7 @@ export const translations = {
 				},
 				cancelled: {
 					header: 'Ваш визит отменён',
-					details:
-						'Сегодня вас не вызовут. Если это произошло по ошибке, обратитесь к сотруднику. Регистрация снова откроется {when}.',
+					details: 'Сегодня вас не вызовут. Если это произошло по ошибке, обратитесь к сотруднику.',
 				},
 				cancelAction: 'Отменить этот визит',
 				cancelConfirmation: 'Отменить ваше место в очереди для этого визита?',

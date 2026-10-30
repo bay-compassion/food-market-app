@@ -13,8 +13,6 @@ import { useGuestTourEnabled } from '../hooks/use-guest-tour-enabled';
 import { GuestLanguageHero } from './GuestLanguageHero';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
-import { GuestServiceState } from './GuestServiceState';
-import { GuestStatusCard } from './GuestStatusCard';
 import { GuestVisitState } from './GuestVisitState';
 import { GuestIdentityCard } from './identity/GuestIdentityCard';
 
@@ -91,11 +89,7 @@ export const GuestMarketStatus = observer(function GuestMarketStatus() {
 
 	const render = () => {
 		if (!session.isActive) {
-			return (
-				<GuestStatusCard frameless>
-					<GuestNotOpenState />
-				</GuestStatusCard>
-			);
+			return <GuestNotOpenState />;
 		}
 
 		if (visitTakesPrecedence(session.currentStatus, visit.status)) {
@@ -108,21 +102,13 @@ export const GuestMarketStatus = observer(function GuestMarketStatus() {
 			case null:
 			case SessionStatusEnum.REGISTRATION_OPEN:
 				return <RegistrationOpenState />;
-			// Both closed phases reach this branch only when the guest has no visit — someone who
-			// missed the window — so they read the same card.
+			// Every phase after registration closes reaches this branch only when the guest has no
+			// visit — someone who missed the window — so they read the same card: whether the draw
+			// is still to run or shopping has begun, all that is left for them is next time.
 			case SessionStatusEnum.REGISTRATION_CLOSED:
 			case SessionStatusEnum.LOTTERY_PENDING:
-				return (
-					<GuestStatusCard>
-						<GuestRegistrationClosedState />
-					</GuestStatusCard>
-				);
 			case SessionStatusEnum.SERVICE_STARTED:
-				return (
-					<GuestStatusCard>
-						<GuestServiceState />
-					</GuestStatusCard>
-				);
+				return <GuestRegistrationClosedState />;
 			default:
 				return <GuestNotOpenState />;
 		}

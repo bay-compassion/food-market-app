@@ -35,7 +35,6 @@ import { authReturnUrl } from '../auth';
 import { AdminAuthView } from '../components/AdminAuthView';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { GuestView } from '../components/guest-view/GuestView';
-import { unscheduled } from '../components/guest-view/unscheduled-next-registration.fixture';
 import { HelpPage } from '../components/help/HelpPage';
 import { LINE_POSITION_INDICATOR_FLAG_KEY } from '../components/hooks/use-line-position-indicator';
 import { PrivacyPage } from '../components/legal/PrivacyPage';
@@ -321,7 +320,11 @@ describe('App', () => {
 		);
 		await fillRegistration(container);
 
-		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
+		await waitFor(() =>
+			expect(container.textContent).toContain(
+				translations.en.guestView.visitStatus.registered.header,
+			),
+		);
 
 		const registrationCall = fetchMock.mock.calls.find(
 			([url]) => url === '/api/lottery-registration',
@@ -356,7 +359,7 @@ describe('App', () => {
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('Ada L');
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('(555) 123-4567');
 		expect(container.querySelector('.guest-identity')!.nextElementSibling?.textContent).toContain(
-			'You’re in the lottery!',
+			translations.en.guestView.visitStatus.registered.header,
 		);
 	});
 
@@ -393,7 +396,11 @@ describe('App', () => {
 		);
 		await fillRegistration(container);
 
-		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
+		await waitFor(() =>
+			expect(container.textContent).toContain(
+				translations.en.guestView.visitStatus.registered.header,
+			),
+		);
 		expect(container.textContent).not.toContain('Current status');
 
 		expect(fetchMock).toHaveBeenCalledWith(
@@ -432,7 +439,9 @@ describe('App', () => {
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBeNull();
-		expect(container.textContent).not.toContain('You got a number!');
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.visitStatus.waiting.header,
+		);
 	});
 
 	it('shows identity signup on /signup when the device token is missing', async () => {
@@ -540,12 +549,14 @@ describe('App', () => {
 			aheadOfYou: null,
 		});
 
-		await waitFor(() => expect(container.textContent).toContain('Come to check-in now'));
-
-		expect(container.textContent).toContain(
-			'It’s your turn. Bring this phone to the check-in desk.',
+		await waitFor(() =>
+			expect(container.textContent).toContain(translations.en.guestView.visitStatus.called.header),
 		);
-		expect(container.textContent).not.toContain('You got a number!');
+
+		expect(container.textContent).toContain(translations.en.guestView.visitStatus.called.details);
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.visitStatus.waiting.header,
+		);
 		// The number stays, for the worker at the entrance to check.
 		expect(container.querySelector('.queue-number-board')?.textContent).toBe('Your number2');
 		// A called guest has nothing left to cancel.
@@ -564,8 +575,10 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.textContent).toContain(copy.header));
 
-		expect(container.textContent).toContain(unscheduled(copy.details));
-		expect(container.textContent).not.toContain('You got a number!');
+		expect(container.textContent).toContain(copy.details);
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.visitStatus.waiting.header,
+		);
 	});
 
 	it('lets a cancelled guest register again while the market is open', async () => {
@@ -581,7 +594,9 @@ describe('App', () => {
 
 		await waitFor(() => expect(container.querySelector('form')).not.toBeNull());
 
-		expect(container.textContent).not.toContain('You got a number!');
+		expect(container.textContent).not.toContain(
+			translations.en.guestView.visitStatus.waiting.header,
+		);
 	});
 
 	it('does not let a visit from another market override the current market', async () => {
@@ -594,7 +609,7 @@ describe('App', () => {
 		});
 
 		await screen.findByRole('heading', {
-			name: translations.en.guestView.serviceState.inProgressHeading,
+			name: translations.en.guestView.registrationClosedState.heading,
 		});
 
 		expect(container.textContent).not.toContain('Your number');
@@ -633,7 +648,7 @@ describe('App', () => {
 		const { container } = await renderWithMarketStatus('service_started');
 
 		await screen.findByRole('heading', {
-			name: translations.en.guestView.serviceState.inProgressHeading,
+			name: translations.en.guestView.registrationClosedState.heading,
 		});
 
 		expect(container.textContent).not.toContain(translations.en.guestView.notOpenState.heading);
@@ -645,7 +660,7 @@ describe('App', () => {
 
 		await screen.findByRole('heading', { name: copy.heading });
 
-		expect(container.textContent).toContain(unscheduled(copy.description));
+		expect(container.textContent).toContain(copy.description);
 		expect(container.textContent).not.toContain(
 			translations.en.guestView.scheduleInformation.heading,
 		);
@@ -658,7 +673,7 @@ describe('App', () => {
 
 		await screen.findByRole('heading', { name: copy.heading });
 
-		expect(container.textContent).toContain(unscheduled(copy.description));
+		expect(container.textContent).toContain(copy.description);
 	});
 
 	it('shows the full inactive-market explanation when the session is inactive', async () => {
@@ -666,7 +681,7 @@ describe('App', () => {
 		const copy = translations.en.guestView.notOpenState;
 
 		const heading = await screen.findByRole('heading', { name: copy.heading });
-		const inactiveState = within(heading.closest<HTMLElement>('.state-message')!);
+		const inactiveState = within(heading.closest<HTMLElement>('.no-visit-state')!);
 
 		expect(inactiveState.getByText(copy.nextLabel)).not.toBeNull();
 		expect(inactiveState.getByText(copy.opensUndated.replace('{time}', '10:30 AM'))).not.toBeNull();

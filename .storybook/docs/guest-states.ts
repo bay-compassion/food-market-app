@@ -12,12 +12,11 @@ export const guestStates = {
 	registered: { label: 'Registered', color: '#7c3aed' },
 	waiting: { label: 'Waiting', color: '#ca8a04' },
 	called: { label: 'Called', color: '#16a34a' },
-	served: { label: 'Served', color: '#0f766e' },
+	served: { label: 'Checked In', color: '#0f766e' },
 	notSelected: { label: 'Not Selected', color: '#db2777' },
 	noShow: { label: 'No Show', color: '#ea580c' },
 	cancelled: { label: 'Cancelled', color: '#b91c1c' },
 	registrationClosed: { label: 'Registration Closed', color: '#0891b2' },
-	marketUnderway: { label: 'Market Underway', color: '#92400e' },
 } as const satisfies Record<string, { label: string; color: string }>;
 
 export type GuestStateKey = keyof typeof guestStates;
@@ -35,7 +34,6 @@ export const guestTransitions: readonly Transition[] = [
 	{ from: 'marketClosed', to: 'registrationOpen', when: 'registration opens' },
 	{ from: 'registrationOpen', to: 'registered', when: 'registers' },
 	{ from: 'registrationOpen', to: 'registrationClosed', when: 'window closes first' },
-	{ from: 'registrationClosed', to: 'marketUnderway', when: 'service starts' },
 	{ from: 'registered', to: 'waiting', when: 'lottery: selected' },
 	{ from: 'registered', to: 'notSelected', when: 'lottery: not selected' },
 	{ from: ['registered', 'waiting'], to: 'cancelled', when: 'gives up their place' },
@@ -45,7 +43,7 @@ export const guestTransitions: readonly Transition[] = [
 	{ from: 'noShow', to: 'waiting', when: 'worker returns to line' },
 	{ from: 'cancelled', to: 'registrationOpen', when: 'registration still open' },
 	{
-		from: ['served', 'notSelected', 'noShow', 'cancelled', 'registrationClosed', 'marketUnderway'],
+		from: ['served', 'notSelected', 'noShow', 'cancelled', 'registrationClosed'],
 		to: 'marketClosed',
 		when: 'market closes',
 	},

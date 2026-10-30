@@ -170,15 +170,20 @@ describe('CalledVisitStatus', () => {
 		expect(said[1]).toContain(copy.called.detailsLate);
 	});
 
-	it('changes the heading to hurry the guest at the same moment', () => {
+	it('changes the headline and the card tone to hurry the guest at the same moment', () => {
 		// Arrange
 		const cards = [6.5, 10.5].map((minutes) => renderCalled(QueueNumber.main(42), { minutes }));
 
 		// Act
-		const headings = cards.map(({ container }) => container.querySelector('h2')?.textContent);
+		const said = cards.map(({ container }) => container.textContent ?? '');
+		const tones = cards.map(({ container }) =>
+			container.querySelector('[data-tone]')?.getAttribute('data-tone'),
+		);
 
 		// Assert
-		expect(headings).toEqual([copy.called.header, copy.called.headerLate]);
+		expect(said[0]).toContain(copy.called.header);
+		expect(said[1]).toContain(copy.called.headerLate);
+		expect(tones).toEqual(['action', 'warning']);
 	});
 
 	it('tells a screen reader how long ago the guest was called, once the board warms', () => {

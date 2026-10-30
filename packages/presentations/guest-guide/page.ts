@@ -504,8 +504,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			],
 			underway: [
 				H.stepsHeading,
-				G.serviceState.inProgressHeading,
-				G.serviceState.inProgressDescription,
+				// The app shows a guest without a visit the registration-closed card once shopping begins.
+				G.registrationClosedState.headline,
+				G.registrationClosedState.description,
 			],
 			help: [H.title, T.help.title, T.help.body.replace('{help}', H.title)],
 		};

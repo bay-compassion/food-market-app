@@ -8,7 +8,6 @@ import { RegistrationForm } from '../forms/GuestCombinedForm.stories.tsx';
 import * as GuestStates from '../GuestVisitStatus.stories.tsx';
 import { NotOpen } from '../GuestNotOpenState.stories.tsx';
 import { RegistrationClosed } from '../GuestRegistrationClosedState.stories.tsx';
-import { InProgress } from '../GuestServiceState.stories.tsx';
 
 <Meta title="Guest Review/Guest States" tags={['review']} />
 
@@ -99,9 +98,10 @@ behind them.
 
 <div className="review-state">
 
-### <StatePip state="served" /> Served
+### <StatePip state="served" /> Checked In
 
-The guest has been served. Their visit is complete.
+The guest has checked in at the desk, our last hand-off of the day. They still have their shopping to
+do, so the card wishes them well rather than saying the visit is over.
 
 <Story of={GuestStates.Served} />
 
@@ -166,20 +166,11 @@ These screens appear when a guest has not entered the lottery.
 
 ### <StatePip state="registrationClosed" /> Registration Closed
 
-Registration has closed, but the market has not started serving guests. A guest who did not enter the
-lottery sees this card, including while the lottery is being drawn.
+Registration has closed, and this guest did not enter the lottery. They see this card from the
+moment the window closes, through the draw, and while shopping is underway: whichever phase the
+market is in, all that is left for them is next time, so the card says when that is and lays out how
+a market Saturday runs.
 
 <Story of={RegistrationClosed} />
-
-</div>
-
-<div className="review-state">
-
-### <StatePip state="marketUnderway" /> Market Underway
-
-The market has started serving guests. Someone who did not register is asked to speak with a market
-team member.
-
-<Story of={InProgress} />
 
 </div>
