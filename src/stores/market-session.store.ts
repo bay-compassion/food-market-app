@@ -2,6 +2,7 @@ import { runInAction } from 'mobx';
 
 import { NextRegistration, type NextRegistrationWindow } from '../models/next-registration.ts';
 import { RegistrationClock } from '../models/registration-clock.ts';
+import { SaturdayClock } from '../models/saturday-clock.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
 import { type SessionCommand, SessionStatusEnum } from '../services/sessionStateMachine.ts';
@@ -138,6 +139,13 @@ export class MarketSessionStore {
 		const event = this.marketEvent;
 
 		return event ? new RegistrationClock(event) : null;
+	}
+
+	/** Today's published timetable clock, rebuilt from observable session state. */
+	get saturdayClock(): SaturdayClock | null {
+		const event = this.marketEvent;
+
+		return this.isActive && event ? new SaturdayClock(event) : null;
 	}
 
 	get error(): Error | null {

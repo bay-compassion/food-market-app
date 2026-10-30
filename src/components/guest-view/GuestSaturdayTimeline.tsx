@@ -1,162 +1,68 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
+import { useRef } from 'react';
 
 import { SaturdayProgress, type SaturdayStepState } from '../../models/saturday-progress';
 import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
+import { useNow } from '../hooks/use-now';
+import { SaturdayTimeIndicator } from './SaturdayTimeIndicator';
+import { SaturdayTimelineStep } from './SaturdayTimelineStep';
+
+const Header = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+`;
 
 const Heading = styled.h3`
-	margin: 0 0 12px;
+	margin: 0;
 	font-family: var(--font-heading);
 	font-size: 20px;
 	font-weight: 700;
 `;
 
+const ClockLabel = styled.span`
+	color: var(--color-brand);
+	font-size: 12px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+`;
+
 const Steps = styled.ol`
+	position: relative;
 	display: grid;
 	margin: 0;
 	padding: 0;
 	list-style: none;
 `;
 
-/**
- * Time, rail, then text — the rail's line runs on to the next step, ending at the last one. A step
- * without a time (making your way to the market) leaves its column empty, so the rail stays aligned.
- */
-const Step = styled.li`
-	display: grid;
-	grid-template-columns: max-content 18px 1fr;
-	column-gap: 12px;
-
-	&:not(:last-child) > div {
-		padding-bottom: 18px;
-	}
-
-	&[data-state='past'] > span:first-of-type,
-	&[data-state='past'] p:first-of-type,
-	&[data-state='skipped'] > span:first-of-type,
-	&[data-state='skipped'] p:first-of-type {
-		color: var(--color-text-subtle);
-	}
-
-	&[data-state='skipped'] > span:first-of-type {
-		text-decoration: line-through;
-	}
-`;
-
-/**
- * Each row sizes its own time column, so a step without a time reserves the width of the one before
- * it, invisibly, to keep its rail in line with the others in any language.
- */
-const Time = styled.span<{ $placeholder?: boolean }>`
-	min-width: 72px;
-	visibility: ${({ $placeholder }) => ($placeholder ? 'hidden' : 'visible')};
-	color: var(--color-brand);
-	font-weight: 700;
-	line-height: 1.4;
-`;
-
-/*
- * Taught (no progress), every dot is filled but the last, which the line runs into. Marked off, a
- * step already behind the guest fills in grey, the current one is a ringed hollow, and those still
- * to come are hollow.
- */
-const Rail = styled.span`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-
-	&::before {
-		width: 14px;
-		height: 14px;
-		margin-top: 3px;
-		flex-shrink: 0;
-		box-sizing: border-box;
-		border: 3px solid var(--color-brand);
-		border-radius: 50%;
-		background: var(--color-brand);
-		content: '';
-	}
-
-	&::after {
-		flex: 1;
-		width: 2px;
-		background: var(--color-border-soft);
-		content: '';
-	}
-
-	li:last-child > &::before,
-	li[data-state='upcoming'] > &::before,
-	li[data-state='skipped'] > &::before {
-		background: transparent;
-	}
-
-	li[data-state='skipped'] > &::before {
-		border-color: var(--color-text-subtle);
-	}
-
-	li:last-child > &::after {
-		display: none;
-	}
-
-	li[data-state='past'] > &::before {
-		border-color: var(--color-text-subtle);
-		background: var(--color-text-subtle);
-	}
-
-	li[data-state='past'] > &::after {
-		background: var(--color-text-subtle);
-	}
-
-	li[data-state='current'] > &::before {
-		width: 18px;
-		height: 18px;
-		margin-top: 1px;
-		border-width: 4px;
-		background: var(--color-background);
-		box-shadow: 0 0 0 4px var(--color-surface-soft);
-	}
-`;
-
-const Title = styled.p`
-	font-weight: 700;
-	line-height: 1.4;
-`;
-
-const Marker = styled.span`
-	display: inline-block;
-	margin-inline-start: 8px;
-	padding: 2px 8px;
-	border-radius: var(--radius-pill);
-	color: var(--color-on-brand);
-	background: var(--color-brand);
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	vertical-align: 2px;
-`;
-
-const Body = styled.p`
-	margin-top: 2px;
-	color: var(--color-text-muted);
-	line-height: 1.5;
+const Timeline = styled.div`
+	position: relative;
 `;
 
 export type GuestSaturdayTimelineProps = {
-	/**
-	 * Marks the steps off for a guest with a visit, under "Today". Without it the timeline teaches
-	 * how every Saturday runs.
-	 */
+	/** A guest's progress; without it, the timeline explains the usual Saturday. */
 	progress?: SaturdayProgress | null;
+	/** A fixed instant for previews; the app uses the live clock. */
+	time?: number;
 };
 
-/** A market Saturday at a glance: register, the draw, the trip to the market, shopping. */
+/** The guest's visit result and the clock are independent: time cannot award a number. */
 export const GuestSaturdayTimeline = observer(function GuestSaturdayTimeline({
 	progress = null,
+	time,
 }: GuestSaturdayTimelineProps) {
 	const copy = useTranslation().guestView.notOpenState;
-	const { session } = useRootStore();
+	const { session, translations } = useRootStore();
+	const list = useRef<HTMLOListElement>(null);
+	const clock = session.saturdayClock;
+	const liveNow = useNow(clock && time === undefined ? 10_000 : null);
+	const now = time ?? liveNow;
+	const position = clock?.positionAt(now) ?? null;
 	const marker = progress?.marker === 'now' ? copy.markerNow : copy.markerNext;
 	const timeline = progress ?? SaturdayProgress.overview;
 	const steps: typeof copy.steps = timeline.shouldTryAgain
@@ -165,50 +71,39 @@ export const GuestSaturdayTimeline = observer(function GuestSaturdayTimeline({
 
 	return (
 		<section>
-			<Heading>{progress ? copy.todayHeading : copy.scheduleHeading}</Heading>
-			<Steps>
-				{steps.map((step, index) => {
-					const stepState = timeline.stateOf(index, session.currentStatus);
-					const state: SaturdayStepState | undefined =
-						progress || stepState === 'skipped' ? stepState : undefined;
+			<Header>
+				<Heading>{progress || position ? copy.todayHeading : copy.scheduleHeading}</Heading>
+				{position && clock ? (
+					<ClockLabel>
+						{copy.markerNow}{' '}
+						<time dateTime={new Date(now).toISOString()}>
+							{clock.labelAt(now, translations.locale)}
+						</time>
+					</ClockLabel>
+				) : null}
+			</Header>
+			<Timeline>
+				<Steps ref={list} data-clock-active={position !== null}>
+					{steps.map((step, index) => {
+						const stepState = timeline.stateOf(index, session.currentStatus);
+						const state: SaturdayStepState | undefined =
+							progress || stepState === 'skipped' ? stepState : undefined;
 
-					return (
-						// The steps are fixed copy in a fixed order, and one has no time to key it by.
-						// oxlint-disable-next-line react/no-array-index-key
-						<Step
-							key={index}
-							data-state={state}
-							aria-current={state === 'current' ? 'step' : undefined}
-						>
-							{step.time ? (
-								<Time>{step.time}</Time>
-							) : (
-								<Time $placeholder aria-hidden="true">
-									{copy.steps[index - 1]?.time}
-								</Time>
-							)}
-							<Rail aria-hidden="true" />
-							<div>
-								<Title>
-									{state === 'skipped' ? (
-										<>
-											<s>{step.title}</s>
-											<span className="sr-only"> — {copy.skippedStep}</span>
-										</>
-									) : (
-										step.title
-									)}
-									{state === 'current' && timeline.marker ? <Marker>{marker}</Marker> : null}
-								</Title>
-								{/* Completed and inapplicable steps need no instructions. */}
-								{step.body && state !== 'past' && state !== 'skipped' ? (
-									<Body>{step.body}</Body>
-								) : null}
-							</div>
-						</Step>
-					);
-				})}
-			</Steps>
+						return (
+							// Fixed copy in a fixed order; travel has no time to key it by.
+							// oxlint-disable-next-line react/no-array-index-key
+							<SaturdayTimelineStep
+								key={index}
+								step={step}
+								state={state}
+								marker={timeline.marker && !(position && timeline.marker === 'now') ? marker : null}
+								placeholderTime={copy.steps[index - 1]?.time}
+							/>
+						);
+					})}
+				</Steps>
+				{position ? <SaturdayTimeIndicator list={list} position={position} /> : null}
+			</Timeline>
 		</section>
 	);
 });
