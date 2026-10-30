@@ -576,6 +576,9 @@ describe('App', () => {
 		await waitFor(() => expect(container.textContent).toContain(copy.header));
 
 		expect(container.textContent).toContain(copy.details);
+		expect(container.textContent).toContain(
+			translations.en.guestView.notOpenState.tryAgainNextWeek,
+		);
 		expect(container.textContent).not.toContain(
 			translations.en.guestView.visitStatus.waiting.header,
 		);
@@ -674,6 +677,24 @@ describe('App', () => {
 		await screen.findByRole('heading', { name: copy.heading });
 
 		expect(container.textContent).toContain(copy.description);
+	});
+
+	it('does not direct a guest who missed registration to the market after the draw', async () => {
+		// Arrange, Act
+		await renderWithMarketStatus('service_started');
+		const copy = translations.en.guestView.notOpenState;
+
+		await screen.findByRole('heading', {
+			name: translations.en.guestView.registrationClosedState.heading,
+		});
+
+		// Assert
+		expect(screen.getByText(copy.steps[0]!.title)).toBeDefined();
+		expect(screen.getByText(copy.steps[1]!.title)).toBeDefined();
+		expect(screen.getByText(copy.steps[2]!.title).tagName).toBe('S');
+		expect(screen.queryByText(copy.steps[2]!.body)).toBeNull();
+		expect(screen.getByText(copy.steps[3]!.title).tagName).toBe('S');
+		expect(screen.queryByText(copy.steps[3]!.body)).toBeNull();
 	});
 
 	it('shows the full inactive-market explanation when the session is inactive', async () => {
