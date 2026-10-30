@@ -28,7 +28,7 @@
 .guest-layout {
 	width: min(100% - 36px, 560px);
 	margin: 0 auto;
-	padding: 24px 0 0;
+	padding: 12px 0 0;
 }
 .status-loading {
 	display: flex;
