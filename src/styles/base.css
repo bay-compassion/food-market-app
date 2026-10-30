@@ -8,7 +8,7 @@
  * stylesheet, so the cascade order matches what `App.vue` used to produce.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Arabic:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@500;600;700&family=Noto+Sans+Arabic:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
 
 @import url('/fonts/brand.css');
 @import './brand.css';
@@ -86,8 +86,11 @@
 :root {
 	/* The sticky app bar's height, which anything pinned beneath it sits below. */
 	--app-bar-height: 60px;
-	--tracking-heading: -0.035em;
-	--tracking-label: -0.02em;
+	/* The app's headings, labels, and buttons. Documents and the app bar's name keep `--font-brand`. */
+	--font-heading: 'Roboto Condensed', Roboto, 'Noto Sans Arabic', 'Noto Sans SC', Arial, sans-serif;
+	--tracking-heading: -0.01em;
+	--tracking-label: 0.04em;
+	--tracking-brand: -0.035em;
 	--radius-sm: 8px;
 	--radius-md: 16px;
 	--radius-lg: 24px;
@@ -106,6 +109,7 @@
 [dir='rtl'] {
 	--tracking-heading: 0;
 	--tracking-label: 0;
+	--tracking-brand: 0;
 }
 * {
 	box-sizing: border-box;

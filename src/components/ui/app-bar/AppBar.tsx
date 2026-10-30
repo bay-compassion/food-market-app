@@ -21,10 +21,10 @@ const Brand = styled(Link)`
 	align-items: center;
 	min-width: 0;
 	color: inherit;
-	font-family: var(--font-heading);
-	font-weight: 700;
+	font-family: var(--font-brand);
+	font-weight: 800;
 	font-size: 14.5px;
-	letter-spacing: var(--tracking-heading);
+	letter-spacing: var(--tracking-brand);
 	text-transform: uppercase;
 	text-decoration: none;
 

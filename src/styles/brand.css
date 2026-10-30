@@ -5,7 +5,7 @@
 	align-items: center;
 	gap: 0.42em;
 	color: inherit;
-	font-family: var(--font-heading);
+	font-family: var(--font-brand);
 	font-size: var(--brand-lockup-size, 24px);
 	font-weight: 800;
 	line-height: 1.04;
