@@ -15,12 +15,28 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
  * A frame's phone (`#guestPhone`, `#adminPhone`), with every animation at rest — CSS transitions
  * finished, endless ones at their start — so two pictures of the same moment differ only if what
  * they show does.
+ *
+ * Transitions still running are left to end on their own rather than finished on the spot. A phone
+ * rebuilt by a seek starts its 0.8-second scroll transitions afresh, and a picture taken the moment
+ * one of them is cut short can catch text in the countdown strip drawn a shade lighter than it is
+ * once the compositor has caught up. The wait is capped so one long animation can't hold verify up.
  */
 async function phoneShot(page: Page, selector: string): Promise<string> {
-	await page.evaluate(() => {
+	await page.evaluate(async () => {
 		const documents = [document, document.querySelector('iframe')?.contentDocument];
+		const animations = () => documents.flatMap((doc) => doc?.getAnimations() ?? []);
+		const ending = animations().filter(
+			(animation) =>
+				animation.playState === 'running' && animation.effect?.getTiming().iterations !== Infinity,
+		);
 
-		for (const animation of documents.flatMap((doc) => doc?.getAnimations() ?? [])) {
+		await Promise.race([
+			// A transition a rebuild cancels rejects `finished`, which is still an end.
+			Promise.allSettled(ending.map((animation) => animation.finished)),
+			new Promise((resolve) => setTimeout(resolve, 2000)),
+		]);
+
+		for (const animation of animations()) {
 			if (animation.effect?.getTiming().iterations === Infinity) {
 				animation.pause();
 				animation.currentTime = 0;

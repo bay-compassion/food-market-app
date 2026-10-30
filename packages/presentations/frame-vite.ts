@@ -42,7 +42,8 @@ const publicImages: Plugin = {
 	enforce: 'pre',
 	transform(code, id) {
 		if (id === here('../../src/styles/base.css')) {
-			return code.replace("@import url('/fonts/brand.css');", brandFontCss);
+			// Keep every @import ahead of the inlined @font-face rules so Vite still resolves them.
+			return code.replace("@import url('/fonts/brand.css');", '') + '\n' + brandFontCss;
 		}
 
 		if (!id.startsWith(here('../../src/'))) {
