@@ -286,13 +286,13 @@ stays because an iPhone ignores a media element's own `volume`. `#record` never 
 
 ## Guest messaging
 
-The app supports adjustable weighting, and the allocation policy is still being developed. That
-needs reconciliation with the equal-chance wording below before a guest-copy or narration change.
-The existing instruction below describes the current walkthrough copy, not a settled allocation
-policy.
+The app supports adjustable weighting, and the allocation policy is still being developed, so
+guest copy no longer says everyone has the same chance — the app's screens dropped it. Some
+narration lines and the reel still say it and are due to change with their next audio rebuild.
 
-The videos follow the same rules as guest copy: everyone in the lottery has the same chance and not
-everyone gets a number; nothing mentions standby or lottery weighting; guests are sent to the
+The videos follow the same rules as guest copy: registering early doesn't change anyone's chances
+and not everyone gets a number; nothing claims every guest has the same chance, and nothing
+mentions standby or lottery weighting; guests are sent to the
 check-in desk; a late guest's number stays called and their board warms to yellow, with no penalty
 implied. All names are fictional, and phone numbers use the reserved 555-01xx range.
 

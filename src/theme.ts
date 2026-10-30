@@ -130,6 +130,12 @@ const appThemeOptions = {
 				variant: 'contained',
 				size: 'large',
 			},
+			styleOverrides: {
+				// MUI spaces an icon with left and right margins, which put it on top of an Arabic or
+				// Farsi label; logical ones follow the writing direction.
+				startIcon: { marginLeft: 0, marginRight: 0, marginInlineStart: -4, marginInlineEnd: 8 },
+				endIcon: { marginLeft: 0, marginRight: 0, marginInlineStart: 8, marginInlineEnd: -4 },
+			},
 		},
 		MuiCard: {
 			defaultProps: {
@@ -278,6 +284,7 @@ export const adminTheme = createTheme({
 		MuiButton: {
 			...appThemeOptions.components.MuiButton,
 			styleOverrides: {
+				...appThemeOptions.components.MuiButton.styleOverrides,
 				root: { textTransform: 'none' },
 			},
 		},

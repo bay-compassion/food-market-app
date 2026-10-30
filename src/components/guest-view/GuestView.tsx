@@ -92,7 +92,7 @@ export const GuestMarketStatus = observer(function GuestMarketStatus() {
 	const render = () => {
 		if (!session.isActive) {
 			return (
-				<GuestStatusCard>
+				<GuestStatusCard frameless>
 					<GuestNotOpenState />
 				</GuestStatusCard>
 			);

@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { useTranslation } from '../stores/react/use-translation';
 import { Dialog } from './ui/Dialog';
+import { PlayCircleIcon } from './ui/icons/PlayCircleIcon';
 
 // The standalone player has no portfolio navigation or links to staff presentations.
 const guestGuideUrl =
@@ -27,8 +28,15 @@ const Content = styled.div`
 	height: 100%;
 `;
 
-/** Both guest entry points play the same hosted guide, without leaving the app. */
-export const GuestGuideButton = observer(function GuestGuideButton() {
+/**
+ * Both guest entry points play the same hosted guide, without leaving the app. A `compact` button
+ * takes the short label, to sit with another button.
+ */
+export const GuestGuideButton = observer(function GuestGuideButton({
+	compact = false,
+}: {
+	compact?: boolean;
+}) {
 	const {
 		guestView: { presentation: copy },
 	} = useTranslation();
@@ -36,8 +44,13 @@ export const GuestGuideButton = observer(function GuestGuideButton() {
 
 	return (
 		<>
-			<Button variant="outlined" size="large" onClick={() => setOpen(true)}>
-				{copy.watch}
+			<Button
+				variant="outlined"
+				size="large"
+				startIcon={<PlayCircleIcon />}
+				onClick={() => setOpen(true)}
+			>
+				{compact ? copy.watchShort : copy.watch}
 			</Button>
 			{open ? (
 				<Dialog

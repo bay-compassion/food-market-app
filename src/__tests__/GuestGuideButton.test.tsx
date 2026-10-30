@@ -9,9 +9,9 @@ import { translations } from '../locales';
 import { renderWithApp } from './render-with-app';
 
 describe('Guest guide playback', () => {
-	for (const [placement, Component] of [
-		['holding page', HoldingPage],
-		['market closed card', GuestNotOpenState],
+	for (const [placement, Component, label] of [
+		['holding page', HoldingPage, 'watch'],
+		['market closed card', GuestNotOpenState, 'watchShort'],
 	] as const) {
 		it(`opens only the standalone player from the ${placement} and removes it on close`, async () => {
 			const user = userEvent.setup();
@@ -20,7 +20,7 @@ describe('Guest guide playback', () => {
 
 			// The large narrated presentation must not load until the guest asks for it.
 			expect(screen.queryByTitle(copy.title)).toBeNull();
-			await user.click(screen.getByRole('button', { name: copy.watch }));
+			await user.click(screen.getByRole('button', { name: copy[label] }));
 
 			const player = screen.getByTitle<HTMLIFrameElement>(copy.title);
 
@@ -38,7 +38,7 @@ describe('Guest guide playback', () => {
 
 			await user.click(screen.getByRole('button', { name: copy.close }));
 			expect(screen.queryByTitle(copy.title)).toBeNull();
-			expect(document.activeElement).toBe(screen.getByRole('button', { name: copy.watch }));
+			expect(document.activeElement).toBe(screen.getByRole('button', { name: copy[label] }));
 		});
 	}
 

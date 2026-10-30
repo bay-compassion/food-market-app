@@ -2,52 +2,28 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
 import { useTranslation } from '../../stores/react/use-translation';
-import { GuestGuideButton } from '../GuestGuideButton';
-import { useNextRegistrationText } from '../hooks/use-next-registration-text';
-import { GuestStateMessage } from './GuestStateMessage';
+import { GuestNextOpening } from './GuestNextOpening';
+import { GuestSaturdayTimeline } from './GuestSaturdayTimeline';
 
-const Message = styled(GuestStateMessage)`
-	--state-description-max-width: 420px;
-`;
-
-const Details = styled.div`
+const State = styled.div`
 	display: grid;
-	max-width: 420px;
-	gap: 16px;
-	margin-top: 20px;
+	gap: 24px;
+`;
+
+const SupplyNote = styled.p`
 	color: var(--color-text-muted);
-	line-height: 1.55;
-	text-align: justify;
-	text-align-last: start;
-	hyphens: auto;
+	line-height: 1.5;
 `;
 
-const Divider = styled.hr`
-	width: 100%;
-	max-width: 420px;
-	margin: 24px 0 0;
-	border: 0;
-	border-top: 1px solid var(--color-border);
-`;
-
-/** The market is closed: when it next opens, how the lottery works, and how to hear about it. */
+/** The market is closed: when it next opens, and how a market Saturday runs. */
 export const GuestNotOpenState = observer(function GuestNotOpenState() {
-	const t = useTranslation();
-	const copy = t.guestView.notOpenState;
-	const nextRegistration = useNextRegistrationText();
+	const copy = useTranslation().guestView.notOpenState;
 
 	return (
-		<Message
-			className="inactive-message"
-			heading={copy.heading}
-			description={nextRegistration(copy.subheading)}
-		>
-			<Divider />
-			<Details className="inactive-details">
-				<p>{copy.lotteryDescription}</p>
-				<p>{copy.selectionDescription}</p>
-				<GuestGuideButton />
-			</Details>
-		</Message>
+		<State className="state-message">
+			<GuestNextOpening />
+			<GuestSaturdayTimeline />
+			<SupplyNote>{copy.supplyNote}</SupplyNote>
+		</State>
 	);
 });

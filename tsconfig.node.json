@@ -24,6 +24,9 @@
     // Bundler mode provides a smoother developer experience.
     "module": "preserve",
     "moduleResolution": "bundler",
+    // `e2e-queue/` reaches `src/locales.ts` and the models it imports, which name their siblings
+    // `./x.ts` so the presentations can run them under plain Node, as `tsconfig.app.json` allows.
+    "allowImportingTsExtensions": true,
 
     // Include Node.js types and avoid accidentally including other `@types/*` packages.
     "types": ["node"],

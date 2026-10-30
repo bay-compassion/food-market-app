@@ -83,7 +83,7 @@ function MarketStateRow({ status, locale }: { status: MarketCardStatus; locale: 
 				{marketCardHeading(locale, status)}
 			</h2>
 			<section className="guest-layout" style={{ width: 'auto', padding: 0 }}>
-				<GuestStatusCard>{content}</GuestStatusCard>
+				<GuestStatusCard frameless={status === 'inactive'}>{content}</GuestStatusCard>
 			</section>
 		</div>
 	);
