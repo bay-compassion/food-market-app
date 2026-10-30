@@ -324,6 +324,8 @@ export interface GuestViewTranslations {
 		markerNow: string;
 		/** Tags the step the guest is waiting for: the draw. */
 		markerNext: string;
+		skippedStep: string;
+		tryAgainNextWeek: string;
 		/**
 		 * A market Saturday in order — register, the draw, travel, shopping. A step with a `time`
 		 * happens then; making your way to the market is the stretch between two, so it has none.
@@ -864,6 +866,8 @@ export const translations = {
 				todayHeading: 'Today',
 				markerNow: 'Now',
 				markerNext: 'Up Next',
+				skippedStep: 'Not applicable to your visit.',
+				tryAgainNextWeek: 'Try Again Next Week',
 				steps: [
 					{
 						time: '10:30 AM',
@@ -1402,6 +1406,8 @@ export const translations = {
 				todayHeading: 'Hoy',
 				markerNow: 'Ahora',
 				markerNext: 'A continuación',
+				skippedStep: 'No corresponde a tu visita.',
+				tryAgainNextWeek: 'Vuelve a intentarlo la próxima semana',
 				steps: [
 					{
 						time: '10:30 a. m.',
@@ -1938,6 +1944,8 @@ export const translations = {
 				todayHeading: 'امروز',
 				markerNow: 'اکنون',
 				markerNext: 'مرحله بعد',
+				skippedStep: 'برای نوبت شما کاربرد ندارد.',
+				tryAgainNextWeek: 'هفتهٔ آینده دوباره تلاش کنید',
 				steps: [
 					{
 						time: '۱۰:۳۰ صبح',
@@ -2474,6 +2482,8 @@ export const translations = {
 				todayHeading: 'Ngayong Araw',
 				markerNow: 'Ngayon',
 				markerNext: 'Susunod',
+				skippedStep: 'Hindi ito naaangkop sa iyong pagbisita.',
+				tryAgainNextWeek: 'Subukan ulit sa susunod na linggo',
 				steps: [
 					{
 						time: '10:30 AM',
@@ -3010,6 +3020,8 @@ export const translations = {
 				todayHeading: 'Hôm nay',
 				markerNow: 'Bây giờ',
 				markerNext: 'Tiếp theo',
+				skippedStep: 'Không áp dụng cho lượt của bạn.',
+				tryAgainNextWeek: 'Hãy thử lại vào tuần sau',
 				steps: [
 					{
 						time: '10:30 sáng',
@@ -3533,6 +3545,8 @@ export const translations = {
 				todayHeading: '今天',
 				markerNow: '现在',
 				markerNext: '下一步',
+				skippedStep: '不适用于您的本次到访。',
+				tryAgainNextWeek: '请下周再试',
 				steps: [
 					{
 						time: '上午 10:30',
@@ -4043,6 +4057,8 @@ export const translations = {
 				todayHeading: 'اليوم',
 				markerNow: 'الآن',
 				markerNext: 'التالي',
+				skippedStep: 'لا تنطبق هذه الخطوة على زيارتك.',
+				tryAgainNextWeek: 'حاول مرة أخرى الأسبوع القادم',
 				steps: [
 					{
 						time: '10:30 صباحًا',
@@ -4575,6 +4591,8 @@ export const translations = {
 				todayHeading: 'Aujourd’hui',
 				markerNow: 'Maintenant',
 				markerNext: 'Prochaine étape',
+				skippedStep: 'Cette étape ne concerne pas votre visite.',
+				tryAgainNextWeek: 'Réessayez la semaine prochaine',
 				steps: [
 					{
 						time: '10 h 30',
@@ -5116,6 +5134,8 @@ export const translations = {
 				todayHeading: 'Hoje',
 				markerNow: 'Agora',
 				markerNext: 'A seguir',
+				skippedStep: 'Esta etapa não se aplica à sua visita.',
+				tryAgainNextWeek: 'Tente novamente na próxima semana',
 				steps: [
 					{
 						time: '10h30',
@@ -5652,6 +5672,8 @@ export const translations = {
 				todayHeading: 'Сегодня',
 				markerNow: 'Сейчас',
 				markerNext: 'Далее',
+				skippedStep: 'Этот этап не относится к вашему посещению.',
+				tryAgainNextWeek: 'Попробуйте снова на следующей неделе',
 				steps: [
 					{
 						time: '10:30',

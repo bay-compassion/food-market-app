@@ -1,7 +1,8 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
-import type { SaturdayProgress, SaturdayStepState } from '../../models/saturday-progress';
+import { SaturdayProgress, type SaturdayStepState } from '../../models/saturday-progress';
+import { useRootStore } from '../../stores/react/store-context';
 import { useTranslation } from '../../stores/react/use-translation';
 
 const Heading = styled.h3`
@@ -32,8 +33,14 @@ const Step = styled.li`
 	}
 
 	&[data-state='past'] > span:first-of-type,
-	&[data-state='past'] p:first-of-type {
+	&[data-state='past'] p:first-of-type,
+	&[data-state='skipped'] > span:first-of-type,
+	&[data-state='skipped'] p:first-of-type {
 		color: var(--color-text-subtle);
+	}
+
+	&[data-state='skipped'] > span:first-of-type {
+		text-decoration: line-through;
 	}
 `;
 
@@ -79,8 +86,13 @@ const Rail = styled.span`
 	}
 
 	li:last-child > &::before,
-	li[data-state='upcoming'] > &::before {
+	li[data-state='upcoming'] > &::before,
+	li[data-state='skipped'] > &::before {
 		background: transparent;
+	}
+
+	li[data-state='skipped'] > &::before {
+		border-color: var(--color-text-subtle);
 	}
 
 	li:last-child > &::after {
@@ -144,14 +156,21 @@ export const GuestSaturdayTimeline = observer(function GuestSaturdayTimeline({
 	progress = null,
 }: GuestSaturdayTimelineProps) {
 	const copy = useTranslation().guestView.notOpenState;
+	const { session } = useRootStore();
 	const marker = progress?.marker === 'now' ? copy.markerNow : copy.markerNext;
+	const timeline = progress ?? SaturdayProgress.overview;
+	const steps: typeof copy.steps = timeline.shouldTryAgain
+		? [...copy.steps, { title: copy.tryAgainNextWeek, body: '' }]
+		: copy.steps;
 
 	return (
 		<section>
 			<Heading>{progress ? copy.todayHeading : copy.scheduleHeading}</Heading>
 			<Steps>
-				{copy.steps.map((step, index) => {
-					const state: SaturdayStepState | undefined = progress?.stateOf(index);
+				{steps.map((step, index) => {
+					const stepState = timeline.stateOf(index, session.currentStatus);
+					const state: SaturdayStepState | undefined =
+						progress || stepState === 'skipped' ? stepState : undefined;
 
 					return (
 						// The steps are fixed copy in a fixed order, and one has no time to key it by.
@@ -171,11 +190,20 @@ export const GuestSaturdayTimeline = observer(function GuestSaturdayTimeline({
 							<Rail aria-hidden="true" />
 							<div>
 								<Title>
-									{step.title}
-									{state === 'current' ? <Marker>{marker}</Marker> : null}
+									{state === 'skipped' ? (
+										<>
+											<s>{step.title}</s>
+											<span className="sr-only"> — {copy.skippedStep}</span>
+										</>
+									) : (
+										step.title
+									)}
+									{state === 'current' && timeline.marker ? <Marker>{marker}</Marker> : null}
 								</Title>
-								{/* What is behind the guest needs no explaining. */}
-								{state === 'past' ? null : <Body>{step.body}</Body>}
+								{/* Completed and inapplicable steps need no instructions. */}
+								{step.body && state !== 'past' && state !== 'skipped' ? (
+									<Body>{step.body}</Body>
+								) : null}
 							</div>
 						</Step>
 					);
