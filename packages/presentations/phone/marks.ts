@@ -182,6 +182,8 @@ export function scrollUnderBar(container: HTMLElement, target: HTMLElement | nul
 
 	// The app's sticky elements pin against the page as it would sit unscrolled, then ride the
 	// transform with it; the stylesheet shifts their insets by the same amount to hold them still.
+	// Whole-pixel offsets keep text rasterization stable after a seek or an eased transition.
+	offset = Math.round(offset);
 	scroller.style.setProperty('--phone-scroll-offset', `${offset}px`);
 	scroller.style.transform = `translateY(${-offset}px)`;
 }
