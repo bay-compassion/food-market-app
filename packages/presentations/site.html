@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<title>__TITLE__</title>
 		<meta name="description" content="__SUMMARY__" />
 		<meta property="og:type" content="website" />
@@ -39,8 +39,10 @@
 			body {
 				margin: 0;
 				min-height: 100vh;
-				padding-inline: 16px;
-				padding-block: 32px 48px;
+				/* The page reaches under a phone's notch and rounded corners, so its full-screen
+				   player can too; the content keeps clear of them. */
+				padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
+				padding-block: 32px max(48px, env(safe-area-inset-bottom));
 				color: var(--ink);
 				background:
 					radial-gradient(circle at 75% 0%, rgb(39 92 99 / 80%), transparent 55%),
@@ -78,7 +80,7 @@
 			.player {
 				position: relative;
 				aspect-ratio: 16 / 9;
-				margin-bottom: 136px;
+				margin-bottom: 80px;
 			}
 
 			iframe {
@@ -86,7 +88,7 @@
 				inset: 0;
 				display: block;
 				width: 100%;
-				height: calc(100% + 136px);
+				height: calc(100% + 80px);
 				border: 0;
 				border-radius: 14px;
 				background: var(--night);
@@ -140,33 +142,18 @@
 				outline: 3px solid var(--focus);
 				outline-offset: 3px;
 			}
-			/* The guest guide's translated controls can take an extra row even on wide screens.
-			   Reserve the same space there as at the intermediate breakpoint. */
-			.guest-player {
-				margin-bottom: 232px;
-			}
-			.guest-player iframe {
-				height: calc(100% + 232px);
-			}
-			/* Reserve room for wrapped chapter and playback controls with the brand typefaces. */
-			@container (max-width: 999px) {
-				.chaptered {
-					margin-bottom: 232px;
-				}
-				.chaptered iframe {
-					height: calc(100% + 232px);
-				}
-			}
+			/* The controls sit over the video; the frame leaves room below it for the row of chapters
+			   and language, one row at any width. */
 			/* A guide that turns portrait on a phone, as the guest and dashboard guides do. */
 			@container (max-width: 600px) {
 				.guest-player,
 				.portrait-player {
 					aspect-ratio: 9 / 16;
-					margin-bottom: 238px;
+					margin-bottom: 48px;
 				}
 				.guest-player iframe,
 				.portrait-player iframe {
-					height: calc(100% + 238px);
+					height: calc(100% + 48px);
 				}
 			}
 		</style>

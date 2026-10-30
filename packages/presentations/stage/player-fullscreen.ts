@@ -1,4 +1,7 @@
-/** Full screen for the HTML presentation, including controls. iPhones can use the page fallback. */
+/**
+ * Full screen for the HTML presentation: the video alone, edge to edge on black, with its controls
+ * over it. iPhones, which have no full screen API for a page, use the page fallback.
+ */
 class PresentationFullscreen {
 	private fallback = false;
 	private restoreFrame: (() => void) | null = null;
@@ -16,7 +19,6 @@ class PresentationFullscreen {
 			}
 		});
 		window.addEventListener('resize', () => this.fit());
-		new ResizeObserver(() => this.fit()).observe(document.getElementById('controls')!);
 	}
 
 	get active(): boolean {
@@ -79,20 +81,12 @@ class PresentationFullscreen {
 			return;
 		}
 		const viewport = document.getElementById('viewport')!;
-		const controls = document.getElementById('controls')!;
-		const body = getComputedStyle(document.body);
 		const [width, height] = getComputedStyle(viewport).aspectRatio.split('/').map(Number);
-		const available =
-			innerHeight -
-			controls.offsetHeight -
-			parseFloat(body.rowGap) -
-			parseFloat(body.paddingTop) -
-			parseFloat(body.paddingBottom);
+		const body = getComputedStyle(document.body);
+		// The height inside the safe area: the body's padding keeps clear of the notch and the home bar.
+		const available = innerHeight - parseFloat(body.paddingTop) - parseFloat(body.paddingBottom);
 
-		viewport.style.setProperty(
-			'--fullscreen-width',
-			Math.max(0, available) * (width! / height!) + 'px',
-		);
+		viewport.style.setProperty('--fullscreen-width', available * (width! / height!) + 'px');
 	}
 }
 

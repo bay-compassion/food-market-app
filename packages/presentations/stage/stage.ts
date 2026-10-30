@@ -562,6 +562,8 @@ function setIcon(button: HTMLElement, icon: keyof typeof ICONS, name: string, hi
 
 /** How far the arrow keys move the playhead, in seconds. */
 const SKIP = 10;
+/** How long the controls stay over a playing video after the viewer last touched them, in ms. */
+const IDLE_AFTER = 2500;
 
 export interface BeatDescription {
 	items: string[];
@@ -642,36 +644,47 @@ function mountPlayer<State>({
 					stepByStepHint: 'Pause at the end of each chapter',
 				};
 
+	/*
+	 * The controls sit over the video, as in other players: play and the chapter steps in the
+	 * middle, the seek bar and the rest along the bottom. A tap anywhere else on the video plays or
+	 * pauses it. The chapter list, step-by-step mode and the language sit in a row below the video,
+	 * which full screen leaves out.
+	 */
 	viewport.insertAdjacentHTML(
-		'afterend',
-		'<div id="controls">' +
+		'beforeend',
+		'<div id="tapSurface" aria-hidden="true"></div>' +
+			'<div id="progressLine" aria-hidden="true"></div>' +
+			'<div id="controls">' +
+			'<div id="controlsCenter">' +
+			(chapters.length ? '<button type="button" class="icon" id="prevChapter"></button>' : '') +
 			'<button type="button" class="icon" id="play"></button>' +
+			(chapters.length ? '<button type="button" class="icon" id="nextChapter"></button>' : '') +
+			'</div><div id="controlsBar">' +
+			'<div id="seekRow">' +
+			'<input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek" />' +
+			'<span id="clock" dir="ltr">0:00</span></div>' +
+			'<div id="controlsRow">' +
 			'<button type="button" class="icon" id="restart"></button>' +
 			'<div id="soundGroup"><button type="button" class="icon" id="sound" aria-pressed="false"></button>' +
-			'<input type="range" id="volume" min="0" max="100" value="100" /></div>' +
+			'<input type="range" id="volume" min="0" max="100" value="50" /></div>' +
 			(VOICE_TRACK
 				? '<button type="button" class="icon" id="music" aria-pressed="true"></button>'
 				: '') +
-			'<input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek" />' +
-			'<span id="clock">0:00</span>' +
-			'<button type="button" class="icon" id="fullscreen" aria-pressed="false"></button></div>',
+			'<button type="button" class="icon" id="fullscreen" aria-pressed="false"></button>' +
+			'</div></div></div>',
 	);
+	viewport.insertAdjacentHTML('afterend', '<div id="pageControls"></div>');
 
 	if (chapters.length) {
-		k('controls').insertAdjacentHTML(
+		k('pageControls').insertAdjacentHTML(
 			'beforeend',
-			'<div id="chapterMenu">' +
-				'<button type="button" id="chapterMenuToggle" aria-expanded="false" aria-controls="chapterOptions"></button>' +
-				'<div id="chapterOptions"><div id="chapters">' +
-				'<button type="button" class="icon" id="prevChapter"></button>' +
-				'<select id="chapter"></select>' +
-				'<button type="button" class="icon" id="nextChapter"></button></div>' +
-				'<button type="button" class="icon" id="stepMode" aria-pressed="false"></button></div></div>',
+			'<select id="chapter"></select>' +
+				'<button type="button" class="icon" id="stepMode" aria-pressed="false"></button>',
 		);
 	}
 
 	if (onLocaleChange) {
-		k('controls').insertAdjacentHTML(
+		k('pageControls').insertAdjacentHTML(
 			'beforeend',
 			'<select id="presentationLocale">' +
 				LANGS.map(([code, name]) => '<option value="' + code + '">' + esc(name) + '</option>').join(
@@ -686,7 +699,7 @@ function mountPlayer<State>({
 			syncControls();
 		});
 	}
-	k('controls').insertAdjacentHTML(
+	k('pageControls').insertAdjacentHTML(
 		'beforeend',
 		'<button type="button" id="devOpen" title="Scrubber and beat list for editing the video">Dev</button>',
 	);
@@ -749,6 +762,7 @@ function mountPlayer<State>({
 	let playerReady = false;
 	let musicOn = true;
 	const clock = k('clock');
+	const progressLine = k('progressLine');
 	const fmt = (sec: number) =>
 		Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
 
@@ -762,12 +776,17 @@ function mountPlayer<State>({
 			document.body.classList.contains('watch') && tl.paused() && tl.time() === 0,
 		);
 		scrub.value = String(Math.round((tl.time() / END) * 1000));
-		clock.textContent = fmt(tl.time());
+		progressLine.style.transform = 'scaleX(' + tl.time() / END + ')';
+		clock.textContent = fmt(tl.time()) + ' / ' + fmt(END);
 		const L = copy();
 
 		(playBtn as HTMLButtonElement).disabled = !playerReady;
 		(k('restart') as HTMLButtonElement).disabled = !playerReady;
 		const stopped = tl.paused() || tl.progress() === 1;
+
+		if (stopped) {
+			viewport.classList.remove('idle');
+		}
 
 		setIcon(playBtn, stopped ? 'play' : 'pause', stopped ? L.play : L.pause);
 		setIcon(k('restart'), 'restart', L.restart);
@@ -811,7 +830,6 @@ function mountPlayer<State>({
 		if (!chapters.length) {
 			return;
 		}
-		k('chapterMenuToggle').textContent = L.chapter;
 		const select = k('chapter') as HTMLSelectElement;
 
 		if (chapterLocale !== locale) {
@@ -900,26 +918,6 @@ function mountPlayer<State>({
 	}
 
 	if (chapters.length) {
-		const toggle = k('chapterMenuToggle');
-		const setMenuOpen = (open: boolean) => {
-			k('chapterMenu').classList.toggle('open', open);
-			toggle.setAttribute('aria-expanded', String(open));
-		};
-
-		toggle.addEventListener('click', () =>
-			setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true'),
-		);
-		k('chapterMenu').addEventListener('keydown', (event) => {
-			if (
-				event.key === 'Escape' &&
-				matchMedia('(max-width: 600px)').matches &&
-				k('chapterMenu').classList.contains('open')
-			) {
-				event.stopPropagation();
-				setMenuOpen(false);
-				toggle.focus();
-			}
-		});
 		k('chapter').addEventListener('change', (event) =>
 			seekChapter(Number((event.target as HTMLSelectElement).value)),
 		);
@@ -1135,6 +1133,34 @@ function mountPlayer<State>({
 			stopAudio();
 		} else {
 			void setSound(soundOn);
+		}
+		wakeControls();
+	});
+	/*
+	 * While the video plays, the controls fade once the viewer leaves them alone, leaving a thin
+	 * progress line; touching them or moving the mouse over the video brings them back, and stopped
+	 * they stay. A tap on the video itself plays or pauses it through the play button, so the sound
+	 * still starts inside the viewer's tap, as Safari asks.
+	 */
+	let idleTimer: number | undefined;
+	const playing = () => !tl.paused() && tl.progress() < 1;
+
+	function wakeControls() {
+		viewport.classList.remove('idle');
+		clearTimeout(idleTimer);
+		idleTimer = window.setTimeout(() => viewport.classList.toggle('idle', playing()), IDLE_AFTER);
+	}
+	k('tapSurface').addEventListener('click', () => playBtn.click());
+	k('controls').addEventListener('pointerdown', wakeControls);
+	viewport.addEventListener('pointermove', (event) => {
+		if (event.pointerType === 'mouse') {
+			wakeControls();
+		}
+	});
+	viewport.addEventListener('pointerleave', (event) => {
+		if (event.pointerType === 'mouse') {
+			clearTimeout(idleTimer);
+			viewport.classList.toggle('idle', playing());
 		}
 	});
 	k('restart').addEventListener('click', () => {

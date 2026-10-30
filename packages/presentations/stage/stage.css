@@ -65,9 +65,6 @@ body.record #viewport {
 	border-radius: 0;
 	box-shadow: none;
 }
-body.record #controls {
-	display: none;
-}
 
 #stage {
 	position: absolute;
@@ -94,56 +91,135 @@ body.record #controls {
 }
 
 /* ---------- controls ---------- */
+/* Over the video, as in other players: a shade at the foot keeps them legible on any scene, and
+   only the controls themselves take pointer events, so a tap between them reaches the video. */
+#tapSurface {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	cursor: pointer;
+}
 #controls {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	width: min(100%, calc((100dvh - 96px) * 16 / 9));
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	pointer-events: none;
 	font-family: var(--font-body);
 	font-size: 15px;
 	letter-spacing: normal;
+	background: linear-gradient(180deg, transparent 55%, rgb(10 24 26 / 80%));
+	transition: opacity 0.25s;
+}
+#controls button,
+#controls input {
+	pointer-events: auto;
+}
+#controlsCenter {
+	position: absolute;
+	inset: 0 0 64px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(16px, 6%, 48px);
+	pointer-events: none;
+}
+#controlsBar {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	padding: 0 8px 2px;
+}
+#controlsRow {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
 }
 #controls button {
-	min-width: 44px;
-	height: 40px;
-	padding: 0 14px;
-	border: 1.5px solid rgb(255 255 255 / 35%);
-	border-radius: 999px;
-	color: var(--reel-ink);
-	background: transparent;
-	font: inherit;
-	font-weight: 700;
-	text-transform: uppercase;
-	cursor: pointer;
-}
-#controls button:hover {
-	border-color: var(--color-focus);
-}
-#controls button.icon {
 	display: grid;
 	place-items: center;
 	flex: none;
 	width: 44px;
+	height: 44px;
 	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	color: var(--reel-ink);
+	background: transparent;
+	cursor: pointer;
 }
-#controls button.icon svg {
+#controls button svg {
 	width: 22px;
 	height: 22px;
+}
+#controlsCenter button {
+	background: rgb(10 24 26 / 50%);
+}
+#controls #play {
+	width: 64px;
+	height: 64px;
+	color: var(--reel-night);
+	background: var(--reel-ink);
+	box-shadow: 0 6px 18px rgb(0 0 0 / 30%);
+}
+#controls #play svg {
+	width: 30px;
+	height: 30px;
+}
+#controls button:hover {
+	color: var(--color-focus);
+}
+#controls #play:hover {
+	color: var(--reel-night);
+	background: var(--color-focus);
 }
 #controls button.icon[aria-pressed='false'] {
 	color: var(--reel-ink-soft);
 }
+/* Faded while the video plays untouched, and out of the way of the tap that brings them back. A
+   control the keyboard is on keeps them showing. */
+#viewport.idle #controls:not(:has(:focus-visible)) {
+	opacity: 0;
+}
+#viewport.idle #controls:not(:has(:focus-visible)) :is(button, input) {
+	pointer-events: none;
+}
+#progressLine {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	z-index: 2;
+	width: 100%;
+	height: 3px;
+	transform-origin: 0 0;
+	background: var(--color-focus);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.25s;
+}
+#viewport.idle #progressLine {
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	#controls,
+	#progressLine {
+		transition: none;
+	}
+}
 /* The volume slider opens beside the speaker while the pointer or the keyboard is on either, as
-   in other players. A touch screen has no hover, and there, as in YouTube's and the browsers' own
-   mobile players, the device's buttons set the volume: the slider stays hidden and the speaker
-   only mutes. */
+   in other players. A touch screen has no hover, so there it always shows: the player starts at
+   half volume, and a phone's own buttons only scale what the page plays. */
 #soundGroup {
 	display: flex;
-	flex: none;
+	flex: 0 1 auto;
 	align-items: center;
+	min-width: 0;
 }
 #volume {
 	width: 0;
+	min-width: 0;
 	margin: 0;
 	opacity: 0;
 	accent-color: var(--color-focus);
@@ -155,12 +231,18 @@ body.record #controls {
 #soundGroup:hover #volume,
 #soundGroup:focus-within #volume {
 	width: 88px;
-	margin-inline: 10px 4px;
+	margin-inline: 6px 4px;
 	opacity: 1;
 }
 @media (hover: none) {
-	#volume {
-		display: none;
+	#volume,
+	#soundGroup:hover #volume,
+	#soundGroup:focus-within #volume {
+		flex: 0 1 88px;
+		width: 88px;
+		margin-inline: 2px 6px;
+		opacity: 1;
+		transition: none;
 	}
 }
 #volume:focus-visible {
@@ -171,24 +253,84 @@ body.record #controls {
 	opacity: 0.4;
 }
 #controls button:focus-visible,
+#pageControls button:focus-visible,
 #scrub:focus-visible {
 	outline: 3px solid var(--color-focus);
 	outline-offset: 2px;
 }
+/* The seek bar, with the elapsed time and the video's length at its end. */
+#seekRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-inline: 6px;
+}
 #scrub {
 	flex: 1;
 	min-width: 0;
+	margin: 0;
 	accent-color: var(--color-focus);
 }
 #clock {
-	min-width: 5ch;
+	flex: none;
+	font-size: 13px;
 	font-variant-numeric: tabular-nums;
-	color: var(--reel-ink-soft);
-	text-align: end;
+	white-space: nowrap;
+	color: var(--reel-ink);
 }
-#controls select {
+/* Full screen sits at the far end of the row. */
+#controls #fullscreen {
+	margin-inline-start: auto;
+}
+#controls button:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+/* Below the video: the chapter list, step-by-step mode, and on the guest guide the language, in one
+   row that never wraps. Full screen leaves it out. The published pages size their player's frame
+   to match (site.html). */
+#pageControls {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+	width: min(100%, calc((100dvh - 96px) * 16 / 9));
+	font-family: var(--font-body);
+	font-size: 15px;
+	letter-spacing: normal;
+}
+#pageControls:not(:has(> :not(#devOpen))) {
+	display: none;
+}
+#pageControls button {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border: 1.5px solid rgb(255 255 255 / 35%);
+	border-radius: 999px;
+	color: var(--reel-ink-soft);
+	background: transparent;
+	font: inherit;
+	cursor: pointer;
+}
+#pageControls button svg {
+	width: 22px;
+	height: 22px;
+}
+#pageControls button:hover {
+	border-color: var(--color-focus);
+}
+#pageControls #stepMode[aria-pressed='true'] {
+	border-color: var(--color-focus);
+	color: var(--color-focus);
+}
+#pageControls select {
 	min-width: 0;
-	height: 40px;
+	height: 44px;
 	padding: 0 12px;
 	border: 1.5px solid rgb(255 255 255 / 35%);
 	border-radius: 999px;
@@ -199,50 +341,19 @@ body.record #controls {
 	text-overflow: ellipsis;
 	cursor: pointer;
 }
-#controls select:focus-visible {
+#pageControls select:focus-visible {
 	outline: 3px solid var(--color-focus);
 	outline-offset: 2px;
 }
-#controls button:disabled {
-	opacity: 0.4;
-	cursor: default;
-}
-
-/* Chapters sit beside the buttons on a wide screen and on a row of their own below that. The
-   published pages size their player's frame to match (site.html). */
-#chapters {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-#chapters button {
-	padding: 0;
-	font-size: 22px;
-	line-height: 1;
-}
 #chapter {
-	max-width: 22ch;
+	flex: 1;
 }
-#controls #stepMode[aria-pressed='true'] {
-	border-color: var(--color-focus);
-	color: var(--color-focus);
+#presentationLocale {
+	flex: 0 1 auto;
+	max-width: 45%;
 }
-@media (max-width: 999px) {
-	#controls {
-		flex-wrap: wrap;
-	}
-	/* A zero basis with a floor, so a page's other row-three controls (the guest guide's language)
-	   share the row rather than wrapping onto another. */
-	#chapters {
-		order: 3;
-		flex: 1 1 0;
-		min-width: 200px;
-	}
-	#chapter {
-		flex: 1;
-		max-width: none;
-	}
+body.record :is(#controls, #tapSurface, #progressLine, #pageControls) {
+	display: none;
 }
 
 /* Published presentations start paused and keep playback controls usable on narrow phones. */
@@ -250,21 +361,8 @@ body.watch-title #title > * {
 	opacity: 1 !important;
 	transform: none !important;
 }
-body.watch #controls {
-	flex-wrap: wrap;
-}
-#devOpen {
+#pageControls #devOpen {
 	display: none;
-}
-body.dev #devOpen {
-	display: block;
-}
-body.watch #scrub {
-	order: 1;
-	flex: 1 1 calc(100% - 8ch - 12px);
-}
-body.watch #clock {
-	order: 2;
 }
 
 /* ---------- captions ---------- */
@@ -1475,7 +1573,7 @@ body.dev #viewport {
 	width: min(100%, calc((100dvh - 200px) * 16 / 9));
 	justify-self: center;
 }
-body.dev #controls {
+body.dev :is(#controls, #tapSurface, #progressLine, #pageControls) {
 	display: none;
 }
 #beats {
@@ -1582,40 +1680,8 @@ body.dev #controls {
 	}
 }
 @media (max-width: 600px) {
-	#controls {
-		gap: 8px;
-		font-size: 13px;
-	}
-	#controls button {
-		padding: 0 10px;
-	}
-	/* On a phone: the symbol buttons in a row, then the language, then the seek bar and clock, then
-	   the chapters, each control row as full as it will go. */
-	body:not(.dev) #controls {
-		flex-wrap: wrap;
+	#pageControls {
 		width: 100%;
-	}
-	#controls #presentationLocale {
-		order: 1;
-	}
-	#controls #devOpen {
-		order: 4;
-	}
-	#controls #presentationLocale {
-		flex: 1 1 0;
-		min-width: 0;
-	}
-	#controls #scrub {
-		order: 2;
-		flex: 1 1 calc(100% - 8ch - 8px);
-		margin: 0;
-	}
-	#controls #clock {
-		order: 2;
-	}
-	#controls #chapters {
-		order: 3;
-		flex: 1 1 100%;
 	}
 }
 
@@ -1647,56 +1713,25 @@ body.dev #controls {
 	}
 }
 
-/* Size the stage from the space left by the actual wrapped controls, in either orientation. */
+/* Full screen is the video alone, as large as the screen allows, on black. The black reaches every
+   edge of the device, under a phone's notch and rounded corners; the video and its controls keep
+   inside the safe area. */
+.presentation-fullscreen,
 .presentation-fullscreen body {
-	padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-		max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+	background: #000;
+}
+.presentation-fullscreen body {
+	justify-content: center;
+	padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+		env(safe-area-inset-left);
+	overflow: hidden;
 }
 .presentation-fullscreen #viewport {
 	width: min(100%, var(--fullscreen-width, 100%)) !important;
 	flex-shrink: 0;
+	border-radius: 0;
+	box-shadow: none;
 }
-.presentation-fullscreen #controls {
-	width: 100%;
-	max-width: 1100px;
-	flex-wrap: wrap;
-	flex-shrink: 0;
-}
-
-/* Keep chapter navigation inline on larger screens and behind a disclosure on phones. */
-#chapterMenu,
-#chapterOptions {
-	display: contents;
-}
-#chapterMenuToggle {
+.presentation-fullscreen #pageControls {
 	display: none;
-}
-@media (max-width: 600px) {
-	#chapterMenu {
-		display: block;
-		order: 3;
-		flex: 1 1 100%;
-		min-width: 0;
-	}
-	#controls #chapterMenuToggle {
-		display: block;
-		width: 100%;
-	}
-	#chapterMenuToggle::after {
-		content: ' ▾';
-	}
-	#chapterOptions {
-		display: none;
-	}
-	#chapterMenu.open #chapterOptions {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin-top: 8px;
-	}
-	#controls #chapters {
-		order: 0;
-		flex: 1;
-		min-width: 0;
-	}
 }
