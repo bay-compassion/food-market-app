@@ -12,6 +12,27 @@ import { videos } from './videos.ts';
 const dir = path.dirname(fileURLToPath(import.meta.url));
 
 /**
+ * Full screen shows the video alone: as large as the window allows in one direction and within it
+ * in the other, with its controls over it. Runs in the page, so it stands alone.
+ */
+function fillsScreen(): boolean {
+	const stage = document.querySelector('#viewport')!.getBoundingClientRect();
+	const controls = document.querySelector('#controlsBar')!.getBoundingClientRect();
+	const below = document.querySelector('#pageControls')!.getBoundingClientRect();
+
+	return (
+		stage.top >= 0 &&
+		stage.left >= 0 &&
+		stage.bottom <= innerHeight + 1 &&
+		stage.right <= innerWidth + 1 &&
+		(Math.abs(stage.width - innerWidth) < 1 || Math.abs(stage.height - innerHeight) < 1) &&
+		controls.top >= stage.top &&
+		controls.bottom <= stage.bottom + 1 &&
+		below.height === 0
+	);
+}
+
+/**
  * A frame's phone (`#guestPhone`, `#adminPhone`), with every animation at rest — CSS transitions
  * finished, endless ones at their start — so two pictures of the same moment differ only if what
  * they show does.
@@ -251,7 +272,7 @@ async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
 				return {
 					page: document.body.scrollWidth > innerWidth,
 					caption: cap.bottom > stage.bottom,
-					controls: rect('#controls').right > innerWidth + 1,
+					controls: rect('#pageControls').right > innerWidth + 1,
 					overlap: innerWidth <= 600 && phase === 'phone' && cap.bottom > rect('#adminPhone').top,
 				};
 			});
@@ -394,10 +415,6 @@ void (async () => {
 
 			await player.locator('#fullscreen').click();
 
-			if (await player.locator('#chapterMenuToggle').count()) {
-				await player.locator('#chapterMenuToggle').click();
-			}
-
 			for (const size of [
 				{ width: 390, height: 844 },
 				{ width: 844, height: 390 },
@@ -414,14 +431,7 @@ void (async () => {
 					.frames()
 					.find((frame) => frame.parentFrame() === embedded.mainFrame())!;
 
-				await frame.waitForFunction(() => {
-					const controls = document.querySelector('#controls')!.getBoundingClientRect();
-					const stage = document.querySelector('#viewport')!.getBoundingClientRect();
-
-					return (
-						stage.top >= 0 && stage.bottom <= controls.top && controls.bottom <= innerHeight + 1
-					);
-				});
+				await frame.waitForFunction(fillsScreen);
 			}
 			await embedded.setViewportSize({ width: 390, height: 844 });
 			await player.locator('#fullscreen').click();
@@ -511,7 +521,7 @@ void (async () => {
 				await player.locator('#presentationLocale').selectOption(code);
 				const layout = await player.evaluate(() => ({
 					width: innerWidth,
-					controlsBottom: document.querySelector('#controls')!.getBoundingClientRect().bottom,
+					controlsBottom: document.querySelector('#pageControls')!.getBoundingClientRect().bottom,
 					height: innerHeight,
 					viewportHeight: document.querySelector('#viewport')!.clientHeight,
 					viewportWidth: document.querySelector('#viewport')!.clientWidth,
@@ -534,14 +544,14 @@ void (async () => {
 				await player.locator('#presentationLocale').selectOption('tl');
 				await player.addStyleTag({
 					content:
-						'#controls { font-size: 18px !important; }' +
-						'#controls select { padding-inline: 40px !important; }',
+						'#pageControls { font-size: 18px !important; }' +
+						'#pageControls select { padding-inline: 40px !important; }',
 				});
 				const layout = await player.evaluate(() => ({
 					ratio:
 						document.querySelector('#viewport')!.clientWidth /
 						document.querySelector('#viewport')!.clientHeight,
-					controlsBottom: document.querySelector('#controls')!.getBoundingClientRect().bottom,
+					controlsBottom: document.querySelector('#pageControls')!.getBoundingClientRect().bottom,
 					height: innerHeight,
 				}));
 
@@ -549,7 +559,7 @@ void (async () => {
 				assert.ok(layout.controlsBottom <= layout.height, 'Wider controls fit the embedded frame');
 			}
 
-			// The staff guides' chapters wrap onto a row of their own below 1000px; the frame grows to fit.
+			// The staff guides' chapters sit in the row below the video at every width.
 			for (const name of ['queue-desk', 'admin-guide']) {
 				await site.goto('file://' + path.join(dir, `out/site/presentations/${name}/index.html`));
 				const player = site.frames()[1]!;
@@ -558,7 +568,8 @@ void (async () => {
 				assert.ok(
 					await player.evaluate(
 						() =>
-							document.querySelector('#controls')!.getBoundingClientRect().bottom <= innerHeight,
+							document.querySelector('#pageControls')!.getBoundingClientRect().bottom <=
+							innerHeight,
 					),
 					`${width}/${name}: embedded controls fit`,
 				);
@@ -650,14 +661,7 @@ void (async () => {
 				{ width: 844, height: 390 },
 			]) {
 				await page.setViewportSize(size);
-				await page.waitForFunction(() => {
-					const stage = document.querySelector('#viewport')!.getBoundingClientRect();
-					const controls = document.querySelector('#controls')!.getBoundingClientRect();
-
-					return (
-						stage.top >= 0 && stage.bottom <= controls.top && controls.bottom <= innerHeight + 1
-					);
-				});
+				await page.waitForFunction(fillsScreen);
 			}
 			await page.keyboard.press('Escape');
 			assert.equal(await page.locator('#fullscreen').getAttribute('aria-pressed'), 'false');
@@ -681,6 +685,20 @@ void (async () => {
 				`${name}: the sound pauses with the video`,
 			);
 			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true);
+			// A tap on the video plays and pauses it, and the controls fade while it plays untouched.
+			assert.equal(await page.locator('#volume').inputValue(), '50', `${name}: half volume`);
+			const tapVideo = () => page.locator('#tapSurface').click({ position: { x: 12, y: 12 } });
+			const idle = () =>
+				page.evaluate(() => document.querySelector('#viewport')!.classList.contains('idle'));
+
+			await tapVideo();
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), false, `${name}: tap plays`);
+			await page.waitForFunction(() =>
+				document.querySelector('#viewport')!.classList.contains('idle'),
+			);
+			await tapVideo();
+			assert.equal(await page.evaluate(() => window.reel.tl.paused()), true, `${name}: tap pauses`);
+			assert.equal(await idle(), false, `${name}: controls show while paused`);
 			await verifyPlaybackRecovery(page, name);
 			// Space plays and pauses, and the arrows skip ten seconds, unless a control has focus.
 			await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -735,7 +753,7 @@ void (async () => {
 			await page.locator('#volume').fill('40');
 			await page.setViewportSize({ width: 390, height: 844 });
 			assert.equal(
-				await page.evaluate(() => document.querySelector('#controls')!.lastElementChild!.id),
+				await page.evaluate(() => document.querySelector('#pageControls')!.lastElementChild!.id),
 				'devOpen',
 				`${name}: Dev is the last control`,
 			);
@@ -747,16 +765,8 @@ void (async () => {
 			const time = () => page.evaluate(() => window.reel.tl.time());
 
 			if (chapters.length) {
-				assert.equal(await page.locator('#chapter').isVisible(), false);
-				await page.locator('#chapterMenuToggle').click();
-				assert.equal(
-					await page.locator('#chapterMenuToggle').getAttribute('aria-expanded'),
-					'true',
-				);
-				assert.equal(await page.locator('#chapter').isVisible(), true);
-				await page.keyboard.press('Escape');
-				assert.equal(await page.locator('#chapter').isVisible(), false);
-				await page.locator('#chapterMenuToggle').click();
+				// On a phone too, the chapter list sits below the video, with no menu to open first.
+				assert.equal(await page.locator('#chapter').isVisible(), true, `${name}: chapters`);
 				const current = chapters.findLastIndex((chapter) => chapter.t <= duration * 0.6);
 
 				await page.locator('#nextChapter').click();
@@ -845,7 +855,7 @@ void (async () => {
 							document.querySelector(selector)!.getBoundingClientRect();
 						const stage = rect('#stage');
 						const cap = rect('#cap');
-						const controls = rect('#controls');
+						const controls = rect('#pageControls');
 						const phone = rect('#guestPhone');
 						const phase = document.querySelector<HTMLElement>('#stage')!.dataset.phase;
 						const kiosk = rect('#kiosk');

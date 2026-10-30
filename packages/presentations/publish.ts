@@ -87,12 +87,8 @@ for (const video of published) {
 			presentation.screens ??
 			'The screens are simplified recreations of the real app, with fictional guests.',
 		INTERACTIVE: presentation.interactive,
-		// A narrated video has chapters, which take a row of their own in a narrow player.
-		PLAYER_CLASS: [
-			presentation.guest && 'guest-player',
-			presentation.portrait && 'portrait-player',
-			video.narration && 'chaptered',
-		]
+		// A guide that turns portrait on a phone, as the guest and dashboard guides do.
+		PLAYER_CLASS: [presentation.guest && 'guest-player', presentation.portrait && 'portrait-player']
 			.filter(Boolean)
 			.join(' '),
 		OPEN: presentation.open ?? 'Open Presentation',

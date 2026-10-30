@@ -8,11 +8,6 @@
 	__STAGE_CSS__
 </style>
 <style>
-	#viewport,
-	#controls {
-		width: min(100%, calc((100dvh - 200px) * 16 / 9));
-	}
-	/* Wrapped controls must never compress the video out of its aspect ratio. */
 	#viewport {
 		flex-shrink: 0;
 	}
@@ -77,27 +72,6 @@
 		width: 100%;
 		height: 100%;
 		border: 0;
-	}
-	#presentationLocale {
-		order: 3;
-		color: var(--reel-ink);
-		border: 1px solid rgb(233 241 238 / 35%);
-		border-radius: 20px;
-		padding: 10px;
-		background: var(--color-brand-dark);
-		font: inherit;
-		max-width: 100%;
-	}
-	#presentationLocale:focus-visible {
-		outline: 3px solid var(--color-focus);
-	}
-	#controls {
-		flex-wrap: wrap;
-	}
-	#controls button:not(.icon) {
-		min-height: 44px;
-		height: auto;
-		padding-block: 10px;
 	}
 	@media (max-width: 600px) {
 		body {
