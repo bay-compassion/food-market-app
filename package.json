@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "NODE_OPTIONS='--inspect' netlify dev",
+    "start": "NODE_OPTIONS=\"--inspect --require $PWD/scripts/dirent-path-shim.cjs\" netlify dev",
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "build-only": "vite build",
