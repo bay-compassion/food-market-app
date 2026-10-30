@@ -11,14 +11,12 @@ import { RootStore } from '../../stores/root.store';
 import { CancelVisitAction } from './CancelVisitAction';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
-import { GuestServiceState } from './GuestServiceState';
-import { GuestStatusCard } from './GuestStatusCard';
 import { GuestVisitStatus } from './GuestVisitStatus';
 
 /**
  * `GuestView` is a container: it owns `localStorage`, polling timers, and a router, none of which
  * can be made to hold several different states at once inside one page. This catalogs every
- * market-level state card and `GuestVisitStatus` inside `GuestStatusCard` for every named
+ * market-level state card and `GuestVisitStatus` for every named
  * `VisitStatus`; `GuestView` presents one only after matching the visit to the displayed market,
  * and lets `cancelled` fall back to market status. The story renders statuses side by side, the same way
  * `QueueGuestRow.stories.tsx`'s `EachStatus` story does for the admin queue row. See
@@ -33,9 +31,9 @@ type GuestViewArgs = {
 	locale: Locale;
 };
 
-// `lottery_pending` is absent on purpose: it shares the `registration_closed` card, so listing it
-// would repeat a column rather than show another state.
-const marketCardStatuses = ['inactive', 'registration_closed', 'service_started'] as const;
+// `lottery_pending` and `service_started` are absent on purpose: they share the
+// `registration_closed` card, so listing them would repeat a column rather than show another state.
+const marketCardStatuses = ['inactive', 'registration_closed'] as const;
 
 type MarketCardStatus = (typeof marketCardStatuses)[number];
 
@@ -47,8 +45,6 @@ function marketCardHeading(locale: Locale, status: MarketCardStatus): string {
 			return copy.notOpenState.heading;
 		case 'registration_closed':
 			return copy.registrationClosedState.heading;
-		case 'service_started':
-			return copy.serviceState.inProgressHeading;
 	}
 }
 
@@ -61,12 +57,12 @@ function visitCardHeading(locale: Locale, status: VisitStatus): string {
 		case 'waiting':
 			return copy.waiting.header;
 		case 'called':
-			return copy.called.header;
+			return copy.called.eyebrow;
 		case 'served':
 		case 'not_placed':
 		case 'no_show':
 		case 'cancelled':
-			return copy[status].header;
+			return copy.labels[status];
 	}
 }
 
@@ -74,7 +70,6 @@ function MarketStateRow({ status, locale }: { status: MarketCardStatus; locale: 
 	const content = {
 		inactive: <GuestNotOpenState />,
 		registration_closed: <GuestRegistrationClosedState />,
-		service_started: <GuestServiceState />,
 	}[status];
 
 	return (
@@ -83,7 +78,7 @@ function MarketStateRow({ status, locale }: { status: MarketCardStatus; locale: 
 				{marketCardHeading(locale, status)}
 			</h2>
 			<section className="guest-layout" style={{ width: 'auto', padding: 0 }}>
-				<GuestStatusCard frameless={status === 'inactive'}>{content}</GuestStatusCard>
+				{content}
 			</section>
 		</div>
 	);
@@ -143,9 +138,7 @@ function VisitStatusRow({
 				data-visit-status={status}
 				style={{ width: 'auto', padding: 0 }}
 			>
-				<GuestStatusCard>
-					<GuestVisitStatus />
-				</GuestStatusCard>
+				<GuestVisitStatus />
 				<CancelVisitAction />
 			</section>
 		</RootStoreProvider>
@@ -203,13 +196,13 @@ export const AllStates: Story = {
 			await expect(canvasElement.querySelectorAll('[data-visit-status]')).toHaveLength(
 				visitStatuses.length,
 			);
-			await expect(canvasElement.querySelectorAll('.success-state')).toHaveLength(
-				visitStatuses.length,
-			);
+			await expect(
+				canvasElement.querySelectorAll('[data-visit-status] .status-panel'),
+			).toHaveLength(visitStatuses.length);
 
 			for (const status of marketCardStatuses) {
 				const cardHeading = canvasElement.querySelector(
-					`[data-session-status="${status}"] .state-message h2`,
+					`[data-session-status="${status}"] .status-panel h2`,
 				);
 
 				await expect(cardHeading).toHaveTextContent(marketCardHeading(locale, status));
@@ -217,7 +210,7 @@ export const AllStates: Story = {
 
 			for (const status of visitStatuses) {
 				const cardHeading = canvasElement.querySelector(
-					`[data-visit-status="${status}"] .success-state h2`,
+					`[data-visit-status="${status}"] .status-panel h2`,
 				);
 
 				await expect(cardHeading).toHaveTextContent(visitCardHeading(locale, status));

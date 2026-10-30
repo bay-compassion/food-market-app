@@ -82,6 +82,10 @@ export const SignalColors: Story = {
 				'Validation messages, the auth banner, the "called" state, and the color the registration countdown blends toward as time runs out',
 			],
 			['--color-success', 'The success severity of `Alert`'],
+			[
+				'--color-success-surface',
+				'Behind a guest status card that reports good news: called, checked in',
+			],
 			['--color-warning', 'The warning severity of `Alert`'],
 			['--color-warning-surface', 'Behind a warning note, such as the reports privacy note'],
 		],

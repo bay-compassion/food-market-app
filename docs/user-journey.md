@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=c476dcb4c4e0, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=2ca92ef896ca, src/stores/registration.store.ts=614b65197522, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=7508c823e248, src/stores/market-session.store.ts=aa8f488d0312, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=212b664e0a69, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083, src/components/guest-view/GuestVisitState.tsx=c5315940aca3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
+<!-- diagram-sources: src/App.tsx=36fd8ef76785, src/components/guest-view/GuestView.tsx=5aa009d056ad, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=2ca92ef896ca, src/stores/registration.store.ts=614b65197522, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=7508c823e248, src/stores/market-session.store.ts=aa8f488d0312, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=212b664e0a69, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=3a3f47681083, src/components/guest-view/GuestVisitState.tsx=be14343a3ac3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
 
 # Guest journey
 
@@ -102,8 +102,7 @@ flowchart TD
     cachedIdentity -- "yes, but the name<br/>is only initials" --> combinedForm
     cachedIdentity -- yes --> lotteryOnlyForm[Show saved identity card<br/>and lottery-entry fields:<br/>age range, household size,<br/>children/seniors — or, when this<br/>phone saved them, a summary to<br/>confirm or change]
     canRegister -- no --> phase{Which active phase is<br/>the session in?}
-    phase -- registration closed<br/>or lottery pending --> closedScreen([Registration-closed screen])
-    phase -- service underway --> inServiceScreen([In-service screen])
+    phase -- registration closed,<br/>lottery pending, or<br/>service underway --> closedScreen([Registration-closed screen:<br/>today's window missed,<br/>next registration date,<br/>and the Saturday timeline])
 
     signupRoute([Guest visits /signup]) --> alreadyIdentified{Already has a<br/>device token?}
     alreadyIdentified -- yes --> redirectHome[Redirect to /]
@@ -233,9 +232,9 @@ visit when Safari creates a separate storage area. Unsupported browsers keep the
   current-market visit can show registration, queue, call,
   or outcome details; a cancelled visit falls back to the market state so the guest can register
   again while registration remains open. A visit from another market cannot override today's
-  screen. When there is no visit to present, `registration_closed` and `lottery_pending` share one
-  card — both phases only reach a guest who never registered, so both apologize for the missed
-  window and say when registration next opens. There is no separate client-side card-state or session-phase
+  screen. When there is no visit to present, `registration_closed`, `lottery_pending` and
+  `service_started` share one card — each only reaches a guest who never registered, so each
+  apologizes for the missed window and says when registration next opens. There is no separate client-side card-state or session-phase
   model beyond those server-owned statuses.
 - **Household composition — age range, household size, and how many children/seniors (55+) the
   guest is shopping for — is entered fresh at every visit and lives only on `visits`, not on the

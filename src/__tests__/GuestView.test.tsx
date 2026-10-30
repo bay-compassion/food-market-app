@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GuestView } from '../components/guest-view/GuestView';
+import { translations } from '../locales';
 import { RootStore } from '../stores/root.store';
 import { answerConfirmation, renderWithApp, settleInitialLoad } from './render-with-app';
 
@@ -201,7 +202,11 @@ describe('GuestView', () => {
 		fireEvent.submit(container.querySelector('form')!);
 
 		// Assert
-		await waitFor(() => expect(container.textContent).toContain('You’re in the lottery!'));
+		await waitFor(() =>
+			expect(container.textContent).toContain(
+				translations.en.guestView.visitStatus.registered.header,
+			),
+		);
 		expect(container.querySelector('.registration-countdown')).not.toBeNull();
 		expect(container.textContent).not.toContain('Current status');
 		expect(window.localStorage.getItem('bay-compassion.visit-token')).toBe('token-1');
@@ -239,7 +244,9 @@ describe('GuestView', () => {
 		const { container } = await renderLoadedGuestView();
 
 		// Assert
-		await waitFor(() => expect(container.textContent).toContain('Come to check-in now'));
+		await waitFor(() =>
+			expect(container.textContent).toContain(translations.en.guestView.visitStatus.called.header),
+		);
 		expect(container.querySelector('.submission-error')).toBeNull();
 	});
 

@@ -1,18 +1,35 @@
 import { observer } from 'mobx-react-lite';
 
 import { useTranslation } from '../../stores/react/use-translation';
-import { useNextRegistrationText } from '../hooks/use-next-registration-text';
-import { GuestStateMessage } from './GuestStateMessage';
+import { GuestGuideButton } from '../GuestGuideButton';
+import { ScheduleIcon } from '../ui/icons/ScheduleIcon';
+import { GuestNoVisitState } from './GuestNoVisitState';
+import {
+	GuestStatusPanel,
+	StatusActions,
+	StatusBody,
+	StatusHeadline,
+} from './status-card/GuestStatusPanel';
+import { NextRegistrationDetails } from './status-card/NextRegistrationDetails';
 
-/** Registration for today has closed, but the session has not started serving yet. */
+/**
+ * Today's registration has closed and this guest has no visit: they missed the window. The same
+ * card whether the draw is still to run or shopping has begun, since either way all that is left
+ * for them is next time.
+ */
 export const GuestRegistrationClosedState = observer(function GuestRegistrationClosedState() {
-	const t = useTranslation();
-	const nextRegistration = useNextRegistrationText();
+	const copy = useTranslation().guestView.registrationClosedState;
 
 	return (
-		<GuestStateMessage
-			heading={t.guestView.registrationClosedState.heading}
-			description={nextRegistration(t.guestView.registrationClosedState.description)}
-		/>
+		<GuestNoVisitState>
+			<GuestStatusPanel tone="warning" icon={<ScheduleIcon />} heading={copy.heading}>
+				<StatusHeadline>{copy.headline}</StatusHeadline>
+				<StatusBody>{copy.description}</StatusBody>
+				<NextRegistrationDetails variant="inset" />
+				<StatusActions>
+					<GuestGuideButton compact />
+				</StatusActions>
+			</GuestStatusPanel>
+		</GuestNoVisitState>
 	);
 });

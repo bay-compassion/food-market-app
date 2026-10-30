@@ -81,7 +81,7 @@ describe('NextRegistration', () => {
 		for (const [locale, copy] of Object.entries(translations)) {
 			// Act
 			const text = saturday.fill(
-				copy.guestView.serviceState.inProgressDescription,
+				copy.guestView.notOpenState.subheading,
 				copy.guestView.nextRegistration,
 				locale,
 				new Date('2026-10-28T19:00:00.000Z'),

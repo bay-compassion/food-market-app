@@ -1,6 +1,7 @@
 import { expect, type Page, test } from '@playwright/test';
 
 import { HOME_SCREEN_INSTALL_FLAG_KEY } from '../src/components/hooks/use-home-screen-install-enabled';
+import { translations } from '../src/locales';
 import type { InstallPlatform } from '../src/pwa/install-environment';
 
 const safari =
@@ -153,7 +154,11 @@ test(
 				});
 				await app.goto('/pwa-start');
 				await expect(app.getByText('Ada L', { exact: true })).toBeVisible();
-				await expect(app.getByRole('heading', { name: 'You’re in the lottery!' })).toBeVisible();
+				await expect(
+					app.getByRole('heading', {
+						name: translations.en.guestView.visitStatus.registered.header,
+					}),
+				).toBeVisible();
 				expect(await app.evaluate(() => localStorage.getItem('bay-compassion.visit-token'))).toBe(
 					'pwa-visit-token',
 				);
@@ -188,7 +193,11 @@ test(
 			await seedGuest(page);
 			await page.goto('/');
 			await expect.poll(() => contexts.some((context) => context.os === 'ios')).toBe(true);
-			await expect(page.getByRole('heading', { name: 'You’re in the lottery!' })).toBeVisible();
+			await expect(
+				page.getByRole('heading', {
+					name: translations.en.guestView.visitStatus.registered.header,
+				}),
+			).toBeVisible();
 			await expect(
 				page.getByRole('button', { name: 'Add to Home Screen', exact: true }),
 			).toHaveCount(0);

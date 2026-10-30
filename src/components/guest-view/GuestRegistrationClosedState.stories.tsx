@@ -3,24 +3,18 @@ import { expect } from 'storybook/test';
 
 import { translations } from '../../locales';
 import { GuestRegistrationClosedState } from './GuestRegistrationClosedState';
-import { GuestStatusCard } from './GuestStatusCard';
+import { ScheduledInThreeDays } from './scheduled-next-registration.fixture';
 
 /**
- * Shown once registration has closed for the day, through both `registration_closed` and
- * `lottery_pending` — a guest only reaches either phase without a visit by missing the window.
- * Wrapped in `GuestStatusCard` for the frame this screen normally sits inside.
+ * Shown once registration has closed for the day, through `registration_closed`,
+ * `lottery_pending` and `service_started` — a guest only reaches any of them without a visit by
+ * missing the window. Today's news leads in the warning tone, then when registration opens next,
+ * then how a market Saturday runs.
  */
 const meta = {
 	title: 'Guest/Market Page/Registration Closed',
 	component: GuestRegistrationClosedState,
 	parameters: { shell: 'guest' },
-	decorators: [
-		(Story) => (
-			<GuestStatusCard>
-				<Story />
-			</GuestStatusCard>
-		),
-	],
 } satisfies Meta<typeof GuestRegistrationClosedState>;
 
 export default meta;
@@ -29,10 +23,32 @@ type Story = StoryObj<typeof meta>;
 
 export const RegistrationClosed: Story = {
 	play: async ({ canvas }) => {
+		const copy = translations.en.guestView;
+
 		await expect(
-			canvas.getByRole('heading', {
-				name: translations.en.guestView.registrationClosedState.heading,
-			}),
+			canvas.getByRole('heading', { name: copy.registrationClosedState.heading }),
+		).toBeInTheDocument();
+		await expect(canvas.getByText(copy.registrationClosedState.headline)).toBeInTheDocument();
+		await expect(canvas.getByText(copy.notOpenState.nextLabel)).toBeInTheDocument();
+		await expect(
+			canvas.getByRole('heading', { name: copy.notOpenState.scheduleHeading }),
+		).toBeInTheDocument();
+		// Undated, so nothing to put in a calendar.
+		await expect(canvas.queryByRole('link')).not.toBeInTheDocument();
+	},
+};
+
+/** With the next session scheduled, the inset names its date and offers Add to Calendar. */
+export const Dated: Story = {
+	render: () => (
+		<ScheduledInThreeDays>
+			<GuestRegistrationClosedState />
+		</ScheduledInThreeDays>
+	),
+	play: async ({ canvas }) => {
+		await expect(canvas.getByText(/^Opens in 3 days at /)).toBeInTheDocument();
+		await expect(
+			canvas.getByRole('link', { name: translations.en.guestView.notOpenState.addToCalendar }),
 		).toBeInTheDocument();
 	},
 };
