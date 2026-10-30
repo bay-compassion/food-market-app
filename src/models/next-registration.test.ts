@@ -91,4 +91,32 @@ describe('NextRegistration', () => {
 			expect(text, locale).not.toMatch(/[{}]/);
 		}
 	});
+
+	describe('headline', () => {
+		const headlinePhrases = {
+			undatedDay: 'Every Saturday',
+			opensDated: 'Opens {relative} at {time}',
+			opensUndated: 'Opens at {time}',
+		};
+
+		it.each([
+			['the morning of', '2026-10-31T15:00:00.000Z', 'Opens today at 10:30 AM'],
+			['the day before', '2026-10-30T19:00:00.000Z', 'Opens tomorrow at 10:30 AM'],
+			['the Sunday before', '2026-10-25T19:00:00.000Z', 'Opens in 6 days at 10:30 AM'],
+		])('tells the date apart from when it opens, %s', (_when, now, opens) => {
+			// Act
+			const headline = saturday.headline(headlinePhrases, 'en', new Date(now));
+
+			// Assert
+			expect(headline).toEqual({ day: 'Saturday, October 31', opens });
+		});
+
+		it('falls back to the usual Saturday when the schedule names no date', () => {
+			// Act
+			const headline = NextRegistration.every.headline(headlinePhrases, 'en', new Date());
+
+			// Assert
+			expect(headline).toEqual({ day: 'Every Saturday', opens: 'Opens at 10:30 AM' });
+		});
+	});
 });

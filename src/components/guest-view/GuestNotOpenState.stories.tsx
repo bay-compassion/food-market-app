@@ -8,12 +8,11 @@ import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { GuestNotOpenState } from './GuestNotOpenState';
 import { GuestStatusCard } from './GuestStatusCard';
-import { unscheduled } from './unscheduled-next-registration.fixture';
 
 /**
  * Shown before a `draft` or `scheduled` session's registration window has opened — including when
- * no event has been configured at all. Wrapped in `GuestStatusCard` for the frame this screen
- * normally sits inside.
+ * no event has been configured at all. Wrapped in a frameless `GuestStatusCard`, as on the home
+ * screen, where this state lays out its own panels instead of sitting in the card's border.
  */
 const meta = {
 	title: 'Guest/Market Page/Not Open',
@@ -21,7 +20,7 @@ const meta = {
 	parameters: { shell: 'guest' },
 	decorators: [
 		(Story) => (
-			<GuestStatusCard>
+			<GuestStatusCard frameless>
 				<Story />
 			</GuestStatusCard>
 		),
@@ -33,23 +32,23 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * No event exists yet, or it's still `draft`/`scheduled`, so the state explains the next market
- * and how its lottery works.
+ * No event exists yet, or it's still `draft`/`scheduled`, so the state leads with when registration
+ * opens again, then lays out a market Saturday as a timeline.
  */
 export const NotOpen: Story = {
 	play: async ({ canvas }) => {
 		const copy = translations.en.guestView.notOpenState;
 
 		await expect(canvas.getByRole('heading', { name: copy.heading })).toBeInTheDocument();
-		await expect(canvas.getByText(unscheduled(copy.subheading))).toBeInTheDocument();
-		await expect(canvas.getByText(copy.lotteryDescription)).toBeInTheDocument();
-		await expect(canvas.getByText(copy.selectionDescription)).toBeInTheDocument();
+		await expect(canvas.getByText(copy.nextLabel)).toBeInTheDocument();
+		await expect(canvas.getByRole('heading', { name: copy.scheduleHeading })).toBeInTheDocument();
+		await expect(canvas.getAllByRole('listitem')).toHaveLength(copy.steps.length);
+		await expect(canvas.getByText(copy.supplyNote)).toBeInTheDocument();
 		// The guide opens inside the app, so the card links nowhere.
 		await expect(canvas.queryByRole('link')).not.toBeInTheDocument();
 		await expect(
-			canvas.getByRole('button', { name: translations.en.guestView.presentation.watch }),
+			canvas.getByRole('button', { name: translations.en.guestView.presentation.watchShort }),
 		).toBeInTheDocument();
-		await expect(canvas.getByRole('separator')).toBeInTheDocument();
 	},
 };
 
@@ -60,9 +59,9 @@ export const RightToLeft: Story = {
 		const copy = translations.ar.guestView.notOpenState;
 
 		await expect(canvas.getByRole('heading', { name: copy.heading })).toBeInTheDocument();
-		await expect(canvas.getByText(unscheduled(copy.subheading, 'ar'))).toBeInTheDocument();
-		await expect(canvas.getByText(copy.lotteryDescription)).toBeInTheDocument();
-		await expect(canvas.getByText(copy.selectionDescription)).toBeInTheDocument();
+		await expect(canvas.getByText(copy.nextLabel)).toBeInTheDocument();
+		await expect(canvas.getByText(copy.steps[0]!.title)).toBeInTheDocument();
+		await expect(canvas.getByText(copy.supplyNote)).toBeInTheDocument();
 	},
 };
 
@@ -110,8 +109,10 @@ function ScheduledInThreeDays() {
 export const Dated: Story = {
 	render: () => <ScheduledInThreeDays />,
 	play: async ({ canvas }) => {
+		await expect(canvas.getByText(/^Opens in 3 days at /)).toBeInTheDocument();
+		// A dated window can go in the guest's calendar; the undated ones above offer no link.
 		await expect(
-			canvas.getByText(/^Registration will open again in 3 days, on /),
-		).toBeInTheDocument();
+			canvas.getByRole('link', { name: translations.en.guestView.notOpenState.addToCalendar }),
+		).toHaveAttribute('download', 'bay-compassion-registration.ics');
 	},
 };

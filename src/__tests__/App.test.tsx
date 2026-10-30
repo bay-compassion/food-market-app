@@ -666,15 +666,19 @@ describe('App', () => {
 		const copy = translations.en.guestView.notOpenState;
 
 		const heading = await screen.findByRole('heading', { name: copy.heading });
-		const inactiveState = within(heading.parentElement!);
+		const inactiveState = within(heading.closest<HTMLElement>('.state-message')!);
 
-		expect(inactiveState.getByText(unscheduled(copy.subheading))).not.toBeNull();
-		expect(inactiveState.getByText(copy.lotteryDescription)).not.toBeNull();
-		expect(inactiveState.getByText(copy.selectionDescription)).not.toBeNull();
+		expect(inactiveState.getByText(copy.nextLabel)).not.toBeNull();
+		expect(inactiveState.getByText(copy.opensUndated.replace('{time}', '10:30 AM'))).not.toBeNull();
+		expect(inactiveState.getByRole('heading', { name: copy.scheduleHeading })).not.toBeNull();
+		expect(inactiveState.getAllByRole('listitem')).toHaveLength(copy.steps.length);
+		expect(inactiveState.getByText(copy.supplyNote)).not.toBeNull();
 		expect(inactiveState.queryByRole('link')).toBeNull();
 		// Guests can learn about the next visit without leaving the app.
 		expect(
-			inactiveState.getByRole('button', { name: translations.en.guestView.presentation.watch }),
+			inactiveState.getByRole('button', {
+				name: translations.en.guestView.presentation.watchShort,
+			}),
 		).toBeDefined();
 	});
 

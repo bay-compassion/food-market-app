@@ -1,3 +1,5 @@
+import { CalendarInvite } from './calendar-invite.ts';
+
 /** When registration next opens, as `/api/market` reports it. */
 export type NextRegistrationWindow = {
 	registrationOpensAt: string;
@@ -19,6 +21,16 @@ export type NextRegistrationPhrases = {
 	next: string;
 	/** `{time}`, "every Saturday": for a market with no schedule to say which Saturday is next. */
 	every: string;
+};
+
+/** The phrases a masthead's day and opening line are built from, in one language. */
+export type NextRegistrationHeadlinePhrases = {
+	/** The day when the schedule names no date: "Every Saturday". */
+	undatedDay: string;
+	/** `{relative}` (today, tomorrow, in 3 days…) and `{time}`: "Opens in 3 days at 10:30 AM". */
+	opensDated: string;
+	/** `{time}`: "Opens at 10:30 AM", under an undated day. */
+	opensUndated: string;
 };
 
 /** Which phrase tells the day: a date from the schedule, or one of the dateless ones. */
@@ -69,6 +81,16 @@ export class NextRegistration {
 		return Math.round((this.closesAt.valueOf() - this.opensAt.valueOf()) / 60_000);
 	}
 
+	/**
+	 * The window as a calendar event, or `null` when the copy tells no date — a dateless "every
+	 * Saturday" or "next Saturday" has no particular day to put in a calendar.
+	 */
+	invite(title: string, url: string): CalendarInvite | null {
+		return this.telling === 'dated'
+			? new CalendarInvite({ startsAt: this.opensAt, endsAt: this.closesAt, title, url })
+			: null;
+	}
+
 	/** Calendar days from `now` to opening in the market's time zone: 0 today, 1 tomorrow. */
 	daysUntil(now: Date): number {
 		return Math.round((this.localDay(this.opensAt) - this.localDay(now)) / dayMs);
@@ -94,24 +116,52 @@ export class NextRegistration {
 			return phrases[this.telling].replace('{time}', time);
 		}
 
-		const days = this.daysUntil(now);
-
-		if (days <= 0) {
+		if (this.daysUntil(now) <= 0) {
 			return phrases.today.replace('{time}', time);
 		}
 
+		return phrases.dated
+			.replace('{relative}', this.relativeDay(locale, now))
+			.replace('{date}', this.date(locale))
+			.replace('{time}', time);
+	}
+
+	/**
+	 * The day and its opening line, told apart for a masthead: "Saturday, October 31" over "Opens in
+	 * 2 days at 10:30 AM" — or, with no date to tell, "Every Saturday" over "Opens at 10:30 AM".
+	 */
+	headline(
+		phrases: NextRegistrationHeadlinePhrases,
+		locale: string,
+		now: Date,
+	): { day: string; opens: string } {
+		const time = this.time(this.opensAt, locale);
+
+		if (this.telling !== 'dated') {
+			return { day: phrases.undatedDay, opens: phrases.opensUndated.replace('{time}', time) };
+		}
+
+		return {
+			day: this.date(locale),
+			opens: phrases.opensDated
+				.replace('{relative}', this.relativeDay(locale, now))
+				.replace('{time}', time),
+		};
+	}
+
+	/** "Saturday, October 31". */
+	private date(locale: string): string {
+		return this.format(this.opensAt, locale, { weekday: 'long', month: 'long', day: 'numeric' });
+	}
+
+	/** "today", "tomorrow", "in 3 days": never a day already past. */
+	private relativeDay(locale: string, now: Date): string {
 		// The digits go in as a locale extension, which every browser takes, rather than an option.
 		const relative = new Intl.RelativeTimeFormat(`${locale}-u-nu-${digitsOf(locale)}`, {
 			numeric: 'auto',
-		}).format(days, 'day');
+		}).format(Math.max(0, this.daysUntil(now)), 'day');
 
-		return phrases.dated
-			.replace('{relative}', lowerFirst(relative, locale))
-			.replace(
-				'{date}',
-				this.format(this.opensAt, locale, { weekday: 'long', month: 'long', day: 'numeric' }),
-			)
-			.replace('{time}', time);
+		return lowerFirst(relative, locale);
 	}
 
 	private time(at: Date, locale: string): string {

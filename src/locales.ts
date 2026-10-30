@@ -134,6 +134,8 @@ export interface GuestTourTranslations {
 /** Playback copy for the guest instructional presentation. Narration is in English. */
 export interface GuestPresentationTranslations {
 	watch: string;
+	/** The same, short enough to sit beside another button. */
+	watchShort: string;
 	close: string;
 	title: string;
 	heading: string;
@@ -302,9 +304,20 @@ export interface GuestViewTranslations {
 	nextRegistration: NextRegistrationPhrases;
 	notOpenState: {
 		heading: string;
+		/** `{when}`: when registration next opens, as one sentence — the guest guide's caption. */
 		subheading: string;
-		lotteryDescription: string;
-		selectionDescription: string;
+		nextLabel: string;
+		/** The masthead's opening line under a dated day; see `NextRegistration.headline`. */
+		opensDated: string;
+		/** The masthead's opening line under "Every Saturday", when the schedule names no date. */
+		opensUndated: string;
+		scheduleHeading: string;
+		/** A market Saturday in order — register, the draw, shopping — each at its usual time. */
+		steps: { time: string; title: string; body: string }[];
+		supplyNote: string;
+		addToCalendar: string;
+		/** The event's name in the guest's calendar. */
+		calendarEventTitle: string;
 	};
 	registrationClosedState: {
 		heading: string;
@@ -650,6 +663,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'Watch the Guest Guide',
+				watchShort: 'Watch Guide',
 				close: 'Close guest guide',
 				title: 'Guest Market Guide',
 				heading: 'Your visit to The Bay Compassion',
@@ -725,7 +739,7 @@ export const translations = {
 					lottery: {
 						time: '10:45 AM',
 						title: 'The lottery draws',
-						body: 'Everyone has the same chance. This screen shows whether you got a number. Not everyone gets a number each week.',
+						body: 'This screen shows whether you got a number. Not everyone gets a number each week.',
 					},
 					line: {
 						title: 'Your place in line',
@@ -822,7 +836,6 @@ export const translations = {
 				heading: 'Registration opens every Saturday at 10:30 AM',
 				body: outdent`
 					Sign-ups are not open yet. Please come back on Saturday at 10:30 AM.
-					Everyone will have a fair chance to enter the queue lottery.
 				`,
 			},
 			nextRegistration: {
@@ -833,22 +846,41 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'The Market Is Closed',
-				subheading:
-					'Registration will open again {when} and stay open for {minutes} minutes, until {closeTime}.',
-				lotteryDescription:
-					'Because supplies are limited, the market uses a lottery system to randomly select shoppers each week. You may register for the lottery from anywhere, at any time during the 15 minutes from 10:30 AM to 10:45 AM on Saturday. Registering early does not affect your chances of being selected, so there is no need to rush.',
-				selectionDescription:
-					'The lottery will run at 10:45 AM, which leaves time to travel to the market if you are selected. If you are selected to shop, you will receive a number here in the app, and shopping begins at 11:30 AM. If you consent to receiving text messages, you will also be notified by text message.',
+				subheading: 'Registration opens again {when}.',
+				scheduleHeading: 'Every Saturday',
+				steps: [
+					{
+						time: '10:30 AM',
+						title: 'Register in the App',
+						body: 'From anywhere, any time until 10:45 AM. Registering early does not change your chances, so there is no need to rush.',
+					},
+					{
+						time: '10:45 AM',
+						title: 'Lottery Draw',
+						body: 'If you are selected, you get a number here in the app, and by text message if you agreed to texts.',
+					},
+					{
+						time: '11:30 AM',
+						title: 'Shopping Begins',
+						body: 'The time between the draw and shopping lets you travel to the market.',
+					},
+				],
+				supplyNote: 'Supplies are limited, so not everyone gets a number each week.',
+				addToCalendar: 'Add to Calendar',
+				calendarEventTitle: 'Register for The Bay Compassion market',
+				nextLabel: 'Next Registration',
+				opensDated: 'Opens {relative} at {time}',
+				opensUndated: 'Opens at {time}',
 			},
 			registrationClosedState: {
 				heading: 'Registration has closed',
 				description:
-					'We’re sorry — you missed today’s sign-up window. Registration opens again {when}, and everyone who registers has an equal chance in the lottery.',
+					'We’re sorry — you missed today’s sign-up window. Registration opens again {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'Today’s market is underway',
 				inProgressDescription:
-					'Registration is closed for today. Registration will open again {when} and stay open for {minutes} minutes, until {closeTime}. Everyone who signs up has the same chance.',
+					'Registration is closed for today. Registration will open again {when} and stay open for {minutes} minutes, until {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'Updating in {seconds}s',
@@ -977,7 +1009,7 @@ export const translations = {
 		help: {
 			title: 'How it works',
 			introHeading: 'It’s a lottery now, not a race.',
-			introBody: 'Sign up from anywhere. Everyone has the same chance.',
+			introBody: 'Sign up from anywhere. Signing up early doesn’t change your chances.',
 			stepsHeading: 'Every Saturday',
 			steps: [
 				{
@@ -1160,6 +1192,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'Ver la guía para visitantes',
+				watchShort: 'Ver la guía',
 				close: 'Cerrar la guía para visitantes',
 				title: 'Guía del mercado para visitantes',
 				heading: 'Su visita a The Bay Compassion',
@@ -1236,7 +1269,7 @@ export const translations = {
 					lottery: {
 						time: '10:45 a. m.',
 						title: 'Se hace el sorteo',
-						body: 'Todos tienen la misma oportunidad. Esta pantalla muestra si obtuvo un número. No todos obtienen número cada semana.',
+						body: 'Esta pantalla muestra si obtuvo un número. No todos obtienen número cada semana.',
 					},
 					line: {
 						title: 'Su lugar en la fila',
@@ -1334,7 +1367,6 @@ export const translations = {
 				heading: 'El registro abre todos los sábados a las 10:30 a. m.',
 				body: outdent`
 					Las inscripciones aún no están abiertas. Vuelva el sábado a las 10:30 a. m.
-					Todos tendrán una oportunidad justa de participar en el sorteo de la fila.
 				`,
 			},
 			nextRegistration: {
@@ -1345,22 +1377,42 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'El mercado está cerrado',
-				subheading:
-					'La inscripción volverá a abrir {when} y permanecerá abierta {minutes} minutos, hasta las {closeTime}.',
-				lotteryDescription:
-					'Debido a que los suministros son limitados, el mercado utiliza un sistema de lotería para seleccionar al azar a las personas que podrán comprar cada semana. Puede inscribirse en la lotería desde cualquier lugar, en cualquier momento durante los 15 minutos entre las 10:30 a. m. y las 10:45 a. m. del sábado. Inscribirse temprano no afecta sus probabilidades de ser seleccionado, por lo que no hay prisa.',
-				selectionDescription:
-					'La lotería se realizará a las 10:45 a. m., lo que le da tiempo de llegar al mercado si es seleccionado. Si es seleccionado para comprar, recibirá un número aquí en la aplicación, y las compras comienzan a las 11:30 a. m. Si acepta recibir mensajes de texto, también recibirá una notificación por mensaje de texto.',
+				subheading: 'La inscripción vuelve a abrir {when}.',
+				scheduleHeading: 'Todos los sábados',
+				steps: [
+					{
+						time: '10:30 a. m.',
+						title: 'Inscríbase en la aplicación',
+						body: 'Desde cualquier lugar, en cualquier momento hasta las 10:45 a. m. Inscribirse temprano no cambia sus probabilidades, así que no hay prisa.',
+					},
+					{
+						time: '10:45 a. m.',
+						title: 'Sorteo de la lotería',
+						body: 'Si es seleccionado, recibirá un número aquí en la aplicación, y por mensaje de texto si aceptó recibirlos.',
+					},
+					{
+						time: '11:30 a. m.',
+						title: 'Comienzan las compras',
+						body: 'El tiempo entre el sorteo y las compras le permite llegar al mercado.',
+					},
+				],
+				supplyNote:
+					'Los suministros son limitados, así que no todos reciben un número cada semana.',
+				addToCalendar: 'Agregar al calendario',
+				calendarEventTitle: 'Inscribirse en el mercado de The Bay Compassion',
+				nextLabel: 'Próxima inscripción',
+				opensDated: 'Abre {relative} a las {time}',
+				opensUndated: 'Abre a las {time}',
 			},
 			registrationClosedState: {
 				heading: 'El registro ha cerrado',
 				description:
-					'Lo sentimos: no alcanzó a inscribirse dentro del horario de hoy. El registro volverá a abrir {when}, y todas las personas que se inscriban tienen las mismas probabilidades en el sorteo.',
+					'Lo sentimos: no alcanzó a inscribirse dentro del horario de hoy. El registro volverá a abrir {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'El mercado de hoy está en curso',
 				inProgressDescription:
-					'El registro está cerrado por hoy. La inscripción volverá a abrir {when} y permanecerá abierta {minutes} minutos, hasta las {closeTime}. Todos los que se inscriben tienen la misma oportunidad.',
+					'El registro está cerrado por hoy. La inscripción volverá a abrir {when} y permanecerá abierta {minutes} minutos, hasta las {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'Se actualizará en {seconds} s',
@@ -1490,7 +1542,8 @@ export const translations = {
 		help: {
 			title: 'Cómo funciona',
 			introHeading: 'Ahora es un sorteo, no una carrera.',
-			introBody: 'Inscríbase desde cualquier lugar. Todos tienen la misma oportunidad.',
+			introBody:
+				'Inscríbase desde cualquier lugar. Inscribirse temprano no cambia sus probabilidades.',
 			stepsHeading: 'Todos los sábados',
 			steps: [
 				{
@@ -1674,6 +1727,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'تماشای راهنمای مهمان',
+				watchShort: 'تماشای راهنما',
 				close: 'بستن راهنمای مهمان',
 				title: 'راهنمای بازار برای مهمانان',
 				heading: 'بازدید شما از The Bay Compassion',
@@ -1749,7 +1803,7 @@ export const translations = {
 					lottery: {
 						time: '۱۰:۴۵ صبح',
 						title: 'قرعه‌کشی انجام می‌شود',
-						body: 'شانس همه برابر است. این صفحه نشان می‌دهد شماره گرفته‌اید یا نه. هر هفته همه شماره نمی‌گیرند.',
+						body: 'این صفحه نشان می‌دهد شماره گرفته‌اید یا نه. هر هفته همه شماره نمی‌گیرند.',
 					},
 					line: {
 						title: 'جایگاه شما در صف',
@@ -1844,7 +1898,6 @@ export const translations = {
 				heading: 'ثبت‌نام هر شنبه ساعت ۱۰:۳۰ صبح باز می‌شود',
 				body: outdent`
 					ثبت‌نام هنوز باز نشده است. لطفاً روز شنبه ساعت ۱۰:۳۰ صبح دوباره مراجعه کنید.
-					همه فرصتی برابر برای ورود به قرعه‌کشی صف خواهند داشت.
 				`,
 			},
 			nextRegistration: {
@@ -1855,22 +1908,41 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'بازار بسته است',
-				subheading:
-					'ثبت‌نام {when} دوباره آغاز می‌شود و {minutes} دقیقه، تا ساعت {closeTime}، باز می‌ماند.',
-				lotteryDescription:
-					'به دلیل محدود بودن اقلام، بازار برای انتخاب تصادفی خریداران هر هفته از سیستم قرعه‌کشی استفاده می‌کند. می‌توانید از هر جایی و در هر زمانی از بازه ۱۵ دقیقه‌ای روز شنبه، از ساعت ۱۰:۳۰ تا ۱۰:۴۵ صبح، برای قرعه‌کشی ثبت‌نام کنید. ثبت‌نام زودتر تأثیری بر شانس انتخاب شدن شما ندارد، بنابراین نیازی به عجله نیست.',
-				selectionDescription:
-					'قرعه‌کشی ساعت ۱۰:۴۵ صبح انجام می‌شود تا اگر انتخاب شدید، فرصت رسیدن به بازار را داشته باشید. اگر برای خرید انتخاب شوید، در همین برنامه یک شماره دریافت خواهید کرد و خرید از ساعت ۱۱:۳۰ صبح آغاز می‌شود. اگر با دریافت پیامک موافقت کرده باشید، از طریق پیامک نیز به شما اطلاع داده می‌شود.',
+				subheading: 'ثبت‌نام {when} دوباره آغاز می‌شود.',
+				scheduleHeading: 'هر شنبه',
+				steps: [
+					{
+						time: '۱۰:۳۰ صبح',
+						title: 'ثبت‌نام در برنامه',
+						body: 'از هر جایی و در هر زمانی تا ساعت ۱۰:۴۵ صبح. ثبت‌نام زودتر شانس شما را تغییر نمی‌دهد، بنابراین نیازی به عجله نیست.',
+					},
+					{
+						time: '۱۰:۴۵ صبح',
+						title: 'قرعه‌کشی',
+						body: 'اگر انتخاب شوید، در همین برنامه یک شماره دریافت می‌کنید، و اگر با دریافت پیامک موافقت کرده باشید، از طریق پیامک نیز.',
+					},
+					{
+						time: '۱۱:۳۰ صبح',
+						title: 'آغاز خرید',
+						body: 'فاصله میان قرعه‌کشی و خرید به شما فرصت می‌دهد تا به بازار برسید.',
+					},
+				],
+				supplyNote: 'اقلام محدود است، بنابراین هر هفته به همه شماره نمی‌رسد.',
+				addToCalendar: 'افزودن به تقویم',
+				calendarEventTitle: 'ثبت‌نام در بازار The Bay Compassion',
+				nextLabel: 'ثبت‌نام بعدی',
+				opensDated: '{relative} ساعت {time} آغاز می‌شود',
+				opensUndated: 'ساعت {time} آغاز می‌شود',
 			},
 			registrationClosedState: {
 				heading: 'ثبت‌نام بسته شده است',
 				description:
-					'متأسفیم؛ شما بازه ثبت‌نام امروز را از دست دادید. ثبت‌نام {when} دوباره آغاز می‌شود و همه کسانی که ثبت‌نام کنند شانس برابری در قرعه‌کشی دارند.',
+					'متأسفیم؛ شما بازه ثبت‌نام امروز را از دست دادید. ثبت‌نام {when} دوباره آغاز می‌شود.',
 			},
 			serviceState: {
 				inProgressHeading: 'بازار امروز در حال برگزاری است',
 				inProgressDescription:
-					'ثبت‌نام برای امروز بسته شده است. ثبت‌نام {when} دوباره آغاز می‌شود و {minutes} دقیقه، تا ساعت {closeTime}، باز می‌ماند. شانس همه کسانی که ثبت‌نام می‌کنند برابر است.',
+					'ثبت‌نام برای امروز بسته شده است. ثبت‌نام {when} دوباره آغاز می‌شود و {minutes} دقیقه، تا ساعت {closeTime}، باز می‌ماند.',
 			},
 			refreshNotice: {
 				countdown: 'به‌روزرسانی تا {seconds} ثانیه دیگر',
@@ -1998,7 +2070,7 @@ export const translations = {
 		help: {
 			title: 'چطور کار می‌کند',
 			introHeading: 'حالا قرعه‌کشی است، نه مسابقه.',
-			introBody: 'از هر جایی ثبت‌نام کنید. شانس همه برابر است.',
+			introBody: 'از هر جایی ثبت‌نام کنید. ثبت‌نام زودتر شانس شما را تغییر نمی‌دهد.',
 			stepsHeading: 'هر شنبه',
 			steps: [
 				{
@@ -2182,6 +2254,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'Manood ng Gabay para sa Bisita',
+				watchShort: 'Panoorin ang Gabay',
 				close: 'Isara ang gabay para sa bisita',
 				title: 'Gabay sa palengke para sa mga bisita',
 				heading: 'Ang iyong pagbisita sa The Bay Compassion',
@@ -2257,7 +2330,7 @@ export const translations = {
 					lottery: {
 						time: '10:45 AM',
 						title: 'Bubunutin ang lottery',
-						body: 'Pareho ang tsansa ng lahat. Ipapakita ng screen na ito kung may numero kayo. Hindi lahat may numero bawat linggo.',
+						body: 'Ipapakita ng screen na ito kung may numero kayo. Hindi lahat may numero bawat linggo.',
 					},
 					line: {
 						title: 'Ang puwesto ninyo sa pila',
@@ -2356,7 +2429,6 @@ export const translations = {
 				heading: 'Nagbubukas ang pagpaparehistro tuwing Sabado nang 10:30 AM',
 				body: outdent`
 					Hindi pa bukas ang pagpaparehistro. Pakibalik sa Sabado nang 10:30 AM.
-					Magkakaroon ang lahat ng patas na pagkakataon na makasali sa lottery ng pila.
 				`,
 			},
 			nextRegistration: {
@@ -2367,22 +2439,42 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'Sarado ang Pamilihan',
-				subheading:
-					'Magbubukas muli ang pagpaparehistro {when} at mananatiling bukas nang {minutes} minuto, hanggang {closeTime}.',
-				lotteryDescription:
-					'Dahil limitado ang mga supply, gumagamit ang pamilihan ng sistema ng lottery upang random na pumili ng mga mamimili bawat linggo. Maaari kang magparehistro sa lottery kahit saan, anumang oras sa loob ng 15 minuto mula 10:30 AM hanggang 10:45 AM tuwing Sabado. Hindi naaapektuhan ng maagang pagpaparehistro ang iyong pagkakataong mapili, kaya hindi kailangang magmadali.',
-				selectionDescription:
-					'Gaganapin ang lottery nang 10:45 AM, kaya may oras kang pumunta sa pamilihan kung mapipili ka. Kung mapipili kang mamili, bibigyan ka ng numero dito sa app, at magsisimula ang pamimili nang 11:30 AM. Kung pumayag kang tumanggap ng mga text message, aabisuhan ka rin sa pamamagitan ng text message.',
+				subheading: 'Magbubukas muli ang pagpaparehistro {when}.',
+				scheduleHeading: 'Tuwing Sabado',
+				steps: [
+					{
+						time: '10:30 AM',
+						title: 'Magparehistro sa App',
+						body: 'Kahit saan, anumang oras hanggang 10:45 AM. Hindi binabago ng maagang pagpaparehistro ang iyong pagkakataon, kaya hindi kailangang magmadali.',
+					},
+					{
+						time: '10:45 AM',
+						title: 'Bunutan ng Lottery',
+						body: 'Kung mapipili ka, bibigyan ka ng numero dito sa app, at sa text message kung pumayag kang tumanggap ng mga text.',
+					},
+					{
+						time: '11:30 AM',
+						title: 'Simula ng Pamimili',
+						body: 'Ang oras sa pagitan ng bunutan at pamimili ay para makapunta ka sa pamilihan.',
+					},
+				],
+				supplyNote:
+					'Limitado ang mga supply, kaya hindi lahat ay nakakakuha ng numero bawat linggo.',
+				addToCalendar: 'Idagdag sa Kalendaryo',
+				calendarEventTitle: 'Magparehistro sa pamilihan ng The Bay Compassion',
+				nextLabel: 'Susunod na Pagpaparehistro',
+				opensDated: 'Magbubukas {relative} nang {time}',
+				opensUndated: 'Magbubukas nang {time}',
 			},
 			registrationClosedState: {
 				heading: 'Sarado na ang pagpaparehistro',
 				description:
-					'Pasensya na po — hindi na kayo umabot sa oras ng pagpaparehistro ngayong araw. Muling magbubukas ang pagpaparehistro {when}, at pantay ang pagkakataon sa lottery ng lahat ng magpaparehistro.',
+					'Pasensya na po — hindi na kayo umabot sa oras ng pagpaparehistro ngayong araw. Muling magbubukas ang pagpaparehistro {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'Kasalukuyang nagaganap ang pamilihan ngayon',
 				inProgressDescription:
-					'Sarado na ang pagpaparehistro para ngayong araw. Magbubukas muli ang pagpaparehistro {when} at mananatiling bukas nang {minutes} minuto, hanggang {closeTime}. Pareho ang tsansa ng lahat ng magsa-sign up.',
+					'Sarado na ang pagpaparehistro para ngayong araw. Magbubukas muli ang pagpaparehistro {when} at mananatiling bukas nang {minutes} minuto, hanggang {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'Mag-a-update sa loob ng {seconds}s',
@@ -2513,7 +2605,7 @@ export const translations = {
 		help: {
 			title: 'Paano ito gumagana',
 			introHeading: 'Lottery na ito, hindi paunahan.',
-			introBody: 'Mag-sign up kahit saan. Pareho ang tsansa ng lahat.',
+			introBody: 'Mag-sign up kahit saan. Hindi nababago ng maagang pag-sign up ang iyong tsansa.',
 			stepsHeading: 'Tuwing Sabado',
 			steps: [
 				{
@@ -2695,6 +2787,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'Xem hướng dẫn dành cho khách',
+				watchShort: 'Xem hướng dẫn',
 				close: 'Đóng hướng dẫn dành cho khách',
 				title: 'Hướng dẫn chợ dành cho khách',
 				heading: 'Lần ghé thăm The Bay Compassion của bạn',
@@ -2770,7 +2863,7 @@ export const translations = {
 					lottery: {
 						time: '10:45 sáng',
 						title: 'Xổ số',
-						body: 'Ai cũng có cơ hội như nhau. Màn hình này cho biết bạn có số hay không. Không phải ai cũng có số mỗi tuần.',
+						body: 'Màn hình này cho biết bạn có số hay không. Không phải ai cũng có số mỗi tuần.',
 					},
 					line: {
 						title: 'Vị trí của bạn trong hàng',
@@ -2866,7 +2959,6 @@ export const translations = {
 				heading: 'Đăng ký mở vào mỗi thứ Bảy lúc 10:30 sáng',
 				body: outdent`
 					Việc đăng ký chưa mở. Vui lòng quay lại vào thứ Bảy lúc 10:30 sáng.
-					Mọi người đều có cơ hội công bằng để tham gia bốc thăm vào hàng đợi.
 				`,
 			},
 			nextRegistration: {
@@ -2877,21 +2969,41 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'Chợ hiện đang đóng cửa',
-				subheading: 'Đăng ký sẽ mở lại {when} và kéo dài {minutes} phút, đến {closeTime}.',
-				lotteryDescription:
-					'Do nguồn cung có hạn, chợ sử dụng hệ thống xổ số để chọn ngẫu nhiên người mua sắm mỗi tuần. Bạn có thể đăng ký tham gia xổ số từ bất cứ đâu, vào bất kỳ lúc nào trong 15 phút từ 10:30 đến 10:45 sáng thứ Bảy. Đăng ký sớm không làm tăng cơ hội được chọn, vì vậy bạn không cần vội.',
-				selectionDescription:
-					'Xổ số sẽ diễn ra lúc 10:45 sáng, để bạn có thời gian đến chợ nếu được chọn. Nếu được chọn để mua sắm, bạn sẽ nhận được một số thứ tự ngay trong ứng dụng, và giờ mua sắm bắt đầu lúc 11:30 sáng. Nếu đồng ý nhận tin nhắn văn bản, bạn cũng sẽ được thông báo qua tin nhắn.',
+				subheading: 'Đăng ký sẽ mở lại {when}.',
+				scheduleHeading: 'Mỗi thứ Bảy',
+				steps: [
+					{
+						time: '10:30 sáng',
+						title: 'Đăng ký trong ứng dụng',
+						body: 'Từ bất cứ đâu, vào bất kỳ lúc nào trước 10:45 sáng. Đăng ký sớm không làm thay đổi cơ hội của bạn, vì vậy bạn không cần vội.',
+					},
+					{
+						time: '10:45 sáng',
+						title: 'Xổ số',
+						body: 'Nếu được chọn, bạn sẽ nhận được một số thứ tự ngay trong ứng dụng, và qua tin nhắn nếu bạn đã đồng ý nhận tin nhắn.',
+					},
+					{
+						time: '11:30 sáng',
+						title: 'Bắt đầu mua sắm',
+						body: 'Khoảng thời gian giữa xổ số và giờ mua sắm giúp bạn kịp đến chợ.',
+					},
+				],
+				supplyNote: 'Nguồn cung có hạn, nên không phải ai cũng nhận được số mỗi tuần.',
+				addToCalendar: 'Thêm vào lịch',
+				calendarEventTitle: 'Đăng ký chợ The Bay Compassion',
+				nextLabel: 'Lần đăng ký tiếp theo',
+				opensDated: 'Mở {relative} lúc {time}',
+				opensUndated: 'Mở lúc {time}',
 			},
 			registrationClosedState: {
 				heading: 'Đăng ký đã đóng',
 				description:
-					'Chúng tôi rất tiếc — bạn đã lỡ khung giờ đăng ký hôm nay. Đăng ký sẽ mở lại {when}, và mọi người đăng ký đều có cơ hội như nhau trong đợt xổ số.',
+					'Chúng tôi rất tiếc — bạn đã lỡ khung giờ đăng ký hôm nay. Đăng ký sẽ mở lại {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'Phiên chợ hôm nay đang diễn ra',
 				inProgressDescription:
-					'Đăng ký đã đóng cho hôm nay. Đăng ký sẽ mở lại {when} và kéo dài {minutes} phút, đến {closeTime}. Ai đăng ký cũng có cơ hội như nhau.',
+					'Đăng ký đã đóng cho hôm nay. Đăng ký sẽ mở lại {when} và kéo dài {minutes} phút, đến {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'Cập nhật sau {seconds} giây',
@@ -3018,7 +3130,7 @@ export const translations = {
 		help: {
 			title: 'Cách thức hoạt động',
 			introHeading: 'Giờ là xổ số, không phải chạy đua.',
-			introBody: 'Đăng ký từ bất cứ đâu. Ai cũng có cơ hội như nhau.',
+			introBody: 'Đăng ký từ bất cứ đâu. Đăng ký sớm không làm thay đổi cơ hội của bạn.',
 			stepsHeading: 'Mỗi thứ Bảy',
 			steps: [
 				{
@@ -3195,6 +3307,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: '观看访客指南',
+				watchShort: '观看指南',
 				close: '关闭访客指南',
 				title: '访客食品市场指南',
 				heading: '您在 The Bay Compassion 的到访',
@@ -3269,7 +3382,7 @@ export const translations = {
 					lottery: {
 						time: '上午 10:45',
 						title: '抽签开始',
-						body: '每个人机会均等。此屏幕会显示您是否抽中号码。并非每个人每周都能抽中。',
+						body: '此屏幕会显示您是否抽中号码。并非每个人每周都能抽中。',
 					},
 					line: {
 						title: '您的排队位置',
@@ -3363,7 +3476,6 @@ export const translations = {
 				heading: '登记每周六上午 10:30 开放',
 				body: outdent`
 					登记尚未开放。请于周六上午 10:30 再次访问。
-					每个人都将有公平的机会参加排队抽签。
 				`,
 			},
 			nextRegistration: {
@@ -3374,21 +3486,36 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: '市场已关闭',
-				subheading: '登记将于{when}再次开放，持续 {minutes} 分钟，至 {closeTime}。',
-				lotteryDescription:
-					'由于物资有限，市场每周通过抽签随机选出购物者。您可以在周六上午 10:30 至 10:45 的 15 分钟内，随时随地登记参加抽签。提前登记不会增加被选中的机会，因此无需着急。',
-				selectionDescription:
-					'抽签将于上午 10:45 进行，如果您获选，还有时间前往市场。如果您获选购物，应用中会显示您的号码，购物从上午 11:30 开始。如果您同意接收短信，也会收到短信通知。',
+				subheading: '登记将于{when}再次开放。',
+				scheduleHeading: '每周六',
+				steps: [
+					{
+						time: '上午 10:30',
+						title: '在应用中登记',
+						body: '随时随地登记，截至上午 10:45。提前登记不会改变您的机会，因此无需着急。',
+					},
+					{
+						time: '上午 10:45',
+						title: '抽签',
+						body: '如果您获选，应用中会显示您的号码；如果您同意接收短信，也会收到短信通知。',
+					},
+					{ time: '上午 11:30', title: '开始购物', body: '抽签与购物之间的时间，方便您前往市场。' },
+				],
+				supplyNote: '由于物资有限，并非每个人每周都能获得号码。',
+				addToCalendar: '添加到日历',
+				calendarEventTitle: '登记 The Bay Compassion 市场',
+				nextLabel: '下次登记',
+				opensDated: '{relative} {time} 开放',
+				opensUndated: '{time} 开放',
 			},
 			registrationClosedState: {
 				heading: '登记已结束',
-				description:
-					'很抱歉，您错过了今天的登记时段。登记将于{when}重新开放，所有登记的人在抽签中机会均等。',
+				description: '很抱歉，您错过了今天的登记时段。登记将于{when}重新开放。',
 			},
 			serviceState: {
 				inProgressHeading: '今天的市场正在进行中',
 				inProgressDescription:
-					'今天的登记已关闭。登记将于{when}再次开放，持续 {minutes} 分钟，至 {closeTime}。每位登记的人机会均等。',
+					'今天的登记已关闭。登记将于{when}再次开放，持续 {minutes} 分钟，至 {closeTime}。',
 			},
 			refreshNotice: {
 				countdown: '{seconds} 秒后更新',
@@ -3509,7 +3636,7 @@ export const translations = {
 		help: {
 			title: '使用说明',
 			introHeading: '现在是抽签，不是抢先。',
-			introBody: '随时随地都能登记，每个人机会均等。',
+			introBody: '随时随地都能登记，提前登记不会改变您的机会。',
 			stepsHeading: '每周六',
 			steps: [
 				{
@@ -3684,6 +3811,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'شاهد دليل الضيوف',
+				watchShort: 'شاهد الدليل',
 				close: 'إغلاق دليل الضيوف',
 				title: 'دليل السوق للضيوف',
 				heading: 'زيارتك إلى The Bay Compassion',
@@ -3759,7 +3887,7 @@ export const translations = {
 					lottery: {
 						time: '10:45 صباحًا',
 						title: 'تُجرى القرعة',
-						body: 'للجميع الفرصة نفسها. تعرض هذه الشاشة إن حصلت على رقم. لا يحصل الجميع على رقم كل أسبوع.',
+						body: 'تعرض هذه الشاشة إن حصلت على رقم. لا يحصل الجميع على رقم كل أسبوع.',
 					},
 					line: {
 						title: 'مكانك في الطابور',
@@ -3853,7 +3981,6 @@ export const translations = {
 				heading: 'يُفتح التسجيل كل يوم سبت الساعة 10:30 صباحًا',
 				body: outdent`
 					التسجيل لم يُفتح بعد. يرجى العودة يوم السبت الساعة 10:30 صباحًا.
-					سيحصل الجميع على فرصة عادلة للدخول في قرعة قائمة الانتظار.
 				`,
 			},
 			nextRegistration: {
@@ -3864,21 +3991,40 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'السوق مغلق',
-				subheading: 'سيفتح التسجيل مجددًا {when} ويستمر {minutes} دقيقة، حتى الساعة {closeTime}.',
-				lotteryDescription:
-					'نظرًا لمحدودية الإمدادات، يستخدم السوق نظام القرعة لاختيار المتسوقين عشوائيًا كل أسبوع. يمكنك التسجيل في القرعة من أي مكان وفي أي وقت خلال الدقائق الخمس عشرة من 10:30 إلى 10:45 صباحًا يوم السبت. لا يؤثر التسجيل المبكر في فرص اختيارك، لذلك لا داعي للعجلة.',
-				selectionDescription:
-					'ستُجرى القرعة الساعة 10:45 صباحًا، ليتسنى لك الوقت للوصول إلى السوق إذا تم اختيارك. إذا تم اختيارك للتسوق، فسيظهر لك رقم هنا في التطبيق، ويبدأ التسوق الساعة 11:30 صباحًا. وإذا وافقت على تلقي الرسائل النصية، فسيتم إخطارك أيضًا برسالة نصية.',
+				subheading: 'سيفتح التسجيل مجددًا {when}.',
+				scheduleHeading: 'كل يوم سبت',
+				steps: [
+					{
+						time: '10:30 صباحًا',
+						title: 'سجّل في التطبيق',
+						body: 'من أي مكان وفي أي وقت حتى الساعة 10:45 صباحًا. التسجيل المبكر لا يغيّر فرصك، لذلك لا داعي للعجلة.',
+					},
+					{
+						time: '10:45 صباحًا',
+						title: 'سحب القرعة',
+						body: 'إذا تم اختيارك، فسيظهر لك رقم هنا في التطبيق، وبرسالة نصية إذا وافقت على تلقي الرسائل.',
+					},
+					{
+						time: '11:30 صباحًا',
+						title: 'بدء التسوق',
+						body: 'الوقت بين القرعة والتسوق يتيح لك الوصول إلى السوق.',
+					},
+				],
+				supplyNote: 'الإمدادات محدودة، لذلك لا يحصل الجميع على رقم كل أسبوع.',
+				addToCalendar: 'أضف إلى التقويم',
+				calendarEventTitle: 'التسجيل في سوق The Bay Compassion',
+				nextLabel: 'التسجيل القادم',
+				opensDated: 'يفتح {relative} الساعة {time}',
+				opensUndated: 'يفتح الساعة {time}',
 			},
 			registrationClosedState: {
 				heading: 'أُغلق التسجيل',
-				description:
-					'نأسف — لقد فاتتك فترة التسجيل اليوم. سيُفتح التسجيل مرة أخرى {when}، ولكل من يسجّل فرصة متساوية في القرعة.',
+				description: 'نأسف — لقد فاتتك فترة التسجيل اليوم. سيُفتح التسجيل مرة أخرى {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'سوق اليوم جارٍ الآن',
 				inProgressDescription:
-					'أُغلق التسجيل لهذا اليوم. سيفتح التسجيل مجددًا {when} ويستمر {minutes} دقيقة، حتى الساعة {closeTime}. لكل من يسجّل الفرصة نفسها.',
+					'أُغلق التسجيل لهذا اليوم. سيفتح التسجيل مجددًا {when} ويستمر {minutes} دقيقة، حتى الساعة {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'التحديث خلال {seconds} ثانية',
@@ -4005,7 +4151,7 @@ export const translations = {
 		help: {
 			title: 'كيف يعمل',
 			introHeading: 'أصبحت قرعة، لا سباقًا.',
-			introBody: 'سجّل من أي مكان. للجميع الفرصة نفسها.',
+			introBody: 'سجّل من أي مكان. التسجيل المبكر لا يغيّر فرصك.',
 			stepsHeading: 'كل يوم سبت',
 			steps: [
 				{
@@ -4187,6 +4333,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'Voir le guide des visiteurs',
+				watchShort: 'Voir le guide',
 				close: 'Fermer le guide des visiteurs',
 				title: 'Guide du marché pour les visiteurs',
 				heading: 'Votre visite à The Bay Compassion',
@@ -4262,7 +4409,7 @@ export const translations = {
 					lottery: {
 						time: '10 h 45',
 						title: 'Le tirage au sort',
-						body: 'Chacun a la même chance. Cet écran indique si vous avez obtenu un numéro. Tout le monde n’en a pas chaque semaine.',
+						body: 'Cet écran indique si vous avez obtenu un numéro. Tout le monde n’en a pas chaque semaine.',
 					},
 					line: {
 						title: 'Votre place dans la file',
@@ -4360,7 +4507,6 @@ export const translations = {
 				heading: 'Les inscriptions ouvrent chaque samedi à 10 h 30',
 				body: outdent`
 					Les inscriptions ne sont pas encore ouvertes. Veuillez revenir samedi à 10 h 30.
-					Tout le monde aura une chance égale de participer au tirage au sort de la file.
 				`,
 			},
 			nextRegistration: {
@@ -4371,22 +4517,42 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'Le marché est fermé',
-				subheading:
-					'Les inscriptions rouvriront {when} et resteront ouvertes {minutes} minutes, jusqu’à {closeTime}.',
-				lotteryDescription:
-					'Les provisions étant limitées, le marché utilise un tirage au sort pour choisir les personnes qui peuvent faire leurs courses chaque semaine. Vous pouvez vous inscrire au tirage au sort d’où vous voulez, à tout moment pendant les 15 minutes de 10 h 30 à 10 h 45, le samedi. S’inscrire tôt n’augmente pas vos chances d’être choisi, il n’est donc pas nécessaire de vous presser.',
-				selectionDescription:
-					'Le tirage au sort aura lieu à 10 h 45, ce qui vous laisse le temps de venir au marché si vous êtes choisi. Si vous êtes choisi, vous recevrez un numéro ici, dans l’application, et les courses commencent à 11 h 30. Si vous acceptez de recevoir des SMS, vous serez également prévenu par SMS.',
+				subheading: 'Les inscriptions rouvriront {when}.',
+				scheduleHeading: 'Tous les samedis',
+				steps: [
+					{
+						time: '10 h 30',
+						title: 'Inscrivez-vous dans l’application',
+						body: 'D’où vous voulez, à tout moment jusqu’à 10 h 45. S’inscrire tôt ne change pas vos chances, inutile donc de vous presser.',
+					},
+					{
+						time: '10 h 45',
+						title: 'Tirage au sort',
+						body: 'Si vous êtes choisi, vous recevez un numéro ici, dans l’application, et par SMS si vous avez accepté les SMS.',
+					},
+					{
+						time: '11 h 30',
+						title: 'Début des courses',
+						body: 'Le temps entre le tirage et les courses vous permet de venir au marché.',
+					},
+				],
+				supplyNote:
+					'Les provisions sont limitées : tout le monde ne reçoit pas un numéro chaque semaine.',
+				addToCalendar: 'Ajouter au calendrier',
+				calendarEventTitle: 'S’inscrire au marché de The Bay Compassion',
+				nextLabel: 'Prochaines inscriptions',
+				opensDated: 'Ouverture {relative} à {time}',
+				opensUndated: 'Ouverture à {time}',
 			},
 			registrationClosedState: {
 				heading: 'Les inscriptions sont closes',
 				description:
-					'Désolés — vous avez manqué le créneau d’inscription d’aujourd’hui. Les inscriptions rouvrent {when}, et chaque personne inscrite a la même chance au tirage au sort.',
+					'Désolés — vous avez manqué le créneau d’inscription d’aujourd’hui. Les inscriptions rouvrent {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'Le marché d’aujourd’hui est en cours',
 				inProgressDescription:
-					'Les inscriptions sont closes pour aujourd’hui. Les inscriptions rouvriront {when} et resteront ouvertes {minutes} minutes, jusqu’à {closeTime}. Toutes les personnes inscrites ont la même chance.',
+					'Les inscriptions sont closes pour aujourd’hui. Les inscriptions rouvriront {when} et resteront ouvertes {minutes} minutes, jusqu’à {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'Mise à jour dans {seconds} s',
@@ -4519,7 +4685,7 @@ export const translations = {
 		help: {
 			title: 'Comment ça marche',
 			introHeading: 'C’est un tirage au sort, pas une course.',
-			introBody: 'Inscrivez-vous d’où vous voulez. Chacun a la même chance.',
+			introBody: 'Inscrivez-vous d’où vous voulez. S’inscrire tôt ne change pas vos chances.',
 			stepsHeading: 'Tous les samedis',
 			steps: [
 				{
@@ -4702,6 +4868,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'Ver o guia para visitantes',
+				watchShort: 'Ver o guia',
 				close: 'Fechar o guia para visitantes',
 				title: 'Guia do mercado para visitantes',
 				heading: 'Sua visita à The Bay Compassion',
@@ -4777,7 +4944,7 @@ export const translations = {
 					lottery: {
 						time: '10h45',
 						title: 'Realização do sorteio',
-						body: 'Todos têm a mesma chance. Esta tela mostra se você recebeu um número. Nem todos recebem um número a cada semana.',
+						body: 'Esta tela mostra se você recebeu um número. Nem todos recebem um número a cada semana.',
 					},
 					line: {
 						title: 'Seu lugar na fila',
@@ -4873,7 +5040,7 @@ export const translations = {
 			},
 			scheduleInformation: {
 				heading: 'As inscrições abrem todo sábado às 10h30',
-				body: 'As inscrições ainda não estão abertas. Volte no sábado às 10h30.\nTodos terão uma chance justa de participar do sorteio para entrar na fila.',
+				body: 'As inscrições ainda não estão abertas. Volte no sábado às 10h30.',
 			},
 			nextRegistration: {
 				today: 'hoje às {time}',
@@ -4883,22 +5050,41 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'O mercado está fechado',
-				subheading:
-					'As inscrições abrirão novamente {when} e ficarão abertas por {minutes} minutos, até as {closeTime}.',
-				lotteryDescription:
-					'Como os alimentos são limitados, o mercado usa um sorteio para selecionar aleatoriamente quem poderá fazer compras a cada semana. Você pode se inscrever de qualquer lugar, a qualquer momento durante os 15 minutos entre 10h30 e 10h45 de sábado. Inscrever-se mais cedo não altera suas chances de ser selecionado, então não precisa ter pressa.',
-				selectionDescription:
-					'O sorteio será realizado às 10h45, dando tempo para ir ao mercado se você for selecionado. Se for selecionado para fazer compras, receberá um número aqui no aplicativo, e as compras começam às 11h30. Se autorizar o recebimento de mensagens de texto, também será avisado por SMS.',
+				subheading: 'As inscrições abrirão novamente {when}.',
+				scheduleHeading: 'Todo sábado',
+				steps: [
+					{
+						time: '10h30',
+						title: 'Inscreva-se no aplicativo',
+						body: 'De qualquer lugar, a qualquer momento até 10h45. Inscrever-se mais cedo não muda suas chances, então não precisa ter pressa.',
+					},
+					{
+						time: '10h45',
+						title: 'Sorteio',
+						body: 'Se for selecionado, você recebe um número aqui no aplicativo, e por SMS se tiver autorizado mensagens de texto.',
+					},
+					{
+						time: '11h30',
+						title: 'Início das compras',
+						body: 'O tempo entre o sorteio e as compras permite que você chegue ao mercado.',
+					},
+				],
+				supplyNote: 'Os alimentos são limitados, então nem todos recebem um número a cada semana.',
+				addToCalendar: 'Adicionar à agenda',
+				calendarEventTitle: 'Inscrever-se no mercado da The Bay Compassion',
+				nextLabel: 'Próximas inscrições',
+				opensDated: 'Abre {relative} às {time}',
+				opensUndated: 'Abre às {time}',
 			},
 			registrationClosedState: {
 				heading: 'As inscrições foram encerradas',
 				description:
-					'Sentimos muito — você perdeu o horário de inscrição de hoje. As inscrições abrem novamente {when}, e todos os inscritos têm a mesma chance no sorteio.',
+					'Sentimos muito — você perdeu o horário de inscrição de hoje. As inscrições abrem novamente {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'O mercado de hoje está em andamento',
 				inProgressDescription:
-					'As inscrições de hoje estão encerradas. As inscrições abrirão novamente {when} e ficarão abertas por {minutes} minutos, até as {closeTime}. Todos que se inscrevem têm a mesma chance.',
+					'As inscrições de hoje estão encerradas. As inscrições abrirão novamente {when} e ficarão abertas por {minutes} minutos, até as {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'Atualização em {seconds}s',
@@ -5029,7 +5215,7 @@ export const translations = {
 		help: {
 			title: 'Como funciona',
 			introHeading: 'Agora é um sorteio, não uma corrida.',
-			introBody: 'Inscreva-se de qualquer lugar. Todos têm a mesma chance.',
+			introBody: 'Inscreva-se de qualquer lugar. Inscrever-se mais cedo não muda suas chances.',
 			stepsHeading: 'Todo sábado',
 			steps: [
 				{
@@ -5213,6 +5399,7 @@ export const translations = {
 			},
 			presentation: {
 				watch: 'Смотреть руководство для гостей',
+				watchShort: 'Смотреть руководство',
 				close: 'Закрыть руководство для гостей',
 				title: 'Руководство для посетителей рынка',
 				heading: 'Ваш визит в The Bay Compassion',
@@ -5288,7 +5475,7 @@ export const translations = {
 					lottery: {
 						time: '10:45',
 						title: 'Проведение жеребьёвки',
-						body: 'У всех одинаковые шансы. На этом экране будет видно, получили ли вы номер. Не все получают номер каждую неделю.',
+						body: 'На этом экране будет видно, получили ли вы номер. Не все получают номер каждую неделю.',
 					},
 					line: {
 						title: 'Ваше место в очереди',
@@ -5383,7 +5570,7 @@ export const translations = {
 			},
 			scheduleInformation: {
 				heading: 'Регистрация открывается каждую субботу в 10:30',
-				body: 'Регистрация ещё не открыта. Вернитесь в субботу в 10:30.\nУ всех будут равные шансы участвовать в жеребьёвке мест в очереди.',
+				body: 'Регистрация ещё не открыта. Вернитесь в субботу в 10:30.',
 			},
 			nextRegistration: {
 				today: 'сегодня в {time}',
@@ -5393,22 +5580,41 @@ export const translations = {
 			},
 			notOpenState: {
 				heading: 'Рынок закрыт',
-				subheading:
-					'Регистрация снова откроется {when} и продлится {minutes} минут, до {closeTime}.',
-				lotteryDescription:
-					'Запасы продуктов ограничены, поэтому каждую неделю рынок случайным образом выбирает покупателей с помощью жеребьёвки. Зарегистрироваться можно откуда угодно в течение 15 минут с 10:30 до 10:45 в субботу. Ранняя регистрация не влияет на шансы быть выбранным, поэтому торопиться не нужно.',
-				selectionDescription:
-					'Жеребьёвка пройдёт в 10:45, чтобы у выбранных участников было время добраться до рынка. Если вас выберут для покупок, вы получите номер здесь, в приложении. Покупки начнутся в 11:30. Если вы согласились получать SMS, мы также уведомим вас сообщением.',
+				subheading: 'Регистрация снова откроется {when}.',
+				scheduleHeading: 'Каждую субботу',
+				steps: [
+					{
+						time: '10:30',
+						title: 'Регистрация в приложении',
+						body: 'Откуда угодно, в любое время до 10:45. Ранняя регистрация не меняет ваши шансы, поэтому торопиться не нужно.',
+					},
+					{
+						time: '10:45',
+						title: 'Жеребьёвка',
+						body: 'Если вас выберут, вы получите номер здесь, в приложении, и по SMS, если вы согласились их получать.',
+					},
+					{
+						time: '11:30',
+						title: 'Начало покупок',
+						body: 'Время между жеребьёвкой и покупками позволяет добраться до рынка.',
+					},
+				],
+				supplyNote: 'Запасы ограничены, поэтому каждую неделю номер получают не все.',
+				addToCalendar: 'Добавить в календарь',
+				calendarEventTitle: 'Регистрация на рынок The Bay Compassion',
+				nextLabel: 'Следующая регистрация',
+				opensDated: 'Откроется {relative} в {time}',
+				opensUndated: 'Откроется в {time}',
 			},
 			registrationClosedState: {
 				heading: 'Регистрация закрыта',
 				description:
-					'К сожалению, вы пропустили сегодняшнюю регистрацию. Регистрация снова откроется {when}. У всех зарегистрированных равные шансы в жеребьёвке.',
+					'К сожалению, вы пропустили сегодняшнюю регистрацию. Регистрация снова откроется {when}.',
 			},
 			serviceState: {
 				inProgressHeading: 'Сегодняшний рынок уже работает',
 				inProgressDescription:
-					'Регистрация на сегодня закрыта. Регистрация снова откроется {when} и продлится {minutes} минут, до {closeTime}. У всех, кто зарегистрировался, одинаковые шансы.',
+					'Регистрация на сегодня закрыта. Регистрация снова откроется {when} и продлится {minutes} минут, до {closeTime}.',
 			},
 			refreshNotice: {
 				countdown: 'Обновление через {seconds} с',
@@ -5536,7 +5742,7 @@ export const translations = {
 		help: {
 			title: 'Как это работает',
 			introHeading: 'Теперь это жеребьёвка, а не гонка.',
-			introBody: 'Регистрируйтесь откуда угодно. У всех одинаковые шансы.',
+			introBody: 'Регистрируйтесь откуда угодно. Ранняя регистрация не меняет ваши шансы.',
 			stepsHeading: 'Каждую субботу',
 			steps: [
 				{
