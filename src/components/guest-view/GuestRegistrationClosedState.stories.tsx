@@ -35,10 +35,14 @@ export const RegistrationClosed: Story = {
 		).toBeInTheDocument();
 		// Undated, so nothing to put in a calendar.
 		await expect(canvas.queryByRole('link')).not.toBeInTheDocument();
+		// The guide is the closed market's offer, not this card's.
+		await expect(
+			canvas.queryByRole('button', { name: translations.en.guestView.presentation.watchShort }),
+		).not.toBeInTheDocument();
 	},
 };
 
-/** With the next session scheduled, the inset names its date and offers Add to Calendar. */
+/** With the next session scheduled, the card below names its date and offers Add to Calendar. */
 export const Dated: Story = {
 	render: () => (
 		<ScheduledInThreeDays>

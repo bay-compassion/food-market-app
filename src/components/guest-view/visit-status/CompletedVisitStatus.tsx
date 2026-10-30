@@ -10,6 +10,7 @@ import {
 	GuestStatusPanel,
 	type GuestStatusTone,
 	StatusBody,
+	StatusCardGroup,
 	StatusHeadline,
 } from '../status-card/GuestStatusPanel';
 import { NextRegistrationDetails } from '../status-card/NextRegistrationDetails';
@@ -34,8 +35,8 @@ const outcomeMarks: Record<
 
 /**
  * A visit that has reached an outcome. A guest who missed their call heads back to the check-in
- * desk, so they keep the ticket stamp for the worker there; every other outcome closes with when
- * registration next opens.
+ * desk, so they keep the ticket stamp for the worker there; every other outcome is followed by a
+ * card saying when registration next opens.
  */
 export const CompletedVisitStatus = observer(function CompletedVisitStatus({
 	status,
@@ -45,11 +46,22 @@ export const CompletedVisitStatus = observer(function CompletedVisitStatus({
 	const copy = useTranslation().guestView.visitStatus;
 	const { Icon, tone } = outcomeMarks[status];
 
-	return (
+	const panel = (
 		<GuestStatusPanel tone={tone} icon={<Icon />} heading={copy.labels[status]}>
 			<StatusHeadline>{copy[status].header}</StatusHeadline>
 			<StatusBody>{copy[status].details}</StatusBody>
-			{status === 'no_show' ? <VisitTicketStamp /> : <NextRegistrationDetails variant="inset" />}
+			{status === 'no_show' ? <VisitTicketStamp /> : null}
 		</GuestStatusPanel>
+	);
+
+	if (status === 'no_show') {
+		return panel;
+	}
+
+	return (
+		<StatusCardGroup>
+			{panel}
+			<NextRegistrationDetails variant="card" />
+		</StatusCardGroup>
 	);
 });

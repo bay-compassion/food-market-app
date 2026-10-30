@@ -42,10 +42,10 @@ export interface VisitStatusTranslations {
 	};
 	registered: {
 		header: string;
-		/** Heads when the lottery result arrives, the one thing a registered guest waits for. */
+		/** The draw and its time: the one thing a registered guest waits for. */
 		resultLabel: string;
 		resultTime: string;
-		resultWhere: string;
+		/** Where the result will appear, and that a text may follow. */
 		details: string;
 		returnInstructions: string;
 	};
@@ -921,10 +921,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'You’re in the Lottery',
-					resultLabel: 'Your Result',
-					resultTime: 'Today at 10:45 AM',
-					resultWhere: 'It will appear right here.',
-					details: 'If you signed up for text updates, we’ll text you too.',
+					resultLabel: 'Lottery Draw',
+					resultTime: '10:45 AM',
+					details:
+						'We’ll show your result on this page after the draw. If you signed up for text updates, we’ll text you too.',
 					returnInstructions:
 						'If you close this page, scan the market QR code again on this phone to return.',
 				},
@@ -1463,10 +1463,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'Está participando en el sorteo',
-					resultLabel: 'Su resultado',
-					resultTime: 'Hoy a las 10:45 a. m.',
-					resultWhere: 'Aparecerá aquí mismo.',
-					details: 'Si activó los mensajes de texto, también le enviaremos un mensaje.',
+					resultLabel: 'Sorteo de la lotería',
+					resultTime: '10:45 a. m.',
+					details:
+						'Mostraremos su resultado en esta página después del sorteo. Si activó los mensajes de texto, también le enviaremos un mensaje.',
 					returnInstructions:
 						'Si cierra esta página, vuelva a escanear el código QR del mercado con este teléfono para regresar.',
 				},
@@ -1998,10 +1998,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'شما در قرعه‌کشی هستید',
-					resultLabel: 'نتیجه شما',
-					resultTime: 'امروز ساعت ۱۰:۴۵ صبح',
-					resultWhere: 'همین‌جا نمایش داده می‌شود.',
-					details: 'اگر دریافت پیامک را فعال کرده باشید، پیامک هم می‌فرستیم.',
+					resultLabel: 'قرعه‌کشی',
+					resultTime: '۱۰:۴۵ صبح',
+					details:
+						'نتیجه شما پس از قرعه‌کشی در همین صفحه نمایش داده می‌شود. اگر دریافت پیامک را فعال کرده باشید، پیامک هم می‌فرستیم.',
 					returnInstructions:
 						'اگر این صفحه را بستید، برای بازگشت کد QR بازار را دوباره با همین تلفن اسکن کنید.',
 				},
@@ -2539,10 +2539,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'Kasali na kayo sa lottery',
-					resultLabel: 'Ang inyong resulta',
-					resultTime: 'Ngayong araw nang 10:45 AM',
-					resultWhere: 'Lalabas ito mismo rito.',
-					details: 'Kung nag-sign up kayo para sa mga update sa text, magte-text din kami sa inyo.',
+					resultLabel: 'Bunutan ng Lottery',
+					resultTime: '10:45 AM',
+					details:
+						'Ipapakita namin ang inyong resulta sa pahinang ito pagkatapos ng bunutan. Kung nag-sign up kayo para sa mga update sa text, magte-text din kami sa inyo.',
 					returnInstructions:
 						'Kung isasara mo ang pahinang ito, i-scan muli ang QR code ng market gamit ang teleponong ito para makabalik.',
 				},
@@ -3075,10 +3075,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'Bạn đã tham gia xổ số',
-					resultLabel: 'Kết quả của bạn',
-					resultTime: 'Hôm nay lúc 10:45 sáng',
-					resultWhere: 'Kết quả sẽ hiện ngay tại đây.',
-					details: 'Nếu bạn đã đăng ký nhận tin nhắn cập nhật, chúng tôi cũng sẽ nhắn tin cho bạn.',
+					resultLabel: 'Xổ số',
+					resultTime: '10:45 sáng',
+					details:
+						'Chúng tôi sẽ hiển thị kết quả của bạn trên trang này sau khi xổ số. Nếu bạn đã đăng ký nhận tin nhắn cập nhật, chúng tôi cũng sẽ nhắn tin cho bạn.',
 					returnInstructions:
 						'Nếu bạn đóng trang này, hãy quét lại mã QR của chợ bằng điện thoại này để quay lại.',
 				},
@@ -3595,10 +3595,10 @@ export const translations = {
 				},
 				registered: {
 					header: '您已参加抽签',
-					resultLabel: '您的结果',
-					resultTime: '今天上午10:45',
-					resultWhere: '结果会显示在这里。',
-					details: '如果您已开通短信更新，我们也会向您发送短信。',
+					resultLabel: '抽签',
+					resultTime: '上午10:45',
+					details:
+						'抽签结束后，您的结果会显示在此页面上。如果您已开通短信更新，我们也会向您发送短信。',
 					returnInstructions: '如果您关闭了此页面，请用这部手机再次扫描市场的二维码，即可返回。',
 				},
 				waiting: {
@@ -4111,10 +4111,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'أنت مشارك في السحب',
-					resultLabel: 'نتيجتك',
-					resultTime: 'اليوم الساعة 10:45 صباحًا',
-					resultWhere: 'ستظهر هنا مباشرة.',
-					details: 'إذا اشتركت في التحديثات بالرسائل النصية، فسنرسل إليك رسالة أيضًا.',
+					resultLabel: 'سحب القرعة',
+					resultTime: '10:45 صباحًا',
+					details:
+						'سنعرض نتيجتك في هذه الصفحة بعد السحب. إذا اشتركت في التحديثات بالرسائل النصية، فسنرسل إليك رسالة أيضًا.',
 					returnInstructions:
 						'إذا أغلقت هذه الصفحة، فامسح رمز QR الخاص بالسوق مرة أخرى بهذا الهاتف للعودة.',
 				},
@@ -4648,11 +4648,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'Vous participez au tirage au sort',
-					resultLabel: 'Votre résultat',
-					resultTime: 'Aujourd’hui à 10 h 45',
-					resultWhere: 'Il s’affichera ici même.',
+					resultLabel: 'Tirage au sort',
+					resultTime: '10 h 45',
 					details:
-						'Si vous avez activé les mises à jour par SMS, nous vous enverrons aussi un message.',
+						'Votre résultat s’affichera sur cette page après le tirage. Si vous avez activé les mises à jour par SMS, nous vous enverrons aussi un message.',
 					returnInstructions:
 						'Si vous fermez cette page, scannez à nouveau le code QR du marché avec ce téléphone pour revenir.',
 				},
@@ -5190,10 +5189,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'Você está no sorteio',
-					resultLabel: 'Seu resultado',
-					resultTime: 'Hoje às 10h45',
-					resultWhere: 'Ele aparecerá aqui mesmo.',
-					details: 'Se você ativou as atualizações por SMS, também enviaremos uma mensagem.',
+					resultLabel: 'Sorteio',
+					resultTime: '10h45',
+					details:
+						'Mostraremos seu resultado nesta página depois do sorteio. Se você ativou as atualizações por SMS, também enviaremos uma mensagem.',
 					returnInstructions:
 						'Se você fechar esta página, escaneie novamente o código QR do mercado com este telefone para voltar.',
 				},
@@ -5727,10 +5726,10 @@ export const translations = {
 				},
 				registered: {
 					header: 'Вы участвуете в жеребьёвке',
-					resultLabel: 'Ваш результат',
-					resultTime: 'Сегодня в 10:45',
-					resultWhere: 'Он появится прямо здесь.',
-					details: 'Если вы подключили СМС-уведомления, мы также отправим вам сообщение.',
+					resultLabel: 'Жеребьёвка',
+					resultTime: '10:45',
+					details:
+						'Результат появится на этой странице после жеребьёвки. Если вы подключили СМС-уведомления, мы также отправим вам сообщение.',
 					returnInstructions:
 						'Если вы закроете эту страницу, снова отсканируйте QR-код рынка этим телефоном, чтобы вернуться.',
 				},

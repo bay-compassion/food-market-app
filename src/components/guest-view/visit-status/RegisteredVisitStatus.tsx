@@ -34,11 +34,7 @@ const ReturnHint = styled.p`
 export function RegisteredVisitStatus({ copy }: { copy: VisitStatusTranslations }) {
 	return (
 		<GuestStatusPanel tone="brand" icon={<CheckIcon />} heading={copy.registered.header}>
-			<StatusFact
-				label={copy.registered.resultLabel}
-				value={copy.registered.resultTime}
-				note={copy.registered.resultWhere}
-			/>
+			<StatusFact label={copy.registered.resultLabel} value={copy.registered.resultTime} />
 			<StatusBody>{copy.registered.details}</StatusBody>
 			<ReturnHint>
 				<InfoIcon aria-hidden="true" />

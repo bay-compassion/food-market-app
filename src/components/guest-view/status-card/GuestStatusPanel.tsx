@@ -47,7 +47,7 @@ const Panel = styled.section<{ $tone: GuestStatusTone }>`
 	grid-template-columns: minmax(0, 1fr);
 	gap: 12px;
 	justify-items: start;
-	padding: 20px;
+	padding: 14px 20px 20px;
 	border-radius: var(--radius-md);
 	background: ${({ $tone }) => tones[$tone].surface};
 
@@ -102,6 +102,12 @@ export const StatusActions = styled.div`
 	gap: 8px;
 	justify-self: stretch;
 	margin-top: 4px;
+`;
+
+/** A status card and the card that follows it, set closer than the screen's other sections. */
+export const StatusCardGroup = styled.div`
+	display: grid;
+	gap: 12px;
 `;
 
 export type GuestStatusPanelProps = {
