@@ -5,6 +5,7 @@ const t = adminTranslations.en;
 
 /** Each screen's name, as the navigation lists it and its title reads. */
 export const adminViewLabels: Record<AdminView, string> = {
+	checklist: t.checklist.title,
 	'current-session': t.currentSession,
 	queue: t.queue,
 	broadcast: t.broadcastTitle,

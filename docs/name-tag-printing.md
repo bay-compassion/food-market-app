@@ -13,7 +13,7 @@ guest. To check a sticker, find the guest on the queue desk's list at `/queue` o
 Queue tab, where each guest shows the code their tag carries, and compare. Four hex characters
 aren't unique on their own, but among one day's visits they narrow a sticker to one.
 
-The dashboard's Current Session screen has a **Printing Station** card with the setup steps below,
+The dashboard's Checklist screen has a **Printing Station** card with the setup steps below,
 the launch command to copy, a button that opens `/printing-station`, and whether a station is
 checking in right now. Sign in to the dashboard on the station's computer and open it from there —
 not from a phone: whatever device has the page open becomes the station and takes the tags.

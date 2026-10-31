@@ -328,9 +328,43 @@ export interface AdminTranslation {
 	queueDesk: QueueDeskTranslation;
 	kioskUnlock: KioskUnlockTranslation;
 	printStationCard: PrintStationCardTranslation;
+	checklist: ChecklistTranslation;
 }
 
-/** The dashboard's card on setting up the `/printing-station` computer at the market. */
+/** The Checklist screen: what has to be done by hand, outside the app, before a session. */
+export interface ChecklistTranslation {
+	title: string;
+	roomDisplay: {
+		title: string;
+		/** Where at the market this step happens. */
+		place: string;
+		/** Each step, in order. */
+		steps: string[];
+		addressLabel: string;
+		getCode: string;
+	};
+	checkIn: {
+		title: string;
+		place: string;
+		/** After the printing station is running: the queue desk, in a window of its own. */
+		queueDeskTitle: string;
+		queueDesk: string;
+		queueDeskAddressLabel: string;
+		openQueueDesk: string;
+	};
+	session: {
+		title: string;
+		place: string;
+		/** `{opens}` is when registration opens, `{capacity}` how many guests it admits. */
+		scheduled: string;
+		/** The session has already started its day: registration is open or past it. */
+		underway: string;
+		missing: string;
+		openSchedule: string;
+	};
+}
+
+/** The Checklist's card on setting up the `/printing-station` computer at the market. */
 export interface PrintStationCardTranslation {
 	title: string;
 	online: string;
@@ -523,6 +557,7 @@ export const adminTranslations = {
 		admitToQueueHelp:
 			'The guest skips the lottery and goes straight into the line. This uses one of the session’s spots.',
 		viewDescriptions: {
+			checklist: 'What to set up at the market by hand before a session begins.',
 			'current-session': 'Open registration, draw the lottery, and follow today’s service.',
 			queue: 'Call guests forward and record who has been served.',
 			broadcast: 'Send one message to every guest who turned on notifications.',
@@ -1025,6 +1060,38 @@ export const adminTranslations = {
 			account:
 				'Sign in on that computer with the print-station account, which can print tags but not change the queue.',
 			guide: 'Full setup guide',
+		},
+		checklist: {
+			title: 'Checklist',
+			roomDisplay: {
+				title: 'Room Display',
+				place: 'In the auditorium',
+				steps: [
+					'On the display’s computer, open a browser window at the address below.',
+					'If the display asks for a code, get one here and type it in. It then stays unlocked for about six months.',
+					'Make the page fullscreen, and turn off the computer’s sleep and screen saver.',
+				],
+				addressLabel: 'Address',
+				getCode: 'Get an Unlock Code',
+			},
+			checkIn: {
+				title: 'Check-In Computer',
+				place: 'At the entrance',
+				queueDeskTitle: 'Queue Desk',
+				queueDesk:
+					'Once the printing station is running, open your usual Chrome — not the printing station’s window — sign in with your own account, and go to the queue desk. Check guests in from there, and leave the printing station’s window open behind it.',
+				queueDeskAddressLabel: 'Address',
+				openQueueDesk: 'Open Queue Desk',
+			},
+			session: {
+				title: 'Market Session',
+				place: 'In the app',
+				scheduled: 'Scheduled. Registration opens {opens}, for {capacity} guests.',
+				underway: 'Today’s session is underway.',
+				missing:
+					'No session is scheduled. One is usually added on its own when the last one ends; add it from the schedule if not.',
+				openSchedule: 'Open Schedule',
+			},
 		},
 	},
 } satisfies Record<'en', AdminTranslation>;

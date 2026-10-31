@@ -50,11 +50,11 @@ function Fixture(args: PrintStationCardArgs) {
 }
 
 /**
- * On the Current Session screen: how to set up the computer the label printer is plugged into,
+ * The check-in computer's step on the Checklist screen: how to set up the computer the label printer is plugged into,
  * the way to open its page, and whether it is checking in right now.
  */
 const meta = {
-	title: 'Admin/Current Session/Printing Station',
+	title: 'Admin/Checklist/Printing Station',
 	component: Fixture,
 	parameters: { shell: 'admin' },
 	argTypes: { station: { control: 'inline-radio', options: ['online', 'offline', 'unknown'] } },

@@ -25,14 +25,18 @@ const Card = styled.section`
 		gap: 12px;
 	}
 
-	h2,
 	h3,
+	h4,
 	p,
 	ol {
 		margin: 0;
 	}
 
 	h3 {
+		font-size: 18px;
+	}
+
+	h4 {
 		font-size: 16px;
 	}
 
@@ -106,8 +110,9 @@ const Card = styled.section`
 
 /**
  * How to set up the computer the label printer is plugged into, the way to open its page, and
- * whether it is checking in right now. A coordinator typically signs in to the dashboard on that
- * computer first and opens the station from here. The station itself shows the launch command too;
+ * whether it is checking in right now: the check-in computer's step on the Checklist screen. A
+ * coordinator typically signs in to the dashboard on that computer first and opens the station
+ * from here. The station itself shows the launch command too;
  * this is where a coordinator finds it before that computer is running anything.
  *
  * Whatever device opens the station becomes it and takes the tags, so the hint under the button
@@ -142,9 +147,9 @@ export const PrintStationCard = observer(function PrintStationCard() {
 	}
 
 	return (
-		<Card className="admin-section print-station-card">
+		<Card className="print-station-card">
 			<div className="heading">
-				<h2>{t.title}</h2>
+				<h3>{t.title}</h3>
 				{online === null ? null : (
 					<span className="status" data-online={online} role="status">
 						{online ? t.online : t.offline}
@@ -157,7 +162,7 @@ export const PrintStationCard = observer(function PrintStationCard() {
 			</Button>
 			<p className="open-hint">{t.openHint}</p>
 
-			<h3>{t.setupTitle}</h3>
+			<h4>{t.setupTitle}</h4>
 			<ol>
 				{t.steps.map((step) => (
 					<li key={step}>{step}</li>
