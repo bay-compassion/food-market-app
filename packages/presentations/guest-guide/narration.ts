@@ -134,6 +134,12 @@ export const lines: NarrationLine[] = [
 		text: 'If the market is already underway, registration has closed for the day. It opens again next Saturday at ten thirty, and everyone who signs up has the same chance.',
 	},
 	{
+		id: 'feedback',
+		chapter: 'feedback',
+		pause: 1.0,
+		text: 'To share feedback about the app, open the three-dot menu at the top right and tap Send feedback. Write your message, then tap Send. Your name is optional.',
+	},
+	{
 		id: 'help',
 		chapter: 'help',
 		pause: 1.0,

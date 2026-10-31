@@ -172,6 +172,7 @@ export interface GuestPresentationTranslations {
 	stepByStepHint: string;
 	/** Chapter titles, keyed by the `chapter` field on the narration line each one starts at. */
 	chapters: GuestPresentationChapters;
+	feedbackInstructions: string;
 }
 
 /**
@@ -189,6 +190,7 @@ export interface GuestPresentationChapters {
 	runningLate: string;
 	complete: string;
 	missedSignUp: string;
+	feedback: string;
 	help: string;
 }
 
@@ -705,6 +707,8 @@ export const translations = {
 				nextChapter: 'Next chapter',
 				stepByStep: 'Step by step',
 				stepByStepHint: 'Pause at the end of each chapter',
+				feedbackInstructions:
+					'Open the three-dot menu, tap “Send feedback,” write your message, then tap “Send.” Your name is optional.',
 				chapters: {
 					welcome: 'Welcome',
 					openPage: 'Open the market page',
@@ -717,6 +721,7 @@ export const translations = {
 					runningLate: 'Running late',
 					complete: 'Visit complete',
 					missedSignUp: 'If you missed sign-up',
+					feedback: 'Send Feedback',
 					help: 'Getting help',
 				},
 			},
@@ -1243,6 +1248,8 @@ export const translations = {
 				nextChapter: 'Capítulo siguiente',
 				stepByStep: 'Paso a paso',
 				stepByStepHint: 'Pausar al final de cada capítulo',
+				feedbackInstructions:
+					'Abre el menú de tres puntos, toca «Enviar comentarios», escribe tu mensaje y toca «Enviar». Tu nombre es opcional.',
 				chapters: {
 					welcome: 'Bienvenida',
 					openPage: 'Abra la página del mercado',
@@ -1255,6 +1262,7 @@ export const translations = {
 					runningLate: 'Si llega tarde',
 					complete: 'Visita completada',
 					missedSignUp: 'Si no alcanzó a registrarse',
+					feedback: 'Enviar comentarios',
 					help: 'Cómo pedir ayuda',
 				},
 			},
@@ -1785,6 +1793,8 @@ export const translations = {
 				nextChapter: 'بخش بعدی',
 				stepByStep: 'گام به گام',
 				stepByStepHint: 'توقف در پایان هر بخش',
+				feedbackInstructions:
+					'منوی سه‌نقطه را باز کنید، روی «ارسال بازخورد» بزنید، پیام خود را بنویسید و سپس روی «ارسال» بزنید. وارد کردن نام اختیاری است.',
 				chapters: {
 					welcome: 'خوش آمدید',
 					openPage: 'صفحهٔ بازارچه را باز کنید',
@@ -1797,6 +1807,7 @@ export const translations = {
 					runningLate: 'اگر دیر می‌رسید',
 					complete: 'پایان مراجعه',
 					missedSignUp: 'اگر ثبت‌نام را از دست دادید',
+					feedback: 'ارسال بازخورد',
 					help: 'دریافت کمک',
 				},
 			},
@@ -2319,6 +2330,8 @@ export const translations = {
 				nextChapter: 'Susunod na kabanata',
 				stepByStep: 'Hakbang-hakbang',
 				stepByStepHint: 'Huminto sa dulo ng bawat kabanata',
+				feedbackInstructions:
+					'Buksan ang menu na may tatlong tuldok, i-tap ang “Magpadala ng puna,” isulat ang mensahe, at i-tap ang “Ipadala.” Opsyonal ang pangalan.',
 				chapters: {
 					welcome: 'Maligayang pagdating',
 					openPage: 'Buksan ang pahina ng market',
@@ -2331,6 +2344,7 @@ export const translations = {
 					runningLate: 'Kung mahuhuli kayo',
 					complete: 'Tapos na ang pagbisita',
 					missedSignUp: 'Kung hindi kayo nakapagparehistro',
+					feedback: 'Magpadala ng Puna',
 					help: 'Paghingi ng tulong',
 				},
 			},
@@ -2860,6 +2874,8 @@ export const translations = {
 				nextChapter: 'Chương tiếp theo',
 				stepByStep: 'Từng bước',
 				stepByStepHint: 'Tạm dừng ở cuối mỗi chương',
+				feedbackInstructions:
+					'Mở menu ba chấm, nhấn “Gửi góp ý”, viết tin nhắn rồi nhấn “Gửi”. Bạn không bắt buộc phải điền tên.',
 				chapters: {
 					welcome: 'Chào mừng',
 					openPage: 'Mở trang chợ',
@@ -2872,6 +2888,7 @@ export const translations = {
 					runningLate: 'Nếu bạn đến trễ',
 					complete: 'Hoàn tất lượt đến',
 					missedSignUp: 'Nếu bạn lỡ thời gian đăng ký',
+					feedback: 'Gửi góp ý',
 					help: 'Nhờ giúp đỡ',
 				},
 			},
@@ -3387,6 +3404,8 @@ export const translations = {
 				nextChapter: '下一章',
 				stepByStep: '分步播放',
 				stepByStepHint: '每章结束时暂停',
+				feedbackInstructions:
+					'打开三点菜单，点击“发送反馈”，填写意见，然后点击“发送”。姓名为选填。',
 				chapters: {
 					welcome: '欢迎',
 					openPage: '打开市集页面',
@@ -3399,6 +3418,7 @@ export const translations = {
 					runningLate: '如果您晚到',
 					complete: '到访完成',
 					missedSignUp: '如果错过了登记',
+					feedback: '发送反馈',
 					help: '获取帮助',
 				},
 			},
@@ -3899,6 +3919,8 @@ export const translations = {
 				nextChapter: 'الفصل التالي',
 				stepByStep: 'خطوة بخطوة',
 				stepByStepHint: 'التوقف عند نهاية كل فصل',
+				feedbackInstructions:
+					'افتح قائمة النقاط الثلاث، واضغط على «إرسال ملاحظات»، واكتب رسالتك، ثم اضغط على «إرسال». الاسم اختياري.',
 				chapters: {
 					welcome: 'مرحبًا بك',
 					openPage: 'افتح صفحة السوق',
@@ -3911,6 +3933,7 @@ export const translations = {
 					runningLate: 'إذا تأخرت',
 					complete: 'اكتملت زيارتك',
 					missedSignUp: 'إذا فاتك التسجيل',
+					feedback: 'إرسال ملاحظات',
 					help: 'طلب المساعدة',
 				},
 			},
@@ -4429,6 +4452,8 @@ export const translations = {
 				nextChapter: 'Chapitre suivant',
 				stepByStep: 'Pas à pas',
 				stepByStepHint: 'Mettre en pause à la fin de chaque chapitre',
+				feedbackInstructions:
+					'Ouvrez le menu à trois points, appuyez sur « Envoyer un commentaire », écrivez votre message, puis appuyez sur « Envoyer ». Votre nom est facultatif.',
 				chapters: {
 					welcome: 'Bienvenue',
 					openPage: 'Ouvrir la page du marché',
@@ -4441,6 +4466,7 @@ export const translations = {
 					runningLate: 'En cas de retard',
 					complete: 'Visite terminée',
 					missedSignUp: 'Si vous avez manqué l’inscription',
+					feedback: 'Envoyer un commentaire',
 					help: 'Obtenir de l’aide',
 				},
 			},
@@ -4973,6 +4999,8 @@ export const translations = {
 				nextChapter: 'Próximo capítulo',
 				stepByStep: 'Passo a passo',
 				stepByStepHint: 'Pausar ao final de cada capítulo',
+				feedbackInstructions:
+					'Abra o menu de três pontos, toque em “Enviar comentário”, escreva sua mensagem e toque em “Enviar”. Seu nome é opcional.',
 				chapters: {
 					welcome: 'Boas-vindas',
 					openPage: 'Abrir a página do mercado',
@@ -4985,6 +5013,7 @@ export const translations = {
 					runningLate: 'Em caso de atraso',
 					complete: 'Visita concluída',
 					missedSignUp: 'Se você perdeu a inscrição',
+					feedback: 'Enviar comentário',
 					help: 'Como obter ajuda',
 				},
 			},
@@ -5512,6 +5541,8 @@ export const translations = {
 				nextChapter: 'Следующая глава',
 				stepByStep: 'Шаг за шагом',
 				stepByStepHint: 'Пауза в конце каждой главы',
+				feedbackInstructions:
+					'Откройте меню с тремя точками, нажмите «Отправить отзыв», напишите сообщение и нажмите «Отправить». Имя указывать необязательно.',
 				chapters: {
 					welcome: 'Добро пожаловать',
 					openPage: 'Откройте страницу рынка',
@@ -5524,6 +5555,7 @@ export const translations = {
 					runningLate: 'Если вы опаздываете',
 					complete: 'Визит завершён',
 					missedSignUp: 'Если вы пропустили регистрацию',
+					feedback: 'Отправить отзыв',
 					help: 'Как получить помощь',
 				},
 			},

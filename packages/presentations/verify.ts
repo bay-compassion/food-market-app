@@ -850,6 +850,22 @@ void (async () => {
 
 				for (const cue of cues) {
 					await seek(cue.t + cue.duration * 0.9);
+
+					if (cue.id === 'feedback') {
+						const frame = guest.frameLocator('#guestPhone iframe');
+
+						assert.equal(
+							await frame
+								.getByRole('menuitem', {
+									name: translations[code].appBar.sendFeedback,
+									exact: true,
+								})
+								.count(),
+							1,
+							`${width}px/${code}: the feedback menu item is shown`,
+						);
+					}
+
 					const overflow = await guest.evaluate(() => {
 						const rect = (selector: string) =>
 							document.querySelector(selector)!.getBoundingClientRect();
@@ -906,6 +922,7 @@ void (async () => {
 				'missed',
 				'finished',
 				'missedWindow',
+				'feedback',
 				'help',
 			]) {
 				const cue = cues.find((cue) => cue.id === id)!;
@@ -945,6 +962,7 @@ void (async () => {
 				'called',
 				'late',
 				'missed',
+				'feedback',
 				'help',
 			],
 			stills,

@@ -303,7 +303,7 @@ market page to check-in. It uses the queue desk guide's Heart voice, speed, loud
 and Moving Pictures arrangement, with every visual cue placed from measured clip lengths.
 The approximately three-minute presentation includes closed registration, the form, explicit text
 message consent, both lottery outcomes, the number and Now calling row, the room display, a call,
-a yellow late-arrival reminder, “We missed you,” completed check-in, and the help page.
+a yellow late-arrival reminder, “We missed you,” completed check-in, sending feedback from the app menu, and the help page.
 Maya Rivera and Amal Haddad are fictional guests; Amal illustrates not being selected, while Maya
 illustrates a selected visit. Luis Herrera shows the returning-guest form. The guide never presents not-selected as a step on the way to selection.
 
@@ -322,6 +322,7 @@ Instruction sources (check these when changing the script):
 | Open the market page, choose a language, Saturday schedule, original phone and no screenshots | `HelpPage`, `GuestLanguageHero`, `help` and `guestView.tour` translations             |
 | Closed, registration closed, market underway                                                  | `GuestView`, `GuestNotOpenState`, `GuestRegistrationClosedState`, `GuestServiceState` |
 | Identity when needed, household details each visit, Join the lottery                          | `GuestCombinedForm`, `GuestInformationForm`, `GuestLotteryForm`, `RegistrationStore`  |
+| Feedback from the three-dot menu, optional name, message and Send                             | `AppBarMenu`, `src/sentry-feedback.ts`, `appBar.feedbackForm`                         |
 | Explicit optional text consent                                                                | `NotificationOptIn`, `GuestIdentityCard`, `GuestStore`                                |
 | Confirmation, result, ticket number, Now calling, automatic updates                           | `GuestVisitStatus`, `RegisteredVisitStatus`, `WaitingVisitStatus`, `VisitStore`       |
 | Check-in, warmth after three minutes, full yellow at ten, missed call, complete               | `CalledVisitStatus`, `LateArrival`, `CompletedVisitStatus`, `guestView.visitStatus`   |
