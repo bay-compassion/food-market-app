@@ -122,7 +122,8 @@ function useStepCopy(id: GuestTourStepId) {
 		body: step.body
 			.replace('{submit}', t.submit)
 			.replace('{action}', t.guestView.identityIndicator.notificationsAction)
-			.replace('{help}', t.help.title),
+			.replace('{help}', t.help.title)
+			.replace('{feedback}', t.appBar.sendFeedback),
 	};
 }
 

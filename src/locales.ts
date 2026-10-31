@@ -109,7 +109,8 @@ export interface GuestTourStepTranslations {
 /**
  * The guided tour a first-time guest is offered after choosing a language, replayable from the
  * menu. A step's `body` may name another control by its own label: `{submit}` is the form's submit
- * button, `{action}` the text-updates button, and `{help}` the help page.
+ * button, `{action}` the text-updates button, `{help}` the help page, and `{feedback}` the menu's
+ * feedback item.
  */
 export interface GuestTourTranslations {
 	/** `{current}` and `{total}` are step numbers. */
@@ -133,6 +134,7 @@ export interface GuestTourTranslations {
 		line: GuestTourStepTranslations;
 		turn: GuestTourStepTranslations;
 		help: GuestTourStepTranslations;
+		feedback: GuestTourStepTranslations;
 		replay: GuestTourStepTranslations;
 	};
 }
@@ -774,6 +776,10 @@ export const translations = {
 						title: 'Need a reminder?',
 						body: '“{help}” has every step.',
 					},
+					feedback: {
+						title: 'Tell us what you think',
+						body: 'Have an idea, or did something go wrong? Tap “{feedback}” in this menu. Your name is optional.',
+					},
 					replay: {
 						title: 'See this again',
 						body: 'You can take this tour again anytime from this menu.',
@@ -1315,6 +1321,10 @@ export const translations = {
 					help: {
 						title: '¿Necesita recordarlo?',
 						body: '“{help}” tiene todos los pasos.',
+					},
+					feedback: {
+						title: 'Díganos qué piensa',
+						body: '¿Tiene una idea o algo salió mal? Toque “{feedback}” en este menú. Su nombre es opcional.',
 					},
 					replay: {
 						title: 'Véalo de nuevo',
@@ -1860,6 +1870,10 @@ export const translations = {
 						title: 'یادآوری لازم دارید؟',
 						body: 'همه مراحل در «{help}» هست.',
 					},
+					feedback: {
+						title: 'نظرتان را بگویید',
+						body: 'ایده‌ای دارید یا مشکلی پیش آمد؟ در این منو روی «{feedback}» بزنید. نوشتن نام اختیاری است.',
+					},
 					replay: {
 						title: 'دوباره ببینید',
 						body: 'هر زمان خواستید می‌توانید این راهنما را از همین منو دوباره ببینید.',
@@ -2396,6 +2410,10 @@ export const translations = {
 					help: {
 						title: 'Kailangan ng paalala?',
 						body: 'Nasa “{help}” ang bawat hakbang.',
+					},
+					feedback: {
+						title: 'Sabihin sa amin ang inyong opinyon',
+						body: 'May ideya ba kayo, o may nagkaproblema? I-tap ang “{feedback}” sa menu na ito. Opsyonal ang pangalan.',
 					},
 					replay: {
 						title: 'Panoorin muli',
@@ -2941,6 +2959,10 @@ export const translations = {
 						title: 'Cần nhắc lại?',
 						body: '“{help}” có đầy đủ các bước.',
 					},
+					feedback: {
+						title: 'Cho chúng tôi biết ý kiến của bạn',
+						body: 'Bạn có ý tưởng, hay có điều gì không ổn? Nhấn “{feedback}” trong trình đơn này. Bạn không bắt buộc phải điền tên.',
+					},
 					replay: {
 						title: 'Xem lại',
 						body: 'Bạn có thể xem lại hướng dẫn này bất cứ lúc nào từ trình đơn này.',
@@ -3471,6 +3493,10 @@ export const translations = {
 						title: '需要回顾？',
 						body: '“{help}”里有每一个步骤。',
 					},
+					feedback: {
+						title: '告诉我们您的想法',
+						body: '有建议，或者遇到了问题？在这个菜单中点按“{feedback}”。姓名可以不填。',
+					},
 					replay: {
 						title: '再看一次',
 						body: '您随时可以从这个菜单再次查看本导览。',
@@ -3985,6 +4011,10 @@ export const translations = {
 					help: {
 						title: 'تحتاج إلى تذكير؟',
 						body: 'في «{help}» كل الخطوات.',
+					},
+					feedback: {
+						title: 'أخبرنا برأيك',
+						body: 'هل لديك فكرة، أو حدثت مشكلة؟ اضغط على «{feedback}» في هذه القائمة. كتابة الاسم اختيارية.',
 					},
 					replay: {
 						title: 'شاهدها مرة أخرى',
@@ -4518,6 +4548,10 @@ export const translations = {
 					help: {
 						title: 'Besoin d’un rappel ?',
 						body: '« {help} » reprend toutes les étapes.',
+					},
+					feedback: {
+						title: 'Donnez-nous votre avis',
+						body: 'Vous avez une idée, ou quelque chose ne fonctionne pas ? Appuyez sur « {feedback} » dans ce menu. Votre nom est facultatif.',
 					},
 					replay: {
 						title: 'Revoir la visite',
@@ -5066,6 +5100,10 @@ export const translations = {
 						title: 'Precisa relembrar?',
 						body: '“{help}” tem todas as etapas.',
 					},
+					feedback: {
+						title: 'Diga o que você acha',
+						body: 'Tem uma ideia ou algo deu errado? Toque em “{feedback}” neste menu. O nome é opcional.',
+					},
 					replay: {
 						title: 'Veja novamente',
 						body: 'Você pode ver este guia novamente a qualquer momento por este menu.',
@@ -5607,6 +5645,10 @@ export const translations = {
 					help: {
 						title: 'Нужно напоминание?',
 						body: 'В разделе «{help}» описаны все шаги.',
+					},
+					feedback: {
+						title: 'Поделитесь мнением',
+						body: 'Есть идея или что-то пошло не так? Нажмите «{feedback}» в этом меню. Имя указывать не обязательно.',
 					},
 					replay: {
 						title: 'Посмотрите ещё раз',
