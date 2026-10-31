@@ -362,6 +362,19 @@ export class PhoneDevice implements PhoneHandle {
 			await this.texts(scene);
 		}
 
+		const menuButton = this.container.querySelector<HTMLElement>('[data-tour="menu"]');
+
+		if ((menuButton?.getAttribute('aria-expanded') === 'true') !== scene.menu) {
+			if (scene.menu) {
+				menuButton?.click();
+			} else {
+				document
+					.querySelector('[role="menu"]')
+					?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+			}
+			await this.commit();
+		}
+
 		const t = translations[scene.locale];
 
 		document.documentElement.lang = scene.locale;

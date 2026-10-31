@@ -60,6 +60,8 @@ export interface PhoneScene {
 	market: PhoneMarket;
 	visit: PhoneVisit | null;
 	texts: PhoneTexts;
+	/** The app bar menu is open to show where feedback is submitted. */
+	menu: boolean;
 	/** What the narration points at, by mark name (see `phone/marks.ts`). */
 	focus: string | null;
 	/** What a finger is on, by mark name. */

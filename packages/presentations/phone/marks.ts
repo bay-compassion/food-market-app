@@ -52,6 +52,14 @@ export function markTarget(mark: string, doc: Document, t: Translation): HTMLEle
 	}
 
 	switch (mark) {
+		case 'menu':
+			return doc.querySelector('[data-tour="menu"]');
+		case 'feedback':
+			return (
+				[...doc.querySelectorAll<HTMLElement>('[role="menuitem"]')].find(
+					(element) => element.textContent?.trim() === t.appBar.sendFeedback,
+				) ?? null
+			);
 		case 'languages':
 			return doc.querySelector('.language-list');
 		case 'timer':

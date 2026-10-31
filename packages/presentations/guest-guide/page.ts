@@ -47,6 +47,7 @@ type CaptionId =
 	| 'finished'
 	| 'missedWindow'
 	| 'underway'
+	| 'feedback'
 	| 'help';
 
 interface GuideGuest extends StageGuest {
@@ -71,6 +72,7 @@ interface GuideState {
 	returning: boolean;
 	/** The text-updates sheet is open. */
 	consent: boolean;
+	menu: boolean;
 	consentChecked: boolean;
 	texts: boolean;
 	registrationClosed: boolean;
@@ -147,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		tap: null,
 		returning: false,
 		consent: false,
+		menu: false,
 		consentChecked: false,
 		texts: false,
 		registrationClosed: false,
@@ -309,7 +312,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	scene('missedWindow', 'missed-window', 'missedWindow');
 	scene('underway', 'underway', 'underway');
+	scene('feedback', 'underway', 'feedback', 'menu');
+	tap(C('feedback', 0.25), 'menu', (s) => {
+		s.menu = true;
+		s.focus = 'feedback';
+	});
 	scene('help', 'help', 'help', 'help');
+	at(C('help'), (s) => {
+		s.menu = false;
+	});
 	at(E('help'), (s) => {
 		s.phone = false;
 		s.outro = true;
@@ -410,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				consented: s.texts,
 				sheet: s.consent ? (s.consentChecked ? 'checked' : 'open') : 'closed',
 			},
+			menu: s.menu,
 			focus: s.focus,
 			tap: s.tap === 'language-en' ? 'language-' + locale : s.tap,
 			scrollTo: s.focus ?? defaultScroll,
@@ -508,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				G.registrationClosedState.headline,
 				G.registrationClosedState.description,
 			],
+			feedback: [H.title, G.presentation.chapters.feedback, G.presentation.feedbackInstructions],
 			help: [H.title, T.help.title, T.help.body.replace('{help}', H.title)],
 		};
 		const [eyebrow, head, sub] = captions[id];

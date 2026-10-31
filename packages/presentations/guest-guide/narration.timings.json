@@ -20,7 +20,7 @@
     },
     "closed": {
       "text": "If the market is closed, come back on Saturday at ten thirty in the morning.",
-      "duration": 4.32
+      "duration": 4.31
     },
     "window": {
       "text": "Sign-up stays open for fifteen minutes. The timer shows how much time is left. There’s no need to rush. Signing up early doesn’t change your chances.",
@@ -88,7 +88,7 @@
     },
     "finished": {
       "text": "After check-in, your phone says Thank you for coming. Your visit is complete.",
-      "duration": 4.626
+      "duration": 4.627
     },
     "missedWindow": {
       "text": "If you missed sign-up, the page explains that registration has closed. Come back next Saturday at ten thirty.",
@@ -97,6 +97,10 @@
     "underway": {
       "text": "If the market is already underway, registration has closed for the day. It opens again next Saturday at ten thirty, and everyone who signs up has the same chance.",
       "duration": 10.484
+    },
+    "feedback": {
+      "text": "To share feedback about the app, open the three-dot menu at the top right and tap Send feedback. Write your message, then tap Send. Your name is optional.",
+      "duration": 9.834
     },
     "help": {
       "text": "Need a reminder? Tap How it works anytime. Thank you for being here.",
