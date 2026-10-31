@@ -1,6 +1,7 @@
 import type { Placement } from 'react-joyride';
 
 import type { GuestTourTranslations } from '../../../locales';
+import { isFeedbackEnabled } from '../../../sentry-feedback-trigger';
 
 export type GuestTourStepId = keyof GuestTourTranslations['steps'];
 
@@ -31,5 +32,9 @@ export const guestTourSteps: readonly GuestTourStepDefinition[] = [
 	{ id: 'line' },
 	{ id: 'turn' },
 	{ id: 'help', anchor: '[data-tour="help"]', fixed: true, placement: 'bottom' },
+	// Only in a build whose menu offers the feedback form.
+	...(isFeedbackEnabled
+		? [{ id: 'feedback', anchor: '[data-tour="menu"]', fixed: true, placement: 'bottom' } as const]
+		: []),
 	{ id: 'replay', anchor: '[data-tour="menu"]', fixed: true, placement: 'bottom' },
 ];
