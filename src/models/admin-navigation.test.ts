@@ -15,7 +15,7 @@ describe('AdminNavigation', () => {
 
 		// Assert
 		expect(sections).toEqual([
-			{ group: 'today', views: ['current-session', 'queue', 'broadcast'] },
+			{ group: 'today', views: ['checklist', 'current-session', 'queue', 'broadcast'] },
 			{ group: 'plan', views: ['schedule', 'question-bank'] },
 			{ group: 'records', views: ['guest-database', 'session-history', 'reports'] },
 			{ group: null, views: ['dev-mode'] },

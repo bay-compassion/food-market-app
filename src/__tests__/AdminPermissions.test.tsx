@@ -135,6 +135,7 @@ describe('admin navigation by permission', () => {
 		]);
 
 		expect(await navigationLabels(container)).toEqual([
+			t.checklist.title,
 			t.currentSession,
 			t.queue,
 			t.broadcastTitle,

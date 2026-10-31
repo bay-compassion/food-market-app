@@ -5,6 +5,7 @@ import type { Permission } from './permissions.ts';
  * follows this order never splits a group. AdminAuthView validates route parameters against this set.
  */
 export const adminViews = [
+	'checklist',
 	'current-session',
 	'queue',
 	'broadcast',
@@ -29,6 +30,7 @@ export function isAdminView(value: unknown): value is AdminView {
  * should not be in the navigation at all.
  */
 export const viewPermissions: Record<AdminView, Permission> = {
+	checklist: 'manage:sessions',
 	'current-session': 'manage:sessions',
 	schedule: 'manage:sessions',
 	queue: 'run:queue',
@@ -56,6 +58,7 @@ export type AdminViewGroup = (typeof adminViewGroups)[number];
  * market, not part of running one, so it trails the list on its own.
  */
 export const adminViewGroup: Record<AdminView, AdminViewGroup | null> = {
+	checklist: 'today',
 	'current-session': 'today',
 	queue: 'today',
 	broadcast: 'today',

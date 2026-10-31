@@ -11,6 +11,7 @@ import { adminVisitStatusLabels } from '../services/visitStatusLabels';
 import type { MarketAction } from '../stores/admin.store';
 import { useRootStore } from '../stores/react/store-context';
 import { AdminDashboardLayout } from './admin/AdminDashboardLayout';
+import { ChecklistView } from './admin/ChecklistView';
 import { DevModeView } from './admin/DevModeView';
 import { GuestDatabaseView } from './admin/GuestDatabaseView';
 import { MarketActionPrompts } from './admin/market-action-prompts';
@@ -154,6 +155,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 					onNavigateQueue={() => navigate('queue')}
 					onNavigateSchedule={() => navigate('schedule')}
 				/>
+			) : activeView === 'checklist' ? (
+				<ChecklistView onNavigateSchedule={() => navigate('schedule')} />
 			) : activeView === 'schedule' ? (
 				<ScheduleView onNavigateSession={() => navigate('current-session')} />
 			) : activeView === 'queue' ? (
