@@ -2,11 +2,11 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: October 18, 2026
+Last Updated: October 31, 2026
 
 These Terms and Conditions ("Terms") govern your use of this food market guest sign-up app (the "App"), offered by The Bay Compassion ("The Bay Compassion," "we," "us," or "our"), a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. These Terms do not cover our other programs or our main website, thebaycompassion.org.
 
-By using the App, you agree to these Terms. If you do not agree, please do not use the App — you can still be served at a food market by signing up in person with a staff member. For information about how we collect and use your personal information, see our [Privacy Policy](/privacy).
+By using the App, you agree to these Terms. If you do not agree, please do not use the App on your own device. You can sign up in person with a staff member instead. For information about how we collect and use your personal information, see our [Privacy Policy](/privacy).
 
 ---
 
@@ -19,7 +19,8 @@ The App is open to any member of the community our food markets serve. If you ar
 ## 2. Guest Sign-Up and Queue
 
 - When you sign up, the App stores a random private credential in your browser to recognize later sign-ups from the same device. It also stores a separate visit credential to protect your place in the queue.
-- Signing up for a market does not guarantee service. Some markets use a lottery or capacity limit, and being signed up or placed in the queue does not guarantee you will be served that day.
+- Signing up for a market does not guarantee service. We decide who is selected and the order in which guests are served, and being signed up or placed in the queue does not guarantee you will be served that day.
+- We may limit sign-ups to one per household per market.
 - We may cancel, pause, or adjust sign-up, queue order, or service availability at any time, including due to weather, capacity, safety concerns, or operational needs.
 - Providing false or misleading information at sign-up, such as impersonating another guest, may result in removal from the queue or from future participation.
 
@@ -46,11 +47,13 @@ When using the App, you agree not to:
 
 We may suspend or remove your access to the App if we reasonably believe you have violated these Terms.
 
+If you send us feedback or suggestions, we may use them to improve the App without any obligation to you.
+
 ---
 
 ## 5. No Guarantee of Services
 
-The Bay Compassion is a nonprofit organization that depends on donations, grants, and volunteer support. While we work hard to serve every guest who signs up, we cannot guarantee the availability, quantity, or timing of food at any given market. The App is provided on an "as is" and "as available" basis, without warranties of any kind, to the fullest extent permitted by law.
+The Bay Compassion is a nonprofit organization that depends on donations, grants, and volunteer support. While we work hard to serve every guest who signs up, we cannot guarantee the availability, quantity, or timing of food at any given market. We may add, change, or remove features of the App at any time, and the features available may differ from one guest to another. The App is provided on an "as is" and "as available" basis, without warranties of any kind, to the fullest extent permitted by law.
 
 ---
 
