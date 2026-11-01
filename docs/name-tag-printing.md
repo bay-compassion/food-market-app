@@ -15,9 +15,9 @@ aren't unique on their own, but among one day's visits they narrow a sticker to 
 
 The dashboard's Checklist screen walks a volunteer through starting the station, as part B of its
 **Check-In** station: whether a station is checking in right now, which account signs in, and the
-market-day steps. On a market day an automation on the iMac starts the station, so the steps don't
-show the launch command. Folded under **When You Need It** at the bottom of the screen are what to
-do when it misbehaves; **Start Printing by Hand**, with the launch command to copy and how to run
+market-day steps. On a market day the [Check-In Launcher](#the-check-in-launcher) on the iMac starts
+the station, so the steps don't show the launch command. Folded under **When You Need It** at the
+bottom of the screen are what to do when it misbehaves; **Start Printing by Hand**, with the launch command to copy and how to run
 it in Terminal; and the one-time setup below, with its own first-time command that leaves out
 `--kiosk-printing`. Sign in to the dashboard on the station's computer and open it from there —
 not from a phone: whatever device has the page open becomes the station and takes the tags.
@@ -46,12 +46,49 @@ proportions, so changing labels means changing that one value.
 2. Load 30857 labels.
 3. Make the LabelWriter the computer's default printer.
 4. Start the print station's browser with the command below, but leave out `--kiosk-printing` (the
-   card's first-time command already does), and
-   print one tag through the dialog (send one from a phone). In that dialog, choose the LabelWriter,
-   pick the 30857 paper size, set the margins to none and the scale to 100%, and, if the dialog shows the printer's own
-   options, choose the roll the labels are on. Chrome saves these in the station's own profile.
-5. Quit the browser and start it again with the full command. From then on it prints with those
-   settings and no dialog.
+   card's first-time command already does), and print one tag through the dialog (send one from a
+   phone). In that dialog, choose the LabelWriter, pick the 30857 paper size, set the margins to none
+   and the scale to 100%, and, if the dialog shows the printer's own options, choose the roll the
+   labels are on. Chrome saves these in the station's own profile.
+5. Quit that browser and open the [Check-In Launcher](#the-check-in-launcher). From then on it prints
+   with those settings and no dialog.
+
+## The Check-In Launcher
+
+On a market day the check-in computer needs two Chrome windows: the print station, and the queue desk
+(`/queue`) in the iMac's everyday Chrome. **Check-In Launcher** is an Automator application that opens
+both, with no Terminal window. Double-click it, then sign in to each window if asked, with the shared
+check-in account (see [`roles.md`](roles.md#the-print-station)).
+
+- **It only opens production** (`app.thebaycompassion.org`). On a preview deploy, use the command below
+  and open `/queue` by hand. To point it elsewhere, change `site` in
+  [`check-in-launcher/launch.sh`](check-in-launcher/launch.sh) and rebuild.
+- **Clicking it again restarts the station.** It quits any running station Chrome and starts a fresh
+  one, so it fixes a station that went offline, closed its window, or was left over from first-time
+  setup. Phones see it offline for a few seconds, and a tag sent meanwhile prints when it's back. It
+  also opens the queue desk in another tab.
+
+It opens the queue desk with `open -na`, not `open -a`. With only the station running, `open -a` could
+hand the address to that instance, and the next click, which restarts the station, would close the
+queue desk with it. `open -na` with no `--user-data-dir` goes to the everyday profile, starting it if
+needed.
+
+### Building it
+
+The source is in [`check-in-launcher/`](check-in-launcher/): `launch.sh` is the script and
+`document.wflow` is the Automator workflow it goes into. On the check-in computer, from a checkout of
+this repo, run:
+
+```bash
+docs/check-in-launcher/build.sh
+```
+
+That puts `Check-In Launcher.app` on the Desktop. It needs nothing but macOS, and Automator can open the
+result if you want to look inside.
+
+Build it on the computer that will run it. The app is signed ad hoc, not with an Apple Developer ID, so
+a copy downloaded or sent from elsewhere is blocked by Gatekeeper the first time: after the warning, go
+to **System Settings → Privacy & Security** and choose **Open Anyway**.
 
 ## Printing without a dialog: the print station
 
@@ -62,8 +99,8 @@ tag** on a volunteer's phone sends the tag there, and says so under the button (
 print station"). If the station goes quiet, phones see it as offline within a few seconds and
 disable the button until it's back.
 
-The browser on that desktop has to be started for it. Quit it completely, then start it with (on a
-Mac; the page shows this command too):
+The browser on that desktop has to be started for it, which the
+[Check-In Launcher](#the-check-in-launcher) does. By hand, on a Mac (the page shows this command too):
 
 ```bash
 open -na "Google Chrome" --args --kiosk-printing --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --user-data-dir="$HOME/chrome-print-station" https://<your site>/printing-station
