@@ -92,6 +92,37 @@ describe('reports handler', () => {
 		expect(body).toContain('Ana');
 	});
 
+	it('leaves odds out of the export for anyone without read:stewardship', async () => {
+		// Arrange
+		vi.mocked(requirePermission)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(Response.json({ error: 'nope' }, { status: 403 }));
+		queueResult({ rows: [{ lottery_weight: 5, guest_first_name: 'Ana' }] });
+
+		// Act
+		const response = await handler(request('?view=export&from=2026-01-01&to=2026-08-08'));
+		const [headers, row] = (await response.text()).split('\r\n');
+
+		// Assert
+		expect(headers).not.toContain('lottery_weight');
+		expect(row).toContain('Ana');
+		expect(row?.split(',')).not.toContain('5');
+	});
+
+	it('keeps odds in the export for a steward', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+		queueResult({ rows: [{ lottery_weight: 5, guest_first_name: 'Ana' }] });
+
+		// Act
+		const response = await handler(request('?view=export&from=2026-01-01&to=2026-08-08'));
+		const [headers, row] = (await response.text()).split('\r\n');
+
+		// Assert
+		expect(headers).toContain('lottery_weight');
+		expect(row?.split(',')).toContain('5');
+	});
+
 	it('checks the range before deciding the export is what was asked for', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 

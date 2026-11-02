@@ -23,6 +23,7 @@ export type ReportsViewProps = {
 	getAccessToken: () => Promise<string>;
 	/** Whether this worker may download the export that names guests. */
 	canExport: boolean;
+	canSeeOdds?: boolean;
 };
 
 const Section = styled.section`
@@ -57,7 +58,7 @@ function download(blob: Blob, filename: string) {
  * because nothing else on the admin side reads or writes report data — keeping it here is what
  * stops the dashboard container from growing another five pieces of state.
  */
-export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
+export function ReportsView({ getAccessToken, canExport, canSeeOdds = false }: ReportsViewProps) {
 	const t = adminTranslations.en;
 	const { notifications } = useRootStore();
 	const isWide = useMediaQuery(wideLayoutQuery);
@@ -201,6 +202,7 @@ export function ReportsView({ getAccessToken, canExport }: ReportsViewProps) {
 				    mistyped is the moment you least want the inputs taken away from you. */}
 				<ReportFilters
 					selectedReport={selectedReport}
+					canSeeOdds={canSeeOdds}
 					onSelectedReportChange={setSelectedReport}
 					from={from}
 					onFromChange={setFrom}

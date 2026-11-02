@@ -6,6 +6,8 @@ import { ChoiceChips } from './ChoiceChips';
 
 export type ReportFiltersProps = {
 	selectedReport: ReportId;
+	/** Whether to offer the report by odds, which is for stewards. The server refuses it to others. */
+	canSeeOdds: boolean;
 	onSelectedReportChange: (report: ReportId) => void;
 	from: string;
 	onFromChange: (from: string) => void;
@@ -42,6 +44,7 @@ const Filters = styled.div`
 /** Which report to run, as a row of pills that are all in sight, and over what dates. */
 export function ReportFilters({
 	selectedReport,
+	canSeeOdds,
 	onSelectedReportChange,
 	from,
 	onFromChange,
@@ -54,7 +57,9 @@ export function ReportFilters({
 		<Filters className="report-filters">
 			<ChoiceChips
 				label={t.reports}
-				options={reportIds.map((id) => ({ value: id, label: t.reportNames[id] }))}
+				options={reportIds
+					.filter((id) => canSeeOdds || id !== 'lottery-outcomes')
+					.map((id) => ({ value: id, label: t.reportNames[id] }))}
 				value={selectedReport}
 				onChange={onSelectedReportChange}
 			/>
