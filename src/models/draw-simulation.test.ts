@@ -56,6 +56,32 @@ describe('DrawSimulation', () => {
 		expect(moved).toBeCloseTo(6);
 	});
 
+	it('estimates a person’s chance at a weight, counting them in the pool', () => {
+		// Arrange
+		const simulation = new DrawSimulation(tiers, 100);
+
+		// Act
+		const standard = simulation.chanceAt(1);
+		const highest = simulation.chanceAt(5);
+
+		// Assert
+		expect(highest).toBeGreaterThan(standard);
+		expect(highest).toBeGreaterThan(0.9);
+	});
+
+	it('tells a result within luck from one far outside it', () => {
+		// Arrange
+		const simulation = new DrawSimulation(tiers, 100);
+
+		// Act
+		const within = simulation.withinLuck([86, 9, 5], [84, 11, 5]);
+		const outside = simulation.withinLuck([60, 15, 5], [84, 11, 5]);
+
+		// Assert
+		expect(within).toBe(true);
+		expect(outside).toBe(false);
+	});
+
 	it('copes with an empty pool', () => {
 		// Arrange
 		const simulation = new DrawSimulation([], 100);

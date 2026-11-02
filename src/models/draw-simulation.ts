@@ -54,6 +54,31 @@ export class DrawSimulation {
 		return totals.map((total) => total / runs);
 	}
 
+	/** The chance a person holding `weight` gets a number, once they're counted in this pool. */
+	chanceAt(weight: number, runs = 400): number {
+		const tiers = this.tiers.some((tier) => tier.weight === weight)
+			? this.tiers.map((tier) =>
+					tier.weight === weight ? { ...tier, entries: tier.entries + 1 } : tier,
+				)
+			: [...this.tiers, { weight, entries: 1 }];
+		const simulation = new DrawSimulation(tiers, this.spots, this.random);
+		const index = tiers.findIndex((tier) => tier.weight === weight);
+
+		return (simulation.expectedPlaced(runs)[index] ?? 0) / (tiers[index]?.entries ?? 1);
+	}
+
+	/** Whether a real draw's counts sit within two usual swings of luck from what was expected. */
+	withinLuck(placed: readonly number[], expected: readonly number[]): boolean {
+		return this.tiers.every((tier, index) => {
+			const mean = expected[index] ?? 0;
+			const chance = tier.entries === 0 ? 0 : mean / tier.entries;
+			const spread = Math.sqrt(tier.entries * chance * (1 - chance));
+
+			// One extra place of slack, since small tiers can't land anywhere between whole numbers.
+			return Math.abs((placed[index] ?? 0) - mean) <= 2 * spread + 1;
+		});
+	}
+
 	/** The places raised entries gain over what even odds would give them. */
 	placesMoved(expected: readonly number[] = this.expectedPlaced()): number {
 		return this.tiers.reduce(
