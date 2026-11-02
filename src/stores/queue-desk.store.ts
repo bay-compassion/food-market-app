@@ -39,6 +39,7 @@ const defaultPollIntervalMs = 5_000;
 export class QueueDeskStore {
 	private _selectedVisitId: string | null = null;
 	private _isStarted = false;
+	private _isAddingGuest = false;
 	private readonly poller: PageVisibilityPoller;
 	private request: Promise<void> | null = null;
 	/** The open ticket's history, and which visit it belongs to — it outlives a switch of ticket. */
@@ -152,6 +153,24 @@ export class QueueDeskStore {
 	/** How a guest added by hand can enter the session as it stands now. */
 	get admissions(): ManualAdmission[] {
 		return this.session.currentState ? manualAdmissionsFor(this.session.currentStatus) : [];
+	}
+
+	/** Whether the session can take a guest added by hand right now. */
+	get canAddGuest(): boolean {
+		return this.admissions.length > 0;
+	}
+
+	/** Whether the add-guest dialog is up. Its way in differs by layout; there is one dialog. */
+	get isAddingGuest(): boolean {
+		return this.canAddGuest && this._isAddingGuest;
+	}
+
+	openAddGuest(): void {
+		this._isAddingGuest = true;
+	}
+
+	closeAddGuest(): void {
+		this._isAddingGuest = false;
 	}
 
 	get isBusy(): boolean {

@@ -496,6 +496,8 @@ export interface QueueDeskTranslation {
 	/** Names the arrow beside "return to back" that opens the other places. */
 	returnOptions: string;
 	addGuest: string;
+	/** Names the menu beside the call button on a phone. */
+	lineActions: string;
 	/** `{number}` is the queue position, `{name}` the guest's full name. */
 	openTicket: string;
 	ticket: string;
@@ -1028,6 +1030,7 @@ export const adminTranslations = {
 		devProgressHalfway: 'Halfway',
 		devProgressNearlyDone: 'Nearly done',
 		queueDesk: {
+			lineActions: 'More Line Actions',
 			title: 'Queue',
 			serving: 'Serving guests',
 			loading: 'Loading the queue…',
@@ -1049,7 +1052,7 @@ export const adminTranslations = {
 			returnToBack: 'Return to back of line',
 			returnToFront: 'Return to front of line',
 			returnOptions: 'Other places in line',
-			addGuest: 'Add guest',
+			addGuest: 'Add Guest',
 			openTicket: 'Open ticket {number}, {name}',
 			ticket: 'Ticket',
 			noTicketOpen: 'Choose a ticket, or call the next guest.',

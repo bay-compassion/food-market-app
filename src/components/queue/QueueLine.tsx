@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { wideLayoutQuery } from '../admin/admin-layout';
 import { AdminFeedbackBanner } from '../admin/AdminFeedbackBanner';
 import { GuestClaimDialog } from '../admin/GuestClaimDialog';
+import { QueueCallBarActions } from './QueueCallBarActions';
 import { QueueCallButton } from './QueueCallButton';
 import { QueueDeskHeader } from './QueueDeskHeader';
 import { QueueLists } from './QueueLists';
@@ -13,6 +14,7 @@ import { TicketSheet } from './TicketSheet';
 
 const Layout = styled.div`
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 12px;
 
 	.admin-feedback {
@@ -22,9 +24,9 @@ const Layout = styled.div`
 		background: var(--color-surface-soft);
 	}
 
-	/* Phone: one column, with room for the call bar and the Add Guest button above it. */
+	/* Phone: one column, with room for the call bar fixed along the bottom edge. */
 	&[data-layout='phone'] {
-		padding-bottom: calc(160px + env(safe-area-inset-bottom));
+		padding-bottom: calc(88px + env(safe-area-inset-bottom));
 	}
 
 	.call-bar {
@@ -38,6 +40,19 @@ const Layout = styled.div`
 		> * {
 			max-width: 480px;
 			margin-inline: auto;
+		}
+
+		/* The call button and, when there is one, the menu beside it. */
+		.call-actions {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+		}
+
+		.more-actions {
+			flex-shrink: 0;
+			width: 52px;
+			height: 52px;
 		}
 	}
 
@@ -96,7 +111,7 @@ export const QueueLine = observer(function QueueLine() {
 				<>
 					<QueueLists />
 					<div className="call-bar">
-						<QueueCallButton />
+						<QueueCallBarActions />
 					</div>
 					<TicketSheet />
 				</>

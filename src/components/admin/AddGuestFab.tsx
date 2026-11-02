@@ -10,16 +10,9 @@ const Floating = styled(Fab)`
 	bottom: calc(${tabBarHeight + 16}px + env(safe-area-inset-bottom));
 	gap: 6px;
 	text-transform: none;
-
-	/* The queue desk has no tabs, but its call bar runs along the same edge. */
-	&[data-above-call-bar='true'] {
-		bottom: calc(84px + env(safe-area-inset-bottom));
-	}
 `;
 
 export type AddGuestFabProps = {
-	/** Sits above the queue desk's call bar, rather than the dashboard's tabs. */
-	aboveCallBar?: boolean;
 	onClick: () => void;
 };
 
@@ -28,7 +21,7 @@ export type AddGuestFabProps = {
  * session's phase: people tap a floating button from habit, and the other actions on these screens
  * have consequences. What adding means in this phase is up to the form it opens.
  */
-export function AddGuestFab({ aboveCallBar = false, onClick }: AddGuestFabProps) {
+export function AddGuestFab({ onClick }: AddGuestFabProps) {
 	const t = adminTranslations.en;
 
 	return (
@@ -37,7 +30,6 @@ export function AddGuestFab({ aboveCallBar = false, onClick }: AddGuestFabProps)
 			className="add-guest-fab"
 			variant="extended"
 			color="primary"
-			data-above-call-bar={aboveCallBar}
 			onClick={onClick}
 		>
 			<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
