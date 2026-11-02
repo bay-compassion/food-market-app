@@ -22,7 +22,8 @@ test(
 			await admin.getByRole('button', { name: 'Until Changed' }).click();
 			await admin.getByRole('button', { name: 'Staff judgment' }).click();
 			await admin.getByRole('button', { name: 'Save Odds' }).click();
-			await expect(admin.getByText('Odds saved.')).toBeVisible();
+			// A toast hides itself, so the sheet closing is the steadier sign that the save finished.
+			await expect(admin.getByRole('dialog')).toBeHidden();
 			await admin.goto('/steward/draw');
 			await expect(admin.getByText('4 in the Draw, 3 Spots')).toBeVisible();
 		});
