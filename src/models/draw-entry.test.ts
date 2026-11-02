@@ -8,6 +8,7 @@ function entry(overrides: Partial<DrawEntryVisit>) {
 		source: 'self',
 		queuePosition: 4,
 		hasDrawEvent: true,
+		hasHistory: true,
 		...overrides,
 	});
 }
@@ -55,9 +56,17 @@ describe('DrawEntry', () => {
 		expect(result.entered).toBe(false);
 	});
 
+	it('leaves out a self-registered guest a worker selected into line', () => {
+		// Act
+		const result = entry({ hasDrawEvent: false });
+
+		// Assert
+		expect(result.entered).toBe(false);
+	});
+
 	it('counts an older self-registration with no history', () => {
 		// Act
-		const result = entry({ status: 'served', hasDrawEvent: false });
+		const result = entry({ status: 'served', hasDrawEvent: false, hasHistory: false });
 
 		// Assert
 		expect(result.entered).toBe(true);
