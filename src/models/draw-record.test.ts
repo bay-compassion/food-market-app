@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DrawRecord, type DrawOutcome } from './draw-record.ts';
 
 function record(results: string, chance = 0.5) {
-	const outcomes: DrawOutcome[] = [...results].map((result, index) => ({
+	const outcomes: DrawOutcome[] = results.split('').map((result, index) => ({
 		drawId: `draw-${index}`,
 		chance,
 		won: result === 'w',

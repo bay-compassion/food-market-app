@@ -30,9 +30,13 @@ export class GuestTemperature {
 
 		const { score } = this;
 
-		if (score <= -1.5) return 'cold';
-		if (score <= -0.5) return 'cool';
-		if (score < 0.5) return 'even';
+		if (score <= -0.5) {
+			return score <= -1.5 ? 'cold' : 'cool';
+		}
+
+		if (score < 0.5) {
+			return 'even';
+		}
 
 		return score < 1.5 ? 'warm' : 'hot';
 	}
