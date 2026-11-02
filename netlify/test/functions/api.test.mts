@@ -47,6 +47,8 @@ describe('consolidated API routing', () => {
 		expect(config.path).toEqual([
 			'/api/admin',
 			'/api/admin/*',
+			'/api/steward',
+			'/api/steward/*',
 			'/api/kiosk/*',
 			...paths.filter((path) => !/^\/api\/(admin|kiosk)\//.test(path)),
 		]);

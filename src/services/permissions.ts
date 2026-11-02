@@ -49,9 +49,13 @@ export const permissions = [
 	 */
 	'print:name-tags',
 	/**
-	 * Give a guest better odds in the draw than everyone else. Held by its own role, granted to named
-	 * stewards rather than to every admin; see `docs/roles.md`. It extends `run:queue`, since a guest
-	 * is only ever added to the draw by hand through that gate.
+	 * Open `/steward`: draw odds, temperature, draw history, and the record of odds changes. Held by
+	 * its own role, granted to named stewards rather than to every admin; see `docs/roles.md`.
+	 */
+	'read:stewardship',
+	/**
+	 * Give a guest better odds in the draw than everyone else, from `/steward` or when adding them
+	 * by hand. It extends `read:stewardship` there, and `run:queue` on the add-a-guest form.
 	 */
 	'manage:stewardship',
 ] as const;

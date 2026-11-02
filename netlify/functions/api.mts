@@ -6,6 +6,7 @@ import { visitRoutes } from '../routes/guests/visit.mjs';
 import { kioskRoutes } from '../routes/kiosk/kiosk.mjs';
 import { marketApi } from '../routes/market/index.mjs';
 import { notificationApi } from '../routes/notifications/index.mjs';
+import { stewardApi } from '../routes/steward/index.mjs';
 
 export const api = createRouter();
 
@@ -14,6 +15,7 @@ api.route('/', visitRoutes);
 api.route('/', notificationApi);
 api.route('/', kioskRoutes);
 api.route('/api/admin', adminApi);
+api.route('/api/steward', stewardApi);
 
 export default routeHandler(api);
 
@@ -21,6 +23,8 @@ export const config: Config = {
 	path: [
 		'/api/admin',
 		'/api/admin/*',
+		'/api/steward',
+		'/api/steward/*',
 		'/api/kiosk/*',
 		'/api/market',
 		'/api/visit',
