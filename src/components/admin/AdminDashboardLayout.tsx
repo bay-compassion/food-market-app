@@ -112,6 +112,8 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 	const t = translations.adminTranslation;
 	const isWide = useMediaQuery(wideLayoutQuery);
 	const headingId = useId();
+	const descriptions: Partial<Record<AdminView, string>> = t.viewDescriptions;
+	const description = descriptions[activeView];
 
 	return (
 		<AdminThemeProvider>
@@ -140,7 +142,7 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 								)}
 								<SessionStateChip />
 							</div>
-							<p>{t.viewDescriptions[activeView]}</p>
+							{description ? <p>{description}</p> : null}
 						</header>
 						<AdminFeedbackBanner />
 						{children}

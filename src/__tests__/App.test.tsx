@@ -793,7 +793,7 @@ describe('App', () => {
 		},
 		{
 			status: 'registration_open',
-			shown: ['Extend registration by (minutes)', 'Close Early', 'Add Guest'],
+			shown: ['Extend Registration', 'Close Early', 'Add Guest'],
 			hidden: ['Today’s overview', 'Run Lottery Draw'],
 		},
 		{
@@ -953,15 +953,14 @@ describe('App', () => {
 		);
 
 		fetchMock.mockClear();
+		await user.click(screen.getByRole('button', { name: t.today.somethingWrong }));
 		await user.click(screen.getByRole('button', { name: 'Reset Session' }));
 
 		const resetSheet = await screen.findByRole('alertdialog');
 
 		expect(resetSheet.textContent).toContain('Reset this session?');
-		expect(resetSheet.textContent).toContain(
-			'It will leave Current Session and remain available in session history.',
-		);
-		await answerConfirmation(user, t.confirmContinue);
+		expect(resetSheet.textContent).toContain(t.confirmResetSessionDetails);
+		await answerConfirmation(user, t.resetSession);
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			'/api/admin/market',

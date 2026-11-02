@@ -19,7 +19,7 @@ import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
 import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
-import { SessionTab } from './admin/SessionTab';
+import { SessionView } from './admin/SessionView';
 import type { AdminView, ManualGuest, QueueGuest } from './admin/types';
 import { WorkersView } from './admin/WorkersView';
 import { PatternQuestionBank } from './schedule/PatternQuestionBank';
@@ -146,14 +146,14 @@ export const AdminDashboard = observer(function AdminDashboard({
 	return (
 		<AdminDashboardLayout activeView={activeView} onNavigate={navigate}>
 			{activeView === 'current-session' ? (
-				<SessionTab
+				<SessionView
 					statusLabels={statusLabels}
 					sessionGuests={currentSessionGuests}
 					admissions={sessionAdmissions}
+					busy={admin.isBusy}
 					onRun={(action) => void runMarketAction(action as MarketAction)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
-					onNavigateQueue={() => navigate('queue')}
-					onNavigateSchedule={() => navigate('schedule')}
+					onNavigate={navigate}
 				/>
 			) : activeView === 'checklist' ? (
 				<ChecklistView onNavigateSchedule={() => navigate('schedule')} />

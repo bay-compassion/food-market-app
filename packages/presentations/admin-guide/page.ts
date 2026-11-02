@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	line(
 		'overrides',
 		[A.registrationOverrides, A.extendRegistration, A.overridesHelp],
-		'field:extendRegistrationMinutes',
+		'field:capacity',
 	);
 	at(C('overrides', 0.55), (s) => {
 		s.focus = 'field:capacity';
@@ -496,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			.forEach((x) => (x.status = 'served'));
 	});
 	line('close', [A.queue, A.closeSession, A.confirmCloseSession], 'button:closeSession');
-	confirm(C('close', 0.5), 'button:closeSession', 'sheet:confirmContinue', (s) => {
+	confirm(C('close', 0.5), 'button:closeSession', 'sheet:closeSession', (s) => {
 		s.status = 'ended';
 		s.archived = true;
 	});

@@ -167,7 +167,7 @@ const preview: Preview = {
 					// Match adminViews in src/services/admin-views.ts, with shared components last.
 					[
 						'Checklist',
-						'Current Session',
+						'Today',
 						'Queue',
 						['Queue', 'Guest Row'],
 						'Broadcast',

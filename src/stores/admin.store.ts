@@ -62,6 +62,10 @@ export type AdminStoreOptions = {
  * Confirmation prompts are deliberately *not* here. Whether to ask before a destructive action is
  * a presentation decision, so the component asks and then calls the plain method.
  */
+function addMinutes(time: string, minutes: number): Date {
+	return new Date(new Date(time).valueOf() + minutes * 60_000);
+}
+
 export class AdminStore {
 	readonly demo = new DemoStore();
 	private _guests: DatabaseGuest[] = [];
@@ -303,12 +307,20 @@ export class AdminStore {
 	}
 
 	async postponeRegistration(minutes: number): Promise<boolean> {
+		const opensAt = this.session.currentState?.event?.registrationOpensAt;
+
 		return this.run(async () => {
 			if (!(await this.session.sendCommand('postpone_registration', { minutes }))) {
 				throw new Error('postpone');
 			}
 
-			runInAction(() => this.report({ kind: 'session-updated' }));
+			runInAction(() =>
+				this.report(
+					opensAt
+						? { kind: 'registration-postponed', opensAt: addMinutes(opensAt, minutes) }
+						: { kind: 'session-updated' },
+				),
+			);
 
 			return true;
 		}, false);
@@ -334,6 +346,32 @@ export class AdminStore {
 			}
 
 			runInAction(() => this.report({ kind: 'session-updated' }));
+
+			return true;
+		}, false);
+	}
+
+	/** Keeps an open registration open for a few minutes more. */
+	async extendRegistration(minutes: number): Promise<boolean> {
+		const event = this.session.currentState?.event;
+
+		if (!event) {
+			return false;
+		}
+
+		const closesAt = addMinutes(event.registrationClosesAt, minutes);
+
+		return this.run(async () => {
+			if (
+				!(await this.session.sendCommand('update_registration', {
+					registrationClosesAt: closesAt.toISOString(),
+					capacity: event.capacity,
+				}))
+			) {
+				throw new Error('extend');
+			}
+
+			runInAction(() => this.report({ kind: 'registration-extended', closesAt }));
 
 			return true;
 		}, false);
