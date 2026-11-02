@@ -51,10 +51,11 @@ Definitions worth being precise about, because grant reports usually are:
   desk counts as first-time even if they have come before under another record.
 - **Who was served** counts each guest once for the whole period, however many sessions they
   attended, by the age band and household size from their latest served visit in the period.
-- **Lottery outcomes** only includes visits that were self-registered and actually went through a
-  draw. A guest a worker placed straight into the line never entered the lottery, so counting them
-  would report a placement rate the draw had nothing to do with. Visits still `registered` are
-  excluded too — their session has not drawn yet.
+- **Lottery outcomes** only includes visits that actually went through a draw, whoever added them.
+  A guest a worker placed straight into the line never entered the lottery, so counting them would
+  report a placement rate the draw had nothing to do with. Visits still `registered` are excluded
+  too — their session has not drawn yet. It needs `read:stewardship`, and so does the
+  `lottery_weight` column of the visit export.
 - **Wait time** is `served_at` minus `called_at`. The **No timing** column is the honest
   counterweight: visits served before `served_at` existed, and visits a worker recorded by hand
   after a session ended, carry no timestamps at all. A median drawn from the rest would otherwise

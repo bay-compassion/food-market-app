@@ -273,6 +273,25 @@ describe('endpoint permissions', () => {
 		expect(asked).toBe('export:guest-data');
 	});
 
+	it('keeps the report by odds from anyone without read:stewardship', async () => {
+		// Arrange
+		vi.mocked(requirePermission)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(Response.json({ error: 'nope' }, { status: 403 }));
+
+		// Act
+		const response = await reportsHandler(
+			json(
+				'https://x/api/admin/reports?report=lottery-outcomes&from=2026-01-01&to=2026-08-08',
+				'GET',
+			),
+		);
+
+		// Assert
+		expect(vi.mocked(requirePermission).mock.calls.at(-1)?.[1]).toBe('read:stewardship');
+		expect(response.status).toBe(403);
+	});
+
 	it('gates the steward ledger on read:stewardship', async () => {
 		// Act
 		const asked = await permissionAskedFor(

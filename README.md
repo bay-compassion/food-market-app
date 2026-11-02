@@ -145,7 +145,7 @@ pnpm run storybook              # component workshop on port 6006
 ## Verify Changes
 
 ```bash
-pnpm run checks                 # lint, formatting, diagrams, unit tests, build
+pnpm run checks                 # lint, formatting, diagrams, unit tests, build, steward chunk
 pnpm run test:storybook         # component rendering and interactions
 pnpm run test:e2e               # guest browser journeys
 ```

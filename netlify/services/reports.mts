@@ -146,11 +146,11 @@ function guestDemographics({ start, end }: ReportRange) {
 }
 
 /**
- * Whether raised odds actually changed who got in. Only self-registered visits count: a guest a
- * worker placed straight into the line never went through the draw, so including them would
- * report a placement rate the lottery had nothing to do with. Visits still `registered` are left
- * out too — their session has not drawn yet. A cancelled visit counts only if it holds a queue
- * position: it won a place and was cancelled afterwards, by the guest or when the session ended.
+ * Whether raised odds actually changed who got in. It counts exactly what `DrawEntry` counts: a
+ * visit the draw drew or passed over, whoever added it. Visits older than the history have none at
+ * all, so those count when the guest registered themselves and reached a state only the draw would
+ * normally put them in. A guest a worker placed straight into the line never went through the draw,
+ * and neither has a visit still `registered`.
  */
 function lotteryOutcomes({ start, end }: ReportRange) {
 	return sql`
@@ -164,10 +164,19 @@ function lotteryOutcomes({ start, end }: ReportRange) {
 		FROM market_events e
 		JOIN visits v ON v.market_event_id = e.id
 		WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
-			AND v.source = 'self'
 			AND (
-				v.status IN ('waiting', 'called', 'served', 'no_show', 'not_placed')
-				OR (v.status = 'cancelled' AND v.queue_position IS NOT NULL)
+				EXISTS (
+					SELECT 1 FROM visit_events ve
+					WHERE ve.visit_id = v.id AND ve.kind IN ('drawn', 'not_drawn')
+				)
+				OR (
+					v.source = 'self'
+					AND NOT EXISTS (SELECT 1 FROM visit_events ve WHERE ve.visit_id = v.id)
+					AND (
+						v.status IN ('waiting', 'called', 'served', 'no_show', 'not_placed')
+						OR (v.status = 'cancelled' AND v.queue_position IS NOT NULL)
+					)
+				)
 			)
 		GROUP BY v.lottery_weight
 		ORDER BY v.lottery_weight

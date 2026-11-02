@@ -201,7 +201,11 @@ export const AdminDashboard = observer(function AdminDashboard({
 			) : activeView === 'question-bank' ? (
 				<PatternQuestionBank />
 			) : activeView === 'reports' ? (
-				<ReportsView getAccessToken={getAccessToken} canExport={admin.can('export:guest-data')} />
+				<ReportsView
+					getAccessToken={getAccessToken}
+					canExport={admin.can('export:guest-data')}
+					canSeeOdds={admin.can('read:stewardship')}
+				/>
 			) : activeView === 'guest-database' ? (
 				<GuestDatabaseView
 					statusLabels={statusLabels}

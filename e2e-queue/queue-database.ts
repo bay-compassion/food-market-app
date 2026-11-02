@@ -6,6 +6,8 @@ export interface QueueVisit {
 	id: string;
 	first_name: string;
 	status: string;
+	lottery_weight: number;
+	suggested_lottery_weight: number | null;
 	queue_position: number | null;
 	called_at: string | null;
 	served_at: string | null;

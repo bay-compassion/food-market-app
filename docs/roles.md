@@ -117,36 +117,36 @@ until it expires, like every other permission here.
 
 ## What each endpoint requires
 
-| Endpoint                                                 | Requires                                                |
-| -------------------------------------------------------- | ------------------------------------------------------- |
-| `/api/admin/workers`, `/api/admin/workers/:id`           | `manage:workers` plus a current admin or owner role     |
-| `GET /api/market`                                        | nothing — the guest app depends on it                   |
-| `POST /api/guest-information`                            | nothing — saves guest identity only                     |
-| `POST /api/lottery-registration`                         | nothing — public self-service lottery entry             |
-| `POST /api/kiosk/unlock`                                 | nothing but a current unlock code                       |
-| `GET /api/kiosk/board`                                   | a kiosk token, not Auth0 — see the room display below   |
-| `GET /api/admin/market?view=history`                     | `run:queue`                                             |
-| `POST /api/admin/market`                                 | `manage:sessions`, except `close_session` → `run:queue` |
-| `/api/admin/schedule` (every method)                     | `manage:sessions`                                       |
-| `POST`, `PATCH /api/admin/guests`                        | `run:queue`; plus `manage:stewardship` to raise odds    |
-| `GET /api/admin/guests` (current session)                | `run:queue`                                             |
-| `GET /api/admin/guests` (`scope=all` or another session) | `export:guest-data`                                     |
-| `POST /api/admin/queue`                                  | `run:queue`                                             |
-| `POST /api/admin/broadcast`                              | `manage:sessions`                                       |
-| `/api/steward/*`                                         | `read:stewardship`                                      |
-| `POST /api/steward/people/:id/odds`                      | `read:stewardship` and `manage:stewardship`             |
-| `POST /api/admin/guest-claims`                           | `run:queue`; plus `manage:guest-access` to override     |
-| `GET /api/admin/reports`                                 | `read:reports`                                          |
-| `GET /api/admin/reports?view=export`                     | `export:guest-data`                                     |
-| `GET /api/admin/guests/:id/deletion`                     | `delete:guest-data`                                     |
-| `DELETE /api/admin/guests/:id`                           | `delete:guest-data`                                     |
-| `GET`, `POST /api/admin/demo-data`                       | `manage:demo-data` — and, for `POST`, an env flag too   |
-| `POST /api/admin/kiosk/unlock-codes`                     | `run:queue`                                             |
-| `GET /api/admin/visits/:id/events`                       | `run:queue`                                             |
-| `POST /api/admin/print-jobs`                             | `run:queue`                                             |
-| `GET /api/admin/print-station`                           | `run:queue`                                             |
-| `GET /api/admin/print-jobs`                              | `print:name-tags`                                       |
-| `DELETE /api/admin/print-jobs/:id`                       | `print:name-tags`                                       |
+| Endpoint                                                 | Requires                                                          |
+| -------------------------------------------------------- | ----------------------------------------------------------------- |
+| `/api/admin/workers`, `/api/admin/workers/:id`           | `manage:workers` plus a current admin or owner role               |
+| `GET /api/market`                                        | nothing — the guest app depends on it                             |
+| `POST /api/guest-information`                            | nothing — saves guest identity only                               |
+| `POST /api/lottery-registration`                         | nothing — public self-service lottery entry                       |
+| `POST /api/kiosk/unlock`                                 | nothing but a current unlock code                                 |
+| `GET /api/kiosk/board`                                   | a kiosk token, not Auth0 — see the room display below             |
+| `GET /api/admin/market?view=history`                     | `run:queue`                                                       |
+| `POST /api/admin/market`                                 | `manage:sessions`, except `close_session` → `run:queue`           |
+| `/api/admin/schedule` (every method)                     | `manage:sessions`                                                 |
+| `POST`, `PATCH /api/admin/guests`                        | `run:queue`; plus `manage:stewardship` to raise odds              |
+| `GET /api/admin/guests` (current session)                | `run:queue`                                                       |
+| `GET /api/admin/guests` (`scope=all` or another session) | `export:guest-data`                                               |
+| `POST /api/admin/queue`                                  | `run:queue`                                                       |
+| `POST /api/admin/broadcast`                              | `manage:sessions`                                                 |
+| `/api/steward/*`                                         | `read:stewardship`                                                |
+| `POST /api/steward/people/:id/odds`                      | `read:stewardship` and `manage:stewardship`                       |
+| `POST /api/admin/guest-claims`                           | `run:queue`; plus `manage:guest-access` to override               |
+| `GET /api/admin/reports`                                 | `read:reports`; plus `read:stewardship` for lottery outcomes      |
+| `GET /api/admin/reports?view=export`                     | `export:guest-data`; plus `read:stewardship` for `lottery_weight` |
+| `GET /api/admin/guests/:id/deletion`                     | `delete:guest-data`                                               |
+| `DELETE /api/admin/guests/:id`                           | `delete:guest-data`                                               |
+| `GET`, `POST /api/admin/demo-data`                       | `manage:demo-data` — and, for `POST`, an env flag too             |
+| `POST /api/admin/kiosk/unlock-codes`                     | `run:queue`                                                       |
+| `GET /api/admin/visits/:id/events`                       | `run:queue`                                                       |
+| `POST /api/admin/print-jobs`                             | `run:queue`                                                       |
+| `GET /api/admin/print-station`                           | `run:queue`                                                       |
+| `GET /api/admin/print-jobs`                              | `print:name-tags`                                                 |
+| `DELETE /api/admin/print-jobs/:id`                       | `print:name-tags`                                                 |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session

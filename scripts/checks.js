@@ -20,6 +20,7 @@ const checks = [
 	{ label: 'check:diagrams', command: 'pnpm', args: ['run', 'check:diagrams'] },
 	{ label: 'test:unit', command: 'pnpm', args: ['run', 'test:unit', '--run'] },
 	{ label: 'build', command: 'pnpm', args: ['run', 'build'] },
+	{ label: 'check:steward-chunk', command: 'node', args: ['scripts/check-steward-chunk.js'] },
 ];
 
 const results = [];

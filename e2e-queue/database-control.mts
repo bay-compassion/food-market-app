@@ -60,7 +60,7 @@ export class DatabaseControl {
 		if (command === 'visits') {
 			return (
 				await this.database.query(
-					`SELECT v.id, g.first_name, v.status, v.queue_position, v.called_at, v.served_at
+					`SELECT v.id, g.first_name, v.status, v.lottery_weight, v.suggested_lottery_weight, v.queue_position, v.called_at, v.served_at
 				 FROM visits v JOIN guests g ON g.id = v.guest_id
 				 ORDER BY v.queue_position NULLS LAST, g.first_name`,
 				)
