@@ -12,21 +12,25 @@ export type OddsChange = {
  * What a person's saved changes mean for a given draw. The newest change that covers the draw wins,
  * so a one-Saturday change falls back to whatever stood before it once that Saturday has passed.
  */
-export class StandingOdds {
-	constructor(private readonly changes: readonly OddsChange[]) {}
+export class StandingOdds<Change extends OddsChange = OddsChange> {
+	constructor(private readonly changes: readonly Change[]) {}
 
-	weightFor(draw: { id: string; registrationOpensAt: Date }): number | null {
+	weightFor(draw: { id: string | null; registrationOpensAt: Date }): number | null {
+		return this.changeFor(draw)?.weight ?? null;
+	}
+
+	/** The change that decides a draw. With no session yet, `id` is null and only dates count. */
+	changeFor(draw: { id: string | null; registrationOpensAt: Date }): Change | null {
 		const covering = this.changes.filter(({ marketEventId, endsAt }) =>
 			marketEventId
 				? marketEventId === draw.id
 				: !endsAt || endsAt.getTime() >= draw.registrationOpensAt.getTime(),
 		);
-		const newest = covering.reduce<OddsChange | null>(
+
+		return covering.reduce<Change | null>(
 			(latest, change) =>
 				!latest || change.createdAt.getTime() > latest.createdAt.getTime() ? change : latest,
 			null,
 		);
-
-		return newest?.weight ?? null;
 	}
 }

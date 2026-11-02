@@ -18,6 +18,7 @@ import scheduleHandler from '../../routes/admin/schedule.mjs';
 import visitEventsHandler from '../../routes/admin/visit-events.mjs';
 import lotteryRegistrationHandler from '../../routes/guests/lottery-registration.mjs';
 import publicMarketHandler from '../../routes/market/market.mjs';
+import stewardApiHandler from '../../routes/steward/index.mjs';
 
 /**
  * Which permission each endpoint asks for.
@@ -270,6 +271,38 @@ describe('endpoint permissions', () => {
 		);
 
 		expect(asked).toBe('export:guest-data');
+	});
+
+	it('gates the steward ledger on read:stewardship', async () => {
+		// Act
+		const asked = await permissionAskedFor(
+			stewardApiHandler,
+			json('https://x/api/steward/ledger', 'GET'),
+		);
+
+		// Assert
+		expect(asked).toBe('read:stewardship');
+	});
+
+	it('needs manage:stewardship as well to change odds', async () => {
+		// Arrange: the area's own gate lets a reader through, then the change is refused.
+		vi.mocked(requirePermission)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(Response.json({ error: 'nope' }, { status: 403 }));
+
+		// Act
+		const response = await stewardApiHandler(
+			json('https://x/api/steward/people/6f1c1c2e-8a4b-4f3e-9d0a-1b2c3d4e5f60/odds', 'POST', {
+				weight: 2,
+				scope: 'open',
+				reason: 'Staff judgment',
+			}),
+		);
+
+		// Assert
+		expect(vi.mocked(requirePermission).mock.calls.at(-1)?.[1]).toBe('manage:stewardship');
+		expect(response.status).toBe(403);
+		expect(db.insert).not.toHaveBeenCalled();
 	});
 
 	it('refuses a raised lottery weight without manage:stewardship', async () => {

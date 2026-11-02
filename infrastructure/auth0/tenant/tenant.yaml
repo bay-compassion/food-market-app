@@ -32,6 +32,8 @@ resourceServers:
         description: >-
           The print station — prints the name tags volunteers send, first name
           and last initial only
+      - value: read:stewardship
+        description: Draw odds, temperature, and draw history
       - value: manage:stewardship
         description: Give a guest better odds in the lottery draw
     signing_alg: RS256
@@ -247,6 +249,8 @@ roles:
       A named person trusted to raise a guest's odds in the draw, alongside a
       role that holds run:queue
     permissions:
+      - permission_name: read:stewardship
+        resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:stewardship
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
