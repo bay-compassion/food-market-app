@@ -445,9 +445,9 @@ Instruction sources (check these when changing the script):
 | Instruction                                                       | Current implementation                                      |
 | ----------------------------------------------------------------- | ----------------------------------------------------------- |
 | Recurring pattern, next session created automatically, one-off    | `ScheduleView`, `ScheduleStore`, `scheduleIntro`            |
-| Opens on its own, Open Early, Postpone, Extend, capacity, Close   | `SessionPhaseControls`, `SessionStepper`, `SessionTimeline` |
+| Opens on its own, Open Early, Postpone, Extend, capacity, Close   | `SessionPhaseStatus`, `SessionPhasePlan`, `SessionTimeline` |
 | Grace period, automatic draw, Run immediately, postpone, pause    | `SessionTransitionTimer`, `LotteryPendingCard`              |
-| Today's overview, Go to the Queue                                 | `SessionOverview`, `SessionPhaseControls`, `QueueView`      |
+| Today's overview, Go to the Queue                                 | `SessionOverview`, `SessionPhaseStatus`, `QueueView`        |
 | Add guest, Give them a spot, end of the line                      | `ManualGuestDialog`, `guestAdmission.ts`                    |
 | Broadcast to subscribed guests, sent exactly as written           | `SessionBroadcastForm`, `broadcastHelp`                     |
 | Switching screens from the title, grouped                         | `AdminViewSwitcher`, `AdminViewList`                        |

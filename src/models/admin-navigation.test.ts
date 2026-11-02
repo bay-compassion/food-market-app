@@ -15,7 +15,7 @@ describe('AdminNavigation', () => {
 
 		// Assert
 		expect(sections).toEqual([
-			{ group: 'today', views: ['checklist', 'current-session', 'queue', 'broadcast'] },
+			{ group: 'today', views: ['current-session', 'checklist', 'queue', 'broadcast'] },
 			{ group: 'plan', views: ['schedule', 'question-bank'] },
 			{ group: 'records', views: ['guest-database', 'session-history', 'reports'] },
 			{ group: null, views: ['dev-mode'] },
@@ -23,9 +23,9 @@ describe('AdminNavigation', () => {
 		expect(navigation.showsHeadings).toBe(true);
 	});
 
-	it('lists a queue worker’s three screens without headings', () => {
+	it('lists three screens without headings', () => {
 		// Arrange
-		const navigation = new AdminNavigation(viewsFor(['run:queue']));
+		const navigation = new AdminNavigation(['queue', 'guest-database', 'session-history']);
 
 		// Act
 		const showsHeadings = navigation.showsHeadings;
@@ -72,5 +72,36 @@ describe('AdminNavigation', () => {
 		// Assert
 		expect(navigation.isEmpty).toBe(true);
 		expect(sections).toEqual([]);
+	});
+
+	it('gives an administrator three tabs and keeps the rest behind More', () => {
+		// Arrange
+		const navigation = new AdminNavigation(
+			viewsFor(['manage:sessions', 'run:queue', 'read:reports', 'manage:demo-data']),
+		);
+
+		// Act
+		const { tabs, overflow } = navigation;
+
+		// Assert
+		expect(tabs).toEqual(['current-session', 'queue', 'guest-database']);
+		expect(overflow.sections).toEqual([
+			{ group: 'today', views: ['checklist', 'broadcast'] },
+			{ group: 'plan', views: ['schedule', 'question-bank'] },
+			{ group: 'records', views: ['session-history', 'reports'] },
+			{ group: null, views: ['dev-mode'] },
+		]);
+	});
+
+	it('gives a queue worker’s one leftover screen a tab instead of a More', () => {
+		// Arrange
+		const navigation = new AdminNavigation(viewsFor(['run:queue']));
+
+		// Act
+		const { tabs, overflow } = navigation;
+
+		// Assert
+		expect(tabs).toEqual(['current-session', 'queue', 'guest-database', 'session-history']);
+		expect(overflow.isEmpty).toBe(true);
 	});
 });

@@ -13,7 +13,7 @@ test(
 		let claimPath = '';
 
 		await test.step('Admin adds a guest by hand; no phone holds their record yet', async () => {
-			await admin.getByRole('button', { name: `+ ${adminCopy.addGuest}`, exact: true }).click();
+			await admin.getByRole('button', { name: adminCopy.addGuest, exact: true }).click();
 			await admin.getByRole('textbox', { name: guestCopy.firstName }).fill('Eve');
 			await admin.getByRole('textbox', { name: guestCopy.lastName }).fill('QueueTest');
 			await admin.getByRole('textbox', { name: guestCopy.phone }).fill('2025550199');
@@ -83,7 +83,7 @@ test(
 
 		await test.step('Admin saves only the guest’s details from the guest database', async () => {
 			await admin.goto('/admin/guest-database');
-			await admin.getByRole('button', { name: `+ ${adminCopy.addGuest}`, exact: true }).click();
+			await admin.getByRole('button', { name: adminCopy.addGuest, exact: true }).click();
 			await admin.getByRole('textbox', { name: guestCopy.firstName }).fill('Gil');
 			await admin.getByRole('textbox', { name: guestCopy.lastName }).fill('QueueTest');
 			await admin.getByRole('textbox', { name: guestCopy.phone }).fill('2025550198');

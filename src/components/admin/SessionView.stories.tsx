@@ -4,197 +4,187 @@ import { expect, fn, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { guestAdmissions } from '../../services/guestAdmission';
+import type { Permission } from '../../services/permissions';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
+import type { VisitStatus } from '../../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
+import type { SessionEvent } from '../../stores/market-session.store';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
+import { NotificationToasts } from '../ui/NotificationToasts';
 import { queueGuest } from './queueGuests.fixture';
 import { SessionView, type SessionViewProps } from './SessionView';
-import type { AdminMarketEvent } from './types';
 
 const t = adminTranslations.en;
-const event: AdminMarketEvent = {
+const event: SessionEvent = {
 	id: 'session-story',
-	registrationOpensAt: '2026-09-03T17:00:00Z',
-	registrationClosesAt: '2026-09-03T18:00:00Z',
-	capacity: 50,
-	status: 'scheduled',
+	registrationOpensAt: '2026-10-31T17:30:00Z',
+	registrationClosesAt: '2026-10-31T17:45:00Z',
+	capacity: 12,
+	status: SessionStatusEnum.SCHEDULED,
 };
 
+type SeededSession = {
+	event: Partial<SessionEvent> | null;
+	counts?: Partial<Record<VisitStatus, number>>;
+	permissions?: Permission[];
+};
+
+type SessionStoryArgs = SessionViewProps & SeededSession;
+
+/** Today reads the session from the store, so each story seeds a store of its own. */
+function SeededSessionView({
+	event: seeded,
+	counts = {},
+	permissions = ['manage:sessions', 'run:queue'],
+	...props
+}: SessionStoryArgs) {
+	const [store] = useState(() => {
+		const root = new RootStore();
+
+		root.session.applyServerState({
+			event: seeded && { ...event, ...seeded },
+			questions: [],
+			counts,
+		});
+		root.setPermissionReader(() => Promise.resolve(permissions));
+		void root.admin.loadPermissions();
+
+		return root;
+	});
+
+	return (
+		<RootStoreProvider store={store}>
+			<SessionView {...props} />
+			<ConfirmationDrawer />
+			<NotificationToasts />
+		</RootStoreProvider>
+	);
+}
+
 const meta = {
-	title: 'Admin/Current Session/Session Overview',
-	component: SessionView,
+	title: 'Admin/Today/Session Overview',
+	component: SeededSessionView,
 	parameters: { shell: 'admin' },
 	args: {
 		event: null,
-		sessionState: 'inactive',
 		counts: {},
 		statusLabels: adminVisitStatusLabels('en'),
 		sessionGuests: [queueGuest({ status: 'registered', queuePosition: null })],
 		admissions: guestAdmissions,
 		busy: false,
-		extensionMinutes: 15,
-		postponementMinutes: 15,
-		onExtensionMinutesChange: fn(),
-		onPostponementMinutesChange: fn(),
-		onPostponeRegistration: fn(),
-		onExtendRegistration: fn(),
-		onSaveCapacityOverride: fn(),
 		onRun: fn(),
 		onAddGuest: fn(),
-		onNavigateQueue: fn(),
-		onNavigateSchedule: fn(),
+		onNavigate: fn(),
 	},
-	render: function SessionStory(args: SessionViewProps) {
-		const [extensionMinutes, setExtensionMinutes] = useState(args.extensionMinutes);
-		const [postponementMinutes, setPostponementMinutes] = useState(args.postponementMinutes);
-
-		return (
-			<SessionView
-				{...args}
-				extensionMinutes={extensionMinutes}
-				onExtensionMinutesChange={setExtensionMinutes}
-				postponementMinutes={postponementMinutes}
-				onPostponementMinutesChange={setPostponementMinutes}
-			/>
-		);
-	},
-} satisfies Meta<typeof SessionView>;
+} satisfies Meta<typeof SeededSessionView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const NoSession: Story = {
-	play: async ({ canvas }) => {
-		await expect(canvas.getByRole('button', { name: t.scheduleOpenSchedule })).toBeInTheDocument();
-		await expect(canvas.queryByLabelText(t.currentSession)).not.toBeInTheDocument();
+	play: async ({ canvas, userEvent, args }) => {
+		await expect(canvas.queryByRole('list', { name: t.today.timelineLabel })).toBeNull();
+		await userEvent.click(canvas.getByRole('button', { name: t.scheduleOpenSchedule }));
+		await expect(args.onNavigate).toHaveBeenCalledWith('schedule');
 	},
 };
 
+/** Nothing is needed yet, so the only thing to read is when something will happen by itself. */
 export const Scheduled: Story = {
-	args: { event, sessionState: 'scheduled' },
+	args: { event: { status: SessionStatusEnum.SCHEDULED, lotteryDelayMinutes: 0 } },
+	play: async ({ canvas, userEvent, args }) => {
+		await expect(canvas.getByText(t.today.nothingToDoYet)).toBeVisible();
+		await expect(canvas.getByText(t.today.milestones.registration_opens.next)).toBeVisible();
+		await expect(canvas.queryByRole('button', { name: t.today.somethingWrong })).toBeNull();
+		await userEvent.click(canvas.getByRole('button', { name: t.today.setUpRoomDisplay }));
+		await expect(args.onNavigate).toHaveBeenCalledWith('checklist');
+		await userEvent.click(canvas.getByRole('button', { name: t.openRegistrationNow }));
+		await expect(args.onRun).toHaveBeenCalledWith('open_registration');
+	},
 };
 
 export const RegistrationOpen: Story = {
 	args: {
-		event: { ...event, status: 'registration_open' },
-		sessionState: 'registration_open',
+		event: {
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+			registrationClosesAt: new Date(Date.now() + 492_000).toISOString(),
+			lotteryDelayMinutes: 0,
+		},
+		counts: { registered: 16 },
 	},
 	play: async ({ canvas, userEvent, args }) => {
-		await expect(canvas.queryByRole('button', { name: t.runLottery })).not.toBeInTheDocument();
+		await expect(canvas.queryByRole('button', { name: t.runLottery })).toBeNull();
+		await expect(canvas.getByRole('timer')).toBeVisible();
+		await expect(canvas.getByText(t.today.milestones.registration_opens.done)).toBeVisible();
 		await userEvent.click(canvas.getByRole('button', { name: t.closeRegistration }));
 		await expect(args.onRun).toHaveBeenCalledWith('close_registration');
 	},
 };
 
+/** Any number of minutes goes through the sheet, which names the new time on its button. */
+export const CustomExtension: Story = {
+	args: {
+		event: {
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+			registrationClosesAt: new Date(Date.now() + 492_000).toISOString(),
+		},
+	},
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(canvas.getByRole('button', { name: t.today.custom }));
+
+		const sheet = within(await within(document.body).findByRole('dialog'));
+
+		await expect(sheet.getByRole('heading', { name: t.today.extendRegistration })).toBeVisible();
+		await expect(
+			sheet.getByRole('button', {
+				name: new RegExp(t.today.customExtendAction.replace('{time}', '')),
+			}),
+		).toBeEnabled();
+		await userEvent.click(sheet.getByRole('button', { name: t.cancel }));
+	},
+};
+
 export const RegistrationClosed: Story = {
 	args: {
-		event: { ...event, status: 'registration_closed' },
-		sessionState: 'registration_closed',
-	},
-	decorators: [
-		(Story) => {
-			const store = new RootStore();
-
-			store.session.applyServerState({
-				event: {
-					...event,
-					status: SessionStatusEnum.REGISTRATION_CLOSED,
-					registrationGraceEndsAt: new Date(Date.now() + 30_000).toISOString(),
-				},
-				questions: [],
-				counts: {},
-			});
-
-			return (
-				<RootStoreProvider store={store}>
-					<Story />
-					<ConfirmationDrawer />
-				</RootStoreProvider>
-			);
+		event: {
+			status: SessionStatusEnum.REGISTRATION_CLOSED,
+			registrationGraceEndsAt: new Date(Date.now() + 30_000).toISOString(),
 		},
-	],
+	},
 	play: async ({ canvas, userEvent, args }) => {
-		await expect(canvas.getByRole('timer')).toHaveTextContent(t.graceCountdown.split('{time}')[0]!);
+		await expect(canvas.getByRole('timer')).toBeVisible();
 		await userEvent.click(canvas.getByRole('button', { name: t.reopenRegistration }));
 		await expect(args.onRun).toHaveBeenCalledWith('reopen_registration');
 	},
 };
 
+/** With nothing scheduled to run the draw, running it is the one thing the screen asks for. */
 export const LotteryPending: Story = {
 	args: {
-		event: { ...event, status: 'lottery_pending' },
-		sessionState: 'lottery_pending',
+		event: { status: SessionStatusEnum.LOTTERY_PENDING },
+		counts: { registered: 16 },
 	},
 	play: async ({ canvas, userEvent, args }) => {
+		await expect(canvas.getByText(t.today.whenYouRunIt)).toBeVisible();
 		await userEvent.click(canvas.getByRole('button', { name: t.runLottery }));
 		await expect(args.onRun).toHaveBeenCalledWith('run_lottery');
 	},
 };
 
-/**
- * Service under way: the overview leads, and the four finished steps fold into one line so the
- * way to the queue sits near the top. The whole timeline is a tap away.
- */
-export const ServiceStarted: Story = {
-	args: {
-		event: { ...event, status: 'service_started' },
-		sessionState: 'service_started',
-		counts: { waiting: 20, called: 5, served: 10, not_placed: 3 },
-	},
-	play: async ({ canvas, userEvent, args }) => {
-		const stepper = within(canvas.getByRole('group', { name: t.currentSession }));
-		const summary = canvas.getByRole('button', {
-			name: new RegExp(t.stepsDone.replace('{count}', '4')),
-		});
-
-		await expect(stepper.queryByText(t.lotteryPending)).not.toBeInTheDocument();
-		await expect(summary).toHaveAttribute('aria-expanded', 'false');
-		await userEvent.click(summary);
-		await expect(summary).toHaveAttribute('aria-expanded', 'true');
-		await expect(stepper.getByText(t.lotteryPending)).toBeVisible();
-		await userEvent.click(canvas.getByRole('button', { name: t.goToQueue }));
-		await expect(args.onNavigateQueue).toHaveBeenCalled();
-	},
-};
-
-/**
- * An automatic draw: the card says when it runs and offers to run it now or push it back. The card
- * reads the draw time from the session store, so this story seeds one of its own.
- */
+/** The draw runs by itself; running it now is a quieter choice under the ways to delay it. */
 export const AutomaticLotteryPending: Story = {
-	args: LotteryPending.args,
-	decorators: [
-		(Story) => {
-			const store = new RootStore();
-
-			store.session.applyServerState({
-				event: {
-					id: event.id,
-					status: SessionStatusEnum.LOTTERY_PENDING,
-					capacity: event.capacity,
-					registrationOpensAt: event.registrationOpensAt,
-					registrationClosesAt: event.registrationClosesAt,
-					lotteryDelayMinutes: 10,
-					lotteryDrawsAt: new Date(Date.now() + 600_000).toISOString(),
-				},
-				questions: [],
-				counts: {},
-			});
-
-			return (
-				<RootStoreProvider store={store}>
-					<Story />
-					<ConfirmationDrawer />
-				</RootStoreProvider>
-			);
+	args: {
+		event: {
+			status: SessionStatusEnum.LOTTERY_PENDING,
+			lotteryDelayMinutes: 10,
+			lotteryDrawsAt: new Date(Date.now() + 102_000).toISOString(),
 		},
-	],
+		counts: { registered: 16 },
+	},
 	play: async ({ canvas }) => {
-		await expect(canvas.getByRole('timer')).toHaveTextContent(
-			t.lotteryCountdown.split('{time}')[0]!,
-		);
+		await expect(canvas.getByRole('timer')).toBeVisible();
 		await expect(canvas.getByRole('button', { name: t.pauseLottery })).toBeEnabled();
 		await expect(canvas.getByRole('button', { name: t.runLotteryNow })).toBeEnabled();
 		await expect(
@@ -203,14 +193,63 @@ export const AutomaticLotteryPending: Story = {
 	},
 };
 
+/** Closing is how a normal day ends. Reset is not, so it stays folded away until asked for. */
+export const ServiceStarted: Story = {
+	args: {
+		event: { status: SessionStatusEnum.SERVICE_STARTED },
+		counts: { waiting: 4, called: 2, served: 5, no_show: 1, not_placed: 4 },
+	},
+	play: async ({ canvas, userEvent, args }) => {
+		await userEvent.click(canvas.getByRole('button', { name: t.goToQueue }));
+		await expect(args.onNavigate).toHaveBeenCalledWith('queue');
+		await userEvent.click(canvas.getByRole('button', { name: t.closeSession }));
+		await expect(args.onRun).toHaveBeenCalledWith('close_session');
+		await expect(canvas.queryByRole('button', { name: t.resetSession })).toBeNull();
+		await userEvent.click(canvas.getByRole('button', { name: t.today.somethingWrong }));
+		await userEvent.click(canvas.getByRole('button', { name: t.resetSession }));
+		await expect(args.onRun).toHaveBeenCalledWith('reset_session');
+	},
+};
+
+/** A worker sees where the market stands, with nothing that would steer it. */
+export const WorkerDuringRegistration: Story = {
+	args: { ...RegistrationOpen.args, permissions: ['run:queue'] },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole('timer')).toBeVisible();
+		await expect(canvas.getByRole('list', { name: t.today.timelineLabel })).toBeVisible();
+		await expect(canvas.getByRole('button', { name: new RegExp(t.addGuest) })).toBeVisible();
+		await expect(canvas.queryByRole('button', { name: t.closeRegistration })).toBeNull();
+		await expect(canvas.queryByRole('button', { name: t.today.custom })).toBeNull();
+		await expect(canvas.queryByRole('button', { name: t.today.somethingWrong })).toBeNull();
+	},
+};
+
+/** A draw run by hand says who it is waiting on, rather than offering a button they cannot use. */
+export const WorkerWaitingOnDraw: Story = {
+	args: { ...LotteryPending.args, permissions: ['run:queue'] },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByText(t.today.drawWaiting)).toBeVisible();
+		await expect(canvas.getByText(t.today.whenAdminRunsIt)).toBeVisible();
+		await expect(canvas.queryByRole('button', { name: t.runLottery })).toBeNull();
+	},
+};
+
+/** Ending the day is part of running the queue, so a worker keeps Close Session. */
+export const WorkerDuringService: Story = {
+	args: { ...ServiceStarted.args, permissions: ['run:queue'] },
+	play: async ({ canvas, userEvent, args }) => {
+		await expect(canvas.queryByRole('button', { name: t.today.sendBroadcast })).toBeNull();
+		await expect(canvas.queryByRole('button', { name: t.today.somethingWrong })).toBeNull();
+		await userEvent.click(canvas.getByRole('button', { name: t.closeSession }));
+		await expect(args.onRun).toHaveBeenCalledWith('close_session');
+	},
+};
+
 export const Busy: Story = {
 	args: { ...RegistrationOpen.args, busy: true },
 	play: async ({ canvas }) => {
-		const stepper = within(canvas.getByLabelText(t.currentSession));
-
-		for (const button of stepper.getAllByRole('button')) {
-			await expect(button).toBeDisabled();
-		}
+		await expect(canvas.getByRole('button', { name: t.closeRegistration })).toBeDisabled();
+		await expect(canvas.getByRole('button', { name: t.today.custom })).toBeDisabled();
 	},
 };
 

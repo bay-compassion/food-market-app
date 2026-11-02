@@ -1,10 +1,11 @@
 import styled from '@emotion/styled';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { ManualGuest } from '../../services/admin-api';
 import { useRootStore } from '../../stores/react/store-context';
+import { wideLayoutQuery } from '../admin/admin-layout';
 import { ManualGuestDialog } from '../admin/ManualGuestDialog';
 import { useNow } from '../hooks/use-now';
 import { useQueueDesk } from './queue-desk-context';
@@ -12,6 +13,7 @@ import { TicketSection } from './TicketSection';
 
 const Lists = styled.div`
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 12px;
 
 	.add-guest {
@@ -29,7 +31,7 @@ const Lists = styled.div`
 /**
  * The line's tickets: the called and waiting numbers; then no-shows, guests the draw did not
  * place, and the finished ones, each in their own section — with adding a guest by hand from the
- * waiting list's heading.
+ * waiting list's heading on a desk. On a phone that sits in the call bar's menu.
  */
 export const QueueLists = observer(function QueueLists() {
 	const t = adminTranslations.en;
@@ -38,11 +40,10 @@ export const QueueLists = observer(function QueueLists() {
 	const { roster } = desk;
 	// Chips show whole minutes, so a coarse shared clock is enough; the open ticket keeps its own.
 	const now = useNow(30_000);
-	const [addingGuest, setAddingGuest] = useState(false);
-	const canAddGuest = desk.admissions.length > 0;
+	const isWide = useMediaQuery(wideLayoutQuery);
 
 	function addGuest(guest: ManualGuest) {
-		setAddingGuest(false);
+		desk.closeAddGuest();
 		void admin.addGuest(guest, { locale: translations.locale });
 	}
 
@@ -60,8 +61,8 @@ export const QueueLists = observer(function QueueLists() {
 				emptyText={t.queueDesk.noneWaiting}
 				now={now}
 				action={
-					canAddGuest ? (
-						<button className="add-guest" type="button" onClick={() => setAddingGuest(true)}>
+					desk.canAddGuest && isWide ? (
+						<button className="add-guest" type="button" onClick={() => desk.openAddGuest()}>
 							+ {t.queueDesk.addGuest}
 						</button>
 					) : null
@@ -77,11 +78,11 @@ export const QueueLists = observer(function QueueLists() {
 				now={now}
 			/>
 			<ManualGuestDialog
-				open={canAddGuest && addingGuest}
+				open={desk.isAddingGuest}
 				admissions={desk.admissions}
 				busy={desk.isBusy}
 				onSubmit={addGuest}
-				onClose={() => setAddingGuest(false)}
+				onClose={() => desk.closeAddGuest()}
 			/>
 		</Lists>
 	);

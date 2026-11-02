@@ -1,5 +1,6 @@
 import { render, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The real module only configures Auth0 when the VITE_AUTH0_* variables are set, which is true on
@@ -11,6 +12,7 @@ vi.mock('../auth', async (importOriginal) => ({
 }));
 
 import { adminTranslations } from '../adminLocales';
+import { adminViewLabels } from '../components/admin/admin-view-labels';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { ConfirmationDrawer } from '../components/ui/ConfirmationDrawer';
 import type { AdminView } from '../services/admin-views';
@@ -64,50 +66,79 @@ function renderDashboard(
 	const onNavigate = vi.fn();
 	const store = new RootStore();
 	const result = render(
-		<RootStoreProvider store={store}>
-			<AdminDashboard
-				view={view}
-				getAccessToken={() => Promise.resolve(tokenWith(permissions))}
-				onNavigate={onNavigate}
-			/>
-			<ConfirmationDrawer />
-		</RootStoreProvider>,
+		<MemoryRouter>
+			<RootStoreProvider store={store}>
+				<AdminDashboard
+					view={view}
+					getAccessToken={() => Promise.resolve(tokenWith(permissions))}
+					onNavigate={onNavigate}
+				/>
+				<ConfirmationDrawer />
+			</RootStoreProvider>
+		</MemoryRouter>,
 	);
 
 	return { ...result, onNavigate, store };
 }
 
-/**
- * On a phone — which is what jsdom's media queries report — the screens are listed in a sheet the
- * title opens, so reading them means opening it first. Waits for the title to become a switcher,
- * which happens once the worker's permissions have resolved to at least one screen.
- */
-async function openNavigation(container: HTMLElement) {
-	const switcher = await waitFor(() => {
-		const button = container.querySelector<HTMLButtonElement>('h1 button');
+/** Every screen the phone offers: the tabs, and what is behind More when there is one. */
+async function navigationLabels() {
+	const tabs = await waitFor(() => {
+		const bar = document.body.querySelector<HTMLElement>('.admin-tabs');
 
-		if (!button) {
-			throw new Error('The view switcher has not rendered yet.');
+		if (!bar) {
+			throw new Error('The tab bar has not rendered yet.');
 		}
 
-		return button;
+		return bar;
 	});
+	const more = tabs.querySelector<HTMLButtonElement>('.admin-more-tab');
+	const onTabs = Array.from(tabs.querySelectorAll<HTMLButtonElement>('button[data-view]')).map(
+		(button) => adminViewLabels[button.dataset.view as AdminView],
+	);
 
-	await userEvent.setup().click(switcher);
+	if (!more) {
+		return onTabs;
+	}
 
-	return document.body.querySelector<HTMLElement>('.admin-navigation')!;
+	await userEvent.setup().click(more);
+
+	const inSheet = Array.from(
+		document.body.querySelectorAll<HTMLButtonElement>('.admin-navigation button'),
+	).map((button) => button.textContent);
+
+	await userEvent.setup().keyboard('{Escape}');
+
+	return [...onTabs, ...inSheet];
 }
 
-async function navigationLabels(container: HTMLElement) {
-	const navigation = await openNavigation(container);
+async function navigateTo(label: string) {
+	const user = userEvent.setup();
+	const tabs = await waitFor(() => {
+		const bar = document.body.querySelector<HTMLElement>('.admin-tabs');
 
-	return Array.from(navigation.querySelectorAll('button')).map((button) => button.textContent);
-}
+		if (!bar) {
+			throw new Error('The tab bar has not rendered yet.');
+		}
 
-async function navigateTo(container: HTMLElement, label: string) {
-	const navigation = await openNavigation(container);
+		return bar;
+	});
+	const tab = Array.from(tabs.querySelectorAll<HTMLButtonElement>('button[data-view]')).find(
+		(button) => adminViewLabels[button.dataset.view as AdminView] === label,
+	);
 
-	await userEvent.setup().click(within(navigation).getByRole('button', { name: label }));
+	if (tab) {
+		await user.click(tab);
+
+		return;
+	}
+
+	await user.click(tabs.querySelector<HTMLButtonElement>('.admin-more-tab')!);
+	await user.click(
+		within(document.body.querySelector<HTMLElement>('.admin-navigation')!).getByRole('button', {
+			name: label,
+		}),
+	);
 }
 
 afterEach(() => {
@@ -117,9 +148,10 @@ afterEach(() => {
 
 describe('admin navigation by permission', () => {
 	it('offers a queue worker only the screens their role can open', async () => {
-		const { container } = renderDashboard(['run:queue']);
+		renderDashboard(['run:queue']);
 
-		expect(await navigationLabels(container)).toEqual([
+		expect(await navigationLabels()).toEqual([
+			t.currentSession,
 			t.queue,
 			t.guestDatabase,
 			t.historySessions,
@@ -127,45 +159,86 @@ describe('admin navigation by permission', () => {
 	});
 
 	it('offers an administrator everything', async () => {
-		const { container } = renderDashboard([
-			'run:queue',
-			'manage:sessions',
-			'read:reports',
-			'export:guest-data',
-		]);
+		renderDashboard(['run:queue', 'manage:sessions', 'read:reports', 'export:guest-data']);
 
-		expect(await navigationLabels(container)).toEqual([
-			t.checklist.title,
+		expect(await navigationLabels()).toEqual([
 			t.currentSession,
 			t.queue,
+			t.guestDatabase,
+			t.checklist.title,
 			t.broadcastTitle,
 			t.schedule,
 			t.questionBank,
-			t.guestDatabase,
 			t.historySessions,
 			t.reports,
 		]);
 	});
 
-	it('lands a worker on a screen they can open, not the default one they cannot', async () => {
-		const { onNavigate } = renderDashboard(['run:queue']);
+	it('lands someone on a screen they can open, not the default one they cannot', async () => {
+		// Arrange and act
+		const { onNavigate } = renderDashboard(['read:reports']);
 
-		// `current-session` is the default view but needs manage:sessions.
-		await waitFor(() => expect(onNavigate.mock.calls[0]).toEqual(['queue']));
+		// Assert: Today needs run:queue.
+		await waitFor(() => expect(onNavigate.mock.calls[0]).toEqual(['reports']));
+	});
+
+	it('lands a worker on the queue during service', async () => {
+		// Arrange and act
+		const { onNavigate } = renderDashboard(['run:queue'], {
+			status: SessionStatusEnum.SERVICE_STARTED,
+		});
+
+		// Assert
+		await waitFor(() => expect(onNavigate).toHaveBeenCalledWith('queue'));
+	});
+
+	it('lands a worker on Today before service', async () => {
+		// Arrange and act
+		const { getByRole, onNavigate } = renderDashboard(['run:queue'], {
+			status: SessionStatusEnum.REGISTRATION_OPEN,
+		});
+
+		// Assert
+		await waitFor(() => expect(getByRole('timer')).toBeTruthy());
+		expect(getByRole('heading', { level: 1 }).textContent).toBe(t.currentSession);
+		expect(onNavigate).not.toHaveBeenCalled();
+	});
+
+	it('keeps a worker on the screen the route names, even during service', async () => {
+		// Arrange and act
+		const { findByRole, onNavigate } = renderDashboard(['run:queue'], {
+			status: SessionStatusEnum.SERVICE_STARTED,
+			view: 'current-session',
+		});
+
+		// Assert
+		await findByRole('button', { name: t.closeSession });
+		expect(onNavigate).not.toHaveBeenCalled();
+	});
+
+	it('lands someone who steers the session on Today during service', async () => {
+		// Arrange and act
+		const { findByRole, onNavigate } = renderDashboard(['run:queue', 'manage:sessions'], {
+			status: SessionStatusEnum.SERVICE_STARTED,
+		});
+
+		// Assert
+		await findByRole('button', { name: t.today.sendBroadcast });
+		expect(onNavigate).not.toHaveBeenCalled();
 	});
 
 	it('explains itself to someone signed in with no role at all', async () => {
 		const { container } = renderDashboard([]);
 
 		await waitFor(() => expect(container.textContent).toContain(t.noAccess));
-		expect(container.querySelector('h1 button')).toBeNull();
+		expect(document.body.querySelector('.admin-tabs')).toBeNull();
 		expect(document.body.querySelector('.admin-navigation')).toBeNull();
 	});
 
 	it('does not request guest data a worker has no permission to read', async () => {
-		const { container } = renderDashboard(['read:reports']);
+		renderDashboard(['read:reports']);
 
-		expect(await navigationLabels(container)).toEqual([t.reports]);
+		expect(await navigationLabels()).toEqual([t.reports]);
 
 		const urls = vi
 			.mocked(fetch)
@@ -177,9 +250,9 @@ describe('admin navigation by permission', () => {
 	// manage:demo-data is deliberately not part of `worker` or `admin` — see docs/roles.md — so an
 	// administrator holding the other four permissions should not see it either.
 	it('offers the dev-mode screen only to whoever holds manage:demo-data', async () => {
-		const { container } = renderDashboard(['manage:demo-data']);
+		renderDashboard(['manage:demo-data']);
 
-		expect(await navigationLabels(container)).toEqual([t.devMode]);
+		expect(await navigationLabels()).toEqual([t.devMode]);
 	});
 });
 
@@ -187,19 +260,19 @@ describe('broadcast notification screen', () => {
 	it('opens its own screen and preserves a draft across screen switches', async () => {
 		// Arrange
 		const user = userEvent.setup();
-		const screen = renderDashboard(['manage:sessions'], {
+		const screen = renderDashboard(['run:queue', 'manage:sessions'], {
 			status: SessionStatusEnum.REGISTRATION_OPEN,
 		});
 
 		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
 
 		// Act
-		await navigateTo(screen.container, t.broadcastTitle);
+		await navigateTo(t.broadcastTitle);
 		await user.type(screen.getByLabelText(t.broadcastTitleLabel), 'Doors open');
 		await user.type(screen.getByLabelText(t.broadcastMessageLabel), 'Come on in');
-		await navigateTo(screen.container, t.currentSession);
+		await navigateTo(t.currentSession);
 		expect(screen.queryByLabelText(t.broadcastTitleLabel)).toBeNull();
-		await navigateTo(screen.container, t.broadcastTitle);
+		await navigateTo(t.broadcastTitle);
 
 		// Assert
 		expect(screen.onNavigate).toHaveBeenLastCalledWith('broadcast');

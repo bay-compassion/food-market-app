@@ -18,6 +18,11 @@ The worker/admin split exists because the risk being managed is volunteer turnov
 the table for a season should not be able to reset a session, push a notification to every guest,
 or download the whole guest database in one click.
 
+A worker can open the **Today** screen to see where the market stands. It shows them Add Guest and,
+during service, Close Session, which their role allows; the controls that steer a session are left
+out, and the server refuses them regardless. Opening `/admin` lands a worker on the Queue during
+service, and on Today otherwise.
+
 ## Managing Workers
 
 The **Workers** screen is available with `manage:workers`, granted to `admin` and the new

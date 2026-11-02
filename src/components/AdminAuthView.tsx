@@ -35,7 +35,7 @@ export const AdminAuthView = observer(function AdminAuthView() {
 	const auth = useAuth0();
 	const navigate = useNavigate();
 	const params = useParams();
-	const view: AdminView = isAdminView(params.view) ? params.view : 'current-session';
+	const view: AdminView | undefined = isAdminView(params.view) ? params.view : undefined;
 
 	if (!isAuth0Configured) {
 		return (

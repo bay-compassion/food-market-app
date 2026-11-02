@@ -26,7 +26,7 @@ import type { KioskUnlockCode } from '../services/kiosk-unlock.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
 import type { PrintJobSubmission } from '../services/print-jobs.ts';
-import type { SessionCommand } from '../services/sessionStateMachine.ts';
+import { SessionStatusEnum, type SessionCommand } from '../services/sessionStateMachine.ts';
 import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
@@ -62,6 +62,10 @@ export type AdminStoreOptions = {
  * Confirmation prompts are deliberately *not* here. Whether to ask before a destructive action is
  * a presentation decision, so the component asks and then calls the plain method.
  */
+function addMinutes(time: string, minutes: number): Date {
+	return new Date(new Date(time).valueOf() + minutes * 60_000);
+}
+
 export class AdminStore {
 	readonly demo = new DemoStore();
 	private _guests: DatabaseGuest[] = [];
@@ -150,6 +154,17 @@ export class AdminStore {
 	/** The screens this worker can open, in navigation order. */
 	get views(): AdminView[] {
 		return viewsFor(this._permissions);
+	}
+
+	/**
+	 * Where opening the dashboard with no screen in mind should land. During service a worker's job
+	 * is the line; whoever steers the session starts from its status at any time.
+	 */
+	get landingView(): AdminView {
+		return !this.can('manage:sessions') &&
+			this.session.currentStatus === SessionStatusEnum.SERVICE_STARTED
+			? 'queue'
+			: 'current-session';
 	}
 
 	/** Those screens as the navigation lists them, under the headings that say what each is for. */
@@ -303,12 +318,20 @@ export class AdminStore {
 	}
 
 	async postponeRegistration(minutes: number): Promise<boolean> {
+		const opensAt = this.session.currentState?.event?.registrationOpensAt;
+
 		return this.run(async () => {
 			if (!(await this.session.sendCommand('postpone_registration', { minutes }))) {
 				throw new Error('postpone');
 			}
 
-			runInAction(() => this.report({ kind: 'session-updated' }));
+			runInAction(() =>
+				this.report(
+					opensAt
+						? { kind: 'registration-postponed', opensAt: addMinutes(opensAt, minutes) }
+						: { kind: 'session-updated' },
+				),
+			);
 
 			return true;
 		}, false);
@@ -334,6 +357,32 @@ export class AdminStore {
 			}
 
 			runInAction(() => this.report({ kind: 'session-updated' }));
+
+			return true;
+		}, false);
+	}
+
+	/** Keeps an open registration open for a few minutes more. */
+	async extendRegistration(minutes: number): Promise<boolean> {
+		const event = this.session.currentState?.event;
+
+		if (!event) {
+			return false;
+		}
+
+		const closesAt = addMinutes(event.registrationClosesAt, minutes);
+
+		return this.run(async () => {
+			if (
+				!(await this.session.sendCommand('update_registration', {
+					registrationClosesAt: closesAt.toISOString(),
+					capacity: event.capacity,
+				}))
+			) {
+				throw new Error('extend');
+			}
+
+			runInAction(() => this.report({ kind: 'registration-extended', closesAt }));
 
 			return true;
 		}, false);

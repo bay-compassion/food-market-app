@@ -286,6 +286,19 @@ export const DuringService: Story = {
 	},
 };
 
+/** On a phone, adding a guest by hand sits in the menu beside the call button. */
+export const AddingAGuestFromTheCallBar: Story = {
+	play: async ({ canvasElement, userEvent }) => {
+		const canvas = within(canvasElement);
+
+		await userEvent.click(await canvas.findByRole('button', { name: t.lineActions }));
+		await userEvent.click(await within(document.body).findByRole('menuitem', { name: t.addGuest }));
+
+		await expect(await within(document.body).findByRole('dialog')).toBeVisible();
+		await expect(canvas.queryByRole('button', { name: t.addGuest })).toBeNull();
+	},
+};
+
 /**
  * The open ticket's sheet. Queries go through it rather than the whole page, because the list
  * behind the sheet carries the same names.

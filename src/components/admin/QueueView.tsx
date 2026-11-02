@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 import { Button, MenuItem } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
@@ -8,7 +9,9 @@ import { adminTranslations } from '../../adminLocales';
 import type { ManualAdmission } from '../../services/guestAdmission';
 import { QueueRoster } from '../../services/queue-roster';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
+import { AddGuestFab } from './AddGuestFab';
 import { useManualGuestForm } from './AddGuestSection';
+import { wideLayoutQuery } from './admin-layout';
 import { KioskUnlockMenuItem } from './KioskUnlockMenuItem';
 import { ManualGuestDialog } from './ManualGuestDialog';
 import { OverflowMenu } from './OverflowMenu';
@@ -79,6 +82,7 @@ export const QueueView = observer(function QueueView({
 	// Every list starts open; a worker folds one away for the rest of the service if they like.
 	const [collapsed, setCollapsed] = useState<Partial<Record<QueueList, boolean>>>({});
 	const addGuestForm = useManualGuestForm(admissions);
+	const isWide = useMediaQuery(wideLayoutQuery);
 	// Drives the "called N min ago" labels. A minute's resolution needs nothing finer than this.
 	const [now, setNow] = useState(() => Date.now());
 
@@ -195,7 +199,7 @@ export const QueueView = observer(function QueueView({
 				open={!collapsed.waiting}
 				onToggle={() => toggle('waiting')}
 				action={
-					addGuestForm.canAdd ? (
+					addGuestForm.canAdd && isWide ? (
 						<button className="add-guest-button" type="button" onClick={addGuestForm.open}>
 							+ {t.addGuest}
 						</button>
@@ -215,6 +219,7 @@ export const QueueView = observer(function QueueView({
 				{guestRows(roster.finished, { status: true })}
 			</QueueSection>
 
+			{addGuestForm.canAdd && !isWide ? <AddGuestFab onClick={addGuestForm.open} /> : null}
 			<ManualGuestDialog
 				open={addGuestForm.isOpen}
 				admissions={admissions}

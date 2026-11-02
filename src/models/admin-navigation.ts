@@ -25,6 +25,9 @@ export class AdminNavigation {
 	 */
 	static readonly listedWithoutHeadings = 3;
 
+	/** The screens a worker moves between mid-market, which get a tab of their own on a phone. */
+	static readonly tabViews: readonly AdminView[] = ['current-session', 'queue', 'guest-database'];
+
 	constructor(private readonly views: readonly AdminView[]) {}
 
 	/** Whether the worker can open anything at all. */
@@ -43,6 +46,24 @@ export class AdminNavigation {
 			this.views.length > AdminNavigation.listedWithoutHeadings &&
 			this.sections.filter((section) => section.group !== null).length > 1
 		);
+	}
+
+	/**
+	 * The phone's tabs for this worker. A single leftover screen takes a tab too, rather than a More
+	 * that opens onto a list of one.
+	 */
+	get tabs(): AdminView[] {
+		const rest = this.views.filter((view) => !AdminNavigation.tabViews.includes(view));
+		const tabs = this.views.filter((view) => AdminNavigation.tabViews.includes(view));
+
+		return rest.length === 1 ? [...tabs, ...rest] : tabs;
+	}
+
+	/** Everything without a tab, which the phone keeps behind More. */
+	get overflow(): AdminNavigation {
+		const tabs = this.tabs;
+
+		return new AdminNavigation(this.views.filter((view) => !tabs.includes(view)));
 	}
 
 	/** The worker's screens by heading, headings in order, the ungrouped tools last. Empty runs are left out. */
