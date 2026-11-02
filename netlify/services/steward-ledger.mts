@@ -3,6 +3,7 @@ import { asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { db } from '../../db/index.mjs';
 import { guests, lotteryOddsChanges, marketEvents, visits } from '../../db/schema.mjs';
 import { AutomaticOddsRule } from '../../src/models/automatic-odds-rule.js';
+import { DrawEntry, type DrawEntryVisit } from '../../src/models/draw-entry.js';
 import { DrawLedger } from '../../src/models/draw-ledger.js';
 import { GuestReconciliation, type GuestIdentity } from '../../src/models/guest-reconciliation.js';
 import { StandingOdds, type OddsChange } from '../../src/models/standing-odds.js';
@@ -15,7 +16,7 @@ import type {
 	StewardTier,
 } from '../../src/services/steward-api.js';
 import { tracedQuery } from '../lib/sentry.mjs';
-import { readDrawLedger, readGuestIdentities } from './draw-ledger.mjs';
+import { hasDrawEventSql, readDrawLedger, readGuestIdentities } from './draw-ledger.mjs';
 
 type ChangeRow = OddsChange & {
 	id: string;
@@ -26,10 +27,9 @@ type ChangeRow = OddsChange & {
 	actorName: string | null;
 };
 
-type VisitRow = {
+type VisitRow = DrawEntryVisit & {
 	marketEventId: string;
 	guestId: string;
-	status: string;
 	lotteryWeight: number;
 	suggestedLotteryWeight: number | null;
 	householdSize: number;
@@ -113,6 +113,12 @@ export function buildStewardLedger(input: StewardLedgerInput): StewardLedgerResp
 		householdByPerson.set(reconciliation.personOf(guestId), householdSize);
 	}
 
+	const visitWeightByPerson = new Map(
+		upcomingVisits.map(({ guestId, lotteryWeight }) => [
+			reconciliation.personOf(guestId),
+			lotteryWeight,
+		]),
+	);
 	const entrantPersons = new Set(
 		upcomingVisits.map(({ guestId }) => reconciliation.personOf(guestId)),
 	);
@@ -136,7 +142,8 @@ export function buildStewardLedger(input: StewardLedgerInput): StewardLedgerResp
 				householdSize: householdByPerson.get(person) ?? null,
 				records: recordsByPerson.get(person)?.length ?? 1,
 				outcomes: [...ledger.recordOf(person).outcomes],
-				weight: setting?.weight ?? 1,
+				// A guest raised when added by hand holds that on the visit, with no saved change.
+				weight: setting?.weight ?? visitWeightByPerson.get(person) ?? 1,
 				setting: setting && {
 					weight: setting.weight,
 					scope: scopeOf(setting),
@@ -178,8 +185,7 @@ export function buildStewardLedger(input: StewardLedgerInput): StewardLedgerResp
 	return {
 		draws: ledger.draws.map(({ id, opensAt }) => {
 			const entered = input.visits.filter(
-				({ marketEventId, status }) =>
-					marketEventId === id && status !== 'registered' && status !== 'cancelled',
+				(visit) => visit.marketEventId === id && new DrawEntry(visit).entered,
 			);
 			const event = input.events.find((candidate) => candidate.id === id);
 
@@ -294,6 +300,9 @@ export async function readStewardLedger(now = new Date()): Promise<StewardLedger
 								marketEventId: visits.marketEventId,
 								guestId: visits.guestId,
 								status: visits.status,
+								source: visits.source,
+								queuePosition: visits.queuePosition,
+								hasDrawEvent: hasDrawEventSql,
 								lotteryWeight: visits.lotteryWeight,
 								suggestedLotteryWeight: visits.suggestedLotteryWeight,
 								householdSize: visits.householdSize,

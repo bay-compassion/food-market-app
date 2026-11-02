@@ -26,7 +26,10 @@ const upcoming = {
 const visit = {
 	marketEventId: 'd1',
 	guestId: 'old',
-	status: 'not_placed',
+	status: 'not_placed' as const,
+	source: 'self',
+	queuePosition: null,
+	hasDrawEvent: true,
 	lotteryWeight: 1,
 	suggestedLotteryWeight: 1,
 	householdSize: 4,
@@ -73,7 +76,16 @@ describe('buildStewardLedger', () => {
 		// Act
 		const { people, upcoming: next } = buildStewardLedger(
 			input({
-				visits: [visit, { ...visit, marketEventId: 'd2', guestId: 'new', status: 'registered' }],
+				visits: [
+					visit,
+					{
+						...visit,
+						marketEventId: 'd2',
+						guestId: 'new',
+						status: 'registered' as const,
+						hasDrawEvent: false,
+					},
+				],
 				changes: [
 					{
 						id: 'c1',
@@ -100,11 +112,67 @@ describe('buildStewardLedger', () => {
 	it('takes people already placed out of the spots left', () => {
 		// Act
 		const { upcoming: next } = buildStewardLedger(
-			input({ visits: [{ ...visit, marketEventId: 'd2', status: 'waiting' }] }),
+			input({
+				visits: [
+					{
+						...visit,
+						marketEventId: 'd2',
+						status: 'waiting' as const,
+						queuePosition: 4,
+						hasDrawEvent: false,
+						source: 'admin',
+					},
+				],
+			}),
 		);
 
 		// Assert
 		expect(next?.spots).toBe(99);
+	});
+
+	it('leaves a guest placed straight into line out of a draw’s tiers', () => {
+		// Act
+		const { draws } = buildStewardLedger(
+			input({
+				visits: [
+					visit,
+					{
+						...visit,
+						guestId: 'bo',
+						status: 'waiting',
+						source: 'admin',
+						queuePosition: 1,
+						hasDrawEvent: false,
+					},
+				],
+			}),
+		);
+
+		// Assert
+		expect(draws[0]?.tiers).toEqual([{ weight: 1, entries: 1, placed: 0 }]);
+	});
+
+	it('shows odds raised on a visit when no change is saved', () => {
+		// Act
+		const { people } = buildStewardLedger(
+			input({
+				visits: [
+					visit,
+					{
+						...visit,
+						marketEventId: 'd2',
+						guestId: 'new',
+						status: 'registered',
+						hasDrawEvent: false,
+						lotteryWeight: 5,
+					},
+				],
+			}),
+		);
+
+		// Assert
+		expect(people[0]?.weight).toBe(5);
+		expect(people[0]?.setting).toBeNull();
 	});
 
 	it('reports a past draw by tier', () => {
