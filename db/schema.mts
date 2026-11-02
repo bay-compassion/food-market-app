@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
 	boolean,
+	check,
 	date,
 	index,
 	integer,
@@ -320,4 +321,29 @@ export const smsOptOuts = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [uniqueIndex('sms_opt_outs_guest_idx').on(table.guestId)],
+);
+
+/** Anonymous completed shopping: one row per household, never a fabricated guest or visit. */
+export const householdServiceEntries = pgTable(
+	'household_service_entries',
+	{
+		/** Client-generated operation id makes a retried create idempotent. */
+		id: uuid('id').primaryKey(),
+		marketEventId: uuid('market_event_id')
+			.notNull()
+			.references(() => marketEvents.id),
+		householdSize: integer('household_size').notNull(),
+		/** Original submitted size, retained so a retry still matches after another worker corrects it. */
+		initialHouseholdSize: integer('initial_household_size').notNull(),
+		createdBy: text('created_by'),
+		updatedBy: text('updated_by'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+		voidedAt: timestamp('voided_at', { withTimezone: true }),
+		version: integer('version').notNull().default(1),
+	},
+	(table) => [
+		index('household_service_entries_event_idx').on(table.marketEventId),
+		check('household_service_entries_size_check', sql`${table.householdSize} BETWEEN 1 AND 30`),
+	],
 );

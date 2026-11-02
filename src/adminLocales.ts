@@ -5,6 +5,27 @@ import type { ReportColumnKey, ReportId, ReportValueKey } from './services/repor
 import type { VisitEventKind } from './services/visit-events.ts';
 
 export interface AdminTranslation {
+	householdService: {
+		title: string;
+		help: string;
+		size: string;
+		record: string;
+		retrySave: string;
+		saved: string;
+		refresh: string;
+		total: string;
+		households: string;
+		people: string;
+		entries: string;
+		correct: string;
+		saveCorrection: string;
+		cancel: string;
+		undo: string;
+		restore: string;
+		voided: string;
+		close: string;
+		errors: Record<'load' | 'save' | 'correct', string>;
+	};
 	registrationScheduledPast: string;
 	registrationOpenUntil: string;
 	registrationOpenPast: string;
@@ -822,6 +843,31 @@ export const adminTranslations = {
 		reportPrivacyNote:
 			'Reports count people without naming them. Only the full export identifies guests, so share that file carefully.',
 		reportEmpty: 'No sessions in this date range.',
+		householdService: {
+			title: 'Record household served',
+			help: 'Record completed shopping only. Do not add a household already marked served in the queue. No name or phone number is collected.',
+			size: 'Household size',
+			record: 'Record household',
+			retrySave: 'Retry this save',
+			saved: 'Household recorded. Ready for the next household.',
+			refresh: 'Refresh entries',
+			total: 'Count-only total',
+			households: 'households',
+			people: 'people',
+			entries: 'Recorded households, newest first',
+			correct: 'Correct size',
+			saveCorrection: 'Save correction',
+			cancel: 'Cancel',
+			undo: 'Undo entry',
+			restore: 'Restore entry',
+			voided: 'Undone',
+			close: 'Close',
+			errors: {
+				load: 'Entries could not be loaded. Refresh to try again.',
+				save: 'The save could not be confirmed. Retry this save before recording another household; it will not be counted twice.',
+				correct: 'The correction could not be confirmed. Refresh entries before trying again.',
+			},
+		},
 		reportNames: {
 			'session-summary': 'Session Summary',
 			'people-served': 'People Served by Month',
@@ -833,21 +879,25 @@ export const adminTranslations = {
 			'session-summary':
 				'One row per session: how many signed up, how many were served, and how full it ran.',
 			'people-served':
-				'Monthly totals for grant reporting. Guests and household members are counted once a month, however many times they came.',
+				'Service totals include count-only households. People served sums household sizes at every shopping visit, including repeats. Unique guests and monthly unique household members cover identified visits only; count-only households cannot be deduplicated.',
 			'guest-demographics':
-				'Age, household size, and language of everyone served in the period, each guest counted once.',
+				'Age, household size, and language of identified guests served in the period, each guest counted once. Excludes count-only households.',
 			'lottery-outcomes':
 				'How often guests at each weighting were placed in the line. Covers guests who signed up themselves and were entered in a draw.',
-			'service-timing': 'How long guests waited between being called and being served.',
+			'service-timing':
+				'How long identified guests waited between being called and being served. Excludes count-only households.',
 		},
 		reportColumnLabels: {
+			countOnlyHouseholds: 'Count-only households',
+			countOnlyMembers: 'Count-only people served (with repeats)',
+			peopleServings: 'People served (with repeats)',
 			capacity: 'Capacity',
 			category: 'Category',
 			entries: 'Entries',
 			fillRate: 'Filled',
 			firstTime: 'First visit',
 			guests: 'Guests',
-			householdMembers: 'Household members',
+			householdMembers: 'Identified household members (monthly unique)',
 			longestWait: 'Longest wait',
 			medianWait: 'Median wait',
 			month: 'Month',
@@ -855,7 +905,7 @@ export const adminTranslations = {
 			notPlaced: 'Not placed',
 			placed: 'Placed',
 			placementRate: 'Placed rate',
-			served: 'Served',
+			served: 'Households served',
 			sessionDate: 'Session',
 			sessions: 'Sessions',
 			share: 'Share',

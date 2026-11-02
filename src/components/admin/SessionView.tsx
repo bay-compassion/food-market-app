@@ -6,6 +6,7 @@ import { adminTranslations } from '../../adminLocales';
 import type { ManualAdmission } from '../../services/guestAdmission';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { AddGuestSection } from './AddGuestSection';
+import { HouseholdServiceRecorder } from './HouseholdServiceRecorder';
 import { SessionGuestList } from './SessionGuestList';
 import { SessionOverview } from './SessionOverview';
 import { SessionPhaseControls, type SessionPhaseControlsProps } from './SessionPhaseControls';
@@ -70,6 +71,12 @@ export const SessionView = observer(function SessionView({
 			</SessionStepper>
 
 			{showsRegisteredGuests ? <SessionGuestList guests={sessionGuests} /> : null}
+
+			{event && sessionState === 'service_started' ? (
+				<section className="admin-section">
+					<HouseholdServiceRecorder key={event.id} marketEventId={event.id} />
+				</section>
+			) : null}
 
 			{/* A worker can add someone by hand at any stage; only what "adding" means changes. */}
 			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />

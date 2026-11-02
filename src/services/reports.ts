@@ -32,6 +32,9 @@ export type ReportColumnType =
 	| 'month';
 
 export const reportColumnKeys = [
+	'countOnlyHouseholds',
+	'countOnlyMembers',
+	'peopleServings',
 	'capacity',
 	'category',
 	'entries',
@@ -75,6 +78,9 @@ export const reportColumns: Record<ReportId, ReportColumn[]> = {
 		{ key: 'capacity', type: 'number' },
 		{ key: 'signUps', type: 'number' },
 		{ key: 'served', type: 'number' },
+		{ key: 'peopleServings', type: 'number' },
+		{ key: 'countOnlyHouseholds', type: 'number' },
+		{ key: 'countOnlyMembers', type: 'number' },
 		{ key: 'noShows', type: 'number' },
 		{ key: 'notPlaced', type: 'number' },
 		{ key: 'walkIns', type: 'number' },
@@ -84,6 +90,9 @@ export const reportColumns: Record<ReportId, ReportColumn[]> = {
 		{ key: 'month', type: 'month' },
 		{ key: 'sessions', type: 'number' },
 		{ key: 'served', type: 'number' },
+		{ key: 'peopleServings', type: 'number' },
+		{ key: 'countOnlyHouseholds', type: 'number' },
+		{ key: 'countOnlyMembers', type: 'number' },
 		{ key: 'uniqueGuests', type: 'number' },
 		{ key: 'householdMembers', type: 'number' },
 		{ key: 'firstTime', type: 'number' },

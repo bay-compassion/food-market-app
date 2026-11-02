@@ -6,6 +6,7 @@ import { adminTranslations } from '../../adminLocales';
 import { SessionHistoryMonths } from '../../models/session-history-months';
 import type { GuestAdmission } from '../../services/guestAdmission';
 import { useRootStore } from '../../stores/react/store-context';
+import { HouseholdServiceRecorder } from './HouseholdServiceRecorder';
 import { ManualGuestDialog } from './ManualGuestDialog';
 import { SessionHistoryRow } from './SessionHistoryRow';
 import type { HistoricalEvent, ManualGuest } from './types';
@@ -55,6 +56,7 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 	const t = adminTranslations.en;
 	const { translations } = useRootStore();
 	const [openEventId, setOpenEventId] = useState<string | null>(null);
+	const [countEventId, setCountEventId] = useState<string | null>(null);
 	const months = new SessionHistoryMonths(history).months;
 	const monthName = new Intl.DateTimeFormat(translations.locale, {
 		month: 'long',
@@ -78,6 +80,7 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 									key={session.id}
 									session={session}
 									onRecordServedGuest={() => setOpenEventId(session.id)}
+									onRecordHousehold={() => setCountEventId(session.id)}
 								/>
 							))}
 						</ul>
@@ -86,6 +89,14 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 			) : (
 				<p className="empty-state">{t.noHistory}</p>
 			)}
+			{countEventId ? (
+				<HouseholdServiceRecorder
+					key={countEventId}
+					marketEventId={countEventId}
+					initiallyOpen
+					onClosed={() => setCountEventId(null)}
+				/>
+			) : null}
 			<ManualGuestDialog
 				open={openEventId !== null}
 				admissions={endedAdmissions}
