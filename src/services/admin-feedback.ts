@@ -12,6 +12,9 @@ export type AdminFeedback =
 	| { kind: 'error'; reason?: string }
 	| { kind: 'saved' }
 	| { kind: 'session-updated' }
+	/** The new time, so a mis-tapped choice shows up straight away: these apply without asking. */
+	| { kind: 'registration-extended'; closesAt: Date }
+	| { kind: 'registration-postponed'; opensAt: Date }
 	| { kind: 'draw-complete' }
 	| { kind: 'no-waiting-guests' }
 	| { kind: 'broadcast-queued'; recipients: number }
@@ -22,6 +25,10 @@ export type AdminFeedback =
 	/** This worker may not put that guest on a phone; a manager can. */
 	| { kind: 'guest-claim-refused' }
 	| { kind: 'guest-deleted'; name: string };
+
+function clockTime(time: Date): string {
+	return new Intl.DateTimeFormat(undefined, { timeStyle: 'short' }).format(time);
+}
 
 /** What the dashboard shows for an outcome. */
 export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTranslation): string {
@@ -36,6 +43,10 @@ export function adminFeedbackText(feedback: AdminFeedback | null, t: AdminTransl
 			return t.saved;
 		case 'session-updated':
 			return t.sessionUpdated;
+		case 'registration-extended':
+			return t.today.extended.replace('{time}', clockTime(feedback.closesAt));
+		case 'registration-postponed':
+			return t.today.postponed.replace('{time}', clockTime(feedback.opensAt));
 		case 'draw-complete':
 			return t.drawComplete;
 		case 'no-waiting-guests':
@@ -66,6 +77,8 @@ export function adminFeedbackSeverity(feedback: AdminFeedback): NotificationSeve
 			return 'info';
 		case 'saved':
 		case 'session-updated':
+		case 'registration-extended':
+		case 'registration-postponed':
 		case 'draw-complete':
 		case 'broadcast-queued':
 		case 'demo-loaded':

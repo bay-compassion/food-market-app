@@ -32,17 +32,40 @@ export class MarketActionPrompts {
 		return {
 			question: questions[action],
 			details: this.detailsFor(action),
-			confirmLabel: this.t.confirmContinue,
-			dismissLabel: this.t.cancel,
+			confirmLabel: this.confirmLabelFor(action),
+			dismissLabel: action === 'close_session' ? this.t.today.keepServing : this.t.cancel,
 			destructive: MarketActionPrompts.destructive.includes(action),
 		};
 	}
 
+	/** The two actions that take something away say so on the button itself. */
+	private confirmLabelFor(action: MarketAction): string {
+		if (action === 'reset_session') {
+			return this.t.resetSession;
+		}
+
+		if (action !== 'close_session') {
+			return this.t.confirmContinue;
+		}
+
+		return this.outstandingCount > 0
+			? this.t.today.closeAndMarkNoShow.replace('{count}', String(this.outstandingCount))
+			: this.t.closeSession;
+	}
+
 	/** The consequences worth naming, for the two actions that have any. */
 	private detailsFor(action: MarketAction): string[] | undefined {
-		if (action === 'close_session' && this.outstandingCount > 0) {
+		if (action === 'close_session') {
 			return [
-				this.t.confirmCloseSessionOutstanding.replace('{count}', String(this.outstandingCount)),
+				...(this.outstandingCount > 0
+					? [
+							this.t.confirmCloseSessionOutstanding.replace(
+								'{count}',
+								String(this.outstandingCount),
+							),
+						]
+					: []),
+				this.t.today.closeEndsService,
 			];
 		}
 

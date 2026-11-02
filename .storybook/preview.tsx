@@ -166,8 +166,8 @@ const preview: Preview = {
 					'Admin',
 					// Match adminViews in src/services/admin-views.ts, with shared components last.
 					[
+						'Today',
 						'Checklist',
-						'Current Session',
 						'Queue',
 						['Queue', 'Guest Row'],
 						'Broadcast',
@@ -250,39 +250,43 @@ const preview: Preview = {
 
 			// A router as well as the store: a component that navigates (the save-information button, the
 			// app bar's mode toggle) throws outright without one, rather than merely failing to move.
-			const router = createMemoryRouter([
-				{
-					path: '*',
-					element: (
-						<>
-							{framed ? (
-								// The chrome `App` puts around every route, so a guest story reads as the screen
-								// it is part of. Only guest stories: an admin screen has no app bar to sit under.
-								<main className="app-shell sb-app-frame" dir={store.translations.dir}>
-									<AppBar />
-									<div className={shells.guest}>
-										<Story />
-									</div>
-									<AppFooter />
-								</main>
-							) : (
-								<div className={shells[shell]} dir={store.translations.dir}>
-									{shell === 'admin' ? (
-										// What `AdminDashboardLayout` provides around every admin screen.
-										<AdminThemeProvider>
+			const router = createMemoryRouter(
+				[
+					{
+						path: '*',
+						element: (
+							<>
+								{framed ? (
+									// The chrome `App` puts around every route, so a guest story reads as the screen
+									// it is part of. Only guest stories: an admin screen has no app bar to sit under.
+									<main className="app-shell sb-app-frame" dir={store.translations.dir}>
+										<AppBar />
+										<div className={shells.guest}>
 											<Story />
-										</AdminThemeProvider>
-									) : (
-										<Story />
-									)}
-								</div>
-							)}
-							<ConfirmationDrawer />
-							<NotificationToasts />
-						</>
-					),
-				},
-			]);
+										</div>
+										<AppFooter />
+									</main>
+								) : (
+									<div className={shells[shell]} dir={store.translations.dir}>
+										{shell === 'admin' ? (
+											// What `AdminDashboardLayout` provides around every admin screen.
+											<AdminThemeProvider>
+												<Story />
+											</AdminThemeProvider>
+										) : (
+											<Story />
+										)}
+									</div>
+								)}
+								<ConfirmationDrawer />
+								<NotificationToasts />
+							</>
+						),
+					},
+				],
+				// Set `route` on a story whose component behaves differently by location.
+				{ initialEntries: [(context.parameters.route as string | undefined) ?? '/'] },
+			);
 
 			const colorScheme = isStoryColorScheme(context.globals.colorScheme)
 				? context.globals.colorScheme

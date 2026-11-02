@@ -64,14 +64,13 @@ function field(doc: Document, label: string): HTMLElement | null {
 const sheet = (doc: Document) => doc.querySelector<HTMLElement>('[role="alertdialog"]');
 
 /**
- * The list of screens: in the view switcher's sheet on a phone, which is only there while open, or
- * the sidebar on a desk.
+ * The list of screens: in the More sheet on a phone, which is only there while open, or the sidebar
+ * on a desk.
  */
 export const navigation = (doc: Document) => doc.querySelector<HTMLElement>('.admin-navigation');
 
-/** The title that is also the view switcher on a phone. A desk has a plain title instead. */
-export const switcher = (doc: Document) =>
-	doc.querySelector<HTMLElement>('.admin-heading h1 button');
+/** The tab that opens the More sheet on a phone. A desk has the sidebar instead. */
+export const switcher = (doc: Document) => doc.querySelector<HTMLElement>('.admin-more-tab');
 
 /** The screen the dashboard is on, read from its title. */
 export function currentView(doc: Document): AdminView | null {
@@ -92,7 +91,10 @@ export function markTarget(mark: AdminMark, doc: Document): HTMLElement | null {
 
 	switch (kind) {
 		case 'tab':
-			return labelled(navigation(doc), 'button', adminViewLabels[key as unknown as AdminView]);
+			return (
+				doc.querySelector<HTMLElement>(`.admin-tabs [data-view="${key as string}"]`) ??
+				labelled(navigation(doc), 'button', adminViewLabels[key as unknown as AdminView])
+			);
 		case 'switcher':
 			return switcher(doc);
 		case 'navigation':

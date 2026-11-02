@@ -1,78 +1,67 @@
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import { adminTranslations } from '../../adminLocales';
 import type { ManualAdmission } from '../../services/guestAdmission';
+import { currentSessionState, type SessionCommand } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
+import { useRootStore } from '../../stores/react/store-context';
 import { AddGuestSection } from './AddGuestSection';
 import { HouseholdServiceRecorder } from './HouseholdServiceRecorder';
+import { ResetSessionDisclosure } from './ResetSessionDisclosure';
 import { SessionGuestList } from './SessionGuestList';
-import { SessionOverview } from './SessionOverview';
-import { SessionPhaseControls, type SessionPhaseControlsProps } from './SessionPhaseControls';
-import { SessionStepper } from './SessionStepper';
-import type { ManualGuest, QueueGuest } from './types';
+import { SessionPhasePlan } from './SessionPhasePlan';
+import { SessionPhaseStatus } from './SessionPhaseStatus';
+import type { AdminView, ManualGuest, QueueGuest } from './types';
 
-export type SessionViewProps = SessionPhaseControlsProps & {
-	counts: Partial<Record<VisitStatus, number>>;
-	statusLabels: Record<VisitStatus, string>;
-	sessionGuests: QueueGuest[];
-	admissions: ManualAdmission[];
-	onAddGuest: (guest: ManualGuest) => void;
-};
-
-const ResetCard = styled.section`
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	align-items: center;
+const Screen = styled.div`
+	display: grid;
 	gap: 16px;
 
-	p {
-		max-width: 560px;
-		color: var(--color-text-subtle);
-		line-height: 1.5;
+	/* The section's usual bottom margin would double the gap. */
+	.admin-section {
+		margin-bottom: 0;
 	}
 `;
 
-/** The session's own screen: whichever controls its current phase actually allows. */
+export type SessionViewProps = {
+	statusLabels: Record<VisitStatus, string>;
+	sessionGuests: QueueGuest[];
+	admissions: ManualAdmission[];
+	busy?: boolean;
+	onRun: (action: SessionCommand) => void;
+	onAddGuest: (guest: ManualGuest) => void;
+	onNavigate: (view: AdminView) => void;
+};
+
+/**
+ * The Today screen: where the market stands, what happens next, and the ways to step in. Only the
+ * current phase's controls exist, and the server's phase decides which that is.
+ */
 export const SessionView = observer(function SessionView({
-	event,
-	sessionState,
-	counts,
 	statusLabels,
 	sessionGuests,
 	admissions,
 	busy,
 	onRun,
 	onAddGuest,
-	...phaseControls
+	onNavigate,
 }: SessionViewProps) {
-	const t = adminTranslations.en;
-
+	const { admin, session } = useRootStore();
+	const event = session.currentState?.event ?? null;
+	const phase = currentSessionState(event?.status);
 	const showsRegisteredGuests =
-		!!event &&
-		['registration_open', 'registration_closed', 'lottery_pending'].includes(sessionState);
+		!!event && ['registration_open', 'registration_closed', 'lottery_pending'].includes(phase);
 
 	return (
-		<>
-			{sessionState === 'service_started' ? (
-				<SessionOverview counts={counts} statusLabels={statusLabels} />
-			) : null}
+		<Screen>
+			<SessionPhaseStatus
+				statusLabels={statusLabels}
+				busy={busy}
+				onRun={onRun}
+				onNavigate={onNavigate}
+			/>
 
-			<SessionStepper sessionState={sessionState} event={event}>
-				<SessionPhaseControls
-					{...phaseControls}
-					event={event}
-					sessionState={sessionState}
-					busy={busy}
-					onRun={onRun}
-				/>
-			</SessionStepper>
-
-			{showsRegisteredGuests ? <SessionGuestList guests={sessionGuests} /> : null}
-
-			{event && sessionState === 'service_started' ? (
+			{event && phase === 'service_started' ? (
 				<section className="admin-section">
 					<HouseholdServiceRecorder key={event.id} marketEventId={event.id} />
 				</section>
@@ -81,24 +70,14 @@ export const SessionView = observer(function SessionView({
 			{/* A worker can add someone by hand at any stage; only what "adding" means changes. */}
 			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />
 
+			<SessionPhasePlan busy={busy} onRun={onRun} />
+
+			{showsRegisteredGuests ? <SessionGuestList guests={sessionGuests} /> : null}
+
 			{/* A session that never opened has nothing to reset. */}
-			{event && sessionState !== 'scheduled' ? (
-				<ResetCard className="admin-section reset-card">
-					<div>
-						<h2>{t.resetSession}</h2>
-						<p>{t.resetSessionHelp}</p>
-					</div>
-					<Button
-						type="button"
-						variant="outlined"
-						color="error"
-						disabled={busy}
-						onClick={() => onRun('reset_session')}
-					>
-						{t.resetSession}
-					</Button>
-				</ResetCard>
+			{event && phase !== 'scheduled' && phase !== 'inactive' && admin.can('manage:sessions') ? (
+				<ResetSessionDisclosure busy={busy} onReset={() => onRun('reset_session')} />
 			) : null}
-		</>
+		</Screen>
 	);
 });

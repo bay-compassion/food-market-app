@@ -1,6 +1,6 @@
 # Recording count-only households served
 
-During service, use **Record household served** on the queue desk or Session screen. For a closed
+During service, use **Record household served** on the queue desk or Today screen. For a closed
 session, choose the same action from its History menu. Enter the household size (including the
 shopper), from 1 to 30, then record it. The form clears for the next household and shows session
 count-only totals. It does not create a guest, queue place, notification, or print job.

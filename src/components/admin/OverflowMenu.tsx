@@ -5,6 +5,8 @@ export type OverflowMenuProps = {
 	/** Names the button for a screen reader; the icon itself says nothing. */
 	label: string;
 	disabled?: boolean;
+	/** Opens above the button, for one along the bottom edge of the screen. */
+	opensUpward?: boolean;
 	/** The menu items. Given `closeMenu` so an item can dismiss the menu once chosen. */
 	children: (closeMenu: () => void) => ReactNode;
 };
@@ -19,8 +21,8 @@ function MoreIcon() {
 	);
 }
 
-/** The vertical-dots button and the menu it opens, anchored under its trailing edge. */
-export function OverflowMenu({ label, disabled, children }: OverflowMenuProps) {
+/** The vertical-dots button and the menu it opens, anchored to its trailing edge. */
+export function OverflowMenu({ label, disabled, opensUpward, children }: OverflowMenuProps) {
 	const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
 	function openMenu(event: MouseEvent<HTMLElement>) {
@@ -48,8 +50,8 @@ export function OverflowMenu({ label, disabled, children }: OverflowMenuProps) {
 				anchorEl={anchor}
 				open={Boolean(anchor)}
 				onClose={closeMenu}
-				anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-				transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+				anchorOrigin={{ vertical: opensUpward ? 'top' : 'bottom', horizontal: 'right' }}
+				transformOrigin={{ vertical: opensUpward ? 'bottom' : 'top', horizontal: 'right' }}
 			>
 				{children(closeMenu)}
 			</Menu>

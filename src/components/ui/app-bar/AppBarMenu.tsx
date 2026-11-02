@@ -9,15 +9,17 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { observer } from 'mobx-react-lite';
 import { useId, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 
 import { authReturnUrl } from '../../../auth';
 import { isFeedbackEnabled, openFeedbackForm } from '../../../sentry-feedback-trigger';
+import { isAdminPath } from '../../../services/admin-views';
 import { useRootStore } from '../../../stores/react/store-context';
 import { useTranslation } from '../../../stores/react/use-translation';
 import { useGuestTourEnabled } from '../../hooks/use-guest-tour-enabled';
 import { ContrastIcon } from '../icons/ContrastIcon';
 import { DashboardIcon } from '../icons/DashboardIcon';
+import { DescriptionIcon } from '../icons/DescriptionIcon';
 import { ExploreIcon } from '../icons/ExploreIcon';
 import { FeedbackIcon } from '../icons/FeedbackIcon';
 import { GlobeIcon } from '../icons/GlobeIcon';
@@ -26,17 +28,25 @@ import { LoginIcon } from '../icons/LoginIcon';
 import { LogoutIcon } from '../icons/LogoutIcon';
 import { MoreVertIcon } from '../icons/MoreVertIcon';
 import { OpenExternalIcon } from '../icons/OpenExternalIcon';
+import { PrivacyIcon } from '../icons/PrivacyIcon';
 import { QrCodeIcon } from '../icons/QrCodeIcon';
 import { SmartphoneIcon } from '../icons/SmartphoneIcon';
+import { StorefrontIcon } from '../icons/StorefrontIcon';
 import { ColorModeDialog } from './ColorModeDialog';
 import { DeviceDetailsDialog } from './DeviceDetailsDialog';
 
-/** Secondary navigation and the authenticated staff account, tucked behind one menu. */
+/**
+ * Secondary navigation and the authenticated staff account, tucked behind one menu.
+ *
+ * The dashboard has no footer, so the legal links are here on every screen. It also has no use for
+ * the guest's introductions to the market, and offers a way back to the guest view instead.
+ */
 export const AppBarMenu = observer(function AppBarMenu() {
 	const { isAuthenticated, user, logout } = useAuth0();
-	const { appBar: t, help, marketName } = useTranslation();
+	const { appBar: t, help, marketName, privacyPolicy, termsAndConditions } = useTranslation();
 	const { tour, translations } = useRootStore();
 	const navigate = useNavigate();
+	const isAdmin = isAdminPath(useLocation().pathname);
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 	const [tourRequested, setTourRequested] = useState(false);
 	const tourEnabled = useGuestTourEnabled();
@@ -144,13 +154,15 @@ export const AppBarMenu = observer(function AppBarMenu() {
 					<OpenExternalIcon fontSize="small" sx={{ marginInlineStart: 2 }} />
 				</MenuItem>
 				<Divider />
-				<MenuItem component={Link} to="/help" onClick={close}>
-					<ListItemIcon>
-						<HelpIcon fontSize="small" />
-					</ListItemIcon>
-					{help.title}
-				</MenuItem>
-				{tourEnabled ? (
+				{isAdmin ? null : (
+					<MenuItem component={Link} to="/help" onClick={close}>
+						<ListItemIcon>
+							<HelpIcon fontSize="small" />
+						</ListItemIcon>
+						{help.title}
+					</MenuItem>
+				)}
+				{tourEnabled && !isAdmin ? (
 					<MenuItem onClick={takeTour}>
 						<ListItemIcon>
 							<ExploreIcon fontSize="small" />
@@ -187,6 +199,19 @@ export const AppBarMenu = observer(function AppBarMenu() {
 					</MenuItem>
 				) : null}
 				<Divider />
+				<MenuItem component={Link} to="/privacy" onClick={close}>
+					<ListItemIcon>
+						<PrivacyIcon fontSize="small" />
+					</ListItemIcon>
+					{privacyPolicy}
+				</MenuItem>
+				<MenuItem component={Link} to="/terms" onClick={close}>
+					<ListItemIcon>
+						<DescriptionIcon fontSize="small" />
+					</ListItemIcon>
+					{termsAndConditions}
+				</MenuItem>
+				<Divider />
 				{isAuthenticated ? (
 					/*
 					 * Who is signed in, stated once here rather than on the admin page it used to head.
@@ -209,13 +234,26 @@ export const AppBarMenu = observer(function AppBarMenu() {
 						{user?.email ?? user?.name}
 					</ListSubheader>
 				) : null}
-				{/* The same destination either way; what changes is whether it still asks for a sign-in. */}
-				<MenuItem component={Link} to="/admin" onClick={close}>
-					<ListItemIcon>
-						{isAuthenticated ? <DashboardIcon fontSize="small" /> : <LoginIcon fontSize="small" />}
-					</ListItemIcon>
-					{isAuthenticated ? t.adminPanel : t.staffLogin}
-				</MenuItem>
+				{isAdmin ? (
+					<MenuItem component={Link} to="/" onClick={close}>
+						<ListItemIcon>
+							<StorefrontIcon fontSize="small" />
+						</ListItemIcon>
+						{translations.adminTranslation.backToGuestView}
+					</MenuItem>
+				) : (
+					/* The same destination either way; what changes is whether it still asks for a sign-in. */
+					<MenuItem component={Link} to="/admin" onClick={close}>
+						<ListItemIcon>
+							{isAuthenticated ? (
+								<DashboardIcon fontSize="small" />
+							) : (
+								<LoginIcon fontSize="small" />
+							)}
+						</ListItemIcon>
+						{isAuthenticated ? t.adminPanel : t.staffLogin}
+					</MenuItem>
+				)}
 				{isAuthenticated ? (
 					<MenuItem onClick={signOut}>
 						<ListItemIcon>

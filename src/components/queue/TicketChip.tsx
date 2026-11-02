@@ -5,6 +5,7 @@ import { adminTranslations } from '../../adminLocales';
 import { NameTag } from '../../models/name-tag';
 import { QueueNumber } from '../../models/queue-number';
 import type { QueueGuest } from '../../services/admin-api';
+import { wideLayoutQuery } from '../admin/admin-layout';
 import { useQueueDesk } from './queue-desk-context';
 
 export type TicketChipProps = {
@@ -20,7 +21,7 @@ const Row = styled.li`
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		gap: 12px;
+		gap: 8px;
 		width: 100%;
 		min-height: 52px;
 		padding: 6px 12px 6px 6px;
@@ -79,6 +80,25 @@ const Row = styled.li`
 		text-decoration: line-through;
 	}
 
+	/*
+	 * Who it is. A phone stacks the code under the name, since both on one line leaves too little room
+	 * for a name. A desk has the room to keep them in a row.
+	 */
+	.who {
+		display: grid;
+		flex: 1;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	@media ${wideLayoutQuery} {
+		.who {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+		}
+	}
+
 	.name {
 		flex: 1;
 		min-width: 0;
@@ -90,7 +110,7 @@ const Row = styled.li`
 		text-overflow: ellipsis;
 	}
 
-	/* The code a volunteer checks a sticker against: on the name's line, at a size read at a glance. */
+	/* The code a volunteer checks a sticker against, at a size read at a glance. */
 	.reference {
 		flex: none;
 		color: var(--color-text-muted);
@@ -143,9 +163,11 @@ export const TicketChip = observer(function TicketChip({ guest, now }: TicketChi
 				onClick={() => desk.select(guest)}
 			>
 				<span className="number">{number}</span>
-				<span className="name">{name}</span>
-				<span className="reference" title={t.referenceHelp}>
-					{tag.reference}
+				<span className="who">
+					<span className="name">{name}</span>
+					<span className="reference" title={t.referenceHelp}>
+						{tag.reference}
+					</span>
 				</span>
 				<span className="language">{tag.languageCode}</span>
 				{/* Always drawn, empty when untimed, so the language codes line up down the list. */}

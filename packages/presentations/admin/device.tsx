@@ -213,15 +213,15 @@ export class AdminDevice implements AdminHandle {
 	}
 
 	/**
-	 * Moves to `view` as a worker would: on a phone, the title opens the sheet of screens and the
-	 * screen is tapped there, which closes it again.
+	 * Moves to `view` as a worker would: on a phone, by its tab, or else from the More sheet, which
+	 * closes again once a screen is tapped.
 	 */
 	private async navigate(view: AdminView): Promise<void> {
 		if (this.view === view) {
 			return;
 		}
 
-		if (!navigation(document)) {
+		if (!markTarget(`tab:${view}`, document)) {
 			this.press('switcher');
 			await this.commit();
 		}
@@ -230,7 +230,7 @@ export class AdminDevice implements AdminHandle {
 		await this.commit();
 	}
 
-	/** The view switcher's sheet, opened from the title and closed by tapping outside it. */
+	/** The More sheet, opened from its tab and closed by tapping outside it. */
 	private async navigation(scene: AdminScene): Promise<void> {
 		const open = Boolean(navigation(document));
 

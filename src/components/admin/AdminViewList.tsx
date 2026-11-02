@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
+import type { AdminNavigation } from '../../models/admin-navigation';
 import { useRootStore } from '../../stores/react/store-context';
 import { adminViewLabels } from './admin-view-labels';
 import type { AdminView } from './types';
@@ -71,11 +72,13 @@ export type AdminViewListProps = {
 	onSelect: (view: AdminView) => void;
 	/** Names the navigation landmark. */
 	label: string;
+	/** The screens to list, when that is not all of this worker's. */
+	navigation?: AdminNavigation;
 };
 
 /**
- * Every screen this worker can open, under the headings that say what each is for. The same list
- * sits in the sidebar on a wide screen and in the view switcher's sheet on a phone.
+ * Every screen this worker can open, under the headings that say what each is for. The whole list
+ * is the sidebar on a wide screen; what has no tab sits in the More sheet on a phone.
  *
  * The current screen is marked only when it is one of the worker's own: while permissions are
  * still resolving, or for a screen typed into the URL by hand, nothing is current, which is the
@@ -85,10 +88,11 @@ export const AdminViewList = observer(function AdminViewList({
 	activeView,
 	onSelect,
 	label,
+	navigation: listed,
 }: AdminViewListProps) {
 	const { admin, translations } = useRootStore();
 	const t = translations.adminTranslation;
-	const { navigation } = admin;
+	const navigation = listed ?? admin.navigation;
 	const current = navigation.includes(activeView) ? activeView : null;
 
 	return (

@@ -3,6 +3,7 @@ import { runInAction } from 'mobx';
 import { NextRegistration, type NextRegistrationWindow } from '../models/next-registration.ts';
 import { RegistrationClock } from '../models/registration-clock.ts';
 import { SaturdayClock } from '../models/saturday-clock.ts';
+import { SessionMilestones } from '../models/session-milestones.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import { PageVisibilityPoller } from '../services/page-visibility-poller.ts';
 import { type SessionCommand, SessionStatusEnum } from '../services/sessionStateMachine.ts';
@@ -142,6 +143,26 @@ export class MarketSessionStore {
 	}
 
 	/** Today's published timetable clock, rebuilt from observable session state. */
+	/** The current session's market day at a glance, for the admin's Today screen. */
+	get milestones(): SessionMilestones | null {
+		const event = this.currentState?.event;
+
+		if (!event) {
+			return null;
+		}
+
+		return new SessionMilestones({
+			status: event.status,
+			registrationOpensAt: new Date(event.registrationOpensAt),
+			registrationClosesAt: new Date(event.registrationClosesAt),
+			registrationGraceEndsAt: event.registrationGraceEndsAt
+				? new Date(event.registrationGraceEndsAt)
+				: null,
+			lotteryDelayMinutes: event.lotteryDelayMinutes,
+			lotteryDrawsAt: event.lotteryDrawsAt ? new Date(event.lotteryDrawsAt) : null,
+		});
+	}
+
 	get saturdayClock(): SaturdayClock | null {
 		const event = this.marketEvent;
 

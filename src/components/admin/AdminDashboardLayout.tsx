@@ -7,9 +7,9 @@ import { useRootStore } from '../../stores/react/store-context';
 import { wideLayoutQuery } from './admin-layout';
 import { adminViewLabels } from './admin-view-labels';
 import { AdminFeedbackBanner } from './AdminFeedbackBanner';
+import { AdminTabBar } from './AdminTabBar';
 import { AdminThemeProvider } from './AdminThemeProvider';
 import { AdminViewList } from './AdminViewList';
-import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { GuestClaimDialog } from './GuestClaimDialog';
 import { GuestDeletionDialog } from './GuestDeletionDialog';
 import { KioskUnlockDialog } from './KioskUnlockDialog';
@@ -23,7 +23,8 @@ import type { AdminView } from './types';
 const Dashboard = styled.section<{ $wide: boolean }>`
 	width: min(100% - 32px, ${({ $wide }) => ($wide ? '1600px' : '1180px')});
 	margin: 0 auto;
-	padding: 12px 0 60px;
+	/* Enough at the end of the page that the floating Add Guest button covers nothing. */
+	padding: 12px 0 84px;
 
 	.admin-sidebar {
 		position: sticky;
@@ -112,6 +113,8 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 	const t = translations.adminTranslation;
 	const isWide = useMediaQuery(wideLayoutQuery);
 	const headingId = useId();
+	const descriptions: Partial<Record<AdminView, string>> = t.viewDescriptions;
+	const description = descriptions[activeView];
 
 	return (
 		<AdminThemeProvider>
@@ -129,18 +132,10 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 					<section className="admin-content" aria-labelledby={headingId}>
 						<header className="admin-heading">
 							<div className="admin-title-row">
-								{isWide ? (
-									<h1 id={headingId}>{adminViewLabels[activeView]}</h1>
-								) : (
-									<AdminViewSwitcher
-										activeView={activeView}
-										onNavigate={onNavigate}
-										headingId={headingId}
-									/>
-								)}
+								<h1 id={headingId}>{adminViewLabels[activeView]}</h1>
 								<SessionStateChip />
 							</div>
-							<p>{t.viewDescriptions[activeView]}</p>
+							{description ? <p>{description}</p> : null}
 						</header>
 						<AdminFeedbackBanner />
 						{children}
@@ -150,6 +145,9 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 						<KioskUnlockDialog />
 					</section>
 				)}
+				{!isWide && !admin.navigation.isEmpty ? (
+					<AdminTabBar activeView={activeView} onNavigate={onNavigate} />
+				) : null}
 			</Dashboard>
 		</AdminThemeProvider>
 	);

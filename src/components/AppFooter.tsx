@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 
 import { useTranslation } from '../stores/react/use-translation';
 
-/** How the market works, and the legal links, at the bottom of every screen. */
+/** How the market works, and the legal links, at the bottom of every guest screen. */
 export const AppFooter = observer(function AppFooter() {
 	const t = useTranslation();
 

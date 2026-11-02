@@ -4,3 +4,6 @@
  * become tables. Every admin screen that changes shape at this width reads it from here.
  */
 export const wideLayoutQuery = '(min-width: 860px)';
+
+/** How tall the phone's tab bar is, without the safe area under it. */
+export const tabBarHeight = 60;

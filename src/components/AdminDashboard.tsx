@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../auth';
 import { LineOrder } from '../models/line-order';
@@ -19,7 +19,7 @@ import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
 import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
-import { SessionTab } from './admin/SessionTab';
+import { SessionView } from './admin/SessionView';
 import type { AdminView, ManualGuest, QueueGuest } from './admin/types';
 import { WorkersView } from './admin/WorkersView';
 import { PatternQuestionBank } from './schedule/PatternQuestionBank';
@@ -27,6 +27,7 @@ import { ScheduleView } from './schedule/ScheduleView';
 
 export type AdminDashboardProps = {
 	getAccessToken: () => Promise<string>;
+	/** The screen the route names. Without one, the dashboard picks where to land. */
 	view?: AdminView;
 	onNavigate: (view: AdminView) => void;
 };
@@ -34,7 +35,7 @@ export type AdminDashboardProps = {
 /** The admin area: navigation, the session's status, and whichever screen is selected. */
 export const AdminDashboard = observer(function AdminDashboard({
 	getAccessToken,
-	view = 'current-session',
+	view,
 	onNavigate,
 }: AdminDashboardProps) {
 	const rootStore = useRootStore();
@@ -42,7 +43,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 	const t = translations.adminTranslation;
 	const locale = translations.locale;
 
-	const [activeView, setActiveView] = useState<AdminView>(view);
+	const [activeView, setActiveView] = useState<AdminView>(view ?? 'current-session');
 	const [broadcast, setBroadcast] = useState({ title: '', body: '' });
 
 	useEffect(() => {
@@ -53,11 +54,15 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}, [getAccessToken, rootStore]);
 
 	useEffect(() => {
-		setActiveView(view);
+		setActiveView(view ?? 'current-session');
 	}, [view]);
+
+	// Opening the dashboard with no screen in the route, until it has landed or the worker has moved.
+	const isLanding = useRef(view === undefined);
 
 	const navigate = useCallback(
 		(next: AdminView) => {
+			isLanding.current = false;
 			setActiveView(next);
 			onNavigate(next);
 		},
@@ -83,6 +88,20 @@ export const AdminDashboard = observer(function AdminDashboard({
 		// Deliberately once on mount: this is the initial load, not a reaction to the current view.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [admin]);
+
+	const hasLoadedSession = session.currentState !== null;
+	const hasLoadedPermissions = admin.views.length > 0;
+
+	// The landing depends on the session's phase and the worker's role, which arrive separately.
+	useEffect(() => {
+		if (isLanding.current && hasLoadedSession && hasLoadedPermissions) {
+			isLanding.current = false;
+
+			if (admin.landingView !== activeView) {
+				navigate(admin.landingView);
+			}
+		}
+	}, [activeView, admin, hasLoadedPermissions, hasLoadedSession, navigate]);
 
 	const statusLabels: Record<VisitStatus, string> = adminVisitStatusLabels(locale);
 	const sessionState = currentSessionState(event?.status);
@@ -146,14 +165,14 @@ export const AdminDashboard = observer(function AdminDashboard({
 	return (
 		<AdminDashboardLayout activeView={activeView} onNavigate={navigate}>
 			{activeView === 'current-session' ? (
-				<SessionTab
+				<SessionView
 					statusLabels={statusLabels}
 					sessionGuests={currentSessionGuests}
 					admissions={sessionAdmissions}
+					busy={admin.isBusy}
 					onRun={(action) => void runMarketAction(action as MarketAction)}
 					onAddGuest={(guest) => void addManualGuest(guest)}
-					onNavigateQueue={() => navigate('queue')}
-					onNavigateSchedule={() => navigate('schedule')}
+					onNavigate={navigate}
 				/>
 			) : activeView === 'checklist' ? (
 				<ChecklistView onNavigateSchedule={() => navigate('schedule')} />

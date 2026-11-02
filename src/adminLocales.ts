@@ -1,8 +1,66 @@
 import type { GuestFormCopy } from './locales.ts';
+import type { MilestoneKind } from './models/session-milestones.ts';
 import type { AdminView, AdminViewGroup } from './services/admin-views.ts';
 import type { GuestDatabaseFilter } from './services/guest-database-filters.ts';
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
 import type { VisitEventKind } from './services/visit-events.ts';
+
+/** The Today screen's own copy. */
+type TodayTranslations = {
+	nothingToDoYet: string;
+	/** `{date}` is the session's day. */
+	opensByItself: string;
+	closesByItself: string;
+	leftToRegister: string;
+	drawsByItself: string;
+	drawResult: string;
+	drawReady: string;
+	drawManual: string;
+	/** A worker's view of a draw run by hand, which they cannot run themselves. */
+	drawWaiting: string;
+	drawWaitingHelp: string;
+	/** A worker's view of no session, which they cannot schedule themselves. */
+	noSessionWorker: string;
+	registered: string;
+	spots: string;
+	/** Names the timeline for a screen reader. */
+	timelineLabel: string;
+	/** Each step's name: in the past tense once it has happened, otherwise looking ahead. */
+	milestones: Record<MilestoneKind, { done: string; next: string }>;
+	afterTheDraw: string;
+	whenYouRunIt: string;
+	whenAdminRunsIt: string;
+	now: string;
+	beforeTheMarket: string;
+	sessionOnSchedule: string;
+	setUpRoomDisplay: string;
+	setUpCheckIn: string;
+	changeThePlan: string;
+	postponeRegistration: string;
+	extendRegistration: string;
+	minutes: string;
+	custom: string;
+	customPostponeCurrent: string;
+	customExtendCurrent: string;
+	customPostponeMinutes: string;
+	customExtendMinutes: string;
+	customPostponeResult: string;
+	customExtendResult: string;
+	customPostponeAction: string;
+	customExtendAction: string;
+	extended: string;
+	postponed: string;
+	needMoreTime: string;
+	everyoneIn: string;
+	runNowHelp: string;
+	sendBroadcast: string;
+	endOfMarket: string;
+	endOfMarketHelp: string;
+	somethingWrong: string;
+	keepServing: string;
+	closeAndMarkNoShow: string;
+	closeEndsService: string;
+};
 
 export interface AdminTranslation {
 	householdService: {
@@ -26,13 +84,9 @@ export interface AdminTranslation {
 		close: string;
 		errors: Record<'load' | 'save' | 'correct', string>;
 	};
-	registrationScheduledPast: string;
 	registrationOpenUntil: string;
-	registrationOpenPast: string;
 	decreaseNumber: string;
 	increaseNumber: string;
-	graceCountdown: string;
-	lotteryCountdown: string;
 	transitionDue: string;
 	pauseLottery: string;
 
@@ -50,11 +104,18 @@ export interface AdminTranslation {
 	admitToQueue: string;
 	admitToQueueHelp: string;
 	/** One line under each screen's title saying what the screen is for. */
-	viewDescriptions: Record<AdminView, string>;
+	/** Today has none: its status card already says what the screen is for. */
+	viewDescriptions: Record<Exclude<AdminView, 'current-session'>, string>;
+	/** The Today screen, the admin's view of the current session. */
+	today: TodayTranslations;
 	/** The navigation's headings. */
 	viewGroups: Record<AdminViewGroup, string>;
-	/** Names the sheet, and the title button that opens it, where a worker picks another screen. */
-	switchView: string;
+	/** The app bar menu's way out of the dashboard. */
+	backToGuestView: string;
+	/** The tab, and the sheet it opens, holding the screens with no tab of their own on a phone. */
+	moreViews: string;
+	/** The guest database's tab, where its full name does not fit. */
+	guestsTab: string;
 	/** A past session's status in the history list. */
 	sessionClosed: string;
 	/** A past session's one menu item: recording a guest served outside the app. */
@@ -102,7 +163,6 @@ export interface AdminTranslation {
 	editSettings: string;
 	error: string;
 	extendRegistration: string;
-	extendRegistrationMinutes: string;
 	guestList: string;
 	guestDatabase: string;
 	/** Feedback after a manual add; `{name}` is the guest's full name. */
@@ -150,10 +210,6 @@ export interface AdminTranslation {
 	householdCount: string;
 	lotteryActions: string;
 	/** The folded timeline's summary, for one completed step and for several (`{count}`). */
-	stepsDoneOne: string;
-	stepsDone: string;
-	showTimeline: string;
-	hideTimeline: string;
 	lotteryPending: string;
 	lotteryPendingHelp: string;
 	lotteryWeightHelp: string;
@@ -306,7 +362,6 @@ export interface AdminTranslation {
 	saveSettings: string;
 	saved: string;
 	scheduled: string;
-	scheduledFor: string;
 	serviceStarted: string;
 	sessionUpdated: string;
 	scaleAnswer: string;
@@ -462,6 +517,8 @@ export interface QueueDeskTranslation {
 	/** Names the arrow beside "return to back" that opens the other places. */
 	returnOptions: string;
 	addGuest: string;
+	/** Names the menu beside the call button on a phone. */
+	lineActions: string;
 	/** `{number}` is the queue position, `{name}` the guest's full name. */
 	openTicket: string;
 	ticket: string;
@@ -552,13 +609,9 @@ export interface VisitHistoryTranslation {
  */
 export const adminTranslations = {
 	en: {
-		registrationScheduledPast: 'Registration was scheduled for',
 		registrationOpenUntil: 'Registration open until',
-		registrationOpenPast: 'Registration was open until',
 		decreaseNumber: 'Decrease value',
 		increaseNumber: 'Increase value',
-		graceCountdown: 'Lottery pending in {time}',
-		lotteryCountdown: 'Automatic draw in {time}',
 		transitionDue: 'Waiting for the server to transition…',
 		pauseLottery: 'Pause Automatic Draw',
 		addGuest: 'Add Guest',
@@ -577,9 +630,66 @@ export const adminTranslations = {
 		admitToQueue: 'Give them a spot',
 		admitToQueueHelp:
 			'The guest skips the lottery and goes straight into the line. This uses one of the session’s spots.',
+		today: {
+			nothingToDoYet: 'Nothing to do yet',
+			opensByItself: 'Registration opens by itself on {date}.',
+			closesByItself: 'Closes by itself at {time}',
+			leftToRegister: 'Left to register. The draw follows on its own.',
+			drawsByItself: 'Draws by itself at {time}',
+			drawResult:
+				'{registered} registered for {capacity} spots. Guests hear the result as soon as it runs.',
+			drawReady: 'Ready to Run',
+			drawWaiting: 'Not Run Yet',
+			drawWaitingHelp: '{registered} registered for {capacity} spots. An admin runs the draw.',
+			noSessionWorker: 'There is no session right now.',
+			drawManual:
+				'{registered} registered for {capacity} spots. Nothing happens until you run the draw.',
+			registered: 'Registered',
+			spots: 'Spots in This Session',
+			timelineLabel: 'Today’s timeline',
+			milestones: {
+				registration_opens: { done: 'Registration Opened', next: 'Registration Opens' },
+				registration_closes: { done: 'Registration Closed', next: 'Registration Closes' },
+				lottery_draw: { done: 'Lottery Drawn', next: 'Lottery Draw' },
+				service_starts: { done: 'Service Started', next: 'Service Starts' },
+			},
+			afterTheDraw: 'After the Draw',
+			whenYouRunIt: 'When You Run It',
+			whenAdminRunsIt: 'When an Admin Runs It',
+			now: 'Now',
+			beforeTheMarket: 'Before the Market',
+			sessionOnSchedule: 'Session Is on the Schedule',
+			setUpRoomDisplay: 'Set Up the Room Display',
+			setUpCheckIn: 'Set Up the Check-In Computer',
+			changeThePlan: 'Change the Plan',
+			postponeRegistration: 'Postpone Registration',
+			extendRegistration: 'Extend Registration',
+			minutes: '{minutes} Min',
+			custom: 'Custom',
+			customPostponeCurrent: 'Registration opens at {time}.',
+			customExtendCurrent: 'Registration closes at {time}.',
+			customPostponeMinutes: 'Minutes to Postpone',
+			customExtendMinutes: 'Minutes to Add',
+			customPostponeResult: 'New opening time: {time}',
+			customExtendResult: 'New closing time: {time}',
+			customPostponeAction: 'Postpone to {time}',
+			customExtendAction: 'Extend to {time}',
+			extended: 'Registration now closes at {time}.',
+			postponed: 'Registration now opens at {time}.',
+			needMoreTime: 'Need More Time?',
+			everyoneIn: 'Everyone Is In?',
+			runNowHelp: 'Run it now instead of waiting. This can’t be undone.',
+			sendBroadcast: 'Send Broadcast',
+			endOfMarket: 'End of the Market',
+			endOfMarketHelp: 'Ends service and sets up the next session from the schedule.',
+			somethingWrong: 'Something Went Wrong?',
+			keepServing: 'Keep Serving',
+			closeAndMarkNoShow: 'Close Session and Mark {count} No Show',
+			closeEndsService:
+				'Service ends and the queue closes. The next session is set up from the schedule.',
+		},
 		viewDescriptions: {
 			checklist: 'What to set up at the market by hand before a session begins.',
-			'current-session': 'Open registration, draw the lottery, and follow today’s service.',
 			queue: 'Call guests forward and record who has been served.',
 			broadcast: 'Send one message to every guest who turned on notifications.',
 			schedule: 'Set when the market runs and add one-off sessions.',
@@ -595,7 +705,9 @@ export const adminTranslations = {
 			plan: 'Plan',
 			records: 'Records',
 		},
-		switchView: 'Switch View',
+		backToGuestView: 'Back to Guest View',
+		moreViews: 'More',
+		guestsTab: 'Guests',
 		sessionClosed: 'Closed',
 		recordServedGuest: 'Record a Served Guest',
 		manualGuestForm: {
@@ -650,15 +762,14 @@ export const adminTranslations = {
 		confirmReopenRegistration: 'Reopen registration for this session?',
 		confirmResetSession: 'Reset this session?',
 		confirmResetSessionDetails:
-			'It will leave Current Session and remain available in session history.',
+			'It stays in session history, but unlike closing, this does not set up the next session.',
 		confirmRunLottery: 'Run the lottery and start service?',
-		currentSession: 'Current Session',
+		currentSession: 'Today',
 		drawComplete: 'Lottery draw complete.',
 		drawn: 'Lottery drawn',
 		editSettings: 'Lottery setup',
 		error: 'Something went wrong. Please try again.',
 		extendRegistration: 'Extend',
-		extendRegistrationMinutes: 'Extend registration by (minutes)',
 		guestList: 'Guest list',
 		guestDatabase: 'Guest Database',
 		guestAdded: '{name} was added.',
@@ -698,10 +809,6 @@ export const adminTranslations = {
 		historySessions: 'Session History',
 		householdCount: 'Household',
 		lotteryActions: 'Lottery Draw',
-		stepsDoneOne: '1 Step Done',
-		stepsDone: '{count} Steps Done',
-		showTimeline: 'Show Timeline',
-		hideTimeline: 'Hide Timeline',
 		lotteryPending: 'Lottery pending',
 		lotteryPendingHelp: 'The registration pool is frozen. The lottery is ready to run.',
 		lotteryWeightHelp:
@@ -814,7 +921,7 @@ export const adminTranslations = {
 		noCalledGuests: 'Nobody has been called up yet.',
 		queueNotStarted: 'The queue opens once you run the lottery and service starts.',
 		goToQueue: 'Go to the Queue',
-		goToCurrentSession: 'Go to the Current Session',
+		goToCurrentSession: 'Go to Today',
 		queuePlacement: 'Place in the queue',
 		placeNext: 'Next up',
 		placeEnd: 'End of the queue',
@@ -923,7 +1030,7 @@ export const adminTranslations = {
 		},
 		resetSession: 'Reset Session',
 		resetSessionHelp:
-			'Return to inactive setup. This session and its guest records will remain in history.',
+			'Ends this session without setting up the next one. It and its guest records stay in history.',
 		postponeByMinutes: 'Postpone by (minutes)',
 		postponeRegistration: 'Postpone',
 		remove: 'Remove',
@@ -933,7 +1040,6 @@ export const adminTranslations = {
 		saveSettings: 'Save Settings',
 		saved: 'Settings saved.',
 		scheduled: 'Registration scheduled',
-		scheduledFor: 'Registration scheduled for',
 		serviceStarted: 'Service started',
 		sessionUpdated: 'Session updated.',
 		scaleAnswer: '1–10 scale',
@@ -974,6 +1080,7 @@ export const adminTranslations = {
 		devProgressHalfway: 'Halfway',
 		devProgressNearlyDone: 'Nearly done',
 		queueDesk: {
+			lineActions: 'More Line Actions',
 			title: 'Queue',
 			serving: 'Serving guests',
 			loading: 'Loading the queue…',
@@ -995,7 +1102,7 @@ export const adminTranslations = {
 			returnToBack: 'Return to back of line',
 			returnToFront: 'Return to front of line',
 			returnOptions: 'Other places in line',
-			addGuest: 'Add guest',
+			addGuest: 'Add Guest',
 			openTicket: 'Open ticket {number}, {name}',
 			ticket: 'Ticket',
 			noTicketOpen: 'Choose a ticket, or call the next guest.',

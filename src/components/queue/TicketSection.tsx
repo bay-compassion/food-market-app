@@ -53,8 +53,10 @@ const Section = styled.section`
 		text-align: center;
 	}
 
+	/* A track that can shrink, or a long name widens the whole page rather than truncating. */
 	ul {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 2px;
 		margin: 0;
 		padding: 0;

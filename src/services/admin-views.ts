@@ -5,8 +5,8 @@ import type { Permission } from './permissions.ts';
  * follows this order never splits a group. AdminAuthView validates route parameters against this set.
  */
 export const adminViews = [
-	'checklist',
 	'current-session',
+	'checklist',
 	'queue',
 	'broadcast',
 	'schedule',
@@ -24,6 +24,11 @@ export function isAdminView(value: unknown): value is AdminView {
 	return adminViews.some((view) => view === value);
 }
 
+/** Whether a route is inside the dashboard, where the shell works as an app rather than a page. */
+export function isAdminPath(pathname: string): boolean {
+	return pathname === '/admin' || pathname.startsWith('/admin/');
+}
+
 /**
  * What a worker needs to hold before a screen is worth offering them. Mirrors how the endpoints
  * behind each screen are gated in `netlify/functions/` — a screen whose data would come back 403
@@ -31,7 +36,7 @@ export function isAdminView(value: unknown): value is AdminView {
  */
 export const viewPermissions: Record<AdminView, Permission> = {
 	checklist: 'manage:sessions',
-	'current-session': 'manage:sessions',
+	'current-session': 'run:queue',
 	schedule: 'manage:sessions',
 	queue: 'run:queue',
 	broadcast: 'manage:sessions',

@@ -86,7 +86,7 @@ export interface AdminScene {
 	guests: AdminSceneGuest[];
 	/** Today's session has moved to Session history. */
 	archived: boolean;
-	/** Whether the view switcher's sheet of screens is open. */
+	/** Whether the More sheet of screens is open. */
 	navigating: boolean;
 	/** The button whose confirmation sheet is open, or `null` for none. */
 	confirm: AdminMark | null;
