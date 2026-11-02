@@ -5,6 +5,9 @@ import { GuestReconciliation } from '../../src/models/guest-reconciliation.js';
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
+const logError = vi.hoisted(() => vi.fn());
+
+vi.mock('../lib/logging.mjs', () => ({ getLogger: () => ({ error: logError }) }));
 vi.mock('./draw-ledger.mjs', () => ({
 	readGuestIdentities: vi.fn(),
 	readDrawLedger: vi.fn(),
@@ -43,6 +46,23 @@ describe('settleDrawOdds', () => {
 		// Assert
 		expect(settled).toEqual([]);
 		expect(readGuestIdentities).not.toHaveBeenCalled();
+	});
+
+	it('lets the draw go ahead on the visits’ own weights when odds can’t be settled', async () => {
+		// Arrange
+		const failure = new Error('connection lost');
+		const registrations = [{ id: 'v1', guestId: 'other', lotteryWeight: 2 }];
+
+		vi.mocked(readGuestIdentities).mockRejectedValue(failure);
+
+		// Act
+		const settled = await settleDrawOdds(db as unknown as Reader, draw, registrations);
+
+		// Assert
+		expect(settled).toEqual(registrations);
+		expect(logError).toHaveBeenCalledWith(
+			expect.objectContaining({ message: 'lottery_odds.settle_failed', err: failure }),
+		);
 	});
 
 	it('follows the person to a new guest record', async () => {

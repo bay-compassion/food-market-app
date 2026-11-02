@@ -240,20 +240,18 @@ export class WarehouseSnapshotter {
 			return this.history;
 		}
 
-		const [identities, firsts] = await tracedQuery('warehouse.read_guest_history', () =>
-			Promise.all([
-				readGuestIdentities(this.db, { realOnly: true }),
-				this.db
-					.select({
-						guestId: visits.guestId,
-						first: min(marketEvents.registrationOpensAt),
-					})
-					.from(visits)
-					.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
-					.where(eq(visits.status, 'served'))
-					.groupBy(visits.guestId),
-			]),
-		);
+		const { identities, firsts } = await tracedQuery('warehouse.read_guest_history', async () => ({
+			identities: await readGuestIdentities(this.db, { realOnly: true }),
+			firsts: await this.db
+				.select({
+					guestId: visits.guestId,
+					first: min(marketEvents.registrationOpensAt),
+				})
+				.from(visits)
+				.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
+				.where(eq(visits.status, 'served'))
+				.groupBy(visits.guestId),
+		}));
 
 		this.history = {
 			reconciliation: new GuestReconciliation(identities),

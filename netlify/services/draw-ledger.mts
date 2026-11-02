@@ -30,21 +30,19 @@ export async function readGuestIdentities(
 	database: Reader,
 	{ realOnly = false }: { realOnly?: boolean } = {},
 ): Promise<GuestIdentity[]> {
-	const [records, visitPhones] = await Promise.all([
-		database
-			.select({
-				guestId: guests.id,
-				firstName: guests.firstName,
-				lastName: guests.lastName,
-				phone: guests.normalizedPhone,
-			})
-			.from(guests)
-			.where(realOnly ? eq(guests.fake, false) : undefined),
-		database
-			.selectDistinct({ guestId: visits.guestId, phone: visits.normalizedPhone })
-			.from(visits)
-			.where(isNotNull(visits.normalizedPhone)),
-	]);
+	const records = await database
+		.select({
+			guestId: guests.id,
+			firstName: guests.firstName,
+			lastName: guests.lastName,
+			phone: guests.normalizedPhone,
+		})
+		.from(guests)
+		.where(realOnly ? eq(guests.fake, false) : undefined);
+	const visitPhones = await database
+		.selectDistinct({ guestId: visits.guestId, phone: visits.normalizedPhone })
+		.from(visits)
+		.where(isNotNull(visits.normalizedPhone));
 	const identities = new Map(
 		records.map((record) => [
 			record.guestId,
