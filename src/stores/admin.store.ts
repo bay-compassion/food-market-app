@@ -31,6 +31,7 @@ import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
 import { DemoStore } from './demo.store';
+import { HouseholdServiceStore } from './household-service.store';
 import type { MarketSessionStore } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
 
@@ -88,6 +89,11 @@ export class AdminStore {
 	private readonly api: AdminApi;
 	private readonly readPermissions: () => Promise<Permission[]>;
 	private readonly notifications: NotificationStore;
+
+	/** A screen-local recorder using the same authenticated API as the queue. */
+	createHouseholdServiceStore(marketEventId: string): HouseholdServiceStore {
+		return new HouseholdServiceStore(marketEventId, this.api);
+	}
 
 	get guests(): DatabaseGuest[] {
 		return this._guests;

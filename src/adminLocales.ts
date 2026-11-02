@@ -64,6 +64,11 @@ type TodayTranslations = {
 
 export interface AdminTranslation {
 	householdService: {
+		queueRecord: string;
+		queueSaved: string;
+		sectionTitle: string;
+		queueHelp: string;
+		entryActions: string;
 		title: string;
 		help: string;
 		size: string;
@@ -951,6 +956,12 @@ export const adminTranslations = {
 			'Reports count people without naming them. Only the full export identifies guests, so share that file carefully.',
 		reportEmpty: 'No sessions in this date range.',
 		householdService: {
+			queueRecord: 'Record',
+			queueSaved: 'Household recorded.',
+			sectionTitle: 'Count-only',
+			queueHelp:
+				'Record completed shopping outside the queue. Do not count guests already marked Done.',
+			entryActions: 'Household actions',
 			title: 'Record household served',
 			help: 'Record completed shopping only. Do not add a household already marked served in the queue. No name or phone number is collected.',
 			size: 'Household size',

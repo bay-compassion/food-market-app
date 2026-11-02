@@ -5,13 +5,13 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import { AdminApi } from '../../services/admin-api';
-import type { HouseholdServiceEntry } from '../../services/household-service';
 import {
 	HouseholdServiceStore,
 	type HouseholdServiceApi,
 } from '../../stores/household-service.store';
 import { useRootStore } from '../../stores/react/store-context';
 import { Dialog } from '../ui/Dialog';
+import { HouseholdServiceEntryRow } from './HouseholdServiceEntryRow';
 
 const Content = styled.div`
 	display: grid;
@@ -33,77 +33,52 @@ const Content = styled.div`
 	p {
 		margin: 0;
 	}
+	&[data-inline='true'] {
+		padding: 4px 8px 8px;
+		gap: 12px;
+		.recorder-help,
+		.recorder-success {
+			font-size: 14px;
+			line-height: 1.5;
+			color: var(--color-text-subtle);
+		}
+		.record-form {
+			display: grid;
+			grid-template-columns: minmax(0, 144px) auto;
+			align-items: end;
+		}
+		.record-form > button {
+			min-height: 44px;
+			justify-self: start;
+		}
+		ul {
+			gap: 0;
+		}
+		.entry {
+			min-height: 48px;
+			border-top: 1px solid var(--color-divider);
+			flex-wrap: nowrap;
+		}
+		.entry > span {
+			flex: 1;
+			font-size: 14px;
+			color: var(--color-text-muted);
+		}
+		.entry:has(form) {
+			flex-wrap: wrap;
+		}
+		.entry form {
+			flex-basis: 100%;
+		}
+	}
 `;
-
-const Entry = observer(function Entry({
-	entry,
-	store,
-}: {
-	entry: HouseholdServiceEntry;
-	store: HouseholdServiceStore;
-}) {
-	const t = adminTranslations.en.householdService;
-	const [editing, setEditing] = useState(false);
-	const [size, setSize] = useState(String(entry.householdSize));
-	const disabled = store.busy || !!store.pending;
-
-	return (
-		<li className="entry">
-			<span>
-				{entry.householdSize} {t.people} ·{' '}
-				{new Date(entry.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-				{entry.voidedAt ? ` · ${t.voided}` : ''}
-			</span>
-			{editing ? (
-				<form
-					onSubmit={async (event) => {
-						event.preventDefault();
-
-						if (await store.correct(entry, Number(size), !!entry.voidedAt)) {
-							setEditing(false);
-						}
-					}}
-				>
-					<TextField
-						label={t.size}
-						type="number"
-						value={size}
-						onChange={(event) => setSize(event.target.value)}
-						disabled={disabled}
-						slotProps={{ htmlInput: { min: 1, max: 30, step: 1, required: true } }}
-					/>
-					<Button type="submit" disabled={disabled}>
-						{t.saveCorrection}
-					</Button>
-					<Button disabled={disabled} onClick={() => setEditing(false)}>
-						{t.cancel}
-					</Button>
-				</form>
-			) : (
-				<Button
-					disabled={disabled || !!entry.voidedAt}
-					onClick={() => {
-						setSize(String(entry.householdSize));
-						setEditing(true);
-					}}
-				>
-					{t.correct}
-				</Button>
-			)}
-			<Button
-				disabled={disabled}
-				onClick={() => void store.correct(entry, entry.householdSize, !entry.voidedAt)}
-			>
-				{entry.voidedAt ? t.restore : t.undo}
-			</Button>
-		</li>
-	);
-});
 
 export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 	store,
+	inline = false,
 }: {
 	store: HouseholdServiceStore;
+	inline?: boolean;
 }) {
 	const t = adminTranslations.en.householdService;
 	const [size, setSize] = useState('');
@@ -115,10 +90,10 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 	}, [store]);
 
 	useEffect(() => {
-		if (store.loaded && !store.pending) {
+		if (!inline && store.loaded && !store.pending) {
 			input.current?.focus();
 		}
-	}, [store.loaded, store.pending]);
+	}, [inline, store.loaded, store.pending]);
 
 	async function submit(event: FormEvent) {
 		event.preventDefault();
@@ -132,18 +107,23 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 	}
 
 	return (
-		<Content>
-			<p>{t.help}</p>
+		<Content data-inline={inline}>
+			<p className="recorder-help">{inline ? t.queueHelp : t.help}</p>
 			{store.error ? <Alert severity="error">{t.errors[store.error]}</Alert> : null}
-			{saved ? (
+			{saved && inline ? (
+				<p role="status" className="recorder-success">
+					{t.queueSaved}
+				</p>
+			) : saved ? (
 				<Alert severity="success" role="status">
 					{t.saved}
 				</Alert>
 			) : null}
-			<form onSubmit={(event) => void submit(event)}>
+			<form className="record-form" onSubmit={(event) => void submit(event)}>
 				<TextField
 					inputRef={input}
-					autoFocus
+					autoFocus={!inline}
+					size={inline ? 'small' : 'medium'}
 					label={t.size}
 					type="number"
 					value={store.pending?.householdSize ?? size}
@@ -157,13 +137,15 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 					}}
 				/>
 				<Button type="submit" variant="contained" disabled={store.busy || !store.loaded}>
-					{store.pending ? t.retrySave : t.record}
+					{store.pending ? t.retrySave : inline ? t.queueRecord : t.record}
 				</Button>
 			</form>
-			<Button onClick={() => void store.load()} disabled={store.busy}>
-				{t.refresh}
-			</Button>
-			{store.loaded ? (
+			{!inline ? (
+				<Button onClick={() => void store.load()} disabled={store.busy}>
+					{t.refresh}
+				</Button>
+			) : null}
+			{store.loaded && !inline ? (
 				<p>
 					{t.total}: <strong>{store.households}</strong> {t.households},{' '}
 					<strong>{store.members}</strong> {t.people}
@@ -171,7 +153,12 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 			) : null}
 			<ul aria-label={t.entries}>
 				{store.entries.map((entry) => (
-					<Entry key={`${entry.id}-${entry.version}`} entry={entry} store={store} />
+					<HouseholdServiceEntryRow
+						key={`${entry.id}-${entry.version}`}
+						entry={entry}
+						store={store}
+						inline={inline}
+					/>
 				))}
 			</ul>
 		</Content>

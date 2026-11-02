@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import type { AdminApi, AdminGuest, GuestDetails } from '../../services/admin-api';
 import type { QueuePlacement } from '../../services/guestAdmission';
+import type { HouseholdServiceEntry } from '../../services/household-service';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitEvent } from '../../services/visit-events';
 import type { VisitCommand } from '../../services/visitStateMachine';
@@ -110,6 +111,7 @@ function historyFor(guest: AdminGuest | undefined): VisitEvent[] {
  */
 function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 	let roster = guests.map((guest) => ({ ...guest }));
+	let households: HouseholdServiceEntry[] = [];
 
 	/** Calls the first guest still waiting, as the server's queue order would. */
 	function callNext(): string[] {
@@ -159,6 +161,47 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 	}
 
 	const api = {
+		householdServiceEntries: async () => households,
+		recordHouseholdService: async (submission: {
+			id: string;
+			marketEventId: string;
+			householdSize: number;
+		}) => {
+			const existing = households.find((row) => row.id === submission.id);
+
+			if (existing) {
+				return existing;
+			}
+			const entry: HouseholdServiceEntry = {
+				...submission,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+				createdBy: matt.id,
+				updatedBy: matt.id,
+				version: 1,
+				voidedAt: null,
+			};
+
+			households = [entry, ...households];
+
+			return entry;
+		},
+		correctHouseholdService: async (
+			id: string,
+			correction: { version: number; householdSize: number; voided: boolean },
+		) => {
+			const original = households.find((row) => row.id === id)!;
+			const updated = {
+				...original,
+				householdSize: correction.householdSize,
+				version: original.version + 1,
+				voidedAt: correction.voided ? new Date().toISOString() : null,
+			};
+
+			households = households.map((row) => (row.id === id ? updated : row));
+
+			return updated;
+		},
 		listSessionGuests: async () => roster,
 		listVisitEvents: async (visitId: string) => historyFor(roster.find(({ id }) => id === visitId)),
 		runGuestCommand: async (visitId: string, command: VisitCommand, placement?: QueuePlacement) => {
@@ -493,4 +536,42 @@ export const ServingAndCallingNextAtTheDesk: Story = {
 
 		await expect(await pane.findByText('Linh N.')).toBeVisible();
 	},
+};
+
+/** The last households can be recorded directly below Done without opening another screen. */
+export const CountOnlyAfterTheQueue: Story = {
+	args: EveryoneThrough.args,
+	play: async ({ canvas }) => {
+		const copy = adminTranslations.en.householdService;
+		const region = await canvas.findByRole('region', { name: copy.sectionTitle });
+		const done = canvas.getByRole('region', { name: t.done });
+
+		await expect(
+			done.compareDocumentPosition(region) & Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+		const section = within(region);
+		const size = section.getByRole('spinbutton', { name: copy.size });
+
+		await waitFor(() => expect(size).toBeEnabled());
+		await expect(size).not.toHaveFocus();
+		await userEvent.type(size, '4');
+		await userEvent.click(section.getByRole('button', { name: copy.queueRecord }));
+		await expect(await section.findByRole('status')).toHaveTextContent(copy.queueSaved);
+		await expect(size).toHaveValue(null);
+		await expect(size).toHaveFocus();
+		await userEvent.type(size, '2');
+		await userEvent.click(section.getByRole('button', { name: copy.queueRecord }));
+		await expect(await section.findByText('6 people')).toBeVisible();
+		await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument();
+		await userEvent.click(
+			section.getByRole('button', { name: `${copy.entryActions}: 2 ${copy.people}` }),
+		);
+		await userEvent.click(await within(document.body).findByRole('menuitem', { name: copy.undo }));
+		await expect(await section.findByText('4 people')).toBeVisible();
+	},
+};
+
+export const CountOnlyAtTheDesk: Story = {
+	...CountOnlyAfterTheQueue,
+	globals: deskViewport,
 };

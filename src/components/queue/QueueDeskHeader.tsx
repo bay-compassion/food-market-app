@@ -4,8 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router';
 
 import { adminTranslations } from '../../adminLocales';
-import { useRootStore } from '../../stores/react/store-context';
-import { HouseholdServiceRecorder } from '../admin/HouseholdServiceRecorder';
 import { KioskUnlockMenuItem } from '../admin/KioskUnlockMenuItem';
 import { OverflowMenu } from '../admin/OverflowMenu';
 import { useQueueDesk } from './queue-desk-context';
@@ -14,7 +12,6 @@ import { useCloseSession } from './use-close-session';
 const Header = styled.header`
 	display: flex;
 	justify-content: space-between;
-	flex-wrap: wrap;
 	align-items: center;
 	gap: 12px;
 	padding: 4px 4px 0 6px;
@@ -49,8 +46,6 @@ const Header = styled.header`
 export const QueueDeskHeader = observer(function QueueDeskHeader() {
 	const t = adminTranslations.en;
 	const desk = useQueueDesk();
-	const { session } = useRootStore();
-	const eventId = session.currentState?.event?.id;
 	const closeSession = useCloseSession();
 
 	return (
@@ -59,7 +54,6 @@ export const QueueDeskHeader = observer(function QueueDeskHeader() {
 				<h1>{t.queueDesk.title}</h1>
 				<p className="status">{t.queueDesk.serving}</p>
 			</div>
-			{eventId ? <HouseholdServiceRecorder key={eventId} marketEventId={eventId} /> : null}
 			<OverflowMenu label={t.queueDesk.actions} disabled={desk.isBusy}>
 				{(closeMenu) => (
 					<>

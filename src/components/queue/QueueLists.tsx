@@ -9,6 +9,7 @@ import { wideLayoutQuery } from '../admin/admin-layout';
 import { ManualGuestDialog } from '../admin/ManualGuestDialog';
 import { useNow } from '../hooks/use-now';
 import { useQueueDesk } from './queue-desk-context';
+import { QueueHouseholdService } from './QueueHouseholdService';
 import { TicketSection } from './TicketSection';
 
 const Lists = styled.div`
@@ -35,7 +36,7 @@ const Lists = styled.div`
  */
 export const QueueLists = observer(function QueueLists() {
 	const t = adminTranslations.en;
-	const { admin, translations } = useRootStore();
+	const { admin, translations, session } = useRootStore();
 	const desk = useQueueDesk();
 	const { roster } = desk;
 	// Chips show whole minutes, so a coarse shared clock is enough; the open ticket keeps its own.
@@ -77,6 +78,12 @@ export const QueueLists = observer(function QueueLists() {
 				emptyText={t.queueDesk.noneDone}
 				now={now}
 			/>
+			{session.currentState?.event ? (
+				<QueueHouseholdService
+					key={session.currentState.event.id}
+					marketEventId={session.currentState.event.id}
+				/>
+			) : null}
 			<ManualGuestDialog
 				open={desk.isAddingGuest}
 				admissions={desk.admissions}
