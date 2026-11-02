@@ -71,6 +71,13 @@ export const router = createInstrumentedBrowserRouter([
 					Component: (await import('./components/queue/QueueRoute')).QueueRoute,
 				}),
 			},
+			// Outside the app shell, and every other download: named stewards see draw odds here.
+			{
+				path: '/steward/:view?',
+				lazy: async () => ({
+					Component: (await import('./components/steward/StewardRoute')).StewardRoute,
+				}),
+			},
 			// Outside the app shell: a desktop that prints the name tags volunteers send from their phones.
 			{
 				path: '/printing-station',

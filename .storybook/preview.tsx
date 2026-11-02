@@ -163,6 +163,7 @@ const preview: Preview = {
 						'Queue Desk',
 						['Line', 'Name Tag Card', 'Room Display Code'],
 					],
+					'Steward',
 					'Admin',
 					// Match adminViews in src/services/admin-views.ts, with shared components last.
 					[
