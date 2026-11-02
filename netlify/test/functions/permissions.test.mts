@@ -272,6 +272,37 @@ describe('endpoint permissions', () => {
 		expect(asked).toBe('export:guest-data');
 	});
 
+	it('refuses a raised lottery weight without manage:stewardship', async () => {
+		// Arrange: a worker gets through the first gate, then the odds gate refuses.
+		vi.mocked(requirePermission)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(Response.json({ error: 'nope' }, { status: 403 }));
+
+		// Act
+		const response = await guestsHandler(
+			json('https://x/api/admin/guests', 'POST', {
+				firstName: 'Ana',
+				lastName: 'Reyes',
+				ageRange: '30-44',
+				householdSize: 3,
+				childrenCount: 0,
+				seniorsCount: 0,
+				phone: '5105550123',
+				locale: 'en',
+				source: 'admin',
+				marketEventId: 'event-1',
+				answers: {},
+				admission: 'lottery',
+				lotteryWeight: 100,
+			}),
+		);
+
+		// Assert
+		expect(vi.mocked(requirePermission).mock.calls.at(-1)?.[1]).toBe('manage:stewardship');
+		expect(response.status).toBe(403);
+		expect(db.insert).not.toHaveBeenCalled();
+	});
+
 	it('checks manage:guest-access, and only that, before overriding a worker’s limits', async () => {
 		// A worker gets through the first gate, then the override gate refuses.
 		vi.mocked(requirePermission)

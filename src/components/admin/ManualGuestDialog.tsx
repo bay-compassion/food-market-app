@@ -67,7 +67,7 @@ const ManualGuestFields = observer(function ManualGuestFields({
 	onSubmit,
 }: ManualGuestFieldsProps) {
 	const t = adminTranslations.en;
-	const { registration } = useRootStore();
+	const { admin, registration } = useRootStore();
 	const [choice, setChoice] = useState(() => defaultChoice(admissions));
 
 	// The guest-facing fields read and write the registration store, which on this device may still
@@ -149,7 +149,7 @@ const ManualGuestFields = observer(function ManualGuestFields({
 					</TextField>
 				) : null}
 				<p className="admission-help">{admissionHelp[choice.admission]}</p>
-				{admissionTakesLotteryWeight(choice.admission) ? (
+				{admissionTakesLotteryWeight(choice.admission) && admin.can('manage:stewardship') ? (
 					<>
 						<TextField
 							label={t.lotteryWeightLabel}

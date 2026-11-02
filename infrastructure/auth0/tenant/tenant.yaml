@@ -32,6 +32,8 @@ resourceServers:
         description: >-
           The print station — prints the name tags volunteers send, first name
           and last initial only
+      - value: manage:stewardship
+        description: Give a guest better odds in the lottery draw
     signing_alg: RS256
     skip_consent_for_verifiable_first_party_clients: true
     subject_type_authorization:
@@ -236,6 +238,14 @@ roles:
       guest, alongside the admin role
     permissions:
       - permission_name: delete:guest-data
+        resource_server_identifier: https://thebaycompassion.org
+    type: tenant
+  - name: lottery-steward
+    description: >-
+      A named person trusted to raise a guest's odds in the draw, alongside a
+      role that holds run:queue
+    permissions:
+      - permission_name: manage:stewardship
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: developer
