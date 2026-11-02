@@ -72,19 +72,19 @@ type Story = StoryObj<typeof meta>;
 
 export const RecordCorrectAndUndo: Story = {
 	play: async ({ canvas }) => {
-		const size = canvas.getByRole('spinbutton', { name: t.size });
+		const size = canvas.getByRole('textbox', { name: t.size });
 
 		await waitFor(() => expect(size).toBeEnabled());
 		await userEvent.type(size, '4');
 		await userEvent.click(canvas.getByRole('button', { name: t.record }));
 		await expect(await canvas.findByText(t.saved)).toBeVisible();
-		await expect(size).toHaveValue(null);
+		await expect(size).toHaveValue('');
 		await expect(size).toHaveFocus();
 		const list = canvas.getByRole('list', { name: t.entries });
 
 		await expect(within(list).getAllByRole('listitem')).toHaveLength(1);
 		await userEvent.click(within(list).getByRole('button', { name: t.correct }));
-		const correction = within(list).getByRole('spinbutton', { name: t.size });
+		const correction = within(list).getByRole('textbox', { name: t.size });
 
 		await userEvent.clear(correction);
 		await userEvent.type(correction, '6');
@@ -105,7 +105,7 @@ export const RecordCorrectAndUndo: Story = {
 export const RetryAnUncertainSave: Story = {
 	args: { failFirst: true },
 	play: async ({ canvas }) => {
-		const size = canvas.getByRole('spinbutton', { name: t.size });
+		const size = canvas.getByRole('textbox', { name: t.size });
 
 		await waitFor(() => expect(size).toBeEnabled());
 		await userEvent.type(size, '3');

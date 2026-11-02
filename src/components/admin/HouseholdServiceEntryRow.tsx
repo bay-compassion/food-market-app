@@ -1,10 +1,11 @@
-import { Button, MenuItem, TextField } from '@mui/material';
+import { Button, MenuItem } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { HouseholdServiceEntry } from '../../services/household-service';
 import type { HouseholdServiceStore } from '../../stores/household-service.store';
+import { NumberSpinner } from '../NumberSpinner';
 import { OverflowMenu } from './OverflowMenu';
 
 export const HouseholdServiceEntryRow = observer(function HouseholdServiceEntryRow({
@@ -18,7 +19,7 @@ export const HouseholdServiceEntryRow = observer(function HouseholdServiceEntryR
 }) {
 	const t = adminTranslations.en.householdService;
 	const [editing, setEditing] = useState(false);
-	const [size, setSize] = useState(String(entry.householdSize));
+	const [size, setSize] = useState<number | string>(entry.householdSize);
 	const disabled = store.busy || !!store.pending;
 
 	return (
@@ -38,13 +39,16 @@ export const HouseholdServiceEntryRow = observer(function HouseholdServiceEntryR
 						}
 					}}
 				>
-					<TextField
+					<NumberSpinner
 						label={t.size}
-						type="number"
 						value={size}
-						onChange={(event) => setSize(event.target.value)}
+						onChange={setSize}
 						disabled={disabled}
-						slotProps={{ htmlInput: { min: 1, max: 30, step: 1, required: true } }}
+						min={1}
+						max={30}
+						required
+						decrementLabel={adminTranslations.en.decreaseNumber}
+						incrementLabel={adminTranslations.en.increaseNumber}
 					/>
 					<Button type="submit" disabled={disabled}>
 						{t.saveCorrection}

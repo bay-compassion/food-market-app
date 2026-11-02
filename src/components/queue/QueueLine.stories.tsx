@@ -550,14 +550,30 @@ export const CountOnlyAfterTheQueue: Story = {
 			done.compareDocumentPosition(region) & Node.DOCUMENT_POSITION_FOLLOWING,
 		).toBeTruthy();
 		const section = within(region);
-		const size = section.getByRole('spinbutton', { name: copy.size });
+		const size = section.getByRole('textbox', { name: copy.size });
 
 		await waitFor(() => expect(size).toBeEnabled());
 		await expect(size).not.toHaveFocus();
-		await userEvent.type(size, '4');
+		await userEvent.click(
+			section.getByRole('button', { name: adminTranslations.en.increaseNumber }),
+		);
+		await expect(size).toHaveValue('1');
+		await expect(
+			section.getByRole('button', { name: adminTranslations.en.decreaseNumber }),
+		).toBeDisabled();
+		await userEvent.click(
+			section.getByRole('button', { name: adminTranslations.en.increaseNumber }),
+		);
+		await userEvent.click(
+			section.getByRole('button', { name: adminTranslations.en.increaseNumber }),
+		);
+		await userEvent.click(
+			section.getByRole('button', { name: adminTranslations.en.increaseNumber }),
+		);
+		await expect(size).toHaveValue('4');
 		await userEvent.click(section.getByRole('button', { name: copy.queueRecord }));
 		await expect(await section.findByRole('status')).toHaveTextContent(copy.queueSaved);
-		await expect(size).toHaveValue(null);
+		await expect(size).toHaveValue('');
 		await expect(size).toHaveFocus();
 		await userEvent.type(size, '2');
 		await userEvent.click(section.getByRole('button', { name: copy.queueRecord }));

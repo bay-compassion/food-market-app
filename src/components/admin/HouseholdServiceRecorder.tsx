@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Alert, Button, TextField } from '@mui/material';
+import { Alert, Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
@@ -10,6 +10,7 @@ import {
 	type HouseholdServiceApi,
 } from '../../stores/household-service.store';
 import { useRootStore } from '../../stores/react/store-context';
+import { NumberSpinner } from '../NumberSpinner';
 import { Dialog } from '../ui/Dialog';
 import { HouseholdServiceEntryRow } from './HouseholdServiceEntryRow';
 
@@ -43,12 +44,17 @@ const Content = styled.div`
 			color: var(--color-text-subtle);
 		}
 		.record-form {
-			display: grid;
-			grid-template-columns: minmax(0, 144px) auto;
+			display: flex;
+			flex-wrap: wrap;
 			align-items: end;
+			.number-spinner {
+				flex: 1 1 220px;
+				max-width: 320px;
+				min-width: 0;
+			}
 		}
 		.record-form > button {
-			min-height: 44px;
+			min-height: 58px;
 			justify-self: start;
 		}
 		ul {
@@ -81,9 +87,9 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 	inline?: boolean;
 }) {
 	const t = adminTranslations.en.householdService;
-	const [size, setSize] = useState('');
+	const [size, setSize] = useState<number | string>('');
 	const [saved, setSaved] = useState(false);
-	const input = useRef<HTMLInputElement>(null);
+	const form = useRef<HTMLFormElement>(null);
 
 	useEffect(() => {
 		void store.load();
@@ -91,7 +97,7 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 
 	useEffect(() => {
 		if (!inline && store.loaded && !store.pending) {
-			input.current?.focus();
+			form.current?.querySelector<HTMLInputElement>('[inputmode="numeric"]')?.focus();
 		}
 	}, [inline, store.loaded, store.pending]);
 
@@ -102,7 +108,7 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 		if (await store.record(Number(size))) {
 			setSize('');
 			setSaved(true);
-			input.current?.focus();
+			form.current?.querySelector<HTMLInputElement>('[inputmode="numeric"]')?.focus();
 		}
 	}
 
@@ -119,22 +125,20 @@ export const HouseholdServiceForm = observer(function HouseholdServiceForm({
 					{t.saved}
 				</Alert>
 			) : null}
-			<form className="record-form" onSubmit={(event) => void submit(event)}>
-				<TextField
-					inputRef={input}
-					autoFocus={!inline}
-					size={inline ? 'small' : 'medium'}
+			<form ref={form} className="record-form" onSubmit={(event) => void submit(event)}>
+				<NumberSpinner
 					label={t.size}
-					type="number"
 					value={store.pending?.householdSize ?? size}
-					onChange={(event) => {
-						setSize(event.target.value);
+					onChange={(value) => {
+						setSize(value);
 						setSaved(false);
 					}}
 					disabled={store.busy || !!store.pending || !store.loaded}
-					slotProps={{
-						htmlInput: { min: 1, max: 30, step: 1, required: true, inputMode: 'numeric' },
-					}}
+					min={1}
+					max={30}
+					required
+					decrementLabel={adminTranslations.en.decreaseNumber}
+					incrementLabel={adminTranslations.en.increaseNumber}
 				/>
 				<Button type="submit" variant="contained" disabled={store.busy || !store.loaded}>
 					{store.pending ? t.retrySave : inline ? t.queueRecord : t.record}
