@@ -10,6 +10,18 @@ type Database = typeof appDatabase;
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 export type Reader = Database | Transaction;
 
+/** Whether a visit's history records the draw drawing it or passing it over. */
+export const hasDrawEventSql = sql<boolean>`exists (
+	select 1 from ${visitEvents}
+	where ${visitEvents.visitId} = ${visits.id}
+		and ${visitEvents.kind} in ('drawn', 'not_drawn')
+)`;
+
+/** Whether a visit has any history at all. Visits older than the history have none. */
+export const hasHistorySql = sql<boolean>`exists (
+	select 1 from ${visitEvents} where ${visitEvents.visitId} = ${visits.id}
+)`;
+
 /** How far back a person's record reaches: the Saturdays the steward screens show. */
 export const ledgerDrawCount = 12;
 
@@ -77,11 +89,8 @@ export async function readDrawLedger(
 			status: visits.status,
 			source: visits.source,
 			queuePosition: visits.queuePosition,
-			hasDrawEvent: sql<boolean>`exists (
-				select 1 from ${visitEvents}
-				where ${visitEvents.visitId} = ${visits.id}
-					and ${visitEvents.kind} in ('drawn', 'not_drawn')
-			)`,
+			hasDrawEvent: hasDrawEventSql,
+			hasHistory: hasHistorySql,
 		})
 		.from(visits)
 		.where(
