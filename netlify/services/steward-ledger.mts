@@ -207,6 +207,12 @@ export function buildStewardLedger(input: StewardLedgerInput): StewardLedgerResp
 						suggestedLotteryWeight === null ? [] : [suggestedLotteryWeight],
 					),
 				),
+				// Settling records a suggestion on every entry, so none at all means it never finished. A
+				// change saved after registration opened can't show here, but its failure is still logged.
+				oddsSkipped:
+					entered.length > 0 &&
+					entered.every(({ suggestedLotteryWeight }) => suggestedLotteryWeight === null) &&
+					changes.some(({ createdAt }) => createdAt.getTime() < opensAt.getTime()),
 			};
 		}),
 		upcoming: upcoming && {

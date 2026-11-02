@@ -176,6 +176,42 @@ describe('buildStewardLedger', () => {
 		expect(people[0]?.setting).toBeNull();
 	});
 
+	it('flags a draw that ran without settling saved odds', () => {
+		// Act
+		const { draws } = buildStewardLedger(
+			input({
+				visits: [{ ...visit, suggestedLotteryWeight: null }],
+				changes: [
+					{
+						id: 'c1',
+						guestId: 'old',
+						previousWeight: 1,
+						weight: 5,
+						marketEventId: null,
+						endsAt: null,
+						reason: 'Staff judgment',
+						note: null,
+						actorName: 'Dana',
+						createdAt: new Date('2026-10-01'),
+					},
+				],
+			}),
+		);
+
+		// Assert
+		expect(draws[0]?.oddsSkipped).toBe(true);
+	});
+
+	it('doesn’t flag an older draw from before anyone saved odds', () => {
+		// Act
+		const { draws } = buildStewardLedger(
+			input({ visits: [{ ...visit, suggestedLotteryWeight: null }] }),
+		);
+
+		// Assert
+		expect(draws[0]?.oddsSkipped).toBe(false);
+	});
+
 	it('reports a past draw by tier', () => {
 		// Act
 		const { draws } = buildStewardLedger(input());

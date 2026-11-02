@@ -26,6 +26,8 @@ export type StewardDraw = {
 	tiers: StewardTier[];
 	/** The pool by what the automatic rule would have given it; empty for an older draw. */
 	suggestedTiers: StewardTier[];
+	/** Saved odds existed, but this draw ran on the visits' own weights because settling failed. */
+	oddsSkipped: boolean;
 };
 
 export type StewardUpcomingDraw = {
