@@ -135,8 +135,8 @@
   pnpm run build
   ```
 
-  Or run all five at once with `pnpm run checks` (`scripts/checks.js`), which prints a clear
-  pass/fail summary for each one. This is a plain script, not a Claude-specific command — it works
+  Or run all five at once with `pnpm run checks` (`scripts/checks.js`), which then also confirms
+  the steward area stayed in its own chunk, and prints a clear pass/fail summary for each one. This is a plain script, not a Claude-specific command — it works
   the same for any agent, in CI, or run by hand.
 
 - Do not modify unrelated files or overwrite existing user changes.
