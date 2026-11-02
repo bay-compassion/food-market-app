@@ -16,7 +16,12 @@ import type {
 	StewardTier,
 } from '../../src/services/steward-api.js';
 import { tracedQuery } from '../lib/sentry.mjs';
-import { hasDrawEventSql, readDrawLedger, readGuestIdentities } from './draw-ledger.mjs';
+import {
+	hasDrawEventSql,
+	hasHistorySql,
+	readDrawLedger,
+	readGuestIdentities,
+} from './draw-ledger.mjs';
 
 type ChangeRow = OddsChange & {
 	id: string;
@@ -303,6 +308,7 @@ export async function readStewardLedger(now = new Date()): Promise<StewardLedger
 								source: visits.source,
 								queuePosition: visits.queuePosition,
 								hasDrawEvent: hasDrawEventSql,
+								hasHistory: hasHistorySql,
 								lotteryWeight: visits.lotteryWeight,
 								suggestedLotteryWeight: visits.suggestedLotteryWeight,
 								householdSize: visits.householdSize,
