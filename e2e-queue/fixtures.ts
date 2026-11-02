@@ -64,6 +64,11 @@ export const test = base.extend<{
 				headers: { ...route.request().headers(), authorization: `Bearer ${adminToken}` },
 			});
 		});
+		await page.context().route(`${baseURL}/api/steward{,/**}`, async (route) => {
+			await route.continue({
+				headers: { ...route.request().headers(), authorization: `Bearer ${adminToken}` },
+			});
+		});
 		await page.goto('/admin/current-session');
 		await use(page);
 	},

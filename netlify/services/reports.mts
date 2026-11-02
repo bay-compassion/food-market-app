@@ -147,10 +147,10 @@ function guestDemographics({ start, end }: ReportRange) {
 
 /**
  * Whether raised odds actually changed who got in. It counts exactly what `DrawEntry` counts: a
- * visit the draw drew or passed over, whoever added it. Visits older than the history have none, so
- * those count when the guest registered themselves and reached a state only the draw could put them
- * in. A guest a worker placed straight into the line never went through the draw, and neither has
- * a visit still `registered`.
+ * visit the draw drew or passed over, whoever added it. Visits older than the history have none at
+ * all, so those count when the guest registered themselves and reached a state only the draw would
+ * normally put them in. A guest a worker placed straight into the line never went through the draw,
+ * and neither has a visit still `registered`.
  */
 function lotteryOutcomes({ start, end }: ReportRange) {
 	return sql`
@@ -171,6 +171,7 @@ function lotteryOutcomes({ start, end }: ReportRange) {
 				)
 				OR (
 					v.source = 'self'
+					AND NOT EXISTS (SELECT 1 FROM visit_events ve WHERE ve.visit_id = v.id)
 					AND (
 						v.status IN ('waiting', 'called', 'served', 'no_show', 'not_placed')
 						OR (v.status = 'cancelled' AND v.queue_position IS NOT NULL)
