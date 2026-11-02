@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=a61bc9002904 -->
+<!-- diagram-sources: db/schema.mts=22d90e8d7a64 -->
 
 # Database structure
 
@@ -29,6 +29,8 @@ erDiagram
     guests ||--o| guest_claims : "awaits a phone"
     visits ||--o{ notification_deliveries : "queues"
     visits ||--o{ visit_events : "records"
+    guests ||--o{ lottery_odds_changes : "has odds set by"
+    market_events |o--o{ lottery_odds_changes : "scopes"
 
     market_locations {
         uuid id PK
@@ -106,7 +108,8 @@ erDiagram
         integer priority_number "P1, P2, ... for a guest a worker put at the front"
         boolean queue_front "put at the front: called before everyone else"
         integer queue_order "call order within queue_front; never shown"
-        integer lottery_weight "relative odds in the draw; 1 unless a steward raised them"
+        integer lottery_weight "relative odds the draw used; 1 unless a steward raised them"
+        integer suggested_lottery_weight "nullable; what the automatic rule would give; a preview only"
         text age_range "nullable; 0-17 | 18-29 | ... | 75+, entered at this visit"
         integer household_size "entered at this visit"
         integer children_count "shopping for, entered at this visit"
@@ -119,6 +122,20 @@ erDiagram
         text access_token_hash UK
         date visit_date
         boolean is_first_visit "the guest record had no visit to any earlier session"
+        timestamptz created_at
+    }
+
+    lottery_odds_changes {
+        uuid id PK
+        uuid guest_id FK "anchor record; read per person"
+        integer previous_weight
+        integer weight "1 holds the person at Standard on purpose"
+        uuid market_event_id FK "nullable; covers this session only"
+        timestamptz ends_at "nullable; stops covering draws after this"
+        text reason
+        text note "nullable"
+        text actor_id "the steward's Auth0 subject"
+        text actor_name "as their sign-in gave it at the time"
         timestamptz created_at
     }
 
@@ -246,7 +263,8 @@ A few things the diagram can't show on its own:
   `sms_subscriptions` row; an inbound START removes the opt-out row directly.
 - **Only `market_events → registration_questions`, `visits → push_subscriptions`,
   `visits → notification_deliveries`, `visits → visit_events`, `guests → sms_subscriptions`,
-  `guests → sms_opt_outs`, and `guests → guest_claims` cascade on delete.**
+  `guests → sms_opt_outs`, `guests → guest_claims`, `guests → lottery_odds_changes`, and
+  `market_events → lottery_odds_changes` cascade on delete.**
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.
 

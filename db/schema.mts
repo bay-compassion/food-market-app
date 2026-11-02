@@ -191,6 +191,8 @@ export const visits = pgTable('visits', {
 	queueOrder: integer('queue_order'),
 	/** Relative odds in the lottery: a visit weighted 2 is twice as likely to be drawn as a 1. */
 	lotteryWeight: integer('lottery_weight').notNull().default(1),
+	/** What the automatic rule would have given this visit. A preview: the draw never reads it. */
+	suggestedLotteryWeight: integer('suggested_lottery_weight'),
 	ageRange: text('age_range').$type<AgeRange>(),
 	householdSize: integer('household_size').notNull(),
 	/** Snapshot of the guest's counts at the time of this visit, for accurate per-visit reporting. */
@@ -234,6 +236,38 @@ export const visitEvents = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [index('visit_events_visit_idx').on(table.visitId, table.createdAt)],
+);
+
+/**
+ * Every change a steward has made to a person's odds, oldest to newest; the newest that covers a
+ * draw is what the draw uses, and a weight of 1 holds someone at Standard on purpose. Nothing
+ * updates or deletes a row except deleting the guest. It is anchored on the guest record the steward
+ * chose and read per person, because the ids `GuestReconciliation` hands out are never stored.
+ */
+export const lotteryOddsChanges = pgTable(
+	'lottery_odds_changes',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		guestId: uuid('guest_id')
+			.notNull()
+			.references(() => guests.id, { onDelete: 'cascade' }),
+		previousWeight: integer('previous_weight').notNull(),
+		weight: integer('weight').notNull(),
+		/** Set when the change covers this one session only. */
+		marketEventId: uuid('market_event_id').references(() => marketEvents.id, {
+			onDelete: 'cascade',
+		}),
+		/** Set when the change stops covering draws after this time. */
+		endsAt: timestamp('ends_at', { withTimezone: true }),
+		reason: text('reason').notNull(),
+		note: text('note'),
+		/** The steward's Auth0 subject. */
+		actorId: text('actor_id'),
+		/** The steward's name as their sign-in gave it at the time, not looked up later. */
+		actorName: text('actor_name'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [index('lottery_odds_changes_guest_idx').on(table.guestId, table.createdAt)],
 );
 
 export const pushSubscriptions = pgTable(

@@ -11,6 +11,10 @@ vi.mock('./visit-events.mjs', () => ({
 	guestActor: { kind: 'guest' },
 	systemActor: { kind: 'system' },
 }));
+// Settling odds has its own queries; tested in draw-odds.test.mts.
+vi.mock('./draw-odds.mjs', () => ({
+	settleDrawOdds: vi.fn((_tx: unknown, _draw: unknown, registrations: unknown) => registrations),
+}));
 vi.mock('./pushNotifications.mjs', () => ({ notificationsEnabled: vi.fn(() => true) }));
 vi.mock('./notificationDispatch.mjs', () => ({ requestNotificationDispatch: vi.fn() }));
 vi.mock('./sessionTimers.mjs', () => ({

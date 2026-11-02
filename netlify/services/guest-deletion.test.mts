@@ -23,7 +23,7 @@ function queuePreview({ found = true, openVisit = false } = {}) {
 		return;
 	}
 
-	for (const value of [3, 2, 1, 1, 1, 0, 0]) {
+	for (const value of [3, 2, 1, 1, 1, 0, 0, 0]) {
 		queueResult([{ value }]);
 	}
 	queueResult(openVisit ? [{ id: 'visit-open' }] : []);
@@ -62,6 +62,7 @@ describe('GuestDeletion.preview', () => {
 				sms_subscriptions: 1,
 				sms_opt_outs: 0,
 				guest_claims: 0,
+				lottery_odds_changes: 0,
 			},
 		});
 	});
