@@ -5,6 +5,11 @@ import type { DemoRoster } from './demo-preview';
 import type { ServiceProgress } from './demoScenario.ts';
 import type { GuestDeletionPreview } from './guest-deletion.ts';
 import type { ManualAdmission, QueuePlacement } from './guestAdmission.ts';
+import type {
+	HouseholdServiceEntry,
+	HouseholdServiceSubmission,
+	HouseholdServiceCorrection,
+} from './household-service';
 import type { KioskUnlockCode } from './kiosk-unlock.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
 import type { PrintJobSubmission } from './print-jobs.ts';
@@ -370,6 +375,38 @@ export class AdminApi {
 		const response = await this.send('POST', '/api/admin/demo-data', { stage, serviceProgress });
 
 		return this.readJson<SessionOverview & { demoRoster: DemoRoster }>(response, 'demo-data');
+	}
+
+	async householdServiceEntries(marketEventId: string): Promise<HouseholdServiceEntry[]> {
+		return this.readJson(
+			await this.get(
+				`/api/admin/household-service?marketEventId=${encodeURIComponent(marketEventId)}`,
+			),
+			'household-service',
+		);
+	}
+
+	async recordHouseholdService(
+		submission: HouseholdServiceSubmission,
+	): Promise<HouseholdServiceEntry> {
+		return this.readJson(
+			await this.send('POST', '/api/admin/household-service', submission),
+			'household-service',
+		);
+	}
+
+	async correctHouseholdService(
+		id: string,
+		correction: HouseholdServiceCorrection,
+	): Promise<HouseholdServiceEntry> {
+		return this.readJson(
+			await this.send(
+				'PATCH',
+				`/api/admin/household-service/${encodeURIComponent(id)}`,
+				correction,
+			),
+			'household-service',
+		);
 	}
 
 	private async get(url: string): Promise<Response> {

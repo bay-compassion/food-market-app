@@ -72,6 +72,7 @@ export type SessionHistoryRowProps = {
 	session: HistoricalEvent;
 	/** Opens the add-guest dialog for this session, limited to recording someone already served. */
 	onRecordServedGuest: () => void;
+	onRecordHousehold?: () => void;
 };
 
 /**
@@ -82,6 +83,7 @@ export type SessionHistoryRowProps = {
 export const SessionHistoryRow = observer(function SessionHistoryRow({
 	session,
 	onRecordServedGuest,
+	onRecordHousehold,
 }: SessionHistoryRowProps) {
 	const t = adminTranslations.en;
 	const { translations } = useRootStore();
@@ -113,14 +115,26 @@ export const SessionHistoryRow = observer(function SessionHistoryRow({
 			</span>
 			<OverflowMenu label={`${t.sessionActions}, ${fullDate}`}>
 				{(closeMenu) => (
-					<MenuItem
-						onClick={() => {
-							closeMenu();
-							onRecordServedGuest();
-						}}
-					>
-						{t.recordServedGuest}
-					</MenuItem>
+					<>
+						{onRecordHousehold ? (
+							<MenuItem
+								onClick={() => {
+									closeMenu();
+									onRecordHousehold();
+								}}
+							>
+								{t.householdService.title}
+							</MenuItem>
+						) : null}
+						<MenuItem
+							onClick={() => {
+								closeMenu();
+								onRecordServedGuest();
+							}}
+						>
+							{t.recordServedGuest}
+						</MenuItem>
+					</>
 				)}
 			</OverflowMenu>
 		</Row>

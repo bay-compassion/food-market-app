@@ -18,7 +18,7 @@ export type TicketSectionProps = {
 	action?: ReactNode;
 };
 
-const Section = styled.section`
+export const QueueSection = styled.section`
 	padding: 14px 10px 10px;
 	border-radius: var(--radius-lg);
 	background: var(--color-surface-soft);
@@ -77,7 +77,7 @@ export function TicketSection({ title, guests, emptyText, now, action }: TicketS
 	}
 
 	return (
-		<Section aria-label={title}>
+		<QueueSection aria-label={title}>
 			<header>
 				<h2>
 					{title}
@@ -94,6 +94,6 @@ export function TicketSection({ title, guests, emptyText, now, action }: TicketS
 			) : (
 				<p className="empty">{emptyText}</p>
 			)}
-		</Section>
+		</QueueSection>
 	);
 }

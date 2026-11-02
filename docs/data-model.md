@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=d0e3ed74eb52 -->
+<!-- diagram-sources: db/schema.mts=a61bc9002904 -->
 
 # Database structure
 
@@ -21,6 +21,7 @@ erDiagram
     recurrence_patterns |o--o{ market_events : "created"
     market_events ||--o{ registration_questions : "asks"
     market_events ||--o{ visits : "hosts"
+    market_events ||--o{ household_service_entries : "counts anonymous shopping"
     guests ||--o{ visits : "attends"
     visits ||--o| push_subscriptions : "notifies"
     guests ||--o| sms_subscriptions : "consents"
@@ -131,6 +132,19 @@ erDiagram
         text actor_name "nullable; the worker's name as their sign-in gave it then"
         jsonb details "placement, the number given, or why it was cancelled"
         timestamptz created_at
+    }
+
+    household_service_entries {
+        uuid id PK "client operation id; retry-safe"
+        uuid market_event_id FK
+        integer household_size "1–30; one completed shopping household"
+        integer initial_household_size "original create payload for retry matching"
+        text created_by "nullable; worker Auth0 subject"
+        text updated_by "nullable; last correcting worker"
+        timestamptz created_at "recorded at; not necessarily shopping time"
+        timestamptz updated_at
+        timestamptz voided_at "nullable; undone entries excluded from totals"
+        integer version "optimistic correction guard"
     }
 
     push_subscriptions {
@@ -252,3 +266,18 @@ has changed, so a schema edit can't quietly leave this page describing a databas
 exists. After reviewing (and fixing, if needed) the diagram, run
 `pnpm run check:diagrams --update` to record that it was checked. `pnpm run checks` runs this
 alongside the other pre-merge checks.
+
+## Count-only completed shopping
+
+`household_service_entries` records completed shopping without creating a guest identity or a
+visit. Staff enter household size during service or against a closed session. Missing demographic
+counts remain uncollected; they are not recorded as zero. Creating a row uses a client operation ID;
+retrying that ID returns the original row rather than adding another household. Corrections and
+undo use a version check, retain the row, and record the most recent worker and correction time.
+These fields are attribution, not a complete history of every correction.
+
+Session and monthly service totals include non-voided count-only households, with separate
+count-only subtotals. People served with repeats sums household sizes at every completed shopping.
+Monthly unique guests, monthly unique household members, demographics, and service timing remain
+identified-only. Anonymous households cannot be deduplicated across sessions. The identified visit
+CSV remains an export of visits; report CSV downloads include the count-only totals.

@@ -29,76 +29,81 @@ const languageLabel = sql.join(
 	sql` `,
 );
 
-/** One row per session: how it was set up and how it turned out. */
+/** Aggregate each source before joining: anonymous entries must never multiply visit rows. */
 function sessionSummary({ start, end }: ReportRange) {
 	return sql`
-		SELECT
-			e.registration_opens_at AS "sessionDate",
-			e.capacity::int AS "capacity",
-			count(v.id)::int AS "signUps",
-			count(v.id) FILTER (WHERE v.status = 'served')::int AS "served",
-			count(v.id) FILTER (WHERE v.status = 'no_show')::int AS "noShows",
-			count(v.id) FILTER (WHERE v.status = 'not_placed')::int AS "notPlaced",
-			count(v.id) FILTER (WHERE v.source = 'admin')::int AS "walkIns",
-			CASE WHEN e.capacity > 0 THEN round(
-				count(v.id) FILTER (WHERE v.status = 'served')::numeric * 100 / e.capacity, 1
-			)::float8 END AS "fillRate"
-		FROM market_events e
-		LEFT JOIN visits v ON v.market_event_id = e.id
-		WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
-		GROUP BY e.id, e.registration_opens_at, e.capacity
-		ORDER BY e.registration_opens_at DESC
-	`;
+  WITH identified AS (
+   SELECT market_event_id,
+    count(*)::int AS sign_ups,
+    count(*) FILTER (WHERE status = 'served')::int AS served,
+    coalesce(sum(household_size) FILTER (WHERE status = 'served'), 0)::int AS members,
+    count(*) FILTER (WHERE status = 'no_show')::int AS no_shows,
+    count(*) FILTER (WHERE status = 'not_placed')::int AS not_placed,
+    count(*) FILTER (WHERE source = 'admin')::int AS walk_ins
+   FROM visits GROUP BY market_event_id
+  ), anonymous AS (
+   SELECT market_event_id, count(*)::int AS households, sum(household_size)::int AS members
+   FROM household_service_entries WHERE voided_at IS NULL GROUP BY market_event_id
+  )
+  SELECT e.registration_opens_at AS "sessionDate", e.capacity::int AS "capacity",
+   coalesce(v.sign_ups, 0)::int AS "signUps",
+   (coalesce(v.served, 0) + coalesce(a.households, 0))::int AS "served",
+   (coalesce(v.members, 0) + coalesce(a.members, 0))::int AS "peopleServings",
+   coalesce(a.households, 0)::int AS "countOnlyHouseholds",
+   coalesce(a.members, 0)::int AS "countOnlyMembers",
+   coalesce(v.no_shows, 0)::int AS "noShows", coalesce(v.not_placed, 0)::int AS "notPlaced",
+   coalesce(v.walk_ins, 0)::int AS "walkIns",
+   CASE WHEN e.capacity > 0 THEN round(
+    (coalesce(v.served, 0) + coalesce(a.households, 0))::numeric * 100 / e.capacity, 1
+   )::float8 END AS "fillRate"
+  FROM market_events e
+  LEFT JOIN identified v ON v.market_event_id = e.id
+  LEFT JOIN anonymous a ON a.market_event_id = e.id
+  WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
+  ORDER BY e.registration_opens_at DESC
+ `;
 }
 
 /**
- * One row per month, counted the way grant reports ask for it. `uniqueGuests` and
- * `householdMembers` are unduplicated within the month — someone who comes to three sessions in
- * March is one guest and one household, not three — while `served` counts every visit. A guest's
- * household size is the one given at their latest served visit that month: household details are
- * recorded per visit, not on the guest. `firstTime` counts guests whose first served visit ever fell
- * in the month, read from their visit history rather than the stored `is_first_visit` flag: until
- * October 2026 that flag was false for a guest who had signed up before their first visit.
+ * Monthly service totals include anonymous households. Unique guests and monthly household
+ * members remain identified-only: anonymous households cannot be deduplicated across sessions.
+ * peopleServings sums household sizes for every completed shopping, including repeat visits.
  */
 function peopleServed({ start, end }: ReportRange) {
 	return sql`
-		WITH served AS (
-			SELECT
-				date_trunc('month', e.registration_opens_at) AS month,
-				e.id AS event_id,
-				v.guest_id,
-				v.household_size,
-				e.registration_opens_at AS opens_at
-			FROM market_events e
-			JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
-			WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
-		),
-		first_served AS (
-			SELECT v.guest_id, min(e.registration_opens_at) AS first_at
-			FROM visits v
-			JOIN market_events e ON e.id = v.market_event_id
-			WHERE v.status = 'served' AND v.guest_id IN (SELECT guest_id FROM served)
-			GROUP BY v.guest_id
-		),
-		households AS (
-			SELECT DISTINCT ON (month, guest_id) month, guest_id, household_size
-			FROM served ORDER BY month, guest_id, opens_at DESC
-		)
-		SELECT
-			to_char(s.month, 'YYYY-MM') AS "month",
-			count(DISTINCT s.event_id)::int AS "sessions",
-			count(*)::int AS "served",
-			count(DISTINCT s.guest_id)::int AS "uniqueGuests",
-			(
-				SELECT coalesce(sum(h.household_size), 0)::int
-				FROM households h WHERE h.month = s.month
-			) AS "householdMembers",
-			count(DISTINCT s.guest_id) FILTER (WHERE s.opens_at = f.first_at)::int AS "firstTime"
-		FROM served s
-		JOIN first_served f ON f.guest_id = s.guest_id
-		GROUP BY s.month
-		ORDER BY s.month DESC
-	`;
+  WITH served AS (
+   SELECT date_trunc('month', e.registration_opens_at) AS month, e.id AS event_id,
+    v.guest_id, v.household_size, e.registration_opens_at AS opens_at
+   FROM market_events e JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
+   WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
+  ), anonymous AS (
+   SELECT date_trunc('month', e.registration_opens_at) AS month, e.id AS event_id,
+    a.household_size
+   FROM market_events e JOIN household_service_entries a ON a.market_event_id = e.id
+   WHERE a.voided_at IS NULL AND e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
+  ), first_served AS (
+   SELECT v.guest_id, min(e.registration_opens_at) AS first_at
+   FROM visits v JOIN market_events e ON e.id = v.market_event_id
+   WHERE v.status = 'served' AND v.guest_id IN (SELECT guest_id FROM served)
+   GROUP BY v.guest_id
+  ), households AS (
+   SELECT DISTINCT ON (month, guest_id) month, guest_id, household_size
+   FROM served ORDER BY month, guest_id, opens_at DESC
+  ), all_service AS (
+   SELECT month, event_id, household_size FROM served
+   UNION ALL
+   SELECT month, event_id, household_size FROM anonymous
+  )
+  SELECT to_char(s.month, 'YYYY-MM') AS "month", count(DISTINCT s.event_id)::int AS "sessions",
+   count(*)::int AS "served", sum(s.household_size)::int AS "peopleServings",
+   (SELECT count(DISTINCT v.guest_id)::int FROM served v WHERE v.month = s.month) AS "uniqueGuests",
+   (SELECT coalesce(sum(h.household_size), 0)::int FROM households h WHERE h.month = s.month) AS "householdMembers",
+   (SELECT count(DISTINCT v.guest_id)::int FROM served v JOIN first_served f ON f.guest_id = v.guest_id
+    WHERE v.month = s.month AND v.opens_at = f.first_at) AS "firstTime",
+   (SELECT count(*)::int FROM anonymous a WHERE a.month = s.month) AS "countOnlyHouseholds",
+   (SELECT coalesce(sum(a.household_size), 0)::int FROM anonymous a WHERE a.month = s.month) AS "countOnlyMembers"
+  FROM all_service s GROUP BY s.month ORDER BY s.month DESC
+ `;
 }
 
 /**

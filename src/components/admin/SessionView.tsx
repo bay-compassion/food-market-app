@@ -6,6 +6,7 @@ import { currentSessionState, type SessionCommand } from '../../services/session
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { AddGuestSection } from './AddGuestSection';
+import { HouseholdServiceRecorder } from './HouseholdServiceRecorder';
 import { ResetSessionDisclosure } from './ResetSessionDisclosure';
 import { SessionGuestList } from './SessionGuestList';
 import { SessionPhasePlan } from './SessionPhasePlan';
@@ -59,6 +60,12 @@ export const SessionView = observer(function SessionView({
 				onRun={onRun}
 				onNavigate={onNavigate}
 			/>
+
+			{event && phase === 'service_started' ? (
+				<section className="admin-section">
+					<HouseholdServiceRecorder key={event.id} marketEventId={event.id} />
+				</section>
+			) : null}
 
 			{/* A worker can add someone by hand at any stage; only what "adding" means changes. */}
 			<AddGuestSection admissions={admissions} busy={busy} onAddGuest={onAddGuest} />
