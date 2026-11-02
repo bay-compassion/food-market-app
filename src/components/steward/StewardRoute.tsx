@@ -8,6 +8,7 @@ import { StewardApi } from '../../services/steward-api';
 import { StewardStore } from '../../stores/steward.store';
 import { AdminThemeProvider } from '../admin/AdminThemeProvider';
 import { RequireAuth } from '../RequireAuth';
+import { NotificationToasts } from '../ui/NotificationToasts';
 import { AutomaticView } from './AutomaticView';
 import { ChangesView } from './ChangesView';
 import { DrawView } from './DrawView';
@@ -48,7 +49,12 @@ function StewardAuthGate() {
 		return null;
 	}
 
-	return <StewardArea getAccessToken={auth.getAccessTokenSilently} />;
+	// With no Auth0 configured there is no provider to ask, and local development has no gate.
+	return (
+		<StewardArea
+			getAccessToken={isAuth0Configured ? auth.getAccessTokenSilently : () => Promise.resolve('')}
+		/>
+	);
 }
 
 function StewardArea({ getAccessToken }: { getAccessToken: () => Promise<string> }) {
@@ -69,6 +75,8 @@ function StewardArea({ getAccessToken }: { getAccessToken: () => Promise<string>
 		<AdminThemeProvider>
 			<StewardProvider store={store}>
 				<StewardScreensAtRoute />
+				{/* Outside the app shell, so nothing else hosts these, as on the queue desk. */}
+				<NotificationToasts />
 			</StewardProvider>
 		</AdminThemeProvider>
 	);

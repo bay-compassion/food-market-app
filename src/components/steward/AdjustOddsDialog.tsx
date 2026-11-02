@@ -148,7 +148,8 @@ export const AdjustOddsDialog = observer(function AdjustOddsDialog({
 
 		try {
 			await steward.saveOdds(person.id, { weight, scope, reason, note });
-			notifications.success(`${person.name} is now ${tierLabel(weight)}.`);
+			// Toasts render outside the masked area, so this one names nobody for replay to record.
+			notifications.success('Odds saved.');
 			onClose();
 		} catch (cause) {
 			notifications.error(cause instanceof Error ? cause.message : 'That could not be saved.');

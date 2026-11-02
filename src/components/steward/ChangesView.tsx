@@ -30,7 +30,7 @@ export const ChangesView = observer(function ChangesView(): React.JSX.Element {
 					{summary.recent} {summary.recent === 1 ? 'Change' : 'Changes'} by {summary.byActor.length}{' '}
 					{summary.byActor.length === 1 ? 'Steward' : 'Stewards'}
 				</PageTitle>
-				<Lede>Every change stays on this list. It can't be edited or removed.</Lede>
+				<Lede>Changes made here can't be edited. Deleting a guest's data removes theirs.</Lede>
 			</header>
 			<StatGrid>
 				<Stat>
