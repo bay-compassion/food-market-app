@@ -5,15 +5,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { adminTranslations } from '../adminLocales';
 import { AddGuestSection } from '../components/admin/AddGuestSection';
 import type { ManualAdmission } from '../services/guestAdmission';
+import type { Permission } from '../services/permissions';
 import { RootStoreProvider } from '../stores/react/store-context';
 import { RootStore } from '../stores/root.store';
 
 const t = adminTranslations.en;
 
-function renderSection(admissions: ManualAdmission[]) {
+async function renderSection(admissions: ManualAdmission[], permissions: Permission[] = []) {
 	const onAddGuest = vi.fn();
+	const store = new RootStore({ admin: { readPermissions: () => Promise.resolve(permissions) } });
+
+	await store.admin.loadPermissions();
+
 	const result = render(
-		<RootStoreProvider store={new RootStore()}>
+		<RootStoreProvider store={store}>
 			<AddGuestSection admissions={admissions} busy={false} onAddGuest={onAddGuest} />
 		</RootStoreProvider>,
 	);
@@ -21,9 +26,9 @@ function renderSection(admissions: ManualAdmission[]) {
 	return { ...result, onAddGuest };
 }
 
-async function openForm(admissions: ManualAdmission[]) {
+async function openForm(admissions: ManualAdmission[], permissions: Permission[] = []) {
 	const user = userEvent.setup();
-	const rendered = renderSection(admissions);
+	const rendered = await renderSection(admissions, permissions);
 
 	await user.click(rendered.container.querySelector('.add-guest-fab')!);
 
@@ -48,8 +53,8 @@ function optionTexts(select: HTMLSelectElement) {
 }
 
 describe('AddGuestSection', () => {
-	it('renders nothing when the session cannot accept a guest', () => {
-		const { container } = renderSection([]);
+	it('renders nothing when the session cannot accept a guest', async () => {
+		const { container } = await renderSection([]);
 
 		expect(container.querySelector('.add-guest-fab')).toBeNull();
 		expect(container.textContent).toBe('');
@@ -109,7 +114,7 @@ describe('AddGuestSection', () => {
 	});
 
 	it('offers the draw odds only to a guest actually entering the draw', async () => {
-		const { user } = await openForm(['lottery', 'queue']);
+		const { user } = await openForm(['lottery', 'queue'], ['run:queue', 'manage:stewardship']);
 
 		expect(dialog().textContent).toContain(t.lotteryWeightLabel);
 		// Switching to a reserved spot takes the guest out of the draw, so the odds go with it.
@@ -131,8 +136,16 @@ describe('AddGuestSection', () => {
 		});
 	});
 
-	it('emits the weight tier the worker picked', async () => {
-		const { onAddGuest, user } = await openForm(['lottery']);
+	it('offers no odds control to a worker without manage:stewardship', async () => {
+		// Arrange
+		await openForm(['lottery'], ['run:queue']);
+
+		// Assert
+		expect(screen.queryByLabelText(t.lotteryWeightLabel)).toBeNull();
+	});
+
+	it('emits the weight tier a steward picked', async () => {
+		const { onAddGuest, user } = await openForm(['lottery'], ['run:queue', 'manage:stewardship']);
 
 		// [0] is the age range select; the admission select is hidden with a single admission, so
 		// [1] is the lottery weight tier.

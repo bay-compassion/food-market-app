@@ -4,8 +4,11 @@ import { z } from 'zod';
 
 import { db } from '../../../db/index.mjs';
 import { guests, marketEvents, visits } from '../../../db/schema.mjs';
+import { admissionTakesLotteryWeight } from '../../../src/services/guestAdmission.js';
+import { minimumLotteryWeight } from '../../../src/services/lotteryWeight.js';
 import type { Permission } from '../../../src/services/permissions.js';
 import { visitCommands } from '../../../src/services/visitStateMachine.js';
+import { requirePermission } from '../../lib/auth.mjs';
 import { withPermission, workerActor, type AdminEnv } from '../../lib/http-auth.mjs';
 import {
 	createRouter,
@@ -157,6 +160,23 @@ async function createGuest(context: Context<AdminEnv>) {
 
 	if (submission.source !== 'admin') {
 		return jsonError('Please provide a valid administrative guest registration.');
+	}
+
+	// Running the queue covers entering a guest in the draw, not improving their chances in it. This
+	// refuses rather than quietly saving even odds, so nobody is told a guest was raised who was not.
+	if (
+		admissionTakesLotteryWeight(submission.admission) &&
+		submission.lotteryWeight > minimumLotteryWeight
+	) {
+		const forbidden = await requirePermission(
+			context.req.raw,
+			'manage:stewardship',
+			context.get('permissions'),
+		);
+
+		if (forbidden) {
+			return forbidden;
+		}
 	}
 
 	const result = await registerGuest(submission, workerActor(context));

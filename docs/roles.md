@@ -6,13 +6,14 @@ explanation and nothing else.
 
 ## The roles
 
-| Role            | Who it is for                                      | Holds                                                           |
-| --------------- | -------------------------------------------------- | --------------------------------------------------------------- |
-| `worker`        | Volunteers running the market                      | `run:queue`, `print:name-tags`                                  |
-| `admin`         | Whoever is responsible for the market and its data | the first five permissions, `print:name-tags`, `manage:workers` |
-| `owner`         | Organization custodian; managed only in Auth0      | Same as `admin`                                                 |
-| `print-station` | The account a print-station desktop signs in as    | `print:name-tags` only                                          |
-| `data-steward`  | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`                |
+| Role              | Who it is for                                      | Holds                                                           |
+| ----------------- | -------------------------------------------------- | --------------------------------------------------------------- |
+| `worker`          | Volunteers running the market                      | `run:queue`, `print:name-tags`                                  |
+| `admin`           | Whoever is responsible for the market and its data | the first five permissions, `print:name-tags`, `manage:workers` |
+| `owner`           | Organization custodian; managed only in Auth0      | Same as `admin`                                                 |
+| `print-station`   | The account a print-station desktop signs in as    | `print:name-tags` only                                          |
+| `data-steward`    | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`                |
+| `lottery-steward` | Named people trusted to raise a guest's draw odds  | `manage:stewardship` only, held alongside `admin` or `worker`   |
 
 The worker/admin split exists because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
@@ -93,6 +94,7 @@ operations. Preserve these through a log drain if long-term audit retention is n
 | `delete:guest-data`   | Permanently deleting a guest and everything about them, after typing their phone number to confirm       |
 | `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
 | `print:name-tags`     | The `/printing-station` page — prints the name tags volunteers send: first name and last initial only    |
+| `manage:stewardship`  | Raising a guest's odds when adding them to the draw by hand                                              |
 
 The first five sit behind two roles on purpose. Splitting out a third role later — a board member
 or grant writer who should read reports but never see a name, holding `read:reports` alone — is
@@ -102,6 +104,13 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 [the dev-mode data loader](#the-dev-mode-data-loader) below before granting it to anyone.
 
 `manage:workers` allows staff management and is held only by `admin` and `owner`.
+
+`manage:stewardship` is on neither `worker` nor `admin`, including `owner`: favouring one guest in
+the draw is a decision for named people. It extends `run:queue`, so a steward needs a role holding
+that as well. Without it, Add Guest offers no odds control and a raised weight sent to the server
+is refused with a 403. Push the role to Auth0 before merging; until someone holds it, every guest
+added by hand enters at even odds, which is the safe way round. The Workers screen treats a
+`lottery-steward` account as read-only, so the role is assigned only in Auth0.
 
 ## What each endpoint requires
 
@@ -116,7 +125,7 @@ kind of split from day one: it belongs on neither `worker` nor `admin`, only on 
 | `GET /api/admin/market?view=history`                     | `run:queue`                                             |
 | `POST /api/admin/market`                                 | `manage:sessions`, except `close_session` → `run:queue` |
 | `/api/admin/schedule` (every method)                     | `manage:sessions`                                       |
-| `POST`, `PATCH /api/admin/guests`                        | `run:queue`                                             |
+| `POST`, `PATCH /api/admin/guests`                        | `run:queue`; plus `manage:stewardship` to raise odds    |
 | `GET /api/admin/guests` (current session)                | `run:queue`                                             |
 | `GET /api/admin/guests` (`scope=all` or another session) | `export:guest-data`                                     |
 | `POST /api/admin/queue`                                  | `run:queue`                                             |
@@ -150,7 +159,7 @@ a token with no permissions, and the moment the server starts checking, they are
 admin area. The reverse order is safe: turning RBAC on with no enforcement deployed just adds a
 claim nothing reads yet, so you can confirm tokens look right and merge afterwards.
 
-1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the nine
+1. **Applications → APIs →** the API matching `AUTH0_AUDIENCE` **→ Permissions.** Add the ten
    permissions above.
 2. **Same API → Settings → RBAC Settings.** Turn on _Enable RBAC_ **and** _Add Permissions in the
    Access Token_. The second one is what puts the `permissions` claim in the token; without it

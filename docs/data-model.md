@@ -106,7 +106,7 @@ erDiagram
         integer priority_number "P1, P2, ... for a guest a worker put at the front"
         boolean queue_front "put at the front: called before everyone else"
         integer queue_order "call order within queue_front; never shown"
-        integer lottery_weight "relative odds in the draw; 1 unless a worker raised them"
+        integer lottery_weight "relative odds in the draw; 1 unless a steward raised them"
         text age_range "nullable; 0-17 | 18-29 | ... | 75+, entered at this visit"
         integer household_size "entered at this visit"
         integer children_count "shopping for, entered at this visit"

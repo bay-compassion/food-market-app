@@ -48,6 +48,12 @@ export const permissions = [
 	 * receives carry a first name and last initial, nothing more.
 	 */
 	'print:name-tags',
+	/**
+	 * Give a guest better odds in the draw than everyone else. Held by its own role, granted to named
+	 * stewards rather than to every admin; see `docs/roles.md`. It extends `run:queue`, since a guest
+	 * is only ever added to the draw by hand through that gate.
+	 */
+	'manage:stewardship',
 ] as const;
 
 export type Permission = (typeof permissions)[number];
