@@ -9,6 +9,7 @@ import {
 	sessionCommandTarget,
 } from '../../src/services/sessionStateMachine.js';
 import { tracedQuery } from '../lib/sentry.mjs';
+import { settleDrawOdds } from './draw-odds.mjs';
 import type { ActionResult, MarketEventRow } from './marketSession.mjs';
 import { queueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
@@ -78,10 +79,10 @@ export async function runLottery(
 				}
 
 				const registrations = await tx
-					.select({ id: visits.id, lotteryWeight: visits.lotteryWeight })
+					.select({ id: visits.id, guestId: visits.guestId, lotteryWeight: visits.lotteryWeight })
 					.from(visits)
 					.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'registered')));
-				const shuffled = shuffleFn(registrations);
+				const shuffled = shuffleFn(await settleDrawOdds(tx, lockedEvent, registrations));
 				// A worker can place a guest straight into the line before the draw. Those guests are
 				// already `waiting`, so they use capacity and the winners queue behind them.
 				const [line] = await tx

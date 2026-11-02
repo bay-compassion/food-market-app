@@ -77,6 +77,7 @@ The script does not write the `guest.deleted` log line, so the note from step 1 
 | `sms_subscriptions`       | Text-message consent                                          |
 | `sms_opt_outs`            | Replies of STOP                                               |
 | `guest_claims`            | Any unredeemed code for moving the record to another phone    |
+| `lottery_odds_changes`    | Changes a steward made to their odds, and the reasons given   |
 
 Deleting the opt-out record does not restart texts: the guest's text consent is deleted with it,
 and Twilio itself keeps blocking a number that replied STOP.

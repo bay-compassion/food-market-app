@@ -362,7 +362,7 @@ describe('guests handler DELETE /guests/:guestId (delete:guest-data)', () => {
 			{ firstName: 'Ari', lastName: 'Guest', phone: '(925) 555-0100', createdAt: new Date() },
 		]);
 
-		for (let table = 0; table < 7; table += 1) {
+		for (let table = 0; table < 8; table += 1) {
 			queueResult([{ value: 0 }]);
 		}
 		queueResult([]);

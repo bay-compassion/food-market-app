@@ -5,6 +5,7 @@ import type { db as appDatabase } from '../../db/index.mjs';
 import {
 	guestClaims,
 	guests,
+	lotteryOddsChanges,
 	marketEvents,
 	notificationDeliveries,
 	pushSubscriptions,
@@ -131,6 +132,10 @@ export class GuestDeletion {
 			sms_subscriptions: await tally(smsSubscriptions, eq(smsSubscriptions.guestId, this.guestId)),
 			sms_opt_outs: await tally(smsOptOuts, eq(smsOptOuts.guestId, this.guestId)),
 			guest_claims: await tally(guestClaims, eq(guestClaims.guestId, this.guestId)),
+			lottery_odds_changes: await tally(
+				lotteryOddsChanges,
+				eq(lotteryOddsChanges.guestId, this.guestId),
+			),
 		};
 		const [openVisit] = await database
 			.select({ id: visits.id })

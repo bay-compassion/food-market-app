@@ -1,4 +1,4 @@
-import { and, eq, gte, isNotNull, lt, min } from 'drizzle-orm';
+import { and, eq, gte, lt, min } from 'drizzle-orm';
 
 import type { db as appDb } from '../../db/index.mjs';
 import { guests, marketEvents, marketLocations, visits } from '../../db/schema.mjs';
@@ -9,12 +9,13 @@ import {
 	sessionFacts,
 	snapshots,
 } from '../../db/warehouse-schema.mjs';
-import { GuestReconciliation, type GuestIdentity } from '../../src/models/guest-reconciliation.js';
+import { GuestReconciliation } from '../../src/models/guest-reconciliation.js';
 import { PeriodReach } from '../../src/models/period-reach.js';
 import { SnapshotSchedule, type DueSnapshot } from '../../src/models/snapshot-schedule.js';
 import type { ReportRow } from '../../src/services/reports.js';
 import { getLogger } from '../lib/logging.mjs';
 import { tracedQuery } from '../lib/sentry.mjs';
+import { readGuestIdentities } from './draw-ledger.mjs';
 import { runReport } from './reports.mjs';
 
 /** Bumped whenever a counting rule changes, and stored on every snapshot. */
@@ -239,47 +240,21 @@ export class WarehouseSnapshotter {
 			return this.history;
 		}
 
-		const [records, visitPhones, firsts] = await tracedQuery('warehouse.read_guest_history', () =>
-			Promise.all([
-				this.db
-					.select({
-						guestId: guests.id,
-						firstName: guests.firstName,
-						lastName: guests.lastName,
-						phone: guests.normalizedPhone,
-					})
-					.from(guests)
-					.where(eq(guests.fake, false)),
-				this.db
-					.selectDistinct({ guestId: visits.guestId, phone: visits.normalizedPhone })
-					.from(visits)
-					.where(isNotNull(visits.normalizedPhone)),
-				this.db
-					.select({
-						guestId: visits.guestId,
-						first: min(marketEvents.registrationOpensAt),
-					})
-					.from(visits)
-					.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
-					.where(eq(visits.status, 'served'))
-					.groupBy(visits.guestId),
-			]),
-		);
-		const identities = new Map<string, GuestIdentity & { phones: string[] }>(
-			records.map((record) => [
-				record.guestId,
-				{ ...record, phones: record.phone ? [record.phone] : [] },
-			]),
-		);
-
-		for (const { guestId, phone } of visitPhones) {
-			if (phone) {
-				identities.get(guestId)?.phones.push(phone);
-			}
-		}
+		const { identities, firsts } = await tracedQuery('warehouse.read_guest_history', async () => ({
+			identities: await readGuestIdentities(this.db, { realOnly: true }),
+			firsts: await this.db
+				.select({
+					guestId: visits.guestId,
+					first: min(marketEvents.registrationOpensAt),
+				})
+				.from(visits)
+				.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
+				.where(eq(visits.status, 'served'))
+				.groupBy(visits.guestId),
+		}));
 
 		this.history = {
-			reconciliation: new GuestReconciliation(identities.values()),
+			reconciliation: new GuestReconciliation(identities),
 			firstServed: new Map(
 				firsts.flatMap((row) => (row.first ? [[row.guestId, row.first] as const] : [])),
 			),
