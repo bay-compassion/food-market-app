@@ -56,6 +56,7 @@ export const stewardFixture: StewardLedgerResponse = {
 			{ weight: 2, entries: 38, placed: 0 },
 			{ weight: 3, entries: 12, placed: 0 },
 		],
+		oddsSkipped: false,
 	})),
 	upcoming: {
 		id: 'draw-next',

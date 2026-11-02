@@ -9,6 +9,7 @@ const draws = ['a', 'b', 'c', 'd'].map((id, index) => ({
 	spots: 1,
 	tiers: [],
 	suggestedTiers: [],
+	oddsSkipped: false,
 }));
 
 function person(id: string, results: string, overrides: Partial<StewardPerson> = {}) {

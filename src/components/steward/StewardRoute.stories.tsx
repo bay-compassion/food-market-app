@@ -3,19 +3,20 @@ import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import type { Permission } from '../../services/permissions';
+import type { StewardLedgerResponse } from '../../services/steward-api';
 import { StewardStore } from '../../stores/steward.store';
 import { AdminThemeProvider } from '../admin/AdminThemeProvider';
 import { StewardProvider } from './steward-context';
 import { stewardFixture } from './steward.fixture';
 import { StewardScreens } from './StewardRoute';
 
-type Args = { view: string; permissions: Permission[] };
+type Args = { view: string; permissions: Permission[]; ledger?: StewardLedgerResponse };
 
-function Seeded({ view, permissions }: Args) {
+function Seeded({ view, permissions, ledger = stewardFixture }: Args) {
 	const [store] = useState(() => {
 		const created = new StewardStore({
 			api: {
-				readLedger: () => Promise.resolve(stewardFixture),
+				readLedger: () => Promise.resolve(ledger),
 				saveOdds: () => Promise.resolve(),
 			},
 			readPermissions: () => Promise.resolve(permissions),
@@ -55,6 +56,23 @@ export const Draw: Story = {
 		await expect(await canvas.findByText('200 in the Draw, 100 Spots')).toBeInTheDocument();
 		await userEvent.click(canvas.getByRole('button', { name: 'Last Draw' }));
 		await expect(await canvas.findByText('100 Got a Number, 100 Missed')).toBeInTheDocument();
+	},
+};
+
+export const DrawThatSkippedOdds: Story = {
+	args: {
+		view: 'draw',
+		permissions: everything,
+		ledger: {
+			...stewardFixture,
+			upcoming: null,
+			draws: stewardFixture.draws.map((draw) => ({ ...draw, oddsSkipped: true })),
+		},
+	},
+	play: async ({ canvasElement }) => {
+		await expect(await within(canvasElement).findByRole('alert')).toHaveTextContent(
+			'ran without saved odds',
+		);
 	},
 };
 

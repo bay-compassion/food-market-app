@@ -1,3 +1,4 @@
+import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
 
@@ -19,6 +20,15 @@ import {
 	TableFrame,
 } from './steward.styles';
 import { temperatureStyles, tierLabel } from './temperature-styles';
+
+const Warning = styled.p`
+	margin: 0;
+	padding: 12px 16px;
+	border-radius: var(--radius-sm);
+	color: var(--color-warning);
+	background: var(--color-warning-surface);
+	font-weight: 500;
+`;
 
 export const LastDrawPanel = observer(function LastDrawPanel({ draw }: { draw: StewardDraw }) {
 	const roster = useSteward().roster!;
@@ -43,6 +53,12 @@ export const LastDrawPanel = observer(function LastDrawPanel({ draw }: { draw: S
 						: 'A tier landed further from expected than luck usually does. One Saturday still says little.'}
 				</Lede>
 			</header>
+			{draw.oddsSkipped ? (
+				<Warning role="alert">
+					This draw ran without saved odds because they couldn't be read. Everyone entered at the
+					odds on their visit. Check the logs before the next draw.
+				</Warning>
+			) : null}
 			<Columns>
 				<Card>
 					<CardTitle>Expected and Actual</CardTitle>
