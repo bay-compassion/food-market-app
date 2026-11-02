@@ -26,7 +26,7 @@ import type { KioskUnlockCode } from '../services/kiosk-unlock.ts';
 import { makeReactive } from '../services/make-reactive.ts';
 import type { Permission } from '../services/permissions.ts';
 import type { PrintJobSubmission } from '../services/print-jobs.ts';
-import type { SessionCommand } from '../services/sessionStateMachine.ts';
+import { SessionStatusEnum, type SessionCommand } from '../services/sessionStateMachine.ts';
 import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
@@ -154,6 +154,17 @@ export class AdminStore {
 	/** The screens this worker can open, in navigation order. */
 	get views(): AdminView[] {
 		return viewsFor(this._permissions);
+	}
+
+	/**
+	 * Where opening the dashboard with no screen in mind should land. During service a worker's job
+	 * is the line; whoever steers the session starts from its status at any time.
+	 */
+	get landingView(): AdminView {
+		return !this.can('manage:sessions') &&
+			this.session.currentStatus === SessionStatusEnum.SERVICE_STARTED
+			? 'queue'
+			: 'current-session';
 	}
 
 	/** Those screens as the navigation lists them, under the headings that say what each is for. */

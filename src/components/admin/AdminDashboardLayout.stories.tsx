@@ -149,18 +149,20 @@ export const NoAccess: Story = {
 	},
 };
 
-/** The view switcher's sheet: every screen, under the headings that say what each is for. */
+/** The phone's tabs, and More's sheet for the screens without one, under their headings. */
 export const SwitchingViews: Story = {
 	play: async ({ canvas }) => {
-		const title = await canvas.findByRole('button', {
-			name: t.currentSession,
-		});
+		const tabs = within(await canvas.findByRole('navigation', { name: t.adminTitle }));
 
-		await userEvent.click(title);
+		await expect(tabs.getByRole('button', { name: t.currentSession })).toHaveAttribute(
+			'aria-current',
+			'page',
+		);
+		await userEvent.click(tabs.getByRole('button', { name: t.moreViews }));
 
 		const sheet = within(
 			await within(document.body).findByRole('dialog', {
-				name: t.switchView,
+				name: t.moreViews,
 			}),
 		);
 
@@ -168,17 +170,17 @@ export const SwitchingViews: Story = {
 			await expect(sheet.getByRole('heading', { name: group })).toBeVisible();
 		}
 
-		await expect(sheet.getByRole('button', { name: t.currentSession })).toHaveAttribute(
-			'aria-current',
-			'page',
-		);
 		await userEvent.click(sheet.getByRole('button', { name: t.reports }));
 		await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(t.reports);
 		await expect(canvas.getByText(t.viewDescriptions.reports)).toBeVisible();
+		await expect(tabs.getByRole('button', { name: t.moreViews })).toHaveAttribute(
+			'aria-current',
+			'page',
+		);
 	},
 };
 
-/** A queue worker opens three screens, which read at a glance with no headings over them. */
+/** A queue worker opens four screens, which all fit on the tabs with no More to open. */
 export const QueueWorker: Story = {
 	args: {
 		activeView: 'queue',
@@ -186,23 +188,14 @@ export const QueueWorker: Story = {
 		permissions: ['run:queue'],
 	},
 	play: async ({ canvas }) => {
-		await userEvent.click(await canvas.findByRole('button', { name: t.queue }));
+		const tabs = within(await canvas.findByRole('navigation', { name: t.adminTitle }));
 
-		const sheet = within(
-			await within(document.body).findByRole('dialog', {
-				name: t.switchView,
-			}),
-		);
-
-		await expect(sheet.getAllByRole('button').map((button) => button.textContent)).toEqual([
+		await expect(tabs.getAllByRole('button').map((button) => button.textContent)).toEqual([
+			t.currentSession,
 			t.queue,
-			t.guestDatabase,
+			t.guestsTab,
 			t.historySessions,
 		]);
-
-		for (const group of Object.values(t.viewGroups)) {
-			await expect(sheet.queryByRole('heading', { name: group })).not.toBeInTheDocument();
-		}
 	},
 };
 

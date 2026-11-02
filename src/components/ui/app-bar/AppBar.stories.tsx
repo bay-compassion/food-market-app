@@ -2,6 +2,7 @@ import { Auth0Context, initialContext } from '@auth0/auth0-react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, waitFor, within } from 'storybook/test';
 
+import { adminTranslations } from '../../../adminLocales';
 import { authReturnUrl } from '../../../auth';
 import { translations, type Locale } from '../../../locales';
 import { AppBar } from './AppBar';
@@ -134,6 +135,36 @@ export const SignedIn: Story = {
 		await userEvent.click(menu.getByRole('menuitem', { name: t.signOut }));
 
 		await expect(logout).toHaveBeenCalledWith({ logoutParams: { returnTo: authReturnUrl } });
+	},
+};
+
+/**
+ * In the dashboard the menu drops the guest's introductions, carries the legal links the footer has
+ * elsewhere, and offers a way back to the guest view.
+ */
+export const InDashboard: Story = {
+	parameters: { signedIn: true, route: '/admin/queue' },
+	play: async ({ canvas, userEvent, globals }) => {
+		const copy = translations[globals.locale as Locale];
+
+		await userEvent.click(canvas.getByRole('button', { name: copy.appBar.accountMenu }));
+		const menu = within(await within(document.body).findByRole('menu'));
+
+		await expect(menu.getByRole('menuitem', { name: copy.privacyPolicy })).toHaveAttribute(
+			'href',
+			'/privacy',
+		);
+		await expect(menu.getByRole('menuitem', { name: copy.termsAndConditions })).toHaveAttribute(
+			'href',
+			'/terms',
+		);
+		await expect(
+			menu.getByRole('menuitem', { name: adminTranslations.en.backToGuestView }),
+		).toHaveAttribute('href', '/');
+		await expect(menu.queryByRole('menuitem', { name: copy.help.title })).not.toBeInTheDocument();
+		await expect(
+			menu.queryByRole('menuitem', { name: copy.appBar.adminPanel }),
+		).not.toBeInTheDocument();
 	},
 };
 

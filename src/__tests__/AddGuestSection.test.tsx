@@ -25,7 +25,7 @@ async function openForm(admissions: ManualAdmission[]) {
 	const user = userEvent.setup();
 	const rendered = renderSection(admissions);
 
-	await user.click(rendered.container.querySelector('.add-guest-button')!);
+	await user.click(rendered.container.querySelector('.add-guest-fab')!);
 
 	return { ...rendered, user };
 }
@@ -51,7 +51,7 @@ describe('AddGuestSection', () => {
 	it('renders nothing when the session cannot accept a guest', () => {
 		const { container } = renderSection([]);
 
-		expect(container.querySelector('.add-guest-button')).toBeNull();
+		expect(container.querySelector('.add-guest-fab')).toBeNull();
 		expect(container.textContent).toBe('');
 	});
 
@@ -161,7 +161,7 @@ describe('AddGuestSection', () => {
 
 		// The dialog leaves through its transition, so it is gone a tick later rather than at once.
 		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-		expect(container.querySelector('.add-guest-button')).not.toBeNull();
+		expect(container.querySelector('.add-guest-fab')).not.toBeNull();
 	});
 
 	it('opens with empty fields and the default household even when this device remembers a guest', async () => {
@@ -175,7 +175,7 @@ describe('AddGuestSection', () => {
 			</RootStoreProvider>,
 		);
 
-		await user.click(container.querySelector('.add-guest-button')!);
+		await user.click(container.querySelector('.add-guest-fab')!);
 
 		expect(store.registration.guest.firstName).toBe('');
 		expect(store.registration.guest.householdSize).toBe(1);

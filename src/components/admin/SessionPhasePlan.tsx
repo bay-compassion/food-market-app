@@ -72,8 +72,8 @@ export type SessionPhasePlanProps = {
 };
 
 /**
- * The lower half of the Today screen: the ways a worker can step in. The market carries on without
- * any of them, so they are all outlined, and they sit below what the screen has to say.
+ * The lower half of the Today screen: the ways to step in. The market carries on without any of
+ * them, so they are all outlined, and they sit below what the screen has to say.
  */
 export const SessionPhasePlan = observer(function SessionPhasePlan({
 	busy,
@@ -83,11 +83,18 @@ export const SessionPhasePlan = observer(function SessionPhasePlan({
 	const { admin, session } = useRootStore();
 	const event = session.currentState?.event;
 
+	const phase = currentSessionState(event?.status);
+
 	if (!event) {
 		return null;
 	}
 
-	switch (currentSessionState(event.status)) {
+	// Closing the day is part of running the queue; everything else here is steering the session.
+	if (phase !== 'service_started' && !admin.can('manage:sessions')) {
+		return null;
+	}
+
+	switch (phase) {
 		case 'scheduled':
 			return (
 				<Plan>

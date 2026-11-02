@@ -47,7 +47,7 @@ interface GuideState {
 	confirm: AdminMark | null;
 	addGuest: AdminSceneGuestForm | null;
 	broadcast: { title: string; body: string };
-	/** Whether the view switcher's sheet of screens is open. */
+	/** Whether the More sheet of screens is open. */
 	navigating: boolean;
 	focus: AdminMark | null;
 	tap: AdminMark | null;
@@ -203,22 +203,29 @@ document.addEventListener('DOMContentLoaded', () => {
 			action?.(s);
 		});
 	};
+	/** The screens with a tab of their own, as `AdminNavigation.tabViews` lists them. */
+	const tabViews: AdminView[] = ['current-session', 'queue', 'guest-database'];
 	/**
-	 * Moves to another screen as a worker does on a phone: a tap on the title opens the sheet of
-	 * screens, a tap on one opens it, and the new screen starts at its top.
+	 * Moves to another screen as a worker does on a phone: a tap on its tab, or on More and then on
+	 * the screen in the sheet. The new screen starts at its top.
 	 */
 	const go = (t: number, view: AdminView, action?: (s: GuideState) => void) => {
+		const hasTab = tabViews.includes(view);
+
 		at(t, (s) => {
-			s.tap = 'switcher';
+			s.tap = hasTab ? `tab:${view}` : 'switcher';
 			s.focus = null;
 		});
-		at(t + 0.25, (s) => {
-			s.tap = null;
-			s.navigating = true;
-		});
-		at(t + 0.4, (s) => {
-			s.tap = `tab:${view}`;
-		});
+
+		if (!hasTab) {
+			at(t + 0.25, (s) => {
+				s.tap = null;
+				s.navigating = true;
+			});
+			at(t + 0.4, (s) => {
+				s.tap = `tab:${view}`;
+			});
+		}
 		at(t + 0.7, (s) => {
 			s.tap = null;
 			s.navigating = false;
@@ -272,11 +279,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 	line(
 		'tabs',
-		['Getting started', 'Sign in on your phone.', 'Tap the title to switch screens.'],
+		['Getting started', 'Sign in on your phone.', 'Tabs along the bottom, and More for the rest.'],
 		'switcher',
 		null,
 	);
-	// The title opens the sheet of every screen, which stays up into the first move.
+	// More opens the sheet of the other screens, which stays up into the first move.
 	at(C('tabs', 0.45), (s) => {
 		s.navigating = true;
 		s.focus = 'navigation';
@@ -356,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	line(
 		'pending',
 		[A.lotteryActions, A.runLotteryNow, A.lotteryDrawsAt.replace('{time}', '10:50 AM')],
-		'heading:lotteryActions',
+		'timer',
 	);
 	at(C('pending', 0.45), (s) => {
 		s.focus = 'button:pauseLottery';

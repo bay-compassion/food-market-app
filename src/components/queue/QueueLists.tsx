@@ -1,10 +1,13 @@
 import styled from '@emotion/styled';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { ManualGuest } from '../../services/admin-api';
 import { useRootStore } from '../../stores/react/store-context';
+import { AddGuestFab } from '../admin/AddGuestFab';
+import { wideLayoutQuery } from '../admin/admin-layout';
 import { ManualGuestDialog } from '../admin/ManualGuestDialog';
 import { useNow } from '../hooks/use-now';
 import { useQueueDesk } from './queue-desk-context';
@@ -40,6 +43,7 @@ export const QueueLists = observer(function QueueLists() {
 	const now = useNow(30_000);
 	const [addingGuest, setAddingGuest] = useState(false);
 	const canAddGuest = desk.admissions.length > 0;
+	const isWide = useMediaQuery(wideLayoutQuery);
 
 	function addGuest(guest: ManualGuest) {
 		setAddingGuest(false);
@@ -60,7 +64,7 @@ export const QueueLists = observer(function QueueLists() {
 				emptyText={t.queueDesk.noneWaiting}
 				now={now}
 				action={
-					canAddGuest ? (
+					canAddGuest && isWide ? (
 						<button className="add-guest" type="button" onClick={() => setAddingGuest(true)}>
 							+ {t.queueDesk.addGuest}
 						</button>
@@ -76,6 +80,9 @@ export const QueueLists = observer(function QueueLists() {
 				emptyText={t.queueDesk.noneDone}
 				now={now}
 			/>
+			{canAddGuest && !isWide ? (
+				<AddGuestFab aboveCallBar onClick={() => setAddingGuest(true)} />
+			) : null}
 			<ManualGuestDialog
 				open={canAddGuest && addingGuest}
 				admissions={desk.admissions}

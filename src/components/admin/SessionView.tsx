@@ -45,7 +45,7 @@ export const SessionView = observer(function SessionView({
 	onAddGuest,
 	onNavigate,
 }: SessionViewProps) {
-	const { session } = useRootStore();
+	const { admin, session } = useRootStore();
 	const event = session.currentState?.event ?? null;
 	const phase = currentSessionState(event?.status);
 	const showsRegisteredGuests =
@@ -68,7 +68,7 @@ export const SessionView = observer(function SessionView({
 			{showsRegisteredGuests ? <SessionGuestList guests={sessionGuests} /> : null}
 
 			{/* A session that never opened has nothing to reset. */}
-			{event && phase !== 'scheduled' && phase !== 'inactive' ? (
+			{event && phase !== 'scheduled' && phase !== 'inactive' && admin.can('manage:sessions') ? (
 				<ResetSessionDisclosure busy={busy} onReset={() => onRun('reset_session')} />
 			) : null}
 		</Screen>

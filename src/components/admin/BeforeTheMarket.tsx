@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import type { ReactNode } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 
@@ -45,6 +46,23 @@ const Section = styled.section`
 	}
 `;
 
+function RowIcon({ children }: { children: ReactNode }) {
+	return (
+		<svg
+			width="22"
+			height="22"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			aria-hidden="true"
+		>
+			{children}
+		</svg>
+	);
+}
+
 function Chevron() {
 	return (
 		<svg
@@ -88,12 +106,22 @@ export function BeforeTheMarket({ onOpenChecklist }: { onOpenChecklist: () => vo
 				</svg>
 				<span>{t.sessionOnSchedule}</span>
 			</div>
-			{[t.setUpRoomDisplay, t.setUpCheckIn].map((label) => (
-				<button key={label} type="button" className="row" onClick={onOpenChecklist}>
-					<span>{label}</span>
-					<Chevron />
-				</button>
-			))}
+			<button type="button" className="row" onClick={onOpenChecklist}>
+				<RowIcon>
+					<rect x="3" y="5" width="18" height="12" rx="2" />
+					<path d="M9 21h6" />
+				</RowIcon>
+				<span>{t.setUpRoomDisplay}</span>
+				<Chevron />
+			</button>
+			<button type="button" className="row" onClick={onOpenChecklist}>
+				<RowIcon>
+					<rect x="3" y="4" width="18" height="12" rx="2" />
+					<path d="M2 20h20" />
+				</RowIcon>
+				<span>{t.setUpCheckIn}</span>
+				<Chevron />
+			</button>
 		</Section>
 	);
 }

@@ -68,7 +68,9 @@ export const SessionPhaseStatus = observer(function SessionPhaseStatus({
 	onNavigate,
 }: SessionPhaseStatusProps) {
 	const t = adminTranslations.en;
-	const { session, translations } = useRootStore();
+	const { admin, session, translations } = useRootStore();
+	// Steering the session is for whoever set it up. Everyone else can still see where it stands.
+	const canSteer = admin.can('manage:sessions');
 	const event = session.currentState?.event;
 	const counts = session.currentState?.counts ?? {};
 	const milestones = session.milestones;
@@ -77,10 +79,12 @@ export const SessionPhaseStatus = observer(function SessionPhaseStatus({
 	if (!event || !milestones || phase === 'inactive') {
 		return (
 			<>
-				<p>{t.noSessionHelp}</p>
-				<Button type="button" onClick={() => onNavigate('schedule')}>
-					{t.scheduleOpenSchedule}
-				</Button>
+				<p>{canSteer ? t.noSessionHelp : t.today.noSessionWorker}</p>
+				{canSteer ? (
+					<Button type="button" onClick={() => onNavigate('schedule')}>
+						{t.scheduleOpenSchedule}
+					</Button>
+				) : null}
 			</>
 		);
 	}
@@ -108,7 +112,7 @@ export const SessionPhaseStatus = observer(function SessionPhaseStatus({
 						)}
 					/>
 					<SessionMilestoneList />
-					<BeforeTheMarket onOpenChecklist={() => onNavigate('checklist')} />
+					{canSteer ? <BeforeTheMarket onOpenChecklist={() => onNavigate('checklist')} /> : null}
 				</>
 			);
 		case 'registration_open':
@@ -159,12 +163,18 @@ export const SessionPhaseStatus = observer(function SessionPhaseStatus({
 					<SessionStatusCard
 						attention
 						lead={t.lotteryActions}
-						value={<SessionStatusValue>{t.today.drawReady}</SessionStatusValue>}
-						help={spots(t.today.drawManual)}
+						value={
+							<SessionStatusValue>
+								{canSteer ? t.today.drawReady : t.today.drawWaiting}
+							</SessionStatusValue>
+						}
+						help={spots(canSteer ? t.today.drawManual : t.today.drawWaitingHelp)}
 					/>
-					<Button type="button" disabled={busy} onClick={() => onRun('run_lottery')}>
-						{t.runLottery}
-					</Button>
+					{canSteer ? (
+						<Button type="button" disabled={busy} onClick={() => onRun('run_lottery')}>
+							{t.runLottery}
+						</Button>
+					) : null}
 					<SessionMilestoneList />
 				</>
 			);
@@ -177,9 +187,11 @@ export const SessionPhaseStatus = observer(function SessionPhaseStatus({
 						<Button type="button" onClick={() => onNavigate('queue')}>
 							{t.goToQueue}
 						</Button>
-						<Button type="button" variant="outlined" onClick={() => onNavigate('broadcast')}>
-							{t.today.sendBroadcast}
-						</Button>
+						{canSteer ? (
+							<Button type="button" variant="outlined" onClick={() => onNavigate('broadcast')}>
+								{t.today.sendBroadcast}
+							</Button>
+						) : null}
 					</Actions>
 				</>
 			);

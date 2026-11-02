@@ -1,7 +1,10 @@
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useEffect, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import type { ManualAdmission } from '../../services/guestAdmission';
+import { AddGuestFab } from './AddGuestFab';
+import { wideLayoutQuery } from './admin-layout';
 import { ManualGuestDialog } from './ManualGuestDialog';
 import type { ManualGuest } from './types';
 
@@ -34,12 +37,13 @@ export function useManualGuestForm(admissions: ManualAdmission[]) {
 }
 
 /**
- * The "add a guest by hand" button and the dialog it opens, shared by every admin screen that
- * offers it.
+ * Adding a guest by hand and the dialog it opens, shared by every admin screen that offers it. On a
+ * phone it floats, since it is needed at unpredictable moments from anywhere on a long screen.
  */
 export function AddGuestSection({ admissions, busy, onAddGuest }: AddGuestSectionProps) {
 	const t = adminTranslations.en;
 	const form = useManualGuestForm(admissions);
+	const isWide = useMediaQuery(wideLayoutQuery);
 
 	if (!form.canAdd) {
 		return null;
@@ -51,10 +55,16 @@ export function AddGuestSection({ admissions, busy, onAddGuest }: AddGuestSectio
 	}
 
 	return (
-		<section className="admin-section">
-			<button className="add-guest-button" type="button" onClick={form.open}>
-				+ {t.addGuest}
-			</button>
+		<>
+			{isWide ? (
+				<section className="admin-section">
+					<button className="add-guest-button" type="button" onClick={form.open}>
+						+ {t.addGuest}
+					</button>
+				</section>
+			) : (
+				<AddGuestFab onClick={form.open} />
+			)}
 			<ManualGuestDialog
 				open={form.isOpen}
 				admissions={admissions}
@@ -62,6 +72,6 @@ export function AddGuestSection({ admissions, busy, onAddGuest }: AddGuestSectio
 				onSubmit={addGuest}
 				onClose={form.close}
 			/>
-		</section>
+		</>
 	);
 }

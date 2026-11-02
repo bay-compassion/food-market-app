@@ -13,6 +13,7 @@ import {
 import type { ManualAdmission } from '../../services/guestAdmission';
 import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
+import { AddGuestFab } from './AddGuestFab';
 import { useManualGuestForm } from './AddGuestSection';
 import { wideLayoutQuery } from './admin-layout';
 import { ChoiceChips } from './ChoiceChips';
@@ -97,7 +98,7 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 					onChange={(event) => setSearch(event.target.value)}
 					slotProps={{ htmlInput: { 'aria-label': t.searchGuests } }}
 				/>
-				{addGuestForm.canAdd ? (
+				{addGuestForm.canAdd && isWide ? (
 					<Button type="button" onClick={addGuestForm.open}>
 						{t.addGuest}
 					</Button>
@@ -122,6 +123,7 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 			) : (
 				<GuestDatabaseList rows={shown} busy={admin.isBusy} onRun={onRun} />
 			)}
+			{addGuestForm.canAdd && !isWide ? <AddGuestFab onClick={addGuestForm.open} /> : null}
 			<ManualGuestDialog
 				open={addGuestForm.isOpen}
 				admissions={admissions}

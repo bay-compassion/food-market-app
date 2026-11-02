@@ -90,7 +90,7 @@ function MilestoneMark({ state }: { state: SessionMilestone['state'] }) {
 /** The whole market day at a glance, on every phase of the Today screen. */
 export const SessionMilestoneList = observer(function SessionMilestoneList() {
 	const t = adminTranslations.en.today;
-	const { session, translations } = useRootStore();
+	const { admin, session, translations } = useRootStore();
 
 	function name({ kind, state }: SessionMilestone) {
 		const started = kind === 'service_starts' && state === 'current';
@@ -104,7 +104,11 @@ export const SessionMilestoneList = observer(function SessionMilestoneList() {
 		}
 
 		if (kind === 'lottery_draw') {
-			return state === 'done' ? null : t.whenYouRunIt;
+			if (state === 'done') {
+				return null;
+			}
+
+			return admin.can('manage:sessions') ? t.whenYouRunIt : t.whenAdminRunsIt;
 		}
 
 		return state === 'current' ? t.now : t.afterTheDraw;

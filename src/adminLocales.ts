@@ -16,6 +16,11 @@ type TodayTranslations = {
 	drawResult: string;
 	drawReady: string;
 	drawManual: string;
+	/** A worker's view of a draw run by hand, which they cannot run themselves. */
+	drawWaiting: string;
+	drawWaitingHelp: string;
+	/** A worker's view of no session, which they cannot schedule themselves. */
+	noSessionWorker: string;
 	registered: string;
 	spots: string;
 	/** Names the timeline for a screen reader. */
@@ -24,6 +29,7 @@ type TodayTranslations = {
 	milestones: Record<MilestoneKind, { done: string; next: string }>;
 	afterTheDraw: string;
 	whenYouRunIt: string;
+	whenAdminRunsIt: string;
 	now: string;
 	beforeTheMarket: string;
 	sessionOnSchedule: string;
@@ -83,8 +89,12 @@ export interface AdminTranslation {
 	today: TodayTranslations;
 	/** The navigation's headings. */
 	viewGroups: Record<AdminViewGroup, string>;
-	/** Names the sheet, and the title button that opens it, where a worker picks another screen. */
-	switchView: string;
+	/** The app bar menu's way out of the dashboard. */
+	backToGuestView: string;
+	/** The tab, and the sheet it opens, holding the screens with no tab of their own on a phone. */
+	moreViews: string;
+	/** The guest database's tab, where its full name does not fit. */
+	guestsTab: string;
 	/** A past session's status in the history list. */
 	sessionClosed: string;
 	/** A past session's one menu item: recording a guest served outside the app. */
@@ -605,7 +615,10 @@ export const adminTranslations = {
 			drawsByItself: 'Draws by itself at {time}',
 			drawResult:
 				'{registered} registered for {capacity} spots. Guests hear the result as soon as it runs.',
-			drawReady: 'Ready when you are',
+			drawReady: 'Ready to Run',
+			drawWaiting: 'Not Run Yet',
+			drawWaitingHelp: '{registered} registered for {capacity} spots. An admin runs the draw.',
+			noSessionWorker: 'There is no session right now.',
 			drawManual:
 				'{registered} registered for {capacity} spots. Nothing happens until you run the draw.',
 			registered: 'Registered',
@@ -619,6 +632,7 @@ export const adminTranslations = {
 			},
 			afterTheDraw: 'After the Draw',
 			whenYouRunIt: 'When You Run It',
+			whenAdminRunsIt: 'When an Admin Runs It',
 			now: 'Now',
 			beforeTheMarket: 'Before the Market',
 			sessionOnSchedule: 'Session Is on the Schedule',
@@ -668,7 +682,9 @@ export const adminTranslations = {
 			plan: 'Plan',
 			records: 'Records',
 		},
-		switchView: 'Switch View',
+		backToGuestView: 'Back to Guest View',
+		moreViews: 'More',
+		guestsTab: 'Guests',
 		sessionClosed: 'Closed',
 		recordServedGuest: 'Record a Served Guest',
 		manualGuestForm: {

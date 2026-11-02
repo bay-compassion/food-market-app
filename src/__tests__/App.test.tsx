@@ -755,10 +755,21 @@ describe('App', () => {
 		expect(container.textContent).toContain(adminTranslations.en.currentSession);
 		expect(container.textContent).not.toContain('Registration questions');
 
-		// On a phone the screens are listed in a sheet the title opens. Selected by label rather
-		// than index, since positional indexing points elsewhere every time the navigation changes.
+		// On a phone a screen is a tab, or in the sheet behind More. Selected by label rather than
+		// index, since positional indexing points elsewhere every time the navigation changes.
 		const navigateTo = async (label: string) => {
-			await user.click(container.querySelector('h1 button')!);
+			const tabs = within(document.body.querySelector<HTMLElement>('.admin-tabs')!);
+			const tab = tabs.queryByRole('button', {
+				name: label === adminTranslations.en.guestDatabase ? adminTranslations.en.guestsTab : label,
+			});
+
+			if (tab) {
+				await user.click(tab);
+
+				return;
+			}
+
+			await user.click(tabs.getByRole('button', { name: adminTranslations.en.moreViews }));
 			await user.click(
 				within(document.body.querySelector<HTMLElement>('.admin-navigation')!).getByRole('button', {
 					name: label,

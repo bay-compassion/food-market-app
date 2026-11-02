@@ -22,9 +22,9 @@ const Layout = styled.div`
 		background: var(--color-surface-soft);
 	}
 
-	/* Phone: one column, with room for the call bar fixed along the bottom edge. */
+	/* Phone: one column, with room for the call bar and the Add Guest button above it. */
 	&[data-layout='phone'] {
-		padding-bottom: calc(88px + env(safe-area-inset-bottom));
+		padding-bottom: calc(160px + env(safe-area-inset-bottom));
 	}
 
 	.call-bar {

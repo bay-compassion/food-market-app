@@ -17,3 +17,8 @@ export const adminViewLabels: Record<AdminView, string> = {
 	workers: 'Workers',
 	'dev-mode': t.devMode,
 };
+
+/** A screen's name on a phone's tab, which has less room than the list does. */
+export function adminTabLabel(view: AdminView): string {
+	return view === 'guest-database' ? t.guestsTab : adminViewLabels[view];
+}
