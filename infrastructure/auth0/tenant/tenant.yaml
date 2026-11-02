@@ -124,6 +124,7 @@ databases:
       active: false
     enabled_clients:
       - Bay Compassion (Test Application)
+      - Bay Compassion Worker Management
       - The Bay Compassion
     is_domain_connection: true
     options:
@@ -156,6 +157,7 @@ connections:
       active: false
     enabled_clients:
       - Bay Compassion (Test Application)
+      - Bay Compassion Worker Management
       - The Bay Compassion
     is_domain_connection: false
     options:
