@@ -129,17 +129,48 @@ describe('AdminStore', () => {
 		expect(api.listSessionGuests).not.toHaveBeenCalled();
 	});
 
-	it('loads guests, session guests, and history for a queue worker', async () => {
+	it('loads session guests and history for a queue worker, but not the guest database', async () => {
 		// Arrange
-		const { store, api } = storeWith();
+		const { store, api } = storeWith({
+			listAllGuests: vi.fn().mockRejectedValue(new Error('403')),
+		});
+
+		// Act
+		await store.load();
+
+		// Assert
+		expect(api.listAllGuests).not.toHaveBeenCalled();
+		expect(api.listSessionGuests).toHaveBeenCalledWith('event-1');
+		expect(api.listHistory).toHaveBeenCalledOnce();
+		expect(store.feedback).toBeNull();
+	});
+
+	it('loads the guest database for a role holding export:guest-data', async () => {
+		// Arrange
+		const { store, api } = storeWith({}, {}, async () => ['run:queue', 'export:guest-data']);
 
 		// Act
 		await store.load();
 
 		// Assert
 		expect(api.listAllGuests).toHaveBeenCalledOnce();
-		expect(api.listSessionGuests).toHaveBeenCalledWith('event-1');
-		expect(api.listHistory).toHaveBeenCalledOnce();
+	});
+
+	it('reports a market action as done for a role without export:guest-data', async () => {
+		// Arrange
+		const { store } = storeWith(
+			{ listAllGuests: vi.fn().mockRejectedValue(new Error('403')) },
+			{},
+			async () => ['run:queue', 'manage:sessions'],
+		);
+
+		await store.load();
+
+		// Act
+		await store.runMarketAction('run_lottery');
+
+		// Assert
+		expect(store.feedback).toEqual({ kind: 'draw-complete' });
 	});
 
 	it('holds no permissions when they cannot be read', async () => {
@@ -692,11 +723,16 @@ describe('AdminStore guest deletion', () => {
 
 	it('deletes the guest, closes the dialog, and rereads both guest lists', async () => {
 		// Arrange
-		const { store, api } = storeWith({
-			previewGuestDeletion: vi.fn().mockResolvedValue(preview),
-			deleteGuest: vi.fn().mockResolvedValue(undefined),
-		});
+		const { store, api } = storeWith(
+			{
+				previewGuestDeletion: vi.fn().mockResolvedValue(preview),
+				deleteGuest: vi.fn().mockResolvedValue(undefined),
+			},
+			{},
+			async () => ['run:queue', 'export:guest-data', 'delete:guest-data'],
+		);
 
+		await store.load();
 		await store.openGuestDeletion('guest-1');
 		api.listAllGuests.mockClear();
 		api.listSessionGuests.mockClear();

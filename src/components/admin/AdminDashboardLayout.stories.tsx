@@ -180,7 +180,7 @@ export const SwitchingViews: Story = {
 	},
 };
 
-/** A queue worker opens four screens, which all fit on the tabs with no More to open. */
+/** A queue worker opens three screens, which all fit on the tabs with no More to open. */
 export const QueueWorker: Story = {
 	args: {
 		activeView: 'queue',
@@ -193,7 +193,6 @@ export const QueueWorker: Story = {
 		await expect(tabs.getAllByRole('button').map((button) => button.textContent)).toEqual([
 			t.currentSession,
 			t.queue,
-			t.guestsTab,
 			t.historySessions,
 		]);
 	},

@@ -80,6 +80,22 @@ describe('Workers API', () => {
 		expect(add).not.toHaveBeenCalled();
 	});
 
+	it.each([true, false])('reports invited: %s after creating an account', async (invited) => {
+		// Arrange
+		vi.spyOn(WorkerDirectory.prototype, 'authorize').mockResolvedValue('actor');
+		vi.spyOn(WorkerDirectory.prototype, 'add').mockResolvedValue(invited);
+		// Act
+		const response = await request('/workers', 'POST', {
+			name: 'New',
+			email: 'new@example.test',
+			role: 'worker',
+		});
+
+		// Assert
+		expect(response.status).toBe(201);
+		expect(await response.json()).toEqual({ ok: true, invited });
+	});
+
 	it('refuses an owner assignment command', async () => {
 		// Arrange
 		vi.spyOn(WorkerDirectory.prototype, 'authorize').mockResolvedValue('actor');

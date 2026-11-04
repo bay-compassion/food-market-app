@@ -100,6 +100,28 @@ export class Auth0Management {
 		return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
 	}
 
+	/**
+	 * Asks Auth0 to email a link for setting a new password. This is the Authentication API, so it
+	 * takes no Management token and sits outside the Management rate-limit queue.
+	 */
+	async sendPasswordEmail(email: string, connection: string): Promise<void> {
+		const response = await this.request(`${this.origin}/dbconnections/change_password`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				email,
+				connection,
+				// Optional. Names the staff app, rather than the tenant alone, in the email and reset page.
+				client_id: process.env.VITE_AUTH0_CLIENT_ID,
+			}),
+			signal: AbortSignal.timeout(10000),
+		});
+
+		if (!response.ok) {
+			this.unavailable(response.status, 'request');
+		}
+	}
+
 	private unavailable(status?: number, operation?: 'authentication' | 'request'): never {
 		throw new HTTPException(503, {
 			message: status

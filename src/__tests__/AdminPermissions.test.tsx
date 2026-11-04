@@ -150,12 +150,7 @@ describe('admin navigation by permission', () => {
 	it('offers a queue worker only the screens their role can open', async () => {
 		renderDashboard(['run:queue']);
 
-		expect(await navigationLabels()).toEqual([
-			t.currentSession,
-			t.queue,
-			t.guestDatabase,
-			t.historySessions,
-		]);
+		expect(await navigationLabels()).toEqual([t.currentSession, t.queue, t.historySessions]);
 	});
 
 	it('offers an administrator everything', async () => {

@@ -8,8 +8,9 @@ function setup() {
 	vi.stubEnv('AUTH0_AUDIENCE', 'https://market.test');
 	const api = new Auth0Management();
 	const call = vi.spyOn(api, 'call');
+	const sendPasswordEmail = vi.spyOn(api, 'sendPasswordEmail').mockResolvedValue();
 
-	return { directory: new WorkerDirectory(api), call };
+	return { directory: new WorkerDirectory(api), call, sendPasswordEmail };
 }
 const admin = { id: 'rol_admin', name: 'admin' };
 const worker = { id: 'rol_worker', name: 'worker' };
@@ -153,5 +154,58 @@ describe('WorkerDirectory security', () => {
 			['users/new/roles', 'POST', { roles: ['rol_admin'] }],
 			['users/new', 'PATCH', { blocked: false }],
 		]);
+	});
+
+	it('emails the set-password link only after the account is usable', async () => {
+		// Arrange
+		const { directory, call, sendPasswordEmail } = setup();
+
+		vi.stubEnv('AUTH0_WORKER_CONNECTION', 'Staff');
+		sendPasswordEmail.mockResolvedValue();
+		call
+			.mockResolvedValueOnce([admin])
+			.mockResolvedValueOnce({ user_id: 'new' })
+			.mockResolvedValue(undefined);
+		// Act
+		const invited = await directory.add('new@example.test', 'New Worker', 'admin');
+
+		// Assert
+		expect(invited).toBe(true);
+		expect(sendPasswordEmail).toHaveBeenCalledWith('new@example.test', 'Staff');
+		expect(sendPasswordEmail.mock.invocationCallOrder[0]).toBeGreaterThan(
+			call.mock.invocationCallOrder.at(-1)!,
+		);
+	});
+
+	it('keeps the new account when the set-password email fails', async () => {
+		// Arrange
+		const { directory, call, sendPasswordEmail } = setup();
+
+		vi.stubEnv('AUTH0_WORKER_CONNECTION', 'Staff');
+		sendPasswordEmail.mockRejectedValue(new Error('Auth0 request failed (HTTP 429)'));
+		call
+			.mockResolvedValueOnce([admin])
+			.mockResolvedValueOnce({ user_id: 'new' })
+			.mockResolvedValue(undefined);
+		// Act
+		const invited = await directory.add('new@example.test', 'New Worker', 'admin');
+
+		// Assert
+		expect(invited).toBe(false);
+		expect(call).toHaveBeenLastCalledWith('users/new', 'PATCH', { blocked: false });
+	});
+
+	it('sends no email when granting access fails', async () => {
+		// Arrange
+		const { directory, call, sendPasswordEmail } = setup();
+
+		vi.stubEnv('AUTH0_WORKER_CONNECTION', 'Staff');
+		call
+			.mockResolvedValueOnce([admin])
+			.mockResolvedValueOnce({ user_id: 'new' })
+			.mockRejectedValueOnce(new Error('Auth0 request failed'));
+		// Act / Assert
+		await expect(directory.add('new@example.test', 'New Worker', 'admin')).rejects.toThrow();
+		expect(sendPasswordEmail).not.toHaveBeenCalled();
 	});
 });

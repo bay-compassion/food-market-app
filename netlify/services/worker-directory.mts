@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { HTTPException } from 'hono/http-exception';
 
 import type { WorkerAccount, WorkerPage, WorkerRole } from '../../src/services/workers.js';
+import { getLogger } from '../lib/logging.mjs';
 import { Auth0Management } from './auth0-management.mjs';
 
 type Role = { id: string; name: string };
@@ -75,14 +76,15 @@ export class WorkerDirectory {
 		return role.id;
 	}
 
-	async add(email: string, name: string, role: WorkerRole): Promise<void> {
+	/** Resolves to whether the set-password email was accepted; the account exists either way. */
+	async add(email: string, name: string, role: WorkerRole): Promise<boolean> {
 		const connection = process.env.AUTH0_WORKER_CONNECTION;
 
 		if (!connection) {
 			throw new HTTPException(503, { message: 'Worker connection is not configured.' });
 		}
 		const roleId = await this.roleId(role);
-		// Passwords never leave the server. The worker sets their own via Auth0's Forgot Password flow.
+		// Passwords never leave the server. The worker sets their own from Auth0's reset email.
 		// Create blocked first: an interrupted role assignment cannot leave a usable unassigned account.
 		const user = await this.api.call<User>('users', 'POST', {
 			email,
@@ -96,6 +98,22 @@ export class WorkerDirectory {
 
 		await this.api.call(`${this.userPath(user.user_id)}/roles`, 'POST', { roles: [roleId] });
 		await this.setBlocked(user.user_id, false);
+
+		return this.sendPasswordEmail(email, connection);
+	}
+
+	// Not a failure of the add: retrying it would hit the account just created. Forgot Password on
+	// the sign-in page sends the same email, so the admin can still get the worker in.
+	private async sendPasswordEmail(email: string, connection: string): Promise<boolean> {
+		try {
+			await this.api.sendPasswordEmail(email, connection);
+
+			return true;
+		} catch (err) {
+			getLogger().warn({ message: 'worker.password_email_failed', err });
+
+			return false;
+		}
 	}
 
 	private async setBlocked(target: string, blocked: boolean): Promise<void> {

@@ -7,7 +7,13 @@ describe('AdminNavigation', () => {
 	it('sorts an administrator’s screens under their headings, with Dev Mode trailing', () => {
 		// Arrange
 		const navigation = new AdminNavigation(
-			viewsFor(['manage:sessions', 'run:queue', 'read:reports', 'manage:demo-data']),
+			viewsFor([
+				'manage:sessions',
+				'run:queue',
+				'read:reports',
+				'export:guest-data',
+				'manage:demo-data',
+			]),
 		);
 
 		// Act
@@ -77,7 +83,13 @@ describe('AdminNavigation', () => {
 	it('gives an administrator three tabs and keeps the rest behind More', () => {
 		// Arrange
 		const navigation = new AdminNavigation(
-			viewsFor(['manage:sessions', 'run:queue', 'read:reports', 'manage:demo-data']),
+			viewsFor([
+				'manage:sessions',
+				'run:queue',
+				'read:reports',
+				'export:guest-data',
+				'manage:demo-data',
+			]),
 		);
 
 		// Act
@@ -93,6 +105,26 @@ describe('AdminNavigation', () => {
 		]);
 	});
 
+	it('keeps the guest database from a team leader, who cannot load it', () => {
+		// Arrange
+		const permissions = viewsFor([
+			'manage:sessions',
+			'manage:guest-access',
+			'print:name-tags',
+			'read:reports',
+			'run:queue',
+		]);
+
+		// Act
+		const navigation = new AdminNavigation(permissions);
+
+		// Assert
+		expect(navigation.includes('guest-database')).toBe(false);
+		expect(navigation.includes('workers')).toBe(false);
+		expect(navigation.includes('schedule')).toBe(true);
+		expect(navigation.includes('reports')).toBe(true);
+	});
+
 	it('gives a queue worker’s one leftover screen a tab instead of a More', () => {
 		// Arrange
 		const navigation = new AdminNavigation(viewsFor(['run:queue']));
@@ -101,7 +133,7 @@ describe('AdminNavigation', () => {
 		const { tabs, overflow } = navigation;
 
 		// Assert
-		expect(tabs).toEqual(['current-session', 'queue', 'guest-database', 'session-history']);
+		expect(tabs).toEqual(['current-session', 'queue', 'session-history']);
 		expect(overflow.isEmpty).toBe(true);
 	});
 });

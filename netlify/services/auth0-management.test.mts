@@ -4,6 +4,45 @@ import { Auth0Management } from './auth0-management.mjs';
 
 afterEach(() => vi.unstubAllEnvs());
 
+describe('Auth0 password email', () => {
+	it('asks the Authentication API without a Management token', async () => {
+		// Arrange
+		vi.stubEnv('AUTH0_MANAGEMENT_DOMAIN', 'tenant.auth0.com');
+		vi.stubEnv('VITE_AUTH0_CLIENT_ID', 'spa-client');
+		const request = vi.fn<typeof fetch>(async () => new Response('sent'));
+
+		// Act
+		await new Auth0Management(request).sendPasswordEmail('new@example.test', 'Staff');
+		// Assert
+		const [url, init] = request.mock.calls[0]!;
+
+		expect(request).toHaveBeenCalledTimes(1);
+		expect(url).toBe('https://tenant.auth0.com/dbconnections/change_password');
+		expect(new Headers(init?.headers).has('Authorization')).toBe(false);
+		expect(JSON.parse(init?.body as string)).toEqual({
+			email: 'new@example.test',
+			connection: 'Staff',
+			client_id: 'spa-client',
+		});
+	});
+
+	it('reports a refusal without forwarding the provider body', async () => {
+		// Arrange
+		vi.stubEnv('AUTH0_MANAGEMENT_DOMAIN', 'tenant.auth0.com');
+		const request = vi.fn<typeof fetch>(
+			async () => new Response('new@example.test is rate limited', { status: 429 }),
+		);
+		// Act
+		const sending = new Auth0Management(request).sendPasswordEmail('new@example.test', 'Staff');
+
+		// Assert
+		await expect(sending).rejects.toMatchObject({
+			status: 503,
+			message: expect.not.stringContaining('new@example.test'),
+		});
+	});
+});
+
 describe('Auth0 Management token recovery', () => {
 	it.each([401, 403])('replaces the cached token after Auth0 returns %s', async (status) => {
 		// Arrange: the cached credential was issued before the M2M grant changed.

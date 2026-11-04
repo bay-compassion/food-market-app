@@ -246,7 +246,16 @@ export class AdminStore {
 		}
 	}
 
+	/**
+	 * Rereads the whole guest database. Callers run this after any change, so without
+	 * `export:guest-data` it does nothing: the server would answer 403, and an action that had
+	 * already succeeded would be reported as failed.
+	 */
 	async refreshGuests(search = ''): Promise<void> {
+		if (!this.can('export:guest-data')) {
+			return;
+		}
+
 		const guests = await this.api.listAllGuests(search);
 
 		runInAction(() => (this._guests = guests));

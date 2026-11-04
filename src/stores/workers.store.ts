@@ -50,12 +50,15 @@ export class WorkersStore {
 	}
 
 	async add(name: string, email: string, role: WorkerRole): Promise<boolean> {
-		return this.mutate(
-			'',
-			{ name, email, role },
-			'POST',
-			'Account added. Ask the worker to choose Forgot Password on the sign-in page to set their password.',
-		);
+		return this.mutate<{ invited: boolean }>('', { name, email, role }, 'POST', ({ invited }) => {
+			if (invited) {
+				this.root.notifications.success(`Account added. We emailed ${email} a set-password link.`);
+			} else {
+				this.root.notifications.error(
+					`Account added, but the email failed. Ask ${email} to choose Forgot Password when signing in.`,
+				);
+			}
+		});
 	}
 
 	async change(worker: WorkerAccount, command: WorkerRole | 'remove'): Promise<void> {
@@ -75,20 +78,17 @@ export class WorkersStore {
 		});
 
 		if (confirmed) {
-			await this.mutate(
-				`/${encodeURIComponent(worker.id)}`,
-				{ command },
-				'PATCH',
-				'Worker access updated.',
+			await this.mutate(`/${encodeURIComponent(worker.id)}`, { command }, 'PATCH', () =>
+				this.root.notifications.success('Worker access updated.'),
 			);
 		}
 	}
 
-	private async mutate(
+	private async mutate<T>(
 		path: string,
 		body: object,
 		method: string,
-		success: string,
+		announce: (result: T) => void,
 	): Promise<boolean> {
 		if (this.busy) {
 			return false;
@@ -97,9 +97,10 @@ export class WorkersStore {
 		let changed = false;
 
 		try {
-			await this.send(path, method, body);
+			const result = await this.send<T>(path, method, body);
+
 			changed = true;
-			this.root.notifications.success(success);
+			announce(result);
 			await this.readPage(this.page);
 
 			return true;

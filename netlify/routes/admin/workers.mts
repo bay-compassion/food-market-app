@@ -46,10 +46,11 @@ workerRoutes.post('/workers', async (context) => {
 	if (!parsed.success) {
 		return jsonError('Enter a name, valid email, and staff role.');
 	}
-	await directory.add(parsed.data.email, parsed.data.name, parsed.data.role);
-	getLogger().info({ message: 'worker.created', actor, role: parsed.data.role });
+	const invited = await directory.add(parsed.data.email, parsed.data.name, parsed.data.role);
 
-	return context.json({ ok: true }, 201);
+	getLogger().info({ message: 'worker.created', actor, role: parsed.data.role, invited });
+
+	return context.json({ ok: true, invited }, 201);
 });
 workerRoutes.patch('/workers/:id', async (context) => {
 	const directory = new WorkerDirectory();

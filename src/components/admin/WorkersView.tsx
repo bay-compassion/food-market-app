@@ -97,8 +97,9 @@ export const WorkersView = observer(function WorkersView() {
 					</FormControl>
 					<p>Workers run the queue. Admins also manage the market, guest data, and staff access.</p>
 					<p>
-						After adding an account, ask the worker to use Forgot Password on the sign-in page. No
-						password is shared with admins.
+						Adding an account emails the worker a link to set their own password. If it expires or
+						never arrives, they can use Forgot Password on the sign-in page. No password is shared
+						with admins.
 					</p>
 					<Button type="submit" variant="contained" disabled={store.busy}>
 						Add Worker
