@@ -11,6 +11,7 @@ explanation and nothing else.
 | `worker`          | Volunteers running the market                      | `run:queue`, `print:name-tags`                                               |
 | `admin`           | Whoever is responsible for the market and its data | the first five permissions, `print:name-tags`, `manage:workers`              |
 | `owner`           | Organization custodian; managed only in Auth0      | Same as `admin`                                                              |
+| `team-leader`     | Trusted people who lead a market day               | `admin`'s permissions except `manage:workers` and `export:guest-data`        |
 | `print-station`   | The account a print-station desktop signs in as    | `print:name-tags` only                                                       |
 | `data-steward`    | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`                             |
 | `lottery-steward` | Named people trusted to raise a guest's draw odds  | `read:stewardship`, `manage:stewardship`, held alongside `admin` or `worker` |
@@ -23,6 +24,12 @@ A worker can open the **Today** screen to see where the market stands. It shows 
 during service, Close Session, which their role allows; the controls that steer a session are left
 out, and the server refuses them regardless. Opening `/admin` lands a worker on the Queue during
 service, and on Today otherwise.
+
+A team leader steers sessions, edits the schedule, sends broadcasts, reads reports, and can put any
+guest on a phone. They cannot manage staff, and because `export:guest-data` gates every read across
+sessions, they get neither the export nor the Guest Database screen, which is offered only to
+holders of that permission. The Workers screen treats a `team-leader` account as read-only, so the
+role is assigned only in Auth0. Push the role to Auth0 before assigning it.
 
 ## Managing Workers
 
@@ -41,9 +48,12 @@ the dashboard's tokens). Only the Workers API itself rechecks the caller's curre
 unblocks it only after assigning its new role; a provider failure can leave it blocked. Refresh
 and retry, or repair the account in Auth0. A failed account creation can leave a blocked account; refresh and restore its access, or repair it in Auth0. No automatic retry repeats a mutation.
 
-New users receive a cryptographically random password that is never returned or logged. Tell
-them to choose **Forgot Password** on the sign-in page to set their own password. The app does
-not send invitations. Configure Auth0's password reset email provider and template before use.
+New users receive a cryptographically random password that is never returned or logged. Once the
+account is usable, the server asks Auth0 to send its password reset email so they can set their
+own. Configure Auth0's email provider before use, and word the change password template so it also
+reads as an invitation, since new and existing users receive the same email. If Auth0 refuses the
+request the account is still created and the admin is told; the worker can then choose **Forgot
+Password** on the sign-in page, which is also the way back in if the link expires.
 
 ### Deployment Setup
 

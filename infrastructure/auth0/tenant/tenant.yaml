@@ -20,8 +20,8 @@ resourceServers:
         description: The visit export, with names and phone numbers
       - value: delete:guest-data
         description: >-
-          Permanently delete a guest and everything about them, for a guest
-          who asks
+          Permanently delete a guest and everything about them, for a guest who
+          asks
       - value: manage:demo-data
         description: Add demo datasets
       - value: manage:guest-access
@@ -51,6 +51,30 @@ clients:
     app_type: non_interactive
     cross_origin_authentication: false
     custom_login_page_on: true
+    grant_types:
+      - client_credentials
+    is_first_party: true
+    is_token_endpoint_ip_header_trusted: false
+    jwt_configuration:
+      alg: RS256
+      lifetime_in_seconds: 36000
+      secret_encoded: false
+    oidc_conformant: true
+    refresh_token:
+      expiration_type: non-expiring
+      leeway: 0
+      infinite_token_lifetime: true
+      infinite_idle_token_lifetime: true
+      token_lifetime: 31557600
+      idle_token_lifetime: 2592000
+      rotation_type: non-rotating
+    sso_disabled: false
+    token_endpoint_auth_method: client_secret_post
+  - name: Bay Compassion Worker Management
+    app_type: non_interactive
+    cross_origin_authentication: false
+    custom_login_page_on: true
+    enforce_anon_session_transfer_network_binding: ip
     grant_types:
       - client_credentials
     is_first_party: true
@@ -101,6 +125,8 @@ clients:
       facebook:
         enabled: false
     oidc_conformant: true
+    organization_require_behavior: no_prompt
+    organization_usage: deny
     refresh_token:
       expiration_type: expiring
       leeway: 0
@@ -133,20 +159,32 @@ databases:
       mfa:
         active: true
         return_enroll_settings: true
+      import_mode: false
       passwordPolicy: good
       passkey_options:
         challenge_ui: both
         local_enrollment_enabled: true
         progressive_enrollment_enabled: true
+      password_history:
+        size: 5
+        enable: false
       strategy_version: 2
+      password_dictionary:
+        enable: false
+        dictionary: []
       authentication_methods:
         passkey:
-          enabled: false
+          enabled: true
         password:
           enabled: true
           api_behavior: required
           signup_behavior: allow
       brute_force_protection: true
+      password_no_personal_info:
+        enable: false
+      password_complexity_options:
+        min_length: 8
+      enabledDatabaseCustomization: false
       disable_self_service_change_password: false
     realms:
       - Username-Password-Authentication
@@ -169,6 +207,7 @@ connections:
         - profile
       profile: true
 tenant:
+  client_id_metadata_document_dynamic_registration_supported: false
   client_id_metadata_document_supported: false
   default_audience: https://thebaycompassion.org
   default_directory: ''
@@ -194,6 +233,14 @@ clientGrants:
     audience: https://thebaycompassion.org
     scope: []
     subject_type: client
+  - client_id: Bay Compassion Worker Management
+    audience: https://dev-y8sdoyf6skl88c4s.us.auth0.com/api/v2/
+    scope:
+      - read:users
+      - update:users
+      - create:users
+      - read:roles
+    subject_type: client
   - client_id: The Bay Compassion
     audience: https://thebaycompassion.org
     allow_all_scopes: false
@@ -203,55 +250,27 @@ roles:
   - name: admin
     description: Admin for Bay Compassion
     permissions:
-      - permission_name: manage:workers
-        resource_server_identifier: https://thebaycompassion.org
       - permission_name: export:guest-data
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:guest-access
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:sessions
         resource_server_identifier: https://thebaycompassion.org
-      - permission_name: read:reports
-        resource_server_identifier: https://thebaycompassion.org
-      - permission_name: run:queue
-        resource_server_identifier: https://thebaycompassion.org
-      - permission_name: print:name-tags
-        resource_server_identifier: https://thebaycompassion.org
-    type: tenant
-  - name: owner
-    description: Organization owner; managed only in Auth0
-    permissions:
       - permission_name: manage:workers
         resource_server_identifier: https://thebaycompassion.org
-      - permission_name: export:guest-data
-        resource_server_identifier: https://thebaycompassion.org
-      - permission_name: manage:guest-access
-        resource_server_identifier: https://thebaycompassion.org
-      - permission_name: manage:sessions
+      - permission_name: print:name-tags
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: read:reports
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: run:queue
-        resource_server_identifier: https://thebaycompassion.org
-      - permission_name: print:name-tags
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: data-steward
     description: >-
-      The person who answers guest data requests — permanently deletes a
-      guest, alongside the admin role
+      The person who answers guest data requests — permanently deletes a guest,
+      alongside the admin role
     permissions:
       - permission_name: delete:guest-data
-        resource_server_identifier: https://thebaycompassion.org
-    type: tenant
-  - name: lottery-steward
-    description: >-
-      A named person trusted to raise a guest's odds in the draw, alongside a
-      role that holds run:queue
-    permissions:
-      - permission_name: read:stewardship
-        resource_server_identifier: https://thebaycompassion.org
-      - permission_name: manage:stewardship
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: developer
@@ -260,19 +279,68 @@ roles:
       - permission_name: manage:demo-data
         resource_server_identifier: https://thebaycompassion.org
     type: tenant
+  - name: kiosk
+    description: Kiosk User
+    permissions: []
+    type: tenant
+  - name: lottery-steward
+    description: >-
+      A named person trusted to raise a guest's odds in the draw, alongside a
+      role that holds run:queue
+    permissions:
+      - permission_name: manage:stewardship
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:stewardship
+        resource_server_identifier: https://thebaycompassion.org
+    type: tenant
+  - name: owner
+    description: Organization owner; managed only in Auth0
+    permissions:
+      - permission_name: export:guest-data
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:guest-access
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:sessions
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:workers
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:reports
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: run:queue
+        resource_server_identifier: https://thebaycompassion.org
+    type: tenant
   - name: print-station
     description: >-
       The account a print-station desktop signs in as — prints name tags,
       nothing else
-  - name: worker
-    description: Role for non-admin staff users
+    permissions: []
+    type: tenant
+  - name: team-leader
+    description: >-
+      Runs the market like an admin, but cannot manage workers or read or export
+      the guest database
     permissions:
-      - permission_name: run:queue
+      - permission_name: manage:guest-access
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:sessions
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: print:name-tags
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:reports
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: run:queue
+        resource_server_identifier: https://thebaycompassion.org
     type: tenant
-
+  - name: worker
+    description: Role for non-admin staff users
+    permissions:
+      - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: run:queue
+        resource_server_identifier: https://thebaycompassion.org
+    type: tenant
 actions:
   - name: Add worker name to access token
     id: ab8f547b-00cf-4e39-8ecc-9c7ac477fdd9

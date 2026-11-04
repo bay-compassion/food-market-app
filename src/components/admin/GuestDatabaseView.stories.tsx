@@ -35,9 +35,11 @@ type GuestDatabaseViewArgs = {
 function View({ locale, admissions, guests }: GuestDatabaseViewArgs) {
 	const [store] = useState(() => {
 		const api = { listAllGuests: () => Promise.resolve(guests) } as unknown as AdminApi;
-		const created = new RootStore({ admin: { api } });
+		const created = new RootStore({
+			admin: { api, readPermissions: () => Promise.resolve(['export:guest-data']) },
+		});
 
-		void created.admin.refreshGuests();
+		void created.admin.loadPermissions().then(() => created.admin.refreshGuests());
 
 		return created;
 	});
