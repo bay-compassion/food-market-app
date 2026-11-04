@@ -125,6 +125,8 @@ clients:
       facebook:
         enabled: false
     oidc_conformant: true
+    organization_require_behavior: no_prompt
+    organization_usage: deny
     refresh_token:
       expiration_type: expiring
       leeway: 0
@@ -157,20 +159,32 @@ databases:
       mfa:
         active: true
         return_enroll_settings: true
+      import_mode: false
       passwordPolicy: good
       passkey_options:
         challenge_ui: both
         local_enrollment_enabled: true
         progressive_enrollment_enabled: true
+      password_history:
+        size: 5
+        enable: false
       strategy_version: 2
+      password_dictionary:
+        enable: false
+        dictionary: []
       authentication_methods:
         passkey:
-          enabled: false
+          enabled: true
         password:
           enabled: true
           api_behavior: required
           signup_behavior: allow
       brute_force_protection: true
+      password_no_personal_info:
+        enable: false
+      password_complexity_options:
+        min_length: 8
+      enabledDatabaseCustomization: false
       disable_self_service_change_password: false
     realms:
       - Username-Password-Authentication
@@ -302,6 +316,22 @@ roles:
       The account a print-station desktop signs in as — prints name tags,
       nothing else
     permissions: []
+    type: tenant
+  - name: team-leader
+    description: >-
+      Runs the market like an admin, but cannot manage workers or read or export
+      the guest database
+    permissions:
+      - permission_name: manage:guest-access
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:sessions
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:reports
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: run:queue
+        resource_server_identifier: https://thebaycompassion.org
     type: tenant
   - name: worker
     description: Role for non-admin staff users
