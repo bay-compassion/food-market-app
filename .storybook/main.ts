@@ -40,6 +40,12 @@ const config: StorybookConfig = {
 	],
 	addons: [
 		{
+			name: 'addon-storybook-sync',
+			options: {
+				port: Number(process.env.WEBSTORM_ADDON_STORYBOOK_SYNC_PORT) || undefined,
+			},
+		},
+		{
 			name: '@storybook/addon-docs',
 			options: {
 				remarkPlugins: [[remarkMermaid, { output: 'svg' }]],
