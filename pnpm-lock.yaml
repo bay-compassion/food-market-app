@@ -344,6 +344,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
+      addon-storybook-sync:
+        specifier: 0.1.0
+        version: 0.1.0(storybook@10.6.1(@types/react@19.2.18)(react@19.2.8))
       auth0-deploy-cli:
         specifier: 9.2.0
         version: 9.2.0(supports-color@11.0.0)
@@ -5017,6 +5020,12 @@ packages:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  addon-storybook-sync@0.1.0:
+    resolution: {integrity: sha512-KPeTv9RTbhrfT9YL7/6JKpwiXlHpLhk4s/G1IO7De7yn9h8p1agq4YKJUagQzXPIIPOoqzsIfq3zy4P2Xb5Cgw==}
+    engines: {node: '>=22.18.0'}
+    peerDependencies:
+      storybook: '*'
 
   address@1.2.2:
     resolution: {integrity: sha512-4B/qKCfeE/ODUaAUpSwfzazo5x29WD4r3vXiWsB7I2mSDAihwEqKO+g8GELZUQSSAo5e1XTYh3ZVfLyxBc12nA==}
@@ -12210,6 +12219,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.22.1:
+    resolution: {integrity: sha512-oyL6OPYme/CmiFvNuGzeoxCJ4nOrZE2O1FwM9MWM1AsGri6nLXB2pg+lNA8aLeXMSav0J6eIVS1j6vUPzUtK9g==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   wsl-utils@0.1.0:
     resolution: {integrity: sha512-h3Fbisa2nKGPxCpm89Hk33lBLsnaGBvctQopaBSOW/uIs6FTe1ATyAnKFJrzVs9vpGdsTe73WF3V4lIsk4Gacw==}
     engines: {node: '>=18'}
@@ -17821,6 +17842,14 @@ snapshots:
       acorn: 8.16.0
 
   acorn@8.16.0: {}
+
+  addon-storybook-sync@0.1.0(storybook@10.6.1(@types/react@19.2.18)(react@19.2.8)):
+    dependencies:
+      storybook: 10.6.1(@types/react@19.2.18)(react@19.2.8)
+      ws: 8.22.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   address@1.2.2: {}
 
@@ -26380,6 +26409,8 @@ snapshots:
       signal-exit: 4.1.0
 
   ws@8.21.1: {}
+
+  ws@8.22.1: {}
 
   wsl-utils@0.1.0:
     dependencies:
