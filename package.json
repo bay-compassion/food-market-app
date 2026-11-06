@@ -98,6 +98,7 @@
     "@vitest/browser": "^4.1.10",
     "@vitest/browser-playwright": "^4.1.10",
     "@vitest/coverage-v8": "^4.1.10",
+    "addon-storybook-sync": "0.1.0",
     "auth0-deploy-cli": "9.2.0",
     "commander": "15.0.0",
     "del-cli": "^7.0.0",
