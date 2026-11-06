@@ -2,7 +2,7 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: October 18, 2026
+Last Updated: November 6, 2026
 
 The Bay Compassion ("The Bay Compassion," "we," "us," or "our") is a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. This Privacy Policy explains how we collect, use, share, and protect information through this food market guest sign-up app (the "App"). It does not cover our other programs or our main website, thebaycompassion.org.
 
@@ -26,7 +26,7 @@ The App also stores a random private credential in your browser so it can recogn
 
 **Each time you check in for a visit**, the App creates a private link tied to that visit so you can check your queue status without signing in again. We do not collect any information from the QR code some markets display — it simply links to the public sign-up page.
 
-**Market staff and volunteers** who manage the queue sign in with a Bay Compassion staff account through our authentication provider, Auth0. We do not collect additional personal information from staff through the App beyond what their account provider already holds.
+**Market staff and volunteers** who manage the queue sign in with a Bay Compassion staff account through our authentication provider, Auth0. Auth0 sends account email, such as a link to set your password, through our email provider, Resend. We do not collect additional personal information from staff through the App beyond what their account provider already holds.
 
 ---
 
@@ -72,6 +72,7 @@ We do not sell your personal information. We do not share, sell, or provide your
 - **Service providers** who help us operate the App on our behalf. These providers are limited to using your information only to provide services to us:
   - Twilio, which sends our text messages
   - Auth0, which handles staff and volunteer sign-in
+  - Resend, which delivers account email to staff and volunteers on Auth0's behalf
   - Netlify, which hosts the App
   - Neon, which stores the App's database as part of Netlify's hosting
   - Sentry, which records errors in the App so we can fix them. When an error happens, Sentry may receive technical details about it, a random identifier for your browser, and a short recording of the screen. What you type into forms is hidden from the recording, as are the name and phone number on your guest card

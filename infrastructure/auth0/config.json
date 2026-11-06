@@ -19,6 +19,7 @@
     "databases",
     "roles",
     "tenant",
+    "emailProvider",
     "actions",
     "triggers"
   ]

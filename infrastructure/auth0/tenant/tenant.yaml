@@ -228,6 +228,12 @@ tenant:
     colors:
       page_background: '#275c63'
       primary: '#275c63'
+emailProvider:
+  name: resend
+  enabled: true
+  default_from_address: The Bay Compassion <noreply@thebaycompassion.org>
+  credentials:
+    api_key: '##RESEND_API_KEY##'
 clientGrants:
   - client_id: Bay Compassion (Test Application)
     audience: https://thebaycompassion.org

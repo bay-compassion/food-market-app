@@ -62,7 +62,7 @@ To the fullest extent permitted by law, The Bay Compassion, its staff, volunteer
 
 ## 7. Third-Party Services
 
-The App relies on third-party providers, including Twilio for text messages, Auth0 for staff and volunteer sign-in, Netlify, our hosting provider, Neon for our database, Sentry for error monitoring, and LaunchDarkly for turning App features on and off. We are not responsible for the practices or availability of these third-party services, which are governed by their own terms.
+The App relies on third-party providers, including Twilio for text messages, Auth0 for staff and volunteer sign-in, Resend for staff and volunteer account email, Netlify, our hosting provider, Neon for our database, Sentry for error monitoring, and LaunchDarkly for turning App features on and off. We are not responsible for the practices or availability of these third-party services, which are governed by their own terms.
 
 ---
 
