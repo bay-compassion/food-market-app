@@ -72,7 +72,7 @@ merging.
 ## The backfill-then-drop rule
 
 Never ship a backfill and the corresponding `DROP` in the same migration/deploy unless you have
-verified on a deploy preview (see below) that the backfill covers every row. Prefer splitting the
+verified on staging (see below) that the backfill covers every row. Prefer splitting the
 work into two separate deploys:
 
 1. Add the new column/table, backfill it, and (if applicable) start writing to both the old and
@@ -84,19 +84,18 @@ That's an acceptable pattern for a small, well-understood table at the time, but
 repeat by default — the two-deploy split gives you a chance to catch a bad backfill before the
 old data is gone.
 
-## Deploy preview as the dry run
+## Staging as the dry run
 
-Every pull request against this repo gets a Netlify deploy preview, and non-production Netlify
-build contexts (deploy previews and branch deploys) connect to an **isolated database branch**,
-not the production database. This is a real, already-available dry run — use it before merging
-any migration that isn't purely additive:
+Deploy previews are turned off to save Netlify build credits. Instead, [staging](staging.md) — the
+branch deploy of the `staging` branch — connects to its own **isolated database branch**, not the
+production database, and applies pending migrations on every build. Use it before merging any
+migration that isn't purely additive:
 
-1. Open the PR containing the new migration file.
-2. Wait for the Netlify deploy preview to finish building.
-3. Run `pnpm exec netlify db status` (optionally with `--branch` for a specific preview branch) to
-   confirm the migration applied cleanly.
-4. Exercise the screens affected by the schema change on the preview URL.
-5. Only merge once the preview build and manual check both look right.
+1. Run **Actions → Deploy staging** with the branch containing the new migration file.
+2. Wait for the staging build to finish.
+3. Run `pnpm exec netlify db status --branch staging` to confirm the migration applied cleanly.
+4. Exercise the screens affected by the schema change on the staging URL.
+5. Only merge once the staging build and manual check both look right.
 
 ## Pre-merge checklist
 
@@ -109,9 +108,9 @@ Before merging any change under `netlify/database/migrations/`, confirm:
       don't have an agent merge it.
 - [ ] If it's destructive, is the drop in a separate, later deploy from its backfill (see the
       backfill-then-drop rule)?
-- [ ] Did you open a PR, let the deploy preview build, and confirm with `pnpm exec netlify db status`
-      that the migration applied there without error?
-- [ ] Did you manually exercise the affected screens on the preview URL?
+- [ ] Did you deploy the branch to staging and confirm with
+      `pnpm exec netlify db status --branch staging` that the migration applied there without error?
+- [ ] Did you manually exercise the affected screens on the staging URL?
 - [ ] Is a **human** — not an AI agent — the one clicking merge?
 
 ## Local commands and their footguns

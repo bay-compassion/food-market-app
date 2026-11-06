@@ -99,11 +99,13 @@ clients:
     allowed_logout_urls:
       - http://localhost:8888/
       - https://baycompassion.netlify.app/
+      - https://staging--baycompassion.netlify.app/
       - https://app.thebaycompassion.org
     app_type: spa
     callbacks:
       - http://localhost:8888/
       - https://baycompassion.netlify.app/
+      - https://staging--baycompassion.netlify.app/
       - https://app.thebaycompassion.org
     client_aliases: []
     cross_origin_authentication: false
@@ -142,6 +144,7 @@ clients:
     web_origins:
       - http://localhost:8888/
       - https://baycompassion.netlify.app/
+      - https://staging--baycompassion.netlify.app/
       - https://app.thebaycompassion.org
 databases:
   - name: Username-Password-Authentication

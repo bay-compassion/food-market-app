@@ -84,8 +84,11 @@ Review the flagged diagram, then run `pnpm run check:diagrams --update` to recor
 
 The app is configured for Netlify in `netlify.toml`. Connect the repository to a Netlify site; Netlify builds the root app and publishes `dist`, while serving the functions in `netlify/functions/`.
 
+To try a change on a hosted copy of the app with its own database before it reaches production,
+deploy it to staging — see [`docs/staging.md`](staging.md).
+
 See [`docs/server-security.md`](server-security.md) for the HTTP policies, registration rate
-limit, and security-header checks to make on a deploy preview before merging.
+limit, and security-header checks to make on staging before merging.
 
 Production can also be deployed manually from GitHub without building the app on a GitHub runner:
 
