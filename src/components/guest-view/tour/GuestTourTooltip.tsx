@@ -82,11 +82,36 @@ const Preview = styled.div`
 	.queue-standing {
 		margin: 0;
 	}
+
+	/*
+	 * Every number is blurred: a legible one under "Your number" was read as a real assignment, and
+	 * presented at the entrance as one, and a legible called number or count would invite the same.
+	 * The called number's tile keeps its shape, so only its digits are smudged.
+	 */
+	.queue-number-board strong {
+		filter: blur(12px);
+		user-select: none;
+	}
+
+	/* Smaller type, so a lighter blur: enough to smudge it without leaving an empty gap. */
+	.guests-ahead strong {
+		filter: blur(5px);
+		user-select: none;
+	}
+
+	.now-calling > div > * {
+		color: transparent;
+		text-shadow: 0 0 8px var(--color-on-brand);
+		user-select: none;
+	}
 `;
 
-/** A plausible line for the preview: number 12, with 9 being called and two guests between. */
+/**
+ * The line for the preview, every number blurred. The guest's number is 912, higher than any market
+ * calls, so it can never match a real one; 9 is being called with two guests between.
+ */
 const previewLine = {
-	queueNumber: QueueNumber.main(12),
+	queueNumber: QueueNumber.main(912),
 	guestsAhead: 2,
 	nowCalling: new NowCalling({ nowCalling: 9, called: [9], calledPriority: [] }),
 };
