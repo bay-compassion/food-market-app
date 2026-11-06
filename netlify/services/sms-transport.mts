@@ -1,6 +1,7 @@
 import twilio from 'twilio';
 
 import { logSmsDelivery } from '../lib/logging.mjs';
+import { TwilioSettings } from './twilio-settings.mjs';
 
 export type SmsMessage = {
 	to: string;
@@ -19,11 +20,11 @@ export class TwilioSmsTransport implements SmsTransport {
 	) {}
 
 	static configured() {
-		return this.environmentSettings() !== null;
+		return TwilioSettings.fromEnvironment() !== null;
 	}
 
 	static fromEnvironment(): TwilioSmsTransport | null {
-		const settings = this.environmentSettings();
+		const settings = TwilioSettings.fromEnvironment();
 
 		return settings
 			? new TwilioSmsTransport(
@@ -47,15 +48,5 @@ export class TwilioSmsTransport implements SmsTransport {
 		});
 
 		return { providerMessageId: result.sid };
-	}
-
-	private static environmentSettings() {
-		const accountSid = process.env.TWILIO_ACCOUNT_SID;
-		const authToken = process.env.TWILIO_AUTH_TOKEN;
-		const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-
-		return accountSid && authToken && messagingServiceSid
-			? { accountSid, authToken, messagingServiceSid }
-			: null;
 	}
 }

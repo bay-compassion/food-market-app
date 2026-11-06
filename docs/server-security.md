@@ -75,7 +75,7 @@ DSN actually points at. Prefer the exact configured origins before full enforcem
 
 The report-only policy does not yet block scripts or collect remote violation reports; review its
 messages in the browser console. Do not interpret its presence as completed XSS protection.
-Before promoting the full policy to enforcement, verify on a deploy preview:
+Before promoting the full policy to enforcement, verify on [staging](staging.md):
 
 1. Guest registration, return visits, cancel, and localized failure states.
 2. Auth0 login, logout, callback, and silent token renewal; admin reports and CSV downloads.

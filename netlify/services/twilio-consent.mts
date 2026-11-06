@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 
 import twilio from 'twilio';
 
+import { TwilioSettings } from './twilio-settings.mjs';
+
 type ConsentResult = {
 	correlation_id?: unknown;
 	error_code?: unknown;
@@ -15,12 +17,13 @@ export class TwilioConsentManager {
 	) {}
 
 	static fromEnvironment(): TwilioConsentManager | null {
-		const accountSid = process.env.TWILIO_ACCOUNT_SID;
-		const authToken = process.env.TWILIO_AUTH_TOKEN;
-		const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+		const settings = TwilioSettings.fromEnvironment();
 
-		return accountSid && authToken && messagingServiceSid
-			? new TwilioConsentManager(twilio(accountSid, authToken), messagingServiceSid)
+		return settings
+			? new TwilioConsentManager(
+					twilio(settings.accountSid, settings.authToken),
+					settings.messagingServiceSid,
+				)
 			: null;
 	}
 
