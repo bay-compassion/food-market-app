@@ -2,29 +2,23 @@
 
 **The Bay Compassion**
 Effective Date: August 21, 2026
-Last Updated: October 18, 2026
+Last Updated: October 31, 2026
 
 The Bay Compassion ("The Bay Compassion," "we," "us," or "our") is a nonprofit organization that runs weekly choice-based food markets in Contra Costa County. This Privacy Policy explains how we collect, use, share, and protect information through this food market guest sign-up app (the "App"). It does not cover our other programs or our main website, thebaycompassion.org.
 
-By using the App, you agree to the collection and use of information as described in this policy. If you do not agree, please do not use the App — you can still be served at a food market by signing up in person with a staff member.
+By using the App, you agree to the collection and use of information as described in this policy. If you do not agree, please do not use the App on your own device. You can sign up in person with a staff member instead, who will enter your information into the App for you; this policy covers that information too.
 
 ---
 
 ## 1. Information We Collect
 
-**When you sign up as a guest**, we collect:
+**When you sign up as a guest**, on your own device or in person with a staff member, we collect your name, phone number, preferred language, age range, and household size (including the number of children and seniors), along with your answers to any optional questions a market asks that day.
 
-- Your first and last name
-- Your age range, and your household size, including the number of children and seniors in your household
-- Your phone number, used for visit-related communication when you opt in
-- Your preferred language
-- Answers to any optional questions a market asks that day, such as a short survey — the questions vary by market and are set by our staff
+**As you use the App**, we keep a record of each visit, such as your queue number, whether you were selected, and the updates we sent you. Staff may also add details that help them serve you, such as how to pronounce your name.
 
-The App also stores a random private credential in your browser so it can recognize sign-ups from the same device. It does not reveal your device's serial number, phone number, or advertising identifier. Clearing your browser data removes it.
+The App stores information in your browser, such as a random private credential that lets it recognize sign-ups from the same device. It does not reveal your device's serial number, phone number, or advertising identifier. Clearing your browser data removes it.
 
 **If you opt in to text message updates**, we collect your consent and use your phone number to send those messages. **If you opt in to browser push notifications**, we collect the subscription your browser creates for that purpose. Both are optional and described further in Sections 2 and 3.
-
-**Each time you check in for a visit**, the App creates a private link tied to that visit so you can check your queue status without signing in again. We do not collect any information from the QR code some markets display — it simply links to the public sign-up page.
 
 **Market staff and volunteers** who manage the queue sign in with a Bay Compassion staff account through our authentication provider, Auth0. We do not collect additional personal information from staff through the App beyond what their account provider already holds.
 
@@ -57,11 +51,11 @@ We use the information we collect to:
 
 - Recognize sign-ups from the same device and refresh your guest information on future visits
 - Manage the queue and communicate your visit status to you
-- Run market operations, such as lotteries or capacity limits, where a market uses them
-- Produce reports on market activity for our staff and program reporting
+- Run market operations, including deciding who is selected and the order in which guests are served
+- Administer our programs, and produce reports on market activity for our staff, funders, and partners
 - Analyze anonymized, aggregate data to measure our impact and support grant writing and fundraising
 
-Reports we produce for general program tracking, impact analysis, and grant writing use counts and rates only — they do not name individual guests. Only staff with a specific, limited permission can export data that includes guest names and phone numbers, and they may do so only to run market operations.
+Reports we produce for general program tracking, impact analysis, and grant writing use counts and rates only — they do not name individual guests. Only staff with a specific, limited permission can export data that includes guest names and phone numbers, and they may do so only to run market operations and administer our programs.
 
 ---
 
@@ -69,7 +63,9 @@ Reports we produce for general program tracking, impact analysis, and grant writ
 
 We do not sell your personal information. We do not share, sell, or provide your mobile phone number or messaging consent data to third parties or affiliates for marketing or promotional purposes. We share information only in the following circumstances:
 
-- **Service providers** who help us operate the App on our behalf. These providers are limited to using your information only to provide services to us:
+- **With your consent**, or at your direction.
+- **Funders and partners:** we share reports with organizations that fund or partner with our programs. These reports use aggregate or anonymized information that does not identify you.
+- **Service providers** who help us operate the App on our behalf. These providers are limited to using your information only to provide services to us. They include:
   - Twilio, which sends our text messages
   - Auth0, which handles staff and volunteer sign-in
   - Netlify, which hosts the App
@@ -83,7 +79,7 @@ We do not sell your personal information. We do not share, sell, or provide your
 
 ## 6. Data Retention
 
-We keep guest and visit information for as long as needed to operate the food market — recognizing you on return visits, managing the current queue, and producing the reports described in Section 4. You may ask us to delete your information at any time; see Section 7.
+We keep information that identifies you for as long as we need it to operate the food market, administer our programs, produce the reports described in Section 4, and comply with the law. We may keep anonymized or aggregate information, which does not identify you, indefinitely. You may ask us to delete your information at any time; see Section 7.
 
 ---
 
@@ -91,7 +87,7 @@ We keep guest and visit information for as long as needed to operate the food ma
 
 **California residents** have the right to know what personal information we have collected and how it's used, request deletion of personal information (subject to legal exceptions), correct inaccurate information, opt out of the sale or sharing of personal information (we do not sell or share personal information), and be free from discrimination for exercising these rights.
 
-**Regardless of location**, you may request a copy of the information we hold about you, ask us to correct or delete it, withdraw consent to receive text messages at any time by replying STOP, and ask questions about how your information is used. Because guest records do not have a traditional login, we will verify your identity before processing a request by confirming your phone number and other details on file.
+**Regardless of location**, you may request a copy of the information we hold about you, ask us to correct or delete it, withdraw consent to receive text messages at any time by replying STOP, and ask questions about how your information is used. Because guest records do not have a traditional login, we will verify your identity before processing a request by confirming your phone number and other details on file. After we delete your information, copies may remain for a limited time in backups and in our service providers' records until they expire.
 
 ---
 
