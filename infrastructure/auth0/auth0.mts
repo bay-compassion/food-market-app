@@ -18,6 +18,23 @@ function loadConfig(): Partial<Config> {
 	return config as Partial<Config>;
 }
 
+/**
+ * The Deploy CLI sends a placeholder with no value to Auth0 as written, which would replace a working
+ * email provider's API key with the placeholder's own text.
+ */
+function assertKeywordsDefined(inputFile: string) {
+	const mappings: unknown = JSON.parse(process.env.AUTH0_KEYWORD_REPLACE_MAPPINGS ?? '{}');
+	const defined = new Set([...Object.keys(process.env), ...Object.keys(mappings ?? {})]);
+	const keywords = readFileSync(inputFile, 'utf8').matchAll(/##([A-Z0-9_]+)##/g);
+	const missing = [...new Set(Array.from(keywords, ([, name]) => name))].filter(
+		(name) => name && !defined.has(name),
+	);
+
+	if (missing.length > 0) {
+		throw new Error(`Define ${missing.join(', ')} in infrastructure/auth0/.env.target.`);
+	}
+}
+
 async function run(command: 'export' | 'plan' | 'import') {
 	loadEnvFile(resolve(auth0Directory, command === 'export' ? '.env.source' : '.env.target'));
 
@@ -43,9 +60,15 @@ async function run(command: 'export' | 'plan' | 'import') {
 		process.env.AUTH0_DRY_RUN_INTERACTIVE = 'false';
 	}
 
+	const inputFile = resolve(auth0Directory, 'tenant/tenant.yaml');
+
+	if (command === 'import') {
+		assertKeywordsDefined(inputFile);
+	}
+
 	await deploy({
 		...options,
-		input_file: resolve(auth0Directory, 'tenant/tenant.yaml'),
+		input_file: inputFile,
 		...(command === 'plan' ? { dry_run: 'preview' as const } : {}),
 	});
 }

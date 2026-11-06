@@ -70,8 +70,34 @@ image. Keep this URL publicly accessible and update it here when the asset moves
 the same asset. These settings are managed through `clients` and `tenant` without enabling
 the separate `branding` resource.
 
+### Email Provider
+
+Auth0 sends its account email, including the password reset that invites a new worker, through
+[Resend](https://resend.com). Auth0's built-in provider is for testing only. The `emailProvider`
+entry in `tenant/tenant.yaml` holds the provider and from address, while the API key stays in the
+ignored `.env.target` as `RESEND_API_KEY`. The Deploy CLI substitutes that value for the
+`##RESEND_API_KEY##` placeholder during plans and imports.
+
+To set it up on a tenant:
+
+1. In Resend, confirm `thebaycompassion.org` is verified, then create an API key with sending
+   access limited to that domain. The from address in `tenant/tenant.yaml` must use a verified
+   domain, so change both together if the provider moves to a subdomain.
+2. Add `RESEND_API_KEY` to `infrastructure/auth0/.env.target`.
+3. Grant the Deploy CLI application `read:email_provider`, `create:email_provider`, and
+   `update:email_provider` on the Management API. The source application only needs the read scope.
+4. Run `pnpm run auth0:plan`, review the output, then run `pnpm run auth0:import`.
+5. Choose **Forgot Password** on the sign-in page with a test account and confirm the email arrives.
+
+A plan does not list a provider being created or replaced, so a missing row is not evidence that
+the provider is already in place. Confirm it with `auth0:export` after an import, which shows the
+provider's name and from address. Auth0 never returns the API key, so keep the placeholder when
+copying an export into `tenant/`. To rotate the key, replace it in `.env.target` and import.
+
+## Allowlisted Resources
+
 `infrastructure/auth0/config.json` allowlists applications, client grants, APIs, connections,
-database connections, roles, and basic tenant settings. This applies in both directions. It can
+database connections, roles, the email provider, and basic tenant settings. This applies in both directions. It can
 include unrelated resources when they share the same Auth0 tenant, so keep only intended resources
 in the reviewed configuration.
 
