@@ -13,10 +13,13 @@ guest. To check a sticker, find the guest on the queue desk's list at `/queue` o
 Queue tab, where each guest shows the code their tag carries, and compare. Four hex characters
 aren't unique on their own, but among one day's visits they narrow a sticker to one.
 
-The dashboard's Checklist screen has a **Printing Station** card, written for a volunteer who has
-never opened Terminal: whether a station is checking in right now, the steps for every market day
-with the launch command to copy, the one-time setup below (with its own first-time command, which
-leaves out `--kiosk-printing`) behind a disclosure, and what to do when it misbehaves. Sign in to the dashboard on the station's computer and open it from there —
+The dashboard's Checklist screen walks a volunteer through starting the station, as part B of its
+**Check-In** station: whether a station is checking in right now, which account signs in, and the
+market-day steps. On a market day an automation on the iMac starts the station, so the steps don't
+show the launch command. Folded under **When You Need It** at the bottom of the screen are what to
+do when it misbehaves; **Start Printing by Hand**, with the launch command to copy and how to run
+it in Terminal; and the one-time setup below, with its own first-time command that leaves out
+`--kiosk-printing`. Sign in to the dashboard on the station's computer and open it from there —
 not from a phone: whatever device has the page open becomes the station and takes the tags.
 
 ## The printer
@@ -53,7 +56,7 @@ proportions, so changing labels means changing that one value.
 ## Printing without a dialog: the print station
 
 The computer the LabelWriter is plugged into prints every tag with no dialog at all. Open
-`/printing-station` on it, signed in as the print-station account (see
+`/printing-station` on it, signed in as the shared check-in account (see
 [`roles.md`](roles.md#the-print-station)). While that page is open and checking in, **Print name
 tag** on a volunteer's phone sends the tag there, and says so under the button ("Prints at the
 print station"). If the station goes quiet, phones see it as offline within a few seconds and

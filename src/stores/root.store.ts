@@ -4,6 +4,7 @@ import { AdminApi } from '../services/admin-api.ts';
 import type { Permission } from '../services/permissions.ts';
 import { StorageService } from '../services/storage.service.ts';
 import { AdminStore, type AdminStoreOptions } from './admin.store.ts';
+import { ChecklistStore } from './checklist.store.ts';
 import { ConfirmationStore } from './confirmation.store.ts';
 import { GuestClaimStore, type GuestClaimStoreOptions } from './guest-claim.store.ts';
 import { GuestTourStore } from './guest-tour.store.ts';
@@ -36,6 +37,7 @@ export class RootStore {
 	readonly storage: StorageService;
 
 	readonly admin: AdminStore;
+	readonly checklist: ChecklistStore;
 	readonly workers: WorkersStore;
 	readonly claim: GuestClaimStore;
 	readonly confirmation: ConfirmationStore;
@@ -78,6 +80,7 @@ export class RootStore {
 			notifications: this.notifications,
 			...options.admin,
 		});
+		this.checklist = new ChecklistStore(this.session, this.admin, this.storage);
 
 		this.workers = new WorkersStore(this, options.workers?.fetch);
 		// A pending install must not resurrect a forgotten or replaced guest on a shared phone.
