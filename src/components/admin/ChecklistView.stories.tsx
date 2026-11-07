@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { AdminApi } from '../../services/admin-api';
@@ -97,6 +97,7 @@ export const Scheduled: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
+		await expect(canvas.getByRole('img', { name: t.floorPlan.alt })).toBeVisible();
 		await expect(canvas.getByRole('heading', { name: t.roomDisplay.title })).toBeVisible();
 		await expect(canvas.getByRole('heading', { name: t.checkIn.title })).toBeVisible();
 		await expect(canvas.getByText(`${window.location.host}/kiosk`)).toBeVisible();
@@ -105,6 +106,7 @@ export const Scheduled: Story = {
 			'/queue',
 		);
 		await expect(canvas.queryByRole('button', { name: t.session.openSchedule })).toBeNull();
+		await expect(canvas.getByText(t.checkIn.queueDeskSteps[0]!)).toBeVisible();
 	},
 };
 
@@ -136,5 +138,28 @@ export const Missing: Story = {
 		await expect(canvas.getByText(t.session.missing)).toBeVisible();
 		await userEvent.click(canvas.getByRole('button', { name: t.session.openSchedule }));
 		await expect(args.onNavigateSchedule).toHaveBeenCalled();
+	},
+};
+
+/**
+ * The floor plan opens zoomed in on the two stations, zooms from the buttons over it, and Reset
+ * goes back to where it opened.
+ */
+export const ZoomFloorPlan: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const content = () =>
+			canvasElement.querySelector<HTMLElement>('.react-transform-component')?.style.transform;
+
+		await waitFor(() =>
+			expect(canvas.getByRole('button', { name: t.floorPlan.zoomOut })).toBeEnabled(),
+		);
+		const opening = content();
+
+		await userEvent.click(canvas.getByRole('button', { name: t.floorPlan.zoomIn }));
+		await waitFor(() => expect(content()).not.toBe(opening));
+
+		await userEvent.click(canvas.getByRole('button', { name: t.floorPlan.reset }));
+		await waitFor(() => expect(content()).toBe(opening));
 	},
 };

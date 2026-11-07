@@ -4,6 +4,7 @@ import { Button } from '@mui/material';
 import { adminTranslations } from '../../adminLocales';
 import { ChecklistAddress } from './ChecklistAddress';
 import { ChecklistStep } from './ChecklistStep';
+import { ChecklistSteps } from './ChecklistSteps';
 import { PrintStationCard } from './PrintStationCard';
 
 const QueueDesk = styled.section`
@@ -14,15 +15,11 @@ const QueueDesk = styled.section`
 		margin: 0;
 		font-size: 18px;
 	}
-
-	p {
-		margin: 0;
-		color: var(--color-text-subtle);
-	}
 `;
 
 /**
- * The computer at the entrance does two jobs. Its Chrome, started with the printing station's
+ * The cabinet at the edge of the lobby is put in place and plugged in first. Its computer then does
+ * two jobs. Its Chrome, started with the printing station's
  * launch command, prints the name tags; the check-in operator then runs the line from the desktop
  * queue desk in an ordinary window beside it. The station comes first because its setup quits
  * Chrome, which would close a queue desk already open. The two windows need different sign-ins:
@@ -33,10 +30,11 @@ export function CheckInStep({ number }: { number: number }) {
 
 	return (
 		<ChecklistStep number={number} title={t.title} place={t.place}>
+			<ChecklistSteps steps={t.placementSteps} />
 			<PrintStationCard />
 			<QueueDesk>
 				<h3>{t.queueDeskTitle}</h3>
-				<p>{t.queueDesk}</p>
+				<ChecklistSteps steps={t.queueDeskSteps} />
 				<ChecklistAddress label={t.queueDeskAddressLabel} path="/queue" />
 				<Button variant="outlined" href="/queue" target="_blank" rel="noopener">
 					{t.openQueueDesk}

@@ -1,12 +1,16 @@
 import styled from '@emotion/styled';
 import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useId, useState } from 'react';
+import { useEffect } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import { PageVisibilityPoller } from '../../services/page-visibility-poller';
 import { useRootStore } from '../../stores/react/store-context';
 import { printStationLaunchCommand, printStationUrl } from '../print-station/PrintStationSetup';
+import { ChecklistSteps } from './ChecklistSteps';
+import { LaunchCommand } from './LaunchCommand';
+import { PrintStationFirstTimeSetup } from './PrintStationFirstTimeSetup';
+import { PrintStationTroubleshooting } from './PrintStationTroubleshooting';
 
 /** How often the card looks again at whether the station is checking in. */
 const checkIntervalMs = 15_000;
@@ -27,8 +31,7 @@ const Card = styled.section`
 
 	h3,
 	h4,
-	p,
-	ol {
+	p {
 		margin: 0;
 	}
 
@@ -40,8 +43,7 @@ const Card = styled.section`
 		font-size: 16px;
 	}
 
-	p,
-	li {
+	p {
 		color: var(--color-text-subtle);
 		line-height: 1.5;
 	}
@@ -69,35 +71,6 @@ const Card = styled.section`
 		text-align: center;
 	}
 
-	ol {
-		display: grid;
-		gap: 8px;
-		padding-inline-start: 22px;
-	}
-
-	.command {
-		display: grid;
-		gap: 8px;
-		justify-items: start;
-	}
-
-	.command-label {
-		font-size: 13px;
-		font-weight: 700;
-	}
-
-	pre {
-		justify-self: stretch;
-		margin: 0;
-		padding: 10px 12px;
-		border-radius: var(--radius-sm);
-		background: var(--color-surface-soft);
-		font-size: 12px;
-		line-height: 1.45;
-		white-space: pre-wrap;
-		word-break: break-all;
-	}
-
 	.account {
 		font-size: 14px;
 	}
@@ -109,20 +82,16 @@ const Card = styled.section`
 `;
 
 /**
- * How to set up the computer the label printer is plugged into, the way to open its page, and
- * whether it is checking in right now: the check-in computer's step on the Checklist screen. A
- * coordinator typically signs in to the dashboard on that computer first and opens the station
- * from here. The station itself shows the launch command too;
- * this is where a coordinator finds it before that computer is running anything.
+ * The check-in computer's printing station on the Checklist screen: whether it is checking in right
+ * now, what to do to start it on a market day, the one-time setup behind a disclosure, and what to
+ * do when it misbehaves. Written for a volunteer who has never opened Terminal.
  *
  * Whatever device opens the station becomes it and takes the tags, so the hint under the button
  * says which computer it belongs on.
  */
 export const PrintStationCard = observer(function PrintStationCard() {
 	const t = adminTranslations.en.printStationCard;
-	const { admin, notifications } = useRootStore();
-	const [copied, setCopied] = useState(false);
-	const commandId = useId();
+	const { admin } = useRootStore();
 	const online = admin.printStationOnline;
 
 	useEffect(() => {
@@ -137,15 +106,6 @@ export const PrintStationCard = observer(function PrintStationCard() {
 		return () => poller.stop();
 	}, [admin]);
 
-	async function copy() {
-		try {
-			await navigator.clipboard.writeText(printStationLaunchCommand);
-			setCopied(true);
-		} catch {
-			notifications.error(t.copyFailed);
-		}
-	}
-
 	return (
 		<Card className="print-station-card">
 			<div className="heading">
@@ -157,27 +117,18 @@ export const PrintStationCard = observer(function PrintStationCard() {
 				)}
 			</div>
 			<p>{t.intro}</p>
-			<Button variant="contained" href={printStationUrl} target="_blank" rel="noopener" fullWidth>
+
+			<h4>{t.dailyTitle}</h4>
+			<ChecklistSteps steps={t.dailySteps} />
+			<LaunchCommand label={t.dailyCommandLabel} command={printStationLaunchCommand} />
+
+			<Button variant="outlined" href={printStationUrl} target="_blank" rel="noopener" fullWidth>
 				{t.open}
 			</Button>
 			<p className="open-hint">{t.openHint}</p>
 
-			<h4>{t.setupTitle}</h4>
-			<ol>
-				{t.steps.map((step) => (
-					<li key={step}>{step}</li>
-				))}
-			</ol>
-
-			<div className="command">
-				<p className="command-label" id={commandId}>
-					{t.commandLabel}
-				</p>
-				<pre aria-labelledby={commandId}>{printStationLaunchCommand}</pre>
-				<Button variant="outlined" onClick={() => void copy()}>
-					{copied ? t.copied : t.copy}
-				</Button>
-			</div>
+			<PrintStationFirstTimeSetup />
+			<PrintStationTroubleshooting />
 
 			<p className="account">
 				{t.account}{' '}

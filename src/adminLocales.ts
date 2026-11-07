@@ -415,6 +415,14 @@ export interface AdminTranslation {
 /** The Checklist screen: what has to be done by hand, outside the app, before a session. */
 export interface ChecklistTranslation {
 	title: string;
+	/** The plan of the market's part of the building, shown before the steps. */
+	floorPlan: {
+		title: string;
+		alt: string;
+		zoomIn: string;
+		zoomOut: string;
+		reset: string;
+	};
 	roomDisplay: {
 		title: string;
 		/** Where at the market this step happens. */
@@ -423,13 +431,18 @@ export interface ChecklistTranslation {
 		steps: string[];
 		addressLabel: string;
 		getCode: string;
+		/** In place of the button, for a worker who can't ask for a code. */
+		askForCode: string;
 	};
 	checkIn: {
 		title: string;
 		place: string;
+		/** Putting the cabinet in place, before anything on it is turned on. */
+		placementSteps: string[];
 		/** After the printing station is running: the queue desk, in a window of its own. */
 		queueDeskTitle: string;
-		queueDesk: string;
+		/** Each step, in order. */
+		queueDeskSteps: string[];
 		queueDeskAddressLabel: string;
 		openQueueDesk: string;
 	};
@@ -451,16 +464,24 @@ export interface PrintStationCardTranslation {
 	online: string;
 	offline: string;
 	intro: string;
+	/** What to do on every market day, in order. */
+	dailyTitle: string;
+	dailySteps: string[];
+	dailyCommandLabel: string;
 	open: string;
-	/** Under the open button: which computer it belongs on. */
+	/** Under the open button: which computer it belongs on, and why the command is better. */
 	openHint: string;
+	/** Done once per computer, in order; collapsed by default. */
 	setupTitle: string;
-	/** Each step, in order. */
-	steps: string[];
-	commandLabel: string;
+	setupSteps: string[];
+	setupCommandLabel: string;
+	/** Under each command: how to run one, for someone who has never opened Terminal. */
+	runCommand: string;
 	copy: string;
 	copied: string;
 	copyFailed: string;
+	troubleshootingTitle: string;
+	troubleshooting: { problem: string; fix: string }[];
 	account: string;
 	guide: string;
 }
@@ -1210,44 +1231,103 @@ export const adminTranslations = {
 			online: 'Online',
 			offline: 'Offline',
 			intro:
-				'The computer at the market with the Dymo label printer plugged in. While its page is open, volunteers can print name tags from their phones.',
-			open: 'Open Printing Station',
-			openHint: 'Open this on the printer’s computer, not your phone.',
-			setupTitle: 'First-Time Setup',
-			steps: [
-				'Install Dymo’s LabelWriter software and plug the printer in over USB.',
-				'Load Dymo 30857 name badge labels and make the LabelWriter the default printer.',
-				'Quit Chrome completely, then start it with the command below, leaving out --kiosk-printing.',
-				'Send one tag from a phone and print it through the dialog: the LabelWriter, 30857 paper, margins None, scale 100%.',
-				'Quit Chrome and start it again with the full command. Tags now print with no dialog.',
+				'The iMac on the check-in cabinet, with the Dymo label printer plugged into it. While the printing station page is open on it, volunteers can print name tags from their phones. The label above shows whether it’s working right now.',
+			dailyTitle: 'Every Market Day',
+			dailySteps: [
+				'Turn on the computer and the label printer. Check the printer has labels in it.',
+				'If Chrome is open, quit it completely: click on any Chrome window and press Command-Q. Closing its windows isn’t enough.',
+				'Copy the command below, then run it in Terminal (how to do that is just under it). A Chrome window opens on the printing station.',
+				'If it asks you to sign in, use the print-station account, not your own.',
+				'Wait until the label next to “Printing Station” above says Online. Leave that window open for the whole market.',
 			],
-			commandLabel: 'Launch Command (Mac)',
+			dailyCommandLabel: 'Every Market Day Command',
+			open: 'Open Printing Station',
+			openHint:
+				'Only on the printer’s computer, never on your phone. Opened with this button, every tag asks before printing; the command above prints them straight away.',
+			setupTitle: 'First-Time Setup (Once per Computer)',
+			setupSteps: [
+				'Download Dymo’s software for the LabelWriter 450 from Dymo’s website and install it (it includes the printer driver). Then plug the printer into the computer with its USB cable.',
+				'Load Dymo 30857 name badge labels.',
+				'Make the LabelWriter the computer’s default printer: open System Settings, choose Printers & Scanners, and pick it next to “Default printer”.',
+				'Stop the computer from sleeping: in System Settings, choose Lock Screen and set the screen saver and “Turn display off” options to Never.',
+				'Quit Chrome completely (Command-Q). Copy the first-time command below and run it in Terminal. Sign in with the print-station account.',
+				'On your phone, open the queue desk (its address is under Queue Desk below), pick any guest, and tap Print name tag.',
+				'A print window appears on the computer. Choose the LabelWriter as the printer, 30857 as the paper size, Margins: None, and Scale: 100%. Then click Print. Chrome remembers these choices.',
+				'Quit Chrome (Command-Q). Setup is done; from now on, follow Every Market Day above.',
+			],
+			setupCommandLabel: 'First-Time Command',
+			runCommand:
+				'To run it: press Command-Space, type Terminal, and press Return. Click inside the Terminal window, paste with Command-V, and press Return. You can close Terminal once Chrome opens.',
 			copy: 'Copy Command',
 			copied: 'Copied',
 			copyFailed: 'Couldn’t copy the command. Select it and copy it instead.',
+			troubleshootingTitle: 'If Something Goes Wrong',
+			troubleshooting: [
+				{
+					problem: 'It says Offline.',
+					fix: 'The printing station window was closed, or the computer went to sleep. Wake the computer; if the window is gone, follow Every Market Day again.',
+				},
+				{
+					problem: 'A print window pops up for every tag.',
+					fix: 'Chrome was opened the usual way instead of with the command. Quit Chrome (Command-Q) and run the Every Market Day command.',
+				},
+				{
+					problem: 'Nothing prints, but it says Online.',
+					fix: 'Check the printer is switched on, its USB cable is plugged in, and it has labels. Then print the tag again.',
+				},
+				{
+					problem: 'Tags come out small, or with a white border.',
+					fix: 'Do steps 5 to 8 of First-Time Setup again, making sure Scale is 100% and the paper is 30857.',
+				},
+				{
+					problem: 'It says this account can’t run the print station.',
+					fix: 'You’re signed in with your own account. Sign out and sign in with the print-station account.',
+				},
+			],
 			account:
-				'Sign in on that computer with the print-station account, which can print tags but not change the queue.',
+				'The print-station account can print tags but can’t change the queue. Ask a team leader for its sign-in.',
 			guide: 'Full setup guide',
 		},
 		checklist: {
 			title: 'Checklist',
+			floorPlan: {
+				title: 'Floor Plan',
+				alt: 'Floor plan of the lobby and the back of the auditorium. The auditorium’s seats are in five sections facing the stage, with a sound booth at the back of the middle one. The waiting area is the back half of the two sections on the far left. 1, the room display, stands against the auditorium’s back wall behind the stairway to the lower level, just left of two large pillars by the center exit, facing the waiting area. 2, the check-in desk, stands at the left edge of the lobby by the restrooms, below a wall outlet.',
+				zoomIn: 'Zoom In',
+				zoomOut: 'Zoom Out',
+				reset: 'Reset',
+			},
 			roomDisplay: {
 				title: 'Room Display',
-				place: 'In the auditorium',
+				place: 'In the auditorium · 1 on the floor plan',
 				steps: [
-					'On the display’s computer, open a browser window at the address below.',
-					'If the display asks for a code, get one here and type it in. It then stays unlocked for about six months.',
-					'Make the page fullscreen, and turn off the computer’s sleep and screen saver.',
+					'Roll the TV stand to 1 on the floor plan: against the auditorium’s back wall, on the other side of that wall from the stairway to the lower level, just left of the left-hand pillar.',
+					'Turn the screen a little to the left of facing straight out from the wall, toward the waiting area (the blue part of the plan): the back rows of the two left-hand sections of seats.',
+					'Plug the stand into the outlet on the back wall behind it, the orange dot on the plan. Turn on the TV and the Mac mini attached to it, and open Chrome on the Mac mini.',
+					'Click the address bar at the top of Chrome, type the address below exactly, and press Return.',
+					'If the screen asks for an unlock code, get one here and type its six numbers in. It then stays unlocked for about six months.',
+					'Make the page fill the screen: press Control-Command-F.',
+					'The first time only, stop the Mac mini from sleeping: open System Settings, choose Lock Screen, and set the screen saver and “Turn display off” options to Never.',
 				],
 				addressLabel: 'Address',
 				getCode: 'Get an Unlock Code',
+				askForCode: 'If the screen asks for a code, ask a team leader to get one for you.',
 			},
 			checkIn: {
 				title: 'Check-In Computer',
-				place: 'At the entrance',
+				place: 'At the left edge of the lobby · 2 on the floor plan',
+				placementSteps: [
+					'Roll the check-in cabinet to 2 on the floor plan: at the left edge of the lobby by the restrooms, where the coffee usually is.',
+					'Turn the iMac so its screen faces away from the lobby, toward the volunteer, who stands on the cabinet’s left side. Guests in the lobby then can’t see the screen.',
+					'Plug the cabinet’s power into the outlet on the wall just above it, the orange dot on the plan. The name tag printer sits on the cabinet beside the iMac.',
+				],
 				queueDeskTitle: 'Queue Desk',
-				queueDesk:
-					'Once the printing station is running, open your usual Chrome — not the printing station’s window — sign in with your own account, and go to the queue desk. Check guests in from there, and leave the printing station’s window open behind it.',
+				queueDeskSteps: [
+					'Set up the printing station first. Starting it quits Chrome, which would close a queue desk that was already open.',
+					'Once the printing station says Online, open Chrome again the usual way, from its icon in the Dock. Leave the printing station’s window open behind it.',
+					'Go to the address below and sign in with your own account, not the print-station one.',
+					'Check guests in from here.',
+				],
 				queueDeskAddressLabel: 'Address',
 				openQueueDesk: 'Open Queue Desk',
 			},
@@ -1257,7 +1337,7 @@ export const adminTranslations = {
 				scheduled: 'Scheduled. Registration opens {opens}, for {capacity} guests.',
 				underway: 'Today’s session is underway.',
 				missing:
-					'No session is scheduled. One is usually added on its own when the last one ends; add it from the schedule if not.',
+					'No session is scheduled. One is usually added on its own when the last one ends. If not, add it from the schedule, or ask a team leader to.',
 				openSchedule: 'Open Schedule',
 			},
 		},
