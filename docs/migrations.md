@@ -86,14 +86,15 @@ old data is gone.
 
 ## Staging as the dry run
 
-Deploy previews are turned off to save Netlify build credits. Instead, [staging](staging.md) — the
-branch deploy of the `staging` branch — connects to its own **isolated database branch**, not the
-production database, and applies pending migrations on every build. Use it before merging any
+Deploy previews are turned off to save Netlify build credits. Instead, [staging](staging.md) — a
+separate Netlify project that builds the `staging` branch — has its **own database**, not a branch
+of production's, and applies pending migrations on every build. (A branch deploy of the production
+project would not do: it connects to the production database.) Use it before merging any
 migration that isn't purely additive:
 
 1. Run **Actions → Deploy staging** with the branch containing the new migration file.
 2. Wait for the staging build to finish.
-3. Run `pnpm exec netlify db status --branch staging` to confirm the migration applied cleanly.
+3. Read the staging build's log to confirm the migration applied cleanly.
 4. Exercise the screens affected by the schema change on the staging URL.
 5. Only merge once the staging build and manual check both look right.
 
@@ -108,8 +109,8 @@ Before merging any change under `netlify/database/migrations/`, confirm:
       don't have an agent merge it.
 - [ ] If it's destructive, is the drop in a separate, later deploy from its backfill (see the
       backfill-then-drop rule)?
-- [ ] Did you deploy the branch to staging and confirm with
-      `pnpm exec netlify db status --branch staging` that the migration applied there without error?
+- [ ] Did you deploy the branch to staging and confirm in its build log that the migration applied
+      there without error?
 - [ ] Did you manually exercise the affected screens on the staging URL?
 - [ ] Is a **human** — not an AI agent — the one clicking merge?
 
