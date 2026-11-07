@@ -2,9 +2,9 @@ name: Deploy staging
 
 run-name: Deploy ${{ inputs.ref }} to staging requested by @${{ github.actor }}
 
-# Staging is the Netlify branch deploy of the `staging` branch (see docs/staging.md). This moves
-# that branch to any ref — a feature branch, a PR head, or main to reset it — and Netlify builds
-# whatever the branch points at. Nothing else ever pushes to `staging`, so overwriting it is safe.
+# Staging is the separate `baycompassion-staging` Netlify project, whose production branch is
+# `staging` (see docs/staging.md). This moves that branch to any ref — a feature branch, a PR head,
+# or main to reset it — and Netlify builds whatever the branch points at. Nothing else ever pushes to `staging`, so overwriting it is safe.
 on:
   workflow_dispatch:
     inputs:
@@ -39,6 +39,6 @@ jobs:
           git push --force origin "HEAD:refs/heads/staging"
           {
             echo "### Staging now points at \`${sha:0:7}\` ($REF)"
-            echo "[Follow the build in Netlify](https://app.netlify.com/projects/baycompassion/deploys?filter=staging)"
-            echo "· [Open staging](https://staging--baycompassion.netlify.app/)"
+            echo "[Follow the build in Netlify](https://app.netlify.com/projects/baycompassion-staging/deploys)"
+            echo "· [Open staging](https://baycompassion-staging.netlify.app/)"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -1,9 +1,10 @@
 /**
  * The Twilio account every outbound message and consent update goes through, or none.
  *
- * `TWILIO_ENABLED=false` switches Twilio off even when the credentials are present. Staging needs
- * that: Netlify will not store an empty value for one branch, so a branch deploy cannot blank out
- * the credentials it inherits, and without the switch staging would text real phone numbers.
+ * `TWILIO_ENABLED=false` switches Twilio off even when the credentials are present, so a deploy that
+ * inherits them — Netlify will not store an empty value for one context or branch — can still be
+ * kept from texting real phone numbers. Staging sets it as a second guard behind having no
+ * credentials at all.
  */
 export class TwilioSettings {
 	private constructor(

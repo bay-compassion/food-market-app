@@ -228,16 +228,14 @@ Snapshots of test sessions are worth nothing to a funder, so leave the switch of
 until launch. Demo tools can stay on until then. To try the routine before that, use either of
 these. Both are human steps.
 
-**On staging (nothing to clean up).** [Staging](staging.md) has its own database branch, so a trial
-there never touches production.
+**On staging (nothing to clean up).** [Staging](staging.md) is a separate Netlify project with its
+own database, so a trial there never touches production.
 
-1. In the Netlify UI, set `ENABLE_WAREHOUSE_SNAPSHOTS` to `true` for the `staging` branch only, then
-   redeploy staging.
-2. On the Functions page for that deploy, open `warehouse-snapshot` and click **Run now**. Scheduled
-   functions run on a schedule only in production, but **Run now** works on a branch deploy.
-3. Read the `warehouse.run` log line, and look at the `warehouse` tables in the staging branch's
-   database.
-4. Remove the `staging` value when you are done.
+1. On the staging project, set `ENABLE_WAREHOUSE_SNAPSHOTS` to `true`, then redeploy staging.
+2. On the Functions page for that deploy, open `warehouse-snapshot` and click **Run now** rather than
+   waiting for the daily schedule.
+3. Read the `warehouse.run` log line, and look at the `warehouse` tables in the staging database.
+4. Set the variable back to `false` when you are done.
 
 **In production (then purge).** Set the variable for production, click **Run now** on the published
 deploy, inspect the tables, then remove the variable and empty the tables. Snapshots reference
