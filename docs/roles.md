@@ -350,6 +350,22 @@ work the same way, and now unlocks with a code instead; the print station may fo
    password, and give it the `print-station` role and nothing else.
 2. **On the desktop, open `/printing-station` and sign in as that user.**
 
+**At the market, the check-in iMac uses one shared check-in account instead**, an Auth0 user with
+a shared email address and the `worker` role. It signs in to both windows on that computer: the
+printing station, and the queue desk beside it. The Checklist tells volunteers to use it there.
+One account is easier for a group that changes every season than a print-only account plus
+everyone's own sign-in, and the iMac stays signed in, so the password is rarely typed. It costs the
+separation above: anyone with that password can run the queue and see the day's guest names and
+phone numbers, and nothing the account does can be traced to one person. So:
+
+- Only team leaders hold the password, in one place they all can reach (a shared password manager
+  vault is best). It isn't written on or near the iMac.
+- Change it when a team leader leaves, and whenever it might have been seen by someone it shouldn't
+  have been. Signing the iMac back in is then the only follow-up.
+- Volunteers working the line from their own phones still sign in as themselves.
+
+A `print-station`-only account still works for a station that should carry nothing beyond printing.
+
 `print:name-tags` grants only collecting waiting tags and removing printed ones. A tag carries the
 guest's first name, last initial, place in line, and language — what the label shows — and nothing
 else. Sending a tag and asking whether a station is online are `run:queue`, since that is what a

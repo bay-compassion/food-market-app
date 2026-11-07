@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { Button } from '@mui/material';
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import { useRootStore } from '../../stores/react/store-context';
@@ -8,7 +8,8 @@ import { useRootStore } from '../../stores/react/store-context';
 const Command = styled.div`
 	display: grid;
 	gap: 8px;
-	justify-items: start;
+	width: 100%;
+	min-width: 0;
 
 	.label {
 		margin: 0;
@@ -17,7 +18,6 @@ const Command = styled.div`
 	}
 
 	pre {
-		justify-self: stretch;
 		margin: 0;
 		padding: 10px 12px;
 		border-radius: var(--radius-sm);
@@ -28,19 +28,45 @@ const Command = styled.div`
 		word-break: break-all;
 	}
 
+	.copy {
+		justify-self: start;
+	}
+
 	.how {
+		display: grid;
+		gap: 6px;
+		margin-top: 6px;
+		font-size: 14px;
+	}
+
+	h4 {
 		margin: 0;
-		color: var(--color-text-subtle);
-		font-size: 13px;
-		line-height: 1.5;
+		font-size: 14px;
+	}
+
+	ol {
+		display: grid;
+		gap: 6px;
+		margin: 0;
+		padding-inline-start: 20px;
+		color: var(--color-text-muted);
+		line-height: 1.45;
 	}
 `;
 
+export type LaunchCommandProps = {
+	label: string;
+	command: string;
+	/** Anything more, after how to run it. */
+	children?: ReactNode;
+};
+
 /**
- * A Terminal command for the printing station's computer, with a button to copy it and how to run
- * it, since the person at that computer may never have opened Terminal.
+ * A Terminal command for the printing station's iMac, with a button to copy it and how to run it,
+ * for someone who may never have opened Terminal. Only ever shown inside When You Need It, so it
+ * stays out of the way on a normal market day.
  */
-export function LaunchCommand({ label, command }: { label: string; command: string }) {
+export function LaunchCommand({ label, command, children }: LaunchCommandProps) {
 	const t = adminTranslations.en.printStationCard;
 	const { notifications } = useRootStore();
 	const [copied, setCopied] = useState(false);
@@ -61,10 +87,23 @@ export function LaunchCommand({ label, command }: { label: string; command: stri
 				{label}
 			</p>
 			<pre aria-labelledby={labelId}>{command}</pre>
-			<Button variant="outlined" onClick={() => void copy()} aria-describedby={labelId}>
+			<Button
+				className="copy"
+				variant="outlined"
+				onClick={() => void copy()}
+				aria-describedby={labelId}
+			>
 				{copied ? t.copied : t.copy}
 			</Button>
-			<p className="how">{t.runCommand}</p>
+			<div className="how">
+				<h4>{t.runCommandTitle}</h4>
+				<ol>
+					{t.runCommandSteps.map((step) => (
+						<li key={step}>{step}</li>
+					))}
+				</ol>
+			</div>
+			{children}
 		</Command>
 	);
 }

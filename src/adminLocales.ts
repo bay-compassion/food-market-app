@@ -412,10 +412,32 @@ export interface AdminTranslation {
 	checklist: ChecklistTranslation;
 }
 
+/** One step on the Checklist: a short instruction, and a line on how or where. */
+export interface ChecklistStepCopy {
+	/** Stable across rewording, since a device's ticks are stored against it. */
+	id: string;
+	title: string;
+	detail?: string;
+}
+
 /** The Checklist screen: what has to be done by hand, outside the app, before a session. */
 export interface ChecklistTranslation {
 	title: string;
-	/** The plan of the market's part of the building, shown before the steps. */
+	/** Under the title: what the screen is for and how to work through it. */
+	intro: string;
+	/** On a station's card: `{done}` of `{total}` steps ticked. */
+	progress: string;
+	/** On a station's card once every step is ticked, in place of the count. */
+	complete: string;
+	/** Leads each station's "what finished looks like" line. */
+	doneWhen: string;
+	showSteps: string;
+	hideSteps: string;
+	/** Next to a step the app ticks for itself. */
+	automatic: string;
+	/** While there is no session, ticks have nothing to belong to. */
+	ticksNeedSession: string;
+	/** The plan of the market's part of the building, shown before the stations. */
 	floorPlan: {
 		title: string;
 		alt: string;
@@ -425,64 +447,99 @@ export interface ChecklistTranslation {
 	};
 	roomDisplay: {
 		title: string;
-		/** Where at the market this step happens. */
+		/** Where at the market this station is set up. */
 		place: string;
+		/** The plan cropped to this station's mark. */
+		closeUpAlt: string;
 		/** Each step, in order. */
-		steps: string[];
+		steps: ChecklistStepCopy[];
+		/** Where the Mac mini's power button and the keyboard's switch are. */
+		hardware: {
+			alt: string;
+			macMini: string;
+			keyboard: string;
+		};
 		addressLabel: string;
+		unlockHint: string;
 		getCode: string;
 		/** In place of the button, for a worker who can't ask for a code. */
 		askForCode: string;
+		/** Under the address: a link to the troubleshooting fix for the old Mac mini's certificate warning. */
+		certificateHelp: string;
+		/** The line board's own full-screen button, drawn beside the step. */
+		fullScreenButtonAlt: string;
+		doneWhen: string;
 	};
 	checkIn: {
 		title: string;
 		place: string;
+		closeUpAlt: string;
+		placeTitle: string;
 		/** Putting the cabinet in place, before anything on it is turned on. */
-		placementSteps: string[];
+		placeSteps: ChecklistStepCopy[];
 		/** After the printing station is running: the queue desk, in a window of its own. */
 		queueDeskTitle: string;
-		/** Each step, in order. */
-		queueDeskSteps: string[];
+		/** Shown until the printing station is online, since starting it closes Chrome. */
+		queueDeskWait: string;
+		queueDeskSteps: ChecklistStepCopy[];
 		queueDeskAddressLabel: string;
 		openQueueDesk: string;
+		doneWhen: string;
 	};
 	session: {
-		title: string;
-		place: string;
 		/** `{opens}` is when registration opens, `{capacity}` how many guests it admits. */
+		scheduledTitle: string;
 		scheduled: string;
 		/** The session has already started its day: registration is open or past it. */
 		underway: string;
+		missingTitle: string;
 		missing: string;
 		openSchedule: string;
 	};
+	/** Below the stations: what is needed only when something goes wrong, or on a new computer. */
+	reference: {
+		title: string;
+		troubleshootingTitle: string;
+		/** Starting the printing station from Terminal, when the iMac's automation doesn't. */
+		byHandTitle: string;
+		byHandIntro: string;
+		setupTitle: string;
+		setupIntro: string;
+		/** The room display's Mac mini, which needs one setting of its own. */
+		macMiniTitle: string;
+		macMiniIntro: string;
+		macMiniSteps: string[];
+	};
 }
 
-/** The Checklist's card on setting up the `/printing-station` computer at the market. */
+/** The Checklist's printing station steps, on the check-in computer at the market. */
 export interface PrintStationCardTranslation {
 	title: string;
 	online: string;
 	offline: string;
-	intro: string;
+	/** Which account signs in on the station, and why it isn't your own. */
+	account: string;
 	/** What to do on every market day, in order. */
-	dailyTitle: string;
-	dailySteps: string[];
-	dailyCommandLabel: string;
-	open: string;
-	/** Under the open button: which computer it belongs on, and why the command is better. */
-	openHint: string;
-	/** Done once per computer, in order; collapsed by default. */
-	setupTitle: string;
-	setupSteps: string[];
-	setupCommandLabel: string;
-	/** Under each command: how to run one, for someone who has never opened Terminal. */
-	runCommand: string;
+	steps: ChecklistStepCopy[];
+	commandLabel: string;
+	/** For someone who has never opened Terminal; under each command. */
+	runCommandTitle: string;
+	runCommandSteps: string[];
 	copy: string;
 	copied: string;
 	copyFailed: string;
-	troubleshootingTitle: string;
-	troubleshooting: { problem: string; fix: string }[];
-	account: string;
+	/** Under the market-day command: opening the station without it. */
+	openInstead: string;
+	open: string;
+	/**
+	 * `id` names a problem a step links to, so the link can open it; `{host}` in a fix is the app's
+	 * own address.
+	 */
+	troubleshooting: { id?: string; problem: string; fix: string }[];
+	/** Done once per computer, grouped by what each part sets up. */
+	setupTitle: string;
+	setupGroups: { title: string; steps: string[] }[];
+	setupCommandLabel: string;
 	guide: string;
 }
 
@@ -1160,7 +1217,7 @@ export const adminTranslations = {
 				signInRequired: 'This print station needs to sign in again.',
 				signIn: 'Sign in',
 				notPermitted:
-					'This account can’t run the print station. Sign in with the print-station account.',
+					'This account can’t run the print station. Sign in with the shared check-in account.',
 				recent: 'Printed recently',
 				noneYet: 'Nothing printed yet.',
 				keepOpen:
@@ -1227,71 +1284,119 @@ export const adminTranslations = {
 			},
 		},
 		printStationCard: {
-			title: 'Printing Station',
+			title: 'Start the Printing Station',
 			online: 'Online',
 			offline: 'Offline',
-			intro:
-				'The iMac on the check-in cabinet, with the Dymo label printer plugged into it. While the printing station page is open on it, volunteers can print name tags from their phones. The label above shows whether it’s working right now.',
-			dailyTitle: 'Every Market Day',
-			dailySteps: [
-				'Turn on the computer and the label printer. Check the printer has labels in it.',
-				'If Chrome is open, quit it completely: click on any Chrome window and press Command-Q. Closing its windows isn’t enough.',
-				'Copy the command below, then run it in Terminal (how to do that is just under it). A Chrome window opens on the printing station.',
-				'If it asks you to sign in, use the print-station account, not your own.',
-				'Wait until the label next to “Printing Station” above says Online. Leave that window open for the whole market.',
+			account:
+				'Sign in with the shared check-in account, here and at the queue desk. Chrome usually remembers it; if it asks, a team leader has the sign-in. Don’t write the password down or save it anywhere else.',
+			steps: [
+				{
+					id: 'printing-power',
+					title: 'Turn on the iMac and the label printer',
+					detail: 'Check the printer has labels in it.',
+				},
+				{
+					id: 'printing-quit-chrome',
+					title: 'Quit Chrome completely',
+					detail: 'Click any Chrome window and press Command-Q. Closing its windows isn’t enough.',
+				},
+				{
+					id: 'printing-start',
+					title: 'Start the printing station',
+					detail:
+						'Use the iMac’s automation. A Chrome window opens on the printing station; sign in if it asks. If it doesn’t start, see Start Printing by Hand below.',
+				},
+				{
+					id: 'printing-wait-online',
+					title: 'Wait for Online',
+					detail: 'Leave that window open for the whole market.',
+				},
 			],
-			dailyCommandLabel: 'Every Market Day Command',
-			open: 'Open Printing Station',
-			openHint:
-				'Only on the printer’s computer, never on your phone. Opened with this button, every tag asks before printing; the command above prints them straight away.',
-			setupTitle: 'First-Time Setup (Once per Computer)',
-			setupSteps: [
-				'Download Dymo’s software for the LabelWriter 450 from Dymo’s website and install it (it includes the printer driver). Then plug the printer into the computer with its USB cable.',
-				'Load Dymo 30857 name badge labels.',
-				'Make the LabelWriter the computer’s default printer: open System Settings, choose Printers & Scanners, and pick it next to “Default printer”.',
-				'Stop the computer from sleeping: in System Settings, choose Lock Screen and set the screen saver and “Turn display off” options to Never.',
-				'Quit Chrome completely (Command-Q). Copy the first-time command below and run it in Terminal. Sign in with the print-station account.',
-				'On your phone, open the queue desk (its address is under Queue Desk below), pick any guest, and tap Print name tag.',
-				'A print window appears on the computer. Choose the LabelWriter as the printer, 30857 as the paper size, Margins: None, and Scale: 100%. Then click Print. Chrome remembers these choices.',
-				'Quit Chrome (Command-Q). Setup is done; from now on, follow Every Market Day above.',
+			commandLabel: 'Market-Day Command',
+			runCommandTitle: 'How to Run It in Terminal',
+			runCommandSteps: [
+				'Press Command-Space, type Terminal, and press Return.',
+				'Click inside the Terminal window, paste with Command-V, and press Return.',
+				'Close Terminal once Chrome opens.',
 			],
-			setupCommandLabel: 'First-Time Command',
-			runCommand:
-				'To run it: press Command-Space, type Terminal, and press Return. Click inside the Terminal window, paste with Command-V, and press Return. You can close Terminal once Chrome opens.',
-			copy: 'Copy Command',
+			copy: 'Copy',
 			copied: 'Copied',
 			copyFailed: 'Couldn’t copy the command. Select it and copy it instead.',
-			troubleshootingTitle: 'If Something Goes Wrong',
+			openInstead:
+				'Can’t run the command? Open the station from here, on the iMac only. Every tag then asks before it prints.',
+			open: 'Open Printing Station',
 			troubleshooting: [
 				{
-					problem: 'It says Offline.',
-					fix: 'The printing station window was closed, or the computer went to sleep. Wake the computer; if the window is gone, follow Every Market Day again.',
+					problem: 'The printing station says Offline',
+					fix: 'Its window was closed, or the iMac went to sleep. Wake the iMac; if the window is gone, start the printing station again.',
 				},
 				{
-					problem: 'A print window pops up for every tag.',
-					fix: 'Chrome was opened the usual way instead of with the command. Quit Chrome (Command-Q) and run the Every Market Day command.',
+					problem: 'A print window pops up for every tag',
+					fix: 'Chrome was opened the usual way instead of by the automation. Quit Chrome (Command-Q) and start the printing station again.',
 				},
 				{
-					problem: 'Nothing prints, but it says Online.',
+					problem: 'It says Online, but nothing prints',
 					fix: 'Check the printer is switched on, its USB cable is plugged in, and it has labels. Then print the tag again.',
 				},
 				{
-					problem: 'Tags come out small, or with a white border.',
-					fix: 'Do steps 5 to 8 of First-Time Setup again, making sure Scale is 100% and the paper is 30857.',
+					problem: 'Tags come out small, or with a white border',
+					fix: 'Do One Test Print under First-Time Setup again, making sure Scale is 100% and the paper is 30857.',
 				},
 				{
-					problem: 'It says this account can’t run the print station.',
-					fix: 'You’re signed in with your own account. Sign out and sign in with the print-station account.',
+					problem: 'It says this account can’t run the print station',
+					fix: 'It’s signed in with an account that can’t print. Sign out and sign in with the shared check-in account.',
+				},
+				{
+					id: 'certificate-warning',
+					problem: 'Chrome says “Your connection is not private”',
+					fix: 'The room display’s Mac mini is too old for updates, so its Chrome no longer recognizes the app’s security certificate. Go past the warning only on that Mac mini, and only when the address bar shows {host}: click Advanced, then “Proceed to {host} (unsafe)”. If there’s no Proceed link, click on the warning page and type thisisunsafe; nothing shows as you type, and the page loads. On any other computer or phone, don’t go past this warning: tell a team leader.',
+				},
+				{
+					problem: 'The room display asks for a code',
+					fix: 'Get an unlock code from the Room Display steps above, or ask a team leader for one.',
 				},
 			],
-			account:
-				'The print-station account can print tags but can’t change the queue. Ask a team leader for its sign-in.',
+			setupTitle: 'Check-In iMac',
+			setupGroups: [
+				{
+					title: 'Printer',
+					steps: [
+						'Download Dymo’s software for the LabelWriter 450 from Dymo’s website and install it. Then plug the printer into the iMac with its USB cable.',
+						'Load Dymo 30857 name badge labels.',
+						'Make the LabelWriter the default printer: in System Settings, choose Printers & Scanners and pick it next to “Default printer”.',
+					],
+				},
+				{
+					title: 'Keep It Awake',
+					steps: [
+						'In System Settings, choose Lock Screen and set the screen saver and “Turn display off” options to Never.',
+					],
+				},
+				{
+					title: 'One Test Print',
+					steps: [
+						'Quit Chrome (Command-Q). Run the first-time command below in Terminal and sign in with the shared check-in account.',
+						'On your phone, open the queue desk, pick any guest, and tap Print name tag.',
+						'A print window appears on the iMac. Choose the LabelWriter, 30857 as the paper size, Margins: None, and Scale: 100%. Click Print; Chrome remembers these choices.',
+						'Quit Chrome. From now on, the market-day steps are all you need.',
+					],
+				},
+			],
+			setupCommandLabel: 'First-Time Command',
 			guide: 'Full setup guide',
 		},
 		checklist: {
 			title: 'Checklist',
+			intro: 'Set up both stations before doors open. Tick each step off as you go.',
+			progress: '{done} of {total} done',
+			complete: 'All done',
+			doneWhen: 'Done when',
+			showSteps: 'Show steps',
+			hideSteps: 'Hide steps',
+			automatic: 'Ticked by the app',
+			ticksNeedSession: 'Steps can be ticked off once a session is scheduled.',
 			floorPlan: {
-				title: 'Floor Plan',
+				title: 'Where Things Go',
 				alt: 'Floor plan of the lobby and the back of the auditorium. The auditorium’s seats are in five sections facing the stage, with a sound booth at the back of the middle one. The waiting area is the back half of the two sections on the far left. 1, the room display, stands against the auditorium’s back wall behind the stairway to the lower level, just left of two large pillars by the center exit, facing the waiting area. 2, the check-in desk, stands at the left edge of the lobby by the restrooms, below a wall outlet.',
 				zoomIn: 'Zoom In',
 				zoomOut: 'Zoom Out',
@@ -1299,46 +1404,114 @@ export const adminTranslations = {
 			},
 			roomDisplay: {
 				title: 'Room Display',
-				place: 'In the auditorium · 1 on the floor plan',
+				place: 'Auditorium, back wall',
+				closeUpAlt:
+					'Close-up of 1 on the floor plan: the room display against the auditorium’s back wall, just left of the pillar, with the waiting area to its upper left and its outlet behind it.',
 				steps: [
-					'Roll the TV stand to 1 on the floor plan: against the auditorium’s back wall, on the other side of that wall from the stairway to the lower level, just left of the left-hand pillar.',
-					'Turn the screen a little to the left of facing straight out from the wall, toward the waiting area (the blue part of the plan): the back rows of the two left-hand sections of seats.',
-					'Plug the stand into the outlet on the back wall behind it, the orange dot on the plan. Turn on the TV and the Mac mini attached to it, and open Chrome on the Mac mini.',
-					'Click the address bar at the top of Chrome, type the address below exactly, and press Return.',
-					'If the screen asks for an unlock code, get one here and type its six numbers in. It then stays unlocked for about six months.',
-					'Make the page fill the screen: press Control-Command-F.',
-					'The first time only, stop the Mac mini from sleeping: open System Settings, choose Lock Screen, and set the screen saver and “Turn display off” options to Never.',
+					{
+						id: 'room-place',
+						title: 'Roll the TV stand to 1',
+						detail:
+							'Against the back wall, just left of the pillar. Angle the screen toward the waiting area.',
+					},
+					{
+						id: 'room-power',
+						title: 'Plug in and turn everything on',
+						detail:
+							'Plug the stand into the outlet on the wall behind it. Turn on the TV, then the Mac mini if it hasn’t started by itself, then the keyboard.',
+					},
+					{
+						id: 'room-open',
+						title: 'Open the line board in Chrome',
+						detail:
+							'If Chrome didn’t open it by itself, click Chrome in the Dock, type this address into the bar at the top, and press Enter.',
+					},
+					{
+						id: 'room-full-screen',
+						title: 'Fill the screen',
+						detail:
+							'With the keyboard’s touchpad, click the full-screen button in the bottom-right corner of the line board. It disappears once the board fills the TV.',
+					},
 				],
+				hardware: {
+					alt: 'The TV on its rolling stand between two upright posts, with the Mac mini wedged on top of the bracket behind it, sticking up above the TV. Its power button is on its back, at the corner beside the power cord. Below, the wireless keyboard with its on/off switch on the right of its top edge.',
+					macMini:
+						'Mac mini: the round button on its back, at the corner beside where the power cord goes in. Reach over the top of the TV to press it.',
+					keyboard:
+						'Keyboard: slide the switch on the right of its top edge to On. Its touchpad moves the pointer.',
+				},
 				addressLabel: 'Address',
+				unlockHint: 'If it asks for an unlock code, it then stays unlocked for about six months.',
 				getCode: 'Get an Unlock Code',
-				askForCode: 'If the screen asks for a code, ask a team leader to get one for you.',
+				askForCode: 'If it asks for an unlock code, ask a team leader to get one for you.',
+				certificateHelp: 'Chrome says “Your connection is not private”?',
+				fullScreenButtonAlt: 'The full-screen button: four corners pointing outward.',
+				doneWhen: 'the line board fills the TV and faces the waiting area.',
 			},
 			checkIn: {
-				title: 'Check-In Computer',
-				place: 'At the left edge of the lobby · 2 on the floor plan',
-				placementSteps: [
-					'Roll the check-in cabinet to 2 on the floor plan: at the left edge of the lobby by the restrooms, where the coffee usually is.',
-					'Turn the iMac so its screen faces away from the lobby, toward the volunteer, who stands on the cabinet’s left side. Guests in the lobby then can’t see the screen.',
-					'Plug the cabinet’s power into the outlet on the wall just above it, the orange dot on the plan. The name tag printer sits on the cabinet beside the iMac.',
+				title: 'Check-In',
+				place: 'Lobby, by the restrooms',
+				closeUpAlt:
+					'Close-up of 2 on the floor plan: the check-in cabinet at the left edge of the lobby by the restrooms, below its wall outlet.',
+				placeTitle: 'Place the Cabinet',
+				placeSteps: [
+					{
+						id: 'check-in-place',
+						title: 'Roll the cabinet to 2',
+						detail:
+							'Where the coffee usually is. Turn the iMac so guests in the lobby can’t see its screen; the volunteer stands on the cabinet’s left.',
+					},
+					{
+						id: 'check-in-power',
+						title: 'Plug in at the outlet above it',
+						detail: 'The label printer sits on the cabinet beside the iMac.',
+					},
 				],
-				queueDeskTitle: 'Queue Desk',
+				queueDeskTitle: 'Open the Queue Desk',
+				queueDeskWait:
+					'Wait until the printing station says Online: starting it quits Chrome, which would close a queue desk opened sooner.',
 				queueDeskSteps: [
-					'Set up the printing station first. Starting it quits Chrome, which would close a queue desk that was already open.',
-					'Once the printing station says Online, open Chrome again the usual way, from its icon in the Dock. Leave the printing station’s window open behind it.',
-					'Go to the address below and sign in with your own account, not the print-station one.',
-					'Check guests in from here.',
+					{
+						id: 'queue-open-chrome',
+						title: 'Open Chrome again from the Dock',
+						detail: 'Leave the printing station’s window open behind it.',
+					},
+					{
+						id: 'queue-sign-in',
+						title: 'Go to the queue desk and sign in',
+						detail: 'Use the shared check-in account, the same one as the printing station.',
+					},
 				],
 				queueDeskAddressLabel: 'Address',
 				openQueueDesk: 'Open Queue Desk',
+				doneWhen: 'the printing station says Online and the queue desk is open beside it.',
 			},
 			session: {
-				title: 'Market Session',
-				place: 'In the app',
-				scheduled: 'Scheduled. Registration opens {opens}, for {capacity} guests.',
+				scheduledTitle: 'Session Scheduled',
+				scheduled: 'Registration opens {opens}, for {capacity} guests.',
 				underway: 'Today’s session is underway.',
+				missingTitle: 'No Session Scheduled',
 				missing:
-					'No session is scheduled. One is usually added on its own when the last one ends. If not, add it from the schedule, or ask a team leader to.',
+					'One is usually added on its own when the last one ends. If not, add it from the schedule, or ask a team leader to.',
 				openSchedule: 'Open Schedule',
+			},
+			reference: {
+				title: 'When You Need It',
+				troubleshootingTitle: 'If Something Goes Wrong',
+				byHandTitle: 'Start Printing by Hand',
+				byHandIntro:
+					'Only if the iMac’s automation doesn’t start the printing station. Quit Chrome first (Command-Q).',
+				setupTitle: 'First-Time Setup',
+				setupIntro: 'Once per computer. Skip this on a normal market day.',
+				macMiniTitle: 'Room Display Mac Mini',
+				macMiniIntro:
+					'So that plugging in the stand is all it takes to bring the line board back. Names are as in System Preferences on older macOS; System Settings on newer Macs has the same options.',
+				macMiniSteps: [
+					'Start up when the stand is plugged in: in Energy Saver, turn on “Start up automatically after a power failure”. Then nobody needs to reach its power button.',
+					'Log in by itself: in Users & Groups, click the lock, then Login Options, and set “Automatic login” to the display’s account. If that is greyed out, FileVault is on; turn it off under Security & Privacy first.',
+					'Open Chrome at login: right-click Chrome in the Dock and choose Options, then Open at Login. In Chrome’s settings, under On Startup, choose “Continue where you left off”, so it comes back to the line board.',
+					'Stop it from sleeping: in Energy Saver, set “Turn display off after” to Never and turn on “Prevent computer from sleeping automatically when the display is off”. In Desktop & Screen Saver, set the screen saver to start Never.',
+				],
 			},
 		},
 	},

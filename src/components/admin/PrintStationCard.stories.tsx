@@ -1,16 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { AdminApi } from '../../services/admin-api';
 import type { Permission } from '../../services/permissions';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
-import {
-	printStationFirstRunCommand,
-	printStationLaunchCommand,
-} from '../print-station/PrintStationSetup';
+import { printStationLaunchCommand } from '../print-station/PrintStationSetup';
 import { PrintStationCard } from './PrintStationCard';
 
 type Station = 'online' | 'offline' | 'unknown';
@@ -54,8 +51,8 @@ function Fixture(args: PrintStationCardArgs) {
 }
 
 /**
- * The check-in computer's step on the Checklist screen: whether the printing station is checking in,
- * how to start it on a market day, its one-time setup, and what to do when it misbehaves.
+ * The check-in computer's printing station on the Checklist screen: whether it is checking in, which
+ * account signs in, and how to start it on a market day.
  */
 const meta = {
 	title: 'Admin/Checklist/Printing Station',
@@ -72,13 +69,7 @@ type Story = StoryObj<typeof meta>;
 /** The station is up: volunteers' phones can print. */
 export const Online: Story = {
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-
-		await expect(await canvas.findByRole('status')).toHaveTextContent(t.online);
-		await expect(canvas.getByRole('link', { name: t.open })).toHaveAttribute(
-			'href',
-			`${window.location.origin}/printing-station`,
-		);
+		await expect(await within(canvasElement).findByRole('status')).toHaveTextContent(t.online);
 	},
 };
 
@@ -101,18 +92,17 @@ export const Unknown: Story = {
 	},
 };
 
-/** The one-time setup is collapsed; opened, it gives the command that prints through the dialog. */
-export const FirstTimeSetup: Story = {
+/**
+ * The market-day steps alone: the iMac's automation starts the station, so the Terminal command is
+ * left to When You Need It.
+ */
+export const MarketDaySteps: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await expect(canvas.getByText(printStationLaunchCommand)).toBeVisible();
-		await expect(canvas.queryByText(printStationFirstRunCommand)).not.toBeVisible();
-
-		await userEvent.click(canvas.getByText(t.setupTitle));
-
-		await expect(canvas.getByText(printStationFirstRunCommand)).toBeVisible();
-		await expect(printStationFirstRunCommand).not.toContain('--kiosk-printing');
-		await expect(printStationLaunchCommand).toContain('--kiosk-printing');
+		for (const step of t.steps) {
+			await expect(canvas.getByRole('checkbox', { name: step.title })).toBeInTheDocument();
+		}
+		await expect(canvas.queryByText(printStationLaunchCommand)).toBeNull();
 	},
 };

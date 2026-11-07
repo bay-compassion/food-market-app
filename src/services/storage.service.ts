@@ -12,6 +12,8 @@ export enum StorageKey {
 	/** This browser's install ID (`src/install-id.ts`). It names the device rather than the guest,
 	 *  so `GuestStore.forget()` deliberately leaves it in place. */
 	INSTALL_ID = 'bay-compassion.install-id',
+	/** The market Checklist's ticked steps on this device, for one session (`ChecklistStore`). */
+	CHECKLIST_PROGRESS = 'bay-compassion.checklist-progress',
 }
 
 interface StorageKeyMap {
@@ -23,6 +25,7 @@ interface StorageKeyMap {
 	[StorageKey.RETURNING_VISITOR]: boolean;
 	[StorageKey.GUEST_TOUR_SEEN]: boolean;
 	[StorageKey.INSTALL_ID]: string;
+	[StorageKey.CHECKLIST_PROGRESS]: unknown;
 }
 
 export class StorageService {
