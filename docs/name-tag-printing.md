@@ -13,9 +13,10 @@ guest. To check a sticker, find the guest on the queue desk's list at `/queue` o
 Queue tab, where each guest shows the code their tag carries, and compare. Four hex characters
 aren't unique on their own, but among one day's visits they narrow a sticker to one.
 
-The dashboard's Checklist screen has a **Printing Station** card with the setup steps below,
-the launch command to copy, a button that opens `/printing-station`, and whether a station is
-checking in right now. Sign in to the dashboard on the station's computer and open it from there —
+The dashboard's Checklist screen has a **Printing Station** card, written for a volunteer who has
+never opened Terminal: whether a station is checking in right now, the steps for every market day
+with the launch command to copy, the one-time setup below (with its own first-time command, which
+leaves out `--kiosk-printing`) behind a disclosure, and what to do when it misbehaves. Sign in to the dashboard on the station's computer and open it from there —
 not from a phone: whatever device has the page open becomes the station and takes the tags.
 
 ## The printer
@@ -41,7 +42,8 @@ proportions, so changing labels means changing that one value.
    printer driver), and plug the printer in over USB.
 2. Load 30857 labels.
 3. Make the LabelWriter the computer's default printer.
-4. Start the print station's browser with the command below, but leave out `--kiosk-printing`, and
+4. Start the print station's browser with the command below, but leave out `--kiosk-printing` (the
+   card's first-time command already does), and
    print one tag through the dialog (send one from a phone). In that dialog, choose the LabelWriter,
    pick the 30857 paper size, set the margins to none and the scale to 100%, and, if the dialog shows the printer's own
    options, choose the roll the labels are on. Chrome saves these in the station's own profile.

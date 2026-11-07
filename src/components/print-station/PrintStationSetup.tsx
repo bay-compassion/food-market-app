@@ -33,20 +33,34 @@ const Setup = styled.details`
 /** Where the print station runs, on this deploy. */
 export const printStationUrl = `${typeof window === 'undefined' ? '' : window.location.origin}/printing-station`;
 
+/** The flag that prints straight to the default printer, using the last dialog print's settings. */
+const kioskPrinting = '--kiosk-printing';
+
+/** Starts the station's own Chrome profile at its page, with the given flags. */
+function launchCommand(flags: string[]): string {
+	return [
+		'open -na "Google Chrome" --args',
+		...flags,
+		'--disable-background-timer-throttling',
+		'--disable-renderer-backgrounding',
+		'--disable-backgrounding-occluded-windows',
+		'--user-data-dir="$HOME/chrome-print-station"',
+		printStationUrl,
+	].join(' ');
+}
+
 /**
  * The launch command for a browser that prints without a dialog, and keeps polling while the room
  * display covers this window. A page cannot tell whether it was started this way, so it always
  * shows how. See `docs/name-tag-printing.md`.
  */
-export const printStationLaunchCommand = [
-	'open -na "Google Chrome" --args',
-	'--kiosk-printing',
-	'--disable-background-timer-throttling',
-	'--disable-renderer-backgrounding',
-	'--disable-backgrounding-occluded-windows',
-	'--user-data-dir="$HOME/chrome-print-station"',
-	printStationUrl,
-].join(' ');
+export const printStationLaunchCommand = launchCommand([kioskPrinting]);
+
+/**
+ * The same browser started once without silent printing, so one tag goes through the dialog and
+ * the profile saves the printer, paper, and margins that silent printing then reuses.
+ */
+export const printStationFirstRunCommand = launchCommand([]);
 
 export function PrintStationSetup() {
 	const t = adminTranslations.en.queueDesk.printStation;

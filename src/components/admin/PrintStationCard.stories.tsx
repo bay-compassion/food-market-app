@@ -1,12 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { AdminApi } from '../../services/admin-api';
 import type { Permission } from '../../services/permissions';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
+import {
+	printStationFirstRunCommand,
+	printStationLaunchCommand,
+} from '../print-station/PrintStationSetup';
 import { PrintStationCard } from './PrintStationCard';
 
 type Station = 'online' | 'offline' | 'unknown';
@@ -50,8 +54,8 @@ function Fixture(args: PrintStationCardArgs) {
 }
 
 /**
- * The check-in computer's step on the Checklist screen: how to set up the computer the label printer is plugged into,
- * the way to open its page, and whether it is checking in right now.
+ * The check-in computer's step on the Checklist screen: whether the printing station is checking in,
+ * how to start it on a market day, its one-time setup, and what to do when it misbehaves.
  */
 const meta = {
 	title: 'Admin/Checklist/Printing Station',
@@ -94,5 +98,21 @@ export const Unknown: Story = {
 
 		await expect(canvas.getByRole('heading', { name: t.title })).toBeVisible();
 		await expect(canvas.queryByRole('status')).toBeNull();
+	},
+};
+
+/** The one-time setup is collapsed; opened, it gives the command that prints through the dialog. */
+export const FirstTimeSetup: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		await expect(canvas.getByText(printStationLaunchCommand)).toBeVisible();
+		await expect(canvas.queryByText(printStationFirstRunCommand)).not.toBeVisible();
+
+		await userEvent.click(canvas.getByText(t.setupTitle));
+
+		await expect(canvas.getByText(printStationFirstRunCommand)).toBeVisible();
+		await expect(printStationFirstRunCommand).not.toContain('--kiosk-printing');
+		await expect(printStationLaunchCommand).toContain('--kiosk-printing');
 	},
 };
