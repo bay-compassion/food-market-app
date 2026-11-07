@@ -154,3 +154,65 @@ export const RequiredValidation: Story = {
 		await expect(form.checkValidity()).toBe(true);
 	},
 };
+
+/**
+ * Focusing the field selects the count, so typing replaces it: "3" then a typed "2" is 2, not 32.
+ */
+export const TypingReplacesTheCount: Story = {
+	args: { value: 3 },
+	play: async ({ canvas, userEvent }) => {
+		const field = canvas.getByRole<HTMLInputElement>('textbox', { name: meta.args.label });
+
+		await userEvent.click(field);
+		await expect(field.selectionStart).toBe(0);
+		await expect(field.selectionEnd).toBe(1);
+
+		await userEvent.keyboard('2');
+
+		await expect(field).toHaveValue('2');
+	},
+};
+
+/** Zeros typed ahead of a digit drop away as they are typed; a lone zero is a count of its own. */
+export const LeadingZerosAreTrimmed: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const field = canvas.getByRole('textbox', { name: meta.args.label });
+
+		await userEvent.type(field, '007');
+		await expect(field).toHaveValue('7');
+
+		await userEvent.clear(field);
+		await userEvent.type(field, '0');
+		await expect(field).toHaveValue('0');
+	},
+};
+
+/**
+ * Erasing the count and leaving the field puts back the count it held, rather than emptying a
+ * required answer by accident.
+ */
+export const BlankRevertsOnBlur: Story = {
+	args: { value: 4 },
+	play: async ({ canvas, userEvent }) => {
+		const field = canvas.getByRole('textbox', { name: meta.args.label });
+
+		await userEvent.clear(field);
+		await expect(field).toHaveValue('');
+
+		await userEvent.tab();
+
+		await expect(field).toHaveValue('4');
+	},
+};
+
+/** A count that was never answered has nothing to go back to, so leaving it blank keeps it blank. */
+export const UnansweredStaysBlank: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const field = canvas.getByRole('textbox', { name: meta.args.label });
+
+		await userEvent.click(field);
+		await userEvent.tab();
+
+		await expect(field).toHaveValue('');
+	},
+};
