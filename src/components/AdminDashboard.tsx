@@ -185,7 +185,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 					statusLabels={statusLabels}
 					serviceStarted={sessionState === 'service_started'}
 					admissions={sessionAdmissions}
-					busy={admin.isBusy}
+					// The dashboard's queue keeps waiting through a call's reread, as it always has.
+					busy={admin.isBusy || admin.isCallingNext}
 					onCallNext={(count) => void admin.callNext(count)}
 					onRun={(guest, command) => void runGuestCommand(guest, command)}
 					onAddGuest={(guest) => void addManualGuest(guest)}

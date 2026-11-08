@@ -3,17 +3,19 @@ import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
+import { LineOrder } from '../../models/line-order';
 import type { AdminApi, AdminGuest, GuestDetails } from '../../services/admin-api';
 import type { QueuePlacement } from '../../services/guestAdmission';
 import type { HouseholdServiceEntry } from '../../services/household-service';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitEvent } from '../../services/visit-events';
-import type { VisitCommand } from '../../services/visitStateMachine';
+import { visitCommandTarget, type VisitCommand } from '../../services/visitStateMachine';
 import type { SessionOverview } from '../../stores/market-session.store';
 import { QueueDeskStore } from '../../stores/queue-desk.store';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { busyQueue, finishedQueue, queueGuest } from '../admin/queueGuests.fixture';
+import { visitCommandLabels } from '../admin/VisitCommandButtons';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { NotificationToasts } from '../ui/NotificationToasts';
 import { QueueDeskProvider } from './queue-desk-context';
@@ -27,13 +29,19 @@ type QueueLineArgs = {
 	guests: AdminGuest[];
 	/** A visit whose ticket is already open, as if the volunteer had just tapped it. */
 	openVisitId: string | null;
+	/** How long each request takes to answer, for what the screen does while one is on its way. */
+	latencyMs?: number;
 };
 
-/** The fixture's people, each with a place in line, the way a drawn session numbers them. */
+/**
+ * The fixture's people, each with a place in line, the way a drawn session numbers them: those
+ * still waiting stand in the line in the order of their numbers.
+ */
 const numberedQueue: AdminGuest[] = [
 	...busyQueue.map((guest, index) => ({
 		...guest,
 		queuePosition: index + 1,
+		queueOrder: guest.status === 'waiting' ? index + 1 : null,
 		marketEventId: eventId,
 	})),
 	// Entered the lottery and was not drawn, so has no place in line.
@@ -109,13 +117,13 @@ function historyFor(guest: AdminGuest | undefined): VisitEvent[] {
  * A root store whose admin API answers from `guests`, and a desk over it. Built here rather than by
  * `QueueDesk`, which would sign in and fetch the real session.
  */
-function seededDesk({ guests, openVisitId }: QueueLineArgs) {
+function seededDesk({ guests, openVisitId, latencyMs = 0 }: QueueLineArgs) {
 	let roster = guests.map((guest) => ({ ...guest }));
 	let households: HouseholdServiceEntry[] = [];
 
-	/** Calls the first guest still waiting, as the server's queue order would. */
+	/** Calls the guest at the front of the line, in the server's queue order. */
 	function callNext(): string[] {
-		const next = roster.find((guest) => guest.status === 'waiting');
+		const [next] = roster.filter((guest) => guest.status === 'waiting').sort(LineOrder.compare);
 
 		if (!next) {
 			return [];
@@ -151,11 +159,16 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 					status: 'waiting',
 					calledAt: null,
 					queuePosition: position,
+					queueOrder: position,
 				};
 			}
 
 			return placement === 'next' && guest.status === 'waiting'
-				? { ...guest, queuePosition: (guest.queuePosition ?? 0) + 1 }
+				? {
+						...guest,
+						queuePosition: (guest.queuePosition ?? 0) + 1,
+						queueOrder: (guest.queueOrder ?? 0) + 1,
+					}
 				: guest;
 		});
 	}
@@ -207,6 +220,10 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 		runGuestCommand: async (visitId: string, command: VisitCommand, placement?: QueuePlacement) => {
 			if (command === 'return_to_queue' && placement) {
 				returnToQueue(visitId, placement);
+			} else {
+				const status = visitCommandTarget(command);
+
+				roster = roster.map((guest) => (guest.id === visitId ? { ...guest, status } : guest));
 			}
 		},
 		callNext: async () => callNext(),
@@ -229,6 +246,18 @@ function seededDesk({ guests, openVisitId }: QueueLineArgs) {
 			return callNext();
 		},
 	} as unknown as AdminApi;
+
+	// Every answer arrives `latencyMs` late, as it would over a market's connection.
+	for (const [name, request] of Object.entries(api) as [
+		string,
+		(...args: unknown[]) => unknown,
+	][]) {
+		(api as unknown as Record<string, unknown>)[name] = async (...args: unknown[]) => {
+			await new Promise((resolve) => setTimeout(resolve, latencyMs));
+
+			return request(...args);
+		};
+	}
 	const overview: SessionOverview = {
 		event: {
 			id: eventId,
@@ -311,7 +340,9 @@ export const DuringService: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await expect(await canvas.findByRole('button', { name: t.callNext })).toBeEnabled();
+		await expect(
+			await canvas.findByRole('button', { name: t.callNextNumber.replace('{number}', '3') }),
+		).toBeEnabled();
 		await expect(
 			await canvas.findByRole('button', {
 				name: t.openTicket.replace('{number}', '3').replace('{name}', 'Linh Nguyen'),
@@ -467,9 +498,109 @@ export const CallingNext: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await userEvent.click(await canvas.findByRole('button', { name: t.callNext }));
+		await userEvent.click(
+			await canvas.findByRole('button', { name: t.callNextNumber.replace('{number}', '3') }),
+		);
 
 		await expect(await (await openTicket()).findByText('Linh N.')).toBeVisible();
+		// The button moves on to the number now at the front of the line.
+		await expect(
+			canvas.getByRole('button', { name: t.callNextNumber.replace('{number}', '4') }),
+		).toBeEnabled();
+	},
+};
+
+/**
+ * The open ticket doesn't block the screen: with one open, the call button and the other tickets
+ * answer the first tap, rather than a first tap that only closes the sheet.
+ */
+export const ActingPastAnOpenTicket: Story = {
+	args: { openVisitId: 'guest-called-1' },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		await expect(await (await openTicket()).findByText('Maria S.')).toBeVisible();
+
+		await userEvent.click(
+			canvas.getByRole('button', {
+				name: t.openTicket.replace('{number}', '2').replace('{name}', 'Sohrab Ahmadi'),
+			}),
+		);
+
+		await expect(await (await openTicket()).findByText('Sohrab A.')).toBeVisible();
+
+		await userEvent.click(
+			canvas.getByRole('button', { name: t.callNextNumber.replace('{number}', '3') }),
+		);
+
+		await expect(await (await openTicket()).findByText('Linh N.')).toBeVisible();
+
+		await userEvent.click(canvas.getByRole('button', { name: t.closeTicket }));
+
+		await expect(canvas.queryByRole('region', { name: t.ticket })).toBeNull();
+	},
+};
+
+/**
+ * Searching opens a dialog that finds tickets across the line — by name, without minding accents,
+ * by the number on a ticket, or by the last digits of a phone number — and opening one puts the
+ * search away.
+ */
+export const SearchingTheLine: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const page = within(document.body);
+
+		await userEvent.click(await canvas.findByRole('button', { name: t.openSearch }));
+
+		const dialog = within(await page.findByRole('dialog', { name: t.search }));
+		const search = dialog.getByRole('searchbox', { name: t.search });
+
+		await expect(search).toHaveFocus();
+		// Once the dialog has faded in.
+		await waitFor(() => expect(dialog.getByText(t.searchHint)).toBeVisible());
+
+		await userEvent.type(search, 'tomas');
+
+		await expect(
+			within(dialog.getByRole('region', { name: t.notPlaced })).getByText('Tomás Rivera'),
+		).toBeVisible();
+		await expect(dialog.queryByText('Maria Santos')).toBeNull();
+
+		await userEvent.clear(search);
+		await userEvent.type(search, '404');
+
+		await expect(await dialog.findByText(t.noMatches)).toBeVisible();
+
+		await userEvent.clear(search);
+		await userEvent.type(search, '4');
+		await userEvent.click(
+			dialog.getByRole('button', {
+				name: t.openTicket.replace('{number}', '4').replace('{name}', 'Rosa Delacruz'),
+			}),
+		);
+
+		// The dialog hides the screen behind it until it has faded out.
+		await waitFor(() => expect(page.queryByRole('dialog', { name: t.search })).toBeNull());
+		await waitFor(async () => expect((await openTicket()).getByText('Rosa D.')).toBeVisible());
+	},
+};
+
+/** A section's title folds it away, keeping its count in view, and unfolds it again. */
+export const FoldingASection: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const toggle = await canvas.findByRole('button', { name: new RegExp(`^${t.done}`) });
+
+		await userEvent.click(toggle);
+
+		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		await expect(canvas.queryByText('James Okafor')).not.toBeVisible();
+
+		await userEvent.click(toggle);
+
+		await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		await expect(canvas.getByText('James Okafor')).toBeVisible();
 	},
 };
 
@@ -533,6 +664,67 @@ export const ServingAndCallingNextAtTheDesk: Story = {
 		);
 
 		await userEvent.click(await pane.findByRole('button', { name: t.serveAndCallNext }));
+
+		await expect(await pane.findByText('Linh N.')).toBeVisible();
+	},
+};
+
+/**
+ * Over a slow connection, the call button says it is calling and waits, and so does serving and
+ * calling in one step — either would call a second guest — while the open ticket's other buttons
+ * keep working: marking the guest served mid-call lands, and the called guest's ticket opens.
+ */
+export const CallingOverASlowConnectionAtTheDesk: Story = {
+	args: { openVisitId: 'guest-called-2', latencyMs: 800 },
+	globals: deskViewport,
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const pane = within(await canvas.findByRole('complementary', { name: t.ticket }));
+
+		await expect(await pane.findByText('Sohrab A.', {}, { timeout: 5_000 })).toBeVisible();
+
+		await userEvent.click(
+			await canvas.findByRole('button', { name: t.callNextNumber.replace('{number}', '3') }),
+		);
+
+		await expect(canvas.getByRole('button', { name: t.calling })).toBeDisabled();
+		await expect(pane.getByRole('button', { name: t.serveAndCallNext })).toBeDisabled();
+
+		await userEvent.click(pane.getByRole('button', { name: visitCommandLabels().serve }));
+
+		await expect(await pane.findByText('Linh N.', {}, { timeout: 5_000 })).toBeVisible();
+
+		const done = within(canvas.getByRole('region', { name: t.done }));
+
+		// After both rereads, so a stale one can't have put Sohrab back among the called.
+		await waitFor(
+			async () => {
+				await expect(
+					canvas.getByRole('button', { name: t.callNextNumber.replace('{number}', '4') }),
+				).toBeEnabled();
+				await expect(done.getByText('Sohrab Ahmadi')).toBeVisible();
+			},
+			{ timeout: 5_000 },
+		);
+	},
+};
+
+/** On the desk, `/` opens the search, and Enter opens the ticket when only one matches. */
+export const SearchingFromTheKeyboardAtTheDesk: Story = {
+	globals: deskViewport,
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const page = within(document.body);
+
+		await canvas.findByRole('button', { name: t.openSearch });
+		await userEvent.keyboard('/');
+
+		const search = await page.findByRole('searchbox', { name: t.search });
+
+		await userEvent.type(search, 'linh{Enter}');
+
+		// Found once the dialog has faded out and stopped hiding the screen behind it.
+		const pane = within(await canvas.findByRole('complementary', { name: t.ticket }));
 
 		await expect(await pane.findByText('Linh N.')).toBeVisible();
 	},

@@ -74,6 +74,7 @@ export class AdminStore {
 	private _history: HistoricalEvent[] = [];
 	private _permissions: Permission[] = [];
 	private _isBusy = false;
+	private _isCallingNext = false;
 	private _feedback: AdminFeedback | null = null;
 	private _guestClaim: GuestClaim | null = null;
 	private _kioskUnlockCode: KioskUnlockCode | null = null;
@@ -482,7 +483,12 @@ export class AdminStore {
 
 			return onFailure;
 		} finally {
-			runInAction(() => (this.pendingGuestCommands -= 1));
+			runInAction(() => {
+				this.pendingGuestCommands -= 1;
+				// A list read while this was in flight — another command's reread, say — may have
+				// left the server before the change landed, and would put the old status back.
+				this.sessionGuestsRevision += 1;
+			});
 		}
 		await this.rereadQueue();
 
@@ -611,21 +617,39 @@ export class AdminStore {
 		}, false);
 	}
 
-	/** Calls the next `count` guests in line. Resolves to the visits called, in queue order. */
+	/** Whether a call for the next guest is in flight, including the reread that follows it. */
+	get isCallingNext(): boolean {
+		return this._isCallingNext;
+	}
+
+	/**
+	 * Calls the next `count` guests in line. Resolves to the visits called, in queue order, once the
+	 * line has been reread to show them.
+	 *
+	 * It holds `isCallingNext` rather than the busy flag. A call is two round trips, and holding every
+	 * other button on the queue screen through them left a volunteer's first click on the open ticket
+	 * doing nothing. Nothing else conflicts with a call — two phones call at once already, and the
+	 * server hands each a different guest — so only the call button needs to wait, which is also
+	 * what stops a double click on it calling a second guest.
+	 */
 	async callNext(count: number): Promise<string[]> {
 		this.sessionGuestsRevision += 1;
 
-		return this.run(async () => {
-			const called = await this.api.callNext(count);
+		return this.run(
+			async () => {
+				const called = await this.api.callNext(count);
 
-			await this.rereadQueue();
+				await this.rereadQueue();
 
-			if (!called.length) {
-				runInAction(() => this.report({ kind: 'no-waiting-guests' }));
-			}
+				if (!called.length) {
+					runInAction(() => this.report({ kind: 'no-waiting-guests' }));
+				}
 
-			return called;
-		}, []);
+				return called;
+			},
+			[],
+			(held) => (this._isCallingNext = held),
+		);
 	}
 
 	async sendBroadcast(message: { title: string; body: string }): Promise<boolean> {
@@ -665,12 +689,17 @@ export class AdminStore {
 	}
 
 	/**
-	 * Runs an action with the busy flag held and a cleared banner, recording a generic failure if it
-	 * throws. `onFailure` is what the caller gets back in that case.
+	 * Runs an action with a flag held — the busy flag, unless `hold` names another — and a cleared
+	 * banner, recording a generic failure if it throws. `onFailure` is what the caller gets back in
+	 * that case.
 	 */
-	private async run<T>(action: () => Promise<T>, onFailure: T): Promise<T> {
+	private async run<T>(
+		action: () => Promise<T>,
+		onFailure: T,
+		hold: (held: boolean) => void = (held) => (this._isBusy = held),
+	): Promise<T> {
 		runInAction(() => {
-			this._isBusy = true;
+			hold(true);
 			this._feedback = null;
 		});
 
@@ -688,9 +717,7 @@ export class AdminStore {
 		} finally {
 			// `finally` resumes on a later tick than the call that entered `run`, so this write is
 			// outside that action and needs one of its own.
-			runInAction(() => {
-				this._isBusy = false;
-			});
+			runInAction(() => hold(false));
 		}
 	}
 }

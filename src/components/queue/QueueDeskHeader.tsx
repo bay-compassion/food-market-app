@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { MenuItem } from '@mui/material';
+import { IconButton, MenuItem } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router';
 
@@ -33,6 +33,12 @@ const Header = styled.header`
 		font-weight: 700;
 	}
 
+	.actions {
+		display: flex;
+		gap: 4px;
+		align-items: center;
+	}
+
 	.status::before {
 		content: '';
 		width: 7px;
@@ -42,7 +48,19 @@ const Header = styled.header`
 	}
 `;
 
-/** The top of the queue screen: what it is, that service is running, and the rarer actions. */
+function SearchIcon() {
+	return (
+		<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+			<circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
+			<path d="M16 16l4.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+		</svg>
+	);
+}
+
+/**
+ * The top of the queue screen: what it is, that service is running, searching the line, and the
+ * rarer actions.
+ */
 export const QueueDeskHeader = observer(function QueueDeskHeader() {
 	const t = adminTranslations.en;
 	const desk = useQueueDesk();
@@ -54,25 +72,35 @@ export const QueueDeskHeader = observer(function QueueDeskHeader() {
 				<h1>{t.queueDesk.title}</h1>
 				<p className="status">{t.queueDesk.serving}</p>
 			</div>
-			<OverflowMenu label={t.queueDesk.actions} disabled={desk.isBusy}>
-				{(closeMenu) => (
-					<>
-						<MenuItem component={Link} to="/admin" onClick={closeMenu}>
-							{t.queueDesk.openDashboard}
-						</MenuItem>
-						<KioskUnlockMenuItem closeMenu={closeMenu} />
-						<MenuItem
-							sx={{ color: 'error.main', fontWeight: 700 }}
-							onClick={() => {
-								closeMenu();
-								void closeSession();
-							}}
-						>
-							{t.closeSession}
-						</MenuItem>
-					</>
-				)}
-			</OverflowMenu>
+			<div className="actions">
+				<IconButton
+					aria-label={t.queueDesk.openSearch}
+					aria-keyshortcuts="/"
+					aria-haspopup="dialog"
+					onClick={() => desk.openSearch()}
+				>
+					<SearchIcon />
+				</IconButton>
+				<OverflowMenu label={t.queueDesk.actions} disabled={desk.isBusy}>
+					{(closeMenu) => (
+						<>
+							<MenuItem component={Link} to="/admin" onClick={closeMenu}>
+								{t.queueDesk.openDashboard}
+							</MenuItem>
+							<KioskUnlockMenuItem closeMenu={closeMenu} />
+							<MenuItem
+								sx={{ color: 'error.main', fontWeight: 700 }}
+								onClick={() => {
+									closeMenu();
+									void closeSession();
+								}}
+							>
+								{t.closeSession}
+							</MenuItem>
+						</>
+					)}
+				</OverflowMenu>
+			</div>
 		</Header>
 	);
 });

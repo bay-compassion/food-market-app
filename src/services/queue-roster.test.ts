@@ -179,4 +179,21 @@ describe('QueueRoster', () => {
 		// Assert
 		expect(roster.isComplete).toBe(false);
 	});
+
+	it('lists finished guests in ticket number order, with those who never had one last', () => {
+		// Arrange
+		const roster = new QueueRoster([
+			guest('cancelled-9', 'cancelled', { queuePosition: 9 }),
+			guest('priority-1', 'served', { priorityNumber: 1 }),
+			guest('unplaced', 'cancelled'),
+			guest('served-12', 'served', { queuePosition: 12 }),
+			guest('served-2', 'served', { queuePosition: 2 }),
+		]);
+
+		// Act
+		const order = roster.done.map(({ id }) => id);
+
+		// Assert
+		expect(order).toEqual(['served-2', 'cancelled-9', 'served-12', 'priority-1', 'unplaced']);
+	});
 });

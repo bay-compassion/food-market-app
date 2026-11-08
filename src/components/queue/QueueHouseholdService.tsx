@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { adminTranslations } from '../../adminLocales';
 import { useRootStore } from '../../stores/react/store-context';
 import { HouseholdServiceForm } from '../admin/HouseholdServiceRecorder';
-import { QueueSection } from './TicketSection';
+import { QueueSection } from './QueueSection';
 
 const Summary = styled.div`
 	display: flex;
@@ -27,12 +27,11 @@ export const QueueHouseholdService = observer(function QueueHouseholdService({
 	const t = adminTranslations.en.householdService;
 
 	return (
-		<QueueSection aria-label={t.sectionTitle}>
-			<header>
-				<h2>
-					{t.sectionTitle}
-					<span className="count">{store.loaded ? store.households : '—'}</span>
-				</h2>
+		<QueueSection
+			id="households"
+			title={t.sectionTitle}
+			count={store.loaded ? store.households : '—'}
+			action={
 				<Summary>
 					{store.loaded ? (
 						<span>
@@ -59,7 +58,8 @@ export const QueueHouseholdService = observer(function QueueHouseholdService({
 						</svg>
 					</IconButton>
 				</Summary>
-			</header>
+			}
+		>
 			<HouseholdServiceForm store={store} inline />
 		</QueueSection>
 	);

@@ -523,6 +523,40 @@ describe('AdminStore', () => {
 		expect(called).toEqual(['visit-2']);
 	});
 
+	it('drops a list read before a guest command landed, even if it answers after', async () => {
+		// Arrange
+		let answerCommand = () => {};
+		let answerStaleRead = (_guests: AdminGuest[]) => {};
+		const listSessionGuests = vi
+			.fn()
+			.mockResolvedValueOnce([guestWith({ status: 'called' })])
+			.mockImplementationOnce(
+				() => new Promise<AdminGuest[]>((resolve) => (answerStaleRead = resolve)),
+			)
+			.mockResolvedValue([guestWith({ status: 'served' })]);
+		const { store } = storeWith({
+			listSessionGuests,
+			runGuestCommand: vi.fn(() => new Promise<void>((resolve) => (answerCommand = resolve))),
+		});
+
+		await store.refreshSessionGuests();
+
+		const [guest] = store.sessionGuests;
+
+		// Act
+		const serving = store.runGuestCommand(guest!, 'serve');
+		// Another command's reread, sent while the serve was still on its way to the server.
+		const staleRead = store.refreshSessionGuests();
+
+		answerCommand();
+		await serving;
+		answerStaleRead([guestWith({ status: 'called' })]);
+		await staleRead;
+
+		// Assert
+		expect(store.sessionGuests[0]?.status).toBe('served');
+	});
+
 	it('puts a guest back on called, and calls nobody, when serving them is refused', async () => {
 		// Arrange
 		const { store } = storeWith({
@@ -683,7 +717,27 @@ describe('AdminStore', () => {
 
 		// Assert
 		expect(store.isBusy).toBe(false);
+		expect(store.isCallingNext).toBe(false);
 		expect(store.feedback).toEqual({ kind: 'error' });
+	});
+
+	it('leaves the rest of the screen usable while a call is in flight', async () => {
+		// Arrange
+		let answer: (visits: string[]) => void = () => {};
+		const { store } = storeWith({
+			callNext: vi.fn(() => new Promise<string[]>((resolve) => (answer = resolve))),
+		});
+
+		// Act
+		const calling = store.callNext(1);
+		const during = { isBusy: store.isBusy, isCallingNext: store.isCallingNext };
+
+		answer(['visit-1']);
+		await calling;
+
+		// Assert
+		expect(during).toEqual({ isBusy: false, isCallingNext: true });
+		expect(store.isCallingNext).toBe(false);
 	});
 });
 

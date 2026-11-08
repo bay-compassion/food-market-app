@@ -592,6 +592,25 @@ export interface QueueDeskTranslation {
 	noneWaiting: string;
 	noneDone: string;
 	callNext: string;
+	/** Names the call button for a screen reader; `{number}` is the number it will call. */
+	callNextNumber: string;
+	/** On the call button while a call is on its way. */
+	calling: string;
+	/** Names the search dialog and the field in it. */
+	search: string;
+	/** The header button that opens the search. */
+	openSearch: string;
+	closeSearch: string;
+	/** Inside the search field, saying what it can find. */
+	searchPlaceholder: string;
+	/** Under the field until something is typed. */
+	searchHint: string;
+	clearSearch: string;
+	/**
+	 * In place of results when nothing matches. It doesn't repeat the query: a search can be part of
+	 * a guest's phone number, and on-screen text is recorded unmasked in a session replay.
+	 */
+	noMatches: string;
 	/** Serves the open ticket's guest and calls the next one, in one tap. */
 	serveAndCallNext: string;
 	/** The default way back into the line: behind everyone waiting. */
@@ -1187,6 +1206,16 @@ export const adminTranslations = {
 			noneWaiting: 'Nobody is left in line.',
 			noneDone: 'Nobody has finished yet.',
 			callNext: 'Call next',
+			callNextNumber: 'Call next, number {number}',
+			calling: 'Calling…',
+			search: 'Search',
+			openSearch: 'Search the Line',
+			closeSearch: 'Close Search',
+			searchPlaceholder: 'Name, number, phone, or code',
+			searchHint:
+				'Find a ticket by name, queue number, phone number (the last four digits will do), or name tag code.',
+			clearSearch: 'Clear Search',
+			noMatches: 'No tickets match.',
 			serveAndCallNext: 'Serve and call next',
 			returnToBack: 'Return to back of line',
 			returnToFront: 'Return to front of line',
