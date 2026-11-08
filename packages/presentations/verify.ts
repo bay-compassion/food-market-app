@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { chromium, webkit, type Page } from 'playwright';
+import { chromium, webkit, type Browser, type Page } from 'playwright';
 
 import { languages, translations } from '../../src/locales.ts';
 import { videos } from './videos.ts';
@@ -191,12 +191,45 @@ async function sameHoweverReached(
 }
 
 /**
- * The admin guide against the dashboard as it is today. Every narration line is visited at its
- * start, middle and end, and must find every mark it points at and taps, ask the frame's server
- * nothing it doesn't answer, and raise no error. This is what makes the guide repeatable: a
- * change to a dashboard screen either reaches the video on the next build, or fails here by name.
+ * The moments of each guide on the admin dashboard that must look the same whether the timeline
+ * played into them or jumped there, by narration line: the ones where the dashboard has changed
+ * the most since the line before.
  */
-async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
+const adminReachIds: Partial<Record<keyof typeof videos, string[]>> = {
+	'admin-guide': [
+		'registered',
+		'overrides',
+		'grace',
+		'pending',
+		'overview',
+		'admission',
+		'message',
+		'database',
+		'reports',
+		'next',
+	],
+	'team-leader-guide': [
+		'checklist',
+		'unlock',
+		'printing',
+		'adjust',
+		'lottery',
+		'addGuest',
+		'close',
+	],
+};
+
+/**
+ * A guide on the admin dashboard (`frame: 'admin'`) against the dashboard as it is today. Every
+ * narration line is visited at its start, middle and end, and must find every mark it points at and
+ * taps, ask the frame's server nothing it doesn't answer, and raise no error. This is what makes the
+ * guide repeatable: a change to a dashboard screen either reaches the video on the next build, or
+ * fails here by name.
+ */
+async function verifyAdminGuide(page: Page, name: keyof typeof videos): Promise<void> {
+	const stills = path.join(dir, `out/${name}/review`);
+
+	mkdirSync(stills, { recursive: true });
 	const errors: string[] = [];
 
 	page.on('pageerror', (error) => errors.push(error.message));
@@ -215,7 +248,7 @@ async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
 		}
 	});
 	await page.setViewportSize({ width: 1920, height: 1080 });
-	await page.goto('file://' + path.join(dir, 'out/admin-guide.html') + '#watch');
+	await page.goto('file://' + path.join(dir, `out/${name}.html`) + '#watch');
 	await page.waitForFunction(() => window.reel);
 	await page.evaluate(() => window.reel.settle());
 	const cues = await page.evaluate(() => window.reel.cues);
@@ -239,12 +272,12 @@ async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
 	assert.deepEqual(
 		await frame.evaluate(() => window.admin?.missing?.()),
 		[],
-		'admin-guide: every mark the narration points at is on the dashboard',
+		`${name}: every mark the narration points at is on the dashboard`,
 	);
 	assert.deepEqual(
 		await frame.evaluate(() => window.admin?.unanswered()),
 		[],
-		'admin-guide: the dashboard asked only what the guide answers',
+		`${name}: the dashboard asked only what the guide answers`,
 	);
 	await page.addStyleTag({
 		content:
@@ -280,33 +313,31 @@ async function verifyAdminGuide(page: Page, stills: string): Promise<void> {
 			assert.deepEqual(
 				overflow,
 				{ page: false, caption: false, controls: false, overlap: false },
-				`admin-guide ${width}px/${cue.id}: fits`,
+				`${name} ${width}px/${cue.id}: fits`,
 			);
 		}
 	}
 	await page.setViewportSize({ width: 390, height: 960 });
 	await page.locator('#viewport').screenshot({ path: path.join(stills, 'portrait.png') });
 	await sameHoweverReached(page, {
-		name: 'admin-guide',
+		name,
 		phone: '#adminPhone',
-		ids: [
-			'registered',
-			'overrides',
-			'grace',
-			'pending',
-			'overview',
-			'admission',
-			'message',
-			'database',
-			'reports',
-			'next',
-		],
+		ids: adminReachIds[name] ?? [],
 		stills,
 	});
-	assert.deepEqual(errors, [], 'admin-guide: no page errors or outside requests');
+	assert.deepEqual(errors, [], `${name}: no page errors or outside requests`);
 	console.log(
-		`admin-guide: ${cues.length} narration lines on the real dashboard; stills in out/admin-guide/review`,
+		`${name}: ${cues.length} narration lines on the real dashboard; stills in out/${name}/review`,
 	);
+}
+
+/** Every guide on the admin dashboard (`frame: 'admin'`), each against the dashboard as it is today. */
+async function verifyAdminGuides(browser: Browser): Promise<void> {
+	for (const [name, video] of Object.entries(videos)) {
+		if ('frame' in video && video.frame === 'admin') {
+			await verifyAdminGuide(await browser.newPage(), name as keyof typeof videos);
+		}
+	}
 }
 
 /** Delayed media startup and GSAP lag recovery must not repeatedly seek or restart the audio. */
@@ -372,6 +403,12 @@ void (async () => {
 	mkdirSync(stills, { recursive: true });
 
 	try {
+		if (process.argv.includes('--admin-only')) {
+			await verifyAdminGuides(browser);
+
+			return;
+		}
+
 		if (process.argv.includes('--playback-only')) {
 			for (const name of Object.keys(videos)) {
 				const page = await browser.newPage();
@@ -560,7 +597,7 @@ void (async () => {
 			}
 
 			// The staff guides' chapters sit in the row below the video at every width.
-			for (const name of ['queue-desk', 'admin-guide']) {
+			for (const name of ['queue-desk', 'admin-guide', 'team-leader-guide']) {
 				await site.goto('file://' + path.join(dir, `out/site/presentations/${name}/index.html`));
 				const player = site.frames()[1]!;
 
@@ -981,10 +1018,7 @@ void (async () => {
 		assert.ok((await guest.locator('#beats li').count()) > 30);
 		await guest.locator('#beats li button').nth(5).click();
 		assert.ok((await guest.evaluate(() => window.reel.tl.time())) > 0);
-		const adminStills = path.join(dir, 'out/admin-guide/review');
-
-		mkdirSync(adminStills, { recursive: true });
-		await verifyAdminGuide(await browser.newPage(), adminStills);
+		await verifyAdminGuides(browser);
 		assert.deepEqual(errors, []);
 		console.log(
 			'Portrait and landscape review stills saved; RTL consent, reaching each moment, and Dev controls checked; no page errors.',

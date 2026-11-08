@@ -17,12 +17,15 @@ Motion pieces showing the app at work, built from its own design tokens and tran
 - **Market dashboard guide** (`admin-guide`): about three and a half minutes, narrated. A training
   video for the coordinator running `/admin`: the schedule, registration, the lottery, service,
   adding a guest, broadcasts, records and reports, and closing the session.
+- **Team leader guide** (`team-leader-guide`): under two minutes, narrated. Market day as a team
+  leader runs it from `/admin`: the Checklist's two stations, registration and the lottery running on
+  their own, changing the plan, adding a guest, a broadcast, and closing the session.
 
 Each presentation is an HTML page animated with [GSAP](https://gsap.com), with its soundtrack
 embedded. GitHub Pages plays that page directly: publishing needs no frame capture or video
 encoding. MP4 exports are still available by photographing the page one frame at a time.
 The guest guide's phone is the guest app itself (see [The guest phone](#the-guest-phone)), and the
-dashboard guide's phone is the admin dashboard itself (see
+dashboard and team leader guides' phones are the admin dashboard itself (see
 [Market dashboard guide](#market-dashboard-guide)); the reel's and the queue desk's screens, and
 every room display, are simplified recreations.
 
@@ -36,34 +39,36 @@ projects, but it is deliberately not an npm workspace: Netlify's CLI treats a wo
 monorepo and would start this package instead of the app under `netlify dev`. The few tools only
 it uses (`gsap` for types, `ts-blank-space`) are dev dependencies of the repository instead.
 
-| File                                   | What it is                                                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `videos.ts`                            | Every video: its folder, soundtrack, arrangement and narration. The scripts take a video's name.             |
-| `stage/stage.css`, `stage/stage.ts`    | Shared by every video: styles, guest phone, room display, captions, the player and `#dev` mode.              |
-| `stage/reel.ts`                        | Types shared by the pages and the scripts: narration, soundtrack parts, and the page's `window.reel` handle. |
-| `strings.ts`                           | The app's copy cut down to what the stage shows, from `src/locales.ts` and `src/adminLocales.ts`.            |
-| `market-day-reel/page.html`, `page.ts` | The market day reel: its screens and styles, and its beat script and timeline.                               |
-| `queue-desk/page.html`, `page.ts`      | The queue desk video: a closer recreation of `/queue`, its beat script, and timeline.                        |
-| `guest-guide/page.html`, `page.ts`     | The guest market guide.                                                                                      |
-| `admin-guide/page.html`, `page.ts`     | The market dashboard guide: its beat script, turning each moment into a scene for the admin frame.           |
-| `<video>/narration.ts`                 | A narrated video's voiceover, line by line, and where the voice comes from.                                  |
-| `<video>/narration.timings.json`       | How long each recorded line runs, written by `voice.ts`; the build paces the page from it.                   |
-| `<video>/arrangement.ts`               | Which Apple Loop plays when, at what level, under the video.                                                 |
-| `<video>/soundtrack.m4a`               | The video's mixed soundtrack, voice included.                                                                |
-| `<video>/voice.m4a`                    | A narrated video's voice alone, mixed as in its soundtrack; the player plays it with the music off.          |
-| `build.ts`                             | Builds `out/<name>.html`, inlining the stage, the page, the app's copy, logos, timings and music.            |
-| `voice.ts`                             | Records a video's narration, one clip per line, and measures each.                                           |
-| `stills.ts`                            | Screenshots chosen moments and reports page errors, for a quick check.                                       |
-| `capture.ts`                           | Renders every frame to `out/<name>/frames/` at 30 fps.                                                       |
-| `encode.swift`                         | Turns the frames and the soundtrack into an MP4 with AVFoundation.                                           |
-| `render.ts`                            | Runs all of the above in order, from narration to MP4.                                                       |
-| `publish.ts`, `site.html`              | Assembles the GitHub Pages site around the built pages.                                                      |
-| `verify.ts`                            | Browser checks for the built site and players.                                                               |
-| `music/mix.ts`                         | Mixes a video's arrangement, and its narration, into its soundtrack.                                         |
-| `phone/`                               | The guest phone: the guest app's own screens, driven by the guest guide (see below).                         |
-| `admin/`                               | The admin frame: the dashboard's own screens, driven by the dashboard guide (see below).                     |
-| `frame-vite.ts`, `stage/frame.ts`      | What the two frame apps share: their Vite build, and the handle a page drives one through.                   |
-| `music/catalog.py`                     | Lists every installed Apple Loop with its key, tempo, instrument and mood, for choosing more.                |
+| File                                     | What it is                                                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `videos.ts`                              | Every video: its folder, soundtrack, arrangement and narration. The scripts take a video's name.             |
+| `stage/stage.css`, `stage/stage.ts`      | Shared by every video: styles, guest phone, room display, captions, the player and `#dev` mode.              |
+| `stage/reel.ts`                          | Types shared by the pages and the scripts: narration, soundtrack parts, and the page's `window.reel` handle. |
+| `strings.ts`                             | The app's copy cut down to what the stage shows, from `src/locales.ts` and `src/adminLocales.ts`.            |
+| `market-day-reel/page.html`, `page.ts`   | The market day reel: its screens and styles, and its beat script and timeline.                               |
+| `queue-desk/page.html`, `page.ts`        | The queue desk video: a closer recreation of `/queue`, its beat script, and timeline.                        |
+| `guest-guide/page.html`, `page.ts`       | The guest market guide.                                                                                      |
+| `admin-guide/page.html`, `page.ts`       | The market dashboard guide: its chapters and beat script.                                                    |
+| `team-leader-guide/page.html`, `page.ts` | The team leader guide: its chapters and beat script, on a team leader's dashboard.                           |
+| `stage/admin-guide.ts`                   | Shared by the guides on the dashboard: the admin frame, the fictional market, beat helpers, the timeline.    |
+| `<video>/narration.ts`                   | A narrated video's voiceover, line by line, and where the voice comes from.                                  |
+| `<video>/narration.timings.json`         | How long each recorded line runs, written by `voice.ts`; the build paces the page from it.                   |
+| `<video>/arrangement.ts`                 | Which Apple Loop plays when, at what level, under the video.                                                 |
+| `<video>/soundtrack.m4a`                 | The video's mixed soundtrack, voice included.                                                                |
+| `<video>/voice.m4a`                      | A narrated video's voice alone, mixed as in its soundtrack; the player plays it with the music off.          |
+| `build.ts`                               | Builds `out/<name>.html`, inlining the stage, the page, the app's copy, logos, timings and music.            |
+| `voice.ts`                               | Records a video's narration, one clip per line, and measures each.                                           |
+| `stills.ts`                              | Screenshots chosen moments and reports page errors, for a quick check.                                       |
+| `capture.ts`                             | Renders every frame to `out/<name>/frames/` at 30 fps.                                                       |
+| `encode.swift`                           | Turns the frames and the soundtrack into an MP4 with AVFoundation.                                           |
+| `render.ts`                              | Runs all of the above in order, from narration to MP4.                                                       |
+| `publish.ts`, `site.html`                | Assembles the GitHub Pages site around the built pages.                                                      |
+| `verify.ts`                              | Browser checks for the built site and players.                                                               |
+| `music/mix.ts`                           | Mixes a video's arrangement, and its narration, into its soundtrack.                                         |
+| `phone/`                                 | The guest phone: the guest app's own screens, driven by the guest guide (see below).                         |
+| `admin/`                                 | The admin frame: the dashboard's own screens, driven by the dashboard guide (see below).                     |
+| `frame-vite.ts`, `stage/frame.ts`        | What the two frame apps share: their Vite build, and the handle a page drives one through.                   |
+| `music/catalog.py`                       | Lists every installed Apple Loop with its key, tempo, instrument and mood, for choosing more.                |
 
 Everything generated goes to `out/`, which is ignored.
 
@@ -185,7 +190,8 @@ or moving a chapter changes no audio, so it needs no recording or mixing — reb
 
 GitHub Pages hosts the portfolio overview at
 <https://bay-compassion.github.io/food-market-app/>. Every presentation page lives under
-`/presentations/`: `market-day-reel/`, `queue-desk/`, `guest-guide/`, and `admin-guide/`.
+`/presentations/`: `market-day-reel/`, `queue-desk/`, `guest-guide/`, `admin-guide/`, and
+`team-leader-guide/`.
 See [portfolio publishing](../../docs/portfolio.md) for the landing page and screenshot workflow. Each landing page embeds the
 GSAP presentation, with playback, restart, sound, and seek controls. It starts paused and
 plays once. The pages link to each other and offer the presentation as a downloadable HTML file.
@@ -400,8 +406,13 @@ rather than redrawn: **its phone runs the real `AdminDashboard`**, and a change 
 reaches the guide on its next build.
 
 - `admin/` is a small Vite app, built by `build.ts` like `phone/`, that mounts `AdminDashboard`
-  behind the app bar with the confirmation sheet, without Auth0 (`admin/stubs/auth.ts` grants a
-  coordinator's permissions: no Dev Mode, no guest-data export).
+  behind the app bar with the confirmation sheet, without Auth0. `admin/stubs/auth.ts` grants the
+  permissions of the scene's `role`, as `docs/roles.md` describes it: a `coordinator`, with the
+  guest database, or a `team-leader`, without it. Neither has Dev Mode.
+- `stage/admin-guide.ts` is what every guide on the dashboard shares: the frame on the stage's
+  phone, the fictional market (guests, the draw, service), the beat helpers (`line`, `tap`, `go`,
+  `confirm`, `type`), and the timeline and player. A guide's `page.ts` calls
+  `window.adminGuide.create({ role, chapters, … })`, writes its beats, and calls `finish(END)`.
 - `admin/server.ts` answers every request the dashboard makes from the scene — the session as
   `SessionTimeline` derives it, the guests, the schedule, history and a report. It answers reads
   only. Where the narration accepts a confirmation, the frame withdraws the sheet and the next
@@ -418,18 +429,20 @@ reaches the guide on its next build.
 - The frame never shows lottery weighting: a guest is added during service, when the dialog has no
   weighting control, and Reports opens on the session summary.
 
-After changing a dashboard screen, rebuild and verify:
+After changing a dashboard screen, rebuild both dashboard guides and verify:
 
 ```bash
 node packages/presentations/build.ts admin-guide
+node packages/presentations/build.ts team-leader-guide
 node packages/presentations/publish.ts
 node packages/presentations/verify.ts
 ```
 
-`verify.ts` visits every narration line on the real dashboard and fails when a mark it names isn't
+`verify.ts` checks every video whose `frame` is `admin` the same way; `--admin-only` runs just
+those checks, after `publish.ts`. It visits every narration line on the real dashboard and fails when a mark it names isn't
 on screen, when the dashboard asks the frame's server something it doesn't answer, when a moment
 looks different reached by seeking or by playing, or on any page error. It writes a still per line
-to `out/admin-guide/review/` — look through them, since a screen can change in ways no mark notices.
+to `out/<video>/review/` — look through them, since a screen can change in ways no mark notices.
 When a change makes the narration wrong (a renamed step, a moved control), edit
 `admin-guide/narration.ts` and the beat in `admin-guide/page.ts`, then record and mix again:
 
@@ -453,3 +466,37 @@ Instruction sources (check these when changing the script):
 | Switching screens from the title, grouped                         | `AdminViewSwitcher`, `AdminViewList`                        |
 | Guest database search, history add-after, reports without names   | `GuestDatabaseView`, `SessionHistoryRow`, `ReportsView`     |
 | Close session replaces Call next; sooner marks waiting as no show | `QueueView`, `confirmCloseSessionOutstanding`               |
+
+## Team leader guide
+
+The narrated **Team Leader Guide** (`team-leader-guide`) is market day as a team leader runs it, in
+under two minutes: the Checklist's banner and two stations ticked off step by step, the unlock code
+for the line board, the printing station's step that ticks itself, registration and the lottery
+running on their own, Change the Plan and Close Early, adding a guest during service, a broadcast,
+and closing the session. The market dashboard guide covers each of those screens at length; this one
+is the whole day at a glance, for someone about to lead one.
+
+It runs on the same admin frame and shared script as the dashboard guide, signed in as a
+`team-leader` (`docs/roles.md`), so its More sheet lists what a team leader gets — no guest
+database, no workers — and its phone has only the Today and Queue tabs. The Checklist's ticks are
+part of each scene (`checklist` in `admin/scene.ts`), set through `ChecklistStore` as a tap would.
+Its marks are `station:roomDisplay`, `station:checkIn`, `task:<step id>` and `checklist-session`.
+
+The video is public. It never shows the Checklist's When You Need It section or the certificate
+warning's fold-out, and says nothing of where the shared check-in sign-in is kept.
+
+The Checklist's labels are nested in their own copy, which a line's `names` can't check, so a
+relabelled station or step needs its line reworded and recorded by hand.
+
+Instruction sources (check these when changing the script):
+
+| Instruction                                                  | Current implementation                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------------ |
+| What a team leader can and can't open                        | `docs/roles.md`, `viewPermissions`, `AdminNavigation`              |
+| Checklist under More, session banner, two stations that fold | `ChecklistView`, `ChecklistSessionBanner`, `ChecklistStation`      |
+| Get an Unlock Code on the line board step                    | `RoomDisplayStation`                                               |
+| Printing station's Online step ticks itself                  | `ChecklistStore.printStationOnlineStep`, `isAutomatic`             |
+| Registration and the draw run on their own; Change the Plan  | `SessionPhasePlan`, `SessionTransitionTimer`, `LotteryPendingCard` |
+| Add Guest, Give them a spot, end of the line                 | `ManualGuestDialog`, `guestAdmission.ts`                           |
+| Broadcast to subscribed guests, exactly as written           | `SessionBroadcastForm`, `broadcastHelp`                            |
+| Close Session ends the day; next week's market is ready      | `QueueView`, `ScheduleStore`                                       |

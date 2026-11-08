@@ -116,6 +116,28 @@ export const videos = {
 			portrait: true,
 		},
 	},
+	'team-leader-guide': {
+		folder: 'team-leader-guide',
+		soundtrack: 'team-leader-guide/soundtrack.m4a',
+		voiceTrack: 'team-leader-guide/voice.m4a',
+		arrangement: 'team-leader-guide/arrangement.ts',
+		narration: 'team-leader-guide/narration.ts',
+		timings: 'team-leader-guide/narration.timings.json',
+		frame: 'admin',
+		publish: {
+			folder: 'presentations/team-leader-guide',
+			interactive: 'team-leader-guide.html',
+			title: 'Team Leader Guide',
+			heading: 'A Guide for Team Leaders',
+			summary: 'A narrated guide, under two minutes, for team leaders running market day.',
+			description:
+				'Learn how to set up the room display and check-in from the Checklist, let registration and the lottery run, adjust them when guests need more time, add a guest by hand, send a broadcast, and close the session.',
+			sound: 'Narration starts with playback. The voice is AI-generated.',
+			screens:
+				'The phone runs the real admin dashboard, signed in as a team leader, with fictional guests.',
+			portrait: true,
+		},
+	},
 } satisfies Record<string, VideoDefinition>;
 
 export type VideoName = keyof typeof videos;

@@ -11,6 +11,7 @@ import { AdminApp } from './AdminApp.tsx';
 import { currentView, markTarget, navigation, revealInDialog, switcher } from './marks.ts';
 import type { AdminHandle, AdminMark, AdminScene } from './scene.ts';
 import { AdminServer } from './server.ts';
+import { signInAs } from './stubs/auth.ts';
 
 const t = adminTranslations.en;
 /** How many times a scene is applied again before the frame gives up on matching it. */
@@ -156,6 +157,9 @@ export class AdminDevice implements AdminHandle {
 		this.clock.reset(scene.now);
 		this.server = new AdminServer(scene);
 
+		// The dashboard reads who is signed in once, as it mounts.
+		signInAs(scene.role);
+
 		const store = new RootStore({ browserStorage: memoryStorage() });
 
 		// What the dashboard would otherwise load once it is up, loaded before it draws.
@@ -175,6 +179,12 @@ export class AdminDevice implements AdminHandle {
 	private async update(scene: AdminScene): Promise<void> {
 		const server = this.network;
 		const changed = records(server.scene) !== records(scene);
+
+		if (scene.role !== server.scene.role) {
+			await this.build(scene);
+
+			return;
+		}
 
 		server.scene = scene;
 		this.clock.advanceTo(scene.now);
@@ -197,8 +207,12 @@ export class AdminDevice implements AdminHandle {
 		]);
 	}
 
-	/** The screen, the sheet of screens, the confirmation sheet, the add-guest dialog and the broadcast form. */
+	/**
+	 * The screen, the sheet of screens, the Checklist's ticks, the confirmation sheet, the add-guest
+	 * dialog and the broadcast form.
+	 */
 	private async screen(scene: AdminScene): Promise<void> {
+		this.tick(scene);
 		await this.navigate(scene.view);
 		await this.navigation(scene);
 		await this.confirmation(scene);
@@ -290,6 +304,27 @@ export class AdminDevice implements AdminHandle {
 		}
 	}
 
+	/**
+	 * Ticks and unticks the Checklist's steps to match the scene, through the store a tap on a step
+	 * goes to. Ticks belong to today's session, so they can only be set once one has loaded.
+	 */
+	private tick(scene: AdminScene): void {
+		const { checklist } = this.current;
+
+		if (!checklist.canTick) {
+			return;
+		}
+
+		// What the last scene ticked, as well as this one's: a step can be unticked too.
+		const steps = new Set([...scene.checklist, ...(this.shown?.checklist ?? [])]);
+
+		for (const step of steps) {
+			if (checklist.isTicked(step) !== scene.checklist.includes(step)) {
+				checklist.toggle(step);
+			}
+		}
+	}
+
 	/** The broadcast form's fields, which belong to the dashboard's own component state. */
 	private broadcast(scene: AdminScene): void {
 		if (scene.view !== 'broadcast') {
@@ -334,10 +369,11 @@ export class AdminDevice implements AdminHandle {
 
 	/** Whether the dashboard shows the scene's screen, records, sheet and dialog. */
 	private matches(scene: AdminScene): boolean {
-		const { session, confirmation } = this.current;
+		const { session, confirmation, checklist } = this.current;
 
 		return (
 			this.view === scene.view &&
+			(!checklist.canTick || scene.checklist.every((step) => checklist.isTicked(step))) &&
 			// A desk's sidebar is always there; only a phone's sheet opens and shuts.
 			(!switcher(document) || Boolean(navigation(document)) === scene.navigating) &&
 			session.currentState?.event?.id === this.network.overview.event?.id &&

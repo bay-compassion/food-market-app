@@ -34,7 +34,8 @@ function stubbed(stubs: Map<string, string>): Plugin {
 }
 
 /**
- * The app names its `public/` images by path (`/bay-compassion-icon-closed.svg`), which a page opened from
+ * The app names its `public/` images by path (`/bay-compassion-icon-closed.svg`,
+ * `/floor-plans/concord-market-area.svg`), which a page opened from
  * a file has nowhere to serve from. The frame carries each one it names inside itself instead.
  */
 const publicImages: Plugin = {
@@ -51,7 +52,7 @@ const publicImages: Plugin = {
 		}
 
 		return code.replace(
-			/(["'])\/([\w.-]+\.(?:png|svg|jpg))\1/g,
+			/(["'])\/((?:[\w-]+\/)*[\w.-]+\.(?:png|svg|jpg))\1/g,
 			(literal, quote: string, name: string) => {
 				const file = here(`../../public/${name}`);
 

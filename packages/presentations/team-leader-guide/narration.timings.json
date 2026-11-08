@@ -1,0 +1,66 @@
+{
+  "voice": {
+    "source": "kokoro",
+    "name": "af_heart",
+    "speed": 0.88,
+    "language": "en-us"
+  },
+  "lines": {
+    "welcome": {
+      "text": "This guide is for team leaders, who lead market day: setting up, running the session, and closing it.",
+      "duration": 6.197
+    },
+    "yours": {
+      "text": "Sign in to the dashboard on your phone. Managing workers and the guest database stay with coordinators; the rest of market day is yours.",
+      "duration": 9.185
+    },
+    "checklist": {
+      "text": "Start with the Checklist, under More. The banner at the top confirms today’s session is scheduled.",
+      "duration": 6.201
+    },
+    "stations": {
+      "text": "Then set up both stations, the room display and check-in. Tick each step as you go, and a finished station folds away.",
+      "duration": 8.082
+    },
+    "unlock": {
+      "text": "If the line board asks for an unlock code, Get an Unlock Code gives you one. Volunteers will ask you for it.",
+      "duration": 7.49
+    },
+    "printing": {
+      "text": "At check-in, the printing station’s Online step ticks itself once the station is running.",
+      "duration": 5.761
+    },
+    "today": {
+      "text": "Today takes it from there. Registration opens and closes on its own, and guests appear as they sign up.",
+      "duration": 7.041
+    },
+    "adjust": {
+      "text": "Under Change the Plan, extend registration if guests need more time, or Close Early to end it now.",
+      "duration": 7.157
+    },
+    "lottery": {
+      "text": "After a short grace period, the lottery draws by itself. Run Immediately draws it now.",
+      "duration": 6.334
+    },
+    "queue": {
+      "text": "Once the lottery is drawn, volunteers call guests up from the queue desk.",
+      "duration": 4.596
+    },
+    "addGuest": {
+      "text": "For someone who couldn’t register, Add Guest, then Give them a spot, puts them at the end of the line.",
+      "duration": 5.856
+    },
+    "broadcast": {
+      "text": "If service runs late, Broadcast Notification reaches every guest who signed up for updates, exactly as written.",
+      "duration": 7.574
+    },
+    "close": {
+      "text": "When nobody is left to call, Close Session ends the day, and next week’s market is ready.",
+      "duration": 5.604
+    },
+    "thanks": {
+      "text": "Thank you for leading the market.",
+      "duration": 1.945
+    }
+  }
+}

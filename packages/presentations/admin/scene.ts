@@ -72,13 +72,28 @@ export type AdminMark =
 	| 'feedback'
 	| 'history'
 	| 'search'
-	| 'report';
+	| 'report'
+	| 'plan'
+	| 'checklist-session'
+	| `station:${ChecklistStation}`
+	| `task:${string}`;
+
+/** The Checklist's two stations, by their copy's key under `checklist`. */
+export type ChecklistStation = 'roomDisplay' | 'checkIn';
+
+/**
+ * Whose dashboard the frame shows, as `docs/roles.md` describes the roles: a coordinator's, with the
+ * guest database, or a team leader's, without it.
+ */
+export type AdminRole = 'coordinator' | 'team-leader';
 
 type KeysOf<Value> = {
 	[Key in keyof AdminTranslation]: AdminTranslation[Key] extends Value ? Key : never;
 }[keyof AdminTranslation];
 
 export interface AdminScene {
+	/** Who is signed in, which decides the screens and tabs the dashboard offers. */
+	role: AdminRole;
 	/** The frame's clock, in epoch milliseconds. Whole seconds, so screens re-render once a second. */
 	now: number;
 	view: AdminView;
@@ -94,6 +109,11 @@ export interface AdminScene {
 	addGuest: AdminSceneGuestForm | null;
 	/** What is typed into the broadcast form. */
 	broadcast: { title: string; body: string };
+	/**
+	 * The Checklist steps ticked off by hand, by id. The printing station's Online step ticks itself
+	 * from the station's own check-in, so it is never listed.
+	 */
+	checklist: string[];
 	/** What the narration points at. */
 	focus: AdminMark | null;
 	/** What a finger is on. */
