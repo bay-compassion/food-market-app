@@ -186,11 +186,17 @@ const stageScript = script('./stage/stage.ts', (code) =>
 		.replace('__VOICE_TRACK__', () => embed(video.voiceTrack)),
 );
 const pageScript = script(`./${video.folder}/page.ts`, (code) =>
-	code
-		.replace('__NARRATION__', () => narrationJson)
-		.replace('__FRAME__', () => frameJson)
-		.replace('__ADMIN_COPY__', () => JSON.stringify(adminTranslations.en)),
+	code.replace('__NARRATION__', () => narrationJson).replace('__FRAME__', () => frameJson),
 );
+/** What every guide on the admin dashboard shares, for a video that shows it. */
+const adminGuideScript =
+	video.frame === 'admin'
+		? `\n<script>${script('./stage/admin-guide.ts', (code) =>
+				code
+					.replace('__FRAME__', () => frameJson)
+					.replace('__ADMIN_COPY__', () => JSON.stringify(adminTranslations.en)),
+			)}</script>`
+		: '';
 // Collapsed onto one line, so the stylesheet takes the single line its placeholder held.
 const stageStyles = (
 	brandFontCss +
@@ -207,7 +213,7 @@ const page =
 	'\n<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>' +
 	// The page's script first: it waits for the stage, which comes after it.
 	// Each script starts on its tag's own line: a newline first would make line 1 blank.
-	`\n<script>${pageScript}</script>\n<script>${script('./stage/player-fullscreen.ts')}</script>\n<script>${stageScript}</script>\n`;
+	`\n<script>${pageScript}</script>${adminGuideScript}\n<script>${script('./stage/player-fullscreen.ts')}</script>\n<script>${stageScript}</script>\n`;
 
 mkdirSync(here('./out'), { recursive: true });
 writeFileSync(here(`./out/${video.name}.artifact.html`), page);

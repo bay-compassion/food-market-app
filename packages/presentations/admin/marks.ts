@@ -60,6 +60,34 @@ function field(doc: Document, label: string): HTMLElement | null {
 	return null;
 }
 
+/** A Checklist step's title, by its id, wherever its station's copy lists it. */
+function stepTitle(id: string, copy: unknown = t): string | null {
+	if (Array.isArray(copy)) {
+		return copy.map((item) => stepTitle(id, item)).find((title) => title !== null) ?? null;
+	}
+
+	if (typeof copy !== 'object' || copy === null) {
+		return null;
+	}
+
+	const { id: own, title } = copy as { id?: unknown; title?: unknown };
+
+	if (own === id && typeof title === 'string') {
+		return title;
+	}
+
+	return Object.values(copy).reduce<string | null>(
+		(found, value) => found ?? stepTitle(id, value),
+		null,
+	);
+}
+
+/** The Checklist's section headed `label`: a station, or the banner over them. */
+const checklistSection = (doc: Document, label: string) =>
+	[...doc.querySelectorAll<HTMLElement>('h2')]
+		.find((heading) => text(heading) === label)
+		?.closest<HTMLElement>('section') ?? null;
+
 /** The open confirmation sheet. */
 const sheet = (doc: Document) => doc.querySelector<HTMLElement>('[role="alertdialog"]');
 
@@ -140,6 +168,28 @@ export function markTarget(mark: AdminMark, doc: Document): HTMLElement | null {
 		// A report's rows: cards on a phone, a table on a desk.
 		case 'report':
 			return doc.querySelector('.report-cards, .report-scroll');
+		// The Today screen's controls for the phase the session is in.
+		case 'plan':
+			return (
+				[...doc.querySelectorAll<HTMLElement>('h2')].find(
+					(heading) => text(heading) === t.today.changeThePlan,
+				)?.parentElement ?? null
+			);
+		case 'checklist-session':
+			return checklistSection(doc, t.checklist.session.scheduledTitle);
+		case 'station':
+			return checklistSection(doc, t.checklist[key as 'roomDisplay' | 'checkIn'].title);
+
+		// A step, with whatever is under it: an address, a button.
+		case 'task': {
+			const title = stepTitle(key as string);
+
+			return title
+				? ([...doc.querySelectorAll<HTMLElement>('[data-ticked] .title')]
+						.find((element) => text(element) === title)
+						?.closest<HTMLElement>('[data-ticked]') ?? null)
+				: null;
+		}
 		default:
 			return null;
 	}
