@@ -52,6 +52,7 @@ function deskWith({
 		{
 			sessionGuests: guests,
 			isBusy: false,
+			isCallingNext: false,
 			can: (permission: Permission) => permissions.includes(permission),
 			loadPermissions: vi.fn().mockResolvedValue(undefined),
 			refreshSessionGuests: vi.fn().mockResolvedValue(undefined),
@@ -482,5 +483,111 @@ describe('QueueDeskStore', () => {
 
 		// Assert
 		expect(admin.refreshSessionGuests).toHaveBeenCalledTimes(1);
+	});
+
+	it('finds tickets by section without narrowing the line it calls from', () => {
+		// Arrange
+		const { desk } = deskWith({
+			guests: [
+				guestWith({ id: 'visit-1', firstName: 'Ada', queuePosition: 1, queueOrder: 1 }),
+				guestWith({ id: 'visit-2', firstName: 'Grace', queuePosition: 2, queueOrder: 2 }),
+			],
+		});
+
+		// Act
+		desk.openSearch();
+		desk.setSearchQuery('grace');
+
+		// Assert
+		expect(desk.searchResults).toEqual([
+			{ section: 'waiting', guests: [expect.objectContaining({ firstName: 'Grace' })] },
+		]);
+		expect(desk.roster.waiting).toHaveLength(2);
+		expect(desk.nextNumber?.label).toBe('1');
+	});
+
+	it('puts the search away, and what was typed, when a ticket is opened from it', () => {
+		// Arrange
+		const { desk } = deskWith();
+
+		desk.openSearch();
+		desk.setSearchQuery('ada');
+
+		// Act
+		desk.selectSoleSearchResult();
+
+		// Assert
+		expect(desk.selected?.id).toBe('visit-1');
+		expect(desk.isSearching).toBe(false);
+		expect(desk.search.query).toBe('');
+	});
+
+	it('opens nothing on Enter when the search found more than one ticket', () => {
+		// Arrange
+		const { desk } = deskWith({
+			guests: [
+				guestWith({ id: 'visit-1', lastName: 'Lovelace' }),
+				guestWith({ id: 'visit-2', firstName: 'Ada', lastName: 'Byron', queuePosition: 2 }),
+			],
+		});
+
+		desk.openSearch();
+		desk.setSearchQuery('ada');
+
+		// Act
+		desk.selectSoleSearchResult();
+
+		// Assert
+		expect(desk.selected).toBeNull();
+		expect(desk.isSearching).toBe(true);
+	});
+
+	it('folds a section away and back', () => {
+		// Arrange
+		const { desk } = deskWith();
+
+		// Act
+		desk.toggleSection('waiting');
+
+		const folded = desk.isCollapsed('waiting');
+
+		desk.toggleSection('waiting');
+
+		// Assert
+		expect(folded).toBe(true);
+		expect(desk.isCollapsed('waiting')).toBe(false);
+	});
+
+	it('has no next number once nobody is waiting', () => {
+		// Arrange
+		const { desk } = deskWith({ guests: [guestWith({ status: 'called', queueOrder: null })] });
+
+		// Act
+		const next = desk.nextNumber;
+
+		// Assert
+		expect(next).toBeNull();
+	});
+
+	it('keeps a ticket the volunteer opened while a call was on its way', async () => {
+		// Arrange
+		let answerCall = (_visits: string[]) => {};
+		const ada = guestWith({ id: 'visit-1', status: 'called', queueOrder: null });
+		const grace = guestWith({ id: 'visit-2', firstName: 'Grace', queuePosition: 2 });
+		const { desk, admin } = deskWith({ guests: [ada, grace] });
+
+		admin.callNext.mockImplementation(
+			() => new Promise<string[]>((resolve) => (answerCall = resolve)),
+		);
+
+		// Act
+		const calling = desk.callNext();
+
+		desk.select(ada);
+		answerCall(['visit-2']);
+		await calling;
+
+		// Assert
+		expect(desk.selected?.id).toBe('visit-1');
 	});
 });

@@ -1,4 +1,5 @@
 import { LineOrder } from '../models/line-order.ts';
+import { QueueNumber } from '../models/queue-number.ts';
 import type { QueueGuest } from './admin-api.ts';
 import { finishedVisitStatuses } from './visitStateMachine.ts';
 
@@ -44,9 +45,25 @@ export class QueueRoster {
 		return this.guests.filter((guest) => guest.status === 'not_placed');
 	}
 
-	/** Through for the day: served, or cancelled by themselves or by the session ending. */
+	/**
+	 * Through for the day: served, or cancelled by themselves or by the session ending — in ticket
+	 * number order, with any guest who never had a number last.
+	 */
 	get done(): QueueGuest[] {
-		return this.guests.filter((guest) => guest.status === 'served' || guest.status === 'cancelled');
+		return this.guests
+			.filter((guest) => guest.status === 'served' || guest.status === 'cancelled')
+			.sort(QueueRoster.byNumber);
+	}
+
+	/** Main numbers, then the priority series, then guests without a number. */
+	private static byNumber(this: void, first: QueueGuest, second: QueueGuest): number {
+		const [firstNumber, secondNumber] = [QueueNumber.of(first), QueueNumber.of(second)];
+
+		if (firstNumber && secondNumber) {
+			return QueueNumber.compare(firstNumber, secondNumber);
+		}
+
+		return Number(firstNumber === null) - Number(secondNumber === null);
 	}
 
 	/** Done for the day, however they got there: served, skipped, a no show, or cancelled. */

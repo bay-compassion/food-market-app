@@ -1,6 +1,8 @@
 import { reaction, runInAction, type IReactionDisposer } from 'mobx';
 
 import { adminTranslations } from '../adminLocales.ts';
+import { QueueNumber } from '../models/queue-number.ts';
+import { QueueSearch } from '../models/queue-search.ts';
 import type { GuestDetails, QueueGuest } from '../services/admin-api.ts';
 import {
 	manualAdmissionsFor,
@@ -22,6 +24,12 @@ export type QueueDeskStoreOptions = {
 	/** Where the outcome of sending a name tag is raised. `QueueDesk` passes the app's own. */
 	notifications?: NotificationStore;
 };
+
+/** The queue screen's sections, each of which a volunteer can fold away. */
+export type QueueSectionId = TicketSectionId | 'households';
+
+/** The sections that hold tickets, which is where a search looks. */
+export type TicketSectionId = 'called' | 'waiting' | 'noShows' | 'notPlaced' | 'done';
 
 /** Which screen the queue desk shows. */
 export type QueueDeskPhase = 'loading' | 'not_permitted' | 'not_started' | 'serving' | 'ended';
@@ -51,6 +59,9 @@ export class QueueDeskStore {
 	private _sendingTagFor: string | null = null;
 	/** The guest whose pronunciation and notes are being saved, so a second tap waits. */
 	private _savingDetailsFor: string | null = null;
+	private _searchQuery = '';
+	private _isSearching = false;
+	private readonly _collapsed = new Set<QueueSectionId>();
 
 	constructor(
 		private readonly admin: AdminStore,
@@ -138,8 +149,98 @@ export class QueueDeskStore {
 		return this.admin.sessionGuests.filter((guest) => guest.marketEventId === eventId);
 	}
 
+	/**
+	 * The whole line, which every decision reads: who is next, whether serving calls someone, and
+	 * whether service is through. Never filtered by the search — see `searchResults`.
+	 */
 	get roster(): QueueRoster {
 		return new QueueRoster(this.guests);
+	}
+
+	get search(): QueueSearch {
+		return new QueueSearch(this._searchQuery);
+	}
+
+	setSearchQuery(query: string): void {
+		this._searchQuery = query;
+	}
+
+	/** Whether the search dialog is up. */
+	get isSearching(): boolean {
+		return this._isSearching;
+	}
+
+	openSearch(): void {
+		this._isSearching = true;
+	}
+
+	/** Puts the search away, and what was typed with it, so the next one starts afresh. */
+	closeSearch(): void {
+		this._isSearching = false;
+		this._searchQuery = '';
+	}
+
+	/**
+	 * The tickets the search finds, grouped as the lists group them and in the same order — or none
+	 * until something is typed. A display-only reading: the line the desk acts on is `roster`.
+	 */
+	get searchResults(): { section: TicketSectionId; guests: QueueGuest[] }[] {
+		const { search, roster } = this;
+
+		if (!search.isActive) {
+			return [];
+		}
+
+		const sections: [TicketSectionId, QueueGuest[]][] = [
+			['called', roster.called],
+			['waiting', roster.waiting],
+			['noShows', roster.noShows],
+			['notPlaced', roster.notPlaced],
+			['done', roster.done],
+		];
+
+		return sections
+			.map(([section, guests]) => ({
+				section,
+				guests: guests.filter((guest) => search.matches(guest)),
+			}))
+			.filter(({ guests }) => guests.length > 0);
+	}
+
+	/** Opens the one ticket the search found, for a volunteer who presses Enter. Else nothing. */
+	selectSoleSearchResult(): void {
+		const found = this.searchResults.flatMap(({ guests }) => guests);
+
+		if (found.length === 1) {
+			this.select(found[0]!);
+		}
+	}
+
+	isCollapsed(section: QueueSectionId): boolean {
+		return this._collapsed.has(section);
+	}
+
+	toggleSection(section: QueueSectionId): void {
+		if (this._collapsed.has(section)) {
+			this._collapsed.delete(section);
+		} else {
+			this._collapsed.add(section);
+		}
+	}
+
+	/**
+	 * The number the call button will call: the front of the line. The server calls in the same
+	 * order `QueueRoster.waiting` sorts by.
+	 */
+	get nextNumber(): QueueNumber | null {
+		const [next] = this.roster.waiting;
+
+		return next ? QueueNumber.of(next) : null;
+	}
+
+	/** Whether a call is in flight, so the call button waits and a double click calls nobody extra. */
+	get isCalling(): boolean {
+		return this.admin.isCallingNext;
 	}
 
 	/**
@@ -273,8 +374,10 @@ export class QueueDeskStore {
 		}
 	}
 
+	/** Opens a ticket — from the lists, or from the search, which it puts away. */
 	select(guest: QueueGuest): void {
 		this._selectedVisitId = guest.id;
+		this.closeSearch();
 	}
 
 	dismiss(): void {
@@ -282,15 +385,21 @@ export class QueueDeskStore {
 	}
 
 	/**
-	 * Calls the next guest in line and opens their ticket, which is where the name tag is. The
-	 * server picks the guest, so two volunteers tapping at once each get a different one.
+	 * Calls the next guest in line and opens their ticket, which is where the name tag is — unless
+	 * the volunteer opened a different ticket while the call was on its way. The server picks the
+	 * guest, so two volunteers tapping at once each get a different one.
 	 */
 	async callNext(): Promise<void> {
+		const open = this._selectedVisitId;
 		const [called] = await this.admin.callNext(1);
 
-		if (called) {
-			runInAction(() => (this._selectedVisitId = called));
-		}
+		runInAction(() => {
+			// The ticket buttons stay live during a call, so a volunteer who opened another ticket
+			// meanwhile keeps it rather than having it swapped out under their next click.
+			if (called && (this._selectedVisitId === open || this._selectedVisitId === null)) {
+				this._selectedVisitId = called;
+			}
+		});
 	}
 
 	/**

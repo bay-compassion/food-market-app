@@ -51,12 +51,14 @@ export const QueueLists = observer(function QueueLists() {
 	return (
 		<Lists>
 			<TicketSection
+				id="called"
 				title={t.queueDesk.called}
 				guests={roster.called}
 				emptyText={t.queueDesk.noneCalled}
 				now={now}
 			/>
 			<TicketSection
+				id="waiting"
 				title={t.queueDesk.waiting}
 				guests={roster.waiting}
 				emptyText={t.queueDesk.noneWaiting}
@@ -70,9 +72,15 @@ export const QueueLists = observer(function QueueLists() {
 				}
 			/>
 			{/* Called guests who never came up are, in effect, at the back of the line. */}
-			<TicketSection title={t.queueDesk.noShows} guests={roster.noShows} now={now} />
-			<TicketSection title={t.queueDesk.notPlaced} guests={roster.notPlaced} now={now} />
+			<TicketSection id="noShows" title={t.queueDesk.noShows} guests={roster.noShows} now={now} />
 			<TicketSection
+				id="notPlaced"
+				title={t.queueDesk.notPlaced}
+				guests={roster.notPlaced}
+				now={now}
+			/>
+			<TicketSection
+				id="done"
 				title={t.queueDesk.done}
 				guests={roster.done}
 				emptyText={t.queueDesk.noneDone}

@@ -69,7 +69,8 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 				<button
 					type="button"
 					className="primary"
-					disabled={desk.isBusy}
+					// It calls a guest too, so it waits for a call already on its way.
+					disabled={desk.isBusy || desk.isCalling}
 					onClick={() => void desk.serveAndCallNext(guest)}
 				>
 					{t.queueDesk.serveAndCallNext}
