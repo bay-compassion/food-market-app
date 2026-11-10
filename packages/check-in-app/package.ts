@@ -43,6 +43,40 @@ if (!identity && process.env.REQUIRE_SIGNING === '1') {
 	throw new Error('REQUIRE_SIGNING is set but SIGNING_IDENTITY is not');
 }
 
+/**
+ * The SHA-1 of the signing identity `identity` names. codesign takes a name too, but on some macOS
+ * versions (GitHub's macOS 26 runners) it then only finds identities macOS trusts, and the release
+ * certificate is self-signed, so it isn't one. By its hash, codesign signs with it regardless. Looked
+ * up before packaging, so a missing certificate fails in a second rather than after the build.
+ */
+function signingHash(identity: string): string {
+	if (/^[0-9a-f]{40}$/i.test(identity)) {
+		return identity;
+	}
+
+	// Without `-v`: every identity, trusted or not.
+	const listing = execFileSync(
+		'security',
+		['find-identity', '-p', 'codesigning', ...(keychain ? [keychain] : [])],
+		{ encoding: 'utf8' },
+	);
+	const hashes = new Set(
+		[...listing.matchAll(/^\s*\d+\) ([0-9A-F]{40}) "([^"]*)"/gm)]
+			.filter(([, , name]) => name === identity)
+			.map(([, hash]) => hash),
+	);
+
+	if (hashes.size !== 1) {
+		throw new Error(
+			`Expected one signing identity named "${identity}"${keychain ? ` in ${keychain}` : ''}, found ${hashes.size}:\n${listing}`,
+		);
+	}
+
+	return [...hashes][0]!;
+}
+
+const signWith = identity ? signingHash(identity) : null;
+
 // Only the manifest, the build, and the settings go in; the sources, the tooling, and node_modules
 // (everything the app uses is bundled) stay out, and so do one machine's `config/local*.json`.
 const shipped = (file: string) =>
@@ -106,7 +140,7 @@ execFileSync(
 		'--force',
 		'--deep',
 		'--sign',
-		identity ?? '-',
+		signWith ?? '-',
 		...(keychain ? ['--keychain', keychain] : []),
 		app,
 	],
