@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import type { Permission } from '../../services/permissions';
@@ -111,8 +111,11 @@ export const ActionsMenuOpen: Story = {
 		await userEvent.click(await canvas.findByRole('button', { name: t.queueDesk.actions }));
 
 		const menu = within(await within(document.body).findByRole('menu'));
+		const link = menu.getByRole('menuitem', { name: t.queueDesk.openQueueDesk });
 
-		await expect(menu.getByRole('menuitem', { name: t.queueDesk.openQueueDesk })).toBeVisible();
+		// The menu fades in, so it reads as hidden for the first frames after the click.
+		await waitFor(() => expect(link).toBeVisible());
+		await expect(link).toHaveAttribute('href', '/queue');
 	},
 };
 
