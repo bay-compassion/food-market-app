@@ -36,7 +36,10 @@ export const printStationUrl = `${typeof window === 'undefined' ? '' : window.lo
 /** The flag that prints straight to the default printer, using the last dialog print's settings. */
 const kioskPrinting = '--kiosk-printing';
 
-/** Starts the station's own Chrome profile at its page, with the given flags. */
+/**
+ * Starts the station's own Chrome profile at its page, with the given flags. The Check-In Launcher
+ * app runs this too: keep `docs/check-in-launcher/launch.sh` in step.
+ */
 function launchCommand(flags: string[]): string {
 	return [
 		'open -na "Google Chrome" --args',
