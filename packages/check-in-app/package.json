@@ -1,0 +1,22 @@
+{
+  "name": "@bay-compassion/check-in-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Compassion Food Market, the desktop app for the check-in iMac: the queue desk and the print station in one window.",
+  "type": "module",
+  "main": "out/main/index.cjs",
+  "scripts": {
+    "dev": "install-electron && electron-vite dev --watch",
+    "build": "electron-vite build && node package.ts",
+    "icon": "node icon/make-icon.ts"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "config": "5.0.1",
+    "electron": "45.2.3",
+    "electron-updater": "6.8.11",
+    "electron-vite": "6.0.0",
+    "vite": "^8.1.5"
+  },
+  "productName": "Compassion Food Market"
+}

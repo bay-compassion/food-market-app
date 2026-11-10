@@ -1,0 +1,254 @@
+# Compassion Food Market
+
+The desktop app for the check-in iMac (this package, `@bay-compassion/check-in-app`). The goal is one window that is both the queue desk and the
+print station, replacing the two Chrome windows the
+[Check-In Launcher](../../docs/name-tag-printing.md#the-check-in-launcher) opens today.
+
+**This is a spike.** Its one window holds the queue desk (`/queue`) with the print station
+(`/printing-station`) in a panel down its right side, showing the station's status and the tags it
+printed. It still has to be tried on the iMac and the LabelWriter before a market relies on it.
+
+## How It Works
+
+- **One window, two pages.** A `BaseWindow` holds two `WebContentsView`s, laid out by
+  `CheckInWindow`: the queue desk, and a 360-pixel panel for the station, whose page is laid out for
+  a phone. **Window → Show Printing Station** (Shift-Command-P) folds the panel away and back.
+- **One sign-in.** The two pages share one session, so signing in at the queue desk signs the
+  station in too. If the station started before anyone had signed in, its panel stays folded while
+  it waits at the sign-in page, and it reloads once the queue desk comes back from signing in.
+- **The station keeps running.** Folded or not, and with the window out of sight, it isn't slowed
+  down, and the app keeps macOS's App Nap from slowing it. Closing the window only hides it; quit
+  the app to stop the station.
+- **Tags print silently.** The station's page asks the app to print (`window.checkInApp`, from the
+  preload), and the app prints the page with `webContents.print({ silent: true })` on one label at
+  the size the page names, with no margins, to the Mac's default printer or the one `printer`
+  names. No print dialog, and no `--kiosk-printing` Chrome profile. `StationPrinter` waits for that
+  print before moving on to the next tag, and tries a failed one again every three seconds. Only the
+  station's page may print.
+- **One copy only.** A second copy would run a second station, and every tag would print twice;
+  opening the app again brings the running one forward.
+
+## Developing
+
+The main process (`src/main/`) and the preload (`src/preload/`) are TypeScript, compiled by
+[electron-vite](https://electron-vite.org) into `out/`. Run `pnpm start` for the local app, then,
+from the repository root:
+
+```bash
+pnpm --filter @bay-compassion/check-in-app dev
+```
+
+That opens the app against `http://localhost:8888`, and rebuilds and restarts it whenever a file
+in `src/` changes. The first run downloads Electron, which `pnpm install` doesn't. A change to
+`electron.vite.config.ts` or `package.json` needs `dev` started again.
+
+### Configuration
+
+Settings come from `config/`, read with [node-config](https://github.com/node-config/node-config):
+
+| Key       | What it is                                                                    |
+| --------- | ----------------------------------------------------------------------------- |
+| `site`    | The app's origin. The window opens its `/queue`.                              |
+| `signIn`  | The Auth0 sign-in page's origin, the only page a saved password is filled in. |
+| `name`    | The app's name, which also names its data folder (see below).                 |
+| `printer` | The printer tags go to, by its macOS queue name; `null` for the default.      |
+| `updates` | Where releases come from (see "Updates"); off in `development`.               |
+
+`default.json` is production. `development.json` is a local `pnpm start` and the Auth0 tenant it
+signs in through. `dev` uses `development` and a packaged app `production`; set `NODE_CONFIG_ENV`
+to choose (`NODE_CONFIG_ENV=production pnpm --filter @bay-compassion/check-in-app dev`).
+
+To override a value for one run, set `CHECK_IN_SITE`, `CHECK_IN_SIGN_IN`, `CHECK_IN_PRINTER` or
+`CHECK_IN_UPDATE_URL`
+(`custom-environment-variables.json`), or `NODE_CONFIG` with JSON. For your machine only, put
+overrides in `config/local.json` or `config/local-development.json`, which git and the packaged app
+both leave out.
+
+The name keeps a development copy apart from the real app on the same Mac: each has its own data
+folder in `~/Library/Application Support/`, so its own session, saved password, and one-copy lock.
+
+The main process is built as CommonJS (`out/main/index.cjs`), not the ES module electron-vite would
+make it in a `"type": "module"` package. node-config, which is bundled in, declares its own
+top-level `require`, and that collides with the `require` shim electron-vite adds to ES module
+output.
+
+### The Saved Password
+
+After a sign-in on Auth0's page succeeds, the app offers to save the email and password. The next
+time that page asks, it fills them in; you still click Continue. **Compassion Food Market → Forget Saved
+Password…** removes them.
+
+They are stored in the app's data folder, encrypted with Electron's
+[`safeStorage`](https://www.electronjs.org/docs/latest/api/safe-storage), whose key macOS keeps in
+the login Keychain. The file is unreadable without that Keychain item. The Keychain knows the app by
+its signature: releases share one certificate, so **Always Allow** once covers every release, but a
+build signed ad hoc is a new app each time, and asks again.
+
+The preload (`src/preload/index.ts`) runs on every page, but the main process only answers Auth0's
+sign-in page (`signIn`), so the password never reaches the app's own pages. Auth0's email page also
+has an unnamed password field that only a password manager would fill, as a trap, so the preload
+fills fields by name.
+
+### The Icon
+
+The icon is The Bay Compassion logo reversed, a white disc with the C and leaves in teal, on a teal
+rounded square drawn to Apple's macOS app icon grid: an 824-point body 100 points in from the edge
+of a 1024-point canvas, with a 185.4-point corner radius and a soft shadow. A current macOS shows an
+icon that keeps to that grid as it is, rather than shrinking it onto a gray plate.
+
+`resources/icon.icns` is what the packaged app carries, and `resources/icon.png` is what development
+puts in the Dock. Both are generated from `public/bay-compassion-icon-digital.svg` and committed, so
+building needs no Swift. After the logo changes, run this on a Mac with the Xcode command line tools
+and commit the result:
+
+```bash
+pnpm --filter @bay-compassion/check-in-app icon
+```
+
+## Building
+
+```bash
+pnpm --filter @bay-compassion/check-in-app build
+```
+
+That compiles the app, then `package.ts` signs it and writes, in `release/`:
+
+- `Compassion Food Market-darwin-universal/Compassion Food Market.app`, one app for both Intel and
+  Apple Silicon Macs. Add `arm64` or `x64` to build for one only, at half the size.
+- `Compassion-Food-Market-<version>-universal-mac.zip`, the app zipped.
+- `latest-mac.yml`, the version, the zip's name, and its SHA-512, which is what an installed copy
+  reads to find and check an update.
+
+Only `package.json`, `out/`, and `config/` (without any `local*.json`) go into the app, along with
+`app-update.yml`, which electron-updater reads from the app's Resources.
+
+It needs macOS 13 (Ventura) or later, the floor of the `electron` devDependency's release. Keep that
+release supported: the app holds a signed-in session with guest names and phone numbers.
+
+## Updates
+
+An installed copy updates itself from the repository's
+[GitHub Releases](https://github.com/bay-compassion/food-market-app/releases), with
+[electron-updater](https://www.electron.build/auto-update) bundled into the main process
+(`src/main/updates.ts`). It checks at launch and every four hours, downloads a new release in the
+background, and installs it when the app next quits. It never restarts by itself, since a restart
+during a market takes the print station offline: the app menu's **Restart to Install Version …**
+installs it sooner. **About** shows the running version, and why the last check failed, if it did.
+
+It looks at the release GitHub marks **Latest**, and reads `latest-mac.yml` from it. So in this
+repository, **only this app's releases may be marked Latest**: anything else published as the
+latest release stops every installed copy updating until one of the app's is the latest again.
+Releasing anything else from this repository means unticking **Set as the latest release**.
+
+macOS (Squirrel.Mac, under electron-updater) installs an update only if it satisfies the running
+app's designated requirement, which a signed build pins to its certificate. So an update must be
+signed by the certificate that signed the copy already installed (see "Signing"); a build signed ad
+hoc pins its own hash instead, and can neither update nor be updated. Development builds don't
+check at all.
+
+To try an update without publishing anything, serve a folder holding a newer build's zip and
+`latest-mac.yml` (`python3 -m http.server 8766`), and start an older, signed build with
+`CHECK_IN_UPDATE_URL=http://127.0.0.1:8766`.
+
+## Signing
+
+Releases are signed with a self-signed code-signing certificate, "Compassion Food Market
+Releases", rather than an Apple Developer ID. macOS doesn't trust it, which costs one **Open
+Anyway** on the first install; after that, updates install silently, since all they have to match
+is the certificate the installed copy was signed with.
+
+That makes the certificate permanent: signing with another one, or losing it, means replacing every
+installed copy by hand once. It is made once, before the first release:
+
+1. Make it, into a folder outside the repository:
+
+   ```bash
+   node packages/check-in-app/signing/make-certificate.ts ~/compassion-food-market-signing
+   ```
+
+2. Keep the folder's three files (`certificate.p12`, `certificate.p12.base64`, and
+   `certificate-password.txt`) in the team's password manager.
+3. Put two of them in the repository's secrets, without the values passing through a terminal's
+   history or a chat:
+
+   ```bash
+   gh secret set APP_SIGNING_CERTIFICATE < ~/compassion-food-market-signing/certificate.p12.base64
+   gh secret set APP_SIGNING_CERTIFICATE_PASSWORD < ~/compassion-food-market-signing/certificate-password.txt
+   ```
+
+4. Delete the folder.
+
+| Secret                             | What it holds                     |
+| ---------------------------------- | --------------------------------- |
+| `APP_SIGNING_CERTIFICATE`          | `certificate.p12`, base64-encoded |
+| `APP_SIGNING_CERTIFICATE_PASSWORD` | The `.p12`'s password             |
+
+To sign a build locally with it, import the `.p12` into a keychain and set `SIGNING_IDENTITY`
+(and `SIGNING_KEYCHAIN`, unless it is a default keychain); see `package.ts`. Moving to an Apple
+Developer ID later is a certificate change like any other: one manual reinstall.
+
+## Releasing
+
+`.github/workflows/release-desktop-app.yml` builds, signs, and drafts each release.
+
+1. Bump `version` in this package's `package.json`, and merge it to `main`.
+2. Tag that commit `check-in-app-v<version>` and push the tag:
+
+   ```bash
+   git tag check-in-app-v0.2.0 && git push origin check-in-app-v0.2.0
+   ```
+
+   The workflow fails if the tag and the version disagree.
+
+3. It drafts a release holding the zip and `latest-mac.yml`. A draft reaches nobody.
+4. Publish the draft from the Releases page, leaving **Set as the latest release** ticked. Installed
+   copies pick it up within four hours, or at their next launch, and install it when they next quit.
+
+Running the workflow by hand (**Actions → Release desktop app → Run workflow**) builds and signs
+without releasing, and keeps the result as a workflow artifact. GitHub only offers that for a
+workflow already on `main`, so the first release goes: make the certificate and its secrets (see
+"Signing"), merge, run the workflow by hand once to see it sign, then tag `check-in-app-v0.1.0`.
+
+## Trying It on the iMac
+
+1. Make the LabelWriter the iMac's default printer, or name it in `printer`, and quit Chrome's
+   print station if it is running: two stations would each print every tag.
+1. Download the zip from the latest
+   [release](https://github.com/bay-compassion/food-market-app/releases/latest) on the iMac, and
+   double-click it to unzip. Install from a release, not a local build: only a release-signed copy
+   updates itself.
+1. Move `Compassion Food Market.app` to Applications.
+1. The first time, open it, then go to **System Settings → Privacy & Security** and choose **Open
+   Anyway**: its certificate is the team's own, not an Apple Developer ID. Only the first install
+   asks. If **Open Anyway** doesn't appear, clear the download's quarantine in Terminal, then open
+   it again:
+
+   ```bash
+   xattr -dr com.apple.quarantine "/Applications/Compassion Food Market.app"
+   ```
+
+1. Sign in with the shared check-in account's email and password, and save the password when it
+   offers. Not **Continue with Google**: Google refuses sign-in inside embedded browsers.
+1. **Compassion Food Market → About Compassion Food Market** shows its version, and the Electron,
+   Chromium, and macOS versions it is running on.
+
+What to check:
+
+- Sign-in comes back to the queue desk, and it stays signed in after **View → Reload** and after
+  quitting and opening it again.
+- The line loads and updates, and calling a guest works.
+- The station's panel says Online, and **Print name tag** on a phone prints a tag on the LabelWriter
+  with no dialog and shows up in the panel's list.
+- If it quits at once, run
+  `"/Applications/Compassion Food Market.app/Contents/MacOS/Compassion Food Market"` in Terminal and
+  keep what it prints. `CHECK_IN_SITE=https://<deploy>` before that command points it at a preview
+  deploy instead of production.
+
+## What Comes Next
+
+If it works on the iMac and the LabelWriter:
+
+- Check a printed tag: that it runs along the label at full size, as `docs/name-tag-printing.md`
+  asks of the Chrome station.
+- Show a failing print in the station's panel; for now it is only retried.
+- Retire the Check-In Launcher and its docs.

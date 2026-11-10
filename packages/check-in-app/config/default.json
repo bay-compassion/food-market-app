@@ -1,0 +1,11 @@
+{
+  "site": "https://app.thebaycompassion.org",
+  "signIn": "https://login.thebaycompassion.org",
+  "name": "Compassion Food Market",
+  "printer": null,
+  "updates": {
+    "enabled": true,
+    "owner": "bay-compassion",
+    "repo": "food-market-app"
+  }
+}
