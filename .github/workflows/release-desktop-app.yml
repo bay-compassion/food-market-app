@@ -80,6 +80,16 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" > /dev/null
           rm "$certificate"
 
+          # codesign looks for its identity in the user's keychain search list, which a keychain
+          # created by path isn't on. Put this one first, keeping the rest, and note them for cleanup.
+          security list-keychains -d user | sed -e 's/^ *"//' -e 's/"$//' > "$RUNNER_TEMP/keychain-search-list"
+          search_list=()
+          while IFS= read -r entry; do search_list+=("$entry"); done < "$RUNNER_TEMP/keychain-search-list"
+          security list-keychains -d user -s "$keychain" "${search_list[@]}"
+
+          # What codesign can see, trusted or not, so a failure to sign shows why.
+          security find-identity -p codesigning
+
           echo "SIGNING_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
 
       - name: Build and sign
@@ -115,6 +125,12 @@ jobs:
       - name: Remove the keychain
         if: always()
         run: |
+          if [ -f "$RUNNER_TEMP/keychain-search-list" ]; then
+            search_list=()
+            while IFS= read -r entry; do search_list+=("$entry"); done < "$RUNNER_TEMP/keychain-search-list"
+            security list-keychains -d user -s "${search_list[@]}" || true
+          fi
+
           if [ -n "${SIGNING_KEYCHAIN:-}" ]; then
             security delete-keychain "$SIGNING_KEYCHAIN" || true
           fi
