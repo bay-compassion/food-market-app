@@ -7,6 +7,7 @@ import { visitCommandsFrom, type VisitCommand } from '../../services/visitStateM
 import { useRootStore } from '../../stores/react/store-context';
 import { OverflowMenu } from './OverflowMenu';
 import type { DatabaseGuest } from './types';
+import { useShowGuestClaim } from './use-show-guest-claim';
 import { primaryVisitCommands, visitCommandLabels } from './VisitCommandButtons';
 
 export type QueueGuestActionsProps = {
@@ -55,9 +56,7 @@ const Actions = styled.div`
  * else — the rarer transitions and a tap-to-dial phone number — folded into a menu so a row stays
  * two lines tall. The state machine still decides which commands exist.
  *
- * A manager (`manage:guest-access`) also gets the QR code that puts this guest on a phone — any
- * guest, at any time, including one already on another phone. It asks first: the code hands over
- * the guest's record and place in line, so the manager has to know who they are handing it to.
+ * A manager also gets the QR code that puts this guest on a phone (see `useShowGuestClaim`).
  *
  * In the guest database, an admin with `delete:guest-data` also gets permanent deletion, which
  * opens `GuestDeletionDialog` rather than asking here: it needs a typed confirmation.
@@ -70,7 +69,8 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 	onRun,
 }: QueueGuestActionsProps) {
 	const t = adminTranslations.en;
-	const { admin, confirmation } = useRootStore();
+	const { admin } = useRootStore();
+	const showGuestClaim = useShowGuestClaim();
 	const commands = guest.status === null ? [] : visitCommandsFrom(guest.status);
 	const primary = menuOnly ? undefined : commands.find((c) => primaryVisitCommands.includes(c));
 	const secondary = commands.filter((command) => command !== primary);
@@ -80,22 +80,6 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 		serve: t.serveShort,
 	};
 	const guestName = `${guest.firstName} ${guest.lastName}`;
-
-	async function showPhoneCode() {
-		const confirmed = await confirmation.ask({
-			question: t.guestClaimConfirm.replace('{name}', guestName),
-			details: [
-				t.guestClaimConfirmIdentity.replace('{name}', guestName).replace('{phone}', guest.phone),
-				t.guestClaimConfirmReplacesPhone,
-			],
-			confirmLabel: t.guestClaimShow,
-			dismissLabel: t.cancel,
-		});
-
-		if (confirmed) {
-			await admin.showGuestClaim({ guestId: guest.guestId, name: guestName });
-		}
-	}
 
 	return (
 		<Actions className="visit-commands">
@@ -131,11 +115,11 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 						>
 							{t.phoneGuest} {guest.phone}
 						</MenuItem>
-						{admin.can('manage:guest-access') ? (
+						{showGuestClaim ? (
 							<MenuItem
 								onClick={() => {
 									closeMenu();
-									void showPhoneCode();
+									void showGuestClaim(guest);
 								}}
 							>
 								{t.guestClaimShow}

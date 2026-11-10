@@ -1,12 +1,11 @@
-import type { VisitStatus } from '../../services/visitStateMachine';
 import type { QueueGuest } from './types';
 
 /**
  * Sample queue guests for the admin stories.
  *
- * Shared by `QueueView` and `QueueGuestRow` so the two screens illustrate the same people, and
- * kept out of the story files themselves so neither has to redeclare them. The names are invented;
- * nothing here comes from real guest data.
+ * Shared by the queue desk's and the dashboard's stories, so the screens illustrate the same
+ * people, and kept out of the story files themselves so none has to redeclare them. The names are
+ * invented; nothing here comes from real guest data.
  */
 
 const baseGuest: QueueGuest = {
@@ -29,20 +28,6 @@ const baseGuest: QueueGuest = {
 
 export function queueGuest(overrides: Partial<QueueGuest> = {}): QueueGuest {
 	return { ...baseGuest, ...overrides };
-}
-
-/** A guest in each status, for stories that want to show one row at a time. */
-export function guestWithStatus(status: VisitStatus): QueueGuest {
-	return queueGuest({
-		id: `guest-${status}`,
-		status,
-		// Only a called guest has been called, and the waiting-time label reads from this.
-		calledAt: status === 'called' ? new Date(Date.now() - 4 * 60_000).toISOString() : null,
-		queuePosition: status === 'waiting' ? 3 : null,
-		priorityNumber: null,
-		queueFront: false,
-		queueOrder: status === 'waiting' ? 3 : null,
-	});
 }
 
 /** A queue mid-service: some guests called, more waiting, a few already resolved. */
@@ -119,14 +104,6 @@ export const busyQueue: QueueGuest[] = [
 	}),
 ];
 
-/** The status tallies the admin overview endpoint returns for `busyQueue`. */
-export const busyQueueCounts: Partial<Record<VisitStatus, number>> = {
-	waiting: 3,
-	called: 2,
-	served: 1,
-	no_show: 1,
-};
-
 /** The end of a service: the same people, all of them finished one way or another. */
 export const finishedQueue: QueueGuest[] = busyQueue.map((guest, index) =>
 	queueGuest({
@@ -137,9 +114,3 @@ export const finishedQueue: QueueGuest[] = busyQueue.map((guest, index) =>
 		calledAt: null,
 	}),
 );
-
-/** The status tallies that go with `finishedQueue`. */
-export const finishedQueueCounts: Partial<Record<VisitStatus, number>> = {
-	served: finishedQueue.length - 1,
-	no_show: 1,
-};

@@ -5,7 +5,7 @@ import { everyPermission, isAuth0Configured, permissionsFromToken } from '../aut
 import { LineOrder } from '../models/line-order';
 import type { ServiceProgress } from '../services/demoScenario';
 import { manualAdmissionsFor } from '../services/guestAdmission';
-import { currentSessionState, type SessionStatus } from '../services/sessionStateMachine';
+import type { SessionStatus } from '../services/sessionStateMachine';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../services/visitStatusLabels';
 import type { MarketAction } from '../stores/admin.store';
@@ -104,7 +104,6 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}, [activeView, admin, hasLoadedPermissions, hasLoadedSession, navigate]);
 
 	const statusLabels: Record<VisitStatus, string> = adminVisitStatusLabels(locale);
-	const sessionState = currentSessionState(event?.status);
 	/**
 	 * With no session configured a guest can still be added, with their details alone. Until the
 	 * session has loaded, though, nothing is offered: "not known yet" is not "no session", and a form
@@ -179,20 +178,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 			) : activeView === 'schedule' ? (
 				<ScheduleView onNavigateSession={() => navigate('current-session')} />
 			) : activeView === 'queue' ? (
-				<QueueView
-					guests={currentSessionGuests}
-					counts={counts}
-					statusLabels={statusLabels}
-					serviceStarted={sessionState === 'service_started'}
-					admissions={sessionAdmissions}
-					// The dashboard's queue keeps waiting through a call's reread, as it always has.
-					busy={admin.isBusy || admin.isCallingNext}
-					onCallNext={(count) => void admin.callNext(count)}
-					onRun={(guest, command) => void runGuestCommand(guest, command)}
-					onAddGuest={(guest) => void addManualGuest(guest)}
-					onCloseSession={() => void runMarketAction('close_session')}
-					onNavigateCurrentSession={() => navigate('current-session')}
-				/>
+				<QueueView onNavigateCurrentSession={() => navigate('current-session')} />
 			) : activeView === 'broadcast' ? (
 				<SessionBroadcastForm
 					broadcast={broadcast}

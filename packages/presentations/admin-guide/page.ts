@@ -166,9 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	line(
 		'addGuest',
 		[A.queue, A.manualGuestTitle, 'The same details the guest form asks for.'],
-		'button:addGuest',
+		'line-actions',
 	);
-	tap(C('addGuest', 0.45), 'button:addGuest', (s) => {
+	tap(C('addGuest', 0.45), 'line-actions', (s) => {
 		s.focus = null;
 		s.scrollTo = null;
 		s.addGuest = { ...BLANK_GUEST };

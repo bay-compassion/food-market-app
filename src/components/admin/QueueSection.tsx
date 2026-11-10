@@ -80,8 +80,8 @@ function Chevron() {
 }
 
 /**
- * One collapsible list on the queue screen: a quiet heading with its tally that folds the list
- * away, then the rows or an empty state.
+ * One collapsible list of guests on the session screen: a quiet heading with its tally that folds
+ * the list away, then the rows or an empty state.
  */
 export function QueueSection({
 	title,

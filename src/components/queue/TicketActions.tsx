@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { adminTranslations } from '../../adminLocales';
 import type { QueueGuest } from '../../services/admin-api';
 import { visitCommandsFrom, type VisitCommand } from '../../services/visitStateMachine';
+import { useShowGuestClaim } from '../admin/use-show-guest-claim';
 import { primaryVisitCommands, visitCommandLabels } from '../admin/VisitCommandButtons';
 import { useQueueDesk } from './queue-desk-context';
 import { ReturnToQueueButton } from './ReturnToQueueButton';
@@ -44,11 +45,13 @@ const Actions = styled.div`
  * that is serving them and calling the next guest in one tap, which opens the next ticket in this
  * one's place; a late arrival called earlier is only marked served, so the line does not advance.
  * Any other command closes the ticket — the volunteer's next tap is the next guest, not this one.
+ * A manager also gets the code that puts this guest on a phone, which leaves the ticket open.
  */
 export const TicketActions = observer(function TicketActions({ guest }: { guest: QueueGuest }) {
 	const t = adminTranslations.en;
 	const desk = useQueueDesk();
 	const labels = visitCommandLabels();
+	const showGuestClaim = useShowGuestClaim();
 	const offersServeAndCallNext = desk.canServeAndCallNext(guest);
 	// The combined step takes the filled style when it is offered; there is only ever one.
 	const isPrimary = (command: VisitCommand) =>
@@ -100,6 +103,11 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 				/>
 			) : null}
 			<a href={`tel:${guest.phone.replace(/[^\d+]/g, '')}`}>{t.phoneGuest}</a>
+			{showGuestClaim ? (
+				<button type="button" disabled={desk.isBusy} onClick={() => void showGuestClaim(guest)}>
+					{t.guestClaimShow}
+				</button>
+			) : null}
 		</Actions>
 	);
 });

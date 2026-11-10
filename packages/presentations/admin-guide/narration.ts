@@ -178,10 +178,10 @@ export const lines: AdminLine[] = [
 
 	{
 		id: 'close',
-		names: ['closeSession', 'callNext', 'sessionActions'],
+		names: ['closeSession', 'callNext'],
 		chapter: 'closing',
 		pause: 1.2,
-		text: 'When nobody is left to call, Close session takes the place of Call next. Closing sooner, from the Session actions menu, marks anyone still waiting as a no show.',
+		text: 'When nobody is left to call, Close session takes the place of Call next. Closing sooner, from the Queue actions menu, marks anyone still waiting as a no show.',
 	},
 	{
 		id: 'next',

@@ -2,16 +2,17 @@ import styled from '@emotion/styled';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 
-import { wideLayoutQuery } from '../admin/admin-layout';
+import { tabBarHeight, wideLayoutQuery } from '../admin/admin-layout';
 import { AdminFeedbackBanner } from '../admin/AdminFeedbackBanner';
 import { GuestClaimDialog } from '../admin/GuestClaimDialog';
-import { callBarOffset } from './call-bar';
+import { callBarBottom, callBarOffset, callBarPaddingBottom } from './call-bar';
 import { useQueueDesk } from './queue-desk-context';
 import { QueueCallBarActions } from './QueueCallBarActions';
 import { QueueCallButton } from './QueueCallButton';
 import { QueueDeskHeader } from './QueueDeskHeader';
 import { QueueLists } from './QueueLists';
 import { QueueSearchDialog } from './QueueSearchDialog';
+import { QueueToolbar } from './QueueToolbar';
 import { TicketPane } from './TicketPane';
 import { TicketSheet } from './TicketSheet';
 
@@ -40,11 +41,17 @@ const Layout = styled.div`
 		padding-bottom: 75dvh;
 	}
 
+	/* Inside the dashboard, the call bar and the ticket on it sit on the tab bar, not the edge. */
+	&[data-embedded='true'] {
+		--queue-dock-inset: calc(${tabBarHeight}px + env(safe-area-inset-bottom));
+		--queue-dock-safe-area: 0px;
+	}
+
 	.call-bar {
 		position: fixed;
 		inset-inline: 0;
-		bottom: 0;
-		padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+		bottom: ${callBarBottom};
+		padding: 12px 16px ${callBarPaddingBottom};
 		background: var(--color-background);
 		box-shadow: 0 -8px 24px rgb(30 71 77 / 10%);
 
@@ -76,9 +83,16 @@ const Layout = styled.div`
 		height: calc(100dvh - 48px);
 	}
 
+	/* In the dashboard, the tab gives the line whatever height is left under its heading. */
+	&[data-layout='desk'][data-embedded='true'] {
+		grid-template-rows: auto minmax(0, 1fr);
+		height: auto;
+		min-height: 0;
+	}
+
 	.panes {
 		display: grid;
-		grid-row: 3;
+		grid-row: -2;
 		grid-template-columns: minmax(0, 1fr) minmax(400px, 520px);
 		gap: 20px;
 		min-height: 0;
@@ -126,20 +140,41 @@ const Layout = styled.div`
 	}
 `;
 
+export type QueueLineProps = {
+	/**
+	 * Inside the dashboard's Queue tab rather than on the standalone `/queue` screen. The dashboard
+	 * brings its own heading, feedback line, and guest claim dialog, and a tab bar along the bottom
+	 * edge that the call bar has to sit on.
+	 */
+	embedded?: boolean;
+};
+
 /**
  * The queue while service runs. On a phone, the line fills the screen, the call button runs along
  * the bottom edge, and a ticket opens as a sheet docked on top of it — beside the line rather than
- * blocking it, so the call button and the other tickets still take the first tap. On a desk-sized screen — the check-in
- * desk's computer — the open ticket sits in a pane beside the line instead, always in view.
+ * blocking it, so the call button and the other tickets still take the first tap. On a desk-sized
+ * screen — the check-in desk's computer — the open ticket sits in a pane beside the line instead,
+ * always in view.
  */
-export const QueueLine = observer(function QueueLine() {
+export const QueueLine = observer(function QueueLine({ embedded = false }: QueueLineProps) {
 	const isDesk = useMediaQuery(wideLayoutQuery);
 	const desk = useQueueDesk();
 
 	return (
-		<Layout data-layout={isDesk ? 'desk' : 'phone'} data-ticket-open={desk.selected !== null}>
-			<QueueDeskHeader />
-			<AdminFeedbackBanner />
+		<Layout
+			className="queue-line"
+			data-layout={isDesk ? 'desk' : 'phone'}
+			data-embedded={embedded}
+			data-ticket-open={desk.selected !== null}
+		>
+			{embedded ? (
+				<QueueToolbar />
+			) : (
+				<>
+					<QueueDeskHeader />
+					<AdminFeedbackBanner />
+				</>
+			)}
 			{isDesk ? (
 				<div className="panes">
 					<div className="line-pane">
@@ -159,7 +194,7 @@ export const QueueLine = observer(function QueueLine() {
 					<TicketSheet />
 				</>
 			)}
-			<GuestClaimDialog />
+			{embedded ? null : <GuestClaimDialog />}
 			<QueueSearchDialog />
 		</Layout>
 	);

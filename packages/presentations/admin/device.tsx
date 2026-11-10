@@ -278,7 +278,15 @@ export class AdminDevice implements AdminHandle {
 		const open = () => markTarget('dialog', document);
 
 		if (scene.addGuest && !open()) {
-			this.press('button:addGuest');
+			// On a phone's queue, adding a guest is in the menu beside the call button.
+			if (!markTarget('button:addGuest', document) && markTarget('line-actions', document)) {
+				this.press('line-actions');
+				await this.commit();
+				this.press('menuitem:addGuest');
+			} else {
+				this.press('button:addGuest');
+			}
+
 			await this.commit();
 		} else if (!scene.addGuest && open()) {
 			const cancel = open()?.querySelectorAll<HTMLElement>('button');

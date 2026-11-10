@@ -1,12 +1,11 @@
 import styled from '@emotion/styled';
 import { Button } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router';
 
 import { adminTranslations } from '../../adminLocales';
 import { everyPermission, isAuth0Configured, permissionsFromToken } from '../../auth';
-import { QueueDeskStore } from '../../stores/queue-desk.store';
 import { useRootStore } from '../../stores/react/store-context';
 import { wideLayoutQuery } from '../admin/admin-layout';
 import { KioskUnlockDialog } from '../admin/KioskUnlockDialog';
@@ -14,6 +13,7 @@ import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { NotificationToasts } from '../ui/NotificationToasts';
 import { QueueDeskProvider } from './queue-desk-context';
 import { QueueLine } from './QueueLine';
+import { useQueueDeskStore } from './use-queue-desk-store';
 
 export type QueueDeskProps = {
 	getAccessToken: () => Promise<string>;
@@ -65,26 +65,19 @@ const Message = styled.section`
 export const QueueDesk = observer(function QueueDesk({ getAccessToken }: QueueDeskProps) {
 	const t = adminTranslations.en;
 	const rootStore = useRootStore();
-	const [desk] = useState(
-		() =>
-			new QueueDeskStore(rootStore.admin, rootStore.session, {
-				notifications: rootStore.notifications,
-			}),
-	);
 
+	// Declared before the desk, so its effect runs first: the desk reads the token as it starts.
 	useEffect(() => {
 		rootStore.setAccessTokenProvider(getAccessToken);
 		rootStore.setPermissionReader(async () =>
 			isAuth0Configured ? permissionsFromToken(await getAccessToken()) : everyPermission(),
 		);
-		void desk.start();
+	}, [getAccessToken, rootStore]);
 
-		return () => desk[Symbol.dispose]();
-	}, [desk, getAccessToken, rootStore]);
-
+	const desk = useQueueDeskStore();
 	let content;
 
-	switch (desk.phase) {
+	switch (desk?.phase ?? 'loading') {
 		case 'loading':
 			content = <QueueDeskMessage text={t.queueDesk.loading} />;
 			break;
