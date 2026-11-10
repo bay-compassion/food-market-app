@@ -1,2 +1,7 @@
 out/
 release/
+# node-config overrides for one machine.
+config/local*.json
+
+# Local Netlify folder
+.netlify

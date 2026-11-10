@@ -1,61 +1,54 @@
-// The check-in iMac's app: the queue desk in one window. A spike for now, to learn whether it
-// signs in and runs the queue desk on the iMac before the print station moves into it.
+// The check-in iMac's app: one window holding the queue desk and, in a panel beside it, the print
+// station, signed in together.
 
-import { app, BrowserWindow } from 'electron';
+import path from 'node:path';
 
+import { app } from 'electron';
+
+import icon from '../../../../public/icon-512.png?asset';
+import { CheckInWindow } from './check-in-window.ts';
 import { installApplicationMenu } from './menu.ts';
-import { Site } from './site.ts';
+import { PrintStation } from './print-station.ts';
+import { QueueDesk } from './queue-desk.ts';
+import { SavedSignIn } from './saved-sign-in.ts';
+import { Settings } from './settings.ts';
+import { SignInAutofill } from './sign-in-autofill.ts';
 
-const site = Site.fromEnvironment(process.argv, process.env);
+const settings = Settings.load();
 
-function openQueueDesk(): BrowserWindow {
-	const window = new BrowserWindow({
-		width: 1280,
-		height: 820,
-		minWidth: 800,
-		minHeight: 600,
-		show: false,
-		webPreferences: {
-			contextIsolation: true,
-			sandbox: true,
-			nodeIntegration: false,
-		},
-	});
+// Before anything reads the data folder: the name picks it, and with it the session, the saved
+// password, and the one-copy lock, so a development copy never collides with the real app.
+app.setName(settings.name);
+app.setPath('userData', path.join(app.getPath('appData'), settings.name));
 
-	window.once('ready-to-show', () => window.show());
-	void window.loadURL(site.queueDesk);
+const saved = new SavedSignIn();
+const autofill = new SignInAutofill(settings, saved);
 
-	return window;
-}
-
-function focusQueueDesk(): void {
-	const [window] = BrowserWindow.getAllWindows();
-
-	if (!window) {
-		openQueueDesk();
-
-		return;
+function start(): void {
+	// A packaged app takes its icon from the bundle; in development the Dock would otherwise show
+	// Electron's.
+	if (!app.isPackaged) {
+		app.dock?.setIcon(icon);
 	}
 
-	if (window.isMinimized()) {
-		window.restore();
-	}
+	// The views need the app to be ready, and each needs the window to lay it out again.
+	const printStation = new PrintStation(settings, () => window.layout());
+	const queueDesk = new QueueDesk(settings, () => printStation.afterSignIn());
+	const window = new CheckInWindow(settings, queueDesk, printStation);
 
-	window.focus();
+	app.on('second-instance', () => window.show());
+	app.on('activate', () => window.show());
+
+	autofill.register();
+	installApplicationMenu(settings, saved, window);
+	queueDesk.start(window.baseWindow, autofill);
+	printStation.start();
 }
 
-// One copy only. Once this window also hosts the print station, a second copy would print every
-// tag twice; opening the app again just brings the running one forward.
+// One copy only: a second would run a second print station, and every tag would print twice.
+// Opening the app again brings the running one forward.
 if (app.requestSingleInstanceLock()) {
-	app.on('second-instance', focusQueueDesk);
-	app.on('activate', focusQueueDesk);
-
-	// Not a top-level await: Electron holds `ready` back until an ES module main has finished
-	// evaluating, so awaiting it here would wait forever.
-	void app.whenReady().then(() => {
-		installApplicationMenu(site);
-		openQueueDesk();
-	});
+	void app.whenReady().then(start);
 } else {
 	app.quit();
 }

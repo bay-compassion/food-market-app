@@ -1,4 +1,4 @@
-// The main process (`src/main/`, bundled by electron-vite) and the Node scripts beside it
+// The main process and preload (`src/`, bundled by electron-vite) and the Node scripts beside it
 // (`package.ts`, the electron-vite config), which Node runs by stripping their types. Both use only
 // erasable syntax and import with real `.ts` extensions. Referenced from the repository root, so
 // `pnpm run type-check` and oxlint's type-aware pass cover it.
@@ -15,7 +15,9 @@
     "moduleResolution": "NodeNext",
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
-    "types": ["node"],
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    // `electron-vite/node` declares the `?asset` imports electron-vite resolves.
+    "types": ["node", "electron-vite/node"],
 
     "strict": true,
     "noUncheckedIndexedAccess": true,

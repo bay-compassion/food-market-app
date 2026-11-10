@@ -8,6 +8,14 @@ NODE_VERSION = "24.15.0"
 [functions]
 directory = "netlify/functions"
 
+# `netlify dev` (`pnpm start`) runs the app's own Vite. Left to detect it, the CLI finds the
+# workspace's other packages and can pick packages/check-in-app, whose `dev` is Electron, then waits
+# forever for a server on 5173.
+[dev]
+framework = "#custom"
+command = "pnpm run dev"
+targetPort = 5173
+
 # Static responses only; function responses use the Hono boundary in netlify/lib/http.mts.
 [[headers]]
 for = "/*"

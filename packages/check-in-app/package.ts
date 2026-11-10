@@ -24,10 +24,13 @@ const { version: electronVersion } = JSON.parse(readFileSync(electronManifest, '
 	version: string;
 };
 
-// Only the manifest and the compiled main process go in; the sources, the tooling, and
-// node_modules (the app has no runtime dependencies) stay out.
+// Only the manifest, the build, and the settings go in; the sources, the tooling, and node_modules
+// (everything the app uses is bundled) stay out, and so do one machine's `config/local*.json`.
 const shipped = (file: string) =>
-	file === '' || file === '/package.json' || file === '/out' || file.startsWith('/out/');
+	file === '' ||
+	file === '/package.json' ||
+	['/out', '/config'].some((folder) => file === folder || file.startsWith(`${folder}/`));
+const personal = (file: string) => /^\/config\/local[^/]*\.json$/.test(file);
 
 const [appDirectory] = await packager({
 	dir: here,
@@ -42,7 +45,7 @@ const [appDirectory] = await packager({
 	asar: true,
 	overwrite: true,
 	prune: false,
-	ignore: (file) => !shipped(file),
+	ignore: (file) => !shipped(file) || personal(file),
 });
 
 if (!appDirectory) {
