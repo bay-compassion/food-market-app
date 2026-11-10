@@ -1,3 +1,7 @@
+# The app itself is the root package; these are separate packages with their own dependencies.
+packages:
+  - packages/check-in-app
+
 # pnpm runs a dependency's install script only when it is listed here as true.
 allowBuilds:
   # Downloads the platform binary Vite, tsx, Storybook, and function bundling run on.

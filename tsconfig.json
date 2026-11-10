@@ -9,6 +9,7 @@
     { "path": "./tsconfig.vitest.json" },
     { "path": "./tsconfig.storybook.json" },
     { "path": "./tsconfig.netlify.json" },
-    { "path": "./packages/presentations" }
+    { "path": "./packages/presentations" },
+    { "path": "./packages/check-in-app" }
   ]
 }

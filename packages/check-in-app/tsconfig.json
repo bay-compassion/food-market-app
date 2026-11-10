@@ -1,0 +1,31 @@
+// The main process (`src/main/`, bundled by electron-vite) and the Node scripts beside it
+// (`package.ts`, the electron-vite config), which Node runs by stripping their types. Both use only
+// erasable syntax and import with real `.ts` extensions. Referenced from the repository root, so
+// `pnpm run type-check` and oxlint's type-aware pass cover it.
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+
+  "include": ["*.ts", "src/**/*.ts"],
+
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "types": ["node"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.check-in-app.tsbuildinfo"
+  }
+}
