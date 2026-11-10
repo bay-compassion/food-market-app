@@ -24,8 +24,8 @@ info="$app/Contents/Info.plist"
 plutil -replace CFBundleName -string 'Check-In Launcher' "$info"
 plutil -replace CFBundleIdentifier -string 'org.thebaycompassion.check-in-launcher' "$info"
 
-# The Bay Compassion logo, from make-icon.sh. A newer stub also names an icon in its asset catalog
-# (CFBundleIconName), which wins over the .icns, so that key goes; El Capitan's stub has none.
+# The Bay Compassion logo, from make-icon.sh. The stub also names an icon in its asset catalog
+# (CFBundleIconName), which wins over the .icns, so that key goes; an older stub may not have it.
 cp "$here/icon.icns" "$app/Contents/Resources/AppIcon.icns"
 plutil -replace CFBundleIconFile -string 'AppIcon' "$info"
 plutil -remove CFBundleIconName "$info" 2>/dev/null || true

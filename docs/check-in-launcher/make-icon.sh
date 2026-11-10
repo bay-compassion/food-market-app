@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Regenerates icon.icns, Check-In Launcher's icon, from the logo in public/. The result is committed,
-# so build.sh only copies it: the check-in iMac runs El Capitan, whose AppKit can't read an SVG. Run
-# this on a current Mac, with the Xcode command line tools, after the logo changes.
+# so build.sh only copies it and building the launcher needs nothing but macOS. This needs the Xcode
+# command line tools, for Swift; run it after the logo changes.
 #
 #   docs/check-in-launcher/make-icon.sh
 

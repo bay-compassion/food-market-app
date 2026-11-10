@@ -78,10 +78,6 @@ hand the address to that instance, and the next click, which restarts the statio
 queue desk with it. `open -na` with no `--user-data-dir` goes to the everyday profile, starting it if
 needed.
 
-Both windows are Chrome, not Safari, because the check-in iMac runs El Capitan. Its newest Safari is
-11, far below the app's Safari 15.4 floor, so the app doesn't load there at all. Chrome 103, the last
-Chrome for El Capitan, runs it.
-
 ### Building it
 
 The source is in [`check-in-launcher/`](check-in-launcher/): `launch.sh` is the script and
@@ -95,10 +91,10 @@ docs/check-in-launcher/build.sh
 That puts `Check-In Launcher.app` on the Desktop. It needs nothing but macOS, and Automator can open the
 result if you want to look inside.
 
-Its icon is The Bay Compassion logo, from the committed `icon.icns`. That file is generated, because
-El Capitan can't draw the logo's SVG: after the logo changes, run `docs/check-in-launcher/make-icon.sh`
-on a current Mac with the Xcode command line tools, commit the new `icon.icns`, and rebuild. A current
-macOS shows the round logo on a gray rounded square; El Capitan shows it as it is.
+Its icon is The Bay Compassion logo, from `icon.icns`. That file is generated and committed, so the
+build needs no developer tools. After the logo changes, run `docs/check-in-launcher/make-icon.sh` on a
+Mac with the Xcode command line tools, commit the new `icon.icns`, and rebuild. Recent macOS shows the
+round logo on a gray rounded square.
 
 Build it on the computer that will run it. The app is signed ad hoc, not with an Apple Developer ID, so
 a copy downloaded or sent from elsewhere is blocked by Gatekeeper the first time: after the warning, go
