@@ -1,6 +1,6 @@
-# Check-In App
+# Compassion Food Market
 
-A desktop app for the check-in iMac. The goal is one window that is both the queue desk and the
+The desktop app for the check-in iMac (this package, `@bay-compassion/check-in-app`). The goal is one window that is both the queue desk and the
 print station, replacing the two Chrome windows the
 [Check-In Launcher](../../docs/name-tag-printing.md#the-check-in-launcher) opens today.
 
@@ -73,7 +73,7 @@ output.
 ### The Saved Password
 
 After a sign-in on Auth0's page succeeds, the app offers to save the email and password. The next
-time that page asks, it fills them in; you still click Continue. **Check-In → Forget Saved
+time that page asks, it fills them in; you still click Continue. **Compassion Food Market → Forget Saved
 Password…** removes them.
 
 They are stored in the app's data folder, encrypted with Electron's
@@ -89,8 +89,19 @@ fills fields by name.
 
 ### The Icon
 
-The packaged app's icon is The Bay Compassion logo, from `docs/check-in-launcher/icon.icns`. In
-development, the main process puts `public/icon-512.png` in the Dock instead of Electron's icon.
+The icon is The Bay Compassion logo reversed, a white disc with the C and leaves in teal, on a teal
+rounded square drawn to Apple's macOS app icon grid: an 824-point body 100 points in from the edge
+of a 1024-point canvas, with a 185.4-point corner radius and a soft shadow. A current macOS shows an
+icon that keeps to that grid as it is, rather than shrinking it onto a gray plate.
+
+`resources/icon.icns` is what the packaged app carries, and `resources/icon.png` is what development
+puts in the Dock. Both are generated from `public/bay-compassion-icon-digital.svg` and committed, so
+building needs no Swift. After the logo changes, run this on a Mac with the Xcode command line tools
+and commit the result:
+
+```bash
+pnpm --filter @bay-compassion/check-in-app icon
+```
 
 ## Building
 
@@ -99,7 +110,8 @@ pnpm --filter @bay-compassion/check-in-app build
 ```
 
 That compiles the app, then `package.ts` writes
-`release/Check-In-darwin-universal/Check-In.app` and `release/Check-In-universal.zip`: one app for
+`release/Compassion Food Market-darwin-universal/Compassion Food Market.app` and
+`release/Compassion-Food-Market-universal.zip`: one app for
 both Intel and Apple Silicon Macs. Add `arm64` or `x64` to build for one only, at half the size.
 Only `package.json`, `out/`, and `config/` (without any `local*.json`) go into the app.
 
@@ -110,14 +122,14 @@ release supported: the app holds a signed-in session with guest names and phone 
 
 1. Make the LabelWriter the iMac's default printer, or name it in `printer`, and quit Chrome's
    print station if it is running: two stations would each print every tag.
-1. Copy `release/Check-In-universal.zip` to the iMac and double-click it to unzip.
-1. Move `Check-In.app` to Applications.
+1. Copy `release/Compassion-Food-Market-universal.zip` to the iMac and double-click it to unzip.
+1. Move `Compassion Food Market.app` to Applications.
 1. The first time, right-click it and choose **Open**, then **Open** again. It is signed ad hoc, not
    with an Apple Developer ID, so Gatekeeper asks once. On a recent macOS, if there is no Open
    button, go to **System Settings → Privacy & Security** and choose **Open Anyway**.
 1. Sign in with the shared check-in account's email and password, and save the password when it
    offers. Not **Continue with Google**: Google refuses sign-in inside embedded browsers.
-1. **Check-In → About Check-In** shows the Electron, Chromium, and macOS versions it is running on.
+1. **Compassion Food Market → About Compassion Food Market** shows the Electron, Chromium, and macOS versions it is running on.
 
 What to check:
 
@@ -126,7 +138,8 @@ What to check:
 - The line loads and updates, and calling a guest works.
 - The station's panel says Online, and **Print name tag** on a phone prints a tag on the LabelWriter
   with no dialog and shows up in the panel's list.
-- If it quits at once, run `/Applications/Check-In.app/Contents/MacOS/Check-In` in Terminal and
+- If it quits at once, run
+  `"/Applications/Compassion Food Market.app/Contents/MacOS/Compassion Food Market"` in Terminal and
   keep what it prints. `CHECK_IN_SITE=https://<deploy>` before that command points it at a preview
   deploy instead of production.
 

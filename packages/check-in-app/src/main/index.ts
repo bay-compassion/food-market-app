@@ -1,11 +1,11 @@
-// The check-in iMac's app: one window holding the queue desk and, in a panel beside it, the print
+// Compassion Food Market, the check-in iMac's app: one window holding the queue desk and, in a panel beside it, the print
 // station, signed in together.
 
 import path from 'node:path';
 
 import { app } from 'electron';
 
-import icon from '../../../../public/icon-512.png?asset';
+import icon from '../../resources/icon.png?asset';
 import { CheckInWindow } from './check-in-window.ts';
 import { installApplicationMenu } from './menu.ts';
 import { PrintStation } from './print-station.ts';

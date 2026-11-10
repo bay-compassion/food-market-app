@@ -1,7 +1,7 @@
 /**
- * What the Check-In desktop app (`packages/check-in-app`) puts on `window` for the pages it runs.
- * Its print station prints there, silently and to the label printer, by asking the app; in a
- * browser there is no `checkInApp`, and the page prints itself. The app's
+ * What the Compassion Food Market desktop app (`packages/check-in-app`) puts on `window` for the
+ * pages it runs. Its print station prints there, silently and to the label printer, by asking the
+ * app; in a browser there is no `checkInApp`, and the page prints itself. The app's
  * `src/shared/print-station.ts` declares the same shape; keep the two in step.
  */
 export interface CheckInAppBridge {

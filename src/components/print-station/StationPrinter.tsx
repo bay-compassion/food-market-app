@@ -15,7 +15,7 @@ function nextFrame(): Promise<void> {
 }
 
 /**
- * Prints through the Check-In desktop app until the printer takes the tag, or until `cancelled`.
+ * Prints through the desktop app until the printer takes the tag, or until `cancelled`.
  * A print that fails, to a printer that is off or out of labels, is tried again rather than
  * dropped. Resolves whether the tag printed.
  */
@@ -41,9 +41,9 @@ async function printThroughApp(
  * its fonts have loaded, or the first tag of the day prints in a fallback face — sent to the
  * printer, and only then marked printed so the next one takes its place.
  *
- * In the Check-In desktop app, the app prints it, silently, to the label printer. In a browser
- * started with `--kiosk-printing` the print goes straight to the default printer. Without either,
- * each tag opens the print dialog, and the next waits until that one is dealt with.
+ * In the Compassion Food Market desktop app, the app prints it, silently, to the label printer. In
+ * a browser started with `--kiosk-printing` the print goes straight to the default printer. Without
+ * either, each tag opens the print dialog, and the next waits until that one is dealt with.
  */
 export const StationPrinter = observer(function StationPrinter() {
 	const station = usePrintStation();

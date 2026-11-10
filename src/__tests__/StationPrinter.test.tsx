@@ -58,7 +58,7 @@ describe('StationPrinter', () => {
 		expect(station.current).toBeNull();
 	});
 
-	it('prints through the Check-In desktop app at label size, and marks the tag printed only once it has', async () => {
+	it('prints through the desktop app at label size, and marks the tag printed only once it has', async () => {
 		// Arrange
 		let finishPrinting = () => {};
 		const appPrint = vi.fn(

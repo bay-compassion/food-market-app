@@ -1,4 +1,5 @@
 import {
+	app,
 	type BaseWindow,
 	dialog,
 	ipcMain,
@@ -83,8 +84,7 @@ export class SignInAutofill {
 			message: current
 				? `Update the saved password for ${credential.username}?`
 				: `Save the password for ${credential.username}?`,
-			detail:
-				'It is kept encrypted, with its key in this Mac’s Keychain, and filled in the next time Check-In asks you to sign in.',
+			detail: `It is kept encrypted, with its key in this Mac’s Keychain, and filled in the next time ${app.name} asks you to sign in.`,
 			buttons: [current ? 'Update Password' : 'Save Password', 'Not Now'],
 			defaultId: 0,
 			cancelId: 1,

@@ -2,12 +2,13 @@
   "name": "@bay-compassion/check-in-app",
   "version": "0.1.0",
   "private": true,
-  "description": "A desktop app for the check-in iMac that runs the queue desk in one window.",
+  "description": "Compassion Food Market, the desktop app for the check-in iMac: the queue desk and the print station in one window.",
   "type": "module",
   "main": "out/main/index.cjs",
   "scripts": {
     "dev": "install-electron && electron-vite dev --watch",
-    "build": "electron-vite build && node package.ts"
+    "build": "electron-vite build && node package.ts",
+    "icon": "node icon/make-icon.ts"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",
@@ -16,5 +17,5 @@
     "electron-vite": "6.0.0",
     "vite": "^8.1.5"
   },
-  "productName": "Check-In"
+  "productName": "Compassion Food Market"
 }

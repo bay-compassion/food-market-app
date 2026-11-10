@@ -1,5 +1,5 @@
-// Packages the built app (`out/`, from `electron-vite build`) as Check-In.app, and zips it for
-// copying to the iMac. `pnpm build` runs both steps.
+// Packages the built app (`out/`, from `electron-vite build`) as Compassion Food Market.app, and
+// zips it for copying to the iMac. `pnpm build` runs both steps.
 //
 //   node package.ts            # universal: Intel and Apple Silicon
 //   node package.ts arm64      # one architecture, half the size
@@ -15,9 +15,10 @@ import path from 'node:path';
 import { packager } from '@electron/packager';
 
 const here = import.meta.dirname;
+const name = 'Compassion Food Market';
 const release = path.join(here, 'release');
 const architectures = ['universal', 'arm64', 'x64'] as const;
-const arch = architectures.find((name) => name === process.argv[2]) ?? 'universal';
+const arch = architectures.find((option) => option === process.argv[2]) ?? 'universal';
 
 const electronManifest = createRequire(import.meta.url).resolve('electron/package.json');
 const { version: electronVersion } = JSON.parse(readFileSync(electronManifest, 'utf8')) as {
@@ -35,13 +36,14 @@ const personal = (file: string) => /^\/config\/local[^/]*\.json$/.test(file);
 const [appDirectory] = await packager({
 	dir: here,
 	out: release,
-	name: 'Check-In',
+	name,
 	platform: 'darwin',
 	arch,
 	electronVersion,
-	appBundleId: 'org.thebaycompassion.check-in',
+	appBundleId: 'org.thebaycompassion.food-market',
 	appCategoryType: 'public.app-category.productivity',
-	icon: path.join(here, '../../docs/check-in-launcher/icon.icns'),
+	// From `pnpm icon` (icon/make-icon.ts).
+	icon: path.join(here, 'resources/icon.icns'),
 	asar: true,
 	overwrite: true,
 	prune: false,
@@ -52,7 +54,7 @@ if (!appDirectory) {
 	throw new Error('Packager produced no app');
 }
 
-const app = path.join(appDirectory, 'Check-In.app');
+const app = path.join(appDirectory, `${name}.app`);
 
 // Packaging edits the bundle, which breaks Electron's own signature, and a broken signature is
 // refused outright. Ad hoc signing has no identity behind it, so Gatekeeper still asks once: the
@@ -61,7 +63,7 @@ execFileSync('codesign', ['--force', '--deep', '--sign', '-', app], { stdio: 'in
 execFileSync('codesign', ['--verify', '--deep', '--strict', app], { stdio: 'inherit' });
 
 // ditto keeps the framework symlinks a plain zip would turn into copies.
-const zip = path.join(release, `Check-In-${arch}.zip`);
+const zip = path.join(release, `${name.replaceAll(' ', '-')}-${arch}.zip`);
 
 rmSync(zip, { force: true });
 execFileSync('ditto', ['-c', '-k', '--keepParent', app, zip]);

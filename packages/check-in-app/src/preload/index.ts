@@ -13,7 +13,7 @@ import {
 } from '../shared/print-station.ts';
 import { type SignInCredential, signInChannels, type SubmittedSignIn } from '../shared/sign-in.ts';
 
-// What tells the web app it is running in Check-In, and how its print station prints here.
+// What tells the web app it is running in the desktop app, and how its print station prints here.
 const bridge: CheckInAppBridge = {
 	printer: {
 		print: (label: LabelSize) => ipcRenderer.invoke(printStationChannels.print, label),
