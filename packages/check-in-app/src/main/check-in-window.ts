@@ -43,13 +43,26 @@ export class CheckInWindow {
 				this.window.hide();
 			}
 		});
-		app.on('before-quit', () => (this.quitting = true));
+		app.on('before-quit', () => this.allowClose());
 		this.layout();
+	}
+
+	/**
+	 * Lets the window close for real, as the app quits. Installing an update closes the windows
+	 * before the app's `before-quit`, so the updater calls this itself first.
+	 */
+	allowClose(): void {
+		this.quitting = true;
 	}
 
 	/** The window itself, which dialogs about it attach to. */
 	get baseWindow(): BaseWindow {
 		return this.window;
+	}
+
+	/** Whether the panel should show once the station is signed in: the menu's checkbox. */
+	get isPanelWanted(): boolean {
+		return this.panelWanted;
 	}
 
 	/** Whether the panel is open: wanted, and the station is past the sign-in page. */

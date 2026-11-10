@@ -7,12 +7,13 @@ import { app } from 'electron';
 
 import icon from '../../resources/icon.png?asset';
 import { CheckInWindow } from './check-in-window.ts';
-import { installApplicationMenu } from './menu.ts';
+import { ApplicationMenu } from './menu.ts';
 import { PrintStation } from './print-station.ts';
 import { QueueDesk } from './queue-desk.ts';
 import { SavedSignIn } from './saved-sign-in.ts';
 import { Settings } from './settings.ts';
 import { SignInAutofill } from './sign-in-autofill.ts';
+import { Updates } from './updates.ts';
 
 const settings = Settings.load();
 
@@ -35,14 +36,18 @@ function start(): void {
 	const printStation = new PrintStation(settings, () => window.layout());
 	const queueDesk = new QueueDesk(settings, () => printStation.afterSignIn());
 	const window = new CheckInWindow(settings, queueDesk, printStation);
+	const updates = new Updates(settings, () => menu.install());
+	const menu = new ApplicationMenu(settings, saved, window, updates);
 
 	app.on('second-instance', () => window.show());
 	app.on('activate', () => window.show());
+	updates.onBeforeInstall(() => window.allowClose());
 
 	autofill.register();
-	installApplicationMenu(settings, saved, window);
+	menu.install();
 	queueDesk.start(window.baseWindow, autofill);
 	printStation.start();
+	updates.start();
 }
 
 // One copy only: a second would run a second print station, and every tag would print twice.

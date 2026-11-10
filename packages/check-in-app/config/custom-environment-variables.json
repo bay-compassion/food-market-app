@@ -1,5 +1,8 @@
 {
   "site": "CHECK_IN_SITE",
   "signIn": "CHECK_IN_SIGN_IN",
-  "printer": "CHECK_IN_PRINTER"
+  "printer": "CHECK_IN_PRINTER",
+  "updates": {
+    "url": "CHECK_IN_UPDATE_URL"
+  }
 }

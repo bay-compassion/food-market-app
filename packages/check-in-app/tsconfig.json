@@ -5,7 +5,7 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
 
-  "include": ["*.ts", "icon/*.ts", "src/**/*.ts"],
+  "include": ["*.ts", "icon/*.ts", "signing/*.ts", "src/**/*.ts"],
 
   "compilerOptions": {
     "composite": true,
