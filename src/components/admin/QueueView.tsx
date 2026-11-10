@@ -1,232 +1,49 @@
-import styled from '@emotion/styled';
-import { Button, MenuItem } from '@mui/material';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
 
 import { adminTranslations } from '../../adminLocales';
-import type { ManualAdmission } from '../../services/guestAdmission';
-import { QueueRoster } from '../../services/queue-roster';
-import type { VisitCommand, VisitStatus } from '../../services/visitStateMachine';
-import { AddGuestFab } from './AddGuestFab';
-import { useManualGuestForm } from './AddGuestSection';
-import { wideLayoutQuery } from './admin-layout';
-import { KioskUnlockMenuItem } from './KioskUnlockMenuItem';
-import { ManualGuestDialog } from './ManualGuestDialog';
-import { OverflowMenu } from './OverflowMenu';
-import { QueueCallNext } from './QueueCallNext';
-import { QueueGuestRow } from './QueueGuestRow';
+import { QueueDeskProvider } from '../queue/queue-desk-context';
+import { QueueDeskMessage } from '../queue/QueueDesk';
+import { QueueLine } from '../queue/QueueLine';
+import { useQueueDeskStore } from '../queue/use-queue-desk-store';
 import { QueueNotStarted } from './QueueNotStarted';
-import { QueueSection } from './QueueSection';
-import type { ManualGuest, QueueGuest } from './types';
 
 export type QueueViewProps = {
-	guests: QueueGuest[];
-	counts: Partial<Record<VisitStatus, number>>;
-	statusLabels: Record<VisitStatus, string>;
-	serviceStarted: boolean;
-	admissions: ManualAdmission[];
-	busy?: boolean;
-	onCallNext: (count: number) => void;
-	onRun: (guest: QueueGuest, command: VisitCommand) => void;
-	onAddGuest: (guest: ManualGuest) => void;
-	onCloseSession: () => void;
 	onNavigateCurrentSession: () => void;
 };
 
-type QueueList = 'called' | 'waiting' | 'resolved';
-
-const Header = styled.div`
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	gap: 4px;
-	align-items: center;
-`;
-
-const Summary = styled.p`
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	gap: 4px 12px;
-	margin: 10px 0 0;
-	color: var(--color-text-subtle);
-	font-size: 13px;
-
-	a {
-		color: var(--color-brand);
-		font-weight: 700;
-	}
-`;
-
 /**
- * The screen a worker actually uses during service. Everything down to the first guest rows is
- * deliberately compact: on a phone this is the only screen they look at, so the controls have to
- * clear the fold.
+ * The dashboard's Queue tab: the queue desk's own line, inside the dashboard. The standalone
+ * `/queue` screen is the one the line is designed for, so the tab adds nothing of its own once
+ * service runs — one screen to learn, and one place a change to the line has to be made.
+ *
+ * The desk's store lives as long as the tab is open, polling the line as it does on `/queue`.
  */
-export const QueueView = observer(function QueueView({
-	guests,
-	counts,
-	statusLabels,
-	serviceStarted,
-	admissions,
-	busy,
-	onCallNext,
-	onRun,
-	onAddGuest,
-	onCloseSession,
-	onNavigateCurrentSession,
-}: QueueViewProps) {
+export const QueueView = observer(function QueueView({ onNavigateCurrentSession }: QueueViewProps) {
 	const t = adminTranslations.en;
-	const [callBatchSize, setCallBatchSize] = useState(1);
-	// Every list starts open; a worker folds one away for the rest of the service if they like.
-	const [collapsed, setCollapsed] = useState<Partial<Record<QueueList, boolean>>>({});
-	const addGuestForm = useManualGuestForm(admissions);
-	const isWide = useMediaQuery(wideLayoutQuery);
-	// Drives the "called N min ago" labels. A minute's resolution needs nothing finer than this.
-	const [now, setNow] = useState(() => Date.now());
+	const desk = useQueueDeskStore();
 
-	useEffect(() => {
-		const timer = setInterval(() => setNow(Date.now()), 30_000);
-
-		return () => clearInterval(timer);
-	}, []);
-
-	if (!serviceStarted) {
-		return <QueueNotStarted onNavigateCurrentSession={onNavigateCurrentSession} />;
+	if (!desk) {
+		return <QueueDeskMessage text={t.queueDesk.loading} />;
 	}
 
-	const roster = new QueueRoster(guests);
-	const summary = [
-		`${counts.waiting ?? 0} ${t.waitingQueue}`,
-		`${counts.called ?? 0} ${t.calledNow}`,
-		`${counts.served ?? 0} ${t.served}`,
-	].join(' · ');
+	let content;
 
-	function toggle(list: QueueList) {
-		setCollapsed({ ...collapsed, [list]: !collapsed[list] });
+	switch (desk.phase) {
+		case 'loading':
+			content = <QueueDeskMessage text={t.queueDesk.loading} />;
+			break;
+		case 'not_permitted':
+			content = <QueueDeskMessage text={t.queueDesk.notPermitted} />;
+			break;
+		case 'not_started':
+			content = <QueueNotStarted onNavigateCurrentSession={onNavigateCurrentSession} />;
+			break;
+		case 'ended':
+			content = <QueueDeskMessage text={t.queueDesk.ended} />;
+			break;
+		case 'serving':
+			content = <QueueLine embedded />;
 	}
 
-	function addGuest(guest: ManualGuest) {
-		addGuestForm.close();
-		onAddGuest(guest);
-	}
-
-	function guestRows(
-		rows: QueueGuest[],
-		options: { waitingTime?: boolean; status?: boolean } = {},
-	) {
-		return rows.map((guest) => (
-			<QueueGuestRow
-				key={guest.id}
-				guest={guest}
-				now={now}
-				statusLabel={options.status ? statusLabels[guest.status] : undefined}
-				busy={busy}
-				showWaitingTime={options.waitingTime}
-				onRun={(command) => onRun(guest, command)}
-			/>
-		));
-	}
-
-	return (
-		<>
-			<Header>
-				{roster.isComplete ? (
-					/*
-					 * Nobody is left to call, so the control that would call them gives its place to the
-					 * one step that remains. It keeps the destructive treatment it has in the menu, and
-					 * still goes through the same confirmation.
-					 */
-					<Button
-						className="close-session"
-						type="button"
-						variant="contained"
-						color="error"
-						fullWidth
-						disabled={busy}
-						onClick={onCloseSession}
-					>
-						{t.closeSession}
-					</Button>
-				) : (
-					<>
-						<QueueCallNext
-							count={callBatchSize}
-							onCountChange={setCallBatchSize}
-							waitingCount={roster.waiting.length}
-							busy={busy}
-							onCall={() => onCallNext(callBatchSize)}
-						/>
-						<OverflowMenu label={t.sessionActions} disabled={busy}>
-							{(closeMenu) => (
-								<>
-									<KioskUnlockMenuItem closeMenu={closeMenu} />
-									<MenuItem
-										sx={{ color: 'error.main', fontWeight: 700 }}
-										onClick={() => {
-											closeMenu();
-											onCloseSession();
-										}}
-									>
-										{t.closeSession}
-									</MenuItem>
-								</>
-							)}
-						</OverflowMenu>
-					</>
-				)}
-			</Header>
-			<Summary className="queue-summary">
-				<span>{summary}</span>
-				<Link to="/queue">{t.queueDesk.openQueueDesk}</Link>
-			</Summary>
-
-			<QueueSection
-				title={t.calledNow}
-				count={roster.called.length}
-				emptyText={t.noCalledGuests}
-				open={!collapsed.called}
-				onToggle={() => toggle('called')}
-			>
-				{guestRows(roster.called, { waitingTime: true })}
-			</QueueSection>
-
-			<QueueSection
-				title={t.waitingQueue}
-				count={roster.waiting.length}
-				emptyText={t.noWaitingGuests}
-				open={!collapsed.waiting}
-				onToggle={() => toggle('waiting')}
-				action={
-					addGuestForm.canAdd && isWide ? (
-						<button className="add-guest-button" type="button" onClick={addGuestForm.open}>
-							+ {t.addGuest}
-						</button>
-					) : null
-				}
-			>
-				{guestRows(roster.waiting)}
-			</QueueSection>
-
-			<QueueSection
-				title={t.resolvedGuests}
-				count={roster.finished.length}
-				emptyText={t.noResolvedGuests}
-				open={!collapsed.resolved}
-				onToggle={() => toggle('resolved')}
-			>
-				{guestRows(roster.finished, { status: true })}
-			</QueueSection>
-
-			{addGuestForm.canAdd && !isWide ? <AddGuestFab onClick={addGuestForm.open} /> : null}
-			<ManualGuestDialog
-				open={addGuestForm.isOpen}
-				admissions={admissions}
-				busy={busy}
-				onSubmit={addGuest}
-				onClose={addGuestForm.close}
-			/>
-		</>
-	);
+	return <QueueDeskProvider value={desk}>{content}</QueueDeskProvider>;
 });

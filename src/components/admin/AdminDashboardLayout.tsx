@@ -17,10 +17,14 @@ import { SessionStateChip } from './SessionStateChip';
 import type { AdminView } from './types';
 
 /*
- * Reports are the one admin screen meant for a desk: a wide table is easier to read than a narrow
- * one, and the rest of the app has no reason to widen with it.
+ * Reports and the queue are the admin screens meant for a desk: a wide table is easier to read
+ * than a narrow one, and the queue sets the open ticket beside the line. The rest of the app has
+ * no reason to widen with them.
+ *
+ * The queue also fills the window's height on a desk, so the line and the ticket each scroll on
+ * their own and a long line never pushes the call button or the ticket out of view.
  */
-const Dashboard = styled.section<{ $wide: boolean }>`
+const Dashboard = styled.section<{ $wide: boolean; $fill: boolean }>`
 	width: min(100% - 32px, ${({ $wide }) => ($wide ? '1600px' : '1180px')});
 	margin: 0 auto;
 	/* Enough at the end of the page that the floating Add Guest button covers nothing. */
@@ -96,6 +100,26 @@ const Dashboard = styled.section<{ $wide: boolean }>`
 		.admin-heading h1 {
 			font-size: 30px;
 		}
+
+		${({ $fill }) =>
+			$fill
+				? `
+			box-sizing: border-box;
+			height: calc(100dvh - var(--app-bar-height));
+			padding-bottom: 24px;
+			align-items: stretch;
+
+			.admin-content {
+				display: flex;
+				flex-direction: column;
+				min-height: 0;
+			}
+
+			.admin-content > .queue-line {
+				flex: 1;
+			}
+		`
+				: ''}
 	}
 `;
 
@@ -118,7 +142,11 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 
 	return (
 		<AdminThemeProvider>
-			<Dashboard className="admin-dashboard" $wide={activeView === 'reports'}>
+			<Dashboard
+				className="admin-dashboard"
+				$wide={activeView === 'reports' || activeView === 'queue'}
+				$fill={activeView === 'queue'}
+			>
 				{isWide ? (
 					<div className="admin-sidebar">
 						<AdminViewList activeView={activeView} onSelect={onNavigate} label={t.adminTitle} />

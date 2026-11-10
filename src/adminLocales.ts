@@ -301,26 +301,13 @@ export interface AdminTranslation {
 	queuePosition: string;
 	queue: string;
 	callNext: string;
-	callNextCount: string;
-	waitingQueue: string;
-	calledNow: string;
-	resolvedGuests: string;
-	noResolvedGuests: string;
-	calledMinutesAgo: string;
-	calledJustNow: string;
-	/** The same two, short enough to sit beside a row's action button. */
-	calledMinutesShort: string;
-	calledJustNowShort: string;
 	sessionActions: string;
 	/** Short labels for the one-tap action on a queue row; the full verb lives in the menu. */
 	callShort: string;
 	serveShort: string;
 	moreActions: string;
 	phoneGuest: string;
-	callFewer: string;
-	callMore: string;
 	noWaitingGuests: string;
-	noCalledGuests: string;
 	queueNotStarted: string;
 	goToQueue: string;
 	goToCurrentSession: string;
@@ -1003,24 +990,12 @@ export const adminTranslations = {
 		queuePosition: 'Queue position',
 		queue: 'Queue',
 		callNext: 'Call Next',
-		callNextCount: 'How many to call',
-		waitingQueue: 'Waiting',
-		calledNow: 'At check-in',
-		resolvedGuests: 'Finished',
-		noResolvedGuests: 'Nobody has finished yet.',
-		calledMinutesAgo: 'Called {minutes} min ago',
-		calledJustNow: 'Called just now',
-		calledMinutesShort: '{minutes} min',
-		calledJustNowShort: 'Just now',
 		sessionActions: 'Session actions',
 		callShort: 'Call',
 		serveShort: 'Served',
 		moreActions: 'More actions',
 		phoneGuest: 'Phone',
-		callFewer: 'Call one fewer',
-		callMore: 'Call one more',
 		noWaitingGuests: 'Nobody is waiting to be called.',
-		noCalledGuests: 'Nobody has been called up yet.',
 		queueNotStarted: 'The queue opens once you run the lottery and service starts.',
 		goToQueue: 'Go to the Queue',
 		goToCurrentSession: 'Go to Today',

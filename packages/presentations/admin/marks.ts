@@ -150,8 +150,14 @@ export function markTarget(mark: AdminMark, doc: Document): HTMLElement | null {
 			return doc.querySelector('.reset-card');
 		case 'overview':
 			return doc.querySelector('.progress-card');
-		case 'call-next':
-			return doc.querySelector('.call-next');
+		// An item in the menu that is open, such as the queue's line actions.
+		case 'menuitem':
+			return labelled(doc.querySelector('[role="menu"]'), '[role="menuitem"]', copy);
+		// The menu beside the queue's call button on a phone, where adding a guest lives.
+		case 'line-actions':
+			return doc.querySelector<HTMLElement>(
+				`[aria-label="${CSS.escape(t.queueDesk.lineActions)}"]`,
+			);
 		case 'feedback':
 			return doc.querySelector('.admin-feedback');
 		case 'row':

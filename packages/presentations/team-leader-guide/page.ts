@@ -188,8 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		'Calling guests is in the queue desk guide.',
 	]);
 	move('queue', 'queue', null, market.midService);
-	line('addGuest', [A.queue, A.manualGuestTitle, A.placeEnd], 'button:addGuest');
-	tap(C('addGuest', 0.25), 'button:addGuest', (s) => {
+	line('addGuest', [A.queue, A.manualGuestTitle, A.placeEnd], 'line-actions');
+	tap(C('addGuest', 0.25), 'line-actions', (s) => {
 		s.scrollTo = null;
 		s.addGuest = { ...BLANK_GUEST };
 	});

@@ -58,6 +58,7 @@ export type AdminMark =
 	| `field:${KeysOf<string>}`
 	| `labelled:${KeysOf<string>}`
 	| `sheet:${KeysOf<string>}`
+	| `menuitem:${KeysOf<string>}`
 	| `row:${number}`
 	| 'switcher'
 	| 'navigation'
@@ -68,7 +69,7 @@ export type AdminMark =
 	| 'dialog'
 	| 'reset'
 	| 'overview'
-	| 'call-next'
+	| 'line-actions'
 	| 'feedback'
 	| 'history'
 	| 'search'

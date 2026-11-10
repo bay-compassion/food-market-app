@@ -18,8 +18,7 @@ import { GuestVisitStatus } from './GuestVisitStatus';
  * can be made to hold several different states at once inside one page. This catalogs every
  * market-level state card and `GuestVisitStatus` for every named
  * `VisitStatus`; `GuestView` presents one only after matching the visit to the displayed market,
- * and lets `cancelled` fall back to market status. The story renders statuses side by side, the same way
- * `QueueGuestRow.stories.tsx`'s `EachStatus` story does for the admin queue row. See
+ * and lets `cancelled` fall back to market status. The story renders statuses side by side. See
  * `GuestVisitStatus.stories.tsx` for each status on its own with full controls.
  *
  * `GuestVisitStatus` reads its visit from the root store rather than taking it as props, so each
