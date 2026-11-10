@@ -354,14 +354,22 @@ work the same way, and now unlocks with a code instead; the print station may fo
 a shared email address and the `worker` role. It signs in to both windows on that computer: the
 printing station, and the queue desk beside it. The Checklist tells volunteers to use it there.
 One account is easier for a group that changes every season than a print-only account plus
-everyone's own sign-in, and the iMac stays signed in, so the password is rarely typed. It costs the
+everyone's own sign-in, and the iMac fills the password in itself, so volunteers never need it. It costs the
 separation above: anyone with that password can run the queue and see the day's guest names and
 phone numbers, and nothing the account does can be traced to one person. So:
 
 - Only team leaders hold the password, in one place they all can reach (a shared password manager
-  vault is best). It isn't written on or near the iMac.
+  vault is best). It isn't written down on or near the iMac.
+- The iMac keeps it in Chrome's saved passwords, so a volunteer can sign in when Auth0 asks
+  without knowing it. It has to be saved twice: the print station runs in a Chrome profile of its
+  own, apart from the everyday one the queue desk uses. A team leader saves it during first-time
+  setup (see [`name-tag-printing.md`](name-tag-printing.md#setting-it-up)). Anyone at the iMac can
+  then sign in as the account, which the open, signed-in windows already allow; to see the password
+  itself, Chrome asks for the Mac's own login password, so give the iMac's user account one that
+  volunteers don't have.
 - Change it when a team leader leaves, and whenever it might have been seen by someone it shouldn't
-  have been. Signing the iMac back in is then the only follow-up.
+  have been. Then sign the iMac back in with the new one in both windows, and let Chrome update both
+  saved copies.
 - Volunteers working the line from their own phones still sign in as themselves.
 
 A `print-station`-only account still works for a station that should carry nothing beyond printing.

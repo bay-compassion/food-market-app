@@ -1292,7 +1292,7 @@ export const adminTranslations = {
 			online: 'Online',
 			offline: 'Offline',
 			account:
-				'Sign in with the shared check-in account, here and at the queue desk. Chrome usually remembers it; if it asks, a team leader has the sign-in. Don’t write the password down or save it anywhere else.',
+				'Sign in with the shared check-in account, here and at the queue desk. Chrome fills in the saved password; if it doesn’t, a team leader has the sign-in. Don’t write the password down.',
 			steps: [
 				{
 					id: 'printing-power',
@@ -1379,10 +1379,11 @@ export const adminTranslations = {
 				{
 					title: 'One Test Print',
 					steps: [
-						'Quit Chrome (Command-Q). Run the first-time command below in Terminal and sign in with the shared check-in account.',
+						'Quit Chrome (Command-Q). Run the first-time command below in Terminal and sign in with the shared check-in account. When Chrome offers to save the password, click Save.',
 						'On your phone, open the queue desk, pick any guest, and tap Print name tag.',
 						'A print window appears on the iMac. Choose the LabelWriter, 30857 as the paper size, Margins: None, and Scale: 100%. Click Print; Chrome remembers these choices.',
-						'Quit Chrome. From now on, the market-day steps are all you need.',
+						'Quit Chrome. Open it again from the Dock, go to the queue desk, sign in with the same account, and save the password there too: the printing station keeps its own copy.',
+						'From now on, the market-day steps are all you need.',
 					],
 				},
 			],

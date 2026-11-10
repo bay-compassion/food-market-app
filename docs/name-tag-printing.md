@@ -49,16 +49,21 @@ proportions, so changing labels means changing that one value.
    card's first-time command already does), and print one tag through the dialog (send one from a
    phone). In that dialog, choose the LabelWriter, pick the 30857 paper size, set the margins to none
    and the scale to 100%, and, if the dialog shows the printer's own options, choose the roll the
-   labels are on. Chrome saves these in the station's own profile.
-5. Quit that browser and open the [Check-In Launcher](#the-check-in-launcher). From then on it prints
-   with those settings and no dialog.
+   labels are on. Chrome saves these in the station's own profile. When it signs in with the shared
+   check-in account, let Chrome save the password.
+5. Quit that browser, open the iMac's everyday Chrome at `/queue`, sign in with the same account, and
+   save the password there too. The two profiles keep separate copies (see
+   [`roles.md`](roles.md#the-print-station)).
+6. Quit Chrome and open the [Check-In Launcher](#the-check-in-launcher). From then on it prints with
+   those settings and no dialog, and Chrome fills in the password whenever Auth0 asks.
 
 ## The Check-In Launcher
 
 On a market day the check-in computer needs two Chrome windows: the print station, and the queue desk
 (`/queue`) in the iMac's everyday Chrome. **Check-In Launcher** is an Automator application that opens
 both, with no Terminal window. Double-click it, then sign in to each window if asked, with the shared
-check-in account (see [`roles.md`](roles.md#the-print-station)).
+check-in account; Chrome fills in its saved password (see [`roles.md`](roles.md#the-print-station)).
+The password is never part of the app: `build.sh` copies `launch.sh` into it as plain text.
 
 - **It only opens production** (`app.thebaycompassion.org`). On a preview deploy, use the command below
   and open `/queue` by hand. To point it elsewhere, change `site` in
@@ -73,6 +78,10 @@ hand the address to that instance, and the next click, which restarts the statio
 queue desk with it. `open -na` with no `--user-data-dir` goes to the everyday profile, starting it if
 needed.
 
+Both windows are Chrome, not Safari, because the check-in iMac runs El Capitan. Its newest Safari is
+11, far below the app's Safari 15.4 floor, so the app doesn't load there at all. Chrome 103, the last
+Chrome for El Capitan, runs it.
+
 ### Building it
 
 The source is in [`check-in-launcher/`](check-in-launcher/): `launch.sh` is the script and
@@ -85,6 +94,11 @@ docs/check-in-launcher/build.sh
 
 That puts `Check-In Launcher.app` on the Desktop. It needs nothing but macOS, and Automator can open the
 result if you want to look inside.
+
+Its icon is The Bay Compassion logo, from the committed `icon.icns`. That file is generated, because
+El Capitan can't draw the logo's SVG: after the logo changes, run `docs/check-in-launcher/make-icon.sh`
+on a current Mac with the Xcode command line tools, commit the new `icon.icns`, and rebuild. A current
+macOS shows the round logo on a gray rounded square; El Capitan shows it as it is.
 
 Build it on the computer that will run it. The app is signed ad hoc, not with an Apple Developer ID, so
 a copy downloaded or sent from elsewhere is blocked by Gatekeeper the first time: after the warning, go
