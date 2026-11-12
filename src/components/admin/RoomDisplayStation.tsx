@@ -32,7 +32,7 @@ const HelpLink = styled.button`
 	cursor: pointer;
 `;
 
-/** The line board's own full-screen button, drawn as it looks in the board's corner. */
+/** The kiosk view's own full-screen button, drawn as it looks in the view's corner. */
 const BoardButton = styled.span`
 	display: inline-grid;
 	padding: 8px;
@@ -44,17 +44,20 @@ const BoardButton = styled.span`
 `;
 
 /**
- * Putting the `/kiosk` line board up on the TV in the auditorium. The unlock code comes from the
+ * Putting the `/kiosk` view up on the TV in the auditorium. The unlock code comes from the
  * same dialog the queue screen's menu opens, which the dashboard already mounts; a worker who can't
  * run the queue can't ask for one, so they are told who can instead. The Mac mini is too old for
- * current certificates, so its Chrome warns about the app's; the step links to how to get past that.
- * The board fills the screen from its own button, clicked with the keyboard's touchpad, rather than
+ * current certificates, so its Chrome warns about the app's; the step links to how to get past that, on the Help screen.
+ * The view fills the screen from its own button, clicked with the keyboard's touchpad, rather than
  * a shortcut that depends on how that Windows-layout keyboard is mapped.
  */
 export const RoomDisplayStation = observer(function RoomDisplayStation({
 	number,
+	onOpenHelp,
 }: {
 	number: number;
+	/** Opens the Help screen, where the certificate warning's fix is. */
+	onOpenHelp: () => void;
 }) {
 	const t = adminTranslations.en.checklist.roomDisplay;
 	const { admin, checklist } = useRootStore();
@@ -71,11 +74,17 @@ export const RoomDisplayStation = observer(function RoomDisplayStation({
 			<ChecklistTaskList
 				steps={t.steps}
 				extras={{
-					'room-power': <RoomDisplayHardware />,
+					'room-turn-on': <RoomDisplayHardware />,
 					'room-open': (
 						<>
 							<ChecklistAddress label={t.addressLabel} path="/kiosk" />
-							<HelpLink type="button" onClick={() => checklist.reveal('certificate-warning')}>
+							<HelpLink
+								type="button"
+								onClick={() => {
+									checklist.reveal('certificate-warning');
+									onOpenHelp();
+								}}
+							>
 								{t.certificateHelp}
 							</HelpLink>
 							{admin.can('run:queue') ? (

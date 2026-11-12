@@ -50,6 +50,26 @@ const Figure = styled.figure`
 		stroke-linecap: round;
 	}
 
+	/* The stand's own power cord: black whatever the theme, since it is black. */
+	.mains {
+		fill: none;
+		stroke: #111;
+		stroke-width: 4;
+		stroke-linecap: round;
+	}
+
+	.plug {
+		fill: #111;
+	}
+
+	/* The ⏻ on the TV's power button, light on the dark button. */
+	.power-symbol {
+		fill: none;
+		stroke: var(--color-surface);
+		stroke-width: 1.6;
+		stroke-linecap: round;
+	}
+
 	.leader {
 		fill: none;
 		stroke: var(--color-text-subtle);
@@ -89,15 +109,21 @@ const Figure = styled.figure`
 	}
 `;
 
+/** The TV's buttons above power, top to bottom: menu, input, volume up and down, channel up and down. */
+const tvButtons = [70, 92, 114, 136, 158, 180];
+
 /** The keyboard's rows of keys, as counts across, leaving room on the right for its touchpad. */
 const keyRows = [12, 12, 11, 10];
 
 /**
- * Where the room display's two awkward switches are. The TV stands on a rolling stand between two
+ * Where the room display's three awkward switches are. The TV stands on a rolling stand between two
  * upright posts, and the Mac mini (an Intel model; from 2010 to 2018 the power button is on the
  * back beside the power inlet) is wedged on the bracket behind it, sticking up above the TV. Under the TV is drawn the
  * mini's back panel, ports in order, and below that the Logitech K400 keyboard, whose on/off switch
  * is on the right of its top edge.
+ *
+ * Right of the TV is drawn the column of buttons on the TV's back, which is along its right edge as
+ * you face the screen; power is the bottom of its seven buttons.
  *
  * Which way the mini's back faces depends on how it was wedged in, so the drawing and caption find
  * the button by the power cord rather than by left or right.
@@ -107,7 +133,7 @@ export function RoomDisplayHardware() {
 
 	return (
 		<Figure>
-			<svg viewBox="0 0 320 368" role="img" aria-label={t.alt}>
+			<svg viewBox="0 0 384 368" role="img" aria-label={t.alt}>
 				{/* The stand: two upright tubes behind the TV, running down past it to a wheeled base, so
 				    the TV stands well off the floor. */}
 				<rect className="metal" x="84" y="252" width="152" height="7" rx="3" />
@@ -115,6 +141,9 @@ export function RoomDisplayHardware() {
 				<circle className="metal" cx="226" cy="264" r="5" />
 				<rect className="metal" x="116" y="58" width="9" height="196" rx="4" />
 				<rect className="metal" x="195" y="58" width="9" height="196" rx="4" />
+				{/* The stand's one long black power cord, from the back of the stand near its base. */}
+				<path className="mains" d="M204 240 C 240 244, 262 262, 300 268" />
+				<rect className="plug" x="300" y="262" width="16" height="12" rx="2" />
 				{/* The Mac mini, wedged on the bracket, about two thirds of it above the TV. */}
 				<rect className="outline" x="128" y="28" width="64" height="60" rx="9" />
 				{/* The TV, in front of both. */}
@@ -123,6 +152,16 @@ export function RoomDisplayHardware() {
 
 				{/* A leader from the mini down to the close-up of its back. */}
 				<path className="leader" d="M128 44 H10 V313 H20" />
+
+				{/* A leader from the TV's right edge to the column of buttons on its back. */}
+				<path className="leader" d="M294 128 H330" />
+				<rect className="outline" x="330" y="56" width="44" height="194" rx="6" />
+				{tvButtons.map((y) => (
+					<rect key={y} className="port" x="342" y={y} width="20" height="15" rx="3" />
+				))}
+				<rect className="port" x="341" y="212" width="22" height="20" rx="3" />
+				<path className="power-symbol" d="M348.6 219.4 a5 5 0 1 0 6.8 0 M352 216.5 V222.5" />
+				<circle className="target" cx="352" cy="222" r="16" />
 
 				{/* The mini's back panel, from the power button end. */}
 				<rect className="outline" x="20" y="296" width="280" height="34" rx="8" />
@@ -161,6 +200,7 @@ export function RoomDisplayHardware() {
 				<ellipse className="target" cx="278" cy="19" rx="18" ry="11" />
 			</svg>
 			<figcaption>
+				<p>{t.tv}</p>
 				<p>{t.macMini}</p>
 				<p>{t.keyboard}</p>
 			</figcaption>

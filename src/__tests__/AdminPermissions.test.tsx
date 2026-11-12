@@ -166,6 +166,7 @@ describe('admin navigation by permission', () => {
 			t.questionBank,
 			t.historySessions,
 			t.reports,
+			t.help.title,
 		]);
 	});
 

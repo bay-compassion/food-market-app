@@ -24,7 +24,7 @@ describe('AdminNavigation', () => {
 			{ group: 'today', views: ['current-session', 'checklist', 'queue', 'broadcast'] },
 			{ group: 'plan', views: ['schedule', 'question-bank'] },
 			{ group: 'records', views: ['guest-database', 'session-history', 'reports'] },
-			{ group: null, views: ['dev-mode'] },
+			{ group: null, views: ['help', 'dev-mode'] },
 		]);
 		expect(navigation.showsHeadings).toBe(true);
 	});
@@ -101,7 +101,7 @@ describe('AdminNavigation', () => {
 			{ group: 'today', views: ['checklist', 'broadcast'] },
 			{ group: 'plan', views: ['schedule', 'question-bank'] },
 			{ group: 'records', views: ['session-history', 'reports'] },
-			{ group: null, views: ['dev-mode'] },
+			{ group: null, views: ['help', 'dev-mode'] },
 		]);
 	});
 

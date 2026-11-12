@@ -397,6 +397,25 @@ export interface AdminTranslation {
 	kioskUnlock: KioskUnlockTranslation;
 	printStationCard: PrintStationCardTranslation;
 	checklist: ChecklistTranslation;
+	help: HelpTranslation;
+}
+
+/** One backup plan: when to switch to it, and what to do instead. */
+export interface BackupPlanCopy {
+	when: string;
+	instead: string;
+}
+
+/** The Help screen: the backup plans, then fixes and first-time setup (`checklist.reference`). */
+export interface HelpTranslation {
+	title: string;
+	intro: string;
+	backupPlans: {
+		title: string;
+		intro: string;
+		/** In order: each is the fallback when the one before it can't be used either. */
+		plans: BackupPlanCopy[];
+	};
 }
 
 /** One step on the Checklist: a short instruction, and a line on how or where. */
@@ -424,6 +443,9 @@ export interface ChecklistTranslation {
 	automatic: string;
 	/** While there is no session, ticks have nothing to belong to. */
 	ticksNeedSession: string;
+	/** Below the stations: where the fixes and backup plans are, on the Help screen. */
+	helpPrompt: string;
+	openHelp: string;
 	/** The plan of the market's part of the building, shown before the stations. */
 	floorPlan: {
 		title: string;
@@ -440,9 +462,10 @@ export interface ChecklistTranslation {
 		closeUpAlt: string;
 		/** Each step, in order. */
 		steps: ChecklistStepCopy[];
-		/** Where the Mac mini's power button and the keyboard's switch are. */
+		/** Where the TV's and the Mac mini's power buttons and the keyboard's switch are. */
 		hardware: {
 			alt: string;
+			tv: string;
 			macMini: string;
 			keyboard: string;
 		};
@@ -453,7 +476,7 @@ export interface ChecklistTranslation {
 		askForCode: string;
 		/** Under the address: a link to the troubleshooting fix for the old Mac mini's certificate warning. */
 		certificateHelp: string;
-		/** The line board's own full-screen button, drawn beside the step. */
+		/** The kiosk view's own full-screen button, drawn beside the step. */
 		fullScreenButtonAlt: string;
 		doneWhen: string;
 	};
@@ -464,13 +487,6 @@ export interface ChecklistTranslation {
 		placeTitle: string;
 		/** Putting the cabinet in place, before anything on it is turned on. */
 		placeSteps: ChecklistStepCopy[];
-		/** After the printing station is running: the queue desk, in a window of its own. */
-		queueDeskTitle: string;
-		/** Shown until the printing station is online, since starting it closes Chrome. */
-		queueDeskWait: string;
-		queueDeskSteps: ChecklistStepCopy[];
-		queueDeskAddressLabel: string;
-		openQueueDesk: string;
 		doneWhen: string;
 	};
 	session: {
@@ -487,9 +503,12 @@ export interface ChecklistTranslation {
 	reference: {
 		title: string;
 		troubleshootingTitle: string;
-		/** Starting the printing station from Terminal, when the iMac's automation doesn't. */
+		/** Starting the printing station in Chrome, from Terminal, when the desktop app won't start. */
 		byHandTitle: string;
 		byHandIntro: string;
+		/** After the command: the queue desk, which the app would have held, in a Chrome window. */
+		byHandQueueDesk: string;
+		byHandQueueDeskLabel: string;
 		setupTitle: string;
 		setupIntro: string;
 		/** The room display's Mac mini, which needs one setting of its own. */
@@ -787,6 +806,7 @@ export const adminTranslations = {
 			'session-history': 'Past sessions, and guests served outside the app.',
 			workers: 'Add staff and manage worker and admin access.',
 			reports: 'Basic figures for a date range. Export a CSV for anything more.',
+			help: 'Backup plans, fixes for common problems, and first-time setup.',
 			'dev-mode': 'Load demo guests and visits to show the app at a chosen moment.',
 		},
 		viewGroups: {
@@ -1292,7 +1312,7 @@ export const adminTranslations = {
 			online: 'Online',
 			offline: 'Offline',
 			account:
-				'Sign in with the shared check-in account, here and at the queue desk. Chrome fills in the saved password; if it doesn’t, a team leader has the sign-in. Don’t write the password down.',
+				'The app signs in with the shared check-in account and fills in its password, so you never need to know it. If it can’t, a team leader types it in from the team’s shared Apple Passwords, or, only if that fails, from the sealed password envelope. Apart from that envelope, the password is never written down, said out loud, or sent.',
 			steps: [
 				{
 					id: 'printing-power',
@@ -1300,20 +1320,22 @@ export const adminTranslations = {
 					detail: 'Check the printer has labels in it.',
 				},
 				{
-					id: 'printing-quit-chrome',
-					title: 'Quit Chrome completely',
-					detail: 'Click any Chrome window and press Command-Q. Closing its windows isn’t enough.',
+					id: 'printing-open-app',
+					title: 'Open Compassion Food Market from the Dock',
+					detail:
+						'One window holds both: the queue desk, and the printing station in a panel down its right side. If it doesn’t start, see Start Printing by Hand below.',
 				},
 				{
-					id: 'printing-start',
-					title: 'Start the printing station',
+					id: 'printing-sign-in',
+					title: 'Sign in if it asks',
 					detail:
-						'Use the iMac’s automation. A Chrome window opens on the printing station; sign in if it asks. If it doesn’t start, see Start Printing by Hand below.',
+						'With the shared check-in account. The app fills it in when it can. If the password is missing, a team leader types it in from the team’s shared Apple Passwords and saves it when the app offers. Only if that fails, they open the sealed password envelope and tell the team the seal is broken. Not Continue with Google: Google won’t sign in inside the app.',
 				},
 				{
 					id: 'printing-wait-online',
 					title: 'Wait for Online',
-					detail: 'Leave that window open for the whole market.',
+					detail:
+						'The printing station’s panel says so. Leave the app open for the whole market: closing its window only hides it, but quitting it stops printing.',
 				},
 			],
 			commandLabel: 'Market-Day Command',
@@ -1332,23 +1354,35 @@ export const adminTranslations = {
 			troubleshooting: [
 				{
 					problem: 'The printing station says Offline',
-					fix: 'Its window was closed, or the iMac went to sleep. Wake the iMac; if the window is gone, start the printing station again.',
+					fix: 'Compassion Food Market was quit, or the iMac went to sleep. Wake the iMac, and open the app from the Dock if it isn’t running.',
+				},
+				{
+					problem: 'The printing station’s panel is missing',
+					fix: 'It stays folded away until someone signs in at the queue desk. Sign in, or choose Window → Show Printing Station (Shift-Command-P).',
+				},
+				{
+					problem: 'Every tag prints twice',
+					fix: 'The printing station is also running in Chrome. Quit Chrome (Command-Q) and leave the app running.',
 				},
 				{
 					problem: 'A print window pops up for every tag',
-					fix: 'Chrome was opened the usual way instead of by the automation. Quit Chrome (Command-Q) and start the printing station again.',
+					fix: 'The printing station was opened in Chrome the usual way. Quit Chrome (Command-Q) and open Compassion Food Market instead.',
 				},
 				{
 					problem: 'It says Online, but nothing prints',
-					fix: 'Check the printer is switched on, its USB cable is plugged in, and it has labels. Then print the tag again.',
+					fix: 'Check the printer is switched on, its USB cable is plugged in, it has labels, and it is the iMac’s default printer. Then print the tag again.',
 				},
 				{
 					problem: 'Tags come out small, or with a white border',
-					fix: 'Do One Test Print under First-Time Setup again, making sure Scale is 100% and the paper is 30857.',
+					fix: 'Check the labels are Dymo 30857. If the printing station was started by hand in Chrome, do Chrome Backup under First-Time Setup again, making sure Scale is 100%.',
+				},
+				{
+					problem: 'It asks for a password it doesn’t fill in',
+					fix: 'The saved password is out of date, usually because it was changed. A team leader types it in from the team’s shared Apple Passwords, or, only if that fails, from the sealed password envelope, and saves it when the app offers. A broken seal means the password gets changed and a new envelope sealed.',
 				},
 				{
 					problem: 'It says this account can’t run the print station',
-					fix: 'It’s signed in with an account that can’t print. Sign out and sign in with the shared check-in account.',
+					fix: 'It’s signed in with an account that can’t print. Ask a team leader to sign out and sign in with the shared check-in account.',
 				},
 				{
 					id: 'certificate-warning',
@@ -1357,7 +1391,7 @@ export const adminTranslations = {
 				},
 				{
 					problem: 'The room display asks for a code',
-					fix: 'Get an unlock code from the Room Display steps above, or ask a team leader for one.',
+					fix: 'Get an unlock code from the Checklist’s Room Display steps, or on your phone at app.thebaycompassion.org/admin/queue, from Unlock a Room Display.',
 				},
 			],
 			setupTitle: 'Check-In iMac',
@@ -1371,19 +1405,30 @@ export const adminTranslations = {
 					],
 				},
 				{
+					title: 'Compassion Food Market',
+					steps: [
+						'On the iMac, download the zip from the latest release at github.com/bay-compassion/food-market-app/releases/latest. Double-click it to unzip, and move Compassion Food Market to Applications.',
+						'Open it. The first time, macOS won’t: go to System Settings → Privacy & Security and choose Open Anyway. After that it opens normally and updates itself.',
+						'Sign in with the shared check-in account, typing the password in from the team’s shared Apple Passwords, not Continue with Google. When the app offers to save the password, save it, so nobody needs to type it again.',
+						'Right-click its icon in the Dock and choose Options, then Keep in Dock.',
+						'On your phone, open the queue desk, pick any guest, and tap Print name tag. The tag prints with no print window and shows in the app’s printing station panel.',
+					],
+				},
+				{
 					title: 'Keep It Awake',
 					steps: [
 						'In System Settings, choose Lock Screen and set the screen saver and “Turn display off” options to Never.',
 					],
 				},
 				{
-					title: 'One Test Print',
+					title: 'Chrome Backup',
 					steps: [
-						'Quit Chrome (Command-Q). Run the first-time command below in Terminal and sign in with the shared check-in account. When Chrome offers to save the password, click Save.',
+						'Only so Start Printing by Hand works if the app ever won’t start. Quit Compassion Food Market and Chrome (Command-Q for each).',
+						'Run the first-time command below in Terminal and sign in with the shared check-in account. When Chrome offers to save the password, click Save.',
 						'On your phone, open the queue desk, pick any guest, and tap Print name tag.',
 						'A print window appears on the iMac. Choose the LabelWriter, 30857 as the paper size, Margins: None, and Scale: 100%. Click Print; Chrome remembers these choices.',
 						'Quit Chrome. Open it again from the Dock, go to the queue desk, sign in with the same account, and save the password there too: the printing station keeps its own copy.',
-						'From now on, the market-day steps are all you need.',
+						'Quit Chrome and open Compassion Food Market again. From now on, the market-day steps are all you need.',
 					],
 				},
 			],
@@ -1400,9 +1445,12 @@ export const adminTranslations = {
 			hideSteps: 'Hide steps',
 			automatic: 'Ticked by the app',
 			ticksNeedSession: 'Steps can be ticked off once a session is scheduled.',
+			helpPrompt:
+				'Something not working? Help has the backup plans, fixes for common problems, and first-time setup.',
+			openHelp: 'Open Help',
 			floorPlan: {
 				title: 'Where Things Go',
-				alt: 'Floor plan of the lobby and the back of the auditorium. The auditorium’s seats are in five sections facing the stage, with a sound booth at the back of the middle one. The waiting area is the back half of the two sections on the far left. 1, the room display, stands against the auditorium’s back wall behind the stairway to the lower level, just left of two large pillars by the center exit, facing the waiting area. 2, the check-in desk, stands at the left edge of the lobby by the restrooms, below a wall outlet.',
+				alt: 'Floor plan of the lobby and the back of the auditorium. The auditorium’s seats are in five sections facing the stage, with a sound booth at the back of the middle one. The waiting area is the back half of the two sections on the far left. 1, the check-in desk, stands at the left edge of the lobby by the restrooms, below a wall outlet. 2, the room display, stands against the auditorium’s back wall behind the stairway to the lower level, just left of two large pillars by the center exit, facing the waiting area.',
 				zoomIn: 'Zoom In',
 				zoomOut: 'Zoom Out',
 				reset: 'Reset',
@@ -1411,85 +1459,89 @@ export const adminTranslations = {
 				title: 'Room Display',
 				place: 'Auditorium, back wall',
 				closeUpAlt:
-					'Close-up of 1 on the floor plan: the room display against the auditorium’s back wall, just left of the pillar, with the waiting area to its upper left and its outlet behind it.',
+					'Close-up of 2 on the floor plan: the room display against the auditorium’s back wall, just left of the pillar, with the waiting area to its upper left and its outlet behind it.',
 				steps: [
 					{
 						id: 'room-place',
-						title: 'Roll the TV stand to 1',
+						title: 'Roll the TV stand to 2',
 						detail:
-							'Against the back wall, just left of the pillar. Angle the screen toward the waiting area.',
+							'Against the back wall, just right of the pillar as you face the wall. Angle the screen toward the waiting area.',
 					},
 					{
 						id: 'room-power',
-						title: 'Plug in and turn everything on',
+						title: 'Plug in its one cord',
 						detail:
-							'Plug the stand into the outlet on the wall behind it. Turn on the TV, then the Mac mini if it hasn’t started by itself, then the keyboard.',
+							'Everything on the stand runs from one long black cord, on the back of the stand near its base. Plug it into the outlet on the wall behind the stand.',
+					},
+					{
+						id: 'room-keyboard',
+						title: 'Bring the keyboard and turn it on',
+						detail:
+							'The Logitech K400 is in the bin in the rolling cabinet at check-in. Its trackpad is the mouse pointer.',
+					},
+					{
+						id: 'room-turn-on',
+						title: 'Turn on the TV and the Mac mini, and log in',
+						detail:
+							'The Mac mini only if it hasn’t started by itself. Log in using the keyboard. Team leaders know the password.',
 					},
 					{
 						id: 'room-open',
-						title: 'Open the line board in Chrome',
+						title: 'Wait for the kiosk view',
 						detail:
-							'If Chrome didn’t open it by itself, click Chrome in the Dock, type this address into the bar at the top, and press Enter.',
+							'It opens by itself a minute or two after you log in. If it doesn’t, open the web browser, type this address into the bar at the top, and press Enter.',
 					},
 					{
 						id: 'room-full-screen',
 						title: 'Fill the screen',
 						detail:
-							'With the keyboard’s touchpad, click the full-screen button in the bottom-right corner of the line board. It disappears once the board fills the TV.',
+							'With the K400’s trackpad, click the full-screen button in the bottom-right corner of the kiosk view. It disappears once the view fills the TV.',
 					},
 				],
 				hardware: {
-					alt: 'The TV on its rolling stand between two upright posts, with the Mac mini wedged on top of the bracket behind it, sticking up above the TV. Its power button is on its back, at the corner beside the power cord. Below, the wireless keyboard with its on/off switch on the right of its top edge.',
+					alt: 'The TV on its rolling stand between two upright posts, with the Mac mini wedged on top of the bracket behind it, sticking up above the TV. The stand’s long black power cord runs from the back of the stand near its base. Its power button is on its back, at the corner beside the power cord. Beside the TV, the column of seven buttons on the TV’s back, along its right edge as you face the screen, with power the bottom one. Below, the Logitech K400 keyboard with its on/off switch on the right of its top edge.',
+					tv: 'TV: the bottom of the seven buttons on its back, along its right edge as you face the screen.',
 					macMini:
 						'Mac mini: the round button on its back, at the corner beside where the power cord goes in. Reach over the top of the TV to press it.',
 					keyboard:
-						'Keyboard: slide the switch on the right of its top edge to On. Its touchpad moves the pointer.',
+						'Logitech K400 keyboard, from the bin in the rolling cabinet: slide the switch on the right of its top edge to On. Its trackpad is the mouse pointer.',
 				},
 				addressLabel: 'Address',
-				unlockHint: 'If it asks for an unlock code, it then stays unlocked for about six months.',
+				unlockHint:
+					'Type the code into the kiosk view and click Unlock. It then stays unlocked for about six months.',
 				getCode: 'Get an Unlock Code',
 				askForCode: 'If it asks for an unlock code, ask a team leader to get one for you.',
 				certificateHelp: 'Chrome says “Your connection is not private”?',
 				fullScreenButtonAlt: 'The full-screen button: four corners pointing outward.',
-				doneWhen: 'the line board fills the TV and faces the waiting area.',
+				doneWhen: 'the kiosk view fills the TV and faces the waiting area.',
 			},
 			checkIn: {
 				title: 'Check-In',
 				place: 'Lobby, by the restrooms',
 				closeUpAlt:
-					'Close-up of 2 on the floor plan: the check-in cabinet at the left edge of the lobby by the restrooms, below its wall outlet.',
+					'Close-up of 1 on the floor plan: the check-in cabinet at the left edge of the lobby by the restrooms, below its wall outlet.',
 				placeTitle: 'Place the Cabinet',
 				placeSteps: [
 					{
 						id: 'check-in-place',
-						title: 'Roll the cabinet to 2',
+						title: 'Roll the cabinet to 1',
+						detail: 'Where the coffee usually is, at the left edge of the lobby.',
+					},
+					{
+						id: 'check-in-printer',
+						title: 'Plug in the label printer',
 						detail:
-							'Where the coffee usually is. Turn the iMac so guests in the lobby can’t see its screen; the volunteer stands on the cabinet’s left.',
+							'It has two cords: its power cord goes into the large white splitter in the cabinet, and its USB cable into the back of the iMac.',
 					},
 					{
 						id: 'check-in-power',
-						title: 'Plug in at the outlet above it',
-						detail: 'The label printer sits on the cabinet beside the iMac.',
+						title: 'Plug the white splitter into the wall',
+						detail:
+							'The iMac plugs into the splitter too. Plug the splitter into the outlet above the cabinet. If it doesn’t reach, use the long orange extension cord.',
 					},
 				],
-				queueDeskTitle: 'Open the Queue Desk',
-				queueDeskWait:
-					'Wait until the printing station says Online: starting it quits Chrome, which would close a queue desk opened sooner.',
-				queueDeskSteps: [
-					{
-						id: 'queue-open-chrome',
-						title: 'Open Chrome again from the Dock',
-						detail: 'Leave the printing station’s window open behind it.',
-					},
-					{
-						id: 'queue-sign-in',
-						title: 'Go to the queue desk and sign in',
-						detail: 'Use the shared check-in account, the same one as the printing station.',
-					},
-				],
-				queueDeskAddressLabel: 'Address',
-				openQueueDesk: 'Open Queue Desk',
-				doneWhen: 'the printing station says Online and the queue desk is open beside it.',
+				doneWhen:
+					'Compassion Food Market shows the queue desk, and its printing station panel says Online.',
 			},
 			session: {
 				scheduledTitle: 'Session Scheduled',
@@ -1505,17 +1557,51 @@ export const adminTranslations = {
 				troubleshootingTitle: 'If Something Goes Wrong',
 				byHandTitle: 'Start Printing by Hand',
 				byHandIntro:
-					'Only if the iMac’s automation doesn’t start the printing station. Quit Chrome first (Command-Q).',
+					'Only if Compassion Food Market won’t start. This runs the printing station in Chrome instead. Quit the app first, or every tag prints twice, and quit Chrome too (Command-Q for each).',
+				byHandQueueDesk:
+					'Once the printing station says Online, open Chrome again from the Dock, go to the queue desk, and sign in with the same account.',
+				byHandQueueDeskLabel: 'Queue Desk Address',
 				setupTitle: 'First-Time Setup',
-				setupIntro: 'Once per computer. Skip this on a normal market day.',
+				setupIntro:
+					'Once per computer, by a team leader: it needs the check-in password, which only team leaders type in. Skip this on a normal market day.',
 				macMiniTitle: 'Room Display Mac Mini',
 				macMiniIntro:
-					'So that plugging in the stand is all it takes to bring the line board back. Names are as in System Preferences on older macOS; System Settings on newer Macs has the same options.',
+					'So that plugging in the stand is all it takes to bring the kiosk view back. Names are as in System Preferences on older macOS; System Settings on newer Macs has the same options.',
 				macMiniSteps: [
 					'Start up when the stand is plugged in: in Energy Saver, turn on “Start up automatically after a power failure”. Then nobody needs to reach its power button.',
 					'Log in by itself: in Users & Groups, click the lock, then Login Options, and set “Automatic login” to the display’s account. If that is greyed out, FileVault is on; turn it off under Security & Privacy first.',
-					'Open Chrome at login: right-click Chrome in the Dock and choose Options, then Open at Login. In Chrome’s settings, under On Startup, choose “Continue where you left off”, so it comes back to the line board.',
+					'Open Chrome at login: right-click Chrome in the Dock and choose Options, then Open at Login. In Chrome’s settings, under On Startup, choose “Continue where you left off”, so it comes back to the kiosk view.',
 					'Stop it from sleeping: in Energy Saver, set “Turn display off after” to Never and turn on “Prevent computer from sleeping automatically when the display is off”. In Desktop & Screen Saver, set the screen saver to start Never.',
+				],
+			},
+		},
+		help: {
+			title: 'Help',
+			intro:
+				'What to do when something at the market goes wrong, and how to set up a computer for the first time.',
+			backupPlans: {
+				title: 'Backup Plans',
+				intro:
+					'If a station can’t be set up, or stops working partway through, switch to its backup plan and carry on. Each plan below is the fallback for the one above it.',
+				plans: [
+					{
+						when: 'Printing doesn’t work',
+						instead: 'Write name tags by hand: the guest’s first name, last initial, and number.',
+					},
+					{
+						when: 'The room display doesn’t work',
+						instead: 'Call numbers out loud. Guests can also see their place in line in the app.',
+					},
+					{
+						when: 'Neither works',
+						instead:
+							'Run the market from the app alone. It still draws the lottery on its own; call guests from the queue desk on your phone, and guests follow their place in line on theirs.',
+					},
+					{
+						when: 'The app doesn’t work',
+						instead:
+							'Use the deli counter tickets: hand them out, and call guests by ticket number.',
+					},
 				],
 			},
 		},

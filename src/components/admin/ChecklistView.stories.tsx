@@ -9,10 +9,7 @@ import { StorageKey } from '../../services/storage.service';
 import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { MemoryStorage } from '../guest-view/memory-storage.fixture';
-import {
-	printStationFirstRunCommand,
-	printStationLaunchCommand,
-} from '../print-station/PrintStationSetup';
+import { printStationLaunchCommand } from '../print-station/PrintStationSetup';
 import { ChecklistView } from './ChecklistView';
 import { KioskUnlockDialog } from './KioskUnlockDialog';
 
@@ -25,6 +22,7 @@ type ChecklistViewArgs = {
 	station: Station;
 	ticked: Ticked;
 	onNavigateSchedule: () => void;
+	onNavigateHelp: () => void;
 };
 
 const t = adminTranslations.en.checklist;
@@ -42,7 +40,13 @@ const sessionStatus: Record<Exclude<Session, 'missing'>, SessionStatusEnum> = {
  * another on the same docs page. The dialog the code opens is mounted by the dashboard's layout, so
  * the fixture mounts it here.
  */
-function SeededChecklist({ session, station, ticked, onNavigateSchedule }: ChecklistViewArgs) {
+function SeededChecklist({
+	session,
+	station,
+	ticked,
+	onNavigateSchedule,
+	onNavigateHelp,
+}: ChecklistViewArgs) {
 	const [store] = useState(() => {
 		// `AdminApi` only ever requests a plain path string.
 		const request = (path: string) =>
@@ -94,7 +98,7 @@ function SeededChecklist({ session, station, ticked, onNavigateSchedule }: Check
 
 	return (
 		<RootStoreProvider store={store}>
-			<ChecklistView onNavigateSchedule={onNavigateSchedule} />
+			<ChecklistView onNavigateSchedule={onNavigateSchedule} onNavigateHelp={onNavigateHelp} />
 			<KioskUnlockDialog />
 		</RootStoreProvider>
 	);
@@ -106,8 +110,8 @@ function Fixture(args: ChecklistViewArgs) {
 }
 
 /**
- * What to set up at the market by hand before a session: whether there is a session, then the room
- * display and the check-in computer, each ticked off step by step on this device.
+ * What to set up at the market by hand before a session: whether there is a session, then the
+ * check-in computer and the room display, each ticked off step by step on this device.
  */
 const meta = {
 	title: 'Admin/Checklist/Checklist',
@@ -118,7 +122,13 @@ const meta = {
 		station: { control: 'inline-radio', options: ['online', 'offline'] },
 		ticked: { control: 'inline-radio', options: ['none', 'roomDisplay'] },
 	},
-	args: { session: 'scheduled', station: 'offline', ticked: 'none', onNavigateSchedule: fn() },
+	args: {
+		session: 'scheduled',
+		station: 'offline',
+		ticked: 'none',
+		onNavigateSchedule: fn(),
+		onNavigateHelp: fn(),
+	},
 } satisfies Meta<typeof Fixture>;
 
 export default meta;
@@ -135,13 +145,13 @@ export const Scheduled: Story = {
 		await expect(canvas.getByRole('heading', { name: t.checkIn.title })).toBeVisible();
 		await expect(canvas.getByRole('img', { name: t.roomDisplay.hardware.alt })).toBeVisible();
 		await expect(canvas.getByText(`${window.location.host}/kiosk`)).toBeVisible();
-		await expect(canvas.getByRole('link', { name: t.checkIn.openQueueDesk })).toHaveAttribute(
-			'href',
-			'/queue',
-		);
+
+		for (const step of printing.steps) {
+			await expect(canvas.getByRole('checkbox', { name: step.title })).toBeInTheDocument();
+		}
+
 		await expect(canvas.queryByText(printStationLaunchCommand)).toBeNull();
 		await expect(canvas.queryByRole('button', { name: t.session.openSchedule })).toBeNull();
-		await expect(await canvas.findByText(t.checkIn.queueDeskWait)).toBeVisible();
 	},
 };
 
@@ -156,7 +166,7 @@ export const TickAStep: Story = {
 		await expect(canvas.getByRole('checkbox', { name: step.title })).toBeChecked();
 		await expect(
 			canvas.getByText(
-				`${t.roomDisplay.place} · ${t.progress.replace('{done}', '1').replace('{total}', '4')}`,
+				`${t.roomDisplay.place} · ${t.progress.replace('{done}', '1').replace('{total}', String(t.roomDisplay.steps.length))}`,
 			),
 		).toBeVisible();
 	},
@@ -172,7 +182,6 @@ export const PrinterOnline: Story = {
 		await waitFor(() => expect(canvas.getByRole('checkbox', { name: step.title })).toBeChecked());
 		await expect(canvas.getByRole('checkbox', { name: step.title })).toBeDisabled();
 		await expect(canvas.getByText(t.automatic)).toBeVisible();
-		await expect(canvas.queryByText(t.checkIn.queueDeskWait)).toBeNull();
 	},
 };
 
@@ -212,21 +221,15 @@ export const UnlockCode: Story = {
 
 /**
  * The room display's Mac mini is too old to trust the app's certificate; the link under its address
- * opens the troubleshooting fix further down.
+ * goes to Help, which opens the fix (see the Help screen's `RequestedFix`).
  */
 export const CertificateHelp: Story = {
-	play: async ({ canvasElement }) => {
+	play: async ({ args, canvasElement }) => {
 		const canvas = within(canvasElement);
-		const problem = printing.troubleshooting.find(({ id }) => id === 'certificate-warning')!;
 
 		await userEvent.click(canvas.getByRole('button', { name: t.roomDisplay.certificateHelp }));
 
-		await expect(
-			await canvas.findByText(problem.fix.replaceAll('{host}', window.location.host)),
-		).toBeVisible();
-		await waitFor(() =>
-			expect(canvas.getByRole('button', { name: problem.problem })).toHaveFocus(),
-		);
+		await expect(args.onNavigateHelp).toHaveBeenCalled();
 	},
 };
 
@@ -253,36 +256,14 @@ export const Missing: Story = {
 	},
 };
 
-/**
- * Troubleshooting, starting the printing station by hand, and first-time setup are folded below the
- * stations. Opened, the by-hand section gives the market-day command, and setup gives the one that
- * prints through the dialog.
- */
-export const WhenYouNeedIt: Story = {
-	play: async ({ canvasElement }) => {
+/** What's needed only when something goes wrong is on the Help screen, which the last section opens. */
+export const OpenHelp: Story = {
+	play: async ({ args, canvasElement }) => {
 		const canvas = within(canvasElement);
-		const problem = printing.troubleshooting[0]!;
 
-		await userEvent.click(canvas.getByRole('button', { name: t.reference.troubleshootingTitle }));
-		await userEvent.click(canvas.getByRole('button', { name: problem.problem }));
-
-		await expect(canvas.getByText(problem.fix)).toBeVisible();
-
-		await expect(canvas.queryByText(printStationLaunchCommand)).toBeNull();
-		await userEvent.click(canvas.getByRole('button', { name: t.reference.byHandTitle }));
-
-		await expect(canvas.getByText(printStationLaunchCommand)).toBeVisible();
-		await expect(canvas.getByRole('link', { name: printing.open })).toHaveAttribute(
-			'href',
-			`${window.location.origin}/printing-station`,
-		);
-
-		await expect(canvas.queryByText(printStationFirstRunCommand)).toBeNull();
-		await userEvent.click(canvas.getByRole('button', { name: t.reference.setupTitle }));
-
-		await expect(canvas.getByText(printStationFirstRunCommand)).toBeVisible();
-		await expect(printStationFirstRunCommand).not.toContain('--kiosk-printing');
-		await expect(printStationLaunchCommand).toContain('--kiosk-printing');
+		await expect(canvas.getByText(t.helpPrompt)).toBeVisible();
+		await userEvent.click(canvas.getByRole('button', { name: t.openHelp }));
+		await expect(args.onNavigateHelp).toHaveBeenCalled();
 	},
 };
 

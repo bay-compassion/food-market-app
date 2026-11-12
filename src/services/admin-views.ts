@@ -15,6 +15,7 @@ export const adminViews = [
 	'session-history',
 	'reports',
 	'workers',
+	'help',
 	'dev-mode',
 ] as const;
 
@@ -45,6 +46,7 @@ export const viewPermissions: Record<AdminView, Permission> = {
 	'session-history': 'run:queue',
 	reports: 'read:reports',
 	workers: 'manage:workers',
+	help: 'manage:sessions',
 	'dev-mode': 'manage:demo-data',
 };
 
@@ -60,7 +62,8 @@ export type AdminViewGroup = (typeof adminViewGroups)[number];
 
 /**
  * Which heading each screen sits under. Dev Mode belongs to none: it is a tool for staging the
- * market, not part of running one, so it trails the list on its own.
+ * market, not part of running one, so it trails the list on its own. Help belongs to none either:
+ * it is for any moment, not one part of the week.
  */
 export const adminViewGroup: Record<AdminView, AdminViewGroup | null> = {
 	checklist: 'today',
@@ -73,5 +76,6 @@ export const adminViewGroup: Record<AdminView, AdminViewGroup | null> = {
 	'session-history': 'records',
 	reports: 'records',
 	workers: null,
+	help: null,
 	'dev-mode': null,
 };

@@ -13,14 +13,18 @@ guest. To check a sticker, find the guest on the queue desk's list at `/queue` o
 Queue tab, where each guest shows the code their tag carries, and compare. Four hex characters
 aren't unique on their own, but among one day's visits they narrow a sticker to one.
 
-The dashboard's Checklist screen walks a volunteer through starting the station, as part B of its
-**Check-In** station: whether a station is checking in right now, which account signs in, and the
-market-day steps. On a market day the [Check-In Launcher](#the-check-in-launcher) on the iMac starts
-the station, so the steps don't show the launch command. Folded under **When You Need It** at the
-bottom of the screen are what to do when it misbehaves; **Start Printing by Hand**, with the launch command to copy and how to run
-it in Terminal; and the one-time setup below, with its own first-time command that leaves out
-`--kiosk-printing`. Sign in to the dashboard on the station's computer and open it from there —
-not from a phone: whatever device has the page open becomes the station and takes the tags.
+On a market day the station is **Compassion Food Market**, a desktop app on the check-in iMac
+(`packages/check-in-app`). Its one window is the queue desk with the print station in a panel down
+its right side, so opening it and signing in once is the whole of starting the station. The
+dashboard's Checklist screen walks a volunteer through that, as part B of its **Check-In** station:
+whether a station is checking in right now, which account signs in, and the market-day steps. A two-page printed version of the setup, for team leaders, is
+[`/support/setup.html`](../public/support/setup.html), listed with the other staff printouts at `/support`.
+
+Chrome is the backup, for when the app won't start. The dashboard's **Help** screen holds the
+backup plans (handwritten name tags, when printing fails), what to do when the station misbehaves; **Start Printing by Hand**, with the
+[Chrome launch command](#the-chrome-backup) to copy and how to run it in Terminal; and the one-time
+setup below. Sign in to the dashboard on the station's computer and open it from there — not from
+a phone: whatever device has the page open becomes the station and takes the tags.
 
 ## The printer
 
@@ -44,22 +48,38 @@ proportions, so changing labels means changing that one value.
 1. Install Dymo's software for the LabelWriter 450 on the station's computer (it includes the
    printer driver), and plug the printer in over USB.
 2. Load 30857 labels.
-3. Make the LabelWriter the computer's default printer.
-4. Start the print station's browser with the command below, but leave out `--kiosk-printing` (the
-   card's first-time command already does), and print one tag through the dialog (send one from a
-   phone). In that dialog, choose the LabelWriter, pick the 30857 paper size, set the margins to none
-   and the scale to 100%, and, if the dialog shows the printer's own options, choose the roll the
-   labels are on. Chrome saves these in the station's own profile. When it signs in with the shared
-   check-in account, let Chrome save the password.
-5. Quit that browser, open the iMac's everyday Chrome at `/queue`, sign in with the same account, and
-   save the password there too. The two profiles keep separate copies (see
-   [`roles.md`](roles.md#the-print-station)).
-6. Quit Chrome and open the [Check-In Launcher](#the-check-in-launcher). From then on it prints with
-   those settings and no dialog, and Chrome fills in the password whenever Auth0 asks.
+3. Make the LabelWriter the computer's default printer. The app prints to the default printer
+   unless its `printer` setting names another (see the
+   [app's README](../packages/check-in-app/README.md#configuration)).
+4. Install Compassion Food Market from the latest
+   [release](https://github.com/bay-compassion/food-market-app/releases/latest): unzip it, move it
+   to Applications, and keep it in the Dock. The first time, macOS blocks it, since it is signed
+   with the team's own certificate rather than an Apple Developer ID: choose **Open Anyway** under
+   **System Settings → Privacy & Security**. It updates itself after that.
+5. Sign in with the shared check-in account's email and password — not **Continue with Google**,
+   which Google refuses inside an embedded browser — and save the password when the app offers.
+   It fills it in whenever Auth0 asks (see [`roles.md`](roles.md#the-print-station)).
+6. Send a tag from a phone. It prints with no dialog and appears in the app's print station panel.
+
+That is all the app needs. To keep the [Chrome backup](#the-chrome-backup) ready too, quit the app
+and Chrome, then:
+
+7. Start the print station's Chrome with the backup command, but leave out `--kiosk-printing` (the
+   Checklist's first-time command already does), and print one tag through the dialog (send one
+   from a phone). In that dialog, choose the LabelWriter, pick the 30857 paper size, set the margins
+   to none and the scale to 100%, and, if the dialog shows the printer's own options, choose the
+   roll the labels are on. Chrome saves these in the station's own profile. When it signs in with
+   the shared check-in account, let Chrome save the password.
+8. Quit that browser, open the iMac's everyday Chrome at `/queue`, sign in with the same account, and
+   save the password there too. The two profiles keep separate copies.
+9. Quit Chrome and open Compassion Food Market again.
 
 ## The Check-In Launcher
 
-On a market day the check-in computer needs two Chrome windows: the print station, and the queue desk
+**Compassion Food Market replaces it.** Don't run it alongside the app: it starts a second print
+station, and every tag would print twice. It stays here until the app has proven itself at a market.
+
+Before the app, the check-in computer needed two Chrome windows: the print station, and the queue desk
 (`/queue`) in the iMac's everyday Chrome. **Check-In Launcher** is an Automator application that opens
 both, with no Terminal window. Double-click it, then sign in to each window if asked, with the shared
 check-in account; Chrome fills in its saved password (see [`roles.md`](roles.md#the-print-station)).
@@ -102,22 +122,30 @@ to **System Settings → Privacy & Security** and choose **Open Anyway**.
 
 ## Printing without a dialog: the print station
 
-The computer the LabelWriter is plugged into prints every tag with no dialog at all. Open
-`/printing-station` on it, signed in as the shared check-in account (see
+The computer the LabelWriter is plugged into prints every tag with no dialog at all. It runs
+`/printing-station`, signed in as the shared check-in account (see
 [`roles.md`](roles.md#the-print-station)). While that page is open and checking in, **Print name
 tag** on a volunteer's phone sends the tag there, and says so under the button ("Prints at the
 print station"). If the station goes quiet, phones see it as offline within a few seconds and
 disable the button until it's back.
 
-The browser on that desktop has to be started for it, which the
-[Check-In Launcher](#the-check-in-launcher) does. By hand, on a Mac (the page shows this command too):
+In Compassion Food Market, the page asks the app to print (`window.checkInApp`), and the app prints
+one label at the page's size, with no margins and no dialog, to the default printer. Nothing has to
+be set up in a dialog first, and the app keeps the station running while its window is hidden or
+covered. Closing the window only hides it; quitting the app stops the station. See the
+[app's README](../packages/check-in-app/README.md#how-it-works).
+
+### The Chrome backup
+
+In a browser, the page prints with `window.print()`, so Chrome has to be started for it. On a Mac
+(the page and the Checklist show this command too):
 
 ```bash
 open -na "Google Chrome" --args --kiosk-printing --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --user-data-dir="$HOME/chrome-print-station" https://<your site>/printing-station
 ```
 
 - `--kiosk-printing` prints to the default printer with no dialog, using the settings from the last
-  print through the dialog in this profile — which is why step 4 above prints one tag the normal
+  print through the dialog in this profile — which is why step 7 above prints one tag the normal
   way first.
 - The three `--disable-…` flags keep the page checking in while another window — the `/kiosk` room
   display, say — covers it. Without them Chrome slows a hidden page's timers to about once a minute,
@@ -141,7 +169,8 @@ left. One station per market: two stations would each print every tag.
   being rotated or shrunk onto it, that one tag uses one label rather than two, and that nothing is
   cut off at the label's edges.
 - If the tag prints small, leaving a white border, the driver's paper is likely set portrait while
-  the page is landscape, and Chrome scales the page down to fit. Choose the 30857 paper in landscape,
-  or with the scale at 100%, in the dialog print of step 4.
+  the page is landscape, and the page is scaled down to fit. In the Chrome backup, choose the 30857
+  paper in landscape, or with the scale at 100%, in the dialog print of step 7. The app sets the
+  page size itself, so a small tag there means the labels or the driver are wrong.
 - The number prints white on a solid black block. Chrome prints that background (the card sets
   `print-color-adjust: exact`), but check the block comes out solid rather than streaked.

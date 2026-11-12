@@ -3,6 +3,7 @@ import { Button } from '@mui/material';
 
 import { adminTranslations } from '../../adminLocales';
 import { printStationLaunchCommand, printStationUrl } from '../print-station/PrintStationSetup';
+import { ChecklistAddress } from './ChecklistAddress';
 import { LaunchCommand } from './LaunchCommand';
 
 const ByHand = styled.div`
@@ -26,17 +27,21 @@ const ByHand = styled.div`
 `;
 
 /**
- * Starting the printing station without the iMac's automation: the market-day Terminal command, or,
- * failing that, opening the station from this page. Opening it here makes whatever device opened it
- * the station, so it is only for the iMac.
+ * Starting the printing station in Chrome when Compassion Food Market won't start: the market-day
+ * Terminal command, then the queue desk in Chrome's everyday window, since the app isn't there to
+ * hold it. Failing the command, the station opens from this page; that makes whatever device opened
+ * it the station, so it is only for the iMac.
  */
 export function PrintStationByHand() {
 	const t = adminTranslations.en.printStationCard;
+	const reference = adminTranslations.en.checklist.reference;
 
 	return (
 		<ByHand>
-			<p>{adminTranslations.en.checklist.reference.byHandIntro}</p>
+			<p>{reference.byHandIntro}</p>
 			<LaunchCommand label={t.commandLabel} command={printStationLaunchCommand} />
+			<p>{reference.byHandQueueDesk}</p>
+			<ChecklistAddress label={reference.byHandQueueDeskLabel} path="/queue" />
 			<div className="instead">
 				<p>{t.openInstead}</p>
 				<Button variant="outlined" href={printStationUrl} target="_blank" rel="noopener">

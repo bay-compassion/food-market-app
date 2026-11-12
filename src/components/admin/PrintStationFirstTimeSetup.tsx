@@ -51,8 +51,9 @@ const Setup = styled.div`
 
 /**
  * Done once per computer, never on a market day: the check-in iMac's printer driver, default
- * printer, and one tag printed through the dialog so Chrome saves the settings silent printing
- * reuses; and the room display's Mac mini, set to start, log in, and open Chrome on its own when
+ * printer, and Compassion Food Market installed and signed in, plus, as a backup, one tag printed
+ * through Chrome's dialog so Chrome saves the settings its silent printing reuses; and the room
+ * display's Mac mini, set to start, log in, and open Chrome on its own when
  * the stand is plugged in, and kept from sleeping.
  */
 export function PrintStationFirstTimeSetup() {

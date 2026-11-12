@@ -179,6 +179,7 @@ const preview: Preview = {
 						'Session History',
 						'Reports',
 						'Workers',
+						'Help',
 						'Dev Mode',
 						'Shared',
 					],
