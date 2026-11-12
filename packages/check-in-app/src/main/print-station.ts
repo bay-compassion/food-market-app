@@ -72,14 +72,28 @@ export class PrintStation {
 					printBackground: true,
 					deviceName: this.settings.printer ?? undefined,
 					margins: { marginType: 'none' },
-					// In microns. The page's own `@page` rule asks for the same size.
-					pageSize: { width: label.widthMm * 1000, height: label.heightMm * 1000 },
+					// In microns. Label printers describe their paper short edge first, as it feeds:
+					// the LabelWriter's 30857 badge is 57.15 × 101.6 mm, printed in landscape. A
+					// landscape-shaped custom size matches no paper the driver knows, so it rotates or
+					// shrinks the tag onto one. Name the paper as the driver does and let `landscape`
+					// turn the page; it then matches the page's own `@page` size.
+					...portraitMedia(label),
 				},
 				(success, failureReason) =>
 					success ? resolve() : reject(new Error(`Printing failed: ${failureReason}`)),
 			);
 		});
 	}
+}
+
+/** The label as a driver names its paper, short edge first, with the page's orientation on it. */
+function portraitMedia({ widthMm, heightMm }: LabelSize) {
+	const [shortMm, longMm] = widthMm <= heightMm ? [widthMm, heightMm] : [heightMm, widthMm];
+
+	return {
+		pageSize: { width: shortMm * 1000, height: longMm * 1000 },
+		landscape: widthMm > heightMm,
+	};
 }
 
 /** A label between 1 and 30 cm on each side: anything else is not a label this app prints. */
