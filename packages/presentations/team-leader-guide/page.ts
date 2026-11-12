@@ -107,16 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
 		'task:room-open',
 	);
 	// The rest of the room display, ticked in the pause, folds the station away.
-	tick(E('unlock') + 0.2, ['room-open', 'room-full-screen'], 0.5);
+	tick(E('unlock') + 0.2, ['room-keyboard', 'room-turn-on', 'room-open', 'room-full-screen'], 0.5);
 	// Check-in's earlier steps are done by the time the narration reaches the printing station.
 	at(before('printing'), (s) => {
 		s.checklist = [
 			...s.checklist,
 			'check-in-place',
+			'check-in-printer',
 			'check-in-power',
 			'printing-power',
-			'printing-quit-chrome',
-			'printing-start',
+			'printing-open-app',
+			'printing-sign-in',
 		];
 	});
 	line(

@@ -351,25 +351,34 @@ work the same way, and now unlocks with a code instead; the print station may fo
 2. **On the desktop, open `/printing-station` and sign in as that user.**
 
 **At the market, the check-in iMac uses one shared check-in account instead**, an Auth0 user with
-a shared email address and the `worker` role. It signs in to both windows on that computer: the
+a shared email address and the `worker` role. It signs in to both pages on that computer: the
 printing station, and the queue desk beside it. The Checklist tells volunteers to use it there.
 One account is easier for a group that changes every season than a print-only account plus
 everyone's own sign-in, and the iMac fills the password in itself, so volunteers never need it. It costs the
 separation above: anyone with that password can run the queue and see the day's guest names and
 phone numbers, and nothing the account does can be traced to one person. So:
 
-- Only team leaders hold the password, in one place they all can reach (a shared password manager
-  vault is best). It isn't written down on or near the iMac.
-- The iMac keeps it in Chrome's saved passwords, so a volunteer can sign in when Auth0 asks
-  without knowing it. It has to be saved twice: the print station runs in a Chrome profile of its
-  own, apart from the everyday one the queue desk uses. A team leader saves it during first-time
-  setup (see [`name-tag-printing.md`](name-tag-printing.md#setting-it-up)). Anyone at the iMac can
+- Only team leaders hold the password, in a shared group in Apple Passwords that they all belong to.
+  That is where a team leader looks first when the iMac needs it typed in.
+- At the market, the only paper copy is one sealed envelope, for when the iMac needs the password typed in and Apple Passwords can't be reached. Whoever opens it types it in, saves it in the app, and
+  tells the team. A broken seal means the password is changed and a new envelope sealed, so an
+  opened envelope never holds a password that still works. The card and the envelope's label are
+  printed from [`/support/password-card.html`](../public/support/password-card.html) and filled in by hand. It is never written down anywhere else,
+  read out, or texted.
+- Volunteers are never told it. The Checklist tells them to fetch a team leader rather than ask for
+  it, and the printed setup sheet (`public/support/setup.html`), which is for team leaders, points to Apple Passwords first and the envelope after.
+- The iMac keeps it saved in Compassion Food Market, the check-in desktop app, so a volunteer can
+  sign in when Auth0 asks without knowing it; the app encrypts it with a key in the login Keychain.
+  One sign-in there covers both the queue desk and the print station. For the Chrome backup it is
+  saved twice more: the print station runs in a Chrome profile of its own, apart from the everyday
+  one the queue desk uses. A team leader saves it during first-time setup (see
+  [`name-tag-printing.md`](name-tag-printing.md#setting-it-up)). Anyone at the iMac can
   then sign in as the account, which the open, signed-in windows already allow; to see the password
   itself, Chrome asks for the Mac's own login password, so give the iMac's user account one that
   volunteers don't have.
-- Change it when a team leader leaves, and whenever it might have been seen by someone it shouldn't
-  have been. Then sign the iMac back in with the new one in both windows, and let Chrome update both
-  saved copies.
+- Change it when a team leader leaves, when the envelope's seal is broken, and whenever it might have
+  been seen by someone it shouldn't have been. Then sign the app on the iMac back in with the new one and save it, seal a new envelope, and
+  update the Chrome backup's two saved copies.
 - Volunteers working the line from their own phones still sign in as themselves.
 
 A `print-station`-only account still works for a station that should carry nothing beyond printing.

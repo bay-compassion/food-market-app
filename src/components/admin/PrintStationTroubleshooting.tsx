@@ -7,6 +7,8 @@ const Fix = styled.p`
 	margin: 0;
 	color: var(--color-text-muted);
 	line-height: 1.5;
+	/* A fix can name a web address, which mustn't push past a phone's edge. */
+	overflow-wrap: anywhere;
 `;
 
 /** Every problem a step can link to, so the card holding them opens for the link too. */

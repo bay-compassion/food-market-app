@@ -26,9 +26,10 @@ const Reference = styled.section`
 `;
 
 /**
- * What the Checklist needs only now and then: what to do when something misbehaves, starting the
- * printing station by hand when its automation doesn't, and setting up a computer for the first time. Kept below the stations and folded, so a normal market day reads
- * straight down the steps without it.
+ * What a team leader needs only now and then: what to do when something misbehaves, starting the
+ * printing station in Chrome when the desktop app won't start, and setting up a computer for the
+ * first time. On the Help screen, below the backup plans, and folded, so each opens only when it's
+ * wanted.
  */
 export function ChecklistReference() {
 	const t = adminTranslations.en.checklist.reference;

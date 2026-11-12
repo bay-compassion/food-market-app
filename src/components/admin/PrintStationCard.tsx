@@ -43,8 +43,8 @@ const Account = styled.p`
 /**
  * The check-in iMac's printing station, as a phase of the Check-In station: whether it is checking
  * in right now, which account signs in, and the market-day steps. Its last step is ticked by the
- * station's own check-in. The iMac's automation starts the station; starting it by hand, from
- * Terminal, is under When You Need It.
+ * station's own check-in. Compassion Food Market runs the station beside the queue desk; starting
+ * it in Chrome instead, from Terminal, is under When You Need It.
  */
 export const PrintStationCard = observer(function PrintStationCard() {
 	const t = adminTranslations.en.printStationCard;

@@ -51,6 +51,17 @@ status = 200
 force = true
 
 [[redirects]]
+from = "/support"
+to = "/support/"
+status = 301
+
+[[redirects]]
+from = "/support/"
+to = "/support/index.html"
+status = 200
+force = true
+
+[[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200

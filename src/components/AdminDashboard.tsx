@@ -14,6 +14,7 @@ import { AdminDashboardLayout } from './admin/AdminDashboardLayout';
 import { ChecklistView } from './admin/ChecklistView';
 import { DevModeView } from './admin/DevModeView';
 import { GuestDatabaseView } from './admin/GuestDatabaseView';
+import { HelpView } from './admin/HelpView';
 import { MarketActionPrompts } from './admin/market-action-prompts';
 import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
@@ -174,7 +175,10 @@ export const AdminDashboard = observer(function AdminDashboard({
 					onNavigate={navigate}
 				/>
 			) : activeView === 'checklist' ? (
-				<ChecklistView onNavigateSchedule={() => navigate('schedule')} />
+				<ChecklistView
+					onNavigateSchedule={() => navigate('schedule')}
+					onNavigateHelp={() => navigate('help')}
+				/>
 			) : activeView === 'schedule' ? (
 				<ScheduleView onNavigateSession={() => navigate('current-session')} />
 			) : activeView === 'queue' ? (
@@ -202,6 +206,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 				/>
 			) : activeView === 'workers' ? (
 				<WorkersView />
+			) : activeView === 'help' ? (
+				<HelpView />
 			) : activeView === 'dev-mode' ? (
 				<DevModeView
 					busy={admin.isBusy}

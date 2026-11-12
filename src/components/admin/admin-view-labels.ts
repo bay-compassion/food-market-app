@@ -15,6 +15,7 @@ export const adminViewLabels: Record<AdminView, string> = {
 	'session-history': t.historySessions,
 	reports: t.reports,
 	workers: 'Workers',
+	help: t.help.title,
 	'dev-mode': t.devMode,
 };
 

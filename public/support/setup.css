@@ -1,0 +1,337 @@
+/*
+ * The printed market setup sheet: two letter-size pages for the team leaders who put the room
+ * display and the check-in desk in place before doors open. Page 1 is the floor plan, the check-in
+ * desk, and the password; page 2 the room display and the backup plans. Print it double-sided. It builds on the guest
+ * flyer's stylesheet (`flyer.css`), which sets each sheet, the masthead, hero band, numbered steps,
+ * and notice; this file adds the rest. Its steps follow the dashboard's Checklist (`checklist` and
+ * `printStationCard` in `src/adminLocales.ts`), and its drawing is `RoomDisplayHardware`: change
+ * them together. Staff-facing, so English only.
+ */
+:root {
+	--metal: #e4eae7;
+	--focus: #ffb545;
+}
+
+@media screen {
+	.sheet + .sheet {
+		margin-top: 24px;
+	}
+}
+
+@media print {
+	.sheet {
+		break-after: page;
+	}
+
+	.sheet:last-child {
+		break-after: auto;
+	}
+}
+
+.hero {
+	padding-block: 18px;
+}
+
+.hero-copy {
+	gap: 14px;
+}
+
+.hero h1 {
+	font-size: 40px;
+}
+
+.hero .lead {
+	font-size: 18px;
+}
+
+/*
+ * The plan carries its own white paper. The card crops it to the two stations and enlarges it, so
+ * their numbered marks read at arm's length: the image is the plan's 294 × 170 units at 1.9 px per
+ * unit, shifted to show roughly x 150–335, y 136–239.
+ */
+.plan {
+	flex: 0 0 352px;
+	height: 196px;
+	position: relative;
+	overflow: hidden;
+	border-radius: 20px;
+	background: #fff;
+}
+
+.plan img {
+	position: absolute;
+	left: -70px;
+	top: -72px;
+	width: 559px;
+	height: 323px;
+}
+
+.station {
+	padding: 14px 48px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.station-heading {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	padding-bottom: 8px;
+	border-bottom: 2px solid var(--brand);
+}
+
+/* Matches the numbered marks on the floor plan. */
+.station-number {
+	flex: 0 0 52px;
+	height: 52px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	background: var(--accent);
+	color: var(--text);
+	font-family: var(--font-heading);
+	font-size: 30px;
+	font-weight: 700;
+}
+
+.station-heading h2 {
+	margin: 0;
+	font-family: var(--font-heading);
+	font-size: 26px;
+	font-weight: 700;
+	letter-spacing: var(--tracking-heading);
+	text-transform: uppercase;
+	color: var(--brand);
+}
+
+.station-place {
+	margin: 2px 0 0;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: var(--tracking-label);
+	color: var(--text-muted);
+}
+
+/* The steps, and beside them on the room display's page, the drawing of its switches. */
+.station-body {
+	display: flex;
+	gap: 28px;
+	align-items: flex-start;
+}
+
+.station ol {
+	flex: 1 1 0;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+}
+
+.station .step-number {
+	flex-basis: 34px;
+	height: 34px;
+	font-size: 19px;
+}
+
+.station .step-title {
+	font-size: 17px;
+}
+
+.station .step-body,
+.substeps {
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--text-muted);
+}
+
+.station .substeps {
+	margin: 2px 0;
+	padding-inline-start: 20px;
+	list-style: decimal;
+	gap: 3px;
+}
+
+.address {
+	font-weight: 700;
+	color: var(--brand);
+	white-space: nowrap;
+}
+
+/* The kiosk view's own full-screen button, drawn as it looks in the view's corner. */
+.glyph {
+	display: inline-grid;
+	place-items: center;
+	padding: 3px;
+	border: 1.5px solid var(--brand);
+	border-radius: 999px;
+	vertical-align: middle;
+	color: var(--brand);
+}
+
+.glyph svg {
+	width: 18px;
+	height: 18px;
+	fill: currentColor;
+}
+
+.hardware {
+	flex: 0 0 236px;
+	margin: 0;
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	border-radius: 16px;
+	background: var(--surface-soft);
+}
+
+.hardware svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.hardware .outline {
+	fill: #fff;
+	stroke: var(--text-muted);
+	stroke-width: 2;
+	stroke-linejoin: round;
+}
+
+.hardware .screen {
+	fill: var(--brand);
+}
+
+.hardware .metal {
+	fill: var(--metal);
+	stroke: var(--text-muted);
+	stroke-width: 1.5;
+}
+
+.hardware .port {
+	fill: var(--text-muted);
+}
+
+.hardware .key {
+	fill: var(--metal);
+}
+
+.hardware .cord {
+	fill: none;
+	stroke: var(--text-muted);
+	stroke-width: 3;
+	stroke-linecap: round;
+}
+
+.hardware .leader {
+	fill: none;
+	stroke: var(--text-muted);
+	stroke-width: 1.5;
+	stroke-dasharray: 4 4;
+}
+
+/* The stand's own power cord, black and heavier than the Mac mini's. */
+.hardware .mains {
+	fill: none;
+	stroke: #111;
+	stroke-width: 4;
+	stroke-linecap: round;
+}
+
+.hardware .plug {
+	fill: #111;
+}
+
+/* The ⏻ on the TV's power button, drawn in white on the dark button. */
+.hardware .power-symbol {
+	fill: none;
+	stroke: #fff;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+}
+
+/* What to press, ringed in orange, as the captions' markers are. */
+.hardware .target {
+	fill: none;
+	stroke: var(--focus);
+	stroke-width: 3;
+}
+
+.hardware figcaption {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.hardware figcaption p {
+	position: relative;
+	margin: 0;
+	padding-inline-start: 20px;
+}
+
+.hardware figcaption p::before {
+	content: '';
+	position: absolute;
+	inset-inline-start: 0;
+	top: 0;
+	width: 12px;
+	height: 12px;
+	margin-top: 3px;
+	box-sizing: border-box;
+	border: 3px solid var(--focus);
+	border-radius: 50%;
+}
+
+.done-when {
+	margin: 0;
+	padding: 10px 14px;
+	border-radius: 12px;
+	background: var(--surface-soft);
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.backup {
+	flex: 1 1 auto;
+	padding: 18px 48px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.backup-intro {
+	margin: 0;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--text-muted);
+}
+
+.backup dl {
+	margin: 0;
+	display: grid;
+	grid-template-columns: 230px minmax(0, 1fr);
+	gap: 6px 20px;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.backup dt {
+	font-weight: 700;
+}
+
+.backup dd {
+	margin: 0;
+	color: var(--text-muted);
+}
+
+.notice {
+	margin-top: 14px;
+	font-size: 16px;
+}

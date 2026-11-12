@@ -4,15 +4,12 @@ import { ChecklistPhase } from './ChecklistPhase';
 import { ChecklistStation } from './ChecklistStation';
 import { ChecklistTaskList, stepIds } from './ChecklistTaskList';
 import { PrintStationCard } from './PrintStationCard';
-import { QueueDeskPhase } from './QueueDeskPhase';
 
 /**
- * The cabinet at the edge of the lobby is put in place and plugged in first. Its iMac then does two
- * jobs. Its Chrome, started with the printing station's launch command, prints the name tags; the
- * check-in operator then runs the line from the desktop queue desk in an ordinary window beside
- * it. The station comes first because its setup quits Chrome, which would close a queue desk
- * already open. The two windows need different sign-ins: the station's account can print but not
- * change the queue.
+ * The cabinet at the edge of the lobby is put in place and plugged in first. Its iMac then runs
+ * Compassion Food Market, the desktop app whose one window is both the check-in operator's queue
+ * desk and, in a panel beside it, the printing station that prints the name tags. One sign-in
+ * covers both.
  */
 export function CheckInStation({ number }: { number: number }) {
 	const t = adminTranslations.en.checklist.checkIn;
@@ -23,7 +20,7 @@ export function CheckInStation({ number }: { number: number }) {
 			number={number}
 			title={t.title}
 			place={t.place}
-			stepIds={stepIds(t.placeSteps, printing.steps, t.queueDeskSteps)}
+			stepIds={stepIds(t.placeSteps, printing.steps)}
 			closeUp={{ center: stationMarks.checkIn, alt: t.closeUpAlt }}
 			doneWhen={t.doneWhen}
 		>
@@ -31,7 +28,6 @@ export function CheckInStation({ number }: { number: number }) {
 				<ChecklistTaskList steps={t.placeSteps} />
 			</ChecklistPhase>
 			<PrintStationCard />
-			<QueueDeskPhase />
 		</ChecklistStation>
 	);
 }
