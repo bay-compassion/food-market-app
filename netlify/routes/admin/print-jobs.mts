@@ -9,7 +9,7 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
-import { nameTagFor, printQueue } from '../../services/print-queue.mjs';
+import { nameTagFor, PrintQueue, printQueue } from '../../services/print-queue.mjs';
 
 const submissionSchema = z.object({ visitId: z.uuid() });
 const jobIdSchema = z.string().regex(/^\d{15}-[0-9a-f-]{36}$/);
@@ -57,6 +57,26 @@ printJobRoutes.get('/print-jobs', withPermission('print:name-tags'), async () =>
 	return Response.json({ jobs: await queue.pending() });
 });
 printJobRoutes.all('/print-jobs', methodNotAllowed);
+
+/**
+ * A worker prints a sample tag to check the label printer, from the Checklist screen. Like a real
+ * tag, it is not queued while no station is online to print it.
+ */
+printJobRoutes.post('/print-jobs/test', withPermission('run:queue'), async () => {
+	const queue = printQueue();
+
+	if (!(await queue.isStationOnline())) {
+		return Response.json({
+			queued: false,
+			reason: 'station_offline',
+		} satisfies PrintJobSubmission);
+	}
+
+	await queue.enqueue(PrintQueue.testTag);
+
+	return Response.json({ queued: true } satisfies PrintJobSubmission, { status: 202 });
+});
+printJobRoutes.all('/print-jobs/test', methodNotAllowed);
 
 /** The print station removes a tag once it has printed it. */
 printJobRoutes.delete('/print-jobs/:id', withPermission('print:name-tags'), async (context) => {

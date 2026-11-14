@@ -201,6 +201,14 @@ export class AdminApi {
 		);
 	}
 
+	/** Sends a sample name tag to the print station, to check the label printer. */
+	async sendTestNameTag(): Promise<PrintJobSubmission> {
+		return this.readJson<PrintJobSubmission>(
+			await this.send('POST', '/api/admin/print-jobs/test', {}),
+			'print_job',
+		);
+	}
+
 	/** Whether a print station is online to take name tags. */
 	async isPrintStationOnline(): Promise<boolean> {
 		const { online } = await this.readJson<{ online: boolean }>(

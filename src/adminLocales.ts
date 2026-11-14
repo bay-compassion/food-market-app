@@ -35,6 +35,9 @@ type TodayTranslations = {
 	sessionOnSchedule: string;
 	setUpRoomDisplay: string;
 	setUpCheckIn: string;
+	/** The print station's section: its status, and a test tag to check the label printer. */
+	printingStation: string;
+	printingStationHelp: string;
 	changeThePlan: string;
 	postponeRegistration: string;
 	extendRegistration: string;
@@ -523,6 +526,13 @@ export interface PrintStationCardTranslation {
 	title: string;
 	online: string;
 	offline: string;
+	/** A button that prints a sample tag at the station, to check the label printer. */
+	printTest: string;
+	/** Under the button while the station is offline: why it can't be pressed. */
+	printTestOffline: string;
+	testSent: string;
+	testOffline: string;
+	testFailed: string;
 	/** Which account signs in on the station, and why it isn't your own. */
 	account: string;
 	/** What to do on every market day, in order. */
@@ -769,6 +779,9 @@ export const adminTranslations = {
 			sessionOnSchedule: 'Session Is on the Schedule',
 			setUpRoomDisplay: 'Set Up the Room Display',
 			setUpCheckIn: 'Set Up the Check-In Computer',
+			printingStation: 'Printing Station',
+			printingStationHelp:
+				'Print a test tag to check the label printer before the first guest, or after loading new labels.',
 			changeThePlan: 'Change the Plan',
 			postponeRegistration: 'Postpone Registration',
 			extendRegistration: 'Extend Registration',
@@ -1311,6 +1324,11 @@ export const adminTranslations = {
 			title: 'Start the Printing Station',
 			online: 'Online',
 			offline: 'Offline',
+			printTest: 'Print a Test Tag',
+			printTestOffline: 'Start the printing station to print a test tag.',
+			testSent: 'Test tag sent to the printer.',
+			testOffline: 'The printing station is offline, so the test tag wasn’t sent.',
+			testFailed: 'The test tag couldn’t be sent. Try again.',
 			account:
 				'The app signs in with the shared check-in account and fills in its password, so you never need to know it. If it can’t, a team leader types it in from the team’s shared Apple Passwords, or, only if that fails, from the sealed password envelope. Apart from that envelope, the password is never written down, said out loud, or sent.',
 			steps: [

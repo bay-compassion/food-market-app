@@ -870,4 +870,52 @@ describe('AdminStore print station', () => {
 		expect(isPrintStationOnline).not.toHaveBeenCalled();
 		expect(store.printStationOnline).toBeNull();
 	});
+	it('says a test tag is on its way when the station takes it', async () => {
+		// Arrange
+		const { store, notifications } = storeWith({
+			sendTestNameTag: vi.fn().mockResolvedValue({ queued: true }),
+		});
+		const success = vi.spyOn(notifications, 'success');
+
+		// Act
+		await store.sendTestNameTag();
+
+		// Assert
+		expect(success).toHaveBeenCalledWith(adminTranslations.en.printStationCard.testSent);
+		expect(store.isSendingTestTag).toBe(false);
+	});
+
+	it('shows the station offline when it is not there to print a test tag', async () => {
+		// Arrange
+		const { store, notifications } = storeWith({
+			isPrintStationOnline: vi.fn().mockResolvedValue(true),
+			sendTestNameTag: vi.fn().mockResolvedValue({ queued: false, reason: 'station_offline' }),
+		});
+		const error = vi.spyOn(notifications, 'error');
+
+		await store.loadPermissions();
+		await store.checkPrintStation();
+
+		// Act
+		await store.sendTestNameTag();
+
+		// Assert
+		expect(store.printStationOnline).toBe(false);
+		expect(error).toHaveBeenCalledWith(adminTranslations.en.printStationCard.testOffline);
+	});
+
+	it('says so when a test tag could not be sent', async () => {
+		// Arrange
+		const { store, notifications } = storeWith({
+			sendTestNameTag: vi.fn().mockRejectedValue(new AdminRequestError('print_job', 'Failed')),
+		});
+		const error = vi.spyOn(notifications, 'error');
+
+		// Act
+		await store.sendTestNameTag();
+
+		// Assert
+		expect(error).toHaveBeenCalledWith(adminTranslations.en.printStationCard.testFailed);
+		expect(store.isSendingTestTag).toBe(false);
+	});
 });

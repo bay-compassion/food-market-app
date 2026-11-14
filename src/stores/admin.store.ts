@@ -80,6 +80,7 @@ export class AdminStore {
 	private _kioskUnlockCode: KioskUnlockCode | null = null;
 	private _guestDeletion: GuestDeletionPreview | null = null;
 	private _printStationOnline: boolean | null = null;
+	private _isSendingTestTag = false;
 	/** Guest commands sent and not yet answered. A poll landing meanwhile would undo their status. */
 	private pendingGuestCommands = 0;
 	/**
@@ -151,6 +152,11 @@ export class AdminStore {
 	 */
 	get printStationOnline(): boolean | null {
 		return this._printStationOnline;
+	}
+
+	/** Whether a test name tag is on its way to the print station. */
+	get isSendingTestTag(): boolean {
+		return this._isSendingTestTag;
 	}
 
 	/** The guest an admin has asked to delete permanently, while the confirmation dialog is open. */
@@ -293,6 +299,33 @@ export class AdminStore {
 		const online = await this.api.isPrintStationOnline().catch(() => null);
 
 		runInAction(() => (this._printStationOnline = online));
+	}
+
+	/**
+	 * Sends a sample name tag to the print station, to check the label printer, and says how it
+	 * went. A station that went quiet since the last look is shown offline at once.
+	 */
+	async sendTestNameTag(): Promise<void> {
+		const t = adminTranslations.en.printStationCard;
+
+		this._isSendingTestTag = true;
+
+		try {
+			const result = await this.api.sendTestNameTag();
+
+			runInAction(() => {
+				if (result.queued) {
+					this.notifications.success(t.testSent);
+				} else {
+					this._printStationOnline = false;
+					this.notifications.error(t.testOffline);
+				}
+			});
+		} catch {
+			runInAction(() => this.notifications.error(t.testFailed));
+		} finally {
+			runInAction(() => (this._isSendingTestTag = false));
+		}
 	}
 
 	/** Sends a visit's name tag to the print station. */

@@ -59,6 +59,22 @@ const heartbeatSchema = z.object({ at: z.number().finite() });
  * two stations would both print every tag.
  */
 export class PrintQueue {
+	/**
+	 * A sample tag a worker sends from the dashboard to check the printer before the market opens.
+	 * Number 0 and the reference code TEST (the visit id's tail) match no guest, so a stray test
+	 * sticker can't be mistaken for a real one. The pronunciation line is filled so the whole
+	 * layout prints.
+	 */
+	static readonly testTag: Omit<NameTagPrintJob, 'id' | 'requestedAt'> = {
+		visitId: 'printer-test',
+		firstName: 'Printer Test',
+		lastInitial: '',
+		pronunciation: 'PRIN-ter test',
+		queuePosition: 0,
+		priorityNumber: null,
+		locale: 'en',
+	};
+
 	private readonly storage: PrintQueueStorage;
 	private readonly now: () => number;
 
