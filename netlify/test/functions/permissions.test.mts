@@ -131,6 +131,12 @@ describe('endpoint permissions', () => {
 			'run:queue',
 		],
 		[
+			'printing a test name tag',
+			printJobsHandler,
+			json('https://x/api/admin/print-jobs/test', 'POST'),
+			'run:queue',
+		],
+		[
 			'asking whether a print station is online',
 			printJobsHandler,
 			json('https://x/api/admin/print-station', 'GET'),

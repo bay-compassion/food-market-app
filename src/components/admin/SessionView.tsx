@@ -11,6 +11,7 @@ import { ResetSessionDisclosure } from './ResetSessionDisclosure';
 import { SessionGuestList } from './SessionGuestList';
 import { SessionPhasePlan } from './SessionPhasePlan';
 import { SessionPhaseStatus } from './SessionPhaseStatus';
+import { TodayPrintStation } from './TodayPrintStation';
 import type { AdminView, ManualGuest, QueueGuest } from './types';
 
 const Screen = styled.div`
@@ -60,6 +61,9 @@ export const SessionView = observer(function SessionView({
 				onRun={onRun}
 				onNavigate={onNavigate}
 			/>
+
+			{/* Wherever the session stands, the label printer can be checked before a tag is needed. */}
+			{event && phase !== 'inactive' ? <TodayPrintStation /> : null}
 
 			{event && phase === 'service_started' ? (
 				<section className="admin-section">

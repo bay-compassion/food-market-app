@@ -11,7 +11,12 @@ const queue = {
 	heartbeat: vi.fn(),
 };
 
+const { testTag } = vi.hoisted(() => ({
+	testTag: { visitId: 'printer-test', firstName: 'Printer Test' },
+}));
+
 vi.mock('../../services/print-queue.mjs', () => ({
+	PrintQueue: { testTag },
 	printQueue: () => queue,
 	nameTagFor: vi.fn(),
 }));
@@ -89,6 +94,30 @@ describe('print jobs handler', () => {
 		const response = await handler(request('POST', '/print-jobs', { visitId }));
 
 		expect(response.status).toBe(404);
+	});
+
+	it('queues the test tag when a station is online', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queue.isStationOnline.mockResolvedValueOnce(true);
+
+		const response = await handler(request('POST', '/print-jobs/test'));
+
+		expect(response.status).toBe(202);
+		await expect(response.json()).resolves.toEqual({ queued: true });
+		expect(queue.enqueue).toHaveBeenCalledWith(testTag);
+	});
+
+	it('queues no test tag, and says why, with no station online', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queue.isStationOnline.mockResolvedValueOnce(false);
+
+		const response = await handler(request('POST', '/print-jobs/test'));
+
+		await expect(response.json()).resolves.toEqual({
+			queued: false,
+			reason: 'station_offline',
+		});
+		expect(queue.enqueue).not.toHaveBeenCalled();
 	});
 
 	it('marks the station online when it collects its tags', async () => {
