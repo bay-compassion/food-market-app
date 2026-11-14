@@ -1,6 +1,6 @@
 {
   "name": "@bay-compassion/check-in-app",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "description": "Compassion Food Market, the desktop app for the check-in iMac: the queue desk and the print station in one window.",
   "type": "module",
