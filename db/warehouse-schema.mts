@@ -16,9 +16,11 @@ import type { SnapshotKind } from '../src/models/snapshot-schedule.js';
  * schema inside the app's database. See `docs/data-warehousing.md`.
  *
  * Nothing here identifies a guest — no names, phones, guest or visit ids, credentials, or free
- * text — and nothing here is ever updated or deleted: a correction is a new snapshot with the next
- * revision that names the one it supersedes. Nothing references the app's own tables either, so
- * deleting a guest or a session never reaches a snapshot.
+ * text — and nothing here is ever updated: a correction is a new snapshot with the next revision
+ * that names the one it supersedes. Nothing references the app's own tables either, so deleting a
+ * guest never reaches a snapshot. The one deletion is a data steward forcing the removal of a test
+ * session the warehouse already counted (`netlify/services/session-deletion.mts`), which takes
+ * every snapshot covering it so the routine can take its periods again without it.
  *
  * Kept out of `schema.mts`, which describes the operational tables. The migration that creates
  * these is hand-written in `netlify/database/migrations/` like every other.

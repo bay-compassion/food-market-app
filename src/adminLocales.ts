@@ -1,5 +1,6 @@
 import type { GuestFormCopy } from './locales.ts';
 import type { MilestoneKind } from './models/session-milestones.ts';
+import type { SnapshotKind } from './models/snapshot-schedule.ts';
 import type { AdminView, AdminViewGroup } from './services/admin-views.ts';
 import type { GuestDatabaseFilter } from './services/guest-database-filters.ts';
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
@@ -65,7 +66,33 @@ type TodayTranslations = {
 	closeEndsService: string;
 };
 
+/** The dialog that permanently deletes a finished session run as a test. */
+export interface SessionDeletionTranslation {
+	menuItem: string;
+	title: string;
+	close: string;
+	intro: string;
+	removes: string;
+	visits: string;
+	households: string;
+	guestsDeleted: string;
+	guestsKept: string;
+	irreversible: string;
+	confirmLabel: string;
+	confirmHint: string;
+	confirm: string;
+	notEnded: string;
+	warehoused: string;
+	snapshotKinds: Record<SnapshotKind, string>;
+	snapshotRevision: string;
+	warehouseRetake: string;
+	forceLabel: string;
+	deleted: string;
+	failed: string;
+}
+
 export interface AdminTranslation {
+	sessionDeletion: SessionDeletionTranslation;
 	householdService: {
 		queueRecord: string;
 		queueSaved: string;
@@ -1060,6 +1087,39 @@ export const adminTranslations = {
 		reportPrivacyNote:
 			'Reports count people without naming them. Only the full export identifies guests, so share that file carefully.',
 		reportEmpty: 'No sessions in this date range.',
+		sessionDeletion: {
+			menuItem: 'Delete Test Session',
+			title: 'Delete Test Session Permanently',
+			close: 'Close without deleting',
+			intro:
+				'Use this only for a session run as a test. It removes the session and everything recorded in it, so it never reaches the reports.',
+			removes: 'This removes:',
+			visits: '{count} visits, with their history and the messages sent about them',
+			households: '{count} count-only households',
+			guestsDeleted:
+				'{count} guests who came only to this session, with everything stored about them:',
+			guestsKept:
+				'{count} guests who also came to other sessions keep their records and lose only this visit.',
+			irreversible: 'This cannot be undone except by restoring the whole database from a backup.',
+			confirmLabel: 'Type the session’s date and start time to confirm',
+			confirmHint: 'Type {confirmation}, exactly as shown.',
+			confirm: 'Delete Permanently',
+			notEnded: 'This session has not ended. End it before deleting it.',
+			warehoused:
+				'The warehouse has already frozen numbers that include this session. Deleting it also removes these snapshots:',
+			snapshotKinds: {
+				session: 'Session summary',
+				month: 'Month of {period}',
+				quarter: '{period}',
+				year: 'Year {period}',
+			},
+			snapshotRevision: '{label} (revision {revision})',
+			warehouseRetake:
+				'The next daily warehouse run takes each of these periods again from the data as it then stands, if another session still falls in it. A report that cited one of these snapshots will no longer match the warehouse.',
+			forceLabel: 'Also remove these warehouse snapshots',
+			deleted: 'The test session was deleted permanently.',
+			failed: 'The session could not be deleted. Try again.',
+		},
 		householdService: {
 			queueRecord: 'Record',
 			queueSaved: 'Household recorded.',

@@ -31,6 +31,11 @@ These come from existing documents and are not up for decision here:
   privacy policy change first, reviewed as a legal change.
 - **Deletion must stay meaningful.** Because the warehouse holds no per-guest data, deleting a guest
   does not reach it and does not need to. [`guest-deletion.md`](guest-deletion.md) says so.
+- **A test session is the one deletion.** Snapshots are never edited, and a mistake in a real
+  session is corrected with a new revision. A session run only as a test is different: it should
+  never have been counted, so a data steward can delete it with **Delete Test Session** even after
+  it was snapshotted, and the deletion takes every snapshot that covers it. See
+  [`test-session-deletion.md`](test-session-deletion.md).
 - **No agent touches production.** As with [`migrations.md`](migrations.md#rules-for-ai-agents) and
   `scripts/delete-guest.mts`, merging the migration, turning the routine on, and any correction to a
   snapshot are human actions.
@@ -59,7 +64,8 @@ Why this one:
   hosts the app's database as part of Netlify's hosting (privacy policy §5), and the warehouse
   tables sit in that same database.
 - **Durable without being separate.** Snapshots are append-only by convention: the routine only
-  inserts, and a snapshot that already exists is skipped. They share the database's backups.
+  inserts, and a snapshot that already exists is skipped. The one exception is a forced test
+  session deletion, above. They share the database's backups.
 - **A schema of its own** keeps the frozen tables visibly apart from the operational ones, so a
   query, a Metabase question, or a future migration does not mistake one for the other.
 - **It is still Postgres.** Metabase reads it the same way it reads the app's tables, and a grant
@@ -160,6 +166,9 @@ captured.
 1. **A session is due** once it has ended and the settling window has passed. Workers can still
    record a visit after a session ends, so snapshotting the moment it ends would freeze an
    incomplete number. Proposed window: seven days.
+   Deleting a [test session](test-session-deletion.md) inside the window keeps it out of the
+   warehouse altogether. After it, the deletion has to be forced, which removes the snapshots that
+   counted it.
 2. **A period is due** once it has ended and the same window has passed.
 3. Each due item is read from the operational tables, then written in one transaction. A failure
    writes nothing for that item, and the next day's run tries again. Inserting a snapshot that
@@ -169,7 +178,8 @@ captured.
 5. The run logs what it wrote (`warehouse.snapshot`, with kind and period, never counts about a
    person), and a failure reaches Sentry like any other function error.
 
-**Corrections.** A snapshot is never changed. If one is wrong (a session was recorded late, or a
+**Corrections.** A snapshot is never changed. (Deleting a test session that was snapshotted removes
+snapshots rather than changing them; see [`test-session-deletion.md`](test-session-deletion.md).) If one is wrong (a session was recorded late, or a
 counting bug is fixed), a human writes a new snapshot with the next revision number, pointing at the
 one it supersedes. (The schema supports this; the script for it is not written yet.) Readers take
 the latest snapshot for a period by default, and a funder report cites the snapshot id it was drawn

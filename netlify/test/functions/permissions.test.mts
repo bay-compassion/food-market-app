@@ -15,6 +15,7 @@ import printJobsHandler from '../../routes/admin/print-jobs.mjs';
 import queueHandler from '../../routes/admin/queue.mjs';
 import reportsHandler from '../../routes/admin/reports.mjs';
 import scheduleHandler from '../../routes/admin/schedule.mjs';
+import sessionsHandler from '../../routes/admin/sessions.mjs';
 import visitEventsHandler from '../../routes/admin/visit-events.mjs';
 import lotteryRegistrationHandler from '../../routes/guests/lottery-registration.mjs';
 import publicMarketHandler from '../../routes/market/market.mjs';
@@ -228,6 +229,20 @@ describe('endpoint permissions', () => {
 			guestsHandler,
 			json('https://x/api/admin/guests/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f', 'DELETE', {
 				phone: '925-555-0100',
+			}),
+			'delete:guest-data',
+		],
+		[
+			'previewing a test session’s permanent deletion',
+			sessionsHandler,
+			json('https://x/api/admin/sessions/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f/deletion', 'GET'),
+			'delete:guest-data',
+		],
+		[
+			'deleting a test session permanently',
+			sessionsHandler,
+			json('https://x/api/admin/sessions/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f', 'DELETE', {
+				confirmation: '2026-11-14 09:30',
 			}),
 			'delete:guest-data',
 		],

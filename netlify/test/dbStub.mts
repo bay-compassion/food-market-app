@@ -45,6 +45,7 @@ function chain() {
 		'returning',
 		'onConflictDoNothing',
 		'onConflictDoUpdate',
+		'as',
 	];
 
 	for (const method of chainedMethods) {
@@ -68,6 +69,7 @@ function chain() {
 export const db = {
 	select: vi.fn(() => chain()),
 	selectDistinct: vi.fn(() => chain()),
+	selectDistinctOn: vi.fn(() => chain()),
 	insert: vi.fn(() => chain()),
 	update: vi.fn(() => chain()),
 	delete: vi.fn(() => chain()),
@@ -83,6 +85,7 @@ export function resetDbStub() {
 	queue.length = 0;
 	db.select.mockClear();
 	db.selectDistinct.mockClear();
+	db.selectDistinctOn.mockClear();
 	db.insert.mockClear();
 	db.update.mockClear();
 	db.delete.mockClear();
