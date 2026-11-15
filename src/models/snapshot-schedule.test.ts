@@ -56,6 +56,24 @@ describe('SnapshotSchedule', () => {
 		expect(due.map(({ kind }) => kind)).toEqual(['session', 'session', 'quarter']);
 	});
 
+	it('re-owes a shared period after a forced deletion, but never a period only the test was in', () => {
+		// Arrange: an August test run came before launch, then was deleted with the snapshots that
+		// covered it — its own, August's, and the third quarter's. September's are untouched.
+		const remaining = [
+			...september.map((periodStart) => ({ kind: 'session' as const, periodStart })),
+			{ kind: 'month' as const, periodStart: new Date('2026-09-01T07:00:00.000Z') },
+		];
+		const schedule = new SnapshotSchedule(september, remaining, zone, 7);
+
+		// Act
+		const due = schedule.dueAt(now);
+
+		// Assert: the quarter is taken again without the test; August is no longer owed at all.
+		expect(due.map(({ kind, start }) => `${kind} ${start.toISOString()}`)).toEqual([
+			'quarter 2026-07-01T07:00:00.000Z',
+		]);
+	});
+
 	it('owes nothing before the market has ended a session', () => {
 		// Arrange
 		const schedule = new SnapshotSchedule([], [], zone, 7);

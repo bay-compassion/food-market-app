@@ -285,6 +285,10 @@ guest's id and the admin's Auth0 subject — the only trace left, since the visi
 it. See [`guest-deletion.md`](guest-deletion.md) for the whole procedure, including what the
 deletion cannot reach.
 
+The same permission deletes a finished session that was only ever a test, from the session
+history's menu (**Delete Test Session**), together with its visits and the guests who came only to
+it. It is logged as `session.deleted`. See [`test-session-deletion.md`](test-session-deletion.md).
+
 Push `infrastructure/auth0/tenant/tenant.yaml` to Auth0, then assign `data-steward` to the right
 person. Until it is assigned, nobody is offered the menu item and both endpoints answer 403.
 

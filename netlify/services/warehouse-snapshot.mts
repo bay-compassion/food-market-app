@@ -61,7 +61,9 @@ const count = (row: ReportRow | undefined, key: string) => column(row, key) ?? 0
  *
  * Each snapshot is written in its own transaction, and its insert does nothing when the snapshot
  * already exists, so two overlapping runs or a run retried after a failure cannot write one twice.
- * Nothing here updates or deletes a warehouse row; a correction is a new revision.
+ * Nothing here updates or deletes a warehouse row; a correction is a new revision. A forced test
+ * session deletion is the one thing that removes snapshots, and the next run simply finds those
+ * periods owed again.
  */
 export class WarehouseSnapshotter {
 	private history: GuestHistory | null = null;

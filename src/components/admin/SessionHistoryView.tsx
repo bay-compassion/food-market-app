@@ -8,6 +8,7 @@ import type { GuestAdmission } from '../../services/guestAdmission';
 import { useRootStore } from '../../stores/react/store-context';
 import { HouseholdServiceRecorder } from './HouseholdServiceRecorder';
 import { ManualGuestDialog } from './ManualGuestDialog';
+import { SessionDeletionDialog } from './SessionDeletionDialog';
 import { SessionHistoryRow } from './SessionHistoryRow';
 import type { HistoricalEvent, ManualGuest } from './types';
 
@@ -108,6 +109,7 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 				}}
 				onClose={() => setOpenEventId(null)}
 			/>
+			<SessionDeletionDialog />
 		</Section>
 	);
 });

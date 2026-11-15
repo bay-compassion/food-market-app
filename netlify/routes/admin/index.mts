@@ -11,6 +11,7 @@ import { printJobRoutes } from './print-jobs.mjs';
 import { queueRoutes } from './queue.mjs';
 import { reportRoutes } from './reports.mjs';
 import { adminScheduleRoutes } from './schedule.mjs';
+import { sessionRoutes } from './sessions.mjs';
 import { visitEventRoutes } from './visit-events.mjs';
 import { workerRoutes } from './workers.mjs';
 
@@ -26,6 +27,7 @@ adminApi.route('/', queueRoutes);
 adminApi.route('/', broadcastRoutes);
 adminApi.route('/', reportRoutes);
 adminApi.route('/', adminScheduleRoutes);
+adminApi.route('/', sessionRoutes);
 adminApi.route('/', demoRoutes);
 adminApi.route('/', kioskRoutes);
 adminApi.route('/', visitEventRoutes);

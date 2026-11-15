@@ -78,7 +78,8 @@ export type SessionHistoryRowProps = {
 /**
  * One past session: the day it ran, its registration window, that it closed, and how many guests
  * it had. Recording someone served outside the app is the one thing still possible on it, so it
- * is in the row's menu rather than a link under every session.
+ * is in the row's menu rather than a link under every session — beside, for a data steward,
+ * deleting a session that was only ever a test.
  */
 export const SessionHistoryRow = observer(function SessionHistoryRow({
 	session,
@@ -86,7 +87,7 @@ export const SessionHistoryRow = observer(function SessionHistoryRow({
 	onRecordHousehold,
 }: SessionHistoryRowProps) {
 	const t = adminTranslations.en;
-	const { translations } = useRootStore();
+	const { admin, translations } = useRootStore();
 	const opens = new Date(session.registrationOpensAt);
 	const closes = new Date(session.registrationClosesAt);
 	const weekday = new Intl.DateTimeFormat(translations.locale, { weekday: 'short' }).format(opens);
@@ -134,6 +135,17 @@ export const SessionHistoryRow = observer(function SessionHistoryRow({
 						>
 							{t.recordServedGuest}
 						</MenuItem>
+						{admin.can('delete:guest-data') ? (
+							<MenuItem
+								sx={{ color: 'error.main' }}
+								onClick={() => {
+									closeMenu();
+									void admin.sessionDeletion.open(session.id);
+								}}
+							>
+								{t.sessionDeletion.menuItem}
+							</MenuItem>
+						) : null}
 					</>
 				)}
 			</OverflowMenu>

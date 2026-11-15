@@ -13,6 +13,7 @@ import type {
 import type { KioskUnlockCode } from './kiosk-unlock.ts';
 import { lotteryWeightFor, type LotteryWeightTier } from './lotteryWeight.ts';
 import type { PrintJobSubmission } from './print-jobs.ts';
+import type { SessionDeletionPreview } from './session-deletion.ts';
 import type { SessionStatus } from './sessionStateMachine.ts';
 import type { VisitEvent } from './visit-events.ts';
 import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
@@ -316,6 +317,35 @@ export class AdminApi {
 
 		if (!response.ok) {
 			throw await AdminRequestError.from(response, 'guest_deletion');
+		}
+	}
+
+	/** What permanently deleting a finished test session would remove, read before confirming. */
+	async previewSessionDeletion(marketEventId: string): Promise<SessionDeletionPreview> {
+		return this.readJson<SessionDeletionPreview>(
+			await this.get(`/api/admin/sessions/${encodeURIComponent(marketEventId)}/deletion`),
+			'session_deletion',
+		);
+	}
+
+	/**
+	 * Permanently deletes a finished session. `confirmation` is the session's date and start time as
+	 * typed, which the server checks; `force` also removes the warehouse snapshots covering it, which
+	 * otherwise block the deletion. A refusal carries its reason, written for the steward to read.
+	 */
+	async deleteSession(
+		marketEventId: string,
+		confirmation: string,
+		{ force = false }: { force?: boolean } = {},
+	): Promise<void> {
+		const response = await this.send(
+			'DELETE',
+			`/api/admin/sessions/${encodeURIComponent(marketEventId)}`,
+			{ confirmation, force },
+		);
+
+		if (!response.ok) {
+			throw await AdminRequestError.from(response, 'session_deletion');
 		}
 	}
 
