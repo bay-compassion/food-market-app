@@ -20,7 +20,7 @@ export class VisitHistoryEntry {
 		return this.event.kind;
 	}
 
-	/** "Called", or "Drawn in the lottery · #4", "Returned to queue · to the back". */
+	/** "Called", or "Drawn in the lottery · #4", "Name tag printed · #4", "Returned to queue · to the back". */
 	get title(): string {
 		const { kind, details } = this.event;
 		const title = this.t.kinds[kind];
@@ -36,7 +36,7 @@ export class VisitHistoryEntry {
 			priorityNumber: details.priorityNumber ?? null,
 		});
 
-		if ((kind === 'drawn' || kind === 'added') && number) {
+		if ((kind === 'drawn' || kind === 'added' || kind === 'tag_printed') && number) {
 			return `${title} · #${number.label}`;
 		}
 

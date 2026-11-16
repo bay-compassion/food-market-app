@@ -4,7 +4,7 @@ import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
 vi.mock('../../db/index.mjs', () => ({ db }));
 
-import { listVisitEvents, recordVisitEvents } from './visit-events.mjs';
+import { listVisitEvents, recordNameTagEvent, recordVisitEvents } from './visit-events.mjs';
 
 /** The rows handed to `insert(...).values(...)`. */
 function insertedRows() {
@@ -61,6 +61,69 @@ describe('recordVisitEvents', () => {
 				details: { cause: 'session_ended' },
 			},
 		]);
+	});
+});
+
+describe('recordNameTagEvent', () => {
+	const station = { kind: 'worker', id: 'auth0|station', name: 'Print Station' } as const;
+
+	it('records the tag with the number it showed and the status the visit is in', async () => {
+		// Arrange
+		queueResult([{ status: 'waiting' }]);
+		queueResult([]);
+
+		// Act
+		await recordNameTagEvent(
+			'tag_printed',
+			{ visitId: 'visit-1', queuePosition: 14, priorityNumber: null },
+			station,
+		);
+
+		// Assert
+		expect(insertedRows()).toEqual([
+			{
+				visitId: 'visit-1',
+				kind: 'tag_printed',
+				toStatus: 'waiting',
+				actorKind: 'worker',
+				actorId: 'auth0|station',
+				actorName: 'Print Station',
+				details: { queuePosition: 14 },
+			},
+		]);
+	});
+
+	it('keeps a priority number on the event', async () => {
+		// Arrange
+		queueResult([{ status: 'called' }]);
+		queueResult([]);
+
+		// Act
+		await recordNameTagEvent(
+			'tag_sent',
+			{ visitId: 'visit-1', queuePosition: null, priorityNumber: 2 },
+			station,
+		);
+
+		// Assert
+		expect(insertedRows()).toEqual([
+			expect.objectContaining({ kind: 'tag_sent', details: { priorityNumber: 2 } }),
+		]);
+	});
+
+	it('writes nothing for a visit deleted since its tag was sent', async () => {
+		// Arrange
+		queueResult([]);
+
+		// Act
+		await recordNameTagEvent(
+			'tag_printed',
+			{ visitId: 'visit-1', queuePosition: 14, priorityNumber: null },
+			station,
+		);
+
+		// Assert
+		expect(db.insert).not.toHaveBeenCalled();
 	});
 });
 

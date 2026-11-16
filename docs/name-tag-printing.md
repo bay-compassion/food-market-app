@@ -160,6 +160,11 @@ prints them one at a time, and removes each after printing it. A tag nobody prin
 minutes is dropped, so a station that comes back online doesn't print a backlog for guests who have
 left. One station per market: two stations would each print every tag.
 
+Each visit's History panel keeps the record the station's "printed recently" list doesn't: a
+`tag_sent` entry naming the volunteer who sent the tag, and a `tag_printed` entry, with the number
+the tag showed, when the station removes it. A tag sent but never printed — dropped after five
+minutes — shows only the first. The printer test tag records nothing.
+
 ## What to check on the real printer
 
 - The station puts the tag on a page the label's size with no margins, and print-only CSS hides

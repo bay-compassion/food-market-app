@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 import type { PrintJobSubmission } from '../../../src/services/print-jobs.js';
-import { type AdminEnv, withPermission } from '../../lib/http-auth.mjs';
+import type { NameTagEventKind, VisitEventActor } from '../../../src/services/visit-events.js';
+import { type AdminEnv, withPermission, workerActor } from '../../lib/http-auth.mjs';
 import {
 	createRouter,
 	jsonBody,
@@ -9,12 +10,31 @@ import {
 	methodNotAllowed,
 	routeHandler,
 } from '../../lib/http.mjs';
+import { getLogger } from '../../lib/logging.mjs';
 import { nameTagFor, PrintQueue, printQueue } from '../../services/print-queue.mjs';
+import { recordNameTagEvent } from '../../services/visit-events.mjs';
 
 const submissionSchema = z.object({ visitId: z.uuid() });
 const jobIdSchema = z.string().regex(/^\d{15}-[0-9a-f-]{36}$/);
 
 export const printJobRoutes = createRouter<AdminEnv>();
+
+/**
+ * Adds a tag to its visit's history. The tag has already been queued or removed by then, so a
+ * failure here is logged rather than answered: a phone that saw an error would send the tag again,
+ * and a station would retry a removal that finds nothing — a duplicate sticker for no record.
+ */
+async function recordTag(
+	kind: NameTagEventKind,
+	tag: Parameters<typeof recordNameTagEvent>[1],
+	actor: VisitEventActor,
+) {
+	try {
+		await recordNameTagEvent(kind, tag, actor);
+	} catch (err) {
+		getLogger().warn({ message: 'print_job.history_failed', kind, visitId: tag.visitId, err });
+	}
+}
 
 /**
  * A volunteer sends the open ticket's name tag to the print station. The tag is built from the
@@ -44,6 +64,7 @@ printJobRoutes.post('/print-jobs', withPermission('run:queue'), async (context) 
 	}
 
 	await queue.enqueue(tag);
+	await recordTag('tag_sent', tag, workerActor(context));
 
 	return Response.json({ queued: true } satisfies PrintJobSubmission, { status: 202 });
 });
@@ -78,7 +99,10 @@ printJobRoutes.post('/print-jobs/test', withPermission('run:queue'), async () =>
 });
 printJobRoutes.all('/print-jobs/test', methodNotAllowed);
 
-/** The print station removes a tag once it has printed it. */
+/**
+ * The print station removes a tag once it has printed it, which is when the visit's history
+ * records the print. A retried removal finds the tag gone and records nothing more.
+ */
 printJobRoutes.delete('/print-jobs/:id', withPermission('print:name-tags'), async (context) => {
 	const id = jobIdSchema.safeParse(context.req.param('id'));
 
@@ -86,7 +110,11 @@ printJobRoutes.delete('/print-jobs/:id', withPermission('print:name-tags'), asyn
 		return jsonError('Please name a print job.');
 	}
 
-	await printQueue().complete(id.data);
+	const job = await printQueue().complete(id.data);
+
+	if (job && !PrintQueue.isTestTag(job)) {
+		await recordTag('tag_printed', job, workerActor(context));
+	}
 
 	return new Response(null, { status: 204 });
 });

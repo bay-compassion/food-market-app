@@ -62,16 +62,16 @@ describe('PrintQueue', () => {
 		expect(pending).toEqual([{ ...job, pronunciation: null }]);
 	});
 
-	it('removes a printed tag, and shrugs off removing it twice', async () => {
+	it('removes a printed tag, hands it back once, and shrugs off removing it twice', async () => {
 		// Arrange
 		const { queue } = queueWith();
 		const job = await queue.enqueue(maria);
 
 		// Act
-		await queue.complete(job.id);
-		await queue.complete(job.id);
+		const removed = [await queue.complete(job.id), await queue.complete(job.id)];
 
 		// Assert
+		expect(removed).toEqual([job, null]);
 		expect(await queue.pending()).toEqual([]);
 	});
 

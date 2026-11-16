@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=22d90e8d7a64 -->
+<!-- diagram-sources: db/schema.mts=adfdc82db743 -->
 
 # Database structure
 
@@ -142,12 +142,12 @@ erDiagram
     visit_events {
         uuid id PK
         uuid visit_id FK "cascade delete"
-        text kind "registered | added | drawn | not_drawn | called | served | no_show | returned | cancelled"
-        text to_status "the status the visit moved to"
+        text kind "registered | added | drawn | not_drawn | called | served | no_show | returned | cancelled | tag_sent | tag_printed"
+        text to_status "the status the visit moved to; for a name tag, the one it was in"
         text actor_kind "guest | worker | system"
         text actor_id "nullable; the worker's Auth0 subject"
         text actor_name "nullable; the worker's name as their sign-in gave it then"
-        jsonb details "placement, the number given, or why it was cancelled"
+        jsonb details "placement, the number given or printed, or why it was cancelled"
         timestamptz created_at
     }
 
@@ -237,7 +237,11 @@ A few things the diagram can't show on its own:
   disagree. It is append-only. A worker is named by their Auth0 subject and by the name their
   sign-in carried at the time — copied, not looked up, so the history still reads correctly after
   a volunteer leaves. Visits from before the table existed have no rows; nothing was backfilled
-  from `called_at` and `served_at`, since those cannot say who acted.
+  from `called_at` and `served_at`, since those cannot say who acted. Name tags add rows that change
+  no status: `tag_sent` when a volunteer sends one to the print station, and `tag_printed` when the
+  station removes it after printing, under the station's account. The station's own on-screen list
+  is gone on a reload; these rows are the lasting record. The printer test tag belongs to no visit
+  and records nothing.
 - **The device token is the self-service guest credential.** The opaque token exists only in the
   browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
   an admin have no device credential until the guest scans a worker's QR code.

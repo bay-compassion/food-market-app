@@ -89,4 +89,20 @@ describe('VisitHistoryEntry', () => {
 		// Assert
 		expect(bylines).toEqual(['Session ended', 'By the guest']);
 	});
+
+	it('gives the number a printed name tag showed', () => {
+		// Arrange
+		const printed = entry({
+			kind: 'tag_printed',
+			toStatus: 'waiting',
+			actor: { kind: 'worker', id: 'auth0|station', name: 'Print Station' },
+			details: { queuePosition: 14 },
+		});
+
+		// Act
+		const line = [printed.title, printed.byline];
+
+		// Assert
+		expect(line).toEqual(['Name tag printed · #14', 'By Print Station']);
+	});
 });

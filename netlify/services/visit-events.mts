@@ -1,8 +1,9 @@
 import { asc, eq } from 'drizzle-orm';
 
 import { db } from '../../db/index.mjs';
-import { visitEvents } from '../../db/schema.mjs';
+import { visitEvents, visits } from '../../db/schema.mjs';
 import type {
+	NameTagEventKind,
 	VisitEvent,
 	VisitEventActor,
 	VisitEventDetails,
@@ -47,6 +48,42 @@ export async function recordVisitEvents(tx: Transaction, events: NewVisitEvent[]
 			actorName: actor.kind === 'worker' ? actor.name : null,
 			details: details ?? {},
 		})),
+	);
+}
+
+/**
+ * Records that a visit's name tag was sent or printed, with the number the tag showed. It changes
+ * no status, so the event carries the one the visit is in. A visit deleted since writes nothing.
+ */
+export async function recordNameTagEvent(
+	kind: NameTagEventKind,
+	tag: { visitId: string; queuePosition: number | null; priorityNumber: number | null },
+	actor: VisitEventActor,
+) {
+	const details: VisitEventDetails = {};
+
+	if (tag.queuePosition !== null) {
+		details.queuePosition = tag.queuePosition;
+	}
+
+	if (tag.priorityNumber !== null) {
+		details.priorityNumber = tag.priorityNumber;
+	}
+
+	await tracedQuery('visit_events.record_name_tag', () =>
+		db.transaction(async (tx) => {
+			const [visit] = await tx
+				.select({ status: visits.status })
+				.from(visits)
+				.where(eq(visits.id, tag.visitId))
+				.limit(1);
+
+			if (visit) {
+				await recordVisitEvents(tx, [
+					{ visitId: tag.visitId, kind, toStatus: visit.status, actor, details },
+				]);
+			}
+		}),
 	);
 }
 
