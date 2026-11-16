@@ -387,7 +387,8 @@ phone numbers, and nothing the account does can be traced to one person. So:
 
 A `print-station`-only account still works for a station that should carry nothing beyond printing.
 
-`print:name-tags` grants only collecting waiting tags and removing printed ones. A tag carries the
+`print:name-tags` grants only collecting waiting tags and removing printed ones. Removing one also
+adds `tag_printed` to the visit's history, under the station's account. A tag carries the
 guest's first name, last initial, place in line, and language — what the label shows — and nothing
 else. Sending a tag and asking whether a station is online are `run:queue`, since that is what a
 volunteer on `/queue` holds. `worker` and `admin` hold `print:name-tags` as well, so a staff member

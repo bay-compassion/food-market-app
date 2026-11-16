@@ -16,14 +16,20 @@ const { testTag } = vi.hoisted(() => ({
 }));
 
 vi.mock('../../services/print-queue.mjs', () => ({
-	PrintQueue: { testTag },
+	PrintQueue: {
+		testTag,
+		isTestTag: (tag: { visitId: string }) => tag.visitId === testTag.visitId,
+	},
 	printQueue: () => queue,
 	nameTagFor: vi.fn(),
 }));
 
+vi.mock('../../services/visit-events.mjs', () => ({ recordNameTagEvent: vi.fn() }));
+
 import { requirePermission } from '../../lib/auth.mjs';
 import handler from '../../routes/admin/print-jobs.mjs';
 import { nameTagFor } from '../../services/print-queue.mjs';
+import { recordNameTagEvent } from '../../services/visit-events.mjs';
 
 const visitId = '6f1c2a4e-3b5d-4c7e-9f80-1a2b3c4d5e6f';
 const jobId = '001791230000000-6f1c2a4e-3b5d-4c7e-9f80-1a2b3c4d5e6f';
@@ -48,6 +54,7 @@ function request(method: string, path: string, body?: unknown) {
 afterEach(() => {
 	vi.mocked(requirePermission).mockReset();
 	vi.mocked(nameTagFor).mockReset();
+	vi.mocked(recordNameTagEvent).mockReset();
 	Object.values(queue).forEach((mock) => mock.mockReset());
 });
 
@@ -62,6 +69,25 @@ describe('print jobs handler', () => {
 		expect(response.status).toBe(202);
 		await expect(response.json()).resolves.toEqual({ queued: true });
 		expect(queue.enqueue).toHaveBeenCalledWith(tag);
+		expect(recordNameTagEvent).toHaveBeenCalledWith(
+			'tag_sent',
+			tag,
+			expect.objectContaining({ kind: 'worker' }),
+		);
+	});
+
+	it('still answers that the tag was queued when its history entry fails', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queue.isStationOnline.mockResolvedValueOnce(true);
+		vi.mocked(nameTagFor).mockResolvedValueOnce(tag);
+		vi.mocked(recordNameTagEvent).mockRejectedValueOnce(new Error('database unavailable'));
+
+		// Act
+		const response = await handler(request('POST', '/print-jobs', { visitId }));
+
+		// Assert
+		expect(response.status).toBe(202);
 	});
 
 	it('queues nothing, and says why, with no station online', async () => {
@@ -105,6 +131,7 @@ describe('print jobs handler', () => {
 		expect(response.status).toBe(202);
 		await expect(response.json()).resolves.toEqual({ queued: true });
 		expect(queue.enqueue).toHaveBeenCalledWith(testTag);
+		expect(recordNameTagEvent).not.toHaveBeenCalled();
 	});
 
 	it('queues no test tag, and says why, with no station online', async () => {
@@ -131,13 +158,50 @@ describe('print jobs handler', () => {
 		expect(queue.heartbeat).toHaveBeenCalledOnce();
 	});
 
-	it('removes a printed tag', async () => {
+	it('removes a printed tag and records the print in its visit history', async () => {
+		// Arrange
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		const job = { ...tag, id: jobId, requestedAt: '2026-11-15T17:00:00.000Z' };
 
+		queue.complete.mockResolvedValueOnce(job);
+
+		// Act
 		const response = await handler(request('DELETE', `/print-jobs/${jobId}`));
 
+		// Assert
 		expect(response.status).toBe(204);
 		expect(queue.complete).toHaveBeenCalledWith(jobId);
+		expect(recordNameTagEvent).toHaveBeenCalledWith(
+			'tag_printed',
+			job,
+			expect.objectContaining({ kind: 'worker' }),
+		);
+	});
+
+	it('records nothing more for a removal retried after it went through', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queue.complete.mockResolvedValueOnce(null);
+
+		// Act
+		const response = await handler(request('DELETE', `/print-jobs/${jobId}`));
+
+		// Assert
+		expect(response.status).toBe(204);
+		expect(recordNameTagEvent).not.toHaveBeenCalled();
+	});
+
+	it('records no history for the test tag', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queue.complete.mockResolvedValueOnce({ ...testTag, id: jobId });
+
+		// Act
+		const response = await handler(request('DELETE', `/print-jobs/${jobId}`));
+
+		// Assert
+		expect(response.status).toBe(204);
+		expect(recordNameTagEvent).not.toHaveBeenCalled();
 	});
 
 	it('rejects a job id that is not one the queue issued', async () => {

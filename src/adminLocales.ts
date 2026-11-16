@@ -1351,6 +1351,8 @@ export const adminTranslations = {
 					no_show: 'Marked no-show',
 					returned: 'Returned to queue',
 					cancelled: 'Cancelled',
+					tag_sent: 'Name tag sent to printer',
+					tag_printed: 'Name tag printed',
 				},
 				returnedToBack: 'to the back',
 				returnedToFront: 'to the front',

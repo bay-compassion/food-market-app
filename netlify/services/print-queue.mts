@@ -75,6 +75,11 @@ export class PrintQueue {
 		locale: 'en',
 	};
 
+	/** Whether a tag is the sample one, which belongs to no visit and so has no history. */
+	static isTestTag(tag: Pick<NameTagPrintJob, 'visitId'>): boolean {
+		return tag.visitId === PrintQueue.testTag.visitId;
+	}
+
 	private readonly storage: PrintQueueStorage;
 	private readonly now: () => number;
 
@@ -115,9 +120,17 @@ export class PrintQueue {
 		return jobs;
 	}
 
-	/** Removes a printed tag. Removing one already gone is not an error. */
-	async complete(id: string): Promise<void> {
-		await this.storage.remove(`${jobPrefix}${id}`);
+	/**
+	 * Removes a printed tag and hands it back, so the caller can record what printed. Null for one
+	 * already gone, which is not an error: a station retrying a removal that went through.
+	 */
+	async complete(id: string): Promise<NameTagPrintJob | null> {
+		const key = `${jobPrefix}${id}`;
+		const job = jobSchema.safeParse(await this.storage.read(key));
+
+		await this.storage.remove(key);
+
+		return job.success ? job.data : null;
 	}
 
 	/** Records that the station just checked in. */

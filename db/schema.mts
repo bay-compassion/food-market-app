@@ -215,7 +215,7 @@ export const visits = pgTable('visits', {
 
 /**
  * A visit's history: one row per status change, written in the same transaction as the change
- * itself, naming who made it. Append-only — nothing updates or deletes a row except the visit's
+ * itself, naming who made it — plus a row each time its name tag is sent or printed. Append-only — nothing updates or deletes a row except the visit's
  * own deletion. Visits from before this table existed simply have no rows.
  */
 export const visitEvents = pgTable(

@@ -3,7 +3,9 @@ import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
 
 /**
  * What happened to a visit. Shared by the server, which records one in the same transaction as
- * every status change, and the volunteer screen's History panel, which lists them.
+ * every status change, and the volunteer screen's History panel, which lists them. The name tag
+ * events change no status; they keep a record of every tag sent and printed after the print
+ * station's own list is gone.
  */
 export type VisitEventKind =
 	/** The guest registered for the session themselves. */
@@ -20,7 +22,11 @@ export type VisitEventKind =
 	/** Put back in line after a no-show or a call made by mistake. */
 	| 'returned'
 	/** Cancelled by the guest, or because the session ended with them still in line. */
-	| 'cancelled';
+	| 'cancelled'
+	/** A volunteer sent the guest's name tag to the print station. */
+	| 'tag_sent'
+	/** The print station printed the guest's name tag. */
+	| 'tag_printed';
 
 export const visitEventKinds: VisitEventKind[] = [
 	'registered',
@@ -32,7 +38,14 @@ export const visitEventKinds: VisitEventKind[] = [
 	'no_show',
 	'returned',
 	'cancelled',
+	'tag_sent',
+	'tag_printed',
 ];
+
+/** The events that record a name tag rather than a status change. */
+export const nameTagEventKinds = ['tag_sent', 'tag_printed'] as const satisfies VisitEventKind[];
+
+export type NameTagEventKind = (typeof nameTagEventKinds)[number];
 
 export function isVisitEventKind(value: unknown): value is VisitEventKind {
 	return visitEventKinds.some((kind) => kind === value);
@@ -51,7 +64,7 @@ export type VisitEventActor =
 export type VisitEventDetails = {
 	/** Where a returned guest was put back in line. */
 	placement?: QueuePlacement;
-	/** The main-series number a guest was given. */
+	/** The main-series number a guest was given, or the one their name tag showed. */
 	queuePosition?: number;
 	/** The priority-series number (`P1`, …) a guest a worker put at the front was given. */
 	priorityNumber?: number;
@@ -63,7 +76,7 @@ export type VisitEventDetails = {
 export type VisitEvent = {
 	id: string;
 	kind: VisitEventKind;
-	/** The status the visit moved to. */
+	/** The status the visit moved to — or, for a name tag event, the status it was in. */
 	toStatus: VisitStatus;
 	actor: VisitEventActor;
 	details: VisitEventDetails;
