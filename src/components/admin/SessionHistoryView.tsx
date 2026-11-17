@@ -16,6 +16,8 @@ export type SessionHistoryViewProps = {
 	history: HistoricalEvent[];
 	busy?: boolean;
 	onAddGuest: (guest: ManualGuest, marketEventId: string) => void;
+	/** Opens a session's participants, for whoever may read them. */
+	onOpenSession?: (marketEventId: string) => void;
 };
 
 /** A finished session only accepts an after-the-fact record of someone already served. */
@@ -53,9 +55,11 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 	history,
 	busy,
 	onAddGuest,
+	onOpenSession,
 }: SessionHistoryViewProps) {
 	const t = adminTranslations.en;
-	const { translations } = useRootStore();
+	const { admin, translations } = useRootStore();
+	const canOpen = onOpenSession !== undefined && admin.can('export:guest-data');
 	const [openEventId, setOpenEventId] = useState<string | null>(null);
 	const [countEventId, setCountEventId] = useState<string | null>(null);
 	const months = new SessionHistoryMonths(history).months;
@@ -82,6 +86,7 @@ export const SessionHistoryView = observer(function SessionHistoryView({
 									session={session}
 									onRecordServedGuest={() => setOpenEventId(session.id)}
 									onRecordHousehold={() => setCountEventId(session.id)}
+									onOpen={canOpen ? () => onOpenSession(session.id) : undefined}
 								/>
 							))}
 						</ul>

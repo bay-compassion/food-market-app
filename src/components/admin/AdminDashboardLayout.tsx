@@ -22,7 +22,8 @@ import type { AdminView } from './types';
  * no reason to widen with them.
  *
  * The queue also fills the window's height on a desk, so the line and the ticket each scroll on
- * their own and a long line never pushes the call button or the ticket out of view.
+ * their own and a long line never pushes the call button or the ticket out of view. A past
+ * session's participants are laid out the same way, so they fill it too.
  */
 const Dashboard = styled.section<{ $wide: boolean; $fill: boolean }>`
 	width: min(100% - 32px, ${({ $wide }) => ($wide ? '1600px' : '1180px')});
@@ -115,7 +116,8 @@ const Dashboard = styled.section<{ $wide: boolean; $fill: boolean }>`
 				min-height: 0;
 			}
 
-			.admin-content > .queue-line {
+			.admin-content > .queue-line,
+			.admin-content > .session-participants {
 				flex: 1;
 			}
 		`
@@ -127,10 +129,13 @@ const Dashboard = styled.section<{ $wide: boolean; $fill: boolean }>`
 export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 	activeView,
 	onNavigate,
+	fill = false,
 	children,
 }: {
 	activeView: AdminView;
 	onNavigate: (view: AdminView) => void;
+	/** Lays the screen out as the queue's list and ticket, filling the window's height on a desk. */
+	fill?: boolean;
 	children: ReactNode;
 }) {
 	const { translations, admin } = useRootStore();
@@ -144,8 +149,8 @@ export const AdminDashboardLayout = observer(function AdminDashboardLayout({
 		<AdminThemeProvider>
 			<Dashboard
 				className="admin-dashboard"
-				$wide={activeView === 'reports' || activeView === 'queue'}
-				$fill={activeView === 'queue'}
+				$wide={activeView === 'reports' || activeView === 'queue' || fill}
+				$fill={activeView === 'queue' || fill}
 			>
 				{isWide ? (
 					<div className="admin-sidebar">

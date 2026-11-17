@@ -77,7 +77,7 @@ async function renderApp(initialPath = '/', flags: Record<string, StaticFlagValu
 					{ path: '/privacy', element: <PrivacyPage /> },
 					{ path: '/terms', element: <TermsPage /> },
 					{ path: '/signup', element: <SignupView /> },
-					{ path: '/admin/:view?', element: <AdminAuthView /> },
+					{ path: '/admin/:view?/:item?', element: <AdminAuthView /> },
 				],
 			},
 		],
@@ -728,6 +728,74 @@ describe('App', () => {
 		await waitFor(() =>
 			expect(container.textContent).toContain('We could not verify your admin session'),
 		);
+	});
+
+	it('opens a past session’s participants from its own address, and goes back to the sessions', async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const pastSession = {
+			id: 'event-9',
+			status: 'ended',
+			registrationOpensAt: '2026-11-14T17:30:00.000Z',
+			registrationClosesAt: '2026-11-14T17:45:00.000Z',
+			capacity: 40,
+			guestCount: 1,
+		};
+		const participant = {
+			id: 'visit-9',
+			guestId: 'guest-9',
+			marketEventId: 'event-9',
+			firstName: 'Cyrus',
+			lastName: 'Rahimi',
+			pronunciation: null,
+			staffNotes: null,
+			phone: '5105550100',
+			householdSize: 2,
+			locale: 'en',
+			queuePosition: 3,
+			priorityNumber: null,
+			queueFront: false,
+			queueOrder: null,
+			calledAt: null,
+			status: 'no_show',
+		};
+
+		authClient.isAuthenticated = true;
+		authClient.getAccessTokenSilently.mockResolvedValue(adminToken);
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation((url: string) =>
+				Promise.resolve({
+					ok: true,
+					json: () =>
+						Promise.resolve(
+							url.includes('view=history')
+								? [pastSession]
+								: url.includes('marketEventId=event-9')
+									? [participant]
+									: url.startsWith('/api/admin/guests')
+										? []
+										: { event: null, questions: [], counts: {} },
+						),
+				}),
+			),
+		);
+
+		// Act
+		await renderApp('/admin/session-history/event-9');
+
+		// Assert
+		expect(
+			await screen.findByRole('button', {
+				name: t.queueDesk.openTicket.replace('{number}', '3').replace('{name}', 'Cyrus Rahimi'),
+			}),
+		).toBeTruthy();
+
+		await user.click(screen.getByRole('button', { name: new RegExp(t.participants.back) }));
+
+		expect(
+			await screen.findByRole('button', { name: /^Participants, .*November 14, 2026/ }),
+		).toBeTruthy();
 	});
 
 	it('sends an access token from the administration surfaces', async () => {

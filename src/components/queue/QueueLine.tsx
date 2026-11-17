@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
 
+import { adminTranslations } from '../../adminLocales';
 import { tabBarHeight, wideLayoutQuery } from '../admin/admin-layout';
 import { AdminFeedbackBanner } from '../admin/AdminFeedbackBanner';
 import { GuestClaimDialog } from '../admin/GuestClaimDialog';
@@ -13,7 +14,9 @@ import { QueueDeskHeader } from './QueueDeskHeader';
 import { QueueLists } from './QueueLists';
 import { QueueSearchDialog } from './QueueSearchDialog';
 import { QueueToolbar } from './QueueToolbar';
+import { TicketDetails } from './TicketDetails';
 import { TicketPane } from './TicketPane';
+import { TicketPanes } from './TicketPanes';
 import { TicketSheet } from './TicketSheet';
 
 const Layout = styled.div`
@@ -90,53 +93,8 @@ const Layout = styled.div`
 		min-height: 0;
 	}
 
-	.panes {
-		display: grid;
+	.ticket-panes {
 		grid-row: -2;
-		grid-template-columns: minmax(0, 1fr) minmax(400px, 520px);
-		gap: 20px;
-		min-height: 0;
-	}
-
-	.line-pane {
-		display: grid;
-		grid-template-rows: minmax(0, 1fr) auto;
-		gap: 12px;
-		min-height: 0;
-	}
-
-	/*
-	 * A scrollbar that is always there, so the desk can see at a glance that the line runs on past
-	 * the window. macOS hides an overlay scrollbar until it is scrolled, whatever 'overflow' says,
-	 * so the bar is drawn here. Not with 'scrollbar-width' or 'scrollbar-color': Chrome ignores
-	 * these pseudo-elements once either is set.
-	 */
-	.line-list {
-		overflow-y: scroll;
-		scrollbar-gutter: stable;
-		padding-inline-end: 4px;
-	}
-
-	.line-list::-webkit-scrollbar {
-		width: 12px;
-	}
-
-	.line-list::-webkit-scrollbar-track {
-		border-radius: var(--radius-pill);
-		background: var(--color-surface-soft);
-	}
-
-	.line-list::-webkit-scrollbar-thumb {
-		border: 3px solid var(--color-surface-soft);
-		border-radius: var(--radius-pill);
-		background: var(--color-text-subtle);
-	}
-
-	/* Firefox draws no WebKit scrollbar, and keeps its own in view when it is styled. */
-	@supports not selector(::-webkit-scrollbar) {
-		.line-list {
-			scrollbar-color: var(--color-text-subtle) var(--color-surface-soft);
-		}
 	}
 `;
 
@@ -157,6 +115,7 @@ export type QueueLineProps = {
  * always in view.
  */
 export const QueueLine = observer(function QueueLine({ embedded = false }: QueueLineProps) {
+	const t = adminTranslations.en;
 	const isDesk = useMediaQuery(wideLayoutQuery);
 	const desk = useQueueDesk();
 
@@ -176,22 +135,18 @@ export const QueueLine = observer(function QueueLine({ embedded = false }: Queue
 				</>
 			)}
 			{isDesk ? (
-				<div className="panes">
-					<div className="line-pane">
-						<div className="line-list">
-							<QueueLists />
-						</div>
-						<QueueCallButton />
-					</div>
-					<TicketPane />
-				</div>
+				<TicketPanes list={<QueueLists />} footer={<QueueCallButton />}>
+					<TicketPane emptyText={t.queueDesk.noTicketOpen}>
+						{(guest) => <TicketDetails guest={guest} />}
+					</TicketPane>
+				</TicketPanes>
 			) : (
 				<>
 					<QueueLists />
 					<div className="call-bar">
 						<QueueCallBarActions />
 					</div>
-					<TicketSheet />
+					<TicketSheet aboveCallBar>{(guest) => <TicketDetails guest={guest} />}</TicketSheet>
 				</>
 			)}
 			{embedded ? null : <GuestClaimDialog />}

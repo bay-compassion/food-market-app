@@ -36,6 +36,8 @@ export const AdminAuthView = observer(function AdminAuthView() {
 	const navigate = useNavigate();
 	const params = useParams();
 	const view: AdminView | undefined = isAdminView(params.view) ? params.view : undefined;
+	// Only the session history opens something within it, so another screen ignores the segment.
+	const sessionId = view === 'session-history' ? params.item : undefined;
 
 	if (!isAuth0Configured) {
 		return (
@@ -65,8 +67,11 @@ export const AdminAuthView = observer(function AdminAuthView() {
 	return (
 		<AdminDashboard
 			view={view}
+			sessionId={sessionId}
 			getAccessToken={auth.getAccessTokenSilently}
-			onNavigate={(next) => void navigate(`/admin/${next}`)}
+			onNavigate={(next, item) =>
+				void navigate(item ? `/admin/${next}/${encodeURIComponent(item)}` : `/admin/${next}`)
+			}
 		/>
 	);
 });

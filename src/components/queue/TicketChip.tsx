@@ -6,7 +6,7 @@ import { NameTag } from '../../models/name-tag';
 import { QueueNumber } from '../../models/queue-number';
 import type { QueueGuest } from '../../services/admin-api';
 import { wideLayoutQuery } from '../admin/admin-layout';
-import { useQueueDesk } from './queue-desk-context';
+import { useTicketList } from './ticket-list-context';
 
 export type TicketChipProps = {
 	guest: QueueGuest;
@@ -145,7 +145,7 @@ const Row = styled.li`
  */
 export const TicketChip = observer(function TicketChip({ guest, now }: TicketChipProps) {
 	const t = adminTranslations.en.queueDesk;
-	const desk = useQueueDesk();
+	const desk = useTicketList();
 	const number = QueueNumber.of(guest)?.label ?? '—';
 	const name = `${guest.firstName} ${guest.lastName}`.trim();
 	const tag = new NameTag({ ...guest, visitId: guest.id, printedAt: new Date(now) });

@@ -11,9 +11,38 @@ const Row = styled.li`
 	display: flex;
 	min-height: 68px;
 	align-items: center;
-	gap: 12px;
-	padding: 8px 0;
+	gap: 4px;
+	padding: 4px 0;
 	border-bottom: 1px solid var(--color-divider);
+
+	/* The day, times, and count: one tap target when it opens the session, as a ticket chip is. */
+	.history-summary {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		min-height: 60px;
+		padding: 4px 8px 4px 0;
+	}
+
+	.history-open {
+		border: 0;
+		border-radius: var(--radius-md);
+		color: inherit;
+		background: transparent;
+		font: inherit;
+		text-align: start;
+		cursor: pointer;
+	}
+
+	.history-open:hover {
+		background: var(--color-surface-soft);
+	}
+
+	.history-open:active {
+		background: var(--color-border);
+	}
 
 	.history-day {
 		display: grid;
@@ -73,18 +102,21 @@ export type SessionHistoryRowProps = {
 	/** Opens the add-guest dialog for this session, limited to recording someone already served. */
 	onRecordServedGuest: () => void;
 	onRecordHousehold?: () => void;
+	/** Opens the session's participants. Without it, the row is not a link. */
+	onOpen?: () => void;
 };
 
 /**
  * One past session: the day it ran, its registration window, that it closed, and how many guests
- * it had. Recording someone served outside the app is the one thing still possible on it, so it
- * is in the row's menu rather than a link under every session — beside, for a data steward,
- * deleting a session that was only ever a test.
+ * it had. For whoever may read past sessions' guests, the row opens them, as a ticket opens on the
+ * queue. What else is still possible on it sits in the row's menu: recording someone served outside
+ * the app, and for a data steward, deleting a session that was only a test.
  */
 export const SessionHistoryRow = observer(function SessionHistoryRow({
 	session,
 	onRecordServedGuest,
 	onRecordHousehold,
+	onOpen,
 }: SessionHistoryRowProps) {
 	const t = adminTranslations.en;
 	const { admin, translations } = useRootStore();
@@ -99,8 +131,8 @@ export const SessionHistoryRow = observer(function SessionHistoryRow({
 		timeStyle: 'short',
 	}).formatRange(opens, closes);
 
-	return (
-		<Row className="history-row">
+	const summary = (
+		<>
 			<span className="history-day">
 				<span aria-hidden="true">{weekday}</span>
 				<strong aria-hidden="true">{day}</strong>
@@ -114,6 +146,23 @@ export const SessionHistoryRow = observer(function SessionHistoryRow({
 				<strong>{session.guestCount}</strong>
 				<span>{t.sessionGuests}</span>
 			</span>
+		</>
+	);
+
+	return (
+		<Row className="history-row">
+			{onOpen ? (
+				<button
+					type="button"
+					className="history-summary history-open"
+					aria-label={t.participants.openSession.replace('{date}', fullDate)}
+					onClick={onOpen}
+				>
+					{summary}
+				</button>
+			) : (
+				<span className="history-summary">{summary}</span>
+			)}
 			<OverflowMenu label={`${t.sessionActions}, ${fullDate}`}>
 				{(closeMenu) => (
 					<>

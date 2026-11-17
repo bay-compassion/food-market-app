@@ -142,7 +142,7 @@ erDiagram
     visit_events {
         uuid id PK
         uuid visit_id FK "cascade delete"
-        text kind "registered | added | drawn | not_drawn | called | served | no_show | returned | cancelled | tag_sent | tag_printed"
+        text kind "registered | added | drawn | not_drawn | called | served | no_show | returned | cancelled | tag_sent | tag_printed | corrected"
         text to_status "the status the visit moved to; for a name tag, the one it was in"
         text actor_kind "guest | worker | system"
         text actor_id "nullable; the worker's Auth0 subject"
@@ -241,7 +241,8 @@ A few things the diagram can't show on its own:
   no status: `tag_sent` when a volunteer sends one to the print station, and `tag_printed` when the
   station removes it after printing, under the station's account. The station's own on-screen list
   is gone on a reload; these rows are the lasting record. The printer test tag belongs to no visit
-  and records nothing.
+  and records nothing. A status set after a session ended, to reconcile what was not recorded on the
+  day, is a `corrected` row whose `details.fromStatus` keeps the status it replaced.
 - **The device token is the self-service guest credential.** The opaque token exists only in the
   browser; the database stores its hash in `device_token_hash`. Existing rows and guests added by
   an admin have no device credential until the guest scans a worker's QR code.

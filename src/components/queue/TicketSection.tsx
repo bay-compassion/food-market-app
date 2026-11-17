@@ -2,12 +2,11 @@ import styled from '@emotion/styled';
 import type { ReactNode } from 'react';
 
 import type { QueueGuest } from '../../services/admin-api';
-import type { QueueSectionId } from '../../stores/queue-desk.store';
 import { QueueSection } from './QueueSection';
 import { TicketChip } from './TicketChip';
 
 export type TicketSectionProps = {
-	id: QueueSectionId;
+	id: string;
 	title: string;
 	guests: QueueGuest[];
 	/**
@@ -37,7 +36,7 @@ const Empty = styled.p`
 	font-size: 14px;
 `;
 
-/** One bucket of tickets on the queue screen — called, waiting, and so on — as tappable rows. */
+/** One bucket of tickets — called, waiting, served, and so on — as tappable rows. */
 export function TicketSection({ id, title, guests, emptyText, now, action }: TicketSectionProps) {
 	if (!guests.length && emptyText === undefined) {
 		return null;

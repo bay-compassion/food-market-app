@@ -203,3 +203,82 @@ describe('sessions handler GET /sessions/:sessionId/deletion (delete:guest-data)
 		expect(response.status).toBe(404);
 	});
 });
+
+describe('sessions handler PATCH /sessions/:sessionId/visits/:visitId (export:guest-data)', () => {
+	const visitId = '0b8f3d2e-6a4c-4e1f-9b7a-3c2d1e0f9a8b';
+	const path = `/${sessionId}/visits/${visitId}`;
+
+	it('passes a refusal from the permission check through without touching the database', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(new Response(null, { status: 403 }));
+
+		// Act
+		const response = await handler(
+			request('PATCH', { path, body: { fromStatus: 'no_show', status: 'served' } }),
+		);
+
+		// Assert
+		expect(response.status).toBe(403);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+
+	it('refuses a status it does not know before touching the database', async () => {
+		// Act
+		const response = await handler(
+			request('PATCH', { path, body: { fromStatus: 'no_show', status: 'eaten' } }),
+		);
+
+		// Assert
+		expect(response.status).toBe(400);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+
+	it('corrects the visit and logs who did it', async () => {
+		// Arrange
+		queueResult([{ status: 'ended' }]);
+		queueResult([{ id: visitId, status: 'served' }]);
+		queueResult(undefined);
+
+		// Act
+		const response = await handler(
+			request('PATCH', { path, body: { fromStatus: 'no_show', status: 'served' } }),
+		);
+
+		// Assert
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ id: visitId, status: 'served' });
+		expect(logged.info).toHaveBeenCalledWith(
+			expect.objectContaining({
+				message: 'visit.status_corrected',
+				visitId,
+				fromStatus: 'no_show',
+				toStatus: 'served',
+			}),
+		);
+	});
+
+	it('answers 409 with the reason when the session has not ended', async () => {
+		// Arrange
+		queueResult([{ status: 'service_started' }]);
+
+		// Act
+		const response = await handler(
+			request('PATCH', { path, body: { fromStatus: 'no_show', status: 'served' } }),
+		);
+
+		// Assert
+		expect(response.status).toBe(409);
+		expect(await response.json()).toEqual({
+			error: 'Statuses can only be corrected once the session has ended.',
+		});
+		expect(logged.info).not.toHaveBeenCalled();
+	});
+
+	it('refuses other methods', async () => {
+		// Act
+		const response = await handler(request('GET', { path }));
+
+		// Assert
+		expect(response.status).toBe(405);
+	});
+});

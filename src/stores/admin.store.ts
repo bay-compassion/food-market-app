@@ -35,6 +35,7 @@ import { HouseholdServiceStore } from './household-service.store';
 import type { MarketSessionStore } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
 import { SessionDeletionStore } from './session-deletion.store.ts';
+import { SessionParticipantsStore } from './session-participants.store.ts';
 
 /** The session commands the dashboard offers as one-click actions. */
 export type MarketAction = Exclude<
@@ -94,6 +95,8 @@ export class AdminStore {
 	private readonly notifications: NotificationStore;
 	/** Deleting a finished test session, from the session history's menu. */
 	readonly sessionDeletion: SessionDeletionStore;
+	/** An ended session's guests, and correcting their statuses, from the same menu. */
+	readonly sessionParticipants: SessionParticipantsStore;
 
 	/** A screen-local recorder using the same authenticated API as the queue. */
 	createHouseholdServiceStore(marketEventId: string): HouseholdServiceStore {
@@ -198,12 +201,14 @@ export class AdminStore {
 		this.sessionDeletion = new SessionDeletionStore(this.api, this.notifications, () =>
 			this.refreshHistory(),
 		);
+		this.sessionParticipants = new SessionParticipantsStore(this.api, this.notifications);
 
 		return makeReactive(this, {
 			api: false,
 			readPermissions: false,
 			notifications: false,
 			sessionDeletion: false,
+			sessionParticipants: false,
 			session: false,
 			pendingGuestCommands: false,
 			sessionGuestsRevision: false,

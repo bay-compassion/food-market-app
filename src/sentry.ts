@@ -152,7 +152,7 @@ initializeSentry();
 
 /**
  * `createBrowserRouter`, instrumented so a transaction is named after the route pattern it
- * matched (`/admin/:view?`) rather than the URL a guest happened to be on.
+ * matched (`/admin/:view?/:item?`) rather than the URL a guest happened to be on.
  */
 export const createInstrumentedBrowserRouter: typeof createBrowserRouter =
 	Sentry.wrapCreateBrowserRouter(createBrowserRouter);

@@ -20,3 +20,9 @@ export const callBarBottom = dockInset;
 
 /** The top of the call bar, measured from the bottom of the screen, as a CSS length. */
 export const callBarOffset = `calc(${callBarHeight}px + ${dockSafeArea} + ${dockInset})`;
+
+/**
+ * Where a sheet docks with no call bar under it: the bottom edge, clear of the safe area, or the top
+ * of the dashboard's tab bar.
+ */
+export const dockOffset = `calc(${dockSafeArea} + ${dockInset})`;

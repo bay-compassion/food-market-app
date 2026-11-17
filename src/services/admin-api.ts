@@ -350,6 +350,26 @@ export class AdminApi {
 	}
 
 	/**
+	 * Sets the status a visit in an ended session should have had. `fromStatus` is the status the
+	 * list showed; the server refuses if it has changed since. A refusal carries its reason.
+	 */
+	async correctVisitStatus(
+		marketEventId: string,
+		visitId: string,
+		correction: { fromStatus: VisitStatus; status: VisitStatus },
+	): Promise<void> {
+		const response = await this.send(
+			'PATCH',
+			`/api/admin/sessions/${encodeURIComponent(marketEventId)}/visits/${encodeURIComponent(visitId)}`,
+			correction,
+		);
+
+		if (!response.ok) {
+			throw await AdminRequestError.from(response, 'status_correction');
+		}
+	}
+
+	/**
 	 * A single-use code that lets a guest take their record onto their own phone. Resolves to `null`
 	 * when this worker may not do that for this guest — only a manager may for one who was not just
 	 * added, or who is already on a phone.

@@ -247,6 +247,16 @@ describe('endpoint permissions', () => {
 			'delete:guest-data',
 		],
 		[
+			'correcting a guest’s status in an ended session',
+			sessionsHandler,
+			json(
+				'https://x/api/admin/sessions/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f/visits/0b8f3d2e-6a4c-4e1f-9b7a-3c2d1e0f9a8b',
+				'PATCH',
+				{ fromStatus: 'no_show', status: 'served' },
+			),
+			'export:guest-data',
+		],
+		[
 			'issuing a code to unlock a room display',
 			kioskHandler,
 			json('https://x/api/admin/kiosk/unlock-codes', 'POST'),
