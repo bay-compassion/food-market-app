@@ -2,12 +2,11 @@ import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 import { useId, type ReactNode } from 'react';
 
-import type { QueueSectionId } from '../../stores/queue-desk.store';
-import { useQueueDesk } from './queue-desk-context';
+import { useTicketList } from './ticket-list-context';
 
 export type QueueSectionProps = {
-	/** Which section this is, so the desk remembers whether the volunteer folded it away. */
-	id: QueueSectionId;
+	/** Which section this is, so the screen remembers whether it was folded away. */
+	id: string;
 	title: string;
 	/** Beside the title, kept in view while the section is folded. */
 	count: ReactNode;
@@ -102,8 +101,8 @@ function Chevron() {
 }
 
 /**
- * One section of the queue screen — a bucket of tickets, or the households served — whose title
- * folds it away and back. Its count and its heading action stay in view while it is folded.
+ * One section of a ticket list — a bucket of tickets, or the queue's households served — whose
+ * title folds it away and back. Its count and its heading action stay in view while it is folded.
  */
 export const QueueSection = observer(function QueueSection({
 	id,
@@ -112,7 +111,7 @@ export const QueueSection = observer(function QueueSection({
 	action,
 	children,
 }: QueueSectionProps) {
-	const desk = useQueueDesk();
+	const desk = useTicketList();
 	const bodyId = useId();
 	const isCollapsed = desk.isCollapsed(id);
 

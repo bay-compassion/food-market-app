@@ -57,7 +57,8 @@ export const router = createInstrumentedBrowserRouter([
 						}),
 					},
 					{
-						path: '/admin/:view?',
+						// The second segment opens something within a screen: an ended session's participants.
+						path: '/admin/:view?/:item?',
 						lazy: async () => ({
 							Component: (await import('./components/AdminRoute')).AdminRoute,
 						}),

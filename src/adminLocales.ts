@@ -67,6 +67,33 @@ type TodayTranslations = {
 };
 
 /** The dialog that permanently deletes a finished session run as a test. */
+/** An ended session's guests, and correcting a status that was not recorded right on the day. */
+export interface SessionParticipantsTranslation {
+	/** Back from a session's participants to the list of sessions. */
+	back: string;
+	/** A session row's accessible name; `{date}` is the session's date and time. */
+	openSession: string;
+	intro: string;
+	loading: string;
+	empty: string;
+	/** `{count}` is how many guests took part. */
+	count: string;
+	/** The desk's ticket pane while no guest is open. */
+	noTicketOpen: string;
+	correctTitle: string;
+	correctHelp: string;
+	/** A correction button; `{status}` is the status it sets. */
+	changeTo: string;
+	/** `{name}`, `{from}`, and `{to}` are the guest's name and the two statuses. */
+	confirmQuestion: string;
+	confirmDetail: string;
+	confirm: string;
+	corrected: string;
+	correctionFailed: string;
+	loadFailed: string;
+	retry: string;
+}
+
 export interface SessionDeletionTranslation {
 	menuItem: string;
 	title: string;
@@ -93,6 +120,7 @@ export interface SessionDeletionTranslation {
 
 export interface AdminTranslation {
 	sessionDeletion: SessionDeletionTranslation;
+	participants: SessionParticipantsTranslation;
 	householdService: {
 		queueRecord: string;
 		queueSaved: string;
@@ -1087,6 +1115,28 @@ export const adminTranslations = {
 		reportPrivacyNote:
 			'Reports count people without naming them. Only the full export identifies guests, so share that file carefully.',
 		reportEmpty: 'No sessions in this date range.',
+		participants: {
+			back: 'All Sessions',
+			openSession: 'Participants, {date}',
+			intro:
+				'Open a guest to correct a status that was not recorded right on the day. Every change is kept in the guest’s visit history with your name.',
+			loading: 'Loading participants…',
+			empty: 'Nobody took part in this session.',
+			count: '{count} guests',
+			noTicketOpen: 'Choose a guest to see their visit.',
+			correctTitle: 'Correct Status',
+			correctHelp: 'If this was recorded wrong on the day, set the status it should have been.',
+			changeTo: 'Mark {status}',
+			confirmQuestion: 'Change {name} from {from} to {to}?',
+			confirmDetail:
+				'Reports for this session will count them as {to}. Snapshots already taken for the data warehouse are not changed.',
+			confirm: 'Change Status',
+			corrected: 'Status corrected.',
+			correctionFailed: 'That status could not be corrected. Try again.',
+			loadFailed: 'This session’s participants could not be loaded.',
+			retry: 'Try Again',
+		},
+
 		sessionDeletion: {
 			menuItem: 'Delete Test Session',
 			title: 'Delete Test Session Permanently',
@@ -1353,6 +1403,7 @@ export const adminTranslations = {
 					cancelled: 'Cancelled',
 					tag_sent: 'Name tag sent to printer',
 					tag_printed: 'Name tag printed',
+					corrected: 'Status corrected',
 				},
 				returnedToBack: 'to the back',
 				returnedToFront: 'to the front',

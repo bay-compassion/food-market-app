@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
 import { VisitHistoryEntry } from '../../models/visit-history-entry';
-import { useQueueDesk } from './queue-desk-context';
+import { useTicketList } from './ticket-list-context';
 
 const Panel = styled.section`
 	padding: 14px 16px 6px;
@@ -64,6 +64,22 @@ const Panel = styled.section`
 `;
 
 const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
+const dateTimeFormat = new Intl.DateTimeFormat('en-US', {
+	month: 'short',
+	day: 'numeric',
+	hour: 'numeric',
+	minute: '2-digit',
+});
+
+/**
+ * The time alone for today's entries, as the queue's always are; the date too for any other day —
+ * an ended session's ticket, or a correction made days after it.
+ */
+function formatWhen(at: Date, today: Date): string {
+	return at.toDateString() === today.toDateString()
+		? timeFormat.format(at)
+		: dateTimeFormat.format(at);
+}
 
 /**
  * What has happened to the open ticket's visit, newest first: each change, who made it, and when.
@@ -71,13 +87,14 @@ const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '
  */
 export const TicketHistory = observer(function TicketHistory() {
 	const t = adminTranslations.en.queueDesk.history;
-	const { history } = useQueueDesk();
+	const { history } = useTicketList();
 
 	if (history === null) {
 		return null;
 	}
 
 	const entries = history.map((event) => new VisitHistoryEntry(event, t)).reverse();
+	const today = new Date();
 
 	return (
 		<Panel className="ticket-history" aria-label={t.title}>
@@ -88,7 +105,7 @@ export const TicketHistory = observer(function TicketHistory() {
 						<li key={entry.id}>
 							<span className="title">{entry.title}</span>
 							<span className="byline">{entry.byline}</span>
-							<time dateTime={entry.at.toISOString()}>{timeFormat.format(entry.at)}</time>
+							<time dateTime={entry.at.toISOString()}>{formatWhen(entry.at, today)}</time>
 						</li>
 					))}
 				</ol>

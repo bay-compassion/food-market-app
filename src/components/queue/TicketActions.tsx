@@ -1,4 +1,3 @@
-import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
@@ -8,36 +7,7 @@ import { useShowGuestClaim } from '../admin/use-show-guest-claim';
 import { primaryVisitCommands, visitCommandLabels } from '../admin/VisitCommandButtons';
 import { useQueueDesk } from './queue-desk-context';
 import { ReturnToQueueButton } from './ReturnToQueueButton';
-
-const Actions = styled.div`
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-
-	button,
-	a {
-		display: inline-flex;
-		align-items: center;
-		min-height: 44px;
-		padding: 0 16px;
-		border: 0;
-		border-radius: var(--radius-pill);
-		color: var(--color-text);
-		background: var(--color-surface-soft);
-		font-size: 15px;
-		font-weight: 700;
-		text-decoration: none;
-	}
-
-	.primary {
-		color: var(--color-on-brand);
-		background: var(--color-success);
-	}
-
-	button:disabled {
-		opacity: 0.6;
-	}
-`;
+import { TicketActionBar } from './TicketActionBar';
 
 /**
  * What a volunteer can do with the open ticket. The state machine decides which commands exist;
@@ -67,7 +37,7 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 		);
 
 	return (
-		<Actions className="ticket-actions">
+		<TicketActionBar className="ticket-actions">
 			{offersServeAndCallNext ? (
 				<button
 					type="button"
@@ -108,6 +78,6 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 					{t.guestClaimShow}
 				</button>
 			) : null}
-		</Actions>
+		</TicketActionBar>
 	);
 });

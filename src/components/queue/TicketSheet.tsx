@@ -1,25 +1,31 @@
 import styled from '@emotion/styled';
 import { Drawer } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useRef, type KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
+import type { QueueGuest } from '../../services/admin-api';
 import { useSwipeToDismiss } from '../hooks/use-swipe-to-dismiss';
-import { callBarOffset } from './call-bar';
-import { useQueueDesk } from './queue-desk-context';
-import { TicketDetails } from './TicketDetails';
+import { callBarOffset, dockOffset } from './call-bar';
+import { useTicketList } from './ticket-list-context';
 
 // Docked, the sheet renders where it is placed, but it is fixed to the viewport, so it carries its
 // own type and colours rather than inherit the frame's.
 const Sheet = styled(Drawer)`
+	--ticket-sheet-bottom: ${dockOffset};
+
+	&[data-above-call-bar='true'] {
+		--ticket-sheet-bottom: ${callBarOffset};
+	}
+
 	.MuiDrawer-paper {
 		box-sizing: border-box;
 		display: grid;
 		gap: 14px;
 		width: min(100%, 480px);
-		/* Some of the line stays in view above it, to tap another ticket straight from the list. */
-		max-height: calc(75dvh - ${callBarOffset});
-		bottom: ${callBarOffset};
+		/* Some of the list stays in view above it, to tap another ticket straight from it. */
+		max-height: calc(75dvh - var(--ticket-sheet-bottom));
+		bottom: var(--ticket-sheet-bottom);
 		margin-inline: auto;
 		padding: 0 16px 18px;
 		overflow-y: auto;
@@ -62,17 +68,27 @@ const Sheet = styled(Drawer)`
 	}
 `;
 
+export type TicketSheetProps = {
+	/** What the open ticket shows: the queue's actions, or an ended session's corrections. */
+	children: (guest: QueueGuest) => ReactNode;
+	/** Sits on the queue's call bar rather than the bottom edge or the dashboard's tab bar. */
+	aboveCallBar?: boolean;
+};
+
 /**
- * The open ticket on a phone, risen from the bottom edge to sit on the call bar. Opening one is
- * how a volunteer works with a guest; the list behind it stays one line per ticket.
+ * The open ticket on a phone, risen from the bottom edge — onto the call bar, on the queue. Opening
+ * one is how a volunteer works with a guest; the list behind it stays one line per ticket.
  *
  * It does not block the screen: the call button below it and the tickets above it still answer
  * the first tap — calling the next guest, or opening another ticket in this one's place. It closes
  * from its handle, by dragging it down, or with Escape.
  */
-export const TicketSheet = observer(function TicketSheet() {
+export const TicketSheet = observer(function TicketSheet({
+	children,
+	aboveCallBar = false,
+}: TicketSheetProps) {
 	const t = adminTranslations.en.queueDesk;
-	const desk = useQueueDesk();
+	const desk = useTicketList();
 	const guest = desk.selected;
 	const paper = useRef<HTMLDivElement>(null);
 	const swipe = useSwipeToDismiss(paper, () => desk.dismiss());
@@ -82,6 +98,7 @@ export const TicketSheet = observer(function TicketSheet() {
 			anchor="bottom"
 			variant="persistent"
 			className="ticket-sheet"
+			data-above-call-bar={aboveCallBar}
 			open={guest !== null}
 			// The content comes from the store, so an outgoing transition would animate an empty panel.
 			transitionDuration={0}
@@ -110,7 +127,7 @@ export const TicketSheet = observer(function TicketSheet() {
 							onClick={() => desk.dismiss()}
 						/>
 					</div>
-					<TicketDetails guest={guest} />
+					{children(guest)}
 				</>
 			) : null}
 		</Sheet>

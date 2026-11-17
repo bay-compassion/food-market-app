@@ -174,6 +174,11 @@ recovery path — a guest marked no-show who turns up after all, or one called b
 to `waiting` and is notified again when re-called — so it clears `called_at` on the way out.
 Nothing transitions out of `served`, so `served_at` is only ever written once.
 
+These are the transitions of a running session. After a session has ended, a status recorded wrong
+on the day can be corrected to any other finished status — including out of `served`, which clears
+`served_at` — outside this state machine; see
+[Correcting a status after a session](roles.md#correcting-a-status-after-a-session).
+
 `return_to_queue` can also say where the guest goes: `placement: 'end'` behind everyone waiting, or
 `'next'` at the front — the same placements as adding a guest by hand. The volunteer queue screen
 sends `end` unless the worker picks the front, since a no-show has lost their turn; without a

@@ -99,7 +99,7 @@ operations. Preserve these through a log drain if long-term audit retention is n
 | `run:queue`           | Call guests, change a visit's status, add a guest by hand, close the day's session, read session history |
 | `manage:sessions`     | The schedule, the question bank, the registration lifecycle, the lottery, broadcasts                     |
 | `read:reports`        | The reports screen — counts and rates, never a guest's name                                              |
-| `export:guest-data`   | The visit export, which carries guest names and phone numbers                                            |
+| `export:guest-data`   | The visit export, the Guest Database, and an ended session's participants, including correcting a status |
 | `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
 | `delete:guest-data`   | Permanently deleting a guest and everything about them, after typing their phone number to confirm       |
 | `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
@@ -150,6 +150,7 @@ until it expires, like every other permission here.
 | `GET /api/admin/reports?view=export`                     | `export:guest-data`; plus `read:stewardship` for `lottery_weight` |
 | `GET /api/admin/guests/:id/deletion`                     | `delete:guest-data`                                               |
 | `DELETE /api/admin/guests/:id`                           | `delete:guest-data`                                               |
+| `PATCH /api/admin/sessions/:id/visits/:visitId`          | `export:guest-data`                                               |
 | `GET`, `POST /api/admin/demo-data`                       | `manage:demo-data` — and, for `POST`, an env flag too             |
 | `POST /api/admin/kiosk/unlock-codes`                     | `run:queue`                                                       |
 | `GET /api/admin/visits/:id/events`                       | `run:queue`                                                       |
@@ -291,6 +292,24 @@ it. It is logged as `session.deleted`. See [`test-session-deletion.md`](test-ses
 
 Push `infrastructure/auth0/tenant/tenant.yaml` to Auth0, then assign `data-steward` to the right
 person. Until it is assigned, nobody is offered the menu item and both endpoints answer 403.
+
+## Correcting a status after a session
+
+In the session history, holders of `export:guest-data` can tap a past session to open its
+participants at `/admin/session-history/:sessionId`. The guests are listed as the queue lists
+tickets, in a section for each status; a tapped ticket opens in a pane to the right on a desk and
+in a sheet on a phone. Without that permission a session is not a link. The list is read through
+the same `GET /api/admin/guests?marketEventId=…` that a past session's roster has always needed
+that permission for. From the ticket, after a confirmation, a guest's status can be changed to any
+other finished status (Served, No show, Not placed, or Cancelled) to reconcile what was not
+recorded right on the day. The server refuses a session that has not ended. It also refuses a
+change made from a list that has gone stale because someone else corrected the same guest.
+
+A correction is not a queue command: it can make moves the queue never would, such as a no-show to
+served. Each one is written to the visit's history as `corrected`, naming who made it and the
+status it replaced, and logged as `visit.status_corrected`. A visit corrected to Served has no
+service time, so the wait-time report counts it as unrecorded; one corrected away from Served loses
+its time. Reports read the new status straight away. Frozen warehouse snapshots do not change.
 
 ## The room display
 

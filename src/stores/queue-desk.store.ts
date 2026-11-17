@@ -18,6 +18,7 @@ import type { VisitCommand } from '../services/visitStateMachine.ts';
 import type { AdminStore } from './admin.store.ts';
 import type { MarketSessionStore } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
+import type { TicketList } from './ticket-list.ts';
 
 export type QueueDeskStoreOptions = {
 	pollIntervalMs?: number;
@@ -44,7 +45,7 @@ const defaultPollIntervalMs = 5_000;
  * `AdminStore`, which still owns the guest list and every command that changes it, and reads none
  * of the guest database or history the dashboard loads: this screen runs on a volunteer's phone.
  */
-export class QueueDeskStore {
+export class QueueDeskStore implements TicketList {
 	private _selectedVisitId: string | null = null;
 	private _isStarted = false;
 	private _isAddingGuest = false;

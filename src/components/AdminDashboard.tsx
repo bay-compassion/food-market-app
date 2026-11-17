@@ -20,6 +20,7 @@ import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
 import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
 import { SessionHistoryView } from './admin/SessionHistoryView';
+import { SessionParticipantsView } from './admin/SessionParticipantsView';
 import { SessionView } from './admin/SessionView';
 import type { AdminView, ManualGuest, QueueGuest } from './admin/types';
 import { WorkersView } from './admin/WorkersView';
@@ -30,13 +31,17 @@ export type AdminDashboardProps = {
 	getAccessToken: () => Promise<string>;
 	/** The screen the route names. Without one, the dashboard picks where to land. */
 	view?: AdminView;
-	onNavigate: (view: AdminView) => void;
+	/** The ended session whose participants the session history has open, as the route names it. */
+	sessionId?: string;
+	/** Goes to a screen, or with `item`, to something open within it. */
+	onNavigate: (view: AdminView, item?: string) => void;
 };
 
 /** The admin area: navigation, the session's status, and whichever screen is selected. */
 export const AdminDashboard = observer(function AdminDashboard({
 	getAccessToken,
 	view,
+	sessionId,
 	onNavigate,
 }: AdminDashboardProps) {
 	const rootStore = useRootStore();
@@ -116,6 +121,9 @@ export const AdminDashboard = observer(function AdminDashboard({
 		.sort(LineOrder.compare);
 
 	const outstandingCount = (counts.waiting ?? 0) + (counts.called ?? 0);
+	// A past session's guests are cross-session PII, which only `export:guest-data` may read.
+	const showsParticipants =
+		activeView === 'session-history' && sessionId !== undefined && admin.can('export:guest-data');
 	const prompts = new MarketActionPrompts(t, outstandingCount);
 
 	async function runMarketAction(action: MarketAction) {
@@ -163,7 +171,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 	}
 
 	return (
-		<AdminDashboardLayout activeView={activeView} onNavigate={navigate}>
+		<AdminDashboardLayout activeView={activeView} onNavigate={navigate} fill={showsParticipants}>
 			{activeView === 'current-session' ? (
 				<SessionView
 					statusLabels={statusLabels}
@@ -213,11 +221,17 @@ export const AdminDashboard = observer(function AdminDashboard({
 					busy={admin.isBusy}
 					onLoad={(stage, progress) => void loadScenario(stage, progress)}
 				/>
+			) : showsParticipants ? (
+				<SessionParticipantsView
+					sessionId={sessionId}
+					onBack={() => onNavigate('session-history')}
+				/>
 			) : (
 				<SessionHistoryView
 					history={admin.history}
 					busy={admin.isBusy}
 					onAddGuest={(guest, marketEventId) => void addManualGuest(guest, marketEventId)}
+					onOpenSession={(id) => onNavigate('session-history', id)}
 				/>
 			)}
 		</AdminDashboardLayout>

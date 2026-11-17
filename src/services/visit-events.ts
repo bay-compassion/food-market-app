@@ -26,7 +26,9 @@ export type VisitEventKind =
 	/** A volunteer sent the guest's name tag to the print station. */
 	| 'tag_sent'
 	/** The print station printed the guest's name tag. */
-	| 'tag_printed';
+	| 'tag_printed'
+	/** Someone reconciling an ended session set the status the visit should have had. */
+	| 'corrected';
 
 export const visitEventKinds: VisitEventKind[] = [
 	'registered',
@@ -40,6 +42,7 @@ export const visitEventKinds: VisitEventKind[] = [
 	'cancelled',
 	'tag_sent',
 	'tag_printed',
+	'corrected',
 ];
 
 /** The events that record a name tag rather than a status change. */
@@ -70,6 +73,8 @@ export type VisitEventDetails = {
 	priorityNumber?: number;
 	/** Why a visit was cancelled without anyone cancelling it. */
 	cause?: 'session_ended';
+	/** The status a `corrected` visit was in before the correction. */
+	fromStatus?: VisitStatus;
 };
 
 /** One entry in a visit's history, as `GET /api/admin/visits/:id/events` returns it. */
