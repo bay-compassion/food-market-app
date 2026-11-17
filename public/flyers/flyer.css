@@ -260,3 +260,71 @@ body {
 .notice p {
 	margin: 0;
 }
+
+/*
+ * The Bay Point flyers (`bay-point/*.html`) are handed out away from the market, so they trade some
+ * room in the hero and the steps for the address and a map of the market beside Bay Point.
+ */
+.sheet--offsite .hero {
+	padding-block: 16px;
+}
+
+.sheet--offsite .hero h1 {
+	font-size: 52px;
+}
+
+.sheet--offsite .hero-copy {
+	gap: 14px;
+}
+
+.sheet--offsite .qr {
+	flex-basis: 200px;
+}
+
+.sheet--offsite .qr img {
+	width: 200px;
+	height: 200px;
+}
+
+.location {
+	margin: 16px 48px 0;
+	display: flex;
+	gap: 24px;
+	align-items: center;
+}
+
+.location-text {
+	flex: 1 1 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.location address {
+	font-style: normal;
+	font-size: 26px;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+.location p {
+	margin: 0;
+	font-size: 17px;
+	line-height: 1.4;
+	color: var(--text-muted);
+}
+
+.location-map {
+	flex: 0 0 auto;
+	display: block;
+	width: 400px;
+	height: auto;
+	border: 2px solid var(--brand);
+	border-radius: 16px;
+}
+
+.sheet--offsite .steps {
+	--step-gap: 10px;
+	padding-top: 16px;
+}

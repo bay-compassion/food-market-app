@@ -13,6 +13,7 @@
     "eslint.config.*",
     "scripts/capture-twilio-opt-in.mts",
     "scripts/generate-brand-assets.mts",
+    "scripts/generate-flyer-map.mts",
     "scripts/screenshots/**/*.mts",
     "scripts/smoke-test-sms.mts",
     "infrastructure/auth0/auth0.mts",
