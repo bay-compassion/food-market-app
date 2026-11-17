@@ -45,6 +45,14 @@ h1 {
 	text-transform: uppercase;
 }
 
+h2 {
+	margin: 32px 0 8px;
+	color: var(--brand);
+	font-family: var(--font-heading);
+	font-size: 22px;
+	text-transform: uppercase;
+}
+
 .lede {
 	margin: 0 0 24px;
 	color: var(--text-muted);
