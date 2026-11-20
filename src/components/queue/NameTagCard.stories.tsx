@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, within } from 'storybook/test';
 
 import { languages, type Locale } from '../../locales';
 import { NameTag } from '../../models/name-tag';
+import type { VisitTrack } from '../../services/visit-track';
 import { NameTagCard } from './NameTagCard';
 
 type NameTagArgs = {
@@ -11,6 +13,7 @@ type NameTagArgs = {
 	pronunciation: string | null;
 	queuePosition: number | null;
 	priorityNumber: number | null;
+	track?: VisitTrack;
 	locale: Locale;
 };
 
@@ -92,6 +95,19 @@ export const LongPronunciation: Story = {
 /** A guest added by hand outside the draw has no place in line yet. */
 export const Unplaced: Story = {
 	args: { queuePosition: null, locale: 'en' },
+};
+
+/** A premarket volunteer shops without a number, so their tag says V. */
+export const PremarketVolunteer: Story = {
+	args: { queuePosition: null, track: 'premarket', locale: 'en' },
+	play: async ({ canvasElement }) => {
+		await expect(within(canvasElement).getByText(NameTag.volunteerMark)).toBeInTheDocument();
+	},
+};
+
+/** A premarket volunteer's tag as it prints. */
+export const PrintedPremarketVolunteer: Story = {
+	args: { printed: true, queuePosition: null, track: 'premarket' },
 };
 
 /**

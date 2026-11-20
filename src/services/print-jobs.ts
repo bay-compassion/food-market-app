@@ -1,4 +1,5 @@
 import type { Locale } from '../locales.ts';
+import type { VisitTrack } from './visit-track.ts';
 
 /**
  * A name tag waiting at the print station, as `GET /api/admin/print-jobs` returns it. Only what the
@@ -14,6 +15,8 @@ export type NameTagPrintJob = {
 	pronunciation: string | null;
 	queuePosition: number | null;
 	priorityNumber: number | null;
+	/** A premarket volunteer's tag shows `V` in place of a number. */
+	track: VisitTrack;
 	locale: Locale;
 	/** ISO timestamp. */
 	requestedAt: string;

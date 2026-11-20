@@ -39,6 +39,15 @@ type TodayTranslations = {
 	/** The print station's section: its status, and a test tag to check the label printer. */
 	printingStation: string;
 	printingStationHelp: string;
+	/** The premarket's QR code and link, for volunteers to check in with. */
+	premarket: string;
+	premarketHelp: string;
+	showPremarketCode: string;
+	premarketCode: string;
+	premarketLink: string;
+	copyPremarketLink: string;
+	premarketLinkCopied: string;
+	premarketLinkNotCopied: string;
 	changeThePlan: string;
 	postponeRegistration: string;
 	extendRegistration: string;
@@ -855,6 +864,15 @@ export const adminTranslations = {
 			printingStation: 'Printing Station',
 			printingStationHelp:
 				'Print a test tag to check the label printer before the first guest, or after loading new labels.',
+			premarket: 'Premarket',
+			premarketHelp:
+				'Volunteers check in for the premarket by scanning this code or opening its link, any time on market day until the session ends. They get no number and take none of the line’s spots.',
+			showPremarketCode: 'Show QR Code',
+			premarketCode: 'Premarket QR code',
+			premarketLink: 'Premarket link',
+			copyPremarketLink: 'Copy Link',
+			premarketLinkCopied: 'The premarket link is copied.',
+			premarketLinkNotCopied: 'The link couldn’t be copied. Select it and copy it instead.',
 			changeThePlan: 'Change the Plan',
 			postponeRegistration: 'Postpone Registration',
 			extendRegistration: 'Extend Registration',

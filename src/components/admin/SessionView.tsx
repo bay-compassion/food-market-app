@@ -11,6 +11,7 @@ import { ResetSessionDisclosure } from './ResetSessionDisclosure';
 import { SessionGuestList } from './SessionGuestList';
 import { SessionPhasePlan } from './SessionPhasePlan';
 import { SessionPhaseStatus } from './SessionPhaseStatus';
+import { TodayPremarket } from './TodayPremarket';
 import { TodayPrintStation } from './TodayPrintStation';
 import type { AdminView, ManualGuest, QueueGuest } from './types';
 
@@ -67,6 +68,9 @@ export const SessionView = observer(function SessionView({
 
 			{/* Wherever the session stands, the label printer can be checked before a tag is needed. */}
 			{event && phase !== 'inactive' ? <TodayPrintStation /> : null}
+
+			{/* Volunteers check in for the premarket whenever the session is unfinished. */}
+			{event && phase !== 'inactive' ? <TodayPremarket /> : null}
 
 			{event && phase === 'service_started' ? (
 				<section className="admin-section">

@@ -26,6 +26,7 @@ const maria = {
 	pronunciation: null,
 	queuePosition: 14,
 	priorityNumber: null,
+	track: 'lottery' as const,
 	locale: 'es' as const,
 };
 

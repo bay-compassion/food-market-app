@@ -205,7 +205,7 @@ export function NameTagCard({ tag, printed = false }: NameTagCardProps) {
 			data-printed={printed}
 			data-long-name={tag.isLongName}
 			data-number-length={tag.numberLength}
-			data-unplaced={tag.number === null}
+			data-unplaced={tag.numberLabel === null}
 		>
 			<figcaption>{t.nameTag}</figcaption>
 			<div className="layout">
@@ -218,7 +218,7 @@ export function NameTagCard({ tag, printed = false }: NameTagCardProps) {
 					) : null}
 				</div>
 				<p className="number">
-					<span className="position">{tag.number === null ? t.unplaced : tag.number.label}</span>
+					<span className="position">{tag.numberLabel ?? t.unplaced}</span>
 					<span className="language" title={t.language}>
 						{tag.languageCode}
 					</span>

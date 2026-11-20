@@ -1,8 +1,15 @@
 import type { Locale } from '../locales.ts';
+import type { VisitTrack } from '../services/visit-track.ts';
 import { QueueNumber, type QueueNumberSource } from './queue-number.ts';
 
+/** What a tag's number block is drawn from: the queue number, or the premarket's track. */
+export type NameTagNumberSource = QueueNumberSource & {
+	/** Absent for a tag sent before tracks existed, which is on the lottery's. */
+	track?: VisitTrack;
+};
+
 /** The parts of a visit a name tag is made from. */
-export type NameTagSource = QueueNumberSource & {
+export type NameTagSource = NameTagNumberSource & {
 	/** The visit the tag is for. Its tail is the reference code that ties the sticker back to it. */
 	visitId: string;
 	/** When the tag is printed; the label shows its date. */
@@ -67,17 +74,31 @@ export class NameTag {
 		return this.name.length > NameTag.longNameLength;
 	}
 
-	/** The guest's queue number, or `null` for a visit the draw has not placed. */
-	get number(): QueueNumber | null {
-		return QueueNumber.of(this.source);
+	/** What a premarket volunteer's tag shows in place of a number: they shop without one. */
+	static readonly volunteerMark = 'V';
+
+	/**
+	 * What the number block reads: `V` for a premarket volunteer, the queue number for anyone else,
+	 * or `null` for a visit the draw has not placed. The queue desk's tickets read it too, so a
+	 * ticket and its tag agree.
+	 */
+	static numberLabelOf(source: NameTagNumberSource): string | null {
+		return source.track === 'premarket'
+			? NameTag.volunteerMark
+			: (QueueNumber.of(source)?.label ?? null);
+	}
+
+	/** This tag's number block: see `NameTag.numberLabelOf`. */
+	get numberLabel(): string | null {
+		return NameTag.numberLabelOf(this.source);
 	}
 
 	/**
 	 * How long the number reads, for the type size that keeps it inside its block: `short` for up
-	 * to two characters (`42`, `P1`), `medium` for three (`128`, `P12`), `long` for more.
+	 * to two characters (`42`, `P1`, `V`), `medium` for three (`128`, `P12`), `long` for more.
 	 */
 	get numberLength(): 'short' | 'medium' | 'long' {
-		const length = this.number?.label.length ?? 0;
+		const length = this.numberLabel?.length ?? 0;
 
 		return length <= 2 ? 'short' : length === 3 ? 'medium' : 'long';
 	}

@@ -78,6 +78,7 @@ export class PrintStationStore {
 					pronunciation: job.pronunciation,
 					queuePosition: job.queuePosition,
 					priorityNumber: job.priorityNumber,
+					track: job.track,
 					locale: job.locale,
 				})
 			: null;
