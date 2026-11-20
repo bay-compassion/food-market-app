@@ -1138,6 +1138,7 @@ describe('registerGuest for the premarket', () => {
 	it('puts a removed volunteer who enters the lottery back on the lottery’s track', async () => {
 		// Arrange
 		const openEvent = { ...marketDay, status: 'registration_open' };
+
 		vi.setSystemTime(new Date('2026-07-18T16:30:00.000Z'));
 		queueResult([openEvent]);
 		queueResult([]); // no registration questions

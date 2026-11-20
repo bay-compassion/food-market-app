@@ -155,6 +155,7 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 
 		expect(response.status).toBe(200);
 		const update = vi.mocked(db.update).mock.results[0]!.value as { set: ReturnType<typeof vi.fn> };
+
 		expect(update.set).toHaveBeenCalledWith({ status: 'cancelled', servedAt: null });
 	});
 
