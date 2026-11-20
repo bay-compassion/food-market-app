@@ -1,59 +1,50 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import type { PremarketCodeStatus } from '../services/premarket.ts';
+import type { PremarketStatus } from '../services/premarket.ts';
 import type { GuestStore } from './guest.store.ts';
 import type { RegistrationStore } from './registration.store.ts';
 import type { VisitStore } from './visit.store.ts';
 
 type PremarketEntryOptions = {
-	/** The code read from the scanned address, or `null` when it carried none. */
-	code: string | null;
 	registration: Pick<RegistrationStore, 'submit'>;
 	visit: Pick<VisitStore, 'submit'>;
 	/** Retires the first-visit language introduction: a volunteer has already used the app. */
 	guest: Pick<GuestStore, 'markAsReturningVisitor'>;
-	checkStatus: (code: string) => Promise<PremarketCodeStatus>;
+	checkStatus: () => Promise<PremarketStatus>;
 };
 
-/** Where the page stands: still checking the code, what the check found, or registered. */
-export type PremarketEntryState = 'checking' | 'missing' | PremarketCodeStatus | 'registered';
+/** Where the page stands: still checking, what the check found, or checked in. */
+export type PremarketEntryState = 'checking' | PremarketStatus | 'registered';
 
 /**
- * A volunteer's way into the premarket from the printed QR: check the code, then register this
- * phone's guest for it. Built by the `/premarket` page for as long as it is open, so nothing of it
+ * A volunteer's way into the premarket from its link or QR code: check that it is open, then check
+ * this phone's guest in for it. Built by the `/premarket` page for as long as it is open, so nothing of it
  * lands in the guest's first download.
  */
 export class PremarketEntryStore {
-	state: PremarketEntryState;
+	state: PremarketEntryState = 'checking';
 
-	private readonly code: string | null;
 	private readonly registration: PremarketEntryOptions['registration'];
 	private readonly visit: PremarketEntryOptions['visit'];
 	private readonly guest: PremarketEntryOptions['guest'];
 	private readonly checkStatus: PremarketEntryOptions['checkStatus'];
 
 	constructor(options: PremarketEntryOptions) {
-		this.code = options.code;
 		this.registration = options.registration;
 		this.visit = options.visit;
 		this.guest = options.guest;
 		this.checkStatus = options.checkStatus;
-		this.state = options.code ? 'checking' : 'missing';
-		makeAutoObservable<this, 'code' | 'registration' | 'visit' | 'guest' | 'checkStatus'>(
+		makeAutoObservable<this, 'registration' | 'visit' | 'guest' | 'checkStatus'>(
 			this,
-			{ code: false, registration: false, visit: false, guest: false, checkStatus: false },
+			{ registration: false, visit: false, guest: false, checkStatus: false },
 			{ autoBind: true },
 		);
 	}
 
-	/** Checks the code with the server; the page asks again when the volunteer taps Try Again. */
+	/** Asks the server whether the premarket is open; the page asks again on Try Again. */
 	async check(): Promise<void> {
-		if (!this.code) {
-			return;
-		}
-
 		this.state = 'checking';
-		const status = await this.checkStatus(this.code);
+		const status = await this.checkStatus();
 
 		runInAction(() => {
 			this.state = status;
@@ -65,13 +56,11 @@ export class PremarketEntryStore {
 	 * the registration store says why under the submit button.
 	 */
 	async submit(locale: string): Promise<void> {
-		if (!this.code || this.state !== 'open') {
+		if (this.state !== 'open') {
 			return;
 		}
 
-		const result = await this.registration.submit('queue', null, locale, {
-			premarketCode: this.code,
-		});
+		const result = await this.registration.submit('queue', null, locale, { premarket: true });
 
 		if (result.kind !== 'registered' || !result.registration.marketEventId) {
 			return;

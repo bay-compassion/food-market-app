@@ -1,36 +1,18 @@
-/**
- * The address the printed premarket QR opens. The code rides in the fragment, which a browser never
- * sends to a server, so it stays out of access logs, link previews, and `Referer`.
- */
-export function premarketUrl(origin: string, code: string): string {
-	return `${origin}/premarket#${encodeURIComponent(code)}`;
-}
-
-/** Reads the code back out of `location.hash`, or `null` when there is none worth sending. */
-export function premarketCodeFromHash(hash: string): string | null {
-	const code = decodeURIComponent(hash.replace(/^#/, '')).trim();
-
-	return code.length >= 16 && code.length <= 200 ? code : null;
+/** The address volunteers open — from the QR code or a shared link — to check in for the premarket. */
+export function premarketUrl(origin: string): string {
+	return `${origin}/premarket`;
 }
 
 /**
- * Where a scanned code stands: its premarket is `open` now, `closed` (it is not market day, or the
- * draw has run), `invalid` (unknown or replaced), or `unreachable` when the check itself failed.
+ * Whether the premarket takes check-ins: `open` now, `closed` (it is not market day, or the session
+ * has ended), or `unreachable` when the check itself failed.
  */
-export type PremarketCodeStatus = 'open' | 'closed' | 'invalid' | 'unreachable';
+export type PremarketStatus = 'open' | 'closed' | 'unreachable';
 
-/** Asks whether a scanned code opens a premarket now. Never throws. */
-export async function fetchPremarketStatus(code: string): Promise<PremarketCodeStatus> {
+/** Asks whether the current session's premarket takes check-ins now. Never throws. */
+export async function fetchPremarketStatus(): Promise<PremarketStatus> {
 	try {
-		const response = await fetch('/api/premarket-status', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ code }),
-		});
-
-		if (response.status === 410 || response.status === 400) {
-			return 'invalid';
-		}
+		const response = await fetch('/api/premarket-status');
 
 		if (!response.ok) {
 			return 'unreachable';

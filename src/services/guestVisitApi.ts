@@ -39,11 +39,8 @@ export type GuestRegistrationInput = Omit<GuestFormState, 'pronunciation'> &
 		marketEventId: string | null;
 		answers: Record<string, string | number>;
 		source: 'self';
-		/**
-		 * The printed premarket code a volunteer scanned. With it, the registration is for that code's
-		 * premarket rather than the lottery, and the server chooses the session.
-		 */
-		premarketCode?: string;
+		/** A volunteer checking in for the premarket rather than entering the lottery. The server chooses the session. */
+		premarket?: boolean;
 	};
 
 export type GuestRegistrationPayload = GuestRegistrationInput & { deviceToken: string | null };
@@ -62,15 +59,13 @@ export type GuestRegistrationResult = {
 export async function submitGuestRegistration(
 	payload: GuestRegistrationPayload,
 ): Promise<GuestRegistrationResult> {
-	const { premarketCode, ...registration } = payload;
+	const { premarket, ...registration } = payload;
 	const response = await fetch(
-		premarketCode === undefined ? '/api/lottery-registration' : '/api/premarket-registration',
+		premarket ? '/api/premarket-registration' : '/api/lottery-registration',
 		{
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(
-				premarketCode === undefined ? registration : { ...registration, code: premarketCode },
-			),
+			body: JSON.stringify(registration),
 		},
 	);
 

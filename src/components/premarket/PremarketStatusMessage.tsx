@@ -38,14 +38,6 @@ export const PremarketStatusMessage = observer(function PremarketStatusMessage({
 					<StatusBody>{copy.closedDetails}</StatusBody>
 				</GuestStatusPanel>
 			);
-		case 'invalid':
-		case 'missing':
-			return (
-				<GuestStatusPanel tone="muted" icon={<CloseIcon />} heading={copy.title}>
-					<StatusHeadline>{copy.invalidHeading}</StatusHeadline>
-					<StatusBody>{state === 'missing' ? copy.missingDetails : copy.invalidDetails}</StatusBody>
-				</GuestStatusPanel>
-			);
 		case 'unreachable':
 			return (
 				<GuestStatusPanel tone="warning" icon={<CloseIcon />} heading={copy.title}>

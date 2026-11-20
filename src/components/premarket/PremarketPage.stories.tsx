@@ -4,19 +4,19 @@ import { useState } from 'react';
 import { expect, within } from 'storybook/test';
 
 import { translations } from '../../locales';
-import type { PremarketCodeStatus } from '../../services/premarket';
+import type { PremarketStatus } from '../../services/premarket';
 import { PremarketEntryStore } from '../../stores/premarket-entry.store';
 import { useRootStore } from '../../stores/react/store-context';
 import { PremarketForm } from './PremarketForm';
 import { PremarketStatusMessage } from './PremarketStatusMessage';
 
 /**
- * Where a volunteer's scan of the printed premarket QR lands. The route (`PremarketPage`) only reads
- * the code out of the URL fragment and asks the server about it; these are what the volunteer sees.
+ * Where the premarket QR code and link land. The route (`PremarketPage`) only asks the server whether
+ * the premarket is open; these are what the volunteer sees.
  * A story hands the entry store its answer directly rather than faking `fetch`, which a docs page
  * would share between every story on it.
  */
-type Args = { status: PremarketCodeStatus | 'checking' | 'missing' };
+type Args = { status: PremarketStatus | 'checking' };
 
 const copy = translations.en.premarket;
 
@@ -24,14 +24,11 @@ const Premarket = observer(function Premarket({ status }: Args) {
 	const { guest, registration, visit } = useRootStore();
 	const [entry] = useState(() => {
 		const created = new PremarketEntryStore({
-			code: status === 'missing' ? null : 'story-premarket-code-1234',
 			registration,
 			visit,
 			guest,
-			checkStatus: (): Promise<PremarketCodeStatus> =>
-				status === 'checking' || status === 'missing'
-					? new Promise(() => undefined)
-					: Promise.resolve(status),
+			checkStatus: (): Promise<PremarketStatus> =>
+				status === 'checking' ? new Promise(() => undefined) : Promise.resolve(status),
 		});
 
 		void created.check();
@@ -54,7 +51,7 @@ const meta = {
 	argTypes: {
 		status: {
 			control: 'select',
-			options: ['open', 'checking', 'closed', 'invalid', 'missing', 'unreachable'],
+			options: ['open', 'checking', 'closed', 'unreachable'],
 		},
 	},
 } satisfies Meta<typeof Premarket>;
@@ -84,20 +81,6 @@ export const NotOpen: Story = {
 	args: { status: 'closed' },
 	play: async ({ canvasElement }) => {
 		await expect(await within(canvasElement).findByText(copy.closedHeading)).toBeInTheDocument();
-	},
-};
-
-export const ReplacedCode: Story = {
-	args: { status: 'invalid' },
-	play: async ({ canvasElement }) => {
-		await expect(await within(canvasElement).findByText(copy.invalidDetails)).toBeInTheDocument();
-	},
-};
-
-export const MissingCode: Story = {
-	args: { status: 'missing' },
-	play: async ({ canvasElement }) => {
-		await expect(await within(canvasElement).findByText(copy.missingDetails)).toBeInTheDocument();
 	},
 };
 
