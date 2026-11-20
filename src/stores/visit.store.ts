@@ -54,6 +54,11 @@ export class VisitStore {
 		return this._currentVisit;
 	}
 
+	/** Whether the visit this phone holds is for the session `marketEventId` names. */
+	belongsTo(marketEventId: string | null | undefined): boolean {
+		return !!this._currentVisit && this._currentVisit.marketEventId === marketEventId;
+	}
+
 	get status(): VisitStatus | null {
 		return this._currentVisit?.status ?? null;
 	}

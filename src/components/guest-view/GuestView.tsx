@@ -88,7 +88,13 @@ export const GuestMarketStatus = observer(function GuestMarketStatus() {
 	}, [rootStore, tourEnabled]);
 
 	const render = () => {
-		if (visitTakesPrecedence(session.currentStatus, visit.status)) {
+		if (
+			visitTakesPrecedence(
+				session.currentStatus,
+				visit.status,
+				visit.belongsTo(session.marketEvent?.id),
+			)
+		) {
 			return <GuestVisitState />;
 		}
 

@@ -101,6 +101,29 @@ describe('VisitStore', () => {
 		});
 	});
 
+	describe('belongsTo', () => {
+		it('knows which session the visit on this phone is for', () => {
+			// Arrange
+			const store = createVisitStore();
+
+			// Act
+			store.submit(registered, 'event-1');
+
+			// Assert
+			expect(store.belongsTo('event-1')).toBe(true);
+			expect(store.belongsTo('next-week')).toBe(false);
+			expect(store.belongsTo(undefined)).toBe(false);
+		});
+
+		it('belongs to no session without a visit', () => {
+			// Act
+			const belongs = createVisitStore().belongsTo('event-1');
+
+			// Assert
+			expect(belongs).toBe(false);
+		});
+	});
+
 	describe('refresh', () => {
 		it('does nothing without a stored token', async () => {
 			// Arrange
