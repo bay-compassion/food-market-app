@@ -51,7 +51,10 @@ export const SessionView = observer(function SessionView({
 	const event = session.currentState?.event ?? null;
 	const phase = currentSessionState(event?.status);
 	const showsRegisteredGuests =
-		!!event && ['registration_open', 'registration_closed', 'lottery_pending'].includes(phase);
+		!!event &&
+		(['registration_open', 'registration_closed', 'lottery_pending'].includes(phase) ||
+			// Volunteers can join the premarket from market day's midnight, while still scheduled.
+			(phase === 'scheduled' && (session.currentState?.premarketCount ?? 0) > 0));
 
 	return (
 		<Screen>

@@ -181,7 +181,11 @@ export const SessionPhaseStatus = observer(function SessionPhaseStatus({
 		case 'service_started':
 			return (
 				<>
-					<SessionOverview counts={counts} statusLabels={statusLabels} />
+					<SessionOverview
+						counts={counts}
+						statusLabels={statusLabels}
+						premarketCount={session.currentState?.premarketCount ?? 0}
+					/>
 					<SessionMilestoneList />
 					<Actions>
 						<Button type="button" onClick={() => onNavigate('queue')}>

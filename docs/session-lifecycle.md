@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=6aebfd4c6059, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=c6525b5020ee -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=c6525b5020ee -->
 
 # Session lifecycle
 

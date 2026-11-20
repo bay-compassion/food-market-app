@@ -8,6 +8,8 @@ import type { VisitStatus } from '../../services/visitStateMachine';
 type SessionOverviewProps = {
 	counts: Partial<Record<VisitStatus, number>>;
 	statusLabels: Record<VisitStatus, string>;
+	/** Volunteers who shopped before the line: served, but never part of it. */
+	premarketCount: number;
 };
 
 /**
@@ -104,6 +106,7 @@ const Overview = styled.section`
 export const SessionOverview = observer(function SessionOverview({
 	counts,
 	statusLabels,
+	premarketCount,
 }: SessionOverviewProps) {
 	const t = adminTranslations.en;
 	const progress = new SessionProgress(counts);
@@ -145,9 +148,12 @@ export const SessionOverview = observer(function SessionOverview({
 				</ul>
 
 				<p className="progress-outside">
-					{progress.outsideService
-						.map(({ status, count }) => `${statusLabels[status]} ${count}`)
-						.join(' · ')}
+					{[
+						...progress.outsideService.map(
+							({ status, count }) => `${statusLabels[status]} ${count}`,
+						),
+						...(premarketCount > 0 ? [`${t.premarketVolunteers} ${premarketCount}`] : []),
+					].join(' · ')}
 				</p>
 			</div>
 		</Overview>

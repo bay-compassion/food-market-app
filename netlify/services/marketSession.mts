@@ -193,13 +193,19 @@ export async function marketOverview() {
 			.orderBy(asc(registrationQuestions.position)),
 	);
 
+	// The line's progress counts the line only: premarket volunteers are reported on their own.
 	const rows = await tracedQuery('market_session.overview_counts', () =>
 		db
-			.select({ status: visits.status, count: sql<number>`count(*)::int` })
+			.select({
+				status: visits.status,
+				track: visits.track,
+				count: sql<number>`count(*)::int`,
+			})
 			.from(visits)
 			.where(eq(visits.marketEventId, event.id))
-			.groupBy(visits.status),
+			.groupBy(visits.status, visits.track),
 	);
+	const line = rows.filter((row) => row.track === 'lottery');
 
 	const timeline = new SessionTimeline(event);
 
@@ -211,7 +217,10 @@ export async function marketOverview() {
 		},
 		nextRegistration: await nextRegistrationAfter(event),
 		questions,
-		counts: Object.fromEntries(rows.map((row) => [row.status, row.count])),
+		counts: Object.fromEntries(line.map((row) => [row.status, row.count])),
+		premarketCount: rows
+			.filter((row) => row.track === 'premarket' && row.status === 'served')
+			.reduce((total, row) => total + row.count, 0),
 	};
 }
 

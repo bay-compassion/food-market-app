@@ -43,7 +43,10 @@ export type SessionOverview = {
 	/** When registration next opens, for the guest's copy; absent from older responses. */
 	nextRegistration?: NextRegistrationWindow | null;
 	questions: SessionQuestion[];
+	/** Visits in the line, by status. Premarket volunteers are counted apart, in `premarketCount`. */
 	counts: Partial<Record<VisitStatus, number>>;
+	/** Volunteers who shopped in the premarket; absent from older responses. */
+	premarketCount?: number;
 };
 
 type SessionCommandParameters = {

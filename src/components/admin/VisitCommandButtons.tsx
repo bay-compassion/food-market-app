@@ -27,7 +27,8 @@ export function visitCommandLabels(): Record<VisitCommand, string> {
 		serve: t.markServed,
 		mark_no_show: t.markNoShow,
 		return_to_queue: t.returnToQueue,
-		cancel: t.cancelled,
+		// The only `cancel` a worker is offered: removing a premarket volunteer (see `VisitCommands`).
+		cancel: t.removeFromPremarket,
 	};
 }
 

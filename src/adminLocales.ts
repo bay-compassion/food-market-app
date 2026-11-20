@@ -207,6 +207,17 @@ export interface AdminTranslation {
 	cancel: string;
 	capacity: string;
 	cancelled: string;
+	/** A worker taking a premarket volunteer's visit back, and the question that confirms it. */
+	removeFromPremarket: string;
+	/** `{name}` is the volunteer's name. */
+	removeFromPremarketQuestion: string;
+	removeFromPremarketDetails: string;
+	keepInPremarket: string;
+	/** The overview's count of volunteers who shopped before the line. */
+	premarketVolunteers: string;
+	/** Heads Today's list of them, and says when it is empty. */
+	premarketHeading: string;
+	noPremarketVolunteers: string;
 	callGuest: string;
 	closeSession: string;
 	closeRegistration: string;
@@ -934,6 +945,14 @@ export const adminTranslations = {
 		cancel: 'Cancel',
 		capacity: 'Queue capacity',
 		cancelled: 'Cancelled',
+		removeFromPremarket: 'Remove from Premarket',
+		removeFromPremarketQuestion: 'Remove {name} from the premarket?',
+		removeFromPremarketDetails:
+			'Their visit is cancelled and no longer counts as served. They can still register for the lottery.',
+		keepInPremarket: 'Keep Them',
+		premarketVolunteers: 'Premarket',
+		premarketHeading: 'Premarket',
+		noPremarketVolunteers: 'No volunteers have checked in for the premarket.',
 		callGuest: 'Call guest',
 		closeSession: 'Close Session',
 		closeRegistration: 'Close Early',

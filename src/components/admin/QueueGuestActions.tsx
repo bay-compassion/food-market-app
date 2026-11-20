@@ -3,10 +3,12 @@ import { MenuItem } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
-import { visitCommandsFrom, type VisitCommand } from '../../services/visitStateMachine';
+import { VisitCommands } from '../../models/visit-commands';
+import type { VisitCommand } from '../../services/visitStateMachine';
 import { useRootStore } from '../../stores/react/store-context';
 import { OverflowMenu } from './OverflowMenu';
 import type { DatabaseGuest } from './types';
+import { useConfirmVisitCommand } from './use-confirm-visit-command';
 import { useShowGuestClaim } from './use-show-guest-claim';
 import { primaryVisitCommands, visitCommandLabels } from './VisitCommandButtons';
 
@@ -71,7 +73,8 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 	const t = adminTranslations.en;
 	const { admin } = useRootStore();
 	const showGuestClaim = useShowGuestClaim();
-	const commands = guest.status === null ? [] : visitCommandsFrom(guest.status);
+	const confirmCommand = useConfirmVisitCommand();
+	const commands = guest.status === null ? [] : new VisitCommands(guest).offered;
 	const primary = menuOnly ? undefined : commands.find((c) => primaryVisitCommands.includes(c));
 	const secondary = commands.filter((command) => command !== primary);
 	const labels = visitCommandLabels();
@@ -81,6 +84,12 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 	};
 	const guestName = `${guest.firstName} ${guest.lastName}`;
 
+	async function run(command: VisitCommand) {
+		if (await confirmCommand(guest, command)) {
+			onRun(command);
+		}
+	}
+
 	return (
 		<Actions className="visit-commands">
 			{primary ? (
@@ -89,7 +98,7 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 					className="primary-command"
 					disabled={disabled}
 					aria-label={`${labels[primary]}: ${guestName}`}
-					onClick={() => onRun(primary)}
+					onClick={() => void run(primary)}
 				>
 					{shortLabels[primary] ?? labels[primary]}
 				</button>
@@ -102,7 +111,7 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 								key={command}
 								onClick={() => {
 									closeMenu();
-									onRun(command);
+									void run(command);
 								}}
 							>
 								{labels[command]}
