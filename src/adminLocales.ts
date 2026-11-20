@@ -661,6 +661,8 @@ export interface QueueDeskTranslation {
 	noShows: string;
 	notPlaced: string;
 	done: string;
+	/** Volunteers who shopped before the line opened, outside it. */
+	premarket: string;
 	noneCalled: string;
 	noneWaiting: string;
 	noneDone: string;
@@ -1215,15 +1217,15 @@ export const adminTranslations = {
 		},
 		reportDescriptions: {
 			'session-summary':
-				'One row per session: how many signed up, how many were served, and how full it ran.',
+				'One row per session: how many signed up, how many were served, and how full it ran. Premarket volunteers are counted as served, with their own subtotal, but not toward how full the line ran.',
 			'people-served':
-				'Service totals include count-only households. People served sums household sizes at every shopping visit, including repeats. Unique guests and monthly unique household members cover identified visits only; count-only households cannot be deduplicated.',
+				'Service totals include count-only households and premarket volunteers, each with its own subtotal. People served sums household sizes at every shopping visit, including repeats. Unique guests and monthly unique household members cover identified visits only; count-only households cannot be deduplicated.',
 			'guest-demographics':
 				'Age, household size, and language of identified guests served in the period, each guest counted once. Excludes count-only households.',
 			'lottery-outcomes':
 				'How often guests at each weighting were placed in the line. Covers guests who signed up themselves and were entered in a draw.',
 			'service-timing':
-				'How long identified guests waited between being called and being served. Excludes count-only households.',
+				'How long identified guests waited between being called and being served. Excludes count-only households and premarket volunteers.',
 		},
 		reportColumnLabels: {
 			countOnlyHouseholds: 'Count-only households',
@@ -1243,6 +1245,8 @@ export const adminTranslations = {
 			notPlaced: 'Not placed',
 			placed: 'Placed',
 			placementRate: 'Placed rate',
+			premarketHouseholds: 'Premarket households',
+			premarketMembers: 'Premarket people served (with repeats)',
 			served: 'Households served',
 			sessionDate: 'Session',
 			sessions: 'Sessions',
@@ -1325,6 +1329,7 @@ export const adminTranslations = {
 			noShows: 'No-shows',
 			notPlaced: 'Not placed',
 			done: 'Done',
+			premarket: 'Premarket',
 			noneCalled: 'Nobody has been called yet.',
 			noneWaiting: 'Nobody is left in line.',
 			noneDone: 'Nobody has finished yet.',

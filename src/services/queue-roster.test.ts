@@ -21,6 +21,7 @@ function guest(id: string, status: VisitStatus, overrides: Partial<QueueGuest> =
 		queueOrder: null,
 		calledAt: null,
 		status,
+		track: 'lottery',
 		...overrides,
 	};
 }
@@ -195,5 +196,33 @@ describe('QueueRoster', () => {
 
 		// Assert
 		expect(order).toEqual(['served-2', 'cancelled-9', 'served-12', 'priority-1', 'unplaced']);
+	});
+
+	it('lists premarket volunteers apart from the line’s finished guests, by name', () => {
+		// Arrange
+		const roster = new QueueRoster([
+			guest('served', 'served', { queuePosition: 4 }),
+			guest('zoe', 'served', { track: 'premarket', lastName: 'Zamora' }),
+			guest('al', 'served', { track: 'premarket', lastName: 'Abbott' }),
+		]);
+
+		// Act
+		const done = roster.done.map(({ id }) => id);
+		const premarket = roster.premarket.map(({ id }) => id);
+
+		// Assert
+		expect(done).toEqual(['served']);
+		expect(premarket).toEqual(['al', 'zoe']);
+	});
+
+	it('counts premarket volunteers as finished, so they never hold the session open', () => {
+		// Arrange
+		const roster = new QueueRoster([guest('al', 'served', { track: 'premarket' })]);
+
+		// Act
+		const complete = roster.isComplete;
+
+		// Assert
+		expect(complete).toBe(true);
 	});
 });

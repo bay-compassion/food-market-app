@@ -24,6 +24,7 @@ const unvisited: UnvisitedGuest = {
 	queueOrder: null,
 	calledAt: null,
 	status: null,
+	track: null,
 	marketEventId: null,
 };
 
@@ -44,6 +45,7 @@ function guest(overrides: Partial<QueueGuest> = {}): QueueGuest {
 		queueOrder: 1,
 		calledAt: null,
 		status: 'waiting',
+		track: 'lottery',
 		...overrides,
 	};
 }

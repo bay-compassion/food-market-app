@@ -84,6 +84,7 @@ export const WithGuestsWhoHaveNoVisit: Story = {
 				queueOrder: null,
 				calledAt: null,
 				status: null,
+				track: null,
 				marketEventId: null,
 			},
 		],

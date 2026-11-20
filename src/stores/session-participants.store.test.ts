@@ -28,6 +28,7 @@ const guest: AdminGuest = {
 	queueOrder: null,
 	calledAt: null,
 	status: 'no_show',
+	track: 'lottery',
 };
 
 const correction: VisitEvent = {

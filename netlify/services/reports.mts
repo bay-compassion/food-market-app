@@ -39,7 +39,10 @@ function sessionSummary({ start, end }: ReportRange) {
     coalesce(sum(household_size) FILTER (WHERE status = 'served'), 0)::int AS members,
     count(*) FILTER (WHERE status = 'no_show')::int AS no_shows,
     count(*) FILTER (WHERE status = 'not_placed')::int AS not_placed,
-    count(*) FILTER (WHERE source = 'admin')::int AS walk_ins
+    count(*) FILTER (WHERE source = 'admin' AND track = 'lottery')::int AS walk_ins,
+    count(*) FILTER (WHERE status = 'served' AND track = 'premarket')::int AS premarket,
+    coalesce(sum(household_size) FILTER (WHERE status = 'served' AND track = 'premarket'), 0)::int
+     AS premarket_members
    FROM visits GROUP BY market_event_id
   ), anonymous AS (
    SELECT market_event_id, count(*)::int AS households, sum(household_size)::int AS members
@@ -51,10 +54,14 @@ function sessionSummary({ start, end }: ReportRange) {
    (coalesce(v.members, 0) + coalesce(a.members, 0))::int AS "peopleServings",
    coalesce(a.households, 0)::int AS "countOnlyHouseholds",
    coalesce(a.members, 0)::int AS "countOnlyMembers",
+   coalesce(v.premarket, 0)::int AS "premarketHouseholds",
+   coalesce(v.premarket_members, 0)::int AS "premarketMembers",
    coalesce(v.no_shows, 0)::int AS "noShows", coalesce(v.not_placed, 0)::int AS "notPlaced",
    coalesce(v.walk_ins, 0)::int AS "walkIns",
+   -- Premarket volunteers take none of the line's spots, so they never count toward filling it.
    CASE WHEN e.capacity > 0 THEN round(
-    (coalesce(v.served, 0) + coalesce(a.households, 0))::numeric * 100 / e.capacity, 1
+    (coalesce(v.served, 0) - coalesce(v.premarket, 0) + coalesce(a.households, 0))::numeric * 100
+     / e.capacity, 1
    )::float8 END AS "fillRate"
   FROM market_events e
   LEFT JOIN identified v ON v.market_event_id = e.id
@@ -73,7 +80,7 @@ function peopleServed({ start, end }: ReportRange) {
 	return sql`
   WITH served AS (
    SELECT date_trunc('month', e.registration_opens_at) AS month, e.id AS event_id,
-    v.guest_id, v.household_size, e.registration_opens_at AS opens_at
+    v.guest_id, v.household_size, v.track, e.registration_opens_at AS opens_at
    FROM market_events e JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
    WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
   ), anonymous AS (
@@ -101,7 +108,11 @@ function peopleServed({ start, end }: ReportRange) {
    (SELECT count(DISTINCT v.guest_id)::int FROM served v JOIN first_served f ON f.guest_id = v.guest_id
     WHERE v.month = s.month AND v.opens_at = f.first_at) AS "firstTime",
    (SELECT count(*)::int FROM anonymous a WHERE a.month = s.month) AS "countOnlyHouseholds",
-   (SELECT coalesce(sum(a.household_size), 0)::int FROM anonymous a WHERE a.month = s.month) AS "countOnlyMembers"
+   (SELECT coalesce(sum(a.household_size), 0)::int FROM anonymous a WHERE a.month = s.month) AS "countOnlyMembers",
+   (SELECT count(*)::int FROM served v WHERE v.month = s.month AND v.track = 'premarket')
+    AS "premarketHouseholds",
+   (SELECT coalesce(sum(v.household_size), 0)::int FROM served v
+    WHERE v.month = s.month AND v.track = 'premarket') AS "premarketMembers"
   FROM all_service s GROUP BY s.month ORDER BY s.month DESC
  `;
 }
@@ -187,6 +198,7 @@ function lotteryOutcomes({ start, end }: ReportRange) {
  * How long guests waited between being called and being served. `unrecorded` is the honest
  * counterweight: visits served before `served_at` existed, or recorded by hand after a session
  * ended, carry no timing, and a median drawn from the rest would otherwise look complete.
+ * Premarket volunteers are never called, so they are left out rather than counted as unrecorded.
  */
 function serviceTiming({ start, end }: ReportRange) {
 	const waitMinutes = sql`EXTRACT(EPOCH FROM (v.served_at - v.called_at)) / 60`;
@@ -200,7 +212,7 @@ function serviceTiming({ start, end }: ReportRange) {
 			round(max(${waitMinutes})::numeric, 1)::float8 AS "longestWait",
 			count(*) FILTER (WHERE v.served_at IS NULL OR v.called_at IS NULL)::int AS "unrecorded"
 		FROM market_events e
-		JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
+		JOIN visits v ON v.market_event_id = e.id AND v.status = 'served' AND v.track = 'lottery'
 		WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
 		GROUP BY e.id, e.registration_opens_at
 		ORDER BY e.registration_opens_at DESC
@@ -235,6 +247,7 @@ export const visitExportHeaders = [
 	'session_status',
 	'visit_status',
 	'visit_source',
+	'visit_track',
 	'queue_position',
 	'priority_number',
 	'lottery_weight',
@@ -269,6 +282,7 @@ export async function runVisitExport({ start, end }: ReportRange) {
 			e.status AS "session_status",
 			v.status AS "visit_status",
 			v.source AS "visit_source",
+			v.track AS "visit_track",
 			v.queue_position AS "queue_position",
 			v.priority_number AS "priority_number",
 			v.lottery_weight AS "lottery_weight",

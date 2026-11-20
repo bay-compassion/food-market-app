@@ -26,6 +26,7 @@ const guest: QueueGuest = {
 	queueOrder: 14,
 	calledAt: null,
 	status: 'called',
+	track: 'lottery',
 };
 
 afterEach(() => {

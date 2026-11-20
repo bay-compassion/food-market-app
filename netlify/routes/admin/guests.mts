@@ -111,6 +111,7 @@ async function listGuests(request: Request) {
 					phone: guests.phone,
 					locale: guests.locale,
 					status: visits.status,
+					track: visits.track,
 					queuePosition: visits.queuePosition,
 					priorityNumber: visits.priorityNumber,
 					queueFront: visits.queueFront,

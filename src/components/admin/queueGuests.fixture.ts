@@ -24,6 +24,7 @@ const baseGuest: QueueGuest = {
 	queueOrder: 1,
 	calledAt: null,
 	status: 'waiting',
+	track: 'lottery',
 };
 
 export function queueGuest(overrides: Partial<QueueGuest> = {}): QueueGuest {

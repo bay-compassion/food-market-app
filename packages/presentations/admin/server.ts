@@ -153,6 +153,7 @@ export class AdminServer {
 			queueOrder: guest.queuePosition,
 			calledAt: guest.calledAt === null ? null : iso(guest.calledAt),
 			status: guest.status,
+			track: 'lottery',
 			marketEventId: 'guide-session',
 		};
 	}
@@ -170,6 +171,7 @@ export class AdminServer {
 				phone,
 				locale: 'en',
 				status: null,
+				track: null,
 				householdSize: null,
 				queuePosition: null,
 				priorityNumber: null,

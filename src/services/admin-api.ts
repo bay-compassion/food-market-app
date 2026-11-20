@@ -16,6 +16,7 @@ import type { PrintJobSubmission } from './print-jobs.ts';
 import type { SessionDeletionPreview } from './session-deletion.ts';
 import type { SessionStatus } from './sessionStateMachine.ts';
 import type { VisitEvent } from './visit-events.ts';
+import type { VisitTrack } from './visit-track.ts';
 import type { VisitCommand, VisitStatus } from './visitStateMachine.ts';
 
 /** One visit as the queue screens render it. */
@@ -44,6 +45,8 @@ export type QueueGuest = {
 	queueOrder: number | null;
 	calledAt: string | null;
 	status: VisitStatus;
+	/** A `premarket` volunteer shopped before the line: served, with no number, outside the draw. */
+	track: VisitTrack;
 };
 
 /** A queue guest together with the session they belong to, as the admin endpoints return them. */
@@ -93,6 +96,7 @@ export type UnvisitedGuest = Omit<
 	| 'queueOrder'
 	| 'calledAt'
 	| 'marketEventId'
+	| 'track'
 > & {
 	id: null;
 	guestId: string;
@@ -104,6 +108,7 @@ export type UnvisitedGuest = Omit<
 	queueOrder: null;
 	calledAt: null;
 	marketEventId: null;
+	track: null;
 };
 
 /** One row of the guest database: a visit, or a guest who has none yet. */
