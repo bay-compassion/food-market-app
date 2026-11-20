@@ -2,14 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { db } from '../dbStub.mjs';
 
-const { premarketSessionFor, registerGuest } = vi.hoisted(() => ({
-	premarketSessionFor: vi.fn(),
+const { currentPremarket, registerGuest } = vi.hoisted(() => ({
+	currentPremarket: vi.fn(),
 	registerGuest: vi.fn(),
 }));
 
 vi.mock('../../../db/index.mjs', () => ({ db }));
 
-vi.mock('../../services/premarket-code.mjs', () => ({ premarketSessionFor }));
+vi.mock('../../services/premarket-session.mjs', () => ({ currentPremarket }));
 vi.mock('../../services/guestRegistration.mjs', async (importOriginal) => ({
 	...(await importOriginal<typeof import('../../services/guestRegistration.mjs')>()),
 	registerGuest,
@@ -17,8 +17,6 @@ vi.mock('../../services/guestRegistration.mjs', async (importOriginal) => ({
 vi.mock('../../services/visit-events.mjs', () => ({ guestActor: { kind: 'guest' } }));
 
 import handler from '../../routes/guests/premarket-registration.mjs';
-
-const code = 'printed-premarket-code-1234';
 
 function request(path: string, method: string, body?: unknown) {
 	return new Request(`https://example.com${path}`, {
@@ -29,7 +27,6 @@ function request(path: string, method: string, body?: unknown) {
 }
 
 const volunteer = {
-	code,
 	firstName: 'Ari',
 	lastName: 'Volunteer',
 	ageRange: '18-29',
@@ -46,43 +43,34 @@ afterEach(() => {
 });
 
 describe('premarket status handler', () => {
-	it('says whether the code’s premarket is open', async () => {
+	it('says whether the current session’s premarket is open', async () => {
 		// Arrange
-		premarketSessionFor.mockResolvedValue({ marketEventId: 'event-1', open: true });
+		currentPremarket.mockResolvedValue({ marketEventId: 'event-1', open: true });
 
 		// Act
-		const response = await handler(request('/api/premarket-status', 'POST', { code }));
+		const response = await handler(request('/api/premarket-status', 'GET'));
 
 		// Assert
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toEqual({ open: true });
 	});
 
-	it('answers an unknown or replaced code with one generic error', async () => {
+	it('reports it closed when no session is coming up', async () => {
 		// Arrange
-		premarketSessionFor.mockResolvedValue(null);
+		currentPremarket.mockResolvedValue(null);
 
 		// Act
-		const response = await handler(request('/api/premarket-status', 'POST', { code }));
+		const response = await handler(request('/api/premarket-status', 'GET'));
 
 		// Assert
-		expect(response.status).toBe(410);
-	});
-
-	it('rejects a malformed code without looking it up', async () => {
-		// Act
-		const response = await handler(request('/api/premarket-status', 'POST', { code: 'short' }));
-
-		// Assert
-		expect(response.status).toBe(400);
-		expect(premarketSessionFor).not.toHaveBeenCalled();
+		await expect(response.json()).resolves.toEqual({ open: false });
 	});
 });
 
 describe('premarket registration handler', () => {
-	it('registers for the code’s session, whatever session the request names', async () => {
+	it('registers for the current session, whatever session the request names', async () => {
 		// Arrange
-		premarketSessionFor.mockResolvedValue({ marketEventId: 'event-1', open: true });
+		currentPremarket.mockResolvedValue({ marketEventId: 'event-1', open: true });
 		registerGuest.mockResolvedValue({
 			ok: true,
 			status: 201,
@@ -109,21 +97,21 @@ describe('premarket registration handler', () => {
 		expect(options).toEqual({ premarket: true });
 	});
 
-	it('refuses a replaced code before validating the form', async () => {
+	it('refuses when no session is coming up', async () => {
 		// Arrange
-		premarketSessionFor.mockResolvedValue(null);
+		currentPremarket.mockResolvedValue(null);
 
 		// Act
 		const response = await handler(request('/api/premarket-registration', 'POST', volunteer));
 
 		// Assert
-		expect(response.status).toBe(410);
+		expect(response.status).toBe(409);
 		expect(registerGuest).not.toHaveBeenCalled();
 	});
 
 	it('reports a form’s problems by field', async () => {
 		// Arrange
-		premarketSessionFor.mockResolvedValue({ marketEventId: 'event-1', open: true });
+		currentPremarket.mockResolvedValue({ marketEventId: 'event-1', open: true });
 
 		// Act
 		const response = await handler(
@@ -135,5 +123,6 @@ describe('premarket registration handler', () => {
 		await expect(response.json()).resolves.toMatchObject({
 			fields: { householdSize: 'required' },
 		});
+		expect(currentPremarket).not.toHaveBeenCalled();
 	});
 });

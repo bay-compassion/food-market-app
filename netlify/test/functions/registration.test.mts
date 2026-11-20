@@ -14,6 +14,8 @@ const paths = [
 	'/api/premarket-status',
 	'/api/premarket-registration',
 ];
+/** Every path but the premarket status, which only reads. */
+const writePaths = paths.filter((path) => path !== '/api/premarket-status');
 const invalidBodyErrors: Record<string, unknown> = {
 	'/api/guest-information': { error: 'Please provide valid guest information.' },
 	// A registration says which fields are wrong, rather than only that something is.
@@ -22,8 +24,9 @@ const invalidBodyErrors: Record<string, unknown> = {
 		fields: expect.objectContaining({ firstName: 'required' }),
 	}),
 	'/api/guest-claim': { error: 'Please provide a valid code.' },
-	'/api/premarket-status': { error: 'Please provide a valid code.' },
-	'/api/premarket-registration': { error: 'Please provide a valid code.' },
+	'/api/premarket-registration': expect.objectContaining({
+		fields: expect.objectContaining({ firstName: 'required' }),
+	}),
 };
 
 afterEach(() => {
@@ -40,7 +43,7 @@ describe('public registration boundary', () => {
 		});
 	});
 
-	it.each(paths)('dispatches JSON to %s', async (path) => {
+	it.each(writePaths)('dispatches JSON to %s', async (path) => {
 		const request = new Request(`https://example.com${path}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -53,7 +56,7 @@ describe('public registration boundary', () => {
 		await expect(response.json()).resolves.toEqual(invalidBodyErrors[path]);
 	});
 
-	it.each(paths)(
+	it.each(writePaths)(
 		'rejects cross-origin form submissions to %s before database access',
 		async (path) => {
 			const request = new Request(`https://example.com${path}`, {
@@ -89,7 +92,7 @@ describe('public registration boundary', () => {
 		expect(db.select).not.toHaveBeenCalled();
 	});
 
-	it.each(paths)('rejects oversized writes to %s before database access', async (path) => {
+	it.each(writePaths)('rejects oversized writes to %s before database access', async (path) => {
 		const request = new Request(`https://example.com${path}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },

@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=4e4ce5148e18 -->
+<!-- diagram-sources: db/schema.mts=db44438659f1 -->
 
 # Database structure
 
@@ -17,7 +17,6 @@ moves through, and [`user-journey.md`](user-journey.md) for the path a guest tak
 erDiagram
     market_locations ||--o{ market_events : "hosts"
     market_locations ||--o| recurrence_patterns : "repeats on"
-    market_locations ||--o{ premarket_codes : "posts"
     recurrence_patterns ||--o{ recurrence_pattern_questions : "asks"
     recurrence_patterns |o--o{ market_events : "created"
     market_events ||--o{ registration_questions : "asks"
@@ -38,16 +37,6 @@ erDiagram
         text name
         text time_zone "IANA name; local dates and times are read in it"
         timestamptz created_at
-    }
-
-    premarket_codes {
-        uuid id PK
-        uuid location_id FK "one live code per location"
-        text code UK "printed on the premarket QR poster; kept so it can be reprinted"
-        text created_by_id "nullable; the steward's Auth0 subject"
-        text created_by_name "nullable; the steward's name at the time"
-        timestamptz created_at
-        timestamptz replaced_at "nullable; set when a newer code voids this one"
     }
 
     recurrence_patterns {
@@ -236,11 +225,11 @@ A few things the diagram can't show on its own:
   device credential. Household composition (age range, household size, children/seniors counts)
   is entered fresh at each visit rather than carried on the guest, and the browser keeps its own
   last-entered copy in `localStorage` purely to prefill the next visit's form.
-- **A volunteer who shops before the line is a guest with a `premarket` visit.** They register by
-  scanning the location's printed premarket code (or a worker adds them), on market day until the
-  draw. The visit is `served` from the start, with no number and no place in line, so the draw never
-  sees it and it takes none of the session's capacity. A guest has one visit per session: scanning
-  the code moves their lottery entry to the premarket rather than adding a second visit.
+- **A volunteer who shops before the line is a guest with a `premarket` visit.** They check in
+  from the premarket link or its QR code (or a worker adds them), any time on market day until the
+  session ends. The visit is `served` from the start, with no number and no place in line, so the
+  draw never sees it and it takes none of the session's capacity. A guest has one visit per session:
+  checking in moves any lottery entry they hold to the premarket rather than adding a second visit.
 - **`guests` still has `age_range`, `household_size`, `children_count`, and `seniors_count`
   columns in the database that this diagram omits.** Application code stopped reading and writing
   them once household composition moved to `visits` — they're mid backfill-then-drop, waiting on a

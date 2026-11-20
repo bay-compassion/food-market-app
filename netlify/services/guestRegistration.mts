@@ -232,15 +232,25 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 
 export type RegisterGuestOptions = {
 	/**
-	 * A guest registering themselves for the premarket, having scanned its printed code. The caller
-	 * has checked the code and resolved the session from it. Only meaningful for a self submission:
+	 * A guest checking themselves in for the premarket, from its link or QR code. The caller has
+	 * resolved the session. Only meaningful for a self submission:
 	 * a worker says `admission: 'premarket'` instead.
 	 */
 	premarket?: boolean;
 };
 
-/** The statuses a guest's own visit can be moved to the premarket from, all before the draw. */
-const premarketConvertible: VisitStatus[] = ['registered', 'cancelled', 'waiting'];
+/**
+ * The statuses a guest's own visit can be moved to the premarket from: every one but `served`. A
+ * guest already served shopped with the line, and that record stands.
+ */
+const premarketConvertible: VisitStatus[] = [
+	'registered',
+	'cancelled',
+	'waiting',
+	'called',
+	'not_placed',
+	'no_show',
+];
 
 /**
  * Validates eligibility, then creates or updates the guest and their visit in a single
@@ -250,7 +260,7 @@ const premarketConvertible: VisitStatus[] = ['registered', 'cancelled', 'waiting
  * `actor` is who is registering: the guest themselves, or the worker adding them by hand. It is
  * recorded in the visit's history.
  *
- * A guest who scans the premarket code with a lottery entry already on their phone has that visit
+ * A guest who checks in for the premarket with a lottery entry already on their phone has that visit
  * moved to the premarket, never a second visit: nobody holds both a guaranteed place and a chance
  * in the draw. Registering for the lottery after the premarket leaves the premarket visit as it is.
  */
@@ -259,7 +269,7 @@ export async function registerGuest(
 	actor: VisitEventActor,
 	options: RegisterGuestOptions = {},
 ): Promise<RegisterGuestResult> {
-	// How the visit joins. A self registration is the lottery, unless it came from the premarket code.
+	// How the visit joins. A self registration is the lottery, unless it came from the premarket link.
 	const admission: GuestAdmission =
 		submission.source === 'admin'
 			? submission.admission
@@ -461,8 +471,8 @@ export async function registerGuest(
 								track: 'premarket',
 								status: 'served',
 								servedAt: new Date(),
-								// A worker may have placed the guest in line before the draw; a premarket place
-								// takes no number and no place in it.
+								// The draw or a worker may have placed the guest in line; a premarket place takes
+								// no number and no place in it.
 								queuePosition: null,
 								priorityNumber: null,
 								queueFront: false,

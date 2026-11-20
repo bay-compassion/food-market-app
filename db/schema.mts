@@ -37,34 +37,6 @@ export const marketLocations = pgTable('market_locations', {
  * A weekly schedule. It occurs on the weekday of `startsOn`, and only its next occurrence is ever
  * a session — see `RecurrencePattern` in `src/models/recurrence-pattern.ts`.
  */
-/**
- * The code a location's printed premarket QR carries. Scanning it lets a volunteer register for the
- * premarket. Stored as written, unlike claim codes, so a steward can reprint the poster: it is
- * posted on paper where volunteers gather, and replacing it is what voids a leaked copy. A
- * replaced code is kept, with who replaced it and when; a location has at most one live code.
- */
-export const premarketCodes = pgTable(
-	'premarket_codes',
-	{
-		id: uuid('id').defaultRandom().primaryKey(),
-		locationId: uuid('location_id')
-			.notNull()
-			.references(() => marketLocations.id),
-		code: text('code').notNull(),
-		/** The steward's Auth0 subject and name, as their sign-in gave it at the time. */
-		createdById: text('created_by_id'),
-		createdByName: text('created_by_name'),
-		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-		replacedAt: timestamp('replaced_at', { withTimezone: true }),
-	},
-	(table) => [
-		uniqueIndex('premarket_codes_code_idx').on(table.code),
-		uniqueIndex('premarket_codes_one_live_per_location_idx')
-			.on(table.locationId)
-			.where(sql`replaced_at IS NULL`),
-	],
-);
-
 export const recurrencePatterns = pgTable(
 	'recurrence_patterns',
 	{

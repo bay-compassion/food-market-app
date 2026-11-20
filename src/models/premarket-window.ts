@@ -3,12 +3,11 @@ import type { MarketLocation } from './market-location.ts';
 import { SessionTimeline, type SessionTiming } from './session-timeline.ts';
 
 /**
- * When a volunteer may register for a session's premarket: on the market's own day, from midnight
- * until the lottery draws.
+ * When a volunteer may check in for a session's premarket: on the market's own day, from midnight
+ * until the session ends. Premarket shopping usually happens after the draw, before guests start.
  *
- * The day matters because a session is `scheduled` all week. Without it, a photo of the printed
- * code would work days early. The draw is the end because a premarket place is taken outside the
- * draw: converting a lottery entry after the pool is frozen would race it.
+ * The day matters because a session is `scheduled` all week: the premarket is a record of who shopped
+ * on market day, not a sign-up ahead of it.
  *
  * Reads the date in the location's time zone, so this uses Luxon through `MarketLocation` and is
  * for the server only — never the guest's first screen.
@@ -19,6 +18,7 @@ export class PremarketWindow {
 		'registration_open',
 		'registration_closed',
 		'lottery_pending',
+		'service_started',
 	];
 
 	constructor(
@@ -31,7 +31,7 @@ export class PremarketWindow {
 		return this.location.localDateOf(this.session.registrationOpensAt);
 	}
 
-	/** Whether a volunteer may register for the premarket at `now`. */
+	/** Whether a volunteer may check in for the premarket at `now`. */
 	isOpenAt(now: Date): boolean {
 		const status = new SessionTimeline(this.session).statusAt(now);
 

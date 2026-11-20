@@ -1024,7 +1024,7 @@ describe('saveGuestInformation', () => {
 });
 
 describe('registerGuest for the premarket', () => {
-	// Registration opens at 9:00 Pacific on 18 July; the premarket is open that whole morning.
+	// Registration opens at 9:00 Pacific on 18 July; the premarket is open all that day.
 	const marketDay = {
 		id: 'event-1',
 		locationId: 'location-1',
@@ -1079,7 +1079,7 @@ describe('registerGuest for the premarket', () => {
 		expect(insertedVisit()?.queuePosition ?? null).toBeNull();
 	});
 
-	it.each(['registered', 'cancelled', 'waiting'] as const)(
+	it.each(['registered', 'cancelled', 'waiting', 'called', 'not_placed', 'no_show'] as const)(
 		'moves a guest’s own %s visit to the premarket rather than adding a second',
 		async (status) => {
 			// Arrange
@@ -1173,11 +1173,31 @@ describe('registerGuest for the premarket', () => {
 		expect(result).toEqual({ ok: false, status: 409, error: 'The premarket is not open.' });
 	});
 
-	it('refuses the premarket once the draw has run', async () => {
+	it('records a volunteer after the draw, while guests shop', async () => {
 		// Arrange
 		const serving = { ...marketDay, status: 'service_started' };
 
+		vi.setSystemTime(new Date('2026-07-18T18:00:00.000Z'));
 		queueResult([serving]);
+		queueResult([location]);
+		queueResult([serving]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
+		const submission = parseSubmission(selfSubmission())!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' }, { premarket: true });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, status: 201 });
+		expect(insertedVisit()).toMatchObject({ status: 'served', track: 'premarket' });
+	});
+
+	it('refuses the premarket once the session has ended', async () => {
+		// Arrange
+		const ended = { ...marketDay, status: 'ended' };
+
+		queueResult([ended]);
 		queueResult([location]);
 		const submission = parseSubmission(selfSubmission())!;
 

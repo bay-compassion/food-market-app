@@ -37,9 +37,17 @@ describe('PremarketWindow', () => {
 		expect(open).toBe(expected);
 	});
 
-	it.each(['service_started', 'ended'] as const)('closes once the session is %s', (status) => {
+	it('stays open after the draw, while guests shop', () => {
 		// Act
-		const open = window(status).isOpenAt(new Date('2026-07-18T18:00:00.000Z'));
+		const open = window('service_started').isOpenAt(new Date('2026-07-18T18:00:00.000Z'));
+
+		// Assert
+		expect(open).toBe(true);
+	});
+
+	it('closes once the session has ended', () => {
+		// Act
+		const open = window('ended').isOpenAt(new Date('2026-07-18T18:00:00.000Z'));
 
 		// Assert
 		expect(open).toBe(false);

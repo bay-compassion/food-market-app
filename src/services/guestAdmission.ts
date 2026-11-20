@@ -13,7 +13,8 @@ import type { VisitStatus } from './visitStateMachine';
  *   Only offered once the session has ended.
  * - `premarket` — a volunteer shopping before the line opens: a guaranteed place, no number, and
  *   nothing taken from the line's capacity. Recorded as served the moment they are added, since a
- *   volunteer is added as they start shopping. Offered until the draw.
+ *   volunteer is added as they start shopping. Offered while the session runs, before and after the
+ *   draw.
  */
 export type GuestAdmission = 'lottery' | 'queue' | 'served' | 'premarket';
 
@@ -31,7 +32,7 @@ const admissionsByStatus: Record<SessionStatus, GuestAdmission[]> = {
 	registration_open: ['lottery', 'queue', 'premarket'],
 	registration_closed: ['lottery', 'queue', 'premarket'],
 	lottery_pending: ['queue', 'premarket'],
-	service_started: ['queue'],
+	service_started: ['queue', 'premarket'],
 	ended: ['served'],
 };
 
