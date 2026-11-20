@@ -244,6 +244,8 @@ export class RegistrationStore {
 		context: 'queue' | 'early',
 		marketEventId: string | null,
 		locale: string,
+		/** For a volunteer registering for the premarket: the printed code they scanned. */
+		options: { premarketCode?: string } = {},
 	): Promise<RegistrationSubmitResult> {
 		// Signing up early collects no household, so counts left over on this device must not block it.
 		if (!this.hasValidNames || (context === 'queue' && !this.household.isValid)) {
@@ -275,6 +277,7 @@ export class RegistrationStore {
 				marketEventId,
 				answers: this.registrationAnswers,
 				source: 'self',
+				...(options.premarketCode === undefined ? {} : { premarketCode: options.premarketCode }),
 			});
 
 			// Kept only to prefill the lottery-entry fields next time — never sent as part of identity.

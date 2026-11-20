@@ -39,6 +39,11 @@ export type GuestRegistrationInput = Omit<GuestFormState, 'pronunciation'> &
 		marketEventId: string | null;
 		answers: Record<string, string | number>;
 		source: 'self';
+		/**
+		 * The printed premarket code a volunteer scanned. With it, the registration is for that code's
+		 * premarket rather than the lottery, and the server chooses the session.
+		 */
+		premarketCode?: string;
 	};
 
 export type GuestRegistrationPayload = GuestRegistrationInput & { deviceToken: string | null };
@@ -49,17 +54,25 @@ export type GuestRegistrationResult = {
 	visitToken: string;
 	/** Present when the server establishes or replaces this browser's guest credential. */
 	deviceToken?: string;
+	/** The session a premarket registration joined, which the phone did not name. */
+	marketEventId?: string;
 };
 
-/** Submits a guest's registration. Throws if the server rejects it. */
+/** Submits a guest's registration, for the lottery or the premarket. Throws if it is refused. */
 export async function submitGuestRegistration(
 	payload: GuestRegistrationPayload,
 ): Promise<GuestRegistrationResult> {
-	const response = await fetch('/api/lottery-registration', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(payload),
-	});
+	const { premarketCode, ...registration } = payload;
+	const response = await fetch(
+		premarketCode === undefined ? '/api/lottery-registration' : '/api/premarket-registration',
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(
+				premarketCode === undefined ? registration : { ...registration, code: premarketCode },
+			),
+		},
+	);
 
 	if (!response.ok) {
 		throw new Error('Guest submission failed');

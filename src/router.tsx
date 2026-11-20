@@ -39,6 +39,14 @@ export const router = createInstrumentedBrowserRouter([
 					{ path: '/claim', element: <ClaimView /> },
 					{ path: '/qr-code', element: <QrCodeView /> },
 					{
+						// A volunteer reaches this from the printed premarket QR. Guests never do, so it is
+						// lazily loaded, out of their download — which also keeps it from being advertised.
+						path: '/premarket',
+						lazy: async () => ({
+							Component: (await import('./components/premarket/PremarketPage')).PremarketPage,
+						}),
+					},
+					{
 						path: '/help',
 						lazy: async () => ({
 							Component: (await import('./components/help/HelpPage')).HelpPage,
