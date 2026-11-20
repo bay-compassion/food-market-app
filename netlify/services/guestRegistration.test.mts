@@ -1060,7 +1060,6 @@ describe('registerGuest for the premarket', () => {
 		// Arrange
 		queueResult([marketDay]);
 		queueResult([location]);
-		queueResult([]); // no registration questions
 		queueResult([marketDay]); // locked event eligibility recheck
 		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
 		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
@@ -1086,7 +1085,6 @@ describe('registerGuest for the premarket', () => {
 			// Arrange
 			queueResult([marketDay]);
 			queueResult([location]);
-			queueResult([]); // no registration questions
 			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
 			queueResult([{ id: 'visit-1', status }]); // existing visit lookup
 			queueResult([marketDay]); // locked event eligibility recheck

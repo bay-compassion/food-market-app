@@ -101,6 +101,7 @@ describe('premarket registration handler', () => {
 
 		// Assert
 		expect(response.status).toBe(201);
+		await expect(response.json()).resolves.toMatchObject({ marketEventId: 'event-1' });
 		const [submission, actor, options] = registerGuest.mock.calls[0]!;
 
 		expect(submission).toMatchObject({ source: 'self', marketEventId: 'event-1' });

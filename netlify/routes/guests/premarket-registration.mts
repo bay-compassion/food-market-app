@@ -65,8 +65,12 @@ premarketRegistrationRoutes.post('/api/premarket-registration', async (context) 
 
 	const result = await registerGuest(validation.data, guestActor, { premarket: true });
 
+	// The phone never named the session, so it is told which one its visit token belongs to.
 	return result.ok
-		? Response.json(result.body, { status: result.status })
+		? Response.json(
+				{ ...result.body, marketEventId: session.marketEventId },
+				{ status: result.status },
+			)
 		: jsonError(result.error, result.status);
 });
 premarketRegistrationRoutes.all('/api/premarket-registration', methodNotAllowed);

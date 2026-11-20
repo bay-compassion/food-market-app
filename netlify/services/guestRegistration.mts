@@ -329,16 +329,19 @@ export async function registerGuest(
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
-		const questions = await tracedQuery('registration.read_questions', () =>
-			db
-				.select({
-					id: registrationQuestions.id,
-					type: registrationQuestions.type,
-					required: registrationQuestions.required,
-				})
-				.from(registrationQuestions)
-				.where(eq(registrationQuestions.marketEventId, marketEventId)),
-		);
+		// The session's questions are asked of guests entering the draw; a volunteer is not entering it.
+		const questions = isPremarket
+			? []
+			: await tracedQuery('registration.read_questions', () =>
+					db
+						.select({
+							id: registrationQuestions.id,
+							type: registrationQuestions.type,
+							required: registrationQuestions.required,
+						})
+						.from(registrationQuestions)
+						.where(eq(registrationQuestions.marketEventId, marketEventId)),
+				);
 
 		for (const question of questions) {
 			const answer = submission.answers[question.id];
