@@ -1399,6 +1399,7 @@ export const adminTranslations = {
 				kinds: {
 					registered: 'Registered',
 					added: 'Added by hand',
+					premarket_check_in: 'Checked in for the premarket',
 					drawn: 'Drawn in the lottery',
 					not_drawn: 'Not drawn',
 					called: 'Called',

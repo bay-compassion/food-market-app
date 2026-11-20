@@ -12,6 +12,11 @@ export type VisitEventKind =
 	| 'registered'
 	/** A worker added the guest by hand. */
 	| 'added'
+	/**
+	 * A volunteer checked in for the premarket — on their own phone or added by a worker, before
+	 * the draw or after it, new or moved from a lottery entry.
+	 */
+	| 'premarket_check_in'
 	/** The lottery drew the guest and gave them a place in line. */
 	| 'drawn'
 	/** The lottery did not draw the guest. */
@@ -33,6 +38,7 @@ export type VisitEventKind =
 export const visitEventKinds: VisitEventKind[] = [
 	'registered',
 	'added',
+	'premarket_check_in',
 	'drawn',
 	'not_drawn',
 	'called',

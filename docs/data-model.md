@@ -143,7 +143,7 @@ erDiagram
     visit_events {
         uuid id PK
         uuid visit_id FK "cascade delete"
-        text kind "registered | added | drawn | not_drawn | called | served | no_show | returned | cancelled | tag_sent | tag_printed | corrected"
+        text kind "registered | added | premarket_check_in | drawn | not_drawn | called | served | no_show | returned | cancelled | tag_sent | tag_printed | corrected"
         text to_status "the status the visit moved to; for a name tag, the one it was in"
         text actor_kind "guest | worker | system"
         text actor_id "nullable; the worker's Auth0 subject"

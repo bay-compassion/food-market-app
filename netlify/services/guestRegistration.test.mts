@@ -13,6 +13,7 @@ vi.mock('./visit-events.mjs', () => ({
 
 import { parseGuestInformation, saveGuestInformation } from './guest-information.mjs';
 import { parseSubmission, registerGuest, validateSubmission } from './guestRegistration.mjs';
+import { recordVisitEvents } from './visit-events.mjs';
 
 const savedDeviceToken = 'device-token-from-this-browser-12345678901234567890';
 
@@ -1023,6 +1024,13 @@ describe('saveGuestInformation', () => {
 	});
 });
 
+/** The kinds of every history entry recorded. */
+function recordedKinds() {
+	return vi
+		.mocked(recordVisitEvents)
+		.mock.calls.flatMap(([, events]) => events.map((event) => event.kind));
+}
+
 describe('registerGuest for the premarket', () => {
 	// Registration opens at 9:00 Pacific on 18 July; the premarket is open all that day.
 	const marketDay = {
@@ -1037,6 +1045,7 @@ describe('registerGuest for the premarket', () => {
 	beforeEach(() => {
 		vi.useFakeTimers({ toFake: ['Date'] });
 		vi.setSystemTime(new Date('2026-07-18T15:00:00.000Z')); // 8:00 on market day
+		vi.mocked(recordVisitEvents).mockClear();
 	});
 
 	afterEach(() => {
@@ -1077,6 +1086,7 @@ describe('registerGuest for the premarket', () => {
 			servedAt: new Date('2026-07-18T15:00:00.000Z'),
 		});
 		expect(insertedVisit()?.queuePosition ?? null).toBeNull();
+		expect(recordedKinds()).toEqual(['premarket_check_in']);
 	});
 
 	it.each(['registered', 'cancelled', 'waiting', 'called', 'not_placed', 'no_show'] as const)(
@@ -1107,6 +1117,7 @@ describe('registerGuest for the premarket', () => {
 				queueOrder: null,
 				lotteryWeight: 1,
 			});
+			expect(recordedKinds()).toEqual(['premarket_check_in']);
 		},
 	);
 
@@ -1191,6 +1202,7 @@ describe('registerGuest for the premarket', () => {
 		// Assert
 		expect(result).toMatchObject({ ok: true, status: 201 });
 		expect(insertedVisit()).toMatchObject({ status: 'served', track: 'premarket' });
+		expect(recordedKinds()).toEqual(['premarket_check_in']);
 	});
 
 	it('refuses the premarket once the session has ended', async () => {
@@ -1229,5 +1241,6 @@ describe('registerGuest for the premarket', () => {
 			lotteryWeight: 1,
 		});
 		expect(insertedVisit()?.queuePosition ?? null).toBeNull();
+		expect(recordedKinds()).toEqual(['premarket_check_in']);
 	});
 });

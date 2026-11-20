@@ -518,16 +518,21 @@ export async function registerGuest(
 								.returning({ id: visits.id, status: visits.status });
 
 				// A new visit starts its history; an existing one only gains an entry when a guest who
-				// had cancelled registers again. Updating the details of a live visit changes no status.
+				// had cancelled registers again, or checks in for the premarket. Updating the details of a
+				// live visit changes no status.
 				if (joinsPremarket) {
 					await recordVisitEvents(tx, [
-						{ visitId: visit!.id, kind: 'registered', toStatus: 'served', actor },
+						{ visitId: visit!.id, kind: 'premarket_check_in', toStatus: 'served', actor },
 					]);
 				} else if (!existingVisit) {
 					await recordVisitEvents(tx, [
 						{
 							visitId: visit!.id,
-							kind: submission.source === 'admin' ? 'added' : 'registered',
+							kind: isPremarket
+								? 'premarket_check_in'
+								: submission.source === 'admin'
+									? 'added'
+									: 'registered',
 							toStatus: visit!.status,
 							actor,
 							details: number ? number.toDetails() : undefined,
