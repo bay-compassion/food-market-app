@@ -21,12 +21,13 @@ type Args = { status: PremarketCodeStatus | 'checking' | 'missing' };
 const copy = translations.en.premarket;
 
 const Premarket = observer(function Premarket({ status }: Args) {
-	const { registration, visit } = useRootStore();
+	const { guest, registration, visit } = useRootStore();
 	const [entry] = useState(() => {
 		const created = new PremarketEntryStore({
 			code: status === 'missing' ? null : 'story-premarket-code-1234',
 			registration,
 			visit,
+			guest,
 			checkStatus: (): Promise<PremarketCodeStatus> =>
 				status === 'checking' || status === 'missing'
 					? new Promise(() => undefined)

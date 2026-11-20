@@ -41,4 +41,20 @@ describe('visitTakesPrecedence', () => {
 		// Assert
 		expect(result).toBe(false);
 	});
+
+	it('shows a premarket volunteer their visit before registration opens', () => {
+		// Act
+		const result = visitTakesPrecedence('scheduled', 'served');
+
+		// Assert
+		expect(result).toBe(true);
+	});
+
+	it.each([null, 'ended'] as const)('has no visit to show for a %s session', (sessionStatus) => {
+		// Act
+		const result = visitTakesPrecedence(sessionStatus, 'served');
+
+		// Assert
+		expect(result).toBe(false);
+	});
 });

@@ -88,12 +88,12 @@ export const GuestMarketStatus = observer(function GuestMarketStatus() {
 	}, [rootStore, tourEnabled]);
 
 	const render = () => {
-		if (!session.isActive) {
-			return <GuestNotOpenState />;
-		}
-
 		if (visitTakesPrecedence(session.currentStatus, visit.status)) {
 			return <GuestVisitState />;
+		}
+
+		if (!session.isActive) {
+			return <GuestNotOpenState />;
 		}
 
 		switch (session.currentStatus) {

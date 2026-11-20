@@ -19,13 +19,14 @@ import { PremarketStatusMessage } from './PremarketStatusMessage';
 export const PremarketPage = observer(function PremarketPage() {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const { registration, visit } = useRootStore();
+	const { guest, registration, visit } = useRootStore();
 	const [entry] = useState(
 		() =>
 			new PremarketEntryStore({
 				code: premarketCodeFromHash(location.hash),
 				registration,
 				visit,
+				guest,
 				checkStatus: fetchPremarketStatus,
 			}),
 	);

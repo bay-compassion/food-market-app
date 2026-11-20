@@ -14,6 +14,7 @@ function entry(code: string | null = 'printed-code-123456', status = 'open' as c
 		code,
 		registration: { submit: vi.fn().mockResolvedValue({ kind: 'registered', registration }) },
 		visit: { submit: vi.fn() },
+		guest: { markAsReturningVisitor: vi.fn() },
 		checkStatus: vi.fn().mockResolvedValue(status),
 	};
 
@@ -46,7 +47,7 @@ describe('PremarketEntryStore', () => {
 
 	it('registers for the premarket with the scanned code and keeps the visit', async () => {
 		// Arrange
-		const { store, registration: registrationStore, visit } = entry();
+		const { store, registration: registrationStore, visit, guest } = entry();
 
 		await store.check();
 
@@ -58,6 +59,7 @@ describe('PremarketEntryStore', () => {
 			premarketCode: 'printed-code-123456',
 		});
 		expect(visit.submit).toHaveBeenCalledWith(registration, 'event-1');
+		expect(guest.markAsReturningVisitor).toHaveBeenCalled();
 		expect(store.state).toBe('registered');
 	});
 
