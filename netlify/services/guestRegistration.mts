@@ -477,9 +477,11 @@ export async function registerGuest(
 								.set({
 									...household,
 									accessTokenHash: visitCredential.tokenHash,
-									// Never touches `track`: a premarket visit stays one if its guest later enters the draw.
-									status:
-										existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
+									// A live premarket visit stays one if its guest later enters the draw. A cancelled one —
+									// a volunteer a worker removed — enters the draw like anyone else, on the lottery's track.
+									...(existingVisit.status === 'cancelled'
+										? { status: 'registered' as const, track: 'lottery' as const }
+										: { status: existingVisit.status }),
 								})
 								.where(eq(visits.id, existingVisit.id))
 								.returning({ id: visits.id, status: visits.status })

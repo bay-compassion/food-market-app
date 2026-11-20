@@ -1135,6 +1135,29 @@ describe('registerGuest for the premarket', () => {
 		expect(visitUpdate).not.toHaveProperty('track');
 	});
 
+	it('puts a removed volunteer who enters the lottery back on the lottery’s track', async () => {
+		// Arrange
+		const openEvent = { ...marketDay, status: 'registration_open' };
+		vi.setSystemTime(new Date('2026-07-18T16:30:00.000Z'));
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+		queueResult([{ id: 'visit-1', status: 'cancelled' }]); // a removed premarket visit
+		queueResult([openEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // tx.update visits returning
+		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+		// Act
+		await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(setRows().find((row) => row?.accessTokenHash)).toMatchObject({
+			status: 'registered',
+			track: 'lottery',
+		});
+	});
+
 	it('refuses the premarket the day before the market', async () => {
 		// Arrange
 		vi.setSystemTime(new Date('2026-07-17T18:00:00.000Z'));

@@ -4,10 +4,10 @@ import { db } from '../../db/index.mjs';
 import { marketEvents, visits } from '../../db/schema.mjs';
 import { LineOrder } from '../../src/models/line-order.js';
 import { QueueNumber } from '../../src/models/queue-number.js';
+import { VisitCommands } from '../../src/models/visit-commands.js';
 import type { QueuePlacement } from '../../src/services/guestAdmission.js';
 import { visitCommandEvents, type VisitEventActor } from '../../src/services/visit-events.js';
 import {
-	canRunVisitCommand,
 	outstandingVisitStatuses,
 	visitCommandTarget,
 	type VisitCommand,
@@ -61,8 +61,13 @@ async function deliverCalledNotifications(visitIds: string[]) {
  * timestamps reporting measures wait time from, so a transition that undoes a call has to clear
  * the one it set. Nothing transitions out of `served`, so `served_at` is only ever written once.
  */
-function visitCommandChanges(command: VisitCommand) {
+function visitCommandChanges(command: VisitCommand, from: VisitStatus) {
 	const status = visitCommandTarget(command);
+
+	// Removing a premarket volunteer: they were never served after all.
+	if (command === 'cancel' && from === 'served') {
+		return { status, servedAt: null };
+	}
 
 	switch (command) {
 		case 'call':
@@ -110,6 +115,7 @@ export async function runVisitCommand(
 		db
 			.select({
 				status: visits.status,
+				track: visits.track,
 				marketEventId: visits.marketEventId,
 				queuePosition: visits.queuePosition,
 				priorityNumber: visits.priorityNumber,
@@ -123,7 +129,7 @@ export async function runVisitCommand(
 		return { ok: false, status: 404, error: 'Visit not found.' };
 	}
 
-	if (!canRunVisitCommand(current.status, command)) {
+	if (!new VisitCommands(current).allows(command)) {
 		return transitionRefused;
 	}
 
@@ -143,8 +149,8 @@ export async function runVisitCommand(
 					: undefined;
 				const changes =
 					slot === undefined
-						? visitCommandChanges(command)
-						: { ...visitCommandChanges(command), ...slot };
+						? visitCommandChanges(command, current.status)
+						: { ...visitCommandChanges(command, current.status), ...slot };
 				const [visit] = await tx
 					.update(visits)
 					.set(changes)
@@ -262,7 +268,7 @@ export async function serveAndCallNext(
 		db.transaction(async (tx) => {
 			const [served] = await tx
 				.update(visits)
-				.set(visitCommandChanges('serve'))
+				.set(visitCommandChanges('serve', 'called'))
 				.where(
 					and(
 						eq(visits.id, visitId),
