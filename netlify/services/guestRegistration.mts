@@ -10,15 +10,18 @@ import {
 	type HouseholdCounts,
 	type HouseholdIssue,
 } from '../../src/models/household-composition.js';
+import { PremarketWindow } from '../../src/models/premarket-window.js';
 import { QueueNumber } from '../../src/models/queue-number.js';
 import { SessionTimeline } from '../../src/models/session-timeline.js';
 import { ageRanges } from '../../src/services/ageRanges.js';
 import {
 	admissionNeedsQueuePosition,
 	admissionTakesLotteryWeight,
+	admissionTrack,
 	admissionVisitStatus,
 	canAdmitGuest,
 	guestAdmissions,
+	type GuestAdmission,
 } from '../../src/services/guestAdmission.js';
 import { normalizeLotteryWeight } from '../../src/services/lotteryWeight.js';
 import type { VisitEventActor } from '../../src/services/visit-events.js';
@@ -31,6 +34,7 @@ import {
 	persistGuestInformation,
 } from './guest-information.mjs';
 import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
+import { locationById } from './marketLocation.mjs';
 import { recordVisitEvents } from './visit-events.mjs';
 import { placeInLine } from './visitQueue.mjs';
 
@@ -226,19 +230,46 @@ export function parseSubmission(value: unknown): GuestSubmission | null {
 	return validation.success ? validation.data : null;
 }
 
+export type RegisterGuestOptions = {
+	/**
+	 * A guest registering themselves for the premarket, having scanned its printed code. The caller
+	 * has checked the code and resolved the session from it. Only meaningful for a self submission:
+	 * a worker says `admission: 'premarket'` instead.
+	 */
+	premarket?: boolean;
+};
+
+/** The statuses a guest's own visit can be moved to the premarket from, all before the draw. */
+const premarketConvertible: VisitStatus[] = ['registered', 'cancelled', 'waiting'];
+
 /**
  * Validates eligibility, then creates or updates the guest and their visit in a single
  * transaction. Assumes the caller has already gated admin-source submissions behind
  * `requirePermission` — this function only checks registration-window and question eligibility.
- */
-/**
+ *
  * `actor` is who is registering: the guest themselves, or the worker adding them by hand. It is
  * recorded in the visit's history.
+ *
+ * A guest who scans the premarket code with a lottery entry already on their phone has that visit
+ * moved to the premarket, never a second visit: nobody holds both a guaranteed place and a chance
+ * in the draw. Registering for the lottery after the premarket leaves the premarket visit as it is.
  */
 export async function registerGuest(
 	submission: GuestSubmission,
 	actor: VisitEventActor,
+	options: RegisterGuestOptions = {},
 ): Promise<RegisterGuestResult> {
+	// How the visit joins. A self registration is the lottery, unless it came from the premarket code.
+	const admission: GuestAdmission =
+		submission.source === 'admin'
+			? submission.admission
+			: options.premarket
+				? 'premarket'
+				: 'lottery';
+	const isPremarket = admission === 'premarket';
+	// Only a self premarket registration reads the market's local date, so only it needs the location.
+	let premarketLocation: Awaited<ReturnType<typeof locationById>> | null = null;
+
 	if (submission.source === 'admin' && !submission.marketEventId) {
 		return { ok: false, status: 409, error: 'No market event has been configured.' };
 	}
@@ -286,9 +317,15 @@ export async function registerGuest(
 
 		const now = new Date();
 
-		// Once the guest UI closes, an already-in-flight request may still land during the short grace
-		// period. `lottery_pending` is the hard boundary where the pool has been frozen.
-		if (!new SessionTimeline(event).acceptsSelfRegistration(now)) {
+		if (isPremarket) {
+			premarketLocation = await locationById(db, event.locationId);
+
+			if (!new PremarketWindow(event, premarketLocation).isOpenAt(now)) {
+				return { ok: false, status: 409, error: 'The premarket is not open.' };
+			}
+		} else if (!new SessionTimeline(event).acceptsSelfRegistration(now)) {
+			// Once the guest UI closes, an already-in-flight request may still land during the short
+			// grace period. `lottery_pending` is the hard boundary where the pool has been frozen.
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
@@ -374,12 +411,15 @@ export async function registerGuest(
 					.limit(1)
 					.for('update');
 
-				if (
-					!event ||
-					(submission.source === 'self' &&
-						!new SessionTimeline(event).acceptsSelfRegistration(new Date())) ||
-					(submission.source === 'admin' && !canAdmitGuest(event.status, submission.admission))
-				) {
+				// The session's row lock is also what keeps a premarket conversion from racing the draw.
+				const stillOpen =
+					submission.source === 'admin'
+						? canAdmitGuest(event?.status ?? 'ended', submission.admission)
+						: premarketLocation
+							? new PremarketWindow(event!, premarketLocation).isOpenAt(new Date())
+							: new SessionTimeline(event!).acceptsSelfRegistration(new Date());
+
+				if (!event || !stillOpen) {
 					throw new Error('INVALID_REGISTRATION_STATE');
 				}
 
@@ -397,51 +437,78 @@ export async function registerGuest(
 						? await placeInLine(tx, submission.marketEventId!, submission.queuePlacement)
 						: null;
 				const number = slot ? QueueNumber.of(slot) : null;
-				const [visit] = existingVisit
+				const household = {
+					answers: submission.answers,
+					ageRange: submission.ageRange,
+					householdSize: submission.householdSize,
+					childrenCount: submission.childrenCount,
+					seniorsCount: submission.seniorsCount,
+					normalizedPhone: normalizePhone(submission.phone),
+				};
+				const joinsPremarket =
+					isPremarket &&
+					existingVisit !== null &&
+					premarketConvertible.includes(existingVisit.status);
+				const [visit] = joinsPremarket
 					? await tx
 							.update(visits)
 							.set({
+								...household,
 								accessTokenHash: visitCredential.tokenHash,
-								answers: submission.answers,
-								ageRange: submission.ageRange,
-								householdSize: submission.householdSize,
-								childrenCount: submission.childrenCount,
-								seniorsCount: submission.seniorsCount,
-								normalizedPhone: normalizePhone(submission.phone),
-								status: existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
+								track: 'premarket',
+								status: 'served',
+								servedAt: new Date(),
+								// A worker may have placed the guest in line before the draw; a premarket place
+								// takes no number and no place in it.
+								queuePosition: null,
+								priorityNumber: null,
+								queueFront: false,
+								queueOrder: null,
+								lotteryWeight: 1,
 							})
-							.where(eq(visits.id, existingVisit.id))
+							.where(eq(visits.id, existingVisit!.id))
 							.returning({ id: visits.id, status: visits.status })
-					: await tx
-							.insert(visits)
-							.values({
-								guestId: guest.id,
-								marketEventId: submission.marketEventId!,
-								status:
-									submission.source === 'admin'
-										? admissionVisitStatus(submission.admission)
-										: 'registered',
-								...slot,
-								answers: submission.answers,
-								source: submission.source,
-								accessTokenHash: visitCredential.tokenHash,
-								isFirstVisit,
-								ageRange: submission.ageRange,
-								householdSize: submission.householdSize,
-								childrenCount: submission.childrenCount,
-								seniorsCount: submission.seniorsCount,
-								normalizedPhone: normalizePhone(submission.phone),
-								// Only a guest actually entering the draw can carry anything but the default odds.
-								lotteryWeight:
-									submission.source === 'admin' && admissionTakesLotteryWeight(submission.admission)
-										? submission.lotteryWeight
-										: 1,
-							})
-							.returning({ id: visits.id, status: visits.status });
+					: existingVisit
+						? await tx
+								.update(visits)
+								.set({
+									...household,
+									accessTokenHash: visitCredential.tokenHash,
+									// Never touches `track`: a premarket visit stays one if its guest later enters the draw.
+									status:
+										existingVisit.status === 'cancelled' ? 'registered' : existingVisit.status,
+								})
+								.where(eq(visits.id, existingVisit.id))
+								.returning({ id: visits.id, status: visits.status })
+						: await tx
+								.insert(visits)
+								.values({
+									guestId: guest.id,
+									marketEventId: submission.marketEventId!,
+									status: admissionVisitStatus(admission),
+									track: admissionTrack(admission),
+									servedAt: isPremarket ? new Date() : null,
+									...slot,
+									...household,
+									source: submission.source,
+									accessTokenHash: visitCredential.tokenHash,
+									isFirstVisit,
+									// Only a guest actually entering the draw can carry anything but the default odds.
+									lotteryWeight:
+										submission.source === 'admin' &&
+										admissionTakesLotteryWeight(submission.admission)
+											? submission.lotteryWeight
+											: 1,
+								})
+								.returning({ id: visits.id, status: visits.status });
 
 				// A new visit starts its history; an existing one only gains an entry when a guest who
 				// had cancelled registers again. Updating the details of a live visit changes no status.
-				if (!existingVisit) {
+				if (joinsPremarket) {
+					await recordVisitEvents(tx, [
+						{ visitId: visit!.id, kind: 'registered', toStatus: 'served', actor },
+					]);
+				} else if (!existingVisit) {
 					await recordVisitEvents(tx, [
 						{
 							visitId: visit!.id,
@@ -479,9 +546,11 @@ export async function registerGuest(
 			ok: false,
 			status: 409,
 			error:
-				submission.source === 'self'
-					? 'Registration is not open.'
-					: 'That way of adding a guest is not available while the session is in this state.',
+				submission.source === 'admin'
+					? 'That way of adding a guest is not available while the session is in this state.'
+					: isPremarket
+						? 'The premarket is not open.'
+						: 'Registration is not open.',
 		};
 	}
 

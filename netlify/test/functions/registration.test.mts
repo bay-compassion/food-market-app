@@ -7,7 +7,13 @@ vi.mock('../../../db/index.mjs', () => ({ db }));
 import handler, { config } from '../../functions/registration.mjs';
 import { maxRequestBodyBytes } from '../../lib/http.mjs';
 
-const paths = ['/api/guest-information', '/api/lottery-registration', '/api/guest-claim'];
+const paths = [
+	'/api/guest-information',
+	'/api/lottery-registration',
+	'/api/guest-claim',
+	'/api/premarket-status',
+	'/api/premarket-registration',
+];
 const invalidBodyErrors: Record<string, unknown> = {
 	'/api/guest-information': { error: 'Please provide valid guest information.' },
 	// A registration says which fields are wrong, rather than only that something is.
@@ -16,6 +22,8 @@ const invalidBodyErrors: Record<string, unknown> = {
 		fields: expect.objectContaining({ firstName: 'required' }),
 	}),
 	'/api/guest-claim': { error: 'Please provide a valid code.' },
+	'/api/premarket-status': { error: 'Please provide a valid code.' },
+	'/api/premarket-registration': { error: 'Please provide a valid code.' },
 };
 
 afterEach(() => {

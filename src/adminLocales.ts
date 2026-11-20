@@ -164,6 +164,8 @@ export interface AdminTranslation {
 	admitProfileOnlyHelp: string;
 	admitToLottery: string;
 	admitToLotteryHelp: string;
+	admitToPremarket: string;
+	admitToPremarketHelp: string;
 	admitToQueue: string;
 	admitToQueueHelp: string;
 	/** One line under each screen's title saying what the screen is for. */
@@ -800,6 +802,9 @@ export const adminTranslations = {
 		admitToLottery: 'Enter the draw',
 		admitToLotteryHelp:
 			'The guest takes their chances in the lottery, the same as anyone who signed up on their own phone.',
+		admitToPremarket: 'Premarket volunteer',
+		admitToPremarketHelp:
+			'A volunteer shopping before the line opens. They skip the lottery, get no number, and take none of the session’s spots. Recorded as served now.',
 		admitToQueue: 'Give them a spot',
 		admitToQueueHelp:
 			'The guest skips the lottery and goes straight into the line. This uses one of the session’s spots.',

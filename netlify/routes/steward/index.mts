@@ -4,6 +4,8 @@ import { oddsReasons, oddsScopes, oddsWeights } from '../../../src/services/stew
 import { withAuth0, withPermission, workerActor, type AdminEnv } from '../../lib/http-auth.mjs';
 import { createRouter, jsonBody, jsonError, routeHandler } from '../../lib/http.mjs';
 import { getLogger } from '../../lib/logging.mjs';
+import { currentLocation } from '../../services/marketLocation.mjs';
+import { liveCodeAt, replaceCode } from '../../services/premarket-code.mjs';
 import { readStewardLedger, saveOddsChange } from '../../services/steward-ledger.mjs';
 
 const changeSchema = z.object({
@@ -48,6 +50,30 @@ stewardRoutes.post('/people/:id/odds', withPermission('manage:stewardship'), asy
 	});
 
 	return Response.json(result, { status: 201 });
+});
+
+// The printed premarket QR. Reading it is enough to reprint the poster; replacing it voids every copy.
+stewardRoutes.get('/premarket-code', async () => {
+	const location = await currentLocation();
+
+	return Response.json({ code: await liveCodeAt(location.id) });
+});
+
+stewardRoutes.post('/premarket-code', withPermission('manage:stewardship'), async (context) => {
+	const location = await currentLocation();
+	const actor = workerActor(context);
+	const code = await replaceCode(location.id, {
+		id: actor.kind === 'worker' ? actor.id : null,
+		name: actor.kind === 'worker' ? actor.name : null,
+	});
+
+	getLogger().info({
+		message: 'premarket_code.replaced',
+		locationId: location.id,
+		actor: context.get('actor'),
+	});
+
+	return Response.json({ code }, { status: 201 });
 });
 
 export const stewardApi = createRouter<AdminEnv>();

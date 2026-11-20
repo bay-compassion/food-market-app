@@ -21,6 +21,7 @@ import type {
 	VisitEventDetails,
 	VisitEventKind,
 } from '../src/services/visit-events.js';
+import type { VisitTrack } from '../src/services/visit-track.js';
 import type { VisitStatus } from '../src/services/visitStateMachine.js';
 
 /** Where a market happens. Its time zone is what every local date and time there is read in. */
@@ -36,6 +37,34 @@ export const marketLocations = pgTable('market_locations', {
  * A weekly schedule. It occurs on the weekday of `startsOn`, and only its next occurrence is ever
  * a session — see `RecurrencePattern` in `src/models/recurrence-pattern.ts`.
  */
+/**
+ * The code a location's printed premarket QR carries. Scanning it lets a volunteer register for the
+ * premarket. Stored as written, unlike claim codes, so a steward can reprint the poster: it is
+ * posted on paper where volunteers gather, and replacing it is what voids a leaked copy. A
+ * replaced code is kept, with who replaced it and when; a location has at most one live code.
+ */
+export const premarketCodes = pgTable(
+	'premarket_codes',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		locationId: uuid('location_id')
+			.notNull()
+			.references(() => marketLocations.id),
+		code: text('code').notNull(),
+		/** The steward's Auth0 subject and name, as their sign-in gave it at the time. */
+		createdById: text('created_by_id'),
+		createdByName: text('created_by_name'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		replacedAt: timestamp('replaced_at', { withTimezone: true }),
+	},
+	(table) => [
+		uniqueIndex('premarket_codes_code_idx').on(table.code),
+		uniqueIndex('premarket_codes_one_live_per_location_idx')
+			.on(table.locationId)
+			.where(sql`replaced_at IS NULL`),
+	],
+);
+
 export const recurrencePatterns = pgTable(
 	'recurrence_patterns',
 	{
@@ -168,50 +197,59 @@ export const guestClaims = pgTable(
 	],
 );
 
-export const visits = pgTable('visits', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	marketEventId: uuid('market_event_id')
-		.notNull()
-		.references(() => marketEvents.id),
-	guestId: uuid('guest_id')
-		.notNull()
-		.references(() => guests.id),
-	status: text('status').$type<VisitStatus>().notNull().default('registered'),
-	/**
-	 * The guest's queue number in the main series — what the draw or a worker gave them, and what
-	 * their phone, text, and name tag show. Never changes once given; the line's order is
-	 * `queueFront` and `queueOrder`. Null before the draw, and for a guest with a `priorityNumber`.
-	 */
-	queuePosition: integer('queue_position'),
-	/** The number of a guest a worker put at the front ahead of others, shown as `P1`, `P2`, …. */
-	priorityNumber: integer('priority_number'),
-	/** Whether a worker put this guest at the front: called before everyone else, in `queueOrder`. */
-	queueFront: boolean('queue_front').notNull().default(false),
-	/** The order the line is called in, within `queueFront`. Null for a visit not in the line. */
-	queueOrder: integer('queue_order'),
-	/** Relative odds in the lottery: a visit weighted 2 is twice as likely to be drawn as a 1. */
-	lotteryWeight: integer('lottery_weight').notNull().default(1),
-	/** What the automatic rule would have given this visit. A preview: the draw never reads it. */
-	suggestedLotteryWeight: integer('suggested_lottery_weight'),
-	ageRange: text('age_range').$type<AgeRange>(),
-	householdSize: integer('household_size').notNull(),
-	/** Snapshot of the guest's counts at the time of this visit, for accurate per-visit reporting. */
-	childrenCount: integer('children_count').notNull().default(0),
-	seniorsCount: integer('seniors_count').notNull().default(0),
-	/** Snapshot used to reconcile renewed or duplicate guest records during later analysis. */
-	normalizedPhone: text('normalized_phone'),
-	calledAt: timestamp('called_at', { withTimezone: true }),
-	/** When service finished. Null for a visit never served, and for one recorded after the fact. */
-	servedAt: timestamp('served_at', { withTimezone: true }),
-	answers: jsonb('answers').$type<Record<string, string | number>>().notNull().default({}),
-	source: text('source').notNull().default('self'),
-	accessTokenHash: text('access_token_hash').notNull().unique(),
-	visitDate: date('visit_date')
-		.notNull()
-		.default(sql`CURRENT_DATE`),
-	isFirstVisit: boolean('is_first_visit').notNull().default(false),
-	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const visits = pgTable(
+	'visits',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		marketEventId: uuid('market_event_id')
+			.notNull()
+			.references(() => marketEvents.id),
+		guestId: uuid('guest_id')
+			.notNull()
+			.references(() => guests.id),
+		status: text('status').$type<VisitStatus>().notNull().default('registered'),
+		/**
+		 * How the guest takes part: through the lottery and the line, or in the premarket before it — a
+		 * volunteer who shops first, with a guaranteed place and no number.
+		 */
+		track: text('track').$type<VisitTrack>().notNull().default('lottery'),
+		/**
+		 * The guest's queue number in the main series — what the draw or a worker gave them, and what
+		 * their phone, text, and name tag show. Never changes once given; the line's order is
+		 * `queueFront` and `queueOrder`. Null before the draw, and for a guest with a `priorityNumber`.
+		 */
+		queuePosition: integer('queue_position'),
+		/** The number of a guest a worker put at the front ahead of others, shown as `P1`, `P2`, …. */
+		priorityNumber: integer('priority_number'),
+		/** Whether a worker put this guest at the front: called before everyone else, in `queueOrder`. */
+		queueFront: boolean('queue_front').notNull().default(false),
+		/** The order the line is called in, within `queueFront`. Null for a visit not in the line. */
+		queueOrder: integer('queue_order'),
+		/** Relative odds in the lottery: a visit weighted 2 is twice as likely to be drawn as a 1. */
+		lotteryWeight: integer('lottery_weight').notNull().default(1),
+		/** What the automatic rule would have given this visit. A preview: the draw never reads it. */
+		suggestedLotteryWeight: integer('suggested_lottery_weight'),
+		ageRange: text('age_range').$type<AgeRange>(),
+		householdSize: integer('household_size').notNull(),
+		/** Snapshot of the guest's counts at the time of this visit, for accurate per-visit reporting. */
+		childrenCount: integer('children_count').notNull().default(0),
+		seniorsCount: integer('seniors_count').notNull().default(0),
+		/** Snapshot used to reconcile renewed or duplicate guest records during later analysis. */
+		normalizedPhone: text('normalized_phone'),
+		calledAt: timestamp('called_at', { withTimezone: true }),
+		/** When service finished. Null for a visit never served, and for one recorded after the fact. */
+		servedAt: timestamp('served_at', { withTimezone: true }),
+		answers: jsonb('answers').$type<Record<string, string | number>>().notNull().default({}),
+		source: text('source').notNull().default('self'),
+		accessTokenHash: text('access_token_hash').notNull().unique(),
+		visitDate: date('visit_date')
+			.notNull()
+			.default(sql`CURRENT_DATE`),
+		isFirstVisit: boolean('is_first_visit').notNull().default(false),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [check('visits_track_check', sql`${table.track} IN ('lottery', 'premarket')`)],
+);
 
 /**
  * A visit's history: one row per status change, written in the same transaction as the change
