@@ -36,6 +36,8 @@ type SeededState = {
 	returningGuest?: boolean;
 	/** A phone that also kept the household from that visit, so nothing is left to fill in. */
 	savedHousehold?: boolean;
+	/** The returning guest's record already holds a race and ethnicity answer, so it is not asked. */
+	raceEthnicityAnswered?: boolean;
 };
 
 type RegistrationFormArgs = SeededState & {
@@ -48,7 +50,14 @@ type RegistrationFormArgs = SeededState & {
  * response goes through, so a story cannot drift into a shape the server could not produce.
  */
 function seededStore(
-	{ askExtraQuestions, submissionError, isSubmitting, returningGuest, savedHousehold }: SeededState,
+	{
+		askExtraQuestions,
+		submissionError,
+		isSubmitting,
+		returningGuest,
+		savedHousehold,
+		raceEthnicityAnswered,
+	}: SeededState,
 	locale: Locale,
 ) {
 	// What this phone remembers lives in memory, not the shared window's `localStorage`.
@@ -60,6 +69,7 @@ function seededStore(
 			firstName: 'Siobhan',
 			lastName: 'Kelly',
 			phone: '(510) 555-0123',
+			raceEthnicityAnswered: raceEthnicityAnswered ?? false,
 		});
 	}
 
@@ -203,7 +213,7 @@ export const JoinBeforeConfirming: Story = {
  * that stays true.
  */
 export const ReadyToJoin: Story = {
-	args: { returningGuest: true, savedHousehold: true },
+	args: { returningGuest: true, savedHousehold: true, raceEthnicityAnswered: true },
 	play: async ({ canvas, canvasElement }) => {
 		const { savedHousehold } = translations.en.guestView.forms;
 
@@ -224,7 +234,7 @@ export const ReadyToJoin: Story = {
  * "Update" puts it in the form and confirms the household, so the pinned bar is ready.
  */
 export const ChangeSavedHousehold: Story = {
-	args: { returningGuest: true, savedHousehold: true },
+	args: { returningGuest: true, savedHousehold: true, raceEthnicityAnswered: true },
 	play: async ({ canvas, canvasElement }) => {
 		const { savedHousehold } = translations.en.guestView.forms;
 		const page = within(document.body);
@@ -285,6 +295,35 @@ export const ReturningGuestWithQuestions: Story = {
 		await expect(steps).toHaveTextContent(joinSteps.householdConfirmed);
 		await expect(steps).toHaveTextContent(joinSteps.answerQuestions);
 		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-awaiting');
+	},
+};
+
+/**
+ * A returning guest not yet asked how they describe themselves: confirming the household leaves the
+ * question to answer, and "Prefer not to answer" settles it as well as any identity.
+ */
+export const ReturningGuestNotYetAsked: Story = {
+	args: { returningGuest: true, savedHousehold: true },
+	play: async ({ canvas, canvasElement }) => {
+		const { savedHousehold, joinSteps, raceEthnicity } = translations.en.guestView.forms;
+
+		await userEvent.click(canvas.getByRole('button', { name: savedHousehold.confirm }));
+
+		const steps = canvas.getByRole('list', { name: joinSteps.label });
+
+		await expect(steps).toHaveTextContent(joinSteps.answerQuestions);
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-awaiting');
+
+		const declined = canvas.getByRole('checkbox', {
+			name: raceEthnicity.options.prefer_not_to_answer,
+		});
+
+		await userEvent.click(declined);
+
+		// Ready, so the bar puts away its checklist.
+		await expect(declined).toBeChecked();
+		await expect(canvasElement.querySelector('.submit-bar')).toHaveAttribute('data-ready');
+		await expect(canvas.queryByRole('list', { name: joinSteps.label })).toBeNull();
 	},
 };
 

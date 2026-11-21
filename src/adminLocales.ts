@@ -1258,7 +1258,7 @@ export const adminTranslations = {
 			'people-served':
 				'Service totals include count-only households and premarket volunteers, each with its own subtotal. People served sums household sizes at every shopping visit, including repeats. Unique guests and monthly unique household members cover identified visits only; count-only households cannot be deduplicated.',
 			'guest-demographics':
-				'Age, household size, and language of identified guests served in the period, each guest counted once. Excludes count-only households.',
+				'Age, household size, language, and race and ethnicity of identified guests served in the period, each guest counted once. Race and ethnicity counts each identity alone or in combination, so its rows add up to more than the guests served. Excludes count-only households.',
 			'lottery-outcomes':
 				'How often guests at each weighting were placed in the line. Covers guests who signed up themselves and were entered in a draw.',
 			'service-timing':

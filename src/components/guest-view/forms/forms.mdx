@@ -2,6 +2,7 @@ import { Meta, Story } from '@storybook/addon-docs/blocks';
 
 import * as LotteryForm from './GuestLotteryForm.stories.tsx';
 import * as CombinedForm from './GuestCombinedForm.stories.tsx';
+import * as RaceEthnicity from './RaceEthnicityFields.stories.tsx';
 
 <Meta title="Guest Review/Forms" tags={['review']} />
 
@@ -26,3 +27,16 @@ their name and enters only their household details. The app asks for those detai
 because they describe that day's visit.
 
 <Story of={LotteryForm.Default} />
+
+## Describe yourself
+
+Under the household details, a guest is asked how they describe their race and ethnicity. The
+question and its seven categories follow the federal standard, so the market's counts can be
+compared with Census figures when it applies for grants. A guest can tick more than one, describe
+an identity in their own words, or prefer not to answer. The question is optional.
+
+It is asked only until the guest answers. The phone remembers that the guest answered, but not
+the answer, so it never appears on screen at a later market. Reports show only totals, never one
+guest's answer.
+
+<Story of={RaceEthnicity.Default} />

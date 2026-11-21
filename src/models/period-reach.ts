@@ -1,4 +1,5 @@
 import type { GuestReconciliation } from './guest-reconciliation.ts';
+import { RaceEthnicity } from './race-ethnicity.ts';
 
 /** One served visit in the period, with what was true of the household at that visit. */
 export type ServedVisit = {
@@ -12,8 +13,13 @@ export type ServedVisit = {
 	locale: string;
 };
 
+/** A guest record's race and ethnicity answer, and when it was given. */
+export type RecordedRaceEthnicity = { codes: readonly string[]; answeredAt: Date };
+
+export type CompositionCategory = 'age' | 'household' | 'language' | 'race-ethnicity';
+
 export type CompositionRow = {
-	category: 'age' | 'household' | 'language';
+	category: CompositionCategory;
 	value: string;
 	people: number;
 };
@@ -37,6 +43,12 @@ export class PeriodReach {
 		/** The first session each guest record was ever served at. */
 		private readonly firstServed: ReadonlyMap<string, Date>,
 		private readonly period: { start: Date; end: Date },
+		/**
+		 * Answers by guest record. Race and ethnicity belongs to the person, not the visit, and a
+		 * worker-added duplicate record holds none, so each person takes their latest answer on any
+		 * of their records rather than the one their latest visit happened to use.
+		 */
+		private readonly raceEthnicity: ReadonlyMap<string, RecordedRaceEthnicity> = new Map(),
 	) {
 		this.latestByPerson = PeriodReach.latestBy(visits, (id) => reconciliation.personOf(id));
 		this.latestByHousehold = PeriodReach.latestBy(visits, (id) => reconciliation.householdOf(id));
@@ -73,9 +85,15 @@ export class PeriodReach {
 		};
 	}
 
+	/**
+	 * Race and ethnicity rows count each identity "alone or in combination", so a person who ticks
+	 * two counts toward both and toward `multiple`: that category's rows add up to more than the
+	 * number of people. Every other category counts each person once.
+	 */
 	get composition(): CompositionRow[] {
 		const counts = new Map<string, CompositionRow>();
-		const count = (category: CompositionRow['category'], value: string) => {
+		const answers = this.raceEthnicityByPerson;
+		const count = (category: CompositionCategory, value: string) => {
 			const key = `${category}\u0000${value}`;
 			const row = counts.get(key) ?? { category, value, people: 0 };
 
@@ -83,15 +101,35 @@ export class PeriodReach {
 			counts.set(key, row);
 		};
 
-		for (const visit of this.latestByPerson.values()) {
+		for (const [person, visit] of this.latestByPerson) {
 			count('age', visit.ageRange ?? 'unknown');
 			count('household', PeriodReach.householdBand(visit.householdSize));
 			count('language', visit.locale);
+
+			for (const value of RaceEthnicity.reportValues(answers.get(person)?.codes ?? null)) {
+				count('race-ethnicity', value);
+			}
 		}
 
 		return [...counts.values()].sort(
 			(a, b) => a.category.localeCompare(b.category) || a.value.localeCompare(b.value),
 		);
+	}
+
+	/** Each person's latest answer across every record reconciled to them. */
+	private get raceEthnicityByPerson(): Map<string, RecordedRaceEthnicity> {
+		const latest = new Map<string, RecordedRaceEthnicity>();
+
+		for (const [guestId, answer] of this.raceEthnicity) {
+			const person = this.reconciliation.personOf(guestId);
+			const current = latest.get(person);
+
+			if (!current || answer.answeredAt > current.answeredAt) {
+				latest.set(person, answer);
+			}
+		}
+
+		return latest;
 	}
 
 	private get firstTimePeople(): number {

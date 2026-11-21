@@ -14,6 +14,11 @@ import {
 	uuid,
 } from 'drizzle-orm/pg-core';
 
+import {
+	RaceEthnicity,
+	raceEthnicityCodes,
+	type RaceEthnicityCode,
+} from '../src/models/race-ethnicity.js';
 import type { AgeRange } from '../src/services/ageRanges.js';
 import type { SessionStatus } from '../src/services/sessionStateMachine.js';
 import type {
@@ -132,12 +137,31 @@ export const guests = pgTable(
 		/** Hash of the browser-local credential. Null for admin-created and earlier guests. */
 		deviceTokenHash: text('device_token_hash'),
 		locale: text('locale').notNull(),
+		/**
+		 * How the guest describes themselves, in SPD 15 codes; null when never asked. Identity, not a
+		 * per-visit snapshot, so it is asked once. Never reported except as aggregate counts.
+		 */
+		raceEthnicity: text('race_ethnicity').$type<RaceEthnicityCode>().array(),
+		/** The guest's own words for `another`. Stays in this table: no report or export reads it. */
+		raceEthnicityOther: text('race_ethnicity_other'),
+		/** When the guest last answered, so reports take a person's latest answer across records. */
+		raceEthnicityAnsweredAt: timestamp('race_ethnicity_answered_at', { withTimezone: true }),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		// `age_range`, `household_size`, `children_count`, and `seniors_count` still exist as physical
 		// columns pending a later backfill-then-drop follow-up — household composition now lives only
 		// on `visits`, snapshotted per visit rather than carried on the guest's identity.
 	},
-	(table) => [uniqueIndex('guests_device_token_hash_idx').on(table.deviceTokenHash)],
+	(table) => [
+		uniqueIndex('guests_device_token_hash_idx').on(table.deviceTokenHash),
+		check(
+			'guests_race_ethnicity_check',
+			sql`${table.raceEthnicity} <@ ARRAY[${sql.raw(raceEthnicityCodes.map((code) => `'${code}'`).join(', '))}]::text[]`,
+		),
+		check(
+			'guests_race_ethnicity_other_check',
+			sql`char_length(${table.raceEthnicityOther}) <= ${sql.raw(String(RaceEthnicity.otherTextMaxLength))}`,
+		),
+	],
 );
 
 /**

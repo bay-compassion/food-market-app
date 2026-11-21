@@ -16,6 +16,16 @@ import { StorageKey, StorageService } from '../services/storage.service.ts';
 export type GuestIdentity = Pick<GuestRegistrationInput, 'firstName' | 'lastName' | 'phone'> & {
 	/** Empty when the guest has not written one — and on a phone that saved its identity before. */
 	pronunciation: string;
+	/**
+	 * Whether the guest's record holds a race and ethnicity answer, as the server last said. The
+	 * answer itself is never kept on the phone.
+	 */
+	raceEthnicityAnswered: boolean;
+};
+
+/** The identity fields a submission carries; the rest of `GuestIdentity` comes from the server. */
+type SubmittedIdentity = Pick<GuestIdentity, 'firstName' | 'lastName' | 'phone'> & {
+	pronunciation?: string;
 };
 
 export type GuestStoreOptions = {
@@ -246,10 +256,14 @@ export class GuestStore {
 	 */
 	adopt(
 		deviceToken: string,
-		identity: Omit<GuestIdentity, 'pronunciation'> & { pronunciation: string | null },
+		identity: Pick<GuestIdentity, 'firstName' | 'lastName' | 'phone'> & {
+			pronunciation: string | null;
+		},
 	): void {
+		// The claim does not say whether the record holds an answer, so the phone asks again. A
+		// fresh answer replaces the stored one, which is how any re-answer behaves.
 		this.saveIdentity(
-			{ deviceToken },
+			{ deviceToken, raceEthnicityAnswered: false },
 			{ ...identity, pronunciation: identity.pronunciation ?? '' },
 		);
 		// Consent belongs to a guest, so nothing the previous guest on this phone chose may show under
@@ -279,8 +293,8 @@ export class GuestStore {
 
 	/** Saves the credential a registration/sign-up response issued, and the identity it carried. */
 	private saveIdentity(
-		result: { deviceToken?: string },
-		input: Omit<GuestIdentity, 'pronunciation'> & { pronunciation?: string },
+		result: { deviceToken?: string; raceEthnicityAnswered?: boolean },
+		input: SubmittedIdentity,
 	): void {
 		if (result.deviceToken) {
 			this.storage?.set(StorageKey.GUEST_DEVICE_TOKEN, result.deviceToken);
@@ -294,6 +308,9 @@ export class GuestStore {
 				phone: input.phone,
 				// Kept as it was when this submission left it unchanged.
 				pronunciation: input.pronunciation ?? this._identity?.pronunciation ?? '',
+				// A sign-up does not say, so it keeps what the phone knew.
+				raceEthnicityAnswered:
+					result.raceEthnicityAnswered ?? this._identity?.raceEthnicityAnswered ?? false,
 			};
 			this.storage?.set(StorageKey.GUEST_IDENTITY, this._identity);
 		}
@@ -580,6 +597,9 @@ export class GuestStore {
 					'pronunciation' in identity && typeof identity.pronunciation === 'string'
 						? identity.pronunciation
 						: '',
+				// Absent on a phone that saved its identity before the question existed: still asked.
+				raceEthnicityAnswered:
+					'raceEthnicityAnswered' in identity && identity.raceEthnicityAnswered === true,
 			};
 		}
 

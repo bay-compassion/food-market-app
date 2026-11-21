@@ -12,6 +12,11 @@ import {
 } from '../../src/models/household-composition.js';
 import { PremarketWindow } from '../../src/models/premarket-window.js';
 import { QueueNumber } from '../../src/models/queue-number.js';
+import {
+	RaceEthnicity,
+	raceEthnicityCodes,
+	type RaceEthnicityIssue,
+} from '../../src/models/race-ethnicity.js';
 import { SessionTimeline } from '../../src/models/session-timeline.js';
 import { ageRanges } from '../../src/services/ageRanges.js';
 import {
@@ -87,6 +92,29 @@ function withHousehold<Output extends HouseholdCounts>(schema: z.ZodType<Output>
 		}));
 }
 
+/**
+ * How the guest describes themselves, checked by `RaceEthnicity` — the same rules the form applies.
+ * Absent, or nothing ticked, leaves what is stored alone: a phone sends it only until it is answered.
+ */
+const raceEthnicitySchema = z
+	.object({
+		codes: z.array(z.enum(raceEthnicityCodes)).max(raceEthnicityCodes.length * 2),
+		otherText: z.string().max(1000).nullish(),
+	})
+	.optional()
+	.superRefine((value, context) => {
+		const issue = value ? new RaceEthnicity(value.codes, value.otherText).issue : null;
+
+		if (issue) {
+			context.addIssue({ code: 'custom', path: ['otherText'], message: issue });
+		}
+	})
+	.transform((value) => {
+		const answer = value ? new RaceEthnicity(value.codes, value.otherText) : null;
+
+		return answer?.isAnswered ? answer.answer : undefined;
+	});
+
 /** A worker adding a guest from the admin console, which has no device credential to offer. */
 const adminSubmissionSchema = withHousehold(
 	submissionFields.extend({
@@ -106,6 +134,8 @@ const selfSubmissionSchema = withHousehold(
 			.optional()
 			.transform(() => 'self' as const),
 		deviceToken: deviceTokenSchema,
+		// Asked of the guest alone: a worker adding someone never answers this for them.
+		raceEthnicity: raceEthnicitySchema,
 	}),
 );
 
@@ -135,6 +165,8 @@ const fieldNames: Record<string, string> = {
 	seniorsCount: 'Number of seniors',
 	marketEventId: 'Market event',
 	answers: 'Answers',
+	'raceEthnicity.codes': 'Race and ethnicity',
+	'raceEthnicity.otherText': 'Some other race and/or ethnicity',
 	deviceToken: 'Device credential',
 };
 
@@ -152,6 +184,16 @@ const householdIssueText: Record<HouseholdIssue, (field: string, count: Househol
 		'no-adult': () =>
 			'A household must include at least one adult, since children cannot shop on their own.',
 	};
+
+const raceEthnicityIssueText: Record<RaceEthnicityIssue, string> = {
+	'other-text-required':
+		'Please describe your race and/or ethnicity, or untick "Some other race and/or ethnicity".',
+	'other-text-too-long': `Some other race and/or ethnicity must be ${RaceEthnicity.otherTextMaxLength} characters or fewer.`,
+};
+
+function isRaceEthnicityIssue(message: string): message is RaceEthnicityIssue {
+	return Object.hasOwn(raceEthnicityIssueText, message);
+}
 
 /** The message a field left out of the request is given, so it reads as missing, not mistyped. */
 const missingField = 'required';
@@ -179,6 +221,9 @@ export function describeSubmissionIssues(error: z.ZodError): SubmissionIssues {
 
 		if (isHouseholdCount(field) && isHouseholdIssue(issue.message)) {
 			sentences.push(householdIssueText[issue.message](name, field));
+			fields[field] ??= issue.message;
+		} else if (isRaceEthnicityIssue(issue.message)) {
+			sentences.push(raceEthnicityIssueText[issue.message]);
 			fields[field] ??= issue.message;
 		} else if (issue.message === missingField) {
 			sentences.push(`${name} is required.`);
@@ -220,6 +265,8 @@ export type RegisterGuestResult =
 				status: string;
 				visitToken?: string;
 				deviceToken?: string;
+				/** Whether the guest's record holds an answer, so their phone stops asking. */
+				raceEthnicityAnswered: boolean;
 			};
 	  }
 	| { ok: false; status: number; error: string };
@@ -550,6 +597,7 @@ export async function registerGuest(
 					status: visit!.status,
 					visitToken: submission.source === 'self' ? visitCredential.token : undefined,
 					deviceToken: deviceCredential?.token,
+					raceEthnicityAnswered: Boolean(guest.raceEthnicity?.length),
 				};
 			})
 			.catch((cause: unknown) => {

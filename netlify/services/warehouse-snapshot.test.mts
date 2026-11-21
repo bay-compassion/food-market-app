@@ -95,6 +95,11 @@ function queueRun() {
 		{ guestId: 'desk', first: saturday },
 		{ guestId: 'phone', first: saturday },
 	]);
+	// Race and ethnicity answers: the same person answered on both records, the phone's later.
+	queueResult([
+		{ guestId: 'desk', codes: ['asian'], answeredAt: new Date('2026-08-01T00:00:00.000Z') },
+		{ guestId: 'phone', codes: ['white'], answeredAt: new Date('2026-09-01T00:00:00.000Z') },
+	]);
 	queueResult([{ id: 'snapshot-2' }]);
 	queueResult([]);
 	queueResult([]);
@@ -153,6 +158,15 @@ describe('WarehouseSnapshotter.run', () => {
 			value: 'es',
 			people: 1,
 		});
+		// One person, described by their latest answer on either record.
+		expect(
+			insertedInto(periodComposition).filter(
+				(row: { snapshotId: string; category: string }) =>
+					row.snapshotId === 'snapshot-2' && row.category === 'race-ethnicity',
+			),
+		).toEqual([
+			{ snapshotId: 'snapshot-2', category: 'race-ethnicity', value: 'white', people: 1 },
+		]);
 	});
 
 	it('refuses to write a session whose report no longer has a column it maps', async () => {

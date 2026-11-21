@@ -9,6 +9,7 @@ import {
 	uuid,
 } from 'drizzle-orm/pg-core';
 
+import type { CompositionCategory } from '../src/models/period-reach.js';
 import type { SnapshotKind } from '../src/models/snapshot-schedule.js';
 
 /**
@@ -87,14 +88,18 @@ export const periodReach = warehouse.table('period_reach', {
 	firstTimePeople: integer('first_time_people').notNull(),
 });
 
-/** Who a period served, by age band, household size band, and language: one row per value. */
+/**
+ * Who a period served, by age band, household size band, language, and race and ethnicity: one row
+ * per value. Never the free-text self-description, which stays in the app's own tables.
+ */
 export const periodComposition = warehouse.table(
 	'period_composition',
 	{
 		snapshotId: uuid('snapshot_id')
 			.notNull()
 			.references(() => snapshots.id),
-		category: text('category').$type<'age' | 'household' | 'language'>().notNull(),
+		/** `race-ethnicity` counts each identity alone or in combination, so its rows sum past people. */
+		category: text('category').$type<CompositionCategory>().notNull(),
 		value: text('value').notNull(),
 		people: integer('people').notNull(),
 	},

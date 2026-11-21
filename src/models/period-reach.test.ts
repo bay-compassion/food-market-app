@@ -71,7 +71,48 @@ describe('PeriodReach', () => {
 			{ category: 'age', value: '45-59', people: 1 },
 			{ category: 'household', value: '6+', people: 1 },
 			{ category: 'language', value: 'es', people: 1 },
+			{ category: 'race-ethnicity', value: 'not_asked', people: 1 },
 		]);
+	});
+
+	it("takes a person's latest race and ethnicity answer on any of their records", () => {
+		// Arrange: the phone record was used most recently, but the desk record holds the newer answer.
+		const visits = [visit('desk', firstSession), visit('phone', secondSession)];
+		const answers = new Map([
+			['phone', { codes: ['asian'], answeredAt: new Date('2026-01-01T00:00:00.000Z') }],
+			[
+				'desk',
+				{ codes: ['asian', 'hispanic_latino'], answeredAt: new Date('2026-02-01T00:00:00.000Z') },
+			],
+		]);
+
+		// Act
+		const { composition } = new PeriodReach(visits, reconciliation, new Map(), march, answers);
+
+		// Assert
+		expect(composition.filter((row) => row.category === 'race-ethnicity')).toEqual([
+			{ category: 'race-ethnicity', value: 'asian', people: 1 },
+			{ category: 'race-ethnicity', value: 'hispanic_latino', people: 1 },
+			{ category: 'race-ethnicity', value: 'multiple', people: 1 },
+		]);
+	});
+
+	it('finds an answer on a record the person was not served with', () => {
+		// Arrange: only the worker-added desk record was served; the guest answered on their phone.
+		const visits = [visit('desk', firstSession)];
+		const answers = new Map([
+			['phone', { codes: ['prefer_not_to_answer'], answeredAt: firstSession }],
+		]);
+
+		// Act
+		const { composition } = new PeriodReach(visits, reconciliation, new Map(), march, answers);
+
+		// Assert
+		expect(composition).toContainEqual({
+			category: 'race-ethnicity',
+			value: 'prefer_not_to_answer',
+			people: 1,
+		});
 	});
 
 	it('counts a person as first-time only when no record of theirs was served earlier', () => {

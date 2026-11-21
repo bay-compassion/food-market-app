@@ -73,20 +73,22 @@ export const GuestJoinSteps = observer(function GuestJoinSteps({
 		return null;
 	}
 
+	// The race and ethnicity question sits with the session's in "Questions", so it is that step too.
+	const asksRaceEthnicity = registration.raceEthnicity.isAsked;
+	const questionsAnswered =
+		registration.hasAnsweredQuestions(questions) && registration.raceEthnicity.isSettled;
 	const steps = [
 		{
 			id: 'household',
 			done: registration.isHouseholdConfirmed,
 			label: registration.isHouseholdConfirmed ? copy.householdConfirmed : copy.confirmHousehold,
 		},
-		...(questions.length > 0
+		...(questions.length > 0 || asksRaceEthnicity
 			? [
 					{
 						id: 'questions',
-						done: registration.hasAnsweredQuestions(questions),
-						label: registration.hasAnsweredQuestions(questions)
-							? copy.questionsAnswered
-							: copy.answerQuestions,
+						done: questionsAnswered,
+						label: questionsAnswered ? copy.questionsAnswered : copy.answerQuestions,
 					},
 				]
 			: []),

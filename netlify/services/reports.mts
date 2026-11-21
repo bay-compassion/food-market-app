@@ -117,20 +117,51 @@ function peopleServed({ start, end }: ReportRange) {
  `;
 }
 
+/** A guest's name as one key, ignoring case and spacing — `GuestReconciliation.nameKey` in SQL. */
+const guestNameKey = sql.raw(
+	`lower(regexp_replace(trim(g.first_name || ' ' || g.last_name), '\\s+', ' ', 'g'))`,
+);
+
 /**
  * Who was served, in long form — one row per category and value, so age bands, household sizes,
- * and languages share a table instead of needing three reports. Each guest is counted once no
- * matter how many times they came, described by their latest served visit in the range.
+ * languages, and race and ethnicity share a table instead of needing four reports. Each guest
+ * record is counted once no matter how many times they came, described by their latest served
+ * visit in the range. A person with duplicate records counts once per record here; the
+ * warehouse's reconciled figures are the authoritative ones.
+ *
+ * Race and ethnicity belongs to the person, not the visit, and a worker-added duplicate record
+ * holds no answer, so each record takes the latest answer on any record with the same phone and
+ * name. Phone alone would not do: a household shares one, and one member's answer must never be
+ * reported as another's. Names match ignoring case and spacing but not accents, so a near-miss
+ * reads as not asked rather than borrowing someone's answer. Its
+ * identities count "alone or in combination" — a person who ticks two counts toward both and toward
+ * `multiple` — so that category's rows add up to more than its guests, and its share is of guests,
+ * not of rows. The self-description is never read here.
  */
 function guestDemographics({ start, end }: ReportRange) {
 	return sql`
 		WITH served_guests AS (
-			SELECT DISTINCT ON (g.id) g.id, v.age_range, v.household_size, g.locale
+			SELECT DISTINCT ON (g.id) g.id, v.age_range, v.household_size, g.locale, g.normalized_phone,
+				${guestNameKey} AS name_key
 			FROM market_events e
 			JOIN visits v ON v.market_event_id = e.id AND v.status = 'served'
 			JOIN guests g ON g.id = v.guest_id
 			WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}
 			ORDER BY g.id, e.registration_opens_at DESC
+		),
+		race_answers AS (
+			SELECT DISTINCT ON (g.normalized_phone, ${guestNameKey})
+				g.normalized_phone, ${guestNameKey} AS name_key, g.race_ethnicity
+			FROM guests g
+			WHERE g.race_ethnicity IS NOT NULL
+			ORDER BY g.normalized_phone, ${guestNameKey}, g.race_ethnicity_answered_at DESC NULLS LAST
+		),
+		served_race AS (
+			SELECT a.race_ethnicity AS codes,
+				coalesce('prefer_not_to_answer' = ANY (a.race_ethnicity), false) AS declined
+			FROM served_guests s
+			LEFT JOIN race_answers a
+				ON a.normalized_phone = s.normalized_phone AND a.name_key = s.name_key
 		),
 		facts AS (
 			SELECT 'age' AS category, age_range AS value FROM served_guests
@@ -143,12 +174,21 @@ function guestDemographics({ start, end }: ReportRange) {
 			END FROM served_guests
 			UNION ALL
 			SELECT 'language', CASE locale ${languageLabel} ELSE locale END FROM served_guests
+			UNION ALL
+			SELECT 'race-ethnicity', 'not_asked' FROM served_race WHERE codes IS NULL
+			UNION ALL
+			SELECT 'race-ethnicity', 'prefer_not_to_answer' FROM served_race WHERE declined
+			UNION ALL
+			SELECT 'race-ethnicity', code FROM served_race, unnest(codes) AS code WHERE NOT declined
+			UNION ALL
+			SELECT 'race-ethnicity', 'multiple' FROM served_race
+			WHERE NOT declined AND cardinality(codes) > 1
 		)
 		SELECT
 			category AS "category",
 			value AS "value",
 			count(*)::int AS "guests",
-			round(count(*)::numeric * 100 / sum(count(*)) OVER (PARTITION BY category), 1)::float8
+			round(count(*)::numeric * 100 / nullif((SELECT count(*) FROM served_guests), 0), 1)::float8
 				AS "share"
 		FROM facts
 		GROUP BY category, value

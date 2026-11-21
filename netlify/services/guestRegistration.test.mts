@@ -245,6 +245,84 @@ describe('validateSubmission', () => {
 	});
 });
 
+describe('race and ethnicity', () => {
+	it('hands on a valid answer in federal order', () => {
+		// Arrange
+		const submission = selfSubmission({ raceEthnicity: { codes: ['white', 'asian'] } });
+
+		// Act
+		const result = parseSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({
+			raceEthnicity: { codes: ['asian', 'white'], otherText: null },
+		});
+	});
+
+	it('keeps only "prefer not to answer" when it is sent with other choices', () => {
+		// Arrange
+		const submission = selfSubmission({
+			raceEthnicity: { codes: ['white', 'prefer_not_to_answer'] },
+		});
+
+		// Act
+		const result = parseSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({
+			raceEthnicity: { codes: ['prefer_not_to_answer'], otherText: null },
+		});
+	});
+
+	it('names a missing self-description for "some other race and/or ethnicity"', () => {
+		// Arrange
+		const submission = selfSubmission({ raceEthnicity: { codes: ['another'], otherText: ' ' } });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result).toMatchObject({
+			success: false,
+			fields: { 'raceEthnicity.otherText': 'other-text-required' },
+		});
+	});
+
+	it('refuses a code outside the federal list', () => {
+		// Arrange
+		const submission = selfSubmission({ raceEthnicity: { codes: ['martian'] } });
+
+		// Act
+		const result = validateSubmission(submission);
+
+		// Assert
+		expect(result.success).toBe(false);
+	});
+
+	it('treats nothing ticked as no answer, leaving what is stored alone', () => {
+		// Arrange
+		const submission = selfSubmission({ raceEthnicity: { codes: [] } });
+
+		// Act
+		const result = parseSubmission(submission);
+
+		// Assert
+		expect(result).not.toBeNull();
+		expect(result).not.toHaveProperty('raceEthnicity.codes');
+	});
+
+	it("ignores an answer on a worker's submission", () => {
+		// Arrange
+		const submission = selfSubmission({ source: 'admin', raceEthnicity: { codes: ['asian'] } });
+
+		// Act
+		const result = parseSubmission(submission);
+
+		// Assert
+		expect(result).not.toHaveProperty('raceEthnicity');
+	});
+});
+
 describe('registerGuest eligibility', () => {
 	it('rejects an admin submission with no market event configured', async () => {
 		const submission = parseSubmission(selfSubmission({ source: 'admin', marketEventId: null }))!;
@@ -530,6 +608,51 @@ describe('registerGuest happy paths', () => {
 		expect(insertedGuest()?.deviceTokenHash).toBeTruthy();
 		expect(insertedGuest()?.deviceTokenHash).not.toBe(deviceToken);
 		expect(insertedVisit()?.normalizedPhone).toBe('+15551234567');
+	});
+
+	it("saves a new guest's answer and tells their phone it was answered", async () => {
+		// Arrange
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([openEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari', raceEthnicity: ['another'] }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
+		const submission = parseSubmission(
+			selfSubmission({ raceEthnicity: { codes: ['another'], otherText: ' Cape Verdean ' } }),
+		)!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, body: { raceEthnicityAnswered: true } });
+		expect(insertedGuest()).toMatchObject({
+			raceEthnicity: ['another'],
+			raceEthnicityOther: 'Cape Verdean',
+		});
+		// Identity, not a per-visit snapshot.
+		expect(insertedVisit()).not.toHaveProperty('raceEthnicity');
+	});
+
+	it('leaves a stored answer alone when the phone sends none', async () => {
+		// Arrange
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+		queueResult([]); // no visit to this session yet
+		queueResult([{ id: 'visit-0' }]); // an earlier visit
+		queueResult([openEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari', raceEthnicity: ['white'] }]); // update guest
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // insert visits
+		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, body: { raceEthnicityAnswered: true } });
+		expect(updatedGuest()?.raceEthnicity).toBeUndefined();
+		expect(updatedGuest()?.raceEthnicityOther).toBeUndefined();
 	});
 
 	it('replaces an unrecognized device token while creating a redundant guest', async () => {

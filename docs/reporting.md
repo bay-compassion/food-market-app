@@ -57,6 +57,10 @@ Definitions worth being precise about, because grant reports usually are:
   them out, because they are never called. The visit export marks them in `visit_track`.
 - **Who was served** counts each guest once for the whole period, however many sessions they
   attended, by the age band and household size from their latest served visit in the period.
+  Race and ethnicity comes from the guest's latest answer on any record that shares their phone,
+  since a worker-added record holds none. Each identity counts alone or in combination, so its rows
+  add up to more than the guests served, and its share is of guests. `not_asked` is a guest with no
+  answer on any record. The free-text self-description is never reported.
 - **Lottery outcomes** only includes visits that actually went through a draw, whoever added them.
   A guest a worker placed straight into the line never entered the lottery, so counting them would
   report a placement rate the draw had nothing to do with. Visits still `registered` are excluded

@@ -30,7 +30,7 @@ export const GuestCombinedForm = observer(function GuestCombinedForm() {
 			onSubmit={submit}
 			// The form runs to more than a screen on a phone, which left "Join the lottery" out of sight.
 			stickySubmit
-			ready={registration.isReadyToSubmit(registrationQuestions)}
+			ready={registration.isReadyToSubmit(registrationQuestions, { asksRaceEthnicity: true })}
 			progress={<GuestJoinSteps questions={registrationQuestions} />}
 		>
 			{/* A returning guest's name and phone are saved and shown above; they are not asked again,
