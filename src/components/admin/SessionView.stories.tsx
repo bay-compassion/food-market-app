@@ -5,6 +5,7 @@ import { expect, fn, within } from 'storybook/test';
 import { adminTranslations } from '../../adminLocales';
 import { guestAdmissions } from '../../services/guestAdmission';
 import type { Permission } from '../../services/permissions';
+import { premarketPosterPath } from '../../services/premarket';
 import { SessionStatusEnum } from '../../services/sessionStateMachine';
 import type { VisitStatus } from '../../services/visitStateMachine';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
@@ -286,6 +287,10 @@ export const PremarketCheckIn: Story = {
 		await expect((link as HTMLInputElement).value).toMatch(/\/premarket$/);
 		await userEvent.click(canvas.getByText(t.today.showPremarketCode));
 		await expect(canvas.getByRole('img', { name: t.today.premarketCode })).toBeVisible();
+		await expect(canvas.getByRole('link', { name: t.today.printPremarketCode })).toHaveAttribute(
+			'href',
+			premarketPosterPath,
+		);
 	},
 };
 

@@ -1,3 +1,9 @@
+/**
+ * The premarket's printable poster. It sits under `/admin` because only a signed-in worker should
+ * be handed the code to print, and `App` hides the bar there when printing, as on `/qr-code`.
+ */
+export const premarketPosterPath = '/admin/premarket-code';
+
 /** The address volunteers open — from the QR code or a shared link — to check in for the premarket. */
 export function premarketUrl(origin: string): string {
 	return `${origin}/premarket`;

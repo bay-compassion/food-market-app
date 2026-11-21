@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import { useId } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import { premarketUrl } from '../../services/premarket';
+import { premarketPosterPath, premarketUrl } from '../../services/premarket';
 import { createQrCodeSvg } from '../../services/qrCode';
 import { useRootStore } from '../../stores/react/store-context';
 import { TodaySection } from './today-section.styles';
@@ -23,6 +23,10 @@ const Code = styled.details`
 		border: 1px solid var(--color-border-soft);
 		border-radius: var(--radius-md);
 		background: white;
+	}
+
+	.qr + a {
+		margin-top: 10px;
 	}
 
 	.qr svg {
@@ -50,8 +54,8 @@ const Link = styled.div`
 `;
 
 /**
- * The premarket on the Today screen: the QR code volunteers scan to check in, and its link to copy
- * and share. The address is the same every week, so a printed copy keeps working.
+ * The premarket on the Today screen: the QR code volunteers scan to check in, a way to its printable
+ * poster, and its link to copy and share. The address is the same every week, so a printed copy keeps working.
  */
 export function TodayPremarket() {
 	const t = adminTranslations.en.today;
@@ -83,6 +87,10 @@ export function TodayPremarket() {
 					aria-label={t.premarketCode}
 					dangerouslySetInnerHTML={{ __html: createQrCodeSvg(link) }}
 				/>
+				{/* A plain link: the dashboard renders outside any router (see `AdminDashboard`). */}
+				<Button href={premarketPosterPath} variant="outlined">
+					{t.printPremarketCode}
+				</Button>
 			</Code>
 			<Link>
 				<input

@@ -8,6 +8,7 @@ import { AppBar } from './components/ui/app-bar/AppBar';
 import { ConfirmationDrawer } from './components/ui/ConfirmationDrawer';
 import { NotificationToasts } from './components/ui/NotificationToasts';
 import { isAdminPath } from './services/admin-views';
+import { premarketPosterPath } from './services/premarket';
 import { useRootStore } from './stores/react/store-context';
 import { useTranslation } from './stores/react/use-translation';
 
@@ -25,10 +26,11 @@ export const App = observer(function App() {
 	const { translations, previewName } = useRootStore();
 	const { error } = useAuth0();
 	const { pathname } = useLocation();
-	const isQrCode = pathname === '/qr-code';
+	// A poster prints as the poster alone, without the bar above it.
+	const isQrPoster = pathname === '/qr-code' || pathname === premarketPosterPath;
 
 	return (
-		<main className={`app-shell${isQrCode ? ' app-shell--print-qr' : ''}`} dir={translations.dir}>
+		<main className={`app-shell${isQrPoster ? ' app-shell--print-qr' : ''}`} dir={translations.dir}>
 			{previewName ? (
 				<Suspense>
 					<DemoPreviewBanner />
