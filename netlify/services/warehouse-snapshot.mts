@@ -1,4 +1,4 @@
-import { and, eq, gte, lt, min } from 'drizzle-orm';
+import { and, eq, gte, isNotNull, lt, min } from 'drizzle-orm';
 
 import type { db as appDb } from '../../db/index.mjs';
 import { guests, marketEvents, marketLocations, visits } from '../../db/schema.mjs';
@@ -10,7 +10,7 @@ import {
 	snapshots,
 } from '../../db/warehouse-schema.mjs';
 import { GuestReconciliation } from '../../src/models/guest-reconciliation.js';
-import { PeriodReach } from '../../src/models/period-reach.js';
+import { PeriodReach, type RecordedRaceEthnicity } from '../../src/models/period-reach.js';
 import { SnapshotSchedule, type DueSnapshot } from '../../src/models/snapshot-schedule.js';
 import type { ReportRow } from '../../src/services/reports.js';
 import { getLogger } from '../lib/logging.mjs';
@@ -34,7 +34,12 @@ type Database = typeof appDb;
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 /** Operational facts shared by every period snapshot in one run, loaded once and only if needed. */
-type GuestHistory = { reconciliation: GuestReconciliation; firstServed: Map<string, Date> };
+type GuestHistory = {
+	reconciliation: GuestReconciliation;
+	firstServed: Map<string, Date>;
+	/** Each guest record's race and ethnicity answer: codes only, never the self-description. */
+	raceEthnicity: Map<string, RecordedRaceEthnicity>;
+};
 
 /**
  * A report column, read strictly. A missing row is a real zero (service timing has no row for a
@@ -157,7 +162,13 @@ export class WarehouseSnapshotter {
 			placed: count(row, 'placed'),
 		}));
 		const history = await this.guestHistory();
-		const reach = new PeriodReach(served, history.reconciliation, history.firstServed, range);
+		const reach = new PeriodReach(
+			served,
+			history.reconciliation,
+			history.firstServed,
+			range,
+			history.raceEthnicity,
+		);
 		const { totals, composition } = reach;
 
 		return this.insert(snapshot, async (tx, snapshotId) => {
@@ -242,23 +253,39 @@ export class WarehouseSnapshotter {
 			return this.history;
 		}
 
-		const { identities, firsts } = await tracedQuery('warehouse.read_guest_history', async () => ({
-			identities: await readGuestIdentities(this.db, { realOnly: true }),
-			firsts: await this.db
-				.select({
-					guestId: visits.guestId,
-					first: min(marketEvents.registrationOpensAt),
-				})
-				.from(visits)
-				.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
-				.where(eq(visits.status, 'served'))
-				.groupBy(visits.guestId),
-		}));
+		const { identities, firsts, answers } = await tracedQuery(
+			'warehouse.read_guest_history',
+			async () => ({
+				identities: await readGuestIdentities(this.db, { realOnly: true }),
+				firsts: await this.db
+					.select({
+						guestId: visits.guestId,
+						first: min(marketEvents.registrationOpensAt),
+					})
+					.from(visits)
+					.innerJoin(marketEvents, eq(marketEvents.id, visits.marketEventId))
+					.where(eq(visits.status, 'served'))
+					.groupBy(visits.guestId),
+				answers: await this.db
+					.select({
+						guestId: guests.id,
+						codes: guests.raceEthnicity,
+						answeredAt: guests.raceEthnicityAnsweredAt,
+					})
+					.from(guests)
+					.where(and(eq(guests.fake, false), isNotNull(guests.raceEthnicity))),
+			}),
+		);
 
 		this.history = {
 			reconciliation: new GuestReconciliation(identities),
 			firstServed: new Map(
 				firsts.flatMap((row) => (row.first ? [[row.guestId, row.first] as const] : [])),
+			),
+			raceEthnicity: new Map(
+				answers.flatMap(({ guestId, codes, answeredAt }) =>
+					codes ? [[guestId, { codes, answeredAt: answeredAt ?? new Date(0) }] as const] : [],
+				),
 			),
 		};
 

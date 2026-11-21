@@ -32,7 +32,11 @@ export const PremarketForm = observer(function PremarketForm({
 		>
 			{/* A returning guest's saved name and phone are not asked again, as on the home screen. */}
 			{guest.identity === null || guest.hasIncompleteName ? <GuestInformationForm /> : null}
-			<GuestLotteryForm registrationQuestions={[]} copy={{ lotteryLegend: copy.householdLegend }} />
+			<GuestLotteryForm
+				registrationQuestions={[]}
+				copy={{ lotteryLegend: copy.householdLegend }}
+				asksRaceEthnicity={false}
+			/>
 		</GuestForm>
 	);
 });

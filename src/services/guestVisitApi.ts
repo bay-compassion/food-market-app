@@ -1,4 +1,5 @@
 import type { GuestFormState } from '../components/types';
+import type { RaceEthnicityAnswer } from '../models/race-ethnicity';
 import type { VisitStatus } from './visitStateMachine';
 
 /**
@@ -38,6 +39,8 @@ export type GuestRegistrationInput = Omit<GuestFormState, 'pronunciation'> &
 		locale: string;
 		marketEventId: string | null;
 		answers: Record<string, string | number>;
+		/** Sent only while the guest is asked, and only once they have ticked something. */
+		raceEthnicity?: RaceEthnicityAnswer;
 		source: 'self';
 		/** A volunteer checking in for the premarket rather than entering the lottery. The server chooses the session. */
 		premarket?: boolean;
@@ -53,6 +56,8 @@ export type GuestRegistrationResult = {
 	deviceToken?: string;
 	/** The session a premarket registration joined, which the phone did not name. */
 	marketEventId?: string;
+	/** Whether the guest's record holds a race and ethnicity answer, so this phone stops asking. */
+	raceEthnicityAnswered?: boolean;
 };
 
 /** Submits a guest's registration, for the lottery or the premarket. Throws if it is refused. */

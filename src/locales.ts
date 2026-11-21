@@ -1,6 +1,7 @@
 import { outdent } from 'outdent';
 
 import type { NextRegistrationPhrases } from './models/next-registration.ts';
+import type { RaceEthnicityCode } from './models/race-ethnicity.ts';
 
 /**
  * `label` is the language's own name, for a guest choosing it; `englishLabel` is what an
@@ -231,6 +232,20 @@ export interface GuestViewTranslations {
 		pronunciationCollapse: string;
 		lotteryLegend: string;
 		questionsLegend: string;
+		/**
+		 * OMB SPD 15's combined question, asked once. The wording follows the federal form so the counts
+		 * compare with Census figures. Says nothing about the lottery, which it never affects.
+		 */
+		raceEthnicity: {
+			legend: string;
+			/** Under the legend: the guest may tick more than one. */
+			instruction: string;
+			/** That answering is optional and private. */
+			privacy: string;
+			options: Record<RaceEthnicityCode, string>;
+			/** The text field under "Some other race and/or ethnicity". */
+			otherLabel: string;
+		};
 		/** Under the seniors count: the guest is one of them when they are 55 or older. */
 		seniorsHint: string;
 		/** Under the household count, when its children and seniors add up to more than it. */
@@ -811,6 +826,23 @@ export const translations = {
 				pronunciationCollapse: 'Hide how to say your name',
 				lotteryLegend: 'Lottery entry details',
 				questionsLegend: 'Questions',
+				raceEthnicity: {
+					legend: 'What is your race and/or ethnicity?',
+					instruction: 'Select all that apply.',
+					privacy: 'Optional. Your answer is kept private.',
+					options: {
+						american_indian_alaska_native: 'American Indian or Alaska Native',
+						asian: 'Asian',
+						black_african_american: 'Black or African American',
+						hispanic_latino: 'Hispanic or Latino',
+						middle_eastern_north_african: 'Middle Eastern or North African',
+						native_hawaiian_pacific_islander: 'Native Hawaiian or Pacific Islander',
+						white: 'White',
+						another: 'Some other race and/or ethnicity',
+						prefer_not_to_answer: 'Prefer not to answer',
+					},
+					otherLabel: 'Describe your race and/or ethnicity',
+				},
 				seniorsHint: 'Include yourself if you’re 55 or older',
 				exceedsHousehold:
 					'Children and seniors together can’t be more than the people in your household.',
@@ -832,7 +864,7 @@ export const translations = {
 					label: 'Before you join',
 					confirmHousehold: 'Confirm your household',
 					householdConfirmed: 'Household confirmed',
-					answerQuestions: 'Answer this week’s questions',
+					answerQuestions: 'Answer the questions',
 					questionsAnswered: 'Questions answered',
 				},
 				countErrors: {
@@ -1372,6 +1404,23 @@ export const translations = {
 				pronunciationCollapse: 'Ocultar cómo se pronuncia su nombre',
 				lotteryLegend: 'Datos de inscripción al sorteo',
 				questionsLegend: 'Preguntas',
+				raceEthnicity: {
+					legend: '¿Cuál es su raza y/o grupo étnico?',
+					instruction: 'Seleccione todas las que correspondan.',
+					privacy: 'Opcional. Su respuesta se mantiene privada.',
+					options: {
+						american_indian_alaska_native: 'Indígena americano o nativo de Alaska',
+						asian: 'Asiático',
+						black_african_american: 'Negro o afroamericano',
+						hispanic_latino: 'Hispano o latino',
+						middle_eastern_north_african: 'Del Medio Oriente o del Norte de África',
+						native_hawaiian_pacific_islander: 'Nativo de Hawái o de otras islas del Pacífico',
+						white: 'Blanco',
+						another: 'Alguna otra raza y/o grupo étnico',
+						prefer_not_to_answer: 'Prefiero no responder',
+					},
+					otherLabel: 'Describa su raza y/o grupo étnico',
+				},
 				seniorsHint: 'Inclúyase si tiene 55 años o más',
 				exceedsHousehold:
 					'Los niños y las personas mayores juntos no pueden ser más que las personas de su hogar.',
@@ -1393,7 +1442,7 @@ export const translations = {
 					label: 'Antes de unirse',
 					confirmHousehold: 'Confirme su hogar',
 					householdConfirmed: 'Hogar confirmado',
-					answerQuestions: 'Responda las preguntas de esta semana',
+					answerQuestions: 'Responda las preguntas',
 					questionsAnswered: 'Preguntas respondidas',
 				},
 				countErrors: {
@@ -1935,6 +1984,23 @@ export const translations = {
 				pronunciationCollapse: 'پنهان کردن تلفظ نام شما',
 				lotteryLegend: 'جزئیات ورود به قرعه‌کشی',
 				questionsLegend: 'پرسش‌ها',
+				raceEthnicity: {
+					legend: 'نژاد و/یا قومیت شما چیست؟',
+					instruction: 'همهٔ گزینه‌هایی را که درباره شما صدق می‌کند انتخاب کنید.',
+					privacy: 'اختیاری. پاسخ شما محرمانه می‌ماند.',
+					options: {
+						american_indian_alaska_native: 'سرخ‌پوست آمریکایی یا بومی آلاسکا',
+						asian: 'آسیایی',
+						black_african_american: 'سیاه‌پوست یا آمریکایی آفریقایی‌تبار',
+						hispanic_latino: 'هیسپانیک یا لاتین‌تبار',
+						middle_eastern_north_african: 'خاورمیانه‌ای یا شمال آفریقایی',
+						native_hawaiian_pacific_islander: 'بومی هاوایی یا جزایر اقیانوس آرام',
+						white: 'سفیدپوست',
+						another: 'نژاد و/یا قومیتی دیگر',
+						prefer_not_to_answer: 'ترجیح می‌دهم پاسخ ندهم',
+					},
+					otherLabel: 'نژاد و/یا قومیت خود را توصیف کنید',
+				},
 				seniorsHint: 'اگر ۵۵ سال یا بیشتر دارید، خودتان را هم حساب کنید',
 				exceedsHousehold: 'مجموع کودکان و سالمندان نمی‌تواند از تعداد افراد خانواده شما بیشتر باشد.',
 				noAdult: 'خانواده شما باید دست‌کم یک بزرگسال داشته باشد.',
@@ -1955,7 +2021,7 @@ export const translations = {
 					label: 'پیش از پیوستن',
 					confirmHousehold: 'اطلاعات خانوار را تأیید کنید',
 					householdConfirmed: 'اطلاعات خانوار تأیید شد',
-					answerQuestions: 'به پرسش‌های این هفته پاسخ دهید',
+					answerQuestions: 'به پرسش‌ها پاسخ دهید',
 					questionsAnswered: 'به پرسش‌ها پاسخ داده شد',
 				},
 				countErrors: {
@@ -2492,6 +2558,23 @@ export const translations = {
 				pronunciationCollapse: 'Itago kung paano bigkasin ang iyong pangalan',
 				lotteryLegend: 'Mga detalye ng pagsali sa lottery',
 				questionsLegend: 'Mga tanong',
+				raceEthnicity: {
+					legend: 'Ano ang iyong lahi at/o etnisidad?',
+					instruction: 'Piliin ang lahat ng naaangkop.',
+					privacy: 'Opsyonal. Pribado ang iyong sagot.',
+					options: {
+						american_indian_alaska_native: 'American Indian o Katutubo ng Alaska',
+						asian: 'Asyano',
+						black_african_american: 'Itim o African American',
+						hispanic_latino: 'Hispanic o Latino',
+						middle_eastern_north_african: 'Taga-Gitnang Silangan o Hilagang Africa',
+						native_hawaiian_pacific_islander: 'Katutubong Hawaiian o Pacific Islander',
+						white: 'Puti',
+						another: 'Ibang lahi at/o etnisidad',
+						prefer_not_to_answer: 'Mas gusto kong hindi sumagot',
+					},
+					otherLabel: 'Ilarawan ang iyong lahi at/o etnisidad',
+				},
 				seniorsHint: 'Isama ang sarili kung 55 taong gulang o higit pa',
 				exceedsHousehold:
 					'Hindi puwedeng mas marami ang mga bata at senior kaysa sa mga tao sa inyong sambahayan.',
@@ -2513,7 +2596,7 @@ export const translations = {
 					label: 'Bago sumali',
 					confirmHousehold: 'Kumpirmahin ang iyong sambahayan',
 					householdConfirmed: 'Nakumpirma ang sambahayan',
-					answerQuestions: 'Sagutin ang mga tanong ngayong linggo',
+					answerQuestions: 'Sagutin ang mga tanong',
 					questionsAnswered: 'Nasagot na ang mga tanong',
 				},
 				countErrors: {
@@ -3054,6 +3137,23 @@ export const translations = {
 				pronunciationCollapse: 'Ẩn cách đọc tên của bạn',
 				lotteryLegend: 'Thông tin tham gia xổ số',
 				questionsLegend: 'Câu hỏi',
+				raceEthnicity: {
+					legend: 'Chủng tộc và/hoặc sắc tộc của bạn là gì?',
+					instruction: 'Chọn tất cả các mục phù hợp.',
+					privacy: 'Không bắt buộc. Câu trả lời của bạn được giữ kín.',
+					options: {
+						american_indian_alaska_native: 'Người Mỹ Da Đỏ hoặc Thổ Dân Alaska',
+						asian: 'Người Châu Á',
+						black_african_american: 'Người Da Đen hoặc Người Mỹ Gốc Phi',
+						hispanic_latino: 'Người Gốc Tây Ban Nha hoặc La-tinh',
+						middle_eastern_north_african: 'Người Trung Đông hoặc Bắc Phi',
+						native_hawaiian_pacific_islander: 'Thổ Dân Hawaii hoặc Người Đảo Thái Bình Dương',
+						white: 'Người Da Trắng',
+						another: 'Chủng tộc và/hoặc sắc tộc khác',
+						prefer_not_to_answer: 'Tôi không muốn trả lời',
+					},
+					otherLabel: 'Mô tả chủng tộc và/hoặc sắc tộc của bạn',
+				},
 				seniorsHint: 'Bao gồm cả bạn nếu bạn từ 55 tuổi trở lên',
 				exceedsHousehold:
 					'Tổng số trẻ em và người cao tuổi không thể nhiều hơn số người trong hộ gia đình của bạn.',
@@ -3075,7 +3175,7 @@ export const translations = {
 					label: 'Trước khi tham gia',
 					confirmHousehold: 'Xác nhận hộ gia đình',
 					householdConfirmed: 'Đã xác nhận hộ gia đình',
-					answerQuestions: 'Trả lời câu hỏi tuần này',
+					answerQuestions: 'Trả lời các câu hỏi',
 					questionsAnswered: 'Đã trả lời câu hỏi',
 				},
 				countErrors: {
@@ -3603,6 +3703,23 @@ export const translations = {
 				pronunciationCollapse: '隐藏名字读音',
 				lotteryLegend: '抽签登记信息',
 				questionsLegend: '问题',
+				raceEthnicity: {
+					legend: '您的种族和/或族裔是什么？',
+					instruction: '请选择所有适用的选项。',
+					privacy: '选填。您的回答将予以保密。',
+					options: {
+						american_indian_alaska_native: '美洲印第安人或阿拉斯加原住民',
+						asian: '亚裔',
+						black_african_american: '黑人或非裔美国人',
+						hispanic_latino: '西班牙裔或拉丁裔',
+						middle_eastern_north_african: '中东或北非裔',
+						native_hawaiian_pacific_islander: '夏威夷原住民或太平洋岛民',
+						white: '白人',
+						another: '其他种族和/或族裔',
+						prefer_not_to_answer: '不愿回答',
+					},
+					otherLabel: '请描述您的种族和/或族裔',
+				},
 				seniorsHint: '如果您年满55岁，请包括您自己',
 				exceedsHousehold: '儿童和老年人的总数不能超过您家庭中的人数。',
 				noAdult: '您的家庭中必须至少有一名成年人。',
@@ -3623,7 +3740,7 @@ export const translations = {
 					label: '参加前',
 					confirmHousehold: '确认家庭信息',
 					householdConfirmed: '家庭信息已确认',
-					answerQuestions: '回答本周的问题',
+					answerQuestions: '回答问题',
 					questionsAnswered: '问题已回答',
 				},
 				countErrors: {
@@ -4135,6 +4252,23 @@ export const translations = {
 				pronunciationCollapse: 'إخفاء طريقة نطق اسمك',
 				lotteryLegend: 'تفاصيل التسجيل في القرعة',
 				questionsLegend: 'أسئلة',
+				raceEthnicity: {
+					legend: 'ما هو عرقك و/أو أصلك الإثني؟',
+					instruction: 'اختر كل ما ينطبق عليك.',
+					privacy: 'اختياري. تبقى إجابتك سرية.',
+					options: {
+						american_indian_alaska_native: 'هندي أمريكي أو من سكان ألاسكا الأصليين',
+						asian: 'آسيوي',
+						black_african_american: 'أسود أو أمريكي من أصل أفريقي',
+						hispanic_latino: 'من أصل إسباني أو لاتيني',
+						middle_eastern_north_african: 'من الشرق الأوسط أو شمال أفريقيا',
+						native_hawaiian_pacific_islander: 'من سكان هاواي الأصليين أو جزر المحيط الهادئ',
+						white: 'أبيض',
+						another: 'عرق و/أو أصل إثني آخر',
+						prefer_not_to_answer: 'أفضّل عدم الإجابة',
+					},
+					otherLabel: 'صِف عرقك و/أو أصلك الإثني',
+				},
 				seniorsHint: 'احسب نفسك إذا كان عمرك 55 عامًا أو أكثر',
 				exceedsHousehold: 'لا يمكن أن يزيد عدد الأطفال وكبار السن معًا عن عدد أفراد أسرتك.',
 				noAdult: 'يجب أن تضم أسرتك شخصًا بالغًا واحدًا على الأقل.',
@@ -4155,7 +4289,7 @@ export const translations = {
 					label: 'قبل الانضمام',
 					confirmHousehold: 'أكّد بيانات أسرتك',
 					householdConfirmed: 'تم تأكيد بيانات الأسرة',
-					answerQuestions: 'أجب عن أسئلة هذا الأسبوع',
+					answerQuestions: 'أجب عن الأسئلة',
 					questionsAnswered: 'تمت الإجابة عن الأسئلة',
 				},
 				countErrors: {
@@ -4687,6 +4821,23 @@ export const translations = {
 				pronunciationCollapse: 'Masquer la prononciation de votre nom',
 				lotteryLegend: 'Détails de l’inscription au tirage au sort',
 				questionsLegend: 'Questions',
+				raceEthnicity: {
+					legend: 'Quelle est votre race et/ou votre origine ethnique ?',
+					instruction: 'Cochez toutes les réponses qui s’appliquent.',
+					privacy: 'Facultatif. Votre réponse reste confidentielle.',
+					options: {
+						american_indian_alaska_native: 'Amérindien ou Autochtone de l’Alaska',
+						asian: 'Asiatique',
+						black_african_american: 'Noir ou Afro-Américain',
+						hispanic_latino: 'Hispanique ou Latino',
+						middle_eastern_north_african: 'Moyen-Oriental ou Nord-Africain',
+						native_hawaiian_pacific_islander: 'Autochtone d’Hawaï ou des îles du Pacifique',
+						white: 'Blanc',
+						another: 'Une autre race et/ou origine ethnique',
+						prefer_not_to_answer: 'Je préfère ne pas répondre',
+					},
+					otherLabel: 'Décrivez votre race et/ou votre origine ethnique',
+				},
 				seniorsHint: 'Comptez-vous si vous avez 55 ans ou plus',
 				exceedsHousehold:
 					'Les enfants et les seniors réunis ne peuvent pas dépasser le nombre de personnes de votre foyer.',
@@ -4708,7 +4859,7 @@ export const translations = {
 					label: 'Avant de participer',
 					confirmHousehold: 'Confirmez votre foyer',
 					householdConfirmed: 'Foyer confirmé',
-					answerQuestions: 'Répondez aux questions de la semaine',
+					answerQuestions: 'Répondez aux questions',
 					questionsAnswered: 'Questions complétées',
 				},
 				countErrors: {
@@ -5253,6 +5404,23 @@ export const translations = {
 				pronunciationCollapse: 'Ocultar a pronúncia do seu nome',
 				lotteryLegend: 'Dados da inscrição no sorteio',
 				questionsLegend: 'Perguntas',
+				raceEthnicity: {
+					legend: 'Qual é a sua raça e/ou etnia?',
+					instruction: 'Selecione todas as opções que se aplicam.',
+					privacy: 'Opcional. Sua resposta é mantida em sigilo.',
+					options: {
+						american_indian_alaska_native: 'Indígena americano ou nativo do Alasca',
+						asian: 'Asiático',
+						black_african_american: 'Negro ou afro-americano',
+						hispanic_latino: 'Hispânico ou latino',
+						middle_eastern_north_african: 'Do Oriente Médio ou do Norte da África',
+						native_hawaiian_pacific_islander: 'Nativo do Havaí ou das Ilhas do Pacífico',
+						white: 'Branco',
+						another: 'Outra raça e/ou etnia',
+						prefer_not_to_answer: 'Prefiro não responder',
+					},
+					otherLabel: 'Descreva sua raça e/ou etnia',
+				},
 				seniorsHint: 'Inclua você se tiver 55 anos ou mais',
 				exceedsHousehold:
 					'Crianças e idosos juntos não podem ser mais do que as pessoas da sua casa.',
@@ -5274,7 +5442,7 @@ export const translations = {
 					label: 'Antes de participar',
 					confirmHousehold: 'Confirme seu domicílio',
 					householdConfirmed: 'Domicílio confirmado',
-					answerQuestions: 'Responda às perguntas desta semana',
+					answerQuestions: 'Responda às perguntas',
 					questionsAnswered: 'Perguntas respondidas',
 				},
 				countErrors: {
@@ -5814,6 +5982,23 @@ export const translations = {
 				pronunciationCollapse: 'Скрыть произношение имени',
 				lotteryLegend: 'Данные для участия в жеребьёвке',
 				questionsLegend: 'Вопросы',
+				raceEthnicity: {
+					legend: 'Какова ваша раса и/или этническая принадлежность?',
+					instruction: 'Отметьте все подходящие варианты.',
+					privacy: 'Необязательно. Ваш ответ останется конфиденциальным.',
+					options: {
+						american_indian_alaska_native: 'Американский индеец или коренной житель Аляски',
+						asian: 'Азиат',
+						black_african_american: 'Чернокожий или афроамериканец',
+						hispanic_latino: 'Латиноамериканец или выходец из испаноязычных стран',
+						middle_eastern_north_african: 'Выходец с Ближнего Востока или из Северной Африки',
+						native_hawaiian_pacific_islander: 'Коренной гавайец или житель островов Тихого океана',
+						white: 'Белый',
+						another: 'Другая раса и/или этническая принадлежность',
+						prefer_not_to_answer: 'Предпочитаю не отвечать',
+					},
+					otherLabel: 'Опишите вашу расу и/или этническую принадлежность',
+				},
 				seniorsHint: 'Включите себя, если вам 55 лет или больше',
 				exceedsHousehold:
 					'Детей и пожилых людей вместе не может быть больше, чем людей в вашей семье.',
@@ -5835,7 +6020,7 @@ export const translations = {
 					label: 'Перед записью',
 					confirmHousehold: 'Подтвердите данные о семье',
 					householdConfirmed: 'Данные о семье подтверждены',
-					answerQuestions: 'Ответьте на вопросы этой недели',
+					answerQuestions: 'Ответьте на вопросы',
 					questionsAnswered: 'Ответы даны',
 				},
 				countErrors: {

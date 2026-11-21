@@ -355,6 +355,7 @@ describe('App', () => {
 			lastName: 'Lovelace',
 			phone: '(555) 123-4567',
 			pronunciation: '',
+			raceEthnicityAnswered: false,
 		});
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('Ada L');
 		expect(container.querySelector('.guest-identity')!.textContent).toContain('(555) 123-4567');

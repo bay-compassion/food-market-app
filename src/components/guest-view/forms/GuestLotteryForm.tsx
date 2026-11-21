@@ -8,6 +8,7 @@ import { useTranslation } from '../../../stores/react/use-translation';
 import { ChangeHouseholdDialog } from './ChangeHouseholdDialog';
 import { FormSection } from './FormSection';
 import { HouseholdFields } from './HouseholdFields';
+import { RaceEthnicityFields } from './RaceEthnicityFields';
 import { SavedHouseholdCard } from './SavedHouseholdCard';
 import { useGuestFormCopy } from './use-guest-form-copy';
 
@@ -17,6 +18,12 @@ export type GuestLotteryFormProps = {
 	registrationQuestions: SessionQuestion[];
 	/** Wording to use in place of the guest's own, for a worker filling it in for them. */
 	copy?: Partial<GuestFormCopy>;
+	/**
+	 * Whether to ask how the guest describes themselves (still only until their record holds an
+	 * answer). Off for a worker, who never answers it for someone, and for a volunteer's premarket
+	 * check-in, which is not a lottery entry.
+	 */
+	asksRaceEthnicity?: boolean;
 };
 
 /** The scale answers on offer, 1 through 10. */
@@ -32,6 +39,7 @@ const scaleValues = Array.from({ length: 10 }, (_, index) => index + 1);
 export const GuestLotteryForm = observer(function GuestLotteryForm({
 	registrationQuestions,
 	copy: override,
+	asksRaceEthnicity = true,
 }: GuestLotteryFormProps) {
 	const t = useTranslation();
 	const copy = useGuestFormCopy(override);
@@ -40,6 +48,7 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 	const showSavedHousehold =
 		registration.savedHouseholdReview === 'pending' ||
 		registration.savedHouseholdReview === 'confirmed';
+	const showRaceEthnicity = asksRaceEthnicity && registration.raceEthnicity.isAsked;
 
 	return (
 		<>
@@ -57,7 +66,7 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 					/>
 				)}
 			</FormSection>
-			{registrationQuestions.length > 0 ? (
+			{registrationQuestions.length > 0 || showRaceEthnicity ? (
 				<FormSection legend={t.guestView.forms.questionsLegend}>
 					{registrationQuestions.map((question) =>
 						question.type === 'scale' ? (
@@ -97,6 +106,7 @@ export const GuestLotteryForm = observer(function GuestLotteryForm({
 							/>
 						),
 					)}
+					{showRaceEthnicity ? <RaceEthnicityFields /> : null}
 				</FormSection>
 			) : null}
 		</>

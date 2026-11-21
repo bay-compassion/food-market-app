@@ -5,6 +5,7 @@ import { db } from '../../db/index.mjs';
 import { guests } from '../../db/schema.mjs';
 import { languages, type Locale } from '../../src/locales.js';
 import { GuestName } from '../../src/models/guest-name.js';
+import type { RaceEthnicityAnswer } from '../../src/models/race-ethnicity.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import { hashDeviceToken, issueDeviceToken, normalizePhone } from './guestCredentials.mjs';
 
@@ -115,7 +116,10 @@ export async function persistGuestInformation(
 		information: Pick<
 			GuestInformationSubmission,
 			'firstName' | 'lastName' | 'phone' | 'locale' | 'pronunciation'
-		>;
+		> & {
+			/** Absent leaves what is stored alone, as with `pronunciation`. */
+			raceEthnicity?: RaceEthnicityAnswer;
+		};
 		deviceTokenHash: string | null;
 	},
 ): Promise<typeof guests.$inferSelect> {
@@ -129,6 +133,9 @@ export async function persistGuestInformation(
 				normalizedPhone: normalizePhone(options.information.phone),
 				locale: options.information.locale,
 				pronunciation: options.information.pronunciation,
+				raceEthnicity: options.information.raceEthnicity?.codes,
+				raceEthnicityOther: options.information.raceEthnicity?.otherText,
+				raceEthnicityAnsweredAt: options.information.raceEthnicity ? new Date() : undefined,
 			})
 			.where(eq(guests.id, options.existingGuest.id))
 			.returning();
@@ -146,6 +153,9 @@ export async function persistGuestInformation(
 			deviceTokenHash: options.deviceTokenHash,
 			locale: options.information.locale,
 			pronunciation: options.information.pronunciation ?? null,
+			raceEthnicity: options.information.raceEthnicity?.codes ?? null,
+			raceEthnicityOther: options.information.raceEthnicity?.otherText ?? null,
+			raceEthnicityAnsweredAt: options.information.raceEthnicity ? new Date() : null,
 		})
 		.returning();
 

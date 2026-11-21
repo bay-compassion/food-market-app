@@ -132,7 +132,11 @@ const ManualGuestFields = observer(function ManualGuestFields({
 			<GuestInformationForm copy={t.manualGuestForm} />
 			{/* Household details belong to a visit, so saving details alone does not ask for them. */}
 			{admissionCreatesVisit(choice.admission) ? (
-				<GuestLotteryForm registrationQuestions={[]} copy={t.manualGuestForm} />
+				<GuestLotteryForm
+					registrationQuestions={[]}
+					copy={t.manualGuestForm}
+					asksRaceEthnicity={false}
+				/>
 			) : null}
 			<FormSection legend={t.admissionLegend}>
 				{admissions.length > 1 ? (

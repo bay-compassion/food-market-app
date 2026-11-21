@@ -130,6 +130,7 @@ describe('GuestStore', () => {
 			lastName: 'Guest',
 			phone: '555-123-4567',
 			pronunciation: '',
+			raceEthnicityAnswered: false,
 		});
 	});
 
@@ -151,6 +152,7 @@ describe('GuestStore', () => {
 			lastName: 'Guest',
 			phone: '555-123-4567',
 			pronunciation: '',
+			raceEthnicityAnswered: false,
 		});
 	});
 
@@ -183,6 +185,7 @@ describe('GuestStore', () => {
 			lastName: 'Guest',
 			phone: '555-000-0000',
 			pronunciation: 'AH-ree',
+			raceEthnicityAnswered: false,
 		});
 	});
 
@@ -200,7 +203,11 @@ describe('GuestStore', () => {
 		const store = new GuestStore({ storage, register });
 
 		// Saved before pronunciations existed, so it has none; that is not a corrupt identity.
-		expect(store.identity).toEqual({ ...savedIdentity, pronunciation: '' });
+		expect(store.identity).toEqual({
+			...savedIdentity,
+			pronunciation: '',
+			raceEthnicityAnswered: false,
+		});
 		expect(register).not.toHaveBeenCalled();
 	});
 
@@ -322,6 +329,7 @@ describe('GuestStore', () => {
 			lastName: 'Guest',
 			phone: '555-123-4567',
 			pronunciation: '',
+			raceEthnicityAnswered: false,
 		});
 	});
 
@@ -342,6 +350,7 @@ describe('GuestStore', () => {
 			lastName: 'Guest',
 			phone: '555-123-4567',
 			pronunciation: '',
+			raceEthnicityAnswered: false,
 		});
 	});
 
@@ -556,6 +565,7 @@ describe('GuestStore.adopt', () => {
 			lastName: 'Lovelace',
 			phone: '510-555-0123',
 			pronunciation: '',
+			raceEthnicityAnswered: false,
 		});
 	});
 });

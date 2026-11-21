@@ -100,7 +100,7 @@ Each run writes a **snapshot**: one row describing what was captured, plus the f
 | `snapshots`          | Snapshot                | Kind, period, when taken, code version, the snapshot it supersedes      |
 | `session_facts`      | Session                 | Date, location, capacity, sign-ups, served, no-shows, not placed, wait  |
 | `period_reach`       | Period                  | Sessions, visits served, unique people, unique households, first visits |
-| `period_composition` | Period, category, value | People served by age band, household size, and language                 |
+| `period_composition` | Period, category, value | People served by age band, household size, language, race and ethnicity |
 | `period_lottery`     | Period, lottery weight  | Entries and placements                                                  |
 
 **Periods.** Unique-people and composition counts cannot be added across months: someone who came in

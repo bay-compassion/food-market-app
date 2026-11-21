@@ -8,6 +8,7 @@ import { makeReactive } from '../services/make-reactive.ts';
 import { StorageKey, StorageService } from '../services/storage.service.ts';
 import type { GuestStore } from './guest.store.ts';
 import type { SessionQuestion } from './market-session.store.ts';
+import { RaceEthnicityEntryStore } from './race-ethnicity-entry.store.ts';
 
 export type RegistrationSubmitResult =
 	| { kind: 'signed-up' }
@@ -56,6 +57,8 @@ export class RegistrationStore {
 	savedHouseholdReview: SavedHouseholdReview = 'none';
 	/** The guest's changes to the saved household, while they make them; `null` otherwise. */
 	householdDraft: HouseholdFormValues | null = null;
+	/** How the guest describes themselves, asked until their record holds an answer. */
+	readonly raceEthnicity: RaceEthnicityEntryStore;
 	/** The pronunciation the form started from, to tell whether the guest changed it. */
 	private initialPronunciation = '';
 
@@ -66,9 +69,10 @@ export class RegistrationStore {
 		options: RegistrationStoreOptions = {},
 	) {
 		this.storage = options.storage === undefined ? new StorageService() : options.storage;
+		this.raceEthnicity = new RaceEthnicityEntryStore(guestStore);
 		this.guest = this.prefillGuest();
 
-		return makeReactive(this, { guestStore: false, storage: false });
+		return makeReactive(this, { guestStore: false, storage: false, raceEthnicity: false });
 	}
 
 	/**
@@ -182,12 +186,17 @@ export class RegistrationStore {
 	 * from last time, and answer this week's questions — optional ones too, since the cue is what
 	 * tells them to look. Leaving an optional one blank still lets them join.
 	 *
-	 * Takes the session's questions because they belong to the session, not to this form.
+	 * Takes the session's questions because they belong to the session, not to this form, and whether
+	 * the form asks the race and ethnicity question, which only a guest entering the lottery is.
 	 */
-	isReadyToSubmit(questions: readonly SessionQuestion[]): boolean {
+	isReadyToSubmit(
+		questions: readonly SessionQuestion[],
+		{ asksRaceEthnicity = false }: { asksRaceEthnicity?: boolean } = {},
+	): boolean {
 		const { phone, ageRange } = this.guest;
 
 		return (
+			(!asksRaceEthnicity || this.raceEthnicity.isSettled) &&
 			this.hasValidNames &&
 			phone.replace(/\D/g, '').length >= 10 &&
 			ageRange !== '' &&
@@ -221,6 +230,7 @@ export class RegistrationStore {
 		this.initialPronunciation = '';
 		this.savedHouseholdReview = 'none';
 		this.householdDraft = null;
+		this.raceEthnicity.reset();
 	}
 
 	/**
@@ -232,6 +242,7 @@ export class RegistrationStore {
 	resetToDeviceState(): void {
 		this.guest = this.prefillGuest();
 		this.registrationAnswers = {};
+		this.raceEthnicity.reset();
 	}
 
 	/** The answer to one of the session's configured registration questions. */
@@ -248,7 +259,14 @@ export class RegistrationStore {
 		options: { premarket?: boolean } = {},
 	): Promise<RegistrationSubmitResult> {
 		// Signing up early collects no household, so counts left over on this device must not block it.
-		if (!this.hasValidNames || (context === 'queue' && !this.household.isValid)) {
+		// Only a guest entering the lottery is asked how they describe themselves.
+		const raceEthnicity = context === 'queue' && !options.premarket ? this.raceEthnicity : null;
+
+		if (
+			!this.hasValidNames ||
+			(context === 'queue' && !this.household.isValid) ||
+			(raceEthnicity?.answer !== undefined && !raceEthnicity.value.isValid)
+		) {
 			return { kind: 'invalid' };
 		}
 
@@ -276,6 +294,7 @@ export class RegistrationStore {
 				locale,
 				marketEventId,
 				answers: this.registrationAnswers,
+				raceEthnicity: raceEthnicity?.answer,
 				source: 'self',
 				...(options.premarket ? { premarket: true } : {}),
 			});
@@ -292,6 +311,7 @@ export class RegistrationStore {
 				this.initialPronunciation = this.guest.pronunciation.trim();
 				// What was just saved is next market's to confirm, not this one's to carry over.
 				this.savedHouseholdReview = 'pending';
+				this.raceEthnicity.reset();
 			});
 
 			return { kind: 'registered', registration };

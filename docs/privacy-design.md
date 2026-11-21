@@ -41,6 +41,31 @@ Sources: [credential generation](../netlify/services/guestCredentials.mts),
 Verification: [credential tests](../netlify/services/guestCredentials.test.mts) and
 [device authentication tests](../netlify/lib/deviceAuth.test.mts).
 
+## Race and Ethnicity Is Asked Once and Reported Only in Aggregate
+
+The lottery step asks how a guest describes their race and ethnicity. The question uses the
+categories in OMB's Statistical Policy Directive No. 15 and is optional. The answer is stored on
+the guest's record (`guests.race_ethnicity`), not on each visit. Their phone keeps only a flag
+saying that it was answered, so the question stops appearing and the answer is never shown on a
+screen at a later market. Workers adding a guest by hand are never asked it, and a volunteer's
+premarket check-in doesn't ask it either.
+
+The self-description a guest writes for "Some other race and/or ethnicity" (`guests.race_ethnicity_other`) stays
+in the app database. No report, warehouse table, CSV export, or admin screen in the app reads it,
+and reports and the warehouse use only the category codes, counted across guests. Metabase's
+read-only role can select every table in the `public` schema (see [Metabase](metabase.md)), so
+anyone with Metabase access can see individual answers. Treat those columns like names and phone
+numbers there. The question is blocked from Sentry session replays, since the order of its boxes
+alone would show which one was ticked. The answer never feeds the
+lottery: neither the draw, its suggested odds, nor a steward's view reads it.
+
+Sources: [answer rules](../src/models/race-ethnicity.ts),
+[registration](../netlify/services/guestRegistration.mts),
+[demographics report](../netlify/services/reports.mts),
+[warehouse snapshot](../netlify/services/warehouse-snapshot.mts).
+Verification: [answer tests](../src/models/race-ethnicity.test.ts) and
+[registration tests](../netlify/services/guestRegistration.test.mts).
+
 ## Personal Responses Are Not Shared Cache Content
 
 The API boundary sets `Cache-Control: no-store` on handled responses, including credentials,

@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=db44438659f1 -->
+<!-- diagram-sources: db/schema.mts=e23e3513e33c -->
 
 # Database structure
 
@@ -96,6 +96,9 @@ erDiagram
 		boolean fake "suppresses external SMS for synthetic guests"
 		text device_token_hash UK "nullable; authenticates self-service sign-ups from one browser"
         text locale
+        text_array race_ethnicity "nullable; SPD 15 codes, null when never asked"
+        text race_ethnicity_other "nullable; the guest's own words for some other race or ethnicity"
+        timestamptz race_ethnicity_answered_at "nullable; latest answer wins across records"
         timestamptz created_at
     }
 

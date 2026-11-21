@@ -595,4 +595,154 @@ describe('RegistrationStore', () => {
 			expect(store.isSubmitting).toBe(false);
 		});
 	});
+
+	describe('race and ethnicity', () => {
+		const ada = {
+			firstName: 'Ada',
+			lastName: 'Lovelace',
+			pronunciation: '',
+			ageRange: '30-44' as const,
+			householdSize: 2,
+			childrenCount: 0,
+			seniorsCount: 0,
+			phone: '555-123-4567',
+		};
+
+		function answeringGuestStore() {
+			const register = vi.fn().mockResolvedValue({
+				id: 'visit-1',
+				status: 'registered',
+				visitToken: 'token-1',
+				deviceToken: 'device-1',
+				raceEthnicityAnswered: true,
+			});
+
+			return { register, guests: new GuestStore({ storage, register }) };
+		}
+
+		it('sends the answer once, then stops asking', async () => {
+			// Arrange
+			const { register, guests } = answeringGuestStore();
+			const store = new RegistrationStore(guests, { storage });
+
+			store.guest = { ...ada };
+			store.raceEthnicity.toggle('asian');
+
+			// Act
+			await store.submit('queue', 'event-1', 'en');
+			await store.submit('queue', 'event-2', 'en');
+
+			// Assert
+			expect(register.mock.calls[0]?.[0]).toMatchObject({
+				raceEthnicity: { codes: ['asian'], otherText: null },
+			});
+			expect(register.mock.calls[1]?.[0].raceEthnicity).toBeUndefined();
+			expect(store.raceEthnicity.isAsked).toBe(false);
+			// The phone keeps that it was answered, never the answer.
+			expect(JSON.stringify(storage.get(StorageKey.GUEST_IDENTITY))).not.toContain('asian');
+		});
+
+		it('sends nothing when the guest leaves it blank, and asks again next time', async () => {
+			// Arrange
+			const register = vi.fn().mockResolvedValue({
+				id: 'visit-1',
+				status: 'registered',
+				visitToken: 'token-1',
+				deviceToken: 'device-1',
+				raceEthnicityAnswered: false,
+			});
+			const store = new RegistrationStore(new GuestStore({ storage, register }), { storage });
+
+			store.guest = { ...ada };
+
+			// Act
+			const result = await store.submit('queue', 'event-1', 'en');
+
+			// Assert
+			expect(result.kind).toBe('registered');
+			expect(register.mock.calls[0]?.[0].raceEthnicity).toBeUndefined();
+			expect(store.raceEthnicity.isAsked).toBe(true);
+		});
+
+		it('lets a guest join who prefers not to answer', async () => {
+			// Arrange
+			const { register, guests } = answeringGuestStore();
+			const store = new RegistrationStore(guests, { storage });
+
+			store.guest = { ...ada };
+			store.raceEthnicity.toggle('prefer_not_to_answer');
+
+			// Act
+			const result = await store.submit('queue', 'event-1', 'en');
+
+			// Assert
+			expect(result.kind).toBe('registered');
+			expect(register.mock.calls[0]?.[0]).toMatchObject({
+				raceEthnicity: { codes: ['prefer_not_to_answer'], otherText: null },
+			});
+		});
+
+		it('is not sent from a premarket check-in', async () => {
+			// Arrange
+			const { register, guests } = answeringGuestStore();
+			const store = new RegistrationStore(guests, { storage });
+
+			store.guest = { ...ada };
+			store.raceEthnicity.toggle('white');
+
+			// Act
+			await store.submit('queue', null, 'en', { premarket: true });
+
+			// Assert
+			expect(register.mock.calls[0]?.[0].raceEthnicity).toBeUndefined();
+		});
+
+		it('refuses "some other race and/or ethnicity" with no description', async () => {
+			// Arrange
+			const { register, guests } = answeringGuestStore();
+			const store = new RegistrationStore(guests, { storage });
+
+			store.guest = { ...ada };
+			store.raceEthnicity.toggle('another');
+
+			// Act
+			const result = await store.submit('queue', 'event-1', 'en');
+
+			// Assert
+			expect(result).toEqual({ kind: 'invalid' });
+			expect(register).not.toHaveBeenCalled();
+		});
+
+		it('holds the cue until answered, where the form asks', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.guest = { ...ada };
+
+			// Act
+			const before = store.isReadyToSubmit([], { asksRaceEthnicity: true });
+			const elsewhere = store.isReadyToSubmit([]);
+
+			store.raceEthnicity.toggle('prefer_not_to_answer');
+			const after = store.isReadyToSubmit([], { asksRaceEthnicity: true });
+
+			// Assert
+			expect(before).toBe(false);
+			expect(elsewhere).toBe(true);
+			expect(after).toBe(true);
+		});
+
+		it('is cleared with the form', () => {
+			// Arrange
+			const store = new RegistrationStore(guestStore, { storage });
+
+			store.raceEthnicity.toggle('asian');
+
+			// Act
+			store.clear();
+
+			// Assert
+			expect(store.raceEthnicity.value.isAnswered).toBe(false);
+		});
+	});
 });
