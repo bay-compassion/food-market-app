@@ -11,6 +11,7 @@ import { ResetSessionDisclosure } from './ResetSessionDisclosure';
 import { SessionGuestList } from './SessionGuestList';
 import { SessionPhasePlan } from './SessionPhasePlan';
 import { SessionPhaseStatus } from './SessionPhaseStatus';
+import { TodayPremarket } from './TodayPremarket';
 import { TodayPrintStation } from './TodayPrintStation';
 import type { AdminView, ManualGuest, QueueGuest } from './types';
 
@@ -51,7 +52,10 @@ export const SessionView = observer(function SessionView({
 	const event = session.currentState?.event ?? null;
 	const phase = currentSessionState(event?.status);
 	const showsRegisteredGuests =
-		!!event && ['registration_open', 'registration_closed', 'lottery_pending'].includes(phase);
+		!!event &&
+		(['registration_open', 'registration_closed', 'lottery_pending'].includes(phase) ||
+			// Volunteers can join the premarket from market day's midnight, while still scheduled.
+			(phase === 'scheduled' && (session.currentState?.premarketCount ?? 0) > 0));
 
 	return (
 		<Screen>
@@ -64,6 +68,9 @@ export const SessionView = observer(function SessionView({
 
 			{/* Wherever the session stands, the label printer can be checked before a tag is needed. */}
 			{event && phase !== 'inactive' ? <TodayPrintStation /> : null}
+
+			{/* Volunteers check in for the premarket whenever the session is unfinished. */}
+			{event && phase !== 'inactive' ? <TodayPremarket /> : null}
 
 			{event && phase === 'service_started' ? (
 				<section className="admin-section">

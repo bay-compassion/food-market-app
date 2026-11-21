@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=adfdc82db743 -->
+<!-- diagram-sources: db/schema.mts=db44438659f1 -->
 
 # Database structure
 
@@ -104,6 +104,7 @@ erDiagram
         uuid market_event_id FK
         uuid guest_id FK
         text status "see session-lifecycle.md"
+        text track "lottery | premarket: a volunteer shopping first, with no number"
         integer queue_position "the guest's number; never changes once given"
         integer priority_number "P1, P2, ... for a guest a worker put at the front"
         boolean queue_front "put at the front: called before everyone else"
@@ -142,7 +143,7 @@ erDiagram
     visit_events {
         uuid id PK
         uuid visit_id FK "cascade delete"
-        text kind "registered | added | drawn | not_drawn | called | served | no_show | returned | cancelled | tag_sent | tag_printed | corrected"
+        text kind "registered | added | premarket_check_in | drawn | not_drawn | called | served | no_show | returned | cancelled | tag_sent | tag_printed | corrected"
         text to_status "the status the visit moved to; for a name tag, the one it was in"
         text actor_kind "guest | worker | system"
         text actor_id "nullable; the worker's Auth0 subject"
@@ -224,6 +225,11 @@ A few things the diagram can't show on its own:
   device credential. Household composition (age range, household size, children/seniors counts)
   is entered fresh at each visit rather than carried on the guest, and the browser keeps its own
   last-entered copy in `localStorage` purely to prefill the next visit's form.
+- **A volunteer who shops before the line is a guest with a `premarket` visit.** They check in
+  from the premarket link or its QR code (or a worker adds them), any time on market day until the
+  session ends. The visit is `served` from the start, with no number and no place in line, so the
+  draw never sees it and it takes none of the session's capacity. A guest has one visit per session:
+  checking in moves any lottery entry they hold to the premarket rather than adding a second visit.
 - **`guests` still has `age_range`, `household_size`, `children_count`, and `seniors_count`
   columns in the database that this diagram omits.** Application code stopped reading and writing
   them once household composition moved to `visits` — they're mid backfill-then-drop, waiting on a

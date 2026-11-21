@@ -364,6 +364,22 @@ export interface SignupViewTranslations {
 	successTitle: string;
 }
 
+/** `/premarket`, where a volunteer's scan of the printed premarket QR lands. */
+export interface PremarketTranslations {
+	title: string;
+	description: string;
+	/** Heads the household fields, in place of the lottery's own legend. */
+	householdLegend: string;
+	submit: string;
+	submitting: string;
+	checking: string;
+	closedHeading: string;
+	closedDetails: string;
+	unreachableHeading: string;
+	unreachableDetails: string;
+	retry: string;
+}
+
 export interface ClaimViewTranslations {
 	title: string;
 	description: string;
@@ -547,6 +563,7 @@ export interface Translation {
 	guestView: GuestViewTranslations;
 	signupView: SignupViewTranslations;
 	claimView: ClaimViewTranslations;
+	premarket: PremarketTranslations;
 	kiosk: KioskTranslations;
 	help: HelpTranslations;
 	admin: string;
@@ -1028,6 +1045,21 @@ export const translations = {
 			failed: 'This code has expired or was already used. Ask a staff member for a new one.',
 			missingCode:
 				'This link is missing its code. Ask a staff member to show you the QR code again.',
+		},
+		premarket: {
+			title: 'Volunteer Premarket',
+			description:
+				'Thank you for volunteering. Check in to shop before the line opens. You won’t need a number.',
+			householdLegend: 'Your household',
+			submit: 'Check In',
+			submitting: 'Checking in…',
+			checking: 'Checking the premarket…',
+			closedHeading: 'Not Open Right Now',
+			closedDetails:
+				'The premarket is open on market day, until the market closes. Open this page again then.',
+			unreachableHeading: 'Couldn’t Connect',
+			unreachableDetails: 'Check your connection and try again.',
+			retry: 'Try Again',
 		},
 		kiosk: {
 			nowCalling: 'Now calling',
@@ -1576,6 +1608,21 @@ export const translations = {
 			missingCode:
 				'A este enlace le falta el código. Pida a un miembro del personal que le muestre el código QR de nuevo.',
 		},
+		premarket: {
+			title: 'Premercado para voluntarios',
+			description:
+				'Gracias por ser voluntario. Regístrese para comprar antes de que se abra la fila. No necesitará un número.',
+			householdLegend: 'Su hogar',
+			submit: 'Registrarme',
+			submitting: 'Registrando…',
+			checking: 'Verificando el premercado…',
+			closedHeading: 'No está abierto ahora',
+			closedDetails:
+				'El premercado está abierto el día del mercado, hasta que cierra el mercado. Vuelva a abrir esta página ese día.',
+			unreachableHeading: 'No se pudo conectar',
+			unreachableDetails: 'Revise su conexión e inténtelo de nuevo.',
+			retry: 'Intentar de nuevo',
+		},
 		kiosk: {
 			nowCalling: 'Llamando ahora',
 			nowCallingNone: 'Aún no se ha llamado ningún número',
@@ -2117,6 +2164,21 @@ export const translations = {
 			submitting: 'در حال راه‌اندازی…',
 			failed: 'این کد منقضی شده یا قبلاً استفاده شده است. از یکی از کارکنان کد جدیدی بخواهید.',
 			missingCode: 'این پیوند کد ندارد. از یکی از کارکنان بخواهید دوباره کد QR را به شما نشان دهد.',
+		},
+		premarket: {
+			title: 'خرید زودهنگام داوطلبان',
+			description:
+				'از داوطلب شدن شما سپاسگزاریم. پیش از باز شدن صف، برای خرید ثبت حضور کنید. به شماره نیاز ندارید.',
+			householdLegend: 'خانوار شما',
+			submit: 'ثبت حضور',
+			submitting: 'در حال ثبت حضور…',
+			checking: 'در حال بررسی خرید زودهنگام…',
+			closedHeading: 'اکنون باز نیست',
+			closedDetails:
+				'خرید زودهنگام در روز بازار تا پایان بازار باز است. در آن روز دوباره این صفحه را باز کنید.',
+			unreachableHeading: 'اتصال برقرار نشد',
+			unreachableDetails: 'اتصال خود را بررسی کنید و دوباره امتحان کنید.',
+			retry: 'دوباره امتحان کنید',
 		},
 		kiosk: {
 			nowCalling: 'در حال فراخوانی',
@@ -2668,6 +2730,21 @@ export const translations = {
 			missingCode:
 				'Walang code ang link na ito. Hilingin sa isang staff na ipakita muli ang QR code.',
 		},
+		premarket: {
+			title: 'Premarket ng mga Boluntaryo',
+			description:
+				'Salamat sa pagboboluntaryo. Mag-check in para mamili bago magbukas ang pila. Hindi mo kailangan ng numero.',
+			householdLegend: 'Ang iyong sambahayan',
+			submit: 'Mag-check In',
+			submitting: 'Nagche-check in…',
+			checking: 'Sinusuri ang premarket…',
+			closedHeading: 'Hindi Bukas Ngayon',
+			closedDetails:
+				'Bukas ang premarket sa araw ng market hanggang magsara ang market. Buksan muli ang pahinang ito sa araw na iyon.',
+			unreachableHeading: 'Hindi Makakonekta',
+			unreachableDetails: 'Suriin ang iyong koneksyon at subukang muli.',
+			retry: 'Subukang Muli',
+		},
 		kiosk: {
 			nowCalling: 'Tinatawag ngayon',
 			nowCallingNone: 'Wala pang tinatawag na numero',
@@ -3208,6 +3285,21 @@ export const translations = {
 			failed: 'Mã này đã hết hạn hoặc đã được sử dụng. Hãy xin nhân viên một mã mới.',
 			missingCode: 'Liên kết này thiếu mã. Hãy nhờ nhân viên cho bạn xem lại mã QR.',
 		},
+		premarket: {
+			title: 'Mua sắm sớm cho tình nguyện viên',
+			description:
+				'Cảm ơn bạn đã tình nguyện. Hãy điểm danh để mua sắm trước khi hàng chờ mở. Bạn sẽ không cần số.',
+			householdLegend: 'Hộ gia đình của bạn',
+			submit: 'Điểm danh',
+			submitting: 'Đang điểm danh…',
+			checking: 'Đang kiểm tra mua sắm sớm…',
+			closedHeading: 'Hiện chưa mở',
+			closedDetails:
+				'Mua sắm sớm mở vào ngày chợ cho đến khi chợ đóng cửa. Hãy mở lại trang này vào ngày đó.',
+			unreachableHeading: 'Không kết nối được',
+			unreachableDetails: 'Hãy kiểm tra kết nối và thử lại.',
+			retry: 'Thử lại',
+		},
 		kiosk: {
 			nowCalling: 'Đang gọi số',
 			nowCallingNone: 'Chưa gọi số nào',
@@ -3727,6 +3819,19 @@ export const translations = {
 			submitting: '正在设置…',
 			failed: '此二维码已过期或已被使用。请向工作人员索取新的二维码。',
 			missingCode: '此链接缺少代码。请让工作人员再次向您出示二维码。',
+		},
+		premarket: {
+			title: '志愿者提前购物',
+			description: '感谢您的志愿服务。请签到，在排队开始前购物。您不需要号码。',
+			householdLegend: '您的家庭',
+			submit: '签到',
+			submitting: '正在签到…',
+			checking: '正在查询提前购物…',
+			closedHeading: '现在未开放',
+			closedDetails: '提前购物在市场当天开放，直到市场结束。请在那天再次打开此页面。',
+			unreachableHeading: '无法连接',
+			unreachableDetails: '请检查网络连接后重试。',
+			retry: '重试',
 		},
 		kiosk: {
 			nowCalling: '正在叫号',
@@ -4257,6 +4362,20 @@ export const translations = {
 			submitting: 'جارٍ الإعداد…',
 			failed: 'انتهت صلاحية هذا الرمز أو تم استخدامه بالفعل. اطلب رمزًا جديدًا من أحد الموظفين.',
 			missingCode: 'هذا الرابط لا يحتوي على رمز. اطلب من أحد الموظفين أن يعرض عليك رمز QR مرة أخرى.',
+		},
+		premarket: {
+			title: 'التسوق المبكر للمتطوعين',
+			description: 'شكرًا لتطوعك. سجّل حضورك لتتسوق قبل أن يبدأ الطابور. لن تحتاج إلى رقم.',
+			householdLegend: 'أسرتك',
+			submit: 'تسجيل الحضور',
+			submitting: 'جارٍ تسجيل الحضور…',
+			checking: 'جارٍ التحقق من التسوق المبكر…',
+			closedHeading: 'غير متاح الآن',
+			closedDetails:
+				'يكون التسوق المبكر متاحًا يوم السوق حتى يُغلق السوق. افتح هذه الصفحة مرة أخرى في ذلك اليوم.',
+			unreachableHeading: 'تعذّر الاتصال',
+			unreachableDetails: 'تحقق من اتصالك وحاول مرة أخرى.',
+			retry: 'حاول مرة أخرى',
 		},
 		kiosk: {
 			nowCalling: 'الرقم الحالي',
@@ -4808,6 +4927,21 @@ export const translations = {
 			missingCode:
 				'Il manque le code dans ce lien. Demandez à un membre du personnel de vous montrer à nouveau le code QR.',
 		},
+		premarket: {
+			title: 'Pré-marché des bénévoles',
+			description:
+				'Merci pour votre bénévolat. Enregistrez-vous pour faire vos courses avant l’ouverture de la file. Vous n’aurez pas besoin de numéro.',
+			householdLegend: 'Votre foyer',
+			submit: 'M’enregistrer',
+			submitting: 'Enregistrement…',
+			checking: 'Vérification du pré-marché…',
+			closedHeading: 'Pas ouvert pour le moment',
+			closedDetails:
+				'Le pré-marché est ouvert le jour du marché, jusqu’à la fermeture du marché. Rouvrez cette page ce jour-là.',
+			unreachableHeading: 'Connexion impossible',
+			unreachableDetails: 'Vérifiez votre connexion et réessayez.',
+			retry: 'Réessayer',
+		},
 		kiosk: {
 			nowCalling: 'Numéro appelé',
 			nowCallingNone: 'Aucun numéro appelé pour l’instant',
@@ -5353,6 +5487,21 @@ export const translations = {
 			missingCode:
 				'Falta o código neste link. Peça a um membro da equipe para mostrar o código QR novamente.',
 		},
+		premarket: {
+			title: 'Pré-mercado para voluntários',
+			description:
+				'Obrigado por ser voluntário. Faça o check-in para comprar antes de a fila abrir. Você não vai precisar de número.',
+			householdLegend: 'Sua família',
+			submit: 'Fazer check-in',
+			submitting: 'Fazendo check-in…',
+			checking: 'Verificando o pré-mercado…',
+			closedHeading: 'Não está aberto agora',
+			closedDetails:
+				'O pré-mercado fica aberto no dia do mercado, até o mercado fechar. Abra esta página de novo nesse dia.',
+			unreachableHeading: 'Não foi possível conectar',
+			unreachableDetails: 'Verifique sua conexão e tente de novo.',
+			retry: 'Tentar de novo',
+		},
 		kiosk: {
 			nowCalling: 'Chamando agora',
 			nowCallingNone: 'Nenhum número chamado ainda',
@@ -5893,6 +6042,21 @@ export const translations = {
 			submitting: 'Настройка…',
 			failed: 'Срок действия кода истёк или он уже использован. Попросите у сотрудника новый код.',
 			missingCode: 'В этой ссылке отсутствует код. Попросите сотрудника снова показать QR-код.',
+		},
+		premarket: {
+			title: 'Предрынок для волонтёров',
+			description:
+				'Спасибо, что вы волонтёр. Отметьтесь, чтобы сделать покупки до открытия очереди. Номер вам не понадобится.',
+			householdLegend: 'Ваша семья',
+			submit: 'Отметиться',
+			submitting: 'Отмечаем…',
+			checking: 'Проверяем предрынок…',
+			closedHeading: 'Сейчас закрыто',
+			closedDetails:
+				'Предрынок открыт в день рынка, пока рынок не закроется. Откройте эту страницу снова в этот день.',
+			unreachableHeading: 'Не удалось подключиться',
+			unreachableDetails: 'Проверьте подключение и попробуйте ещё раз.',
+			retry: 'Попробовать снова',
 		},
 		kiosk: {
 			nowCalling: 'Сейчас вызывают',

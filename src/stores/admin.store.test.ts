@@ -41,6 +41,7 @@ function guestWith(overrides: Partial<AdminGuest> = {}): AdminGuest {
 		queueOrder: 1,
 		calledAt: null,
 		status: 'waiting',
+		track: 'lottery',
 		marketEventId: 'event-1',
 		...overrides,
 	};

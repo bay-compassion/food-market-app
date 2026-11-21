@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=6aebfd4c6059, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=00be73bf6624 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=c6525b5020ee -->
 
 # Session lifecycle
 
@@ -120,7 +120,7 @@ mis-tap cannot move a served guest back into the queue.
 stateDiagram-v2
     [*] --> registered : guest registers, or a worker<br/>enters them in the draw
     [*] --> waiting : worker gives a guest<br/>a spot in the line
-    [*] --> served : worker records someone<br/>served outside the app
+    [*] --> served : worker records someone<br/>served outside the app,<br/>or a volunteer joins the premarket
 
     registered --> waiting : select (lottery win)
     registered --> not_placed : skip (lottery loss)
@@ -137,6 +137,7 @@ stateDiagram-v2
 
     no_show --> waiting : return_to_queue
 
+    served --> cancelled : cancel (a worker removes<br/>a premarket volunteer)
     served --> [*]
     not_placed --> [*]
     cancelled --> [*]
@@ -163,8 +164,13 @@ Who owns each transition matters:
 - **The session ending** cancels every visit still `registered`, `waiting`, or `called`. It is the
   only way a `called` visit becomes `cancelled`, and it is applied by the server, never offered as a
   command.
-- **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the only four
-  the admin UI ever offers, and it offers only the ones legal from a visit's current status.
+- **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the four
+  the admin UI offers for the line, and it offers only the ones legal from a visit's current status.
+  A premarket volunteer is `served` from the moment they join, with no number and outside the draw,
+  so none of those apply; the one thing a worker can do is remove them with `cancel`, which clears
+  `served_at`. `VisitCommands` (`src/models/visit-commands.ts`) is that rule, shared by the server
+  and the screens. A removed volunteer who then registers for the lottery enters the draw on the
+  lottery's track, like anyone who cancelled.
 
 Three of those also write a timestamp. `call` stamps `called_at`, which is what the queue screen
 counts up from to show how long a guest has been standing at the table — the signal for deciding a

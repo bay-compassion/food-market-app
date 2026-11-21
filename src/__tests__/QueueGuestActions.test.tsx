@@ -27,6 +27,7 @@ const guest: QueueGuest = {
 	queueOrder: 3,
 	calledAt: null,
 	status: 'waiting',
+	track: 'lottery',
 };
 
 async function renderActions(permissions: Permission[]) {

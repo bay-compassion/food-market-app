@@ -8,6 +8,7 @@ import { db } from '../../db/index.mjs';
 import { guests, visits } from '../../db/schema.mjs';
 import { isLocale, type Locale } from '../../src/locales.js';
 import type { NameTagPrintJob } from '../../src/services/print-jobs.js';
+import { isVisitTrack, type VisitTrack } from '../../src/services/visit-track.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 
 /** The few operations the queue needs from a key-value store, so tests can hand it a map. */
@@ -45,6 +46,8 @@ const jobSchema = z.object({
 	queuePosition: z.number().int().nullable(),
 	// Defaulted for a tag a phone sent before priority numbers existed, still in the store.
 	priorityNumber: z.number().int().nullable().default(null),
+	// Defaulted for a tag a phone sent before the premarket existed, still in the store.
+	track: z.custom<VisitTrack>(isVisitTrack).default('lottery'),
 	locale: z.custom<Locale>(isLocale),
 	requestedAt: z.iso.datetime(),
 });
@@ -72,6 +75,7 @@ export class PrintQueue {
 		pronunciation: 'PRIN-ter test',
 		queuePosition: 0,
 		priorityNumber: null,
+		track: 'lottery',
 		locale: 'en',
 	};
 
@@ -182,6 +186,7 @@ export async function nameTagFor(
 				pronunciation: guests.pronunciation,
 				queuePosition: visits.queuePosition,
 				priorityNumber: visits.priorityNumber,
+				track: visits.track,
 				locale: guests.locale,
 			})
 			.from(visits)
@@ -201,6 +206,7 @@ export async function nameTagFor(
 		pronunciation: row.pronunciation?.trim() || null,
 		queuePosition: row.queuePosition,
 		priorityNumber: row.priorityNumber,
+		track: row.track,
 		locale: isLocale(row.locale) ? row.locale : 'en',
 	};
 }

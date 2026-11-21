@@ -86,6 +86,13 @@ export const QueueLists = observer(function QueueLists() {
 				emptyText={t.queueDesk.noneDone}
 				now={now}
 			/>
+			{/* Volunteers who shopped before the line: never in it, so kept apart from those it served. */}
+			<TicketSection
+				id="premarket"
+				title={t.queueDesk.premarket}
+				guests={roster.premarket}
+				now={now}
+			/>
 			{session.currentState?.event ? (
 				<QueueHouseholdService
 					key={session.currentState.event.id}

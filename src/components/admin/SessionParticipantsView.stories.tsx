@@ -55,6 +55,7 @@ function guest(
 		queueOrder: null,
 		calledAt: null,
 		status,
+		track: 'lottery',
 	};
 }
 

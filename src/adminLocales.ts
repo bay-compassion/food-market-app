@@ -39,6 +39,15 @@ type TodayTranslations = {
 	/** The print station's section: its status, and a test tag to check the label printer. */
 	printingStation: string;
 	printingStationHelp: string;
+	/** The premarket's QR code and link, for volunteers to check in with. */
+	premarket: string;
+	premarketHelp: string;
+	showPremarketCode: string;
+	premarketCode: string;
+	premarketLink: string;
+	copyPremarketLink: string;
+	premarketLinkCopied: string;
+	premarketLinkNotCopied: string;
 	changeThePlan: string;
 	postponeRegistration: string;
 	extendRegistration: string;
@@ -164,6 +173,8 @@ export interface AdminTranslation {
 	admitProfileOnlyHelp: string;
 	admitToLottery: string;
 	admitToLotteryHelp: string;
+	admitToPremarket: string;
+	admitToPremarketHelp: string;
 	admitToQueue: string;
 	admitToQueueHelp: string;
 	/** One line under each screen's title saying what the screen is for. */
@@ -205,6 +216,17 @@ export interface AdminTranslation {
 	cancel: string;
 	capacity: string;
 	cancelled: string;
+	/** A worker taking a premarket volunteer's visit back, and the question that confirms it. */
+	removeFromPremarket: string;
+	/** `{name}` is the volunteer's name. */
+	removeFromPremarketQuestion: string;
+	removeFromPremarketDetails: string;
+	keepInPremarket: string;
+	/** The overview's count of volunteers who shopped before the line. */
+	premarketVolunteers: string;
+	/** Heads Today's list of them, and says when it is empty. */
+	premarketHeading: string;
+	noPremarketVolunteers: string;
 	callGuest: string;
 	closeSession: string;
 	closeRegistration: string;
@@ -659,6 +681,8 @@ export interface QueueDeskTranslation {
 	noShows: string;
 	notPlaced: string;
 	done: string;
+	/** Volunteers who shopped before the line opened, outside it. */
+	premarket: string;
 	noneCalled: string;
 	noneWaiting: string;
 	noneDone: string;
@@ -800,6 +824,9 @@ export const adminTranslations = {
 		admitToLottery: 'Enter the draw',
 		admitToLotteryHelp:
 			'The guest takes their chances in the lottery, the same as anyone who signed up on their own phone.',
+		admitToPremarket: 'Premarket volunteer',
+		admitToPremarketHelp:
+			'A volunteer shopping before the line opens. They skip the lottery, get no number, and take none of the session’s spots. Recorded as served now.',
 		admitToQueue: 'Give them a spot',
 		admitToQueueHelp:
 			'The guest skips the lottery and goes straight into the line. This uses one of the session’s spots.',
@@ -837,6 +864,15 @@ export const adminTranslations = {
 			printingStation: 'Printing Station',
 			printingStationHelp:
 				'Print a test tag to check the label printer before the first guest, or after loading new labels.',
+			premarket: 'Premarket',
+			premarketHelp:
+				'Volunteers check in for the premarket by scanning this code or opening its link, any time on market day until the session ends. They get no number and take none of the line’s spots.',
+			showPremarketCode: 'Show QR Code',
+			premarketCode: 'Premarket QR code',
+			premarketLink: 'Premarket link',
+			copyPremarketLink: 'Copy Link',
+			premarketLinkCopied: 'The premarket link is copied.',
+			premarketLinkNotCopied: 'The link couldn’t be copied. Select it and copy it instead.',
 			changeThePlan: 'Change the Plan',
 			postponeRegistration: 'Postpone Registration',
 			extendRegistration: 'Extend Registration',
@@ -927,6 +963,14 @@ export const adminTranslations = {
 		cancel: 'Cancel',
 		capacity: 'Queue capacity',
 		cancelled: 'Cancelled',
+		removeFromPremarket: 'Remove from Premarket',
+		removeFromPremarketQuestion: 'Remove {name} from the premarket?',
+		removeFromPremarketDetails:
+			'Their visit is cancelled and no longer counts as served. They can still register for the lottery.',
+		keepInPremarket: 'Keep Them',
+		premarketVolunteers: 'Premarket',
+		premarketHeading: 'Premarket',
+		noPremarketVolunteers: 'No volunteers have checked in for the premarket.',
 		callGuest: 'Call guest',
 		closeSession: 'Close Session',
 		closeRegistration: 'Close Early',
@@ -1210,15 +1254,15 @@ export const adminTranslations = {
 		},
 		reportDescriptions: {
 			'session-summary':
-				'One row per session: how many signed up, how many were served, and how full it ran.',
+				'One row per session: how many signed up, how many were served, and how full it ran. Premarket volunteers are counted as served, with their own subtotal, but not toward how full the line ran.',
 			'people-served':
-				'Service totals include count-only households. People served sums household sizes at every shopping visit, including repeats. Unique guests and monthly unique household members cover identified visits only; count-only households cannot be deduplicated.',
+				'Service totals include count-only households and premarket volunteers, each with its own subtotal. People served sums household sizes at every shopping visit, including repeats. Unique guests and monthly unique household members cover identified visits only; count-only households cannot be deduplicated.',
 			'guest-demographics':
 				'Age, household size, and language of identified guests served in the period, each guest counted once. Excludes count-only households.',
 			'lottery-outcomes':
 				'How often guests at each weighting were placed in the line. Covers guests who signed up themselves and were entered in a draw.',
 			'service-timing':
-				'How long identified guests waited between being called and being served. Excludes count-only households.',
+				'How long identified guests waited between being called and being served. Excludes count-only households and premarket volunteers.',
 		},
 		reportColumnLabels: {
 			countOnlyHouseholds: 'Count-only households',
@@ -1238,6 +1282,8 @@ export const adminTranslations = {
 			notPlaced: 'Not placed',
 			placed: 'Placed',
 			placementRate: 'Placed rate',
+			premarketHouseholds: 'Premarket households',
+			premarketMembers: 'Premarket people served (with repeats)',
 			served: 'Households served',
 			sessionDate: 'Session',
 			sessions: 'Sessions',
@@ -1320,6 +1366,7 @@ export const adminTranslations = {
 			noShows: 'No-shows',
 			notPlaced: 'Not placed',
 			done: 'Done',
+			premarket: 'Premarket',
 			noneCalled: 'Nobody has been called yet.',
 			noneWaiting: 'Nobody is left in line.',
 			noneDone: 'Nobody has finished yet.',
@@ -1394,6 +1441,7 @@ export const adminTranslations = {
 				kinds: {
 					registered: 'Registered',
 					added: 'Added by hand',
+					premarket_check_in: 'Checked in for the premarket',
 					drawn: 'Drawn in the lottery',
 					not_drawn: 'Not drawn',
 					called: 'Called',

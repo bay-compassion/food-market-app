@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
 
@@ -13,6 +13,7 @@ vi.mock('./visit-events.mjs', () => ({
 
 import { parseGuestInformation, saveGuestInformation } from './guest-information.mjs';
 import { parseSubmission, registerGuest, validateSubmission } from './guestRegistration.mjs';
+import { recordVisitEvents } from './visit-events.mjs';
 
 const savedDeviceToken = 'device-token-from-this-browser-12345678901234567890';
 
@@ -1020,5 +1021,226 @@ describe('saveGuestInformation', () => {
 		}
 		expect(result.body.deviceToken).toBeTruthy();
 		expect(result.body.deviceToken).not.toBe(savedDeviceToken);
+	});
+});
+
+/** The kinds of every history entry recorded. */
+function recordedKinds() {
+	return vi
+		.mocked(recordVisitEvents)
+		.mock.calls.flatMap(([, events]) => events.map((event) => event.kind));
+}
+
+describe('registerGuest for the premarket', () => {
+	// Registration opens at 9:00 Pacific on 18 July; the premarket is open all that day.
+	const marketDay = {
+		id: 'event-1',
+		locationId: 'location-1',
+		status: 'scheduled',
+		registrationOpensAt: new Date('2026-07-18T16:00:00.000Z'),
+		registrationClosesAt: new Date('2026-07-18T17:00:00.000Z'),
+	};
+	const location = { id: 'location-1', name: 'Bay Point', timeZone: 'America/Los_Angeles' };
+
+	beforeEach(() => {
+		vi.useFakeTimers({ toFake: ['Date'] });
+		vi.setSystemTime(new Date('2026-07-18T15:00:00.000Z')); // 8:00 on market day
+		vi.mocked(recordVisitEvents).mockClear();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	function setRows() {
+		return db.update.mock.results
+			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
+			.flatMap(({ set }) => set.mock.calls.map(([row]) => row));
+	}
+
+	function insertedVisit() {
+		return db.insert.mock.results
+			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
+			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
+			.find((row) => row?.guestId);
+	}
+
+	it('records a new volunteer as served in the premarket, with no number', async () => {
+		// Arrange
+		queueResult([marketDay]);
+		queueResult([location]);
+		queueResult([marketDay]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
+		const submission = parseSubmission(selfSubmission())!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' }, { premarket: true });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'served' } });
+		expect(insertedVisit()).toMatchObject({
+			status: 'served',
+			track: 'premarket',
+			lotteryWeight: 1,
+			servedAt: new Date('2026-07-18T15:00:00.000Z'),
+		});
+		expect(insertedVisit()?.queuePosition ?? null).toBeNull();
+		expect(recordedKinds()).toEqual(['premarket_check_in']);
+	});
+
+	it.each(['registered', 'cancelled', 'waiting', 'called', 'not_placed', 'no_show'] as const)(
+		'moves a guest’s own %s visit to the premarket rather than adding a second',
+		async (status) => {
+			// Arrange
+			queueResult([marketDay]);
+			queueResult([location]);
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+			queueResult([{ id: 'visit-1', status }]); // existing visit lookup
+			queueResult([marketDay]); // locked event eligibility recheck
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+			queueResult([{ id: 'visit-1', status: 'served' }]); // tx.update visits returning
+			const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+			// Act
+			const result = await registerGuest(submission, { kind: 'guest' }, { premarket: true });
+
+			// Assert
+			expect(result).toMatchObject({ ok: true, status: 200, body: { status: 'served' } });
+			expect(db.insert).not.toHaveBeenCalled();
+			expect(setRows().find((row) => row?.accessTokenHash)).toMatchObject({
+				track: 'premarket',
+				status: 'served',
+				queuePosition: null,
+				priorityNumber: null,
+				queueFront: false,
+				queueOrder: null,
+				lotteryWeight: 1,
+			});
+			expect(recordedKinds()).toEqual(['premarket_check_in']);
+		},
+	);
+
+	it('leaves a premarket visit in the premarket when its guest registers for the lottery', async () => {
+		// Arrange
+		const openEvent = { ...marketDay, status: 'registration_open' };
+
+		vi.setSystemTime(new Date('2026-07-18T16:30:00.000Z'));
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+		queueResult([{ id: 'visit-1', status: 'served' }]); // existing premarket visit
+		queueResult([openEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+		queueResult([{ id: 'visit-1', status: 'served' }]); // tx.update visits returning
+		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, body: { status: 'served' } });
+		const visitUpdate = setRows().find((row) => row?.accessTokenHash);
+
+		expect(visitUpdate).toMatchObject({ status: 'served' });
+		expect(visitUpdate).not.toHaveProperty('track');
+	});
+
+	it('puts a removed volunteer who enters the lottery back on the lottery’s track', async () => {
+		// Arrange
+		const openEvent = { ...marketDay, status: 'registration_open' };
+
+		vi.setSystemTime(new Date('2026-07-18T16:30:00.000Z'));
+		queueResult([openEvent]);
+		queueResult([]); // no registration questions
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+		queueResult([{ id: 'visit-1', status: 'cancelled' }]); // a removed premarket visit
+		queueResult([openEvent]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+		queueResult([{ id: 'visit-1', status: 'registered' }]); // tx.update visits returning
+		const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+		// Act
+		await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(setRows().find((row) => row?.accessTokenHash)).toMatchObject({
+			status: 'registered',
+			track: 'lottery',
+		});
+	});
+
+	it('refuses the premarket the day before the market', async () => {
+		// Arrange
+		vi.setSystemTime(new Date('2026-07-17T18:00:00.000Z'));
+		queueResult([marketDay]);
+		queueResult([location]);
+		const submission = parseSubmission(selfSubmission())!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' }, { premarket: true });
+
+		// Assert
+		expect(result).toEqual({ ok: false, status: 409, error: 'The premarket is not open.' });
+	});
+
+	it('records a volunteer after the draw, while guests shop', async () => {
+		// Arrange
+		const serving = { ...marketDay, status: 'service_started' };
+
+		vi.setSystemTime(new Date('2026-07-18T18:00:00.000Z'));
+		queueResult([serving]);
+		queueResult([location]);
+		queueResult([serving]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
+		const submission = parseSubmission(selfSubmission())!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' }, { premarket: true });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, status: 201 });
+		expect(insertedVisit()).toMatchObject({ status: 'served', track: 'premarket' });
+		expect(recordedKinds()).toEqual(['premarket_check_in']);
+	});
+
+	it('refuses the premarket once the session has ended', async () => {
+		// Arrange
+		const ended = { ...marketDay, status: 'ended' };
+
+		queueResult([ended]);
+		queueResult([location]);
+		const submission = parseSubmission(selfSubmission())!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' }, { premarket: true });
+
+		// Assert
+		expect(result).toEqual({ ok: false, status: 409, error: 'The premarket is not open.' });
+	});
+
+	it('lets a worker add a premarket volunteer, recorded as served with no number', async () => {
+		// Arrange
+		queueResult([{ status: 'registration_open' }]); // admin event status check
+		queueResult([{ status: 'registration_open' }]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'visit-1', status: 'served' }]); // insert visits
+		const submission = parseSubmission(
+			selfSubmission({ source: 'admin', admission: 'premarket', lotteryWeight: 5 }),
+		)!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'served' } });
+		expect(insertedVisit()).toMatchObject({
+			track: 'premarket',
+			status: 'served',
+			lotteryWeight: 1,
+		});
+		expect(insertedVisit()?.queuePosition ?? null).toBeNull();
+		expect(recordedKinds()).toEqual(['premarket_check_in']);
 	});
 });

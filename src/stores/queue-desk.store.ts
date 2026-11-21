@@ -30,7 +30,7 @@ export type QueueDeskStoreOptions = {
 export type QueueSectionId = TicketSectionId | 'households';
 
 /** The sections that hold tickets, which is where a search looks. */
-export type TicketSectionId = 'called' | 'waiting' | 'noShows' | 'notPlaced' | 'done';
+export type TicketSectionId = 'called' | 'waiting' | 'noShows' | 'notPlaced' | 'done' | 'premarket';
 
 /** Which screen the queue desk shows. */
 export type QueueDeskPhase = 'loading' | 'not_permitted' | 'not_started' | 'serving' | 'ended';
@@ -198,6 +198,7 @@ export class QueueDeskStore implements TicketList {
 			['noShows', roster.noShows],
 			['notPlaced', roster.notPlaced],
 			['done', roster.done],
+			['premarket', roster.premarket],
 		];
 
 		return sections

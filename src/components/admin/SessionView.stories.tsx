@@ -275,3 +275,48 @@ export const RegistrationSections: Story = {
 		await expect(canvas.getByRole('table', { name: t.cancelled })).toHaveTextContent('Grace');
 	},
 };
+
+/** Volunteers who shopped in the premarket, each of whom a worker can remove, after confirming. */
+/** The premarket's QR code and its link, for volunteers to check in with on market day. */
+export const PremarketCheckIn: Story = {
+	args: RegistrationOpen.args,
+	play: async ({ canvas, userEvent }) => {
+		const link = canvas.getByRole('textbox', { name: t.today.premarketLink });
+
+		await expect((link as HTMLInputElement).value).toMatch(/\/premarket$/);
+		await userEvent.click(canvas.getByText(t.today.showPremarketCode));
+		await expect(canvas.getByRole('img', { name: t.today.premarketCode })).toBeVisible();
+	},
+};
+
+export const PremarketVolunteers: Story = {
+	args: {
+		...RegistrationOpen.args,
+		sessionGuests: [
+			queueGuest({ id: 'registered', firstName: 'Ada', status: 'registered', queuePosition: null }),
+			queueGuest({
+				id: 'volunteer',
+				firstName: 'Bo',
+				lastName: 'Volunteer',
+				status: 'served',
+				track: 'premarket',
+				queuePosition: null,
+			}),
+		],
+	},
+	play: async ({ canvas, userEvent }) => {
+		await expect(canvas.getByRole('table', { name: t.registered })).not.toHaveTextContent('Bo');
+		await expect(canvas.getByRole('table', { name: t.premarketHeading })).toHaveTextContent('Bo');
+		await userEvent.click(
+			canvas.getByRole('button', { name: `${t.removeFromPremarket}: Bo Volunteer` }),
+		);
+
+		const sheet = within(document.body);
+
+		await expect(await sheet.findByRole('alertdialog')).toHaveTextContent(
+			t.removeFromPremarketQuestion.replace('{name}', 'Bo Volunteer'),
+		);
+		await userEvent.click(sheet.getByRole('button', { name: t.keepInPremarket }));
+		await expect(canvas.getByRole('table', { name: t.premarketHeading })).toHaveTextContent('Bo');
+	},
+};

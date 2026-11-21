@@ -22,6 +22,7 @@ const guest: QueueGuest = {
 	queueOrder: 14,
 	calledAt: null,
 	status: 'waiting',
+	track: 'lottery',
 };
 
 describe('TicketChip', () => {

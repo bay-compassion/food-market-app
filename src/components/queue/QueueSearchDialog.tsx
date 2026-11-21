@@ -97,6 +97,7 @@ export const QueueSearchDialog = observer(function QueueSearchDialog() {
 		noShows: t.noShows,
 		notPlaced: t.notPlaced,
 		done: t.done,
+		premarket: t.premarket,
 	};
 
 	useEffect(() => {

@@ -111,12 +111,14 @@ const ManualGuestFields = observer(function ManualGuestFields({
 		lottery: t.admitToLottery,
 		queue: t.admitToQueue,
 		served: t.admitAsServed,
+		premarket: t.admitToPremarket,
 		profile: t.admitProfileOnly,
 	};
 	const admissionHelp: Record<ManualAdmission, string> = {
 		lottery: t.admitToLotteryHelp,
 		queue: t.admitToQueueHelp,
 		served: t.admitAsServedHelp,
+		premarket: t.admitToPremarketHelp,
 		profile: t.admitProfileOnlyHelp,
 	};
 	const weightLabels: Record<LotteryWeightTier, string> = {

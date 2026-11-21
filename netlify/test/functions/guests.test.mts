@@ -144,6 +144,33 @@ describe('guests handler PATCH (admin: requires Auth0)', () => {
 		expect(db.transaction).not.toHaveBeenCalled();
 	});
 
+	it('removes a premarket volunteer, clearing the time they were served', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([{ status: 'served', track: 'premarket' }]); // current visit
+		queueResult([{ id: 'visit-1', status: 'cancelled' }]); // the update
+
+		const response = await handler(
+			request('PATCH', { body: { id: 'visit-1', command: 'cancel' } }),
+		);
+
+		expect(response.status).toBe(200);
+		const update = vi.mocked(db.update).mock.results[0]!.value as { set: ReturnType<typeof vi.fn> };
+
+		expect(update.set).toHaveBeenCalledWith({ status: 'cancelled', servedAt: null });
+	});
+
+	it('never cancels a guest the line served', async () => {
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([{ status: 'served', track: 'lottery' }]);
+
+		const response = await handler(
+			request('PATCH', { body: { id: 'visit-1', command: 'cancel' } }),
+		);
+
+		expect(response.status).toBe(409);
+		expect(db.transaction).not.toHaveBeenCalled();
+	});
+
 	it('returns 404 when the visit does not exist', async () => {
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
 		queueResult([]);

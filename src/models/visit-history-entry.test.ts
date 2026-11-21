@@ -33,6 +33,21 @@ describe('VisitHistoryEntry', () => {
 		expect(line).toEqual(['Called', 'By Matt']);
 	});
 
+	it('tells a premarket check-in apart from a lottery registration', () => {
+		// Arrange
+		const checkIn = entry({
+			kind: 'premarket_check_in',
+			toStatus: 'served',
+			actor: { kind: 'guest' },
+		});
+
+		// Act
+		const line = [checkIn.title, checkIn.byline];
+
+		// Assert
+		expect(line).toEqual([t.kinds.premarket_check_in, t.byGuest]);
+	});
+
 	it('falls back to "a volunteer" for a worker whose sign-in carried no name', () => {
 		// Arrange
 		const called = entry({ actor: { kind: 'worker', id: 'auth0|worker', name: null } });

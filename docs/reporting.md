@@ -49,6 +49,12 @@ Definitions worth being precise about, because grant reports usually are:
   month, counted once each. It is read from visit history, not the stored `is_first_visit` flag.
   Guests are guest records here: a visit a worker adds creates a new record, so someone added at the
   desk counts as first-time even if they have come before under another record.
+- **Premarket volunteers** are guests whose visit is on the `premarket` track: they shopped before
+  the line, with no number and outside the draw. They count as **served** in the session and
+  monthly totals, with their own **Premarket households** and **Premarket people served**
+  subtotals, and appear in **Who was served** like anyone else. They do not count toward how full
+  a session ran, since they take none of its spots, nor as workers' additions. Service timing leaves
+  them out, because they are never called. The visit export marks them in `visit_track`.
 - **Who was served** counts each guest once for the whole period, however many sessions they
   attended, by the age band and household size from their latest served visit in the period.
 - **Lottery outcomes** only includes visits that actually went through a draw, whoever added them.

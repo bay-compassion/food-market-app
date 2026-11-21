@@ -79,10 +79,21 @@ describe('NameTag', () => {
 		const unplaced = new NameTag({ ...maria, queuePosition: null });
 
 		// Act
-		const numbers = [placed, front, unplaced].map((tag) => tag.number?.label ?? null);
+		const numbers = [placed, front, unplaced].map((tag) => tag.numberLabel);
 
 		// Assert
 		expect(numbers).toEqual(['14', 'P2', null]);
+	});
+
+	it('marks a premarket volunteer V, who shops without a number', () => {
+		// Arrange
+		const tag = new NameTag({ ...maria, queuePosition: null, track: 'premarket' });
+
+		// Act
+		const number = [tag.numberLabel, tag.numberLength];
+
+		// Assert
+		expect(number).toEqual(['V', 'short']);
 	});
 
 	it('writes the registration language as an uppercase code', () => {

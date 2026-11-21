@@ -29,6 +29,7 @@ const guest: QueueGuest = {
 	queueOrder: null,
 	calledAt: null,
 	status: 'served',
+	track: 'lottery',
 };
 
 function previewWith(overrides: Partial<GuestDeletionPreview> = {}): GuestDeletionPreview {

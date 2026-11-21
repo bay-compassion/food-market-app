@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=2cd9474e1aa9, src/components/guest-view/GuestView.tsx=5aa009d056ad, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=2ca92ef896ca, src/stores/registration.store.ts=614b65197522, src/services/guestVisitApi.ts=659246dc0aa0, src/stores/visit.store.ts=b17f8dfa546c, src/stores/root.store.ts=1f84973c8469, src/stores/market-session.store.ts=01333064971d, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=212b664e0a69, netlify/services/guestRegistration.mts=cb33f816be57, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=756295e3baf4, src/components/guest-view/GuestVisitState.tsx=be14343a3ac3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
+<!-- diagram-sources: src/App.tsx=2cd9474e1aa9, src/components/guest-view/GuestView.tsx=611b9876241f, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=2ca92ef896ca, src/stores/registration.store.ts=32f707123263, src/services/guestVisitApi.ts=1352b2fca376, src/stores/visit.store.ts=8cc51ad9c7e1, src/stores/root.store.ts=1f84973c8469, src/stores/market-session.store.ts=2361a10aedcb, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=212b664e0a69, netlify/services/guestRegistration.mts=a8e9088319cf, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=3ac98fbfcc48, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/premarket/PremarketPage.tsx=3b8e51502a43, src/stores/premarket-entry.store.ts=b02fa43fa33f, netlify/routes/guests/premarket-registration.mts=63c736a40935, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=756295e3baf4, src/components/guest-view/GuestVisitState.tsx=be14343a3ac3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
 
 # Guest journey
 
@@ -90,7 +90,9 @@ flowchart TD
     notifyButton --> activeSession
     notificationError --> activeSession
 
-    activeSession -- no --> inactiveScreen([Market-closed screen:<br/>next registration date,<br/>add to calendar, and the<br/>Saturday timeline])
+    activeSession -- no --> scheduledVisit{Session scheduled, and this<br/>device holds a visit to it? —<br/>a premarket volunteer}
+    scheduledVisit -- yes --> status
+    scheduledVisit -- no --> inactiveScreen([Market-closed screen:<br/>next registration date,<br/>add to calendar, and the<br/>Saturday timeline])
     activeSession -- yes --> hasVisit{Saved visit token<br/>on this device?}
     hasVisit -- yes --> currentVisit{Visit belongs to this market<br/>and is not cancelled?}
     currentVisit -- yes --> status[Visit status or outcome screen]
@@ -124,6 +126,13 @@ flowchart TD
     claimSubmit -- refused --> claimFailed[Expired or already used:<br/>ask a staff member for a new code]
     claimSubmit -- accepted --> adoptIdentity[Save the issued device token,<br/>the returned name, phone,<br/>and pronunciation,<br/>and a fresh visit token if the guest<br/>has a visit in today's session;<br/>a manager's override signs<br/>the old phone out]
     adoptIdentity --> open
+
+    premarketPoster([A volunteer opens /premarket,<br/>from its QR code or a shared link]) --> premarketCheck["GET /api/premarket-status"]
+    premarketCheck -- "not market day,<br/>or the session has ended" --> premarketClosed([Not open right now])
+    premarketCheck -- open --> premarketForm[Name and phone if this phone<br/>has none saved, plus household;<br/>no session questions]
+    premarketForm --> premarketSubmit["POST /api/premarket-registration<br/>(the server picks the<br/>current session)"]
+    premarketSubmit --> premarketServed[Visit on the premarket track:<br/>served, no number, outside the draw;<br/>a lottery entry on this phone<br/>is moved, not duplicated]
+    premarketServed --> status
 
     combinedForm --> questions[Answer this session's<br/>registration questions]
     lotteryOnlyForm --> questions

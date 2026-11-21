@@ -1,8 +1,10 @@
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
+import { VisitCommands } from '../../models/visit-commands';
 import type { QueueGuest } from '../../services/admin-api';
-import { visitCommandsFrom, type VisitCommand } from '../../services/visitStateMachine';
+import type { VisitCommand } from '../../services/visitStateMachine';
+import { useConfirmVisitCommand } from '../admin/use-confirm-visit-command';
 import { useShowGuestClaim } from '../admin/use-show-guest-claim';
 import { primaryVisitCommands, visitCommandLabels } from '../admin/VisitCommandButtons';
 import { useQueueDesk } from './queue-desk-context';
@@ -26,7 +28,8 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 	// The combined step takes the filled style when it is offered; there is only ever one.
 	const isPrimary = (command: VisitCommand) =>
 		!offersServeAndCallNext && primaryVisitCommands.includes(command);
-	const available = visitCommandsFrom(guest.status);
+	const confirmCommand = useConfirmVisitCommand();
+	const available = new VisitCommands(guest).offered;
 	// Returning to the queue asks where, so it gets a control of its own after the rest.
 	const commands = available
 		.filter((command) => command !== 'return_to_queue')
@@ -55,7 +58,11 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 					type="button"
 					className={isPrimary(command) ? 'primary' : undefined}
 					disabled={desk.isBusy}
-					onClick={() => {
+					onClick={async () => {
+						if (!(await confirmCommand(guest, command))) {
+							return;
+						}
+
 						desk.dismiss();
 						void desk.run(guest, command);
 					}}

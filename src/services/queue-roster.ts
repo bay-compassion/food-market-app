@@ -47,12 +47,27 @@ export class QueueRoster {
 
 	/**
 	 * Through for the day: served, or cancelled by themselves or by the session ending — in ticket
-	 * number order, with any guest who never had a number last.
+	 * number order, with any guest who never had a number last. Premarket volunteers are listed
+	 * apart, in `premarket`: they were never in the line.
 	 */
 	get done(): QueueGuest[] {
 		return this.guests
-			.filter((guest) => guest.status === 'served' || guest.status === 'cancelled')
+			.filter(
+				(guest) =>
+					guest.track === 'lottery' && (guest.status === 'served' || guest.status === 'cancelled'),
+			)
 			.sort(QueueRoster.byNumber);
+	}
+
+	/** Volunteers who shopped before the line, by name: they have no number to order them by. */
+	get premarket(): QueueGuest[] {
+		return this.guests
+			.filter((guest) => guest.track === 'premarket')
+			.sort(
+				(first, second) =>
+					first.lastName.localeCompare(second.lastName) ||
+					first.firstName.localeCompare(second.firstName),
+			);
 	}
 
 	/** Main numbers, then the priority series, then guests without a number. */

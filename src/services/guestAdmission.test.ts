@@ -20,7 +20,7 @@ describe('manualAdmissionsFor', () => {
 		const admissions = manualAdmissionsFor('registration_open');
 
 		// Assert
-		expect(admissions).toEqual(['lottery', 'queue', 'profile']);
+		expect(admissions).toEqual(['lottery', 'queue', 'premarket', 'profile']);
 	});
 });
 
