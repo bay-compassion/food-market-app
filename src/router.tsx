@@ -6,6 +6,7 @@ import { ClaimView } from './components/routes/ClaimView';
 import { SignupView } from './components/routes/SignupView';
 import { homeScreenStartPath } from './pwa/home-screen-handoff';
 import { createInstrumentedBrowserRouter } from './sentry';
+import { premarketPosterPath } from './services/premarket';
 
 /**
  * Everything a guest does lives in the initial chunk; everything else is loaded on demand.
@@ -62,6 +63,14 @@ export const router = createInstrumentedBrowserRouter([
 						path: '/terms',
 						lazy: async () => ({
 							Component: (await import('./components/legal/TermsPage')).TermsPage,
+						}),
+					},
+					{
+						// A static segment outranks `/admin/:view?` below, so this never reaches the dashboard.
+						path: premarketPosterPath,
+						lazy: async () => ({
+							Component: (await import('./components/admin/PremarketPosterRoute'))
+								.PremarketPosterRoute,
 						}),
 					},
 					{

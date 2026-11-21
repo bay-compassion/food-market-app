@@ -48,6 +48,12 @@ type TodayTranslations = {
 	copyPremarketLink: string;
 	premarketLinkCopied: string;
 	premarketLinkNotCopied: string;
+	/** The premarket's printable poster, opened from the section above. */
+	printPremarketCode: string;
+	premarketPosterTitle: string;
+	premarketPosterDescription: string;
+	backToToday: string;
+	print: string;
 	changeThePlan: string;
 	postponeRegistration: string;
 	extendRegistration: string;
@@ -873,6 +879,12 @@ export const adminTranslations = {
 			copyPremarketLink: 'Copy Link',
 			premarketLinkCopied: 'The premarket link is copied.',
 			premarketLinkNotCopied: 'The link couldn’t be copied. Select it and copy it instead.',
+			printPremarketCode: 'Print QR Code',
+			premarketPosterTitle: 'Premarket Check-In',
+			premarketPosterDescription:
+				'Volunteers: scan this code with your phone camera to check in for the premarket, any time on market day.',
+			backToToday: 'Back to Today',
+			print: 'Print',
 			changeThePlan: 'Change the Plan',
 			postponeRegistration: 'Postpone Registration',
 			extendRegistration: 'Extend Registration',
