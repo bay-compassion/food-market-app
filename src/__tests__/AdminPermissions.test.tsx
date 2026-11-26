@@ -154,7 +154,13 @@ describe('admin navigation by permission', () => {
 	});
 
 	it('offers an administrator everything', async () => {
-		renderDashboard(['run:queue', 'manage:sessions', 'read:reports', 'export:guest-data']);
+		renderDashboard([
+			'run:queue',
+			'manage:sessions',
+			'read:reports',
+			'read:guest-profiles',
+			'export:guest-data',
+		]);
 
 		expect(await navigationLabels()).toEqual([
 			t.currentSession,

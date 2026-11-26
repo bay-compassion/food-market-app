@@ -40,8 +40,42 @@ const List = styled.ul`
 		font-size: 14px;
 	}
 
-	.guest-status {
+	.guest-name {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+	}
+
+	.guest-flag {
 		flex-shrink: 0;
+		padding: 1px 7px;
+		border-radius: var(--radius-pill);
+		background: var(--color-warning-surface);
+		color: var(--color-warning);
+		font-size: 11px;
+		font-weight: 700;
+	}
+
+	.guest-visits {
+		display: grid;
+		flex-shrink: 0;
+		justify-items: end;
+		gap: 3px;
+	}
+
+	.guest-visits .last-visit {
+		color: var(--color-text-muted);
+		font-size: 13px;
+		font-weight: 500;
+	}
+
+	.guest-visits .visit-count {
+		color: var(--color-text-subtle);
+		font-size: 12px;
+	}
+
+	.guest-status {
 		padding: 3px 10px;
 		border-radius: var(--radius-pill);
 		background: var(--color-surface-soft);
@@ -59,8 +93,9 @@ export type GuestDatabaseListProps = {
 
 /**
  * The guest database on a phone, one row per guest: a grid shows a column and a half at this
- * width, so the same rows become a list of who, how to reach them, and where today's visit stands.
- * Each row's menu is the grid's own actions menu.
+ * width, so the same rows become a list of who, how to reach them, and when they last came — or,
+ * for a guest in today's session, where that visit stands. A guest with notes is flagged with the
+ * newest note's category. Each row's menu is the grid's own actions menu.
  */
 export const GuestDatabaseList = observer(function GuestDatabaseList({
 	rows,
@@ -75,31 +110,61 @@ export const GuestDatabaseList = observer(function GuestDatabaseList({
 
 	return (
 		<List className="guest-database-list" aria-label={t.allGuests}>
-			{rows.map(({ id, guest, name, phone, householdSize, language, status, statusLabel }) => (
-				<li key={id}>
+			{rows.map((row) => (
+				<li key={row.id}>
 					<span className="guest-text">
-						<strong>{name}</strong>
+						<span className="guest-name">
+							<strong>{row.name}</strong>
+							{noteFlag(row) ? <span className="guest-flag">{noteFlag(row)}</span> : null}
+						</span>
 						<span>
 							{[
-								phone,
-								householdSize === null ? null : `${t.householdColumn} ${householdSize}`,
-								language,
+								row.phone,
+								row.householdSize === null ? null : `${t.householdColumn} ${row.householdSize}`,
+								row.language,
 							]
 								.filter(Boolean)
 								.join(' · ')}
 						</span>
 					</span>
-					{status === null ? null : <span className="guest-status">{statusLabel}</span>}
+					<span className="guest-visits">
+						{row.inSession ? (
+							<span className="guest-status">{row.statusLabel}</span>
+						) : (
+							<span className="last-visit">{row.lastVisitLabel}</span>
+						)}
+						{row.visitCount > 0 ? (
+							<span className="visit-count">
+								{row.visitCount === 1
+									? t.visitCountOne
+									: t.visitCount.replace('{count}', String(row.visitCount))}
+							</span>
+						) : null}
+					</span>
 					<QueueGuestActions
-						guest={guest}
+						guest={row.guest}
 						disabled={busy}
 						menuOnly
 						offerDeletion
 						// A guest with no visit is offered no command, so this only ever runs against a visit.
-						onRun={(command) => guest.status !== null && onRun(guest, command)}
+						onRun={(command) => row.guest.status !== null && onRun(row.guest, command)}
 					/>
 				</li>
 			))}
 		</List>
 	);
 });
+
+/** What flags a guest with notes: their newest note's category, or how many notes they have. */
+function noteFlag({ noteCount, latestNoteCategory }: GuestDatabaseRow): string | null {
+	const t = adminTranslations.en;
+
+	if (noteCount === 0) {
+		return null;
+	}
+
+	return (
+		latestNoteCategory ??
+		(noteCount === 1 ? t.noteCountOne : t.noteCount.replace('{count}', String(noteCount)))
+	);
+}

@@ -26,6 +26,7 @@ import {
 	staffGuestDetailsSchema,
 	updateStaffGuestDetails,
 } from '../../services/guest-information.mjs';
+import { GuestSummaries } from '../../services/guest-summaries.mjs';
 import { registerGuest, validateSubmission } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
 
@@ -56,16 +57,16 @@ async function currentEventId() {
 
 /**
  * Which permission a guest-list read needs. `run:queue` covers a worker's daily screen — the
- * current session's roster, whether named explicitly or left to default. Reading the whole
- * database (`scope=all`) or any other session's guests is historical, cross-session PII, so it
- * takes the same gate as the bulk export (`export:guest-data`) rather than being handed to every
- * volunteer running the queue.
+ * current session's roster, whether named explicitly or left to default. The whole database
+ * (`scope=all`) is historical, cross-session PII, so it takes `read:guest-profiles`, which team
+ * leaders hold and volunteers running the queue do not. Another session's roster stays on the
+ * bulk export's gate (`export:guest-data`), as it did before the guest database had its own.
  */
 async function guestListPermission(request: Request): Promise<Permission> {
 	const url = new URL(request.url);
 
 	if (url.searchParams.get('scope') === 'all') {
-		return 'export:guest-data';
+		return 'read:guest-profiles';
 	}
 
 	const requested = url.searchParams.get('marketEventId');
@@ -78,10 +79,14 @@ async function guestListPermission(request: Request): Promise<Permission> {
 async function listGuests(request: Request) {
 	const url = new URL(request.url);
 	const query = url.searchParams.get('q')?.trim() ?? '';
-	const eventId =
-		url.searchParams.get('scope') === 'all'
-			? null
-			: (url.searchParams.get('marketEventId') ?? (await currentEventId()));
+
+	if (url.searchParams.get('scope') === 'all') {
+		return Response.json(
+			await tracedQuery('admin_guests.list_summaries', () => new GuestSummaries(db).list(query)),
+		);
+	}
+
+	const eventId = url.searchParams.get('marketEventId') ?? (await currentEventId());
 	const eventFilter = eventId ? eq(visits.marketEventId, eventId) : undefined;
 	const searchFilter = query
 		? or(
@@ -123,8 +128,6 @@ async function listGuests(request: Request) {
 					createdAt: visits.createdAt,
 				})
 				.from(guests)
-				// A left join so the whole-database view also lists guests with no visit — every visit
-				// column comes back null for them. A session filter still excludes them, as before.
 				.leftJoin(visits, eq(visits.guestId, guests.id))
 				.where(where)
 				.orderBy(desc(sql`coalesce(${visits.createdAt}, ${guests.createdAt})`))

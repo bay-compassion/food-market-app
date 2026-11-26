@@ -145,9 +145,9 @@ describe('AdminStore', () => {
 		expect(store.feedback).toBeNull();
 	});
 
-	it('loads the guest database for a role holding export:guest-data', async () => {
+	it('loads the guest database for a role holding read:guest-profiles', async () => {
 		// Arrange
-		const { store, api } = storeWith({}, {}, async () => ['run:queue', 'export:guest-data']);
+		const { store, api } = storeWith({}, {}, async () => ['run:queue', 'read:guest-profiles']);
 
 		// Act
 		await store.load();
@@ -156,7 +156,7 @@ describe('AdminStore', () => {
 		expect(api.listAllGuests).toHaveBeenCalledOnce();
 	});
 
-	it('reports a market action as done for a role without export:guest-data', async () => {
+	it('reports a market action as done for a role without read:guest-profiles', async () => {
 		// Arrange
 		const { store } = storeWith(
 			{ listAllGuests: vi.fn().mockRejectedValue(new Error('403')) },
@@ -784,7 +784,7 @@ describe('AdminStore guest deletion', () => {
 				deleteGuest: vi.fn().mockResolvedValue(undefined),
 			},
 			{},
-			async () => ['run:queue', 'export:guest-data', 'delete:guest-data'],
+			async () => ['run:queue', 'read:guest-profiles', 'delete:guest-data'],
 		);
 
 		await store.load();

@@ -7,7 +7,7 @@ import {
 	AdminApi,
 	AdminRequestError,
 	type AdminGuest,
-	type DatabaseGuest,
+	type GuestSummary,
 	type GuestClaimCode,
 	type GuestDetails,
 	type HistoricalEvent,
@@ -73,7 +73,7 @@ function addMinutes(time: string, minutes: number): Date {
 
 export class AdminStore {
 	readonly demo = new DemoStore();
-	private _guests: DatabaseGuest[] = [];
+	private _guests: GuestSummary[] = [];
 	private _sessionGuests: AdminGuest[] = [];
 	private _history: HistoricalEvent[] = [];
 	private _permissions: Permission[] = [];
@@ -112,7 +112,7 @@ export class AdminStore {
 		return new GuestNotesStore(guestId, this.api, this.notifications);
 	}
 
-	get guests(): DatabaseGuest[] {
+	get guests(): GuestSummary[] {
 		return this._guests;
 	}
 
@@ -278,11 +278,11 @@ export class AdminStore {
 
 	/**
 	 * Rereads the whole guest database. Callers run this after any change, so without
-	 * `export:guest-data` it does nothing: the server would answer 403, and an action that had
+	 * `read:guest-profiles` it does nothing: the server would answer 403, and an action that had
 	 * already succeeded would be reported as failed.
 	 */
 	async refreshGuests(search = ''): Promise<void> {
-		if (!this.can('export:guest-data')) {
+		if (!this.can('read:guest-profiles')) {
 			return;
 		}
 

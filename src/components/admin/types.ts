@@ -15,6 +15,7 @@ export type {
 	AdminGuest,
 	AdminMarketEvent,
 	DatabaseGuest,
+	GuestSummary,
 	HistoricalEvent,
 	ManualGuest,
 	Question,

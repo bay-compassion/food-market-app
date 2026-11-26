@@ -6,8 +6,8 @@ import type { Locale } from '../../locales';
 import { GuestDatabaseRows } from '../../models/guest-database-rows';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { GuestDatabaseGrid } from './GuestDatabaseGrid';
-import { busyQueue } from './queueGuests.fixture';
-import type { DatabaseGuest } from './types';
+import { guestDatabase, unvisitedGuest } from './guestSummaries.fixture';
+import type { GuestSummary } from './types';
 
 /**
  * Every guest on record, as the guest database shows them on a desk.
@@ -22,7 +22,7 @@ type GuestDatabaseGridArgs = {
 	locale: Locale;
 	busy: boolean;
 	canExport: boolean;
-	guests: DatabaseGuest[];
+	guests: GuestSummary[];
 };
 
 function Grid({ locale, busy, canExport, guests }: GuestDatabaseGridArgs) {
@@ -49,14 +49,17 @@ const meta = {
 	parameters: { shell: 'admin' },
 	// The grid is the desk form of the guest database; a phone gets the list instead.
 	globals: { viewport: { value: 'ipad12p', isRotated: false } },
-	args: { locale: 'en', busy: false, canExport: true, guests: busyQueue },
+	args: { locale: 'en', busy: false, canExport: true, guests: guestDatabase },
 } satisfies Meta<typeof Grid>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** The default view: every guest, sorted by name. */
+/**
+ * The default view: every guest, sorted by name, with when they last came, how often, and the
+ * category of their newest note.
+ */
 export const AllGuests: Story = {};
 
 /**
@@ -66,27 +69,7 @@ export const AllGuests: Story = {};
  */
 export const WithGuestsWhoHaveNoVisit: Story = {
 	args: {
-		guests: [
-			...busyQueue,
-			{
-				id: null,
-				guestId: 'guest-without-visit',
-				firstName: 'Ana',
-				lastName: 'Reyes',
-				pronunciation: null,
-				phone: '(555) 987-6543',
-				locale: 'tl',
-				householdSize: null,
-				queuePosition: null,
-				priorityNumber: null,
-				queueFront: null,
-				queueOrder: null,
-				calledAt: null,
-				status: null,
-				track: null,
-				marketEventId: null,
-			},
-		],
+		guests: [...guestDatabase, unvisitedGuest],
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
@@ -117,9 +100,9 @@ export const Busy: Story = {
 };
 
 /**
- * A worker who may run the queue but not `export:guest-data`. The toolbar keeps its columns and
- * filter controls and loses the export menu, so guest names and phone numbers stay on
- * the screen they were loaded for.
+ * A team leader, who may look guests up (`read:guest-profiles`) but not `export:guest-data`. The
+ * toolbar keeps its columns and filter controls and loses the export menu, so guest names and
+ * phone numbers stay on the screen they were loaded for.
  */
 export const WithoutExportPermission: Story = {
 	args: { canExport: false },

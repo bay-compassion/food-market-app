@@ -55,6 +55,33 @@ export function guestDatabaseColumns({
 			width: 110,
 		},
 		{
+			field: 'lastVisit',
+			headerName: t.lastVisitColumn,
+			type: 'date',
+			width: 120,
+			// Sorted and filtered as the date itself, but shown the way the phone list writes it.
+			renderCell: ({ row }) => row.lastVisitLabel,
+		},
+		{
+			field: 'visitCount',
+			headerName: t.visitsColumn,
+			type: 'number',
+			width: 90,
+			align: 'left',
+			headerAlign: 'left',
+		},
+		{
+			field: 'noteCount',
+			headerName: t.notesColumn,
+			type: 'number',
+			width: 150,
+			align: 'left',
+			headerAlign: 'left',
+			// Sorted by how many notes; shown as the newest note's category when it has one.
+			renderCell: ({ row }) =>
+				row.noteCount === 0 ? '' : (row.latestNoteCategory ?? String(row.noteCount)),
+		},
+		{
 			field: 'actions',
 			headerName: t.actionsColumn,
 			sortable: false,

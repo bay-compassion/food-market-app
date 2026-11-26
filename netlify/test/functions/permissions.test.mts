@@ -26,8 +26,9 @@ import stewardApiHandler from '../../routes/steward/index.mjs';
  * Which permission each endpoint asks for.
  *
  * The other function tests mock `requirePermission` and only care that a refusal is passed
- * through. These check the argument — that the queue is gated on `run:queue` and the identifying
- * export on `export:guest-data`, and not the other way round. Getting one of these backwards is
+ * through. These check the argument — that the queue is gated on `run:queue`, the guest database
+ * on `read:guest-profiles`, and the identifying export on `export:guest-data`, and not the other
+ * way round. Getting one of these backwards is
  * exactly the mistake that would hand every volunteer the guest database.
  */
 
@@ -78,7 +79,7 @@ describe('endpoint permissions', () => {
 			'listing the whole guest database',
 			guestsHandler,
 			json('https://x/api/admin/guests?scope=all', 'GET'),
-			'export:guest-data',
+			'read:guest-profiles',
 		],
 		[
 			'running a visit command',

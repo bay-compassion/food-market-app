@@ -33,6 +33,7 @@ const everyPermission: Permission[] = [
 	'run:queue',
 	'read:reports',
 	'export:guest-data',
+	'read:guest-profiles',
 ];
 
 function marketResponse(status: SessionStatusEnum | null) {

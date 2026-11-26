@@ -22,10 +22,17 @@ export const permissions = [
 	/** Download the visit export, which carries guest names and phone numbers. */
 	'export:guest-data',
 	/**
+	 * Open the guest database and a guest's profile: everyone on record, their visits across
+	 * sessions, and the notes staff keep about them. Held by `admin`, `owner` and `team-leader` —
+	 * a team leader looks guests up but does not take the whole list off the screen, so the grid's
+	 * export and print stay on `export:guest-data`.
+	 */
+	'read:guest-profiles',
+	/**
 	 * Permanently delete a guest and every record about them, for a guest who asks — after typing
 	 * the guest's phone number to confirm. Held by its own role, granted to the named person who
 	 * answers data requests rather than to every admin; see `docs/roles.md`. It extends
-	 * `export:guest-data`, since the guest database it is offered from only loads with that.
+	 * `read:guest-profiles`, since the guest database it is offered from only loads with that.
 	 */
 	'delete:guest-data',
 	/**
