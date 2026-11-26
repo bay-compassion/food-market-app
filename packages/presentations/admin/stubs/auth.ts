@@ -5,8 +5,8 @@
  *
  * - a market coordinator: every screen of the session's lifecycle and its records, including the
  *   guest database that `read:guest-profiles` opens;
- * - a team leader: the same day-to-day screens. The role now holds `read:guest-profiles` too, but
- *   this guide does not grant it until its narration covers the guest database.
+ * - a team leader: the same day-to-day screens, and the guest database too (`read:guest-profiles`),
+ *   but not the export, which `export:guest-data` keeps for admins.
  *
  * The frame names the role before it mounts a dashboard (`signInAs`), and the dashboard reads it
  * once, as it reads a token's permissions once.
@@ -28,12 +28,13 @@ const permissions: Record<AdminRole, Permission[]> = {
 		'read:guest-profiles',
 		'export:guest-data',
 	],
-	// As `infrastructure/auth0/tenant/tenant.yaml` grants the role, less `read:guest-profiles` (above).
+	// As `infrastructure/auth0/tenant/tenant.yaml` grants the role.
 	'team-leader': [
 		'run:queue',
 		'manage:sessions',
 		'manage:guest-access',
 		'manage:guest-notes',
+		'read:guest-profiles',
 		'read:reports',
 		'print:name-tags',
 	],

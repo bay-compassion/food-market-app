@@ -82,12 +82,12 @@ const clockAt = (time: string) =>
 	new Date(`${MARKET_DAY}T${time.length === 5 ? time + ':00' : time}`).getTime();
 
 /**
- * The phone's tabs for each role, as `AdminNavigation.tabs` lays them out for its screens: a team
- * leader has no guest database, so only the session and the queue have tabs.
+ * The phone's tabs for each role, as `AdminNavigation.tabs` lays them out for its screens. Both
+ * roles open the guest database (`read:guest-profiles`), so both have its tab.
  */
 const TAB_VIEWS: Record<AdminRole, AdminView[]> = {
 	coordinator: ['current-session', 'queue', 'guest-database'],
-	'team-leader': ['current-session', 'queue'],
+	'team-leader': ['current-session', 'queue', 'guest-database'],
 };
 
 /* ================= the market ================= */

@@ -408,7 +408,8 @@ reaches the guide on its next build.
 - `admin/` is a small Vite app, built by `build.ts` like `phone/`, that mounts `AdminDashboard`
   behind the app bar with the confirmation sheet, without Auth0. `admin/stubs/auth.ts` grants the
   permissions of the scene's `role`, as `docs/roles.md` describes it: a `coordinator`, with the
-  guest database, or a `team-leader`, without it. Neither has Dev Mode.
+  guest database and its export, or a `team-leader`, with the guest database but no export. Neither
+  has Dev Mode.
 - `stage/admin-guide.ts` is what every guide on the dashboard shares: the frame on the stage's
   phone, the fictional market (guests, the draw, service), the beat helpers (`line`, `tap`, `go`,
   `confirm`, `type`), and the timeline and player. A guide's `page.ts` calls
