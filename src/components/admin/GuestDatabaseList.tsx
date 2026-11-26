@@ -22,6 +22,23 @@ const List = styled.ul`
 		border-top: 1px solid var(--color-divider);
 	}
 
+	/* The row's who and when, as one button that opens the guest's profile. */
+	.guest-open {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		min-height: 48px;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		text-align: start;
+		cursor: pointer;
+	}
+
 	.guest-text {
 		display: grid;
 		flex: 1;
@@ -89,6 +106,7 @@ export type GuestDatabaseListProps = {
 	rows: GuestDatabaseRow[];
 	busy?: boolean;
 	onRun: (guest: QueueGuest, command: VisitCommand) => void;
+	onOpenGuest: (guestId: string) => void;
 };
 
 /**
@@ -101,6 +119,7 @@ export const GuestDatabaseList = observer(function GuestDatabaseList({
 	rows,
 	busy,
 	onRun,
+	onOpenGuest,
 }: GuestDatabaseListProps) {
 	const t = adminTranslations.en;
 
@@ -112,35 +131,37 @@ export const GuestDatabaseList = observer(function GuestDatabaseList({
 		<List className="guest-database-list" aria-label={t.allGuests}>
 			{rows.map((row) => (
 				<li key={row.id}>
-					<span className="guest-text">
-						<span className="guest-name">
-							<strong>{row.name}</strong>
-							{noteFlag(row) ? <span className="guest-flag">{noteFlag(row)}</span> : null}
-						</span>
-						<span>
-							{[
-								row.phone,
-								row.householdSize === null ? null : `${t.householdColumn} ${row.householdSize}`,
-								row.language,
-							]
-								.filter(Boolean)
-								.join(' · ')}
-						</span>
-					</span>
-					<span className="guest-visits">
-						{row.inSession ? (
-							<span className="guest-status">{row.statusLabel}</span>
-						) : (
-							<span className="last-visit">{row.lastVisitLabel}</span>
-						)}
-						{row.visitCount > 0 ? (
-							<span className="visit-count">
-								{row.visitCount === 1
-									? t.visitCountOne
-									: t.visitCount.replace('{count}', String(row.visitCount))}
+					<button type="button" className="guest-open" onClick={() => onOpenGuest(row.id)}>
+						<span className="guest-text">
+							<span className="guest-name">
+								<strong>{row.name}</strong>
+								{noteFlag(row) ? <span className="guest-flag">{noteFlag(row)}</span> : null}
 							</span>
-						) : null}
-					</span>
+							<span>
+								{[
+									row.phone,
+									row.householdSize === null ? null : `${t.householdColumn} ${row.householdSize}`,
+									row.language,
+								]
+									.filter(Boolean)
+									.join(' · ')}
+							</span>
+						</span>
+						<span className="guest-visits">
+							{row.inSession ? (
+								<span className="guest-status">{row.statusLabel}</span>
+							) : (
+								<span className="last-visit">{row.lastVisitLabel}</span>
+							)}
+							{row.visitCount > 0 ? (
+								<span className="visit-count">
+									{row.visitCount === 1
+										? t.visitCountOne
+										: t.visitCount.replace('{count}', String(row.visitCount))}
+								</span>
+							) : null}
+						</span>
+					</button>
 					<QueueGuestActions
 						guest={row.guest}
 						disabled={busy}

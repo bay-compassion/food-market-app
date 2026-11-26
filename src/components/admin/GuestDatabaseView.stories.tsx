@@ -51,6 +51,7 @@ function View({ locale, admissions, guests }: GuestDatabaseViewArgs) {
 				admissions={admissions}
 				onRun={fn()}
 				onAddGuest={fn()}
+				onOpenGuest={fn()}
 			/>
 			<ConfirmationDrawer />
 		</RootStoreProvider>

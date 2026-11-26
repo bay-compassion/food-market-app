@@ -18,6 +18,8 @@ export type GuestDatabaseGridProps = {
 	canExport: boolean;
 	busy?: boolean;
 	onRun: (guest: QueueGuest, command: VisitCommand) => void;
+	/** Opens a guest's profile; a click anywhere on their row but the actions menu. */
+	onOpenGuest: (guestId: string) => void;
 };
 
 /*
@@ -39,6 +41,11 @@ const Grid = styled(DataGrid)`
 	 * which turns the queue's pill-shaped action button into a circle. Centring the cell with flex
 	 * instead lets the line height go back to normal for everything inside it.
 	 */
+	/* A row opens the guest's profile. */
+	.MuiDataGrid-row {
+		cursor: pointer;
+	}
+
 	.MuiDataGrid-cell {
 		display: flex;
 		align-items: center;
@@ -83,7 +90,14 @@ const panelStyles = css`
  * grid, shared with the phone's list, so the toolbar keeps only the filter panel (one column at a
  * time), the column picker, and export.
  */
-export function GuestDatabaseGrid({ rows, shown, canExport, busy, onRun }: GuestDatabaseGridProps) {
+export function GuestDatabaseGrid({
+	rows,
+	shown,
+	canExport,
+	busy,
+	onRun,
+	onOpenGuest,
+}: GuestDatabaseGridProps) {
 	const t = adminTranslations.en;
 	// Household size and visit status are worth filtering and sorting by, but not worth a column of
 	// their own on a screen used to look a guest up, so they start hidden. The Columns button brings
@@ -111,6 +125,17 @@ export function GuestDatabaseGrid({ rows, shown, canExport, busy, onRun }: Guest
 				loading={busy}
 				rowHeight={56}
 				disableRowSelectionOnClick
+				onCellClick={({ field, row }) => {
+					if (field !== 'actions') {
+						onOpenGuest(row.id);
+					}
+				}}
+				// The keyboard's way to the same place: Enter on a focused cell.
+				onCellKeyDown={({ field, row }, event) => {
+					if (event.key === 'Enter' && field !== 'actions') {
+						onOpenGuest(row.id);
+					}
+				}}
 				pageSizeOptions={[25, 50, 100]}
 				initialState={{
 					pagination: { paginationModel: { pageSize: 25, page: 0 } },

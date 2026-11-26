@@ -82,6 +82,12 @@ describe('endpoint permissions', () => {
 			'read:guest-profiles',
 		],
 		[
+			'reading a guest’s profile',
+			guestsHandler,
+			json('https://x/api/admin/guests/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f', 'GET'),
+			'read:guest-profiles',
+		],
+		[
 			'running a visit command',
 			guestsHandler,
 			json('https://x/api/admin/guests', 'PATCH', { id: 'visit-1', command: 'serve' }),

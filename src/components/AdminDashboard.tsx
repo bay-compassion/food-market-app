@@ -34,6 +34,8 @@ export type AdminDashboardProps = {
 	view?: AdminView;
 	/** The ended session whose participants the session history has open, as the route names it. */
 	sessionId?: string;
+	/** The guest whose profile the guest database has open, as the route names it. */
+	guestId?: string;
 	/** Goes to a screen, or with `item`, to something open within it. */
 	onNavigate: (view: AdminView, item?: string) => void;
 };
@@ -43,6 +45,7 @@ export const AdminDashboard = observer(function AdminDashboard({
 	getAccessToken,
 	view,
 	sessionId,
+	guestId,
 	onNavigate,
 }: AdminDashboardProps) {
 	const rootStore = useRootStore();
@@ -210,6 +213,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 				/>
 			) : activeView === 'guest-database' ? (
 				<GuestDatabaseView
+					guestId={guestId}
+					onOpenGuest={(id) => onNavigate('guest-database', id)}
 					statusLabels={statusLabels}
 					admissions={sessionAdmissions}
 					onRun={(guest, command) => void runGuestCommand(guest, command)}
