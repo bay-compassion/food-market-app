@@ -27,6 +27,7 @@ import {
 	updateStaffGuestDetails,
 } from '../../services/guest-information.mjs';
 import { GuestProfileReader } from '../../services/guest-profile.mjs';
+import { GuestRelatedRecords } from '../../services/guest-related-records.mjs';
 import { GuestSummaries } from '../../services/guest-summaries.mjs';
 import { registerGuest, validateSubmission } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
@@ -217,6 +218,20 @@ async function readGuestProfile(context: Context<AdminEnv>) {
 	return profile ? Response.json(profile) : jsonError('Guest not found.', 404);
 }
 
+async function readRelatedRecords(context: Context<AdminEnv>) {
+	const guestId = guestIdSchema.safeParse(context.req.param('guestId'));
+
+	if (!guestId.success) {
+		return jsonError('Invalid guest.');
+	}
+
+	const related = await tracedQuery('admin_guests.related', () =>
+		new GuestRelatedRecords(db).read(guestId.data),
+	);
+
+	return related ? Response.json(related) : jsonError('Guest not found.', 404);
+}
+
 async function updateGuestDetails(context: Context<AdminEnv>) {
 	const guestId = guestIdSchema.safeParse(context.req.param('guestId'));
 	const details = staffGuestDetailsSchema.safeParse(await jsonBody(context.req.raw));
@@ -292,6 +307,10 @@ guestRoutes.delete('/guests/:guestId', withPermission('delete:guest-data'), (con
 	deleteGuest(context),
 );
 guestRoutes.all('/guests/:guestId', methodNotAllowed);
+guestRoutes.get('/guests/:guestId/related', withPermission('read:guest-profiles'), (context) =>
+	readRelatedRecords(context),
+);
+guestRoutes.all('/guests/:guestId/related', methodNotAllowed);
 guestRoutes.get('/guests/:guestId/deletion', withPermission('delete:guest-data'), (context) =>
 	previewGuestDeletion(context),
 );

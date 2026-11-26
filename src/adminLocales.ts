@@ -199,6 +199,31 @@ export interface GuestProfileTranslation {
 	overviewTab: string;
 	visitsTab: string;
 	notesTab: string;
+	recordsTab: string;
+	sameTitle: string;
+	/** Under the title: how records are linked. */
+	sameHelp: string;
+	samePerson: string;
+	sameHousehold: string;
+	noRelated: string;
+	relatedLoading: string;
+	relatedFailed: string;
+	/** A linked record's line; `{created}` is when it was made, `{visits}` its visit count. */
+	relatedDetail: string;
+	openRecord: string;
+	accessTitle: string;
+	onPhone: string;
+	notOnPhone: string;
+	textAlertsOn: string;
+	textAlertsOff: string;
+	moveToPhone: string;
+	putOnPhone: string;
+	/** Under the button: what showing a claim code does to a phone that already holds the record. */
+	moveToPhoneHelp: string;
+	oddsTitle: string;
+	stewardsOnly: string;
+	oddsHelp: string;
+	openStewardArea: string;
 	/** Hands over from the Overview's newest note to the Notes tab; `{count}` is every note. */
 	seeAllNotes: string;
 	/** The same, for a guest with one note or none, where adding one is the likelier next step. */
@@ -1386,6 +1411,30 @@ export const adminTranslations = {
 			overviewTab: 'Overview',
 			visitsTab: 'Visits',
 			notesTab: 'Notes',
+			recordsTab: 'Records',
+			sameTitle: 'Other Records',
+			sameHelp:
+				'Linked by a phone number this record or one of its visits used. The same name in the same household is likely the same person.',
+			samePerson: 'Likely the same person',
+			sameHousehold: 'Same household',
+			noRelated: 'No other records share a phone number with this one.',
+			relatedLoading: 'Looking for linked records…',
+			relatedFailed: 'The linked records couldn’t be loaded.',
+			relatedDetail: 'On record since {created} · {visits}',
+			openRecord: 'Open',
+			accessTitle: 'App Access',
+			onPhone: 'On their phone',
+			notOnPhone: 'Not on a phone',
+			textAlertsOn: 'Text alerts on',
+			textAlertsOff: 'Text alerts off',
+			moveToPhone: 'Move to a New Phone',
+			putOnPhone: 'Put on a Phone',
+			moveToPhoneHelp:
+				'Shows a one-time QR code. A phone that already holds the record loses it once the code is scanned.',
+			oddsTitle: 'Lottery Odds',
+			stewardsOnly: 'Stewards only',
+			oddsHelp: 'This guest’s odds, draw history, and any changes to them are in the steward area.',
+			openStewardArea: 'Open the Steward Area',
 			seeAllNotes: 'All {count} Notes',
 			openNotes: 'Open Notes',
 			noVisitsYet: 'No visits yet.',

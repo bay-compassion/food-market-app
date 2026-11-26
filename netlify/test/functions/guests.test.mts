@@ -417,6 +417,78 @@ describe('guests handler GET /guests/:guestId (profile)', () => {
 	});
 });
 
+describe('guests handler GET /guests/:guestId/related', () => {
+	const guestId = '7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f';
+
+	it('lists the records linked by phone, the same person first', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([
+			{ guestId, firstName: 'Maria', lastName: 'Lopez', phone: '4155550142' },
+			{ guestId: 'same', firstName: 'María', lastName: 'López', phone: '4155550142' },
+			{ guestId: 'daughter', firstName: 'Ana', lastName: 'Lopez', phone: '4155550199' },
+			{ guestId: 'stranger', firstName: 'Li', lastName: 'Chen', phone: '6505550108' },
+		]);
+		// The daughter's visit was made with her mother's phone, which links the two.
+		queueResult([{ guestId: 'daughter', phone: '4155550142' }]);
+		queueResult([
+			{
+				guestId: 'daughter',
+				firstName: 'Ana',
+				lastName: 'Lopez',
+				phone: '(415) 555-0199',
+				createdAt: new Date('2026-01-10T17:00:00Z'),
+				visitCount: 2,
+				lastVisitDate: '2026-11-12',
+			},
+			{
+				guestId: 'same',
+				firstName: 'María',
+				lastName: 'López',
+				phone: '(415) 555-0142',
+				createdAt: new Date('2025-06-04T17:00:00Z'),
+				visitCount: 1,
+				lastVisitDate: null,
+			},
+		]);
+
+		// Act
+		const response = await handler(request('GET', { path: `/${guestId}/related` }));
+
+		// Assert
+		await expect(response.json()).resolves.toEqual([
+			expect.objectContaining({ guestId: 'same', relation: 'same-person' }),
+			expect.objectContaining({ guestId: 'daughter', relation: 'household', visitCount: 2 }),
+		]);
+	});
+
+	it('answers an empty list for a guest linked to nobody, without a further read', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([{ guestId, firstName: 'Maria', lastName: 'Lopez', phone: '4155550142' }]);
+		queueResult([]);
+
+		// Act
+		const response = await handler(request('GET', { path: `/${guestId}/related` }));
+
+		// Assert
+		await expect(response.json()).resolves.toEqual([]);
+	});
+
+	it('answers 404 for a guest that does not exist', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([]);
+		queueResult([]);
+
+		// Act
+		const response = await handler(request('GET', { path: `/${guestId}/related` }));
+
+		// Assert
+		expect(response.status).toBe(404);
+	});
+});
+
 describe('guests handler PATCH /guests/:guestId (staff details)', () => {
 	const guestId = '6f1c2b8e-4a1d-4f7e-9b2a-3c5d7e9f1a2b';
 

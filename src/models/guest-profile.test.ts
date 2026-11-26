@@ -34,6 +34,8 @@ function profileWith(visits: GuestProfileVisit[]): GuestProfile {
 		phone: '(415) 555-0142',
 		locale: 'es',
 		createdAt: '2025-03-12T17:00:00.000Z',
+		onPhone: true,
+		textAlerts: true,
 		visits,
 	};
 

@@ -5,7 +5,7 @@ import type {
 	GuestNoteRecord,
 	GuestNoteRevision,
 } from '../models/guest-note.ts';
-import type { GuestProfileRecord } from '../models/guest-profile.ts';
+import type { GuestProfileRecord, RelatedGuestRecord } from '../models/guest-profile.ts';
 import type { SessionOverview } from '../stores/market-session.store.ts';
 import type { AgeRange } from './ageRanges.ts';
 import type { DemoRoster } from './demo-preview';
@@ -213,6 +213,14 @@ export class AdminApi {
 		return this.readOrRefuse<GuestProfileRecord>(
 			await this.get(`/api/admin/guests/${encodeURIComponent(guestId)}`),
 			'guest_profile',
+		);
+	}
+
+	/** The other records likely the same person as a guest, or in their household. */
+	async listRelatedGuests(guestId: string): Promise<RelatedGuestRecord[]> {
+		return this.readOrRefuse<RelatedGuestRecord[]>(
+			await this.get(`/api/admin/guests/${encodeURIComponent(guestId)}/related`),
+			'related_guests',
 		);
 	}
 

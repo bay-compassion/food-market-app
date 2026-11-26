@@ -84,6 +84,7 @@ export class AdminStore {
 	private _guestClaim: GuestClaim | null = null;
 	private _kioskUnlockCode: KioskUnlockCode | null = null;
 	private _guestDeletion: GuestDeletionPreview | null = null;
+	private _deletedGuestId: string | null = null;
 	private _printStationOnline: boolean | null = null;
 	private _isSendingTestTag = false;
 	/** Guest commands sent and not yet answered. A poll landing meanwhile would undo their status. */
@@ -180,6 +181,11 @@ export class AdminStore {
 	/** The guest an admin has asked to delete permanently, while the confirmation dialog is open. */
 	get guestDeletion(): GuestDeletionPreview | null {
 		return this._guestDeletion;
+	}
+
+	/** The guest most recently deleted, so a screen showing them can leave. */
+	get deletedGuestId(): string | null {
+		return this._deletedGuestId;
 	}
 
 	/** The screens this worker can open, in navigation order. */
@@ -669,6 +675,7 @@ export class AdminStore {
 
 			runInAction(() => {
 				this._guestDeletion = null;
+				this._deletedGuestId = guest.guestId;
 				this.report({ kind: 'guest-deleted', name: `${guest.firstName} ${guest.lastName}` });
 			});
 			// The deletion has landed; a failed reread must not report it as failed and invite a retry.
