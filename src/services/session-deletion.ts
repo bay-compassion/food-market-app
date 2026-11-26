@@ -16,6 +16,7 @@ export const sessionDataTables = [
 	'guests',
 	'registration_questions',
 	'lottery_odds_changes',
+	'guest_notes',
 ] as const;
 
 export type SessionDataTable = (typeof sessionDataTables)[number];

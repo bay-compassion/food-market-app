@@ -13,6 +13,7 @@ export const guestDataTables = [
 	'sms_opt_outs',
 	'guest_claims',
 	'lottery_odds_changes',
+	'guest_notes',
 ] as const;
 
 export type GuestDataTable = (typeof guestDataTables)[number];

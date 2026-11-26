@@ -27,6 +27,7 @@ const permissions: Record<AdminRole, Permission[]> = {
 		'run:queue',
 		'manage:sessions',
 		'manage:guest-access',
+		'manage:guest-notes',
 		'read:reports',
 		'print:name-tags',
 	],

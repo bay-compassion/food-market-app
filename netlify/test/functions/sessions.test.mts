@@ -62,6 +62,8 @@ function queueEndedSession({ warehoused = false } = {}) {
 	for (let table = 0; table < 7; table += 1) {
 		queueResult([{ value: 1 }]);
 	}
+	// The one session-only guest's staff notes.
+	queueResult([{ value: 1 }]);
 }
 
 afterEach(() => {

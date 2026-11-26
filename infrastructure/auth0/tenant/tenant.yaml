@@ -36,6 +36,8 @@ resourceServers:
         description: Draw odds, temperature, and draw history
       - value: manage:stewardship
         description: Give a guest better odds in the lottery draw
+      - value: manage:guest-notes
+        description: Change any staff note about a guest, and manage note categories
     signing_alg: RS256
     skip_consent_for_verifiable_first_party_clients: true
     subject_type_authorization:
@@ -263,6 +265,8 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:guest-access
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:guest-notes
+        resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:sessions
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:workers
@@ -309,6 +313,8 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:guest-access
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:guest-notes
+        resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:sessions
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:workers
@@ -332,6 +338,8 @@ roles:
       the guest database
     permissions:
       - permission_name: manage:guest-access
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: manage:guest-notes
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: manage:sessions
         resource_server_identifier: https://thebaycompassion.org

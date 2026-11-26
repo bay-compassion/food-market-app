@@ -8,7 +8,7 @@ const guestId = '7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f';
 const signedUp = new Date('2026-09-27T17:00:00.000Z');
 
 /**
- * Queues what one preview reads, in its order: the guest, a count for each of the seven tables,
+ * Queues what one preview reads, in its order: the guest, a count for each of the nine tables,
  * then any visit in a session that has not ended. The cascades themselves are Postgres's; these
  * tests cover the decisions made before them.
  */
@@ -23,7 +23,7 @@ function queuePreview({ found = true, openVisit = false } = {}) {
 		return;
 	}
 
-	for (const value of [3, 2, 1, 1, 1, 0, 0, 0]) {
+	for (const value of [3, 2, 1, 1, 1, 0, 0, 0, 4]) {
 		queueResult([{ value }]);
 	}
 	queueResult(openVisit ? [{ id: 'visit-open' }] : []);
@@ -63,6 +63,7 @@ describe('GuestDeletion.preview', () => {
 				sms_opt_outs: 0,
 				guest_claims: 0,
 				lottery_odds_changes: 0,
+				guest_notes: 4,
 			},
 		});
 	});

@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=e23e3513e33c -->
+<!-- diagram-sources: db/schema.mts=f0acad269998 -->
 
 # Database structure
 
@@ -31,6 +31,9 @@ erDiagram
     visits ||--o{ visit_events : "records"
     guests ||--o{ lottery_odds_changes : "has odds set by"
     market_events |o--o{ lottery_odds_changes : "scopes"
+    guests ||--o{ guest_notes : "has noted by staff"
+    market_events |o--o{ guest_notes : "was open for"
+    guest_note_categories |o--o{ guest_notes : "files"
 
     market_locations {
         uuid id PK
@@ -140,6 +143,27 @@ erDiagram
         text note "nullable"
         text actor_id "the steward's Auth0 subject"
         text actor_name "as their sign-in gave it at the time"
+        timestamptz created_at
+    }
+
+    guest_notes {
+        uuid id PK
+        uuid guest_id FK "cascade delete"
+        uuid market_event_id FK "nullable; the session open when written; set null if it is deleted"
+        uuid category_id FK "nullable"
+        text kind "text | screenshot_notice"
+        text body "nullable for a structured note; up to 2,000 characters"
+        jsonb data "a structured note's particulars, by kind"
+        text author_id "nullable; the worker's Auth0 subject"
+        text author_name "nullable; as their sign-in gave it at the time"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    guest_note_categories {
+        uuid id PK
+        text label "unique among categories still offered"
+        timestamptz archived_at "nullable; retired, but kept for notes filed under it"
         timestamptz created_at
     }
 
@@ -277,8 +301,10 @@ A few things the diagram can't show on its own:
   `sms_subscriptions` row; an inbound START removes the opt-out row directly.
 - **Only `market_events → registration_questions`, `visits → push_subscriptions`,
   `visits → notification_deliveries`, `visits → visit_events`, `guests → sms_subscriptions`,
-  `guests → sms_opt_outs`, `guests → guest_claims`, `guests → lottery_odds_changes`, and
-  `market_events → lottery_odds_changes` cascade on delete.**
+  `guests → sms_opt_outs`, `guests → guest_claims`, `guests → lottery_odds_changes`,
+  `guests → guest_notes`, and `market_events → lottery_odds_changes` cascade on delete.**
+  `market_events → guest_notes` sets the note's session to null instead, so deleting a test
+  session never takes a kept guest's notes with it.
   `visits` itself has plain references, so a guest or market event with visits can't simply be
   deleted.
 

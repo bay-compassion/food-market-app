@@ -4,6 +4,7 @@ import type { PgTable } from 'drizzle-orm/pg-core';
 import type { db as appDatabase } from '../../db/index.mjs';
 import {
 	guestClaims,
+	guestNotes,
 	guests,
 	lotteryOddsChanges,
 	marketEvents,
@@ -62,7 +63,7 @@ export class GuestDeletion {
 	 *
 	 * `visits` is the only table that does not cascade from `guests`, so its rows go first; that
 	 * cascades to each visit's events, notifications and push subscription, and deleting the guest
-	 * then cascades to their text consent, opt-outs and phone-transfer codes.
+	 * then cascades to their text consent, opt-outs, phone-transfer codes, odds changes and staff notes.
 	 */
 	async delete(typedPhone: string): Promise<GuestDeletionResult> {
 		return this.database.transaction(async (tx) => {
@@ -136,6 +137,7 @@ export class GuestDeletion {
 				lotteryOddsChanges,
 				eq(lotteryOddsChanges.guestId, this.guestId),
 			),
+			guest_notes: await tally(guestNotes, eq(guestNotes.guestId, this.guestId)),
 		};
 		const [openVisit] = await database
 			.select({ id: visits.id })
