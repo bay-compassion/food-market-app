@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
-import { expect, screen, within } from 'storybook/test';
+import { StrictMode, useState } from 'react';
+import { expect, screen, waitFor, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import { AdminApi, type AdminGuest, type HistoricalEvent } from '../../services/admin-api';
@@ -104,6 +104,8 @@ function SeededView({ refuse }: SessionParticipantsViewArgs) {
 		const request = (input: string, init?: RequestInit) => {
 			if (init?.method === 'PATCH') {
 				corrected = !refuse;
+				const visitId = decodeURIComponent(input.split('/').at(-1) ?? '');
+				const { status } = JSON.parse(init.body as string) as { status: VisitStatus };
 
 				return Promise.resolve(
 					refuse
@@ -114,7 +116,7 @@ function SeededView({ refuse }: SessionParticipantsViewArgs) {
 								},
 								{ status: 409 },
 							)
-						: Response.json({ id: 'visit-3', status: 'served' }),
+						: Response.json({ id: visitId, status }),
 				);
 			}
 
@@ -226,5 +228,160 @@ export const RefusedAsStale: Story = {
 		await userEvent.click(within(sheet).getByRole('button', { name: t.participants.confirm }));
 		await expect(await screen.findByText(/changed since the list was loaded/)).toBeVisible();
 		await expect(canvas.getByRole('region', { name: t.noShow })).toHaveTextContent('Cyrus Rahimi');
+	},
+};
+
+const checkTicket = (number: string, name: string) =>
+	t.participants.checkTicket.replace('{number}', number).replace('{name}', name);
+
+/**
+ * On a phone, Select turns the tickets into checkboxes and docks a bar on the tab bar. Two guests
+ * who were in fact served are picked out and corrected together, after one confirmation.
+ */
+export const CorrectSeveralOnPhone: Story = {
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(await canvas.findByRole('button', { name: t.participants.select }));
+		await userEvent.click(canvas.getByRole('checkbox', { name: checkTicket('3', 'Cyrus Rahimi') }));
+		await userEvent.click(canvas.getByRole('checkbox', { name: checkTicket('—', 'Dana Okafor') }));
+
+		const bar = canvas.getByRole('region', { name: t.participants.bulkTitle });
+
+		await expect(bar).toHaveTextContent(t.participants.selected.replace('{count}', '2'));
+		await userEvent.click(within(bar).getByRole('button', { name: markServed }));
+
+		const sheet = await within(document.body).findByRole('alertdialog');
+
+		await expect(sheet).toHaveTextContent(
+			t.participants.bulkConfirmQuestion.replace('{guests}', '2 guests').replace('{to}', t.served),
+		);
+		await userEvent.click(within(sheet).getByRole('button', { name: t.participants.confirm }));
+		await expect(
+			await screen.findByText(t.participants.bulkCorrected.replace('{guests}', '2 guests')),
+		).toBeVisible();
+
+		const servedSection = canvas.getByRole('region', { name: t.served });
+
+		await expect(servedSection).toHaveTextContent('Cyrus Rahimi');
+		await expect(servedSection).toHaveTextContent('Dana Okafor');
+		await expect(canvas.queryByRole('region', { name: t.participants.bulkTitle })).toBeNull();
+	},
+};
+
+/**
+ * On a desk, the bar sits under the list. A section's Select All picks out everyone in it; a
+ * status they all already have is not offered.
+ */
+export const SelectASectionOnDesk: Story = {
+	globals: { viewport: { value: 'ipad12p', isRotated: true } },
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(await canvas.findByRole('button', { name: t.participants.select }));
+		await userEvent.click(
+			canvas.getByRole('button', {
+				name: t.participants.selectAllLabel.replace('{status}', t.served),
+			}),
+		);
+
+		const bar = canvas.getByRole('region', { name: t.participants.bulkTitle });
+
+		await expect(bar).toHaveTextContent(t.participants.selected.replace('{count}', '2'));
+		await expect(within(bar).queryByRole('button', { name: markServed })).toBeNull();
+		await expect(
+			within(bar).getByRole('button', {
+				name: t.participants.changeTo.replace('{status}', t.noShow),
+			}),
+		).toBeVisible();
+	},
+};
+
+/** Searching finds a guest anywhere in the session; picking the one found opens their ticket. */
+export const SearchToOpen: Story = {
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(await canvas.findByRole('button', { name: t.participants.openSearch }));
+
+		const dialog = within(await screen.findByRole('dialog', { name: t.queueDesk.search }));
+		const field = dialog.getByRole('searchbox', { name: t.queueDesk.search });
+
+		// Ready to type into straight away, with no second tap to raise a phone's keyboard.
+		await expect(field).toHaveFocus();
+		await userEvent.type(field, 'dana');
+		await userEvent.keyboard('{Enter}');
+
+		// The sheet renders in a portal outside the story's canvas.
+		const correctTitle = await screen.findByText(t.participants.correctTitle);
+
+		await expect(correctTitle.closest('.MuiDrawer-paper')).toHaveTextContent('Dana Okafor');
+		// The search fades out, so it is still in the page for the first frames after it closes.
+		await waitFor(() =>
+			expect(screen.queryByRole('dialog', { name: t.queueDesk.search })).toBeNull(),
+		);
+	},
+};
+
+/** While selecting, a guest found by search is checked rather than opened, and the search stays. */
+export const SearchWhileSelecting: Story = {
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(await canvas.findByRole('button', { name: t.participants.select }));
+		await userEvent.click(canvas.getByRole('button', { name: t.participants.openSearch }));
+
+		const dialog = within(await screen.findByRole('dialog', { name: t.queueDesk.search }));
+
+		await userEvent.type(dialog.getByRole('searchbox', { name: t.queueDesk.search }), 'cyrus');
+		await userEvent.click(dialog.getByRole('checkbox', { name: checkTicket('3', 'Cyrus Rahimi') }));
+
+		await expect(
+			dialog.getByRole('checkbox', { name: checkTicket('3', 'Cyrus Rahimi') }),
+		).toBeChecked();
+		await userEvent.click(dialog.getByRole('button', { name: t.queueDesk.closeSearch }));
+		await expect(
+			await canvas.findByRole('region', { name: t.participants.bulkTitle }),
+		).toHaveTextContent(t.participants.selected.replace('{count}', '1'));
+	},
+};
+
+/** Each status's guests read by last name rather than number. */
+export const SortedByLastName: Story = {
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(
+			await canvas.findByRole('button', {
+				name: t.queueDesk.sortLabel.replace('{order}', t.queueDesk.orders.queue),
+			}),
+		);
+		await userEvent.click(
+			await within(document.body).findByRole('menuitemradio', {
+				name: t.queueDesk.orders.lastName,
+			}),
+		);
+
+		const served = within(canvas.getByRole('region', { name: t.served }));
+		const names = served
+			.getAllByRole('button', { name: /^Open ticket / })
+			.map((ticket) => ticket.querySelector('.name')?.textContent);
+
+		// Ana Reyes is number 1 and Bao Nguyen number 2; by last name, Nguyen comes first.
+		await expect(names).toEqual(['Bao Nguyen', 'Ana Reyes']);
+	},
+};
+
+/**
+ * Opening the search puts the cursor in its field, ready to type. Rendered in `StrictMode`, as the
+ * app is: there the dialog's focus trap is set up twice, and focus given only on mount was lost to
+ * the dialog itself.
+ */
+export const SearchFocusesItsField: Story = {
+	decorators: [
+		(Story) => (
+			<StrictMode>
+				<Story />
+			</StrictMode>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(await canvas.findByRole('button', { name: t.participants.openSearch }));
+
+		const dialog = within(await screen.findByRole('dialog', { name: t.queueDesk.search }));
+
+		await waitFor(() =>
+			expect(dialog.getByRole('searchbox', { name: t.queueDesk.search })).toHaveFocus(),
+		);
 	},
 };

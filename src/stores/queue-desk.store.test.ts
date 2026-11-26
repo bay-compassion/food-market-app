@@ -1,6 +1,7 @@
 import { observable } from 'mobx';
 import { describe, expect, it, vi } from 'vitest';
 
+import { adminTranslations } from '../adminLocales';
 import type { AdminGuest } from '../services/admin-api';
 import type { Permission } from '../services/permissions';
 import { SessionStatusEnum } from '../services/sessionStateMachine';
@@ -486,6 +487,26 @@ describe('QueueDeskStore', () => {
 		expect(admin.refreshSessionGuests).toHaveBeenCalledTimes(1);
 	});
 
+	it('lists the sections by name when asked, but keeps those waiting in line order', () => {
+		// Arrange
+		const { desk } = deskWith({
+			guests: [
+				guestWith({ id: 'visit-1', firstName: 'Zoe', queuePosition: 1, queueOrder: 1 }),
+				guestWith({ id: 'visit-2', firstName: 'Ada', queuePosition: 2, queueOrder: 2 }),
+				guestWith({ id: 'visit-3', firstName: 'Yan', queuePosition: 3, status: 'served' }),
+				guestWith({ id: 'visit-4', firstName: 'Bea', queuePosition: 4, status: 'served' }),
+			],
+		});
+
+		// Act
+		desk.setOrder('firstName');
+
+		// Assert
+		expect(desk.listed.waiting.map(({ id }) => id)).toEqual(['visit-1', 'visit-2']);
+		expect(desk.listed.done.map(({ id }) => id)).toEqual(['visit-4', 'visit-3']);
+		expect(desk.nextNumber?.label).toBe('1');
+	});
+
 	it('finds tickets by section without narrowing the line it calls from', () => {
 		// Arrange
 		const { desk } = deskWith({
@@ -501,7 +522,11 @@ describe('QueueDeskStore', () => {
 
 		// Assert
 		expect(desk.searchResults).toEqual([
-			{ section: 'waiting', guests: [expect.objectContaining({ firstName: 'Grace' })] },
+			{
+				section: 'waiting',
+				title: adminTranslations.en.queueDesk.waiting,
+				guests: [expect.objectContaining({ firstName: 'Grace' })],
+			},
 		]);
 		expect(desk.roster.waiting).toHaveLength(2);
 		expect(desk.nextNumber?.label).toBe('1');

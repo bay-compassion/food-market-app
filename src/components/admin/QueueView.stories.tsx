@@ -175,3 +175,46 @@ export const InTheDashboardAtTheDesk: Story = {
 		).toBeVisible();
 	},
 };
+
+/** The names on a section's tickets, top to bottom. */
+function ticketNames(canvas: ReturnType<typeof within>, section: string): string[] {
+	return within(canvas.getByRole('region', { name: section }))
+		.getAllByRole('button', { name: /^Open ticket / })
+		.map((ticket) => ticket.querySelector('.name')?.textContent ?? '');
+}
+
+/**
+ * The line read by first name, to find a guest at a glance. Only the lists change, and not the
+ * waiting list, which always reads as the line: the call button still calls the front of it, and
+ * the sort button fills in to say the other sections are in another order.
+ */
+export const SortedByFirstName: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const callNext = await canvas.findByRole('button', { name: /^Call next/ });
+		const before = callNext.getAttribute('aria-label');
+		const line = ticketNames(canvas, t.queueDesk.waiting);
+
+		await userEvent.click(
+			canvas.getByRole('button', {
+				name: t.queueDesk.sortLabel.replace('{order}', t.queueDesk.orders.queue),
+			}),
+		);
+		await userEvent.click(
+			await within(document.body).findByRole('menuitemradio', {
+				name: t.queueDesk.orders.firstName,
+			}),
+		);
+
+		const called = ticketNames(canvas, t.queueDesk.called);
+
+		await expect(called).toEqual([...called].sort((a, b) => a.localeCompare(b)));
+		await expect(ticketNames(canvas, t.queueDesk.waiting)).toEqual(line);
+		await expect(callNext).toHaveAttribute('aria-label', before);
+		await expect(
+			canvas.getByRole('button', {
+				name: t.queueDesk.sortLabel.replace('{order}', t.queueDesk.orders.firstName),
+			}),
+		).toBeVisible();
+	},
+};

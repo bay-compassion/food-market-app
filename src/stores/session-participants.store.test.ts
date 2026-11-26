@@ -185,4 +185,174 @@ describe('SessionParticipantsStore', () => {
 		expect(store.participants?.groups.map((group) => group.status)).toEqual(['no_show']);
 		expect(error).toHaveBeenCalledWith(reason);
 	});
+
+	describe('correcting several at once', () => {
+		const second: AdminGuest = { ...guest, id: 'visit-2', guestId: 'guest-2', firstName: 'Bao' };
+		const served: AdminGuest = { ...guest, id: 'visit-3', guestId: 'guest-3', status: 'served' };
+
+		async function selecting(api: Partial<SessionParticipantsApi> = {}) {
+			const context = setup({
+				listSessionGuests: vi.fn(async () => [guest, second, served]),
+				...api,
+			});
+
+			await context.store.load('event-1');
+			context.store.startSelecting();
+
+			return context;
+		}
+
+		it('closes the open ticket when selecting starts', async () => {
+			// Arrange
+			const { store } = setup();
+
+			await store.load('event-1');
+			store.select(guest);
+
+			// Act
+			store.startSelecting();
+
+			// Assert
+			expect(store.selected).toBeNull();
+			expect(store.selection?.isChecked(guest)).toBe(false);
+		});
+
+		it('picks out a whole section, and lets it go once all of it is picked', async () => {
+			// Arrange
+			const { store } = await selecting();
+
+			// Act
+			store.toggleAll([guest, second]);
+			const picked = store.checked.map(({ id }) => id);
+
+			store.toggleAll([guest, second]);
+
+			// Assert
+			expect(picked).toEqual(['visit-1', 'visit-2']);
+			expect(store.checked).toEqual([]);
+		});
+
+		it('corrects each picked guest, skips those already there, and raises one toast', async () => {
+			// Arrange
+			const { store, success, correctVisitStatus } = await selecting();
+
+			store.toggleAll([guest, second, served]);
+
+			// Act
+			const saved = await store.correctChecked('served');
+
+			// Assert
+			expect(saved).toBe(true);
+			expect(correctVisitStatus.mock.calls).toEqual([
+				['event-1', 'visit-1', { fromStatus: 'no_show', status: 'served' }],
+				['event-1', 'visit-2', { fromStatus: 'no_show', status: 'served' }],
+			]);
+			expect(store.participants?.groups.map((group) => group.status)).toEqual(['served']);
+			expect(success).toHaveBeenCalledOnce();
+			expect(success).toHaveBeenCalledWith(t.bulkCorrected.replace('{guests}', '2 guests'));
+			expect(store.isSelecting).toBe(false);
+			expect(store.isCorrecting).toBe(false);
+		});
+
+		it('keeps the guests the server refused picked out, with its reason', async () => {
+			// Arrange
+			const reason =
+				'This guest’s status changed since the list was loaded. Refresh and try again.';
+			const { store, error, success } = await selecting({
+				correctVisitStatus: vi.fn(async (_session: string, visitId: string) => {
+					if (visitId === 'visit-2') {
+						throw new AdminRequestError('status_correction', reason);
+					}
+				}),
+			});
+
+			store.toggleAll([guest, second]);
+
+			// Act
+			const saved = await store.correctChecked('served');
+
+			// Assert
+			expect(saved).toBe(false);
+			expect(store.isSelecting).toBe(true);
+			expect(store.checked.map(({ id }) => id)).toEqual(['visit-2']);
+			expect(success).not.toHaveBeenCalled();
+			expect(error).toHaveBeenCalledWith(
+				t.bulkPartlyCorrected
+					.replace('{done}', '1')
+					.replace('{total}', '2')
+					.replace('{reason}', reason),
+			);
+		});
+
+		it('checks the one guest a search finds on Enter, and keeps searching', async () => {
+			// Arrange
+			const { store } = await selecting();
+
+			store.openSearch();
+			store.setSearchQuery('bao');
+
+			// Act
+			store.selectSoleSearchResult();
+
+			// Assert
+			expect(store.checked.map(({ id }) => id)).toEqual(['visit-2']);
+			expect(store.isSearching).toBe(true);
+			expect(store.selected).toBeNull();
+		});
+
+		it('lets the selection go when another session opens', async () => {
+			// Arrange
+			const { store } = await selecting();
+
+			store.toggleChecked(guest);
+
+			// Act
+			await store.load('event-2');
+
+			// Assert
+			expect(store.isSelecting).toBe(false);
+			expect(store.checked).toEqual([]);
+		});
+	});
+
+	it('opens the one guest a search finds, and puts the search away', async () => {
+		// Arrange
+		const { store } = setup();
+
+		await store.load('event-1');
+		store.openSearch();
+		store.setSearchQuery('reyes');
+
+		// Act
+		store.selectSoleSearchResult();
+
+		// Assert
+		expect(store.selected?.id).toBe('visit-1');
+		expect(store.isSearching).toBe(false);
+		expect(store.search.query).toBe('');
+	});
+
+	it('lists each status by the name the volunteer chose', async () => {
+		// Arrange
+		const zoe: AdminGuest = {
+			...guest,
+			id: 'visit-9',
+			firstName: 'Zoe',
+			lastName: 'Adams',
+			queuePosition: 9,
+		};
+		const { store } = setup({ listSessionGuests: vi.fn(async () => [guest, zoe]) });
+
+		await store.load('event-1');
+
+		// Act
+		const byNumber = store.groups[0]?.guests.map(({ id }) => id);
+
+		store.setOrder('lastName');
+		const byLastName = store.groups[0]?.guests.map(({ id }) => id);
+
+		// Assert
+		expect(byNumber).toEqual(['visit-1', 'visit-9']);
+		expect(byLastName).toEqual(['visit-9', 'visit-1']);
+	});
 });

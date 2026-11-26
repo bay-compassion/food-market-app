@@ -3,9 +3,10 @@ import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
-import { useQueueDesk } from './queue-desk-context';
 import { QueueActionsMenu } from './QueueActionsMenu';
 import { SearchIcon } from './SearchIcon';
+import { TicketOrderMenu } from './TicketOrderMenu';
+import { useOpenSearch } from './use-open-search';
 
 const Header = styled.header`
 	display: flex;
@@ -47,12 +48,12 @@ const Header = styled.header`
 `;
 
 /**
- * The top of the queue screen: what it is, that service is running, searching the line, and the
- * rarer actions.
+ * The top of the queue screen: what it is, that service is running, searching the line, the order
+ * to read it in, and the rarer actions.
  */
 export const QueueDeskHeader = observer(function QueueDeskHeader() {
 	const t = adminTranslations.en;
-	const desk = useQueueDesk();
+	const openSearch = useOpenSearch();
 
 	return (
 		<Header>
@@ -65,10 +66,11 @@ export const QueueDeskHeader = observer(function QueueDeskHeader() {
 					aria-label={t.queueDesk.openSearch}
 					aria-keyshortcuts="/"
 					aria-haspopup="dialog"
-					onClick={() => desk.openSearch()}
+					onClick={openSearch}
 				>
 					<SearchIcon />
 				</IconButton>
+				<TicketOrderMenu />
 				<QueueActionsMenu />
 			</div>
 		</Header>

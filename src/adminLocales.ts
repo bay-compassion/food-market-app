@@ -1,6 +1,7 @@
 import type { GuestFormCopy } from './locales.ts';
 import type { MilestoneKind } from './models/session-milestones.ts';
 import type { SnapshotKind } from './models/snapshot-schedule.ts';
+import type { TicketOrderKey } from './models/ticket-order.ts';
 import type { AdminView, AdminViewGroup } from './services/admin-views.ts';
 import type { GuestDatabaseFilter } from './services/guest-database-filters.ts';
 import type { ReportColumnKey, ReportId, ReportValueKey } from './services/reports.ts';
@@ -107,6 +108,33 @@ export interface SessionParticipantsTranslation {
 	correctionFailed: string;
 	loadFailed: string;
 	retry: string;
+	openSearch: string;
+	/** Starts picking out several guests to correct at once. */
+	select: string;
+	doneSelecting: string;
+	/** A section's heading action; `{status}` names the section, for its accessible name. */
+	selectAll: string;
+	selectAllLabel: string;
+	clearAll: string;
+	clearAllLabel: string;
+	/** A ticket's checkbox while selecting; `{number}` and `{name}` say whose it is. */
+	checkTicket: string;
+	/** The bulk bar's region name. */
+	bulkTitle: string;
+	selectHint: string;
+	/** `{count}` is how many guests are selected. */
+	selected: string;
+	/** `{count}` guests, as the bulk confirmation counts them. */
+	guestCount: Record<'one' | 'other', string>;
+	/** `{guests}` is a `guestCount`; `{to}` is the status they are set to. */
+	bulkConfirmQuestion: string;
+	/** `{guests}` already have the status `{to}`. */
+	bulkUnchanged: string;
+	/** `{guests}` were corrected. */
+	bulkCorrected: string;
+	/** `{done}` and `{total}` count corrections; `{reason}` is why the first one failed. */
+	bulkPartlyCorrected: string;
+	correcting: string;
 }
 
 export interface SessionDeletionTranslation {
@@ -704,6 +732,9 @@ export interface QueueDeskTranslation {
 	closeSearch: string;
 	/** Inside the search field, saying what it can find. */
 	searchPlaceholder: string;
+	/** The sort menu's button; `{order}` is the order the lists are in now. */
+	sortLabel: string;
+	orders: Record<TicketOrderKey, string>;
 	/** Under the field until something is typed. */
 	searchHint: string;
 	clearSearch: string;
@@ -1191,6 +1222,24 @@ export const adminTranslations = {
 			correctionFailed: 'That status could not be corrected. Try again.',
 			loadFailed: 'This session’s participants could not be loaded.',
 			retry: 'Try Again',
+			openSearch: 'Search Participants',
+			select: 'Select',
+			doneSelecting: 'Done',
+			selectAll: 'Select All',
+			selectAllLabel: 'Select all {status}',
+			clearAll: 'Clear',
+			clearAllLabel: 'Clear the selection in {status}',
+			checkTicket: 'Select {number}, {name}',
+			bulkTitle: 'Change Selected Guests',
+			selectHint: 'Tap guests to select them, then choose the status they should have had.',
+			selected: '{count} selected',
+			guestCount: { one: '{count} guest', other: '{count} guests' },
+			bulkConfirmQuestion: 'Change {guests} to {to}?',
+			bulkUnchanged: '{guests} already {to} will be left as they are.',
+			bulkCorrected: '{guests} corrected.',
+			bulkPartlyCorrected:
+				'{done} of {total} corrected. The rest are still selected to try again. {reason}',
+			correcting: 'Changing…',
 		},
 
 		sessionDeletion: {
@@ -1389,6 +1438,8 @@ export const adminTranslations = {
 			openSearch: 'Search the Line',
 			closeSearch: 'Close Search',
 			searchPlaceholder: 'Name, number, phone, or code',
+			sortLabel: 'Sort Tickets, by {order} Now',
+			orders: { queue: 'Queue Order', firstName: 'First Name', lastName: 'Last Name' },
 			searchHint:
 				'Find a ticket by name, queue number, phone number (the last four digits will do), or name tag code.',
 			clearSearch: 'Clear Search',

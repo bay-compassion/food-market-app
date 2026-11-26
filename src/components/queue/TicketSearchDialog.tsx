@@ -5,12 +5,11 @@ import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
-import type { TicketSectionId } from '../../stores/queue-desk.store';
 import { wideLayoutQuery } from '../admin/admin-layout';
 import { useNow } from '../hooks/use-now';
-import { useQueueDesk } from './queue-desk-context';
-import { QueueSearchField } from './QueueSearchField';
+import { useTicketList } from './ticket-list-context';
 import { TicketChip } from './TicketChip';
+import { TicketSearchField } from './TicketSearchField';
 
 // The dialog renders in a portal, outside the queue screen's frame, so it carries its own styles.
 const Panel = styled.div`
@@ -81,24 +80,17 @@ function isTyping(target: EventTarget | null): boolean {
 }
 
 /**
- * Finds a ticket anywhere in the line — by name, number, phone number, or name tag code — and
- * opens it, which puts the search away. Full screen on a phone; on the desk, a dialog over the
- * line that `/` opens from the keyboard.
+ * Finds a ticket anywhere in a list — the line, or an ended session's participants — by name,
+ * number, phone number, or name tag code, and opens it, which puts the search away. While the
+ * list is picking out several tickets, a tap checks one instead and the search stays up. Full
+ * screen on a phone; on the desk, a dialog over the list that `/` opens from the keyboard.
  */
-export const QueueSearchDialog = observer(function QueueSearchDialog() {
+export const TicketSearchDialog = observer(function TicketSearchDialog() {
 	const t = adminTranslations.en.queueDesk;
-	const desk = useQueueDesk();
+	const desk = useTicketList();
 	const isWide = useMediaQuery(wideLayoutQuery);
 	const now = useNow(desk.isSearching ? 30_000 : null);
 	const { search, searchResults } = desk;
-	const titles: Record<TicketSectionId, string> = {
-		called: t.called,
-		waiting: t.waiting,
-		noShows: t.noShows,
-		notPlaced: t.notPlaced,
-		done: t.done,
-		premarket: t.premarket,
-	};
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -139,7 +131,7 @@ export const QueueSearchDialog = observer(function QueueSearchDialog() {
 		>
 			<Panel>
 				<div className="top">
-					<QueueSearchField />
+					<TicketSearchField />
 					<IconButton aria-label={t.closeSearch} onClick={() => desk.closeSearch()}>
 						<CloseIcon />
 					</IconButton>
@@ -150,9 +142,9 @@ export const QueueSearchDialog = observer(function QueueSearchDialog() {
 					) : searchResults.length === 0 ? (
 						<p className="message">{t.noMatches}</p>
 					) : (
-						searchResults.map(({ section, guests }) => (
-							<section key={section} aria-label={titles[section]}>
-								<h3>{titles[section]}</h3>
+						searchResults.map(({ section, title, guests }) => (
+							<section key={section} aria-label={title}>
+								<h3>{title}</h3>
 								<ul>
 									{guests.map((guest) => (
 										<TicketChip key={guest.id} guest={guest} now={now} />

@@ -37,9 +37,30 @@ const Row = styled.li`
 	}
 
 	/* The open ticket: on a phone the sheet covers the list, but the desk shows both at once. */
-	button[aria-current='true'] {
+	button[aria-current='true'],
+	button[aria-checked='true'] {
 		background: var(--color-background);
 		box-shadow: inset 0 0 0 2px var(--color-brand);
+	}
+
+	/* While picking out several tickets, a check ahead of each says whether it is picked. */
+	.check {
+		display: grid;
+		flex: none;
+		place-items: center;
+		box-sizing: border-box;
+		width: 26px;
+		height: 26px;
+		margin-inline-start: 6px;
+		border: 2px solid var(--color-text-subtle);
+		border-radius: var(--radius-sm);
+		color: var(--color-on-brand);
+		background: var(--color-background);
+	}
+
+	button[aria-checked='true'] .check {
+		border-color: var(--color-brand);
+		background: var(--color-brand);
 	}
 
 	.number {
@@ -138,13 +159,30 @@ const Row = styled.li`
 	}
 `;
 
+function CheckMark() {
+	return (
+		<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+			<path
+				d="M3 8.5l3 3 7-7"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2.5"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+			/>
+		</svg>
+	);
+}
+
 /**
  * One ticket in a list: its number, who it is with the reference code their name tag carries, the
- * language to greet them in, how long since they were called, and a tap to open it.
+ * language to greet them in, how long since they were called, and a tap to open it — or, while the
+ * screen is picking out several tickets, a tap to check it.
  */
 export const TicketChip = observer(function TicketChip({ guest, now }: TicketChipProps) {
 	const t = adminTranslations.en.queueDesk;
 	const desk = useTicketList();
+	const selection = desk.selection ?? null;
 	const number = NameTag.numberLabelOf(guest) ?? '—';
 	const name = `${guest.firstName} ${guest.lastName}`.trim();
 	const tag = new NameTag({ ...guest, visitId: guest.id, printedAt: new Date(now) });
@@ -157,10 +195,24 @@ export const TicketChip = observer(function TicketChip({ guest, now }: TicketChi
 		<Row data-status={guest.status}>
 			<button
 				type="button"
-				aria-label={t.openTicket.replace('{number}', number).replace('{name}', name)}
-				aria-current={desk.selected?.id === guest.id}
-				onClick={() => desk.select(guest)}
+				{...(selection
+					? {
+							role: 'checkbox',
+							'aria-checked': selection.isChecked(guest),
+							'aria-label': adminTranslations.en.participants.checkTicket
+								.replace('{number}', number)
+								.replace('{name}', name),
+							onClick: () => selection.toggle(guest),
+						}
+					: {
+							'aria-label': t.openTicket.replace('{number}', number).replace('{name}', name),
+							'aria-current': desk.selected?.id === guest.id,
+							onClick: () => desk.select(guest),
+						})}
 			>
+				{selection ? (
+					<span className="check">{selection.isChecked(guest) ? <CheckMark /> : null}</span>
+				) : null}
 				<span className="number">{number}</span>
 				<span className="who">
 					<span className="name">{name}</span>

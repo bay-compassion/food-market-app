@@ -38,7 +38,7 @@ export const QueueLists = observer(function QueueLists() {
 	const t = adminTranslations.en;
 	const { admin, translations, session } = useRootStore();
 	const desk = useQueueDesk();
-	const { roster } = desk;
+	const { listed } = desk;
 	// Chips show whole minutes, so a coarse shared clock is enough; the open ticket keeps its own.
 	const now = useNow(30_000);
 	const isWide = useMediaQuery(wideLayoutQuery);
@@ -53,14 +53,14 @@ export const QueueLists = observer(function QueueLists() {
 			<TicketSection
 				id="called"
 				title={t.queueDesk.called}
-				guests={roster.called}
+				guests={listed.called}
 				emptyText={t.queueDesk.noneCalled}
 				now={now}
 			/>
 			<TicketSection
 				id="waiting"
 				title={t.queueDesk.waiting}
-				guests={roster.waiting}
+				guests={listed.waiting}
 				emptyText={t.queueDesk.noneWaiting}
 				now={now}
 				action={
@@ -72,17 +72,17 @@ export const QueueLists = observer(function QueueLists() {
 				}
 			/>
 			{/* Called guests who never came up are, in effect, at the back of the line. */}
-			<TicketSection id="noShows" title={t.queueDesk.noShows} guests={roster.noShows} now={now} />
+			<TicketSection id="noShows" title={t.queueDesk.noShows} guests={listed.noShows} now={now} />
 			<TicketSection
 				id="notPlaced"
 				title={t.queueDesk.notPlaced}
-				guests={roster.notPlaced}
+				guests={listed.notPlaced}
 				now={now}
 			/>
 			<TicketSection
 				id="done"
 				title={t.queueDesk.done}
-				guests={roster.done}
+				guests={listed.done}
 				emptyText={t.queueDesk.noneDone}
 				now={now}
 			/>
@@ -90,7 +90,7 @@ export const QueueLists = observer(function QueueLists() {
 			<TicketSection
 				id="premarket"
 				title={t.queueDesk.premarket}
-				guests={roster.premarket}
+				guests={listed.premarket}
 				now={now}
 			/>
 			{session.currentState?.event ? (
