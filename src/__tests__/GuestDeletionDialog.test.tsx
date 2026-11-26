@@ -49,6 +49,7 @@ function previewWith(overrides: Partial<GuestDeletionPreview> = {}): GuestDeleti
 			sms_opt_outs: 0,
 			guest_claims: 0,
 			lottery_odds_changes: 0,
+			guest_notes: 0,
 		},
 		...overrides,
 	};

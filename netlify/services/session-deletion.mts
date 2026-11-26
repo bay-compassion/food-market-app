@@ -18,6 +18,7 @@ import type { PgTable } from 'drizzle-orm/pg-core';
 
 import type { db as appDatabase } from '../../db/index.mjs';
 import {
+	guestNotes,
 	guests,
 	householdServiceEntries,
 	lotteryOddsChanges,
@@ -300,6 +301,10 @@ export class SessionDeletion {
 						)
 					: eq(lotteryOddsChanges.marketEventId, this.marketEventId),
 			),
+			// Only a session-only guest's notes go, with the guest; a kept guest's stay, unfiled.
+			guest_notes: sessionOnlyIds.length
+				? await tally(guestNotes, inArray(guestNotes.guestId, sessionOnlyIds))
+				: 0,
 		};
 
 		const market = new MarketLocation(found.location);

@@ -58,6 +58,13 @@ export const permissions = [
 	 * by hand. It extends `read:stewardship` there, and `run:queue` on the add-a-guest form.
 	 */
 	'manage:stewardship',
+	/**
+	 * Change or delete any staff note about a guest, including those from a session that has ended,
+	 * and add or retire the categories notes are filed under. Without it a worker can change only
+	 * the notes they wrote during the session still open — see `GuestNotePolicy`. Held by
+	 * `team-leader`, `admin` and `owner`. It extends `run:queue`, which every notes endpoint needs.
+	 */
+	'manage:guest-notes',
 ] as const;
 
 export type Permission = (typeof permissions)[number];

@@ -88,6 +88,11 @@ function queuePreview({
 	for (const value of [1, 2, 6, 3, 1, 2, 0]) {
 		queueResult([{ value }]);
 	}
+
+	// Staff notes are counted only for the guests deleted with the session.
+	if (sessionOnly.length) {
+		queueResult([{ value: 5 }]);
+	}
 }
 
 /** The tables `delete` was called on, in order. */
@@ -126,6 +131,7 @@ describe('SessionDeletion.preview', () => {
 				guests: 1,
 				registration_questions: 2,
 				lottery_odds_changes: 0,
+				guest_notes: 5,
 			},
 		});
 	});

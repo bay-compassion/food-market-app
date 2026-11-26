@@ -26,6 +26,7 @@ const preview: SessionDeletionPreview = {
 		guests: 1,
 		registration_questions: 0,
 		lottery_odds_changes: 0,
+		guest_notes: 0,
 	},
 };
 

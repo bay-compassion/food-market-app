@@ -8,6 +8,7 @@ vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 import { requirePermission } from '../../lib/auth.mjs';
 import broadcastHandler from '../../routes/admin/broadcast.mjs';
 import guestClaimsHandler from '../../routes/admin/guest-claims.mjs';
+import guestNotesHandler from '../../routes/admin/guest-notes.mjs';
 import guestsHandler from '../../routes/admin/guests.mjs';
 import kioskHandler from '../../routes/admin/kiosk.mjs';
 import marketHandler from '../../routes/admin/market.mjs';
@@ -261,6 +262,31 @@ describe('endpoint permissions', () => {
 			kioskHandler,
 			json('https://x/api/admin/kiosk/unlock-codes', 'POST'),
 			'run:queue',
+		],
+		[
+			'adding a staff note',
+			guestNotesHandler,
+			json('https://x/api/admin/guests/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f/notes', 'POST', {
+				kind: 'text',
+				body: 'Uses a cane.',
+			}),
+			'run:queue',
+		],
+		[
+			'adding a note category',
+			guestNotesHandler,
+			json('https://x/api/admin/guest-note-categories', 'POST', { label: 'Mobility' }),
+			'manage:guest-notes',
+		],
+		[
+			'retiring a note category',
+			guestNotesHandler,
+			json(
+				'https://x/api/admin/guest-note-categories/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f',
+				'PATCH',
+				{ archived: true },
+			),
+			'manage:guest-notes',
 		],
 	];
 

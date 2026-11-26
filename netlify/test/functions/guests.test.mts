@@ -12,6 +12,7 @@ vi.mock('../../services/visit-events.mjs', () => ({
 }));
 vi.mock('../../lib/auth.mjs', () => ({ requirePermission: vi.fn() }));
 
+import { guestDataTables } from '../../../src/services/guest-deletion.js';
 import { requirePermission } from '../../lib/auth.mjs';
 import handler from '../../routes/admin/guests.mjs';
 
@@ -389,7 +390,7 @@ describe('guests handler DELETE /guests/:guestId (delete:guest-data)', () => {
 			{ firstName: 'Ari', lastName: 'Guest', phone: '(925) 555-0100', createdAt: new Date() },
 		]);
 
-		for (let table = 0; table < 8; table += 1) {
+		for (const _table of guestDataTables) {
 			queueResult([{ value: 0 }]);
 		}
 		queueResult([]);

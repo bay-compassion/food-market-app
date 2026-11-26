@@ -15,6 +15,12 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import {
+	GuestNote,
+	GuestNoteCategory,
+	guestNoteKinds,
+	type GuestNoteKind,
+} from '../src/models/guest-note.js';
+import {
 	RaceEthnicity,
 	raceEthnicityCodes,
 	type RaceEthnicityCode,
@@ -302,6 +308,72 @@ export const lotteryOddsChanges = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [index('lottery_odds_changes_guest_idx').on(table.guestId, table.createdAt)],
+);
+
+/**
+ * The labels a staff note can be filed under ("Warning", "Escalate to Lead", …). Retiring one sets
+ * `archivedAt` instead of deleting it, so the notes filed under it keep their label.
+ */
+export const guestNoteCategories = pgTable(
+	'guest_note_categories',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		label: text('label').notNull(),
+		archivedAt: timestamp('archived_at', { withTimezone: true }),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex('guest_note_categories_active_label_idx')
+			.on(sql`lower(${table.label})`)
+			.where(sql`${table.archivedAt} IS NULL`),
+		check(
+			'guest_note_categories_label_check',
+			sql`char_length(btrim(${table.label})) BETWEEN 1 AND ${sql.raw(String(GuestNoteCategory.labelMaxLength))}`,
+		),
+	],
+);
+
+/**
+ * What workers keep about a guest, one row per note, newest last. Read and written only through the
+ * admin API and never sent to the guest's own phone; deleting the guest deletes them. Who may change
+ * a note is `GuestNotePolicy`'s call, which is why the author and the session are kept.
+ */
+export const guestNotes = pgTable(
+	'guest_notes',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		guestId: uuid('guest_id')
+			.notNull()
+			.references(() => guests.id, { onDelete: 'cascade' }),
+		/** The session open when the note was written; null for a note written between sessions. */
+		marketEventId: uuid('market_event_id').references(() => marketEvents.id, {
+			onDelete: 'set null',
+		}),
+		categoryId: uuid('category_id').references(() => guestNoteCategories.id),
+		kind: text('kind').$type<GuestNoteKind>().notNull(),
+		/** The note's words: required for a `text` note, an optional remark on any other kind. */
+		body: text('body'),
+		/** A structured note's particulars, shaped by its `kind`. */
+		data: jsonb('data').$type<Record<string, unknown>>().notNull().default({}),
+		/** The author's Auth0 subject. */
+		authorId: text('author_id'),
+		/** The author's name as their sign-in gave it at the time, not looked up later. */
+		authorName: text('author_name'),
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		index('guest_notes_guest_idx').on(table.guestId, table.createdAt),
+		check(
+			'guest_notes_kind_check',
+			sql`${table.kind} IN (${sql.raw(guestNoteKinds.map((kind) => `'${kind}'`).join(', '))})`,
+		),
+		check(
+			'guest_notes_body_check',
+			sql`char_length(${table.body}) <= ${sql.raw(String(GuestNote.bodyMaxLength))}`,
+		),
+		check('guest_notes_text_body_check', sql`${table.kind} <> 'text' OR ${table.body} IS NOT NULL`),
+	],
 );
 
 export const pushSubscriptions = pgTable(

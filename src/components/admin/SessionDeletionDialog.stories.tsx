@@ -67,6 +67,7 @@ function previewWith(blockedBy: SessionDeletionBlock | null): SessionDeletionPre
 			guests: 2,
 			registration_questions: 1,
 			lottery_odds_changes: 0,
+			guest_notes: 0,
 		},
 	};
 }
