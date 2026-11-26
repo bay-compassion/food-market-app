@@ -12,14 +12,17 @@ export const AdminAuthView = observer(function AdminAuthView() {
 	const navigate = useNavigate();
 	const params = useParams();
 	const view: AdminView | undefined = isAdminView(params.view) ? params.view : undefined;
-	// Only the session history opens something within it, so another screen ignores the segment.
+	// The session history opens a session within it, and the guest database a guest; another screen
+	// ignores the segment.
 	const sessionId = view === 'session-history' ? params.item : undefined;
+	const guestId = view === 'guest-database' ? params.item : undefined;
 
 	return (
 		<AdminAuthGate>
 			<AdminDashboard
 				view={view}
 				sessionId={sessionId}
+				guestId={guestId}
 				getAccessToken={auth.getAccessTokenSilently}
 				onNavigate={(next, item) =>
 					void navigate(item ? `/admin/${next}/${encodeURIComponent(item)}` : `/admin/${next}`)

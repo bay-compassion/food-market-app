@@ -17,12 +17,17 @@ import { AddGuestFab } from './AddGuestFab';
 import { useManualGuestForm } from './AddGuestSection';
 import { wideLayoutQuery } from './admin-layout';
 import { ChoiceChips } from './ChoiceChips';
+import { GuestProfileView } from './guest-profile/GuestProfileView';
 import { GuestDatabaseGrid } from './GuestDatabaseGrid';
 import { GuestDatabaseList } from './GuestDatabaseList';
 import { ManualGuestDialog } from './ManualGuestDialog';
 import type { ManualGuest, QueueGuest } from './types';
 
 export type GuestDatabaseViewProps = {
+	/** The guest whose profile is open, as the route names it; the list when there is none. */
+	guestId?: string;
+	/** Opens a guest's profile, or with no id, goes back to the list. */
+	onOpenGuest: (guestId?: string) => void;
 	statusLabels: Record<VisitStatus, string>;
 	admissions: ManualAdmission[];
 	onRun: (guest: QueueGuest, command: VisitCommand) => void;
@@ -59,11 +64,13 @@ const Section = styled.section`
 `;
 
 /**
- * Every guest on record. Search and the quick filters sit above the list and serve both of its
- * forms: on a desk the full grid, which keeps sorting, the filter panel, the column picker and
+ * Every guest on record, and — when the route names one — that guest's profile. Search and the
+ * quick filters sit above the list and serve both of its forms: on a desk the full grid, which keeps sorting, the filter panel, the column picker and
  * export; on a phone, a list of rows, since a grid shows a column and a half at that width.
  */
 export const GuestDatabaseView = observer(function GuestDatabaseView({
+	guestId,
+	onOpenGuest,
 	statusLabels,
 	admissions,
 	onRun,
@@ -87,6 +94,10 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 	function addGuest(guest: ManualGuest) {
 		addGuestForm.close();
 		onAddGuest(guest);
+	}
+
+	if (guestId !== undefined) {
+		return <GuestProfileView guestId={guestId} onBack={() => onOpenGuest()} />;
 	}
 
 	return (
@@ -119,10 +130,16 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 						canExport={admin.can('export:guest-data')}
 						busy={admin.isBusy}
 						onRun={onRun}
+						onOpenGuest={onOpenGuest}
 					/>
 				</div>
 			) : (
-				<GuestDatabaseList rows={shown} busy={admin.isBusy} onRun={onRun} />
+				<GuestDatabaseList
+					rows={shown}
+					busy={admin.isBusy}
+					onRun={onRun}
+					onOpenGuest={onOpenGuest}
+				/>
 			)}
 			{addGuestForm.canAdd && !isWide ? <AddGuestFab onClick={addGuestForm.open} /> : null}
 			<ManualGuestDialog

@@ -5,6 +5,7 @@ import type {
 	GuestNoteRecord,
 	GuestNoteRevision,
 } from '../models/guest-note.ts';
+import type { GuestProfileRecord } from '../models/guest-profile.ts';
 import type { SessionOverview } from '../stores/market-session.store.ts';
 import type { AgeRange } from './ageRanges.ts';
 import type { DemoRoster } from './demo-preview';
@@ -205,6 +206,14 @@ export class AdminApi {
 		}
 
 		return this.readJson<GuestSummary[]>(await this.get(`/api/admin/guests?${params}`), 'guests');
+	}
+
+	/** One guest's record for their profile: who they are and every visit, newest first. */
+	async getGuestProfile(guestId: string): Promise<GuestProfileRecord> {
+		return this.readOrRefuse<GuestProfileRecord>(
+			await this.get(`/api/admin/guests/${encodeURIComponent(guestId)}`),
+			'guest_profile',
+		);
 	}
 
 	/** The guests attached to one session. */

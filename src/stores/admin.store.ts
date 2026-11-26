@@ -33,6 +33,7 @@ import { visitCommandTarget } from '../services/visitStateMachine.ts';
 import { DemoStore } from './demo.store';
 import { GuestNoteCategoriesStore } from './guest-note-categories.store.ts';
 import { GuestNotesStore } from './guest-notes.store.ts';
+import { GuestProfileStore } from './guest-profile.store.ts';
 import { HouseholdServiceStore } from './household-service.store';
 import type { MarketSessionStore } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
@@ -99,6 +100,8 @@ export class AdminStore {
 	readonly sessionDeletion: SessionDeletionStore;
 	/** An ended session's guests, and correcting their statuses, from the same menu. */
 	readonly sessionParticipants: SessionParticipantsStore;
+	/** One guest's profile, opened from the guest database. */
+	readonly guestProfile: GuestProfileStore;
 	/** The categories staff notes are filed under, shared by every ticket and their own screen. */
 	readonly noteCategories: GuestNoteCategoriesStore;
 
@@ -211,6 +214,7 @@ export class AdminStore {
 			this.refreshHistory(),
 		);
 		this.sessionParticipants = new SessionParticipantsStore(this.api, this.notifications);
+		this.guestProfile = new GuestProfileStore(this.api, this.notifications);
 		this.noteCategories = new GuestNoteCategoriesStore(this.api, this.notifications);
 
 		return makeReactive(this, {
@@ -219,6 +223,7 @@ export class AdminStore {
 			notifications: false,
 			sessionDeletion: false,
 			sessionParticipants: false,
+			guestProfile: false,
 			noteCategories: false,
 			session: false,
 			pendingGuestCommands: false,

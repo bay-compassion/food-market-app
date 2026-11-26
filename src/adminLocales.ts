@@ -161,7 +161,41 @@ export interface SessionDeletionTranslation {
 	failed: string;
 }
 
+/** One guest's profile, opened from the guest database. */
+export interface GuestProfileTranslation {
+	back: string;
+	/** The guest's name said aloud, as "Says it “mah-REE-ah”"; `{pronunciation}` is the guest's. */
+	saysIt: string;
+	/** `{date}` is when the guest was first put on record, as "Mar 2025". */
+	onRecordSince: string;
+	visits: string;
+	served: string;
+	noShows: string;
+	household: string;
+	loading: string;
+	loadFailed: string;
+	retry: string;
+	todayTitle: string;
+	householdTitle: string;
+	/** `{date}` is the visit that recorded the household. */
+	householdAsOf: string;
+	people: string;
+	children: string;
+	seniors: string;
+	ageRange: string;
+	/** `{size}` people before it changed, through `{date}`. */
+	householdWas: string;
+	noHousehold: string;
+	recentTitle: string;
+	noPastVisits: string;
+	/** A visit's number, as "#41"; `{number}` is the label `QueueNumber` gives. */
+	visitNumber: string;
+	premarket: string;
+	addedByStaff: string;
+}
+
 export interface AdminTranslation {
+	guestProfile: GuestProfileTranslation;
 	sessionDeletion: SessionDeletionTranslation;
 	participants: SessionParticipantsTranslation;
 	householdService: {
@@ -1303,6 +1337,32 @@ export const adminTranslations = {
 		reportPrivacyNote:
 			'Reports count people without naming them. Only the full export identifies guests, so share that file carefully.',
 		reportEmpty: 'No sessions in this date range.',
+		guestProfile: {
+			back: 'All Guests',
+			saysIt: 'Says it “{pronunciation}”',
+			onRecordSince: 'On record since {date}',
+			visits: 'Visits',
+			served: 'Served',
+			noShows: 'No-shows',
+			household: 'Household',
+			loading: 'Loading the guest…',
+			loadFailed: 'Couldn’t load this guest.',
+			retry: 'Try Again',
+			todayTitle: 'Today’s Visit',
+			householdTitle: 'Household',
+			householdAsOf: 'As of {date}',
+			people: 'People',
+			children: 'Children',
+			seniors: 'Seniors',
+			ageRange: 'Age range {range}',
+			householdWas: 'Was {size} people through {date}.',
+			noHousehold: 'No visit has recorded a household yet.',
+			recentTitle: 'Earlier Visits',
+			noPastVisits: 'No earlier visits.',
+			visitNumber: '#{number}',
+			premarket: 'Premarket volunteer',
+			addedByStaff: 'Added by staff',
+		},
 		participants: {
 			back: 'All Sessions',
 			openSession: 'Participants, {date}',

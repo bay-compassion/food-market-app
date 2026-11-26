@@ -39,6 +39,7 @@ function Grid({ locale, busy, canExport, guests }: GuestDatabaseGridArgs) {
 			canExport={canExport}
 			busy={busy}
 			onRun={fn()}
+			onOpenGuest={fn()}
 		/>
 	);
 }

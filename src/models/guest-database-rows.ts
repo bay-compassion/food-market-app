@@ -1,6 +1,7 @@
 import { languages, type Locale } from '../locales.ts';
 import type { GuestSummary } from '../services/admin-api.ts';
 import type { GuestDatabaseFilter } from '../services/guest-database-filters.ts';
+import { formatVisitDate } from '../services/visit-date.ts';
 import { visitStatuses, type VisitStatus } from '../services/visitStateMachine.ts';
 
 /** One guest as the guest database grid renders, sorts, and filters them. */
@@ -71,7 +72,9 @@ export class GuestDatabaseRows {
 				statusLabel: guest.status === null ? this.noVisitLabel : this.statusLabels[guest.status],
 				inSession: this.currentEventId !== null && guest.marketEventId === this.currentEventId,
 				lastVisit,
-				lastVisitLabel: lastVisit ? this.dateLabel(lastVisit) : this.noVisitLabel,
+				lastVisitLabel: guest.lastVisitDate
+					? formatVisitDate(guest.lastVisitDate, this.today)
+					: this.noVisitLabel,
 				visitCount: guest.visitCount,
 				noteCount: guest.noteCount,
 				latestNoteCategory: guest.latestNoteCategory,
@@ -116,15 +119,5 @@ export class GuestDatabaseRows {
 
 	get languageOptions(): string[] {
 		return languages.map((language) => language.englishLabel);
-	}
-
-	/** "Nov 19", with the year only when it is not this one. Visit dates are calendar dates. */
-	private dateLabel(date: Date): string {
-		return date.toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: date.getUTCFullYear() === this.today.getFullYear() ? undefined : 'numeric',
-			timeZone: 'UTC',
-		});
 	}
 }

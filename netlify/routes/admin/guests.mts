@@ -26,6 +26,7 @@ import {
 	staffGuestDetailsSchema,
 	updateStaffGuestDetails,
 } from '../../services/guest-information.mjs';
+import { GuestProfileReader } from '../../services/guest-profile.mjs';
 import { GuestSummaries } from '../../services/guest-summaries.mjs';
 import { registerGuest, validateSubmission } from '../../services/guestRegistration.mjs';
 import { runVisitCommand } from '../../services/visitQueue.mjs';
@@ -202,6 +203,20 @@ async function updateGuest(context: Context<AdminEnv>) {
 	return result.ok ? Response.json(result.visit) : jsonError(result.error, result.status);
 }
 
+async function readGuestProfile(context: Context<AdminEnv>) {
+	const guestId = guestIdSchema.safeParse(context.req.param('guestId'));
+
+	if (!guestId.success) {
+		return jsonError('Invalid guest.');
+	}
+
+	const profile = await tracedQuery('admin_guests.profile', () =>
+		new GuestProfileReader(db).read(guestId.data),
+	);
+
+	return profile ? Response.json(profile) : jsonError('Guest not found.', 404);
+}
+
 async function updateGuestDetails(context: Context<AdminEnv>) {
 	const guestId = guestIdSchema.safeParse(context.req.param('guestId'));
 	const details = staffGuestDetailsSchema.safeParse(await jsonBody(context.req.raw));
@@ -267,6 +282,9 @@ guestRoutes.get(
 guestRoutes.post('/guests', withPermission('run:queue'), (context) => createGuest(context));
 guestRoutes.patch('/guests', withPermission('run:queue'), (context) => updateGuest(context));
 guestRoutes.all('/guests', methodNotAllowed);
+guestRoutes.get('/guests/:guestId', withPermission('read:guest-profiles'), (context) =>
+	readGuestProfile(context),
+);
 guestRoutes.patch('/guests/:guestId', withPermission('run:queue'), (context) =>
 	updateGuestDetails(context),
 );

@@ -5,38 +5,13 @@ import { adminTranslations } from '../../adminLocales';
 import { useRootStore } from '../../stores/react/store-context';
 import { SearchOpener } from '../queue/SearchOpener';
 import { TicketOrderMenu } from '../queue/TicketOrderMenu';
+import { BackButton } from './BackButton';
 import { SelectGuestsToggle } from './SelectGuestsToggle';
 
 const Header = styled.header`
 	display: grid;
 	gap: 4px;
 	justify-items: start;
-
-	/* Back to the sessions, as a quiet link above what it leads back from. */
-	.back {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		min-height: 40px;
-		/*
-		 * Pulled up and in by the room the 40px tap target leaves around its text, so the text lines
-		 * up with where every screen's content starts, under the dashboard's heading.
-		 */
-		margin-block: -8px -4px;
-		margin-inline-start: -8px;
-		padding: 0 10px;
-		border: 0;
-		border-radius: var(--radius-pill);
-		color: var(--color-brand);
-		background: transparent;
-		font: inherit;
-		font-weight: 700;
-		cursor: pointer;
-	}
-
-	.back:hover {
-		background: var(--color-surface-soft);
-	}
 
 	.title {
 		display: flex;
@@ -87,10 +62,7 @@ export const SessionParticipantsHeader = observer(function SessionParticipantsHe
 
 	return (
 		<Header>
-			<button type="button" className="back" onClick={onBack}>
-				<span aria-hidden="true">←</span>
-				{t.back}
-			</button>
+			<BackButton label={t.back} onClick={onBack} />
 			<div className="title">
 				{when ? <h2>{when}</h2> : <span />}
 				{hasGuests ? <SelectGuestsToggle /> : null}

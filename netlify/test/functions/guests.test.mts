@@ -345,6 +345,78 @@ describe('guests handler POST (admin only)', () => {
 	});
 });
 
+describe('guests handler GET /guests/:guestId (profile)', () => {
+	const guestId = '7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f';
+
+	it('returns the guest and their visits, newest first, with timestamps as ISO strings', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([
+			{
+				guestId,
+				firstName: 'Maria',
+				lastName: 'Lopez',
+				pronunciation: null,
+				phone: '(415) 555-0142',
+				locale: 'es',
+				createdAt: new Date('2025-03-12T17:00:00Z'),
+			},
+		]);
+		queueResult([
+			{
+				id: 'visit-2',
+				visitDate: '2026-11-26',
+				status: 'called',
+				calledAt: new Date('2026-11-26T18:48:00Z'),
+				servedAt: null,
+				createdAt: new Date('2026-11-26T17:02:00Z'),
+			},
+		]);
+
+		// Act
+		const response = await handler(request('GET', { path: `/${guestId}` }));
+
+		// Assert
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toMatchObject({
+			guestId,
+			createdAt: '2025-03-12T17:00:00.000Z',
+			visits: [
+				{
+					id: 'visit-2',
+					calledAt: '2026-11-26T18:48:00.000Z',
+					servedAt: null,
+					createdAt: '2026-11-26T17:02:00.000Z',
+				},
+			],
+		});
+	});
+
+	it('answers 404 for a guest that does not exist', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([]);
+
+		// Act
+		const response = await handler(request('GET', { path: `/${guestId}` }));
+
+		// Assert
+		expect(response.status).toBe(404);
+	});
+
+	it('rejects an id that is not a guest id without reading anything', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+
+		// Act
+		const response = await handler(request('GET', { path: '/not-a-uuid' }));
+
+		// Assert
+		expect(response.status).toBe(400);
+		expect(db.select).not.toHaveBeenCalled();
+	});
+});
+
 describe('guests handler PATCH /guests/:guestId (staff details)', () => {
 	const guestId = '6f1c2b8e-4a1d-4f7e-9b2a-3c5d7e9f1a2b';
 
