@@ -192,6 +192,14 @@ export interface GuestProfileTranslation {
 	visitNumber: string;
 	premarket: string;
 	addedByStaff: string;
+	/** Hands over from the Overview's few earlier visits to the Visits tab. */
+	seeAllVisits: string;
+	/** Names the tabs of a guest's profile. */
+	tabsLabel: string;
+	overviewTab: string;
+	visitsTab: string;
+	noVisitsYet: string;
+	historyLoading: string;
 }
 
 export interface AdminTranslation {
@@ -1362,6 +1370,12 @@ export const adminTranslations = {
 			visitNumber: '#{number}',
 			premarket: 'Premarket volunteer',
 			addedByStaff: 'Added by staff',
+			seeAllVisits: 'See All Visits',
+			tabsLabel: 'Guest profile',
+			overviewTab: 'Overview',
+			visitsTab: 'Visits',
+			noVisitsYet: 'No visits yet.',
+			historyLoading: 'Loading what happened…',
 		},
 		participants: {
 			back: 'All Sessions',

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { adminTranslations } from '../adminLocales.ts';
 import type { GuestProfileRecord } from '../models/guest-profile.ts';
 import { AdminRequestError } from '../services/admin-api.ts';
+import type { VisitEvent } from '../services/visit-events.ts';
 import { GuestProfileStore, type GuestProfileApi } from './guest-profile.store.ts';
 import { NotificationStore } from './notification.store.ts';
 
@@ -19,13 +20,25 @@ function record(guestId: string): GuestProfileRecord {
 	};
 }
 
-function setup(getGuestProfile: GuestProfileApi['getGuestProfile']) {
+function setup(
+	getGuestProfile: GuestProfileApi['getGuestProfile'],
+	listVisitEvents: GuestProfileApi['listVisitEvents'] = async () => [],
+) {
 	const notifications = new NotificationStore();
 	const error = vi.spyOn(notifications, 'error');
-	const store = new GuestProfileStore({ getGuestProfile }, notifications);
+	const store = new GuestProfileStore({ getGuestProfile, listVisitEvents }, notifications);
 
 	return { store, error };
 }
+
+const called: VisitEvent = {
+	id: 'event-1',
+	kind: 'called',
+	toStatus: 'called',
+	actor: { kind: 'worker', id: 'auth0|jamie', name: 'Jamie' },
+	details: {},
+	createdAt: '2026-11-26T18:48:00.000Z',
+};
 
 describe('GuestProfileStore', () => {
 	it('loads the guest the route names', async () => {
@@ -100,5 +113,56 @@ describe('GuestProfileStore', () => {
 
 		// Assert
 		expect(error).toHaveBeenCalledWith(adminTranslations.en.guestProfile.loadFailed);
+	});
+
+	it('opens a visit and reads its history', async () => {
+		// Arrange
+		const listVisitEvents = vi.fn(async () => [called]);
+		const { store } = setup(async (guestId) => record(guestId), listVisitEvents);
+
+		await store.load('guest-1');
+
+		// Act
+		store.toggleVisit('visit-1');
+		await vi.waitFor(() => expect(store.openVisitHistory).not.toBeNull());
+
+		// Assert
+		expect(store.openVisitId).toBe('visit-1');
+		expect(store.openVisitHistory).toEqual([called]);
+		expect(listVisitEvents).toHaveBeenCalledWith('visit-1');
+	});
+
+	it('closes the open visit when it is opened again', async () => {
+		// Arrange
+		const { store } = setup(async (guestId) => record(guestId));
+
+		store.toggleVisit('visit-1');
+
+		// Act
+		store.toggleVisit('visit-1');
+
+		// Assert
+		expect(store.openVisitId).toBeNull();
+		expect(store.openVisitHistory).toBeNull();
+	});
+
+	it('shows no history for a visit until its own has loaded', async () => {
+		// Arrange
+		let resolve: (events: VisitEvent[]) => void = () => {};
+		const listVisitEvents = vi
+			.fn<GuestProfileApi['listVisitEvents']>()
+			.mockResolvedValueOnce([called])
+			.mockImplementationOnce(() => new Promise((done) => (resolve = done)));
+		const { store } = setup(async (guestId) => record(guestId), listVisitEvents);
+
+		store.toggleVisit('visit-1');
+		await vi.waitFor(() => expect(store.openVisitHistory).not.toBeNull());
+
+		// Act
+		store.toggleVisit('visit-2');
+
+		// Assert
+		expect(store.openVisitHistory).toBeNull();
+		resolve([]);
 	});
 });
