@@ -16,6 +16,7 @@ import {
 import { tracedQuery } from '../lib/sentry.mjs';
 import { deliverQueuedNotifications, requeueNotification } from './notifications.mjs';
 import { notificationsEnabled } from './pushNotifications.mjs';
+import type { SessionEnding } from './sessionEnding.mjs';
 import { recordVisitEvents, systemActor } from './visit-events.mjs';
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -303,34 +304,53 @@ export async function serveAndCallNext(
 }
 
 /**
- * Cancels every visit still in line — registered, waiting, or called — when a session ends. Runs
- * inside `endSession`'s transaction so ending a session never strands a guest in a status that
- * implies service is still coming. It is `cancelled` rather than `no_show` because the market ended
- * the visit, not the guest: a no-show is only ever recorded by a worker.
+ * Resolves every visit still in line when a session ends, inside `endSession`'s transaction, so
+ * ending a session never strands a guest in a status that implies service is still coming.
+ *
+ * A guest who was called and never came to be served is recorded as a no-show, as a worker would
+ * have. Everyone else still in line — waiting to be called, or `registered` and never given a place
+ * — was never asked to come, so the market ended their visit and it is cancelled. A reset is a
+ * do-over rather than a market day, so it cancels everyone and leaves no no-show on anyone's record.
  */
-export async function resolveOutstandingVisits(tx: Transaction, marketEventId: string) {
+export async function resolveOutstandingVisits(
+	tx: Transaction,
+	marketEventId: string,
+	ending: SessionEnding,
+) {
 	return tracedQuery('visit.resolve_outstanding', async () => {
-		const resolved = await tx
-			.update(visits)
-			.set({ status: 'cancelled' })
-			.where(
-				and(eq(visits.marketEventId, marketEventId), inArray(visits.status, stillInLineStatuses)),
-			)
-			.returning({ id: visits.id });
+		const noShows =
+			ending === 'reset' ? [] : await resolveVisits(tx, marketEventId, ['called'], 'no_show');
+		const cancelled = await resolveVisits(tx, marketEventId, stillInLineStatuses, 'cancelled');
 
-		await recordVisitEvents(
-			tx,
-			resolved.map(({ id }) => ({
-				visitId: id,
-				kind: 'cancelled',
-				toStatus: 'cancelled',
-				actor: systemActor,
-				details: { cause: 'session_ended' },
-			})),
-		);
-
-		return resolved.length;
+		return noShows.length + cancelled.length;
 	});
+}
+
+/** Moves a session's visits in `from` to `to`, recording the session's ending as the cause. */
+async function resolveVisits(
+	tx: Transaction,
+	marketEventId: string,
+	from: VisitStatus[],
+	to: 'no_show' | 'cancelled',
+) {
+	const resolved = await tx
+		.update(visits)
+		.set({ status: to })
+		.where(and(eq(visits.marketEventId, marketEventId), inArray(visits.status, from)))
+		.returning({ id: visits.id });
+
+	await recordVisitEvents(
+		tx,
+		resolved.map(({ id }) => ({
+			visitId: id,
+			kind: to,
+			toStatus: to,
+			actor: systemActor,
+			details: { cause: 'session_ended' },
+		})),
+	);
+
+	return resolved;
 }
 
 /**

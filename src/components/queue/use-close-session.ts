@@ -11,7 +11,10 @@ export function useCloseSession(): () => Promise<void> {
 	const { confirmation } = useRootStore();
 	const desk = useQueueDesk();
 	const { called, waiting } = desk.roster;
-	const prompts = new MarketActionPrompts(adminTranslations.en, called.length + waiting.length);
+	const prompts = new MarketActionPrompts(adminTranslations.en, {
+		called: called.length,
+		waiting: waiting.length,
+	});
 
 	return async () => {
 		if (await confirmation.ask(prompts.for('close_session'))) {

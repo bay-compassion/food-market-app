@@ -104,7 +104,8 @@ describe('getCurrentEvent auto-close', () => {
 		queueResult([overdue]); // latest active event
 		queueResult([overdue]); // endSession lock
 		queueResult(undefined); // end
-		queueResult([]); // nobody in line
+		queueResult([]); // nobody waiting or called
+		queueResult([]); // nobody registered
 		queueResult([
 			{
 				id: 'pattern-1',
@@ -144,7 +145,8 @@ describe('getCurrentEvent auto-close', () => {
 		queueResult([overdue]); // latest active event
 		queueResult([overdue]); // endSession lock
 		queueResult(undefined); // end
-		queueResult([]); // nobody in line
+		queueResult([]); // nobody waiting or called
+		queueResult([]); // nobody registered
 		queueResult([]); // no pattern
 		queueResult([]); // nothing else unfinished
 

@@ -124,11 +124,13 @@ export const AdminDashboard = observer(function AdminDashboard({
 		.filter((guest) => guest.marketEventId === event?.id)
 		.sort(LineOrder.compare);
 
-	const outstandingCount = (counts.waiting ?? 0) + (counts.called ?? 0);
 	// A past session's guests are cross-session PII, which only `export:guest-data` may read.
 	const showsParticipants =
 		activeView === 'session-history' && sessionId !== undefined && admin.can('export:guest-data');
-	const prompts = new MarketActionPrompts(t, outstandingCount);
+	const prompts = new MarketActionPrompts(t, {
+		called: counts.called ?? 0,
+		waiting: counts.waiting ?? 0,
+	});
 
 	async function runMarketAction(action: MarketAction) {
 		if (await confirmation.ask(prompts.for(action))) {

@@ -89,7 +89,10 @@ export const Destructive: Story = {
 export const WithDetails: Story = {
 	args: {
 		question: 'Close this session and end service?',
-		details: ['4 guests have not been served yet. Closing marks them as a no show.'],
+		details: [
+			'2 called guests have not been served yet. Closing marks them as a no show.',
+			'3 guests are still waiting to be called. Closing cancels their visits.',
+		],
 		destructive: true,
 	},
 	play: async ({ canvas, userEvent }) => {

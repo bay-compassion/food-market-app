@@ -58,7 +58,8 @@ describe('endSession', () => {
 
 		queueResult([event]); // lock
 		queueResult(undefined); // end
-		queueResult([]); // visits resolved
+		queueResult([]); // no-shows recorded
+		queueResult([]); // visits cancelled
 		queueResult([pattern]); // the location's pattern
 		queueResult([location]); // its location
 		queueResult([next]); // insert ... returning
