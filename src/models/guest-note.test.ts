@@ -106,4 +106,40 @@ describe('GuestNotes', () => {
 		expect(notes.hasLockedNotes).toBe(true);
 		expect(notes.isEmpty).toBe(false);
 	});
+
+	describe('categories', () => {
+		const notes = new GuestNotes([
+			note({ id: 'a', createdAt: '2026-10-22T17:00:00.000Z', categoryLabel: 'Accessibility' }),
+			note({ id: 'b', createdAt: '2026-11-19T17:00:00.000Z', categoryLabel: 'Escalate to Lead' }),
+			note({ id: 'c', createdAt: '2026-11-01T17:00:00.000Z', categoryLabel: null }),
+			note({ id: 'd', createdAt: '2026-09-01T17:00:00.000Z', categoryLabel: 'Accessibility' }),
+		]);
+
+		it('names each category with its count, newest first', () => {
+			// Arrange, Act
+			const categories = notes.categories;
+
+			// Assert
+			expect(categories).toEqual([
+				{ label: 'Escalate to Lead', count: 1 },
+				{ label: 'Accessibility', count: 2 },
+			]);
+		});
+
+		it('files notes under a category, and every note under none', () => {
+			// Arrange, Act
+			const accessibility = notes.filedUnder('Accessibility').map(({ id }) => id);
+			const all = notes.filedUnder(null).map(({ id }) => id);
+
+			// Assert
+			expect(accessibility).toEqual(['a', 'd']);
+			expect(all).toEqual(['b', 'c', 'a', 'd']);
+		});
+
+		it('reads the newest note, and none without notes', () => {
+			// Arrange, Act, Assert
+			expect(notes.latest?.id).toBe('b');
+			expect(new GuestNotes([]).latest).toBeNull();
+		});
+	});
 });

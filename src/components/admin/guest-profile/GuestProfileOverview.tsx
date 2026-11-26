@@ -3,21 +3,23 @@ import { observer } from 'mobx-react-lite';
 import type { GuestProfile } from '../../../models/guest-profile';
 import type { VisitCommand } from '../../../services/visitStateMachine';
 import { useRootStore } from '../../../stores/react/store-context';
-import { TicketGuestNotes } from '../../queue/TicketGuestNotes';
 import { HouseholdCard } from './HouseholdCard';
+import { LatestNoteCard } from './LatestNoteCard';
 import { PastVisitsCard } from './PastVisitsCard';
 import { TodayVisitCard } from './TodayVisitCard';
 
 /**
  * The Overview tab: the guest's visit in today's session with the queue's own actions, their
- * household, the latest visits before today's, and the notes staff keep about them.
+ * household, the latest visits before today's, and the newest note staff keep about them.
  */
 export const GuestProfileOverview = observer(function GuestProfileOverview({
 	profile,
 	onSeeAllVisits,
+	onSeeAllNotes,
 }: {
 	profile: GuestProfile;
 	onSeeAllVisits: () => void;
+	onSeeAllNotes: () => void;
 }) {
 	const { admin, session } = useRootStore();
 	const currentEventId = session.currentState?.event?.id ?? null;
@@ -40,7 +42,7 @@ export const GuestProfileOverview = observer(function GuestProfileOverview({
 			<HouseholdCard profile={profile} />
 			<PastVisitsCard visits={profile.pastVisits(currentEventId)} onSeeAll={onSeeAllVisits} />
 			{/* Keyed by guest, so another profile reads its own notes. */}
-			<TicketGuestNotes key={profile.guestId} guestId={profile.guestId} />
+			<LatestNoteCard key={profile.guestId} guestId={profile.guestId} onSeeAll={onSeeAllNotes} />
 		</>
 	);
 });
