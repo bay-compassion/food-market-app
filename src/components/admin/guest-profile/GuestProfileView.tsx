@@ -1,25 +1,42 @@
 import styled from '@emotion/styled';
-import { Button } from '@mui/material';
+import { Button, Tab, Tabs } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 
 import { adminTranslations } from '../../../adminLocales';
-import type { VisitCommand } from '../../../services/visitStateMachine';
 import { useRootStore } from '../../../stores/react/store-context';
-import { TicketGuestNotes } from '../../queue/TicketGuestNotes';
 import { BackButton } from '../BackButton';
 import { GuestProfileHeader } from './GuestProfileHeader';
+import { GuestProfileOverview } from './GuestProfileOverview';
 import { GuestProfileStats } from './GuestProfileStats';
-import { HouseholdCard } from './HouseholdCard';
-import { PastVisitsCard } from './PastVisitsCard';
-import { TodayVisitCard } from './TodayVisitCard';
+import { GuestProfileVisits } from './GuestProfileVisits';
+
+/** The tabs of a guest's profile, in order. The first is where a profile opens. */
+export const guestProfileTabs = ['overview', 'visits'] as const;
+
+export type GuestProfileTab = (typeof guestProfileTabs)[number];
+
+function isGuestProfileTab(value: string | null): value is GuestProfileTab {
+	return guestProfileTabs.some((tab) => tab === value);
+}
 
 const Layout = styled.div`
 	display: grid;
 	gap: 16px;
 	max-width: 640px;
 
-	.message {
+	.tabs {
+		border-bottom: 1px solid var(--color-divider);
+	}
+
+	.panel {
+		display: grid;
+		gap: 16px;
+	}
+
+	.message,
+	.empty {
 		display: grid;
 		justify-items: start;
 		gap: 12px;
@@ -37,25 +54,30 @@ export type GuestProfileViewProps = {
 };
 
 /**
- * The guest database's subview: one guest's profile. Who they are, their record in four numbers,
- * their visit in today's session with the queue's own actions, their household, the visits before
- * today's, and the notes staff keep about them.
+ * The guest database's subview: one guest's profile. Who they are and their record in four numbers
+ * lead, over tabs for the Overview and every visit. The open tab is in the address (`?tab=visits`),
+ * so going back from elsewhere returns to it.
  */
 export const GuestProfileView = observer(function GuestProfileView({
 	guestId,
 	onBack,
 }: GuestProfileViewProps) {
 	const t = adminTranslations.en.guestProfile;
-	const { admin, session } = useRootStore();
-	const store = admin.guestProfile;
+	const store = useRootStore().admin.guestProfile;
 	const profile = store.profile;
-	const currentEventId = session.currentState?.event?.id ?? null;
+	const [searchParams, setSearchParams] = useSearchParams();
+	const requested = searchParams.get('tab');
+	const tab: GuestProfileTab = isGuestProfileTab(requested) ? requested : 'overview';
 
 	useEffect(() => {
 		void store.load(guestId);
 
 		return () => store.close();
 	}, [store, guestId]);
+
+	function openTab(next: GuestProfileTab) {
+		setSearchParams(next === 'overview' ? {} : { tab: next }, { replace: true });
+	}
 
 	if (!profile) {
 		return (
@@ -77,28 +99,42 @@ export const GuestProfileView = observer(function GuestProfileView({
 		);
 	}
 
-	const today = profile.visitIn(currentEventId);
-	const todayGuest = today ? profile.asQueueGuest(today) : null;
-
-	// The admin store reports a refusal itself; either way the profile rereads what the visit is now.
-	async function run(command: VisitCommand) {
-		if (todayGuest) {
-			await admin.runGuestCommand(todayGuest, command);
-			await store.load(guestId);
-		}
-	}
-
 	return (
 		<Layout className="guest-profile">
 			<GuestProfileHeader profile={profile} onBack={onBack} />
 			<GuestProfileStats profile={profile} />
-			{todayGuest ? (
-				<TodayVisitCard visit={todayGuest} onRun={(command) => void run(command)} />
-			) : null}
-			<HouseholdCard profile={profile} />
-			<PastVisitsCard visits={profile.pastVisits(currentEventId)} />
-			{/* Keyed by guest, so another profile reads its own notes. */}
-			<TicketGuestNotes key={profile.guestId} guestId={profile.guestId} />
+			<Tabs
+				className="tabs"
+				value={tab}
+				onChange={(_, next: GuestProfileTab) => openTab(next)}
+				aria-label={t.tabsLabel}
+				variant="fullWidth"
+			>
+				<Tab
+					value="overview"
+					label={t.overviewTab}
+					id="guest-profile-tab-overview"
+					aria-controls="guest-profile-panel"
+				/>
+				<Tab
+					value="visits"
+					label={t.visitsTab}
+					id="guest-profile-tab-visits"
+					aria-controls="guest-profile-panel"
+				/>
+			</Tabs>
+			<div
+				className="panel"
+				role="tabpanel"
+				id="guest-profile-panel"
+				aria-labelledby={`guest-profile-tab-${tab}`}
+			>
+				{tab === 'overview' ? (
+					<GuestProfileOverview profile={profile} onSeeAllVisits={() => openTab('visits')} />
+				) : (
+					<GuestProfileVisits profile={profile} />
+				)}
+			</div>
 		</Layout>
 	);
 });

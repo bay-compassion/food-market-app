@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, fn, within } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { adminTranslations } from '../../../adminLocales';
 import type { GuestNoteRecord } from '../../../models/guest-note';
 import type { GuestProfileRecord, GuestProfileVisit } from '../../../models/guest-profile';
 import type { AdminApi } from '../../../services/admin-api';
 import { SessionStatusEnum } from '../../../services/sessionStateMachine';
+import type { VisitEvent } from '../../../services/visit-events';
 import type { SessionOverview } from '../../../stores/market-session.store';
 import { RootStoreProvider } from '../../../stores/react/store-context';
 import { RootStore } from '../../../stores/root.store';
@@ -104,6 +105,33 @@ const notes: GuestNoteRecord[] = [
 	},
 ];
 
+const events: VisitEvent[] = [
+	{
+		id: 'event-registered',
+		kind: 'registered',
+		toStatus: 'registered',
+		actor: { kind: 'guest' },
+		details: {},
+		createdAt: '2026-11-19T17:02:00.000Z',
+	},
+	{
+		id: 'event-called',
+		kind: 'called',
+		toStatus: 'called',
+		actor: { kind: 'worker', id: 'auth0|jamie', name: 'Jamie K.' },
+		details: {},
+		createdAt: '2026-11-19T18:48:00.000Z',
+	},
+	{
+		id: 'event-served',
+		kind: 'served',
+		toStatus: 'served',
+		actor: { kind: 'worker', id: 'auth0|priya', name: 'Priya S.' },
+		details: {},
+		createdAt: '2026-11-19T19:05:00.000Z',
+	},
+];
+
 type GuestProfileViewArgs = {
 	record: GuestProfileRecord;
 	notes: GuestNoteRecord[];
@@ -122,6 +150,7 @@ function View({ record, notes, inSession, loadFails }: GuestProfileViewArgs) {
 				return record;
 			},
 			listGuestNotes: async () => notes,
+			listVisitEvents: async () => events,
 			listGuestNoteCategories: async () => [],
 			listAllGuests: async () => [],
 			listSessionGuests: async () => [],
@@ -178,13 +207,35 @@ export const InTodaysSession: Story = {
 
 		const earlier = within(canvas.getByRole('region', { name: t.recentTitle }));
 
-		// Today's visit is the ticket above, so the earlier visits are the other four.
-		await expect(earlier.getAllByRole('listitem')).toHaveLength(4);
+		// Today's visit is the ticket above; the Overview lists the latest three of the other four.
+		await expect(earlier.getAllByRole('listitem')).toHaveLength(3);
+		await expect(earlier.getByRole('button', { name: t.seeAllVisits })).toBeVisible();
 		await expect(
 			canvas.getByText(t.householdWas.replace('{size}', '3').replace('{date}', 'Sep 24'), {
 				exact: false,
 			}),
 		).toBeVisible();
+	},
+};
+
+/**
+ * The Visits tab: every visit, newest first. Opening one shows what happened to it, who did it, and
+ * when — the same history the queue's ticket shows.
+ */
+export const Visits: Story = {
+	play: async ({ canvas }) => {
+		await canvas.findByRole('heading', { name: 'Maria Lopez' });
+		await userEvent.click(canvas.getByRole('tab', { name: t.visitsTab }));
+
+		const visits = within(canvas.getByRole('list', { name: t.visitsTab }));
+		const [, lastWeek] = visits.getAllByRole('button');
+
+		await expect(visits.getAllByRole('listitem')).toHaveLength(regular.visits.length);
+		await userEvent.click(lastWeek!);
+		await expect(lastWeek).toHaveAttribute('aria-expanded', 'true');
+		await expect(
+			await canvas.findByRole('region', { name: adminTranslations.en.queueDesk.history.title }),
+		).toHaveTextContent('Priya S.');
 	},
 };
 

@@ -5,9 +5,10 @@ import { GuestProfile } from '../models/guest-profile.ts';
 import type { GuestProfileRecord } from '../models/guest-profile.ts';
 import { AdminRequestError, type AdminApi } from '../services/admin-api.ts';
 import { makeReactive } from '../services/make-reactive.ts';
+import type { VisitEvent } from '../services/visit-events.ts';
 import type { NotificationStore } from './notification.store.ts';
 
-export type GuestProfileApi = Pick<AdminApi, 'getGuestProfile'>;
+export type GuestProfileApi = Pick<AdminApi, 'getGuestProfile' | 'listVisitEvents'>;
 
 /**
  * The guest whose profile is open from the guest database. Its own store rather than more of
@@ -17,6 +18,8 @@ export class GuestProfileStore {
 	private _guestId: string | null = null;
 	private _record: GuestProfileRecord | null = null;
 	private _loadFailed = false;
+	private _openVisitId: string | null = null;
+	private _history: { visitId: string; events: VisitEvent[] } | null = null;
 
 	constructor(
 		private readonly api: GuestProfileApi,
@@ -40,6 +43,28 @@ export class GuestProfileStore {
 		return this._loadFailed;
 	}
 
+	/** The visit opened on the Visits tab; `null` while none is. */
+	get openVisitId(): string | null {
+		return this._openVisitId;
+	}
+
+	/** What has happened to the open visit, oldest first; `null` until it has loaded. */
+	get openVisitHistory(): VisitEvent[] | null {
+		return this._history?.visitId === this._openVisitId ? this._history.events : null;
+	}
+
+	/** Opens a visit to show its history, or closes it when it is the one already open. */
+	toggleVisit(visitId: string): void {
+		if (this._openVisitId === visitId) {
+			this._openVisitId = null;
+
+			return;
+		}
+
+		this._openVisitId = visitId;
+		void this.loadHistory(visitId);
+	}
+
 	/**
 	 * Reads the guest's record. Run again after a change to one of their visits: a reload keeps the
 	 * profile on screen while it reads, so a command does not blank the page.
@@ -48,6 +73,8 @@ export class GuestProfileStore {
 		if (this._guestId !== guestId) {
 			this._guestId = guestId;
 			this._record = null;
+			this._openVisitId = null;
+			this._history = null;
 		}
 
 		this._loadFailed = false;
@@ -80,5 +107,21 @@ export class GuestProfileStore {
 		this._guestId = null;
 		this._record = null;
 		this._loadFailed = false;
+		this._openVisitId = null;
+		this._history = null;
+	}
+
+	/**
+	 * Reads a visit's history. A failure leaves it empty rather than raising a toast: the history
+	 * is context for the visit, and the visit itself is already on screen.
+	 */
+	private async loadHistory(visitId: string): Promise<void> {
+		const events = await this.api.listVisitEvents(visitId).catch(() => []);
+
+		runInAction(() => {
+			if (this._openVisitId === visitId) {
+				this._history = { visitId, events };
+			}
+		});
 	}
 }
