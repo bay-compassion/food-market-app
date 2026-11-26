@@ -12,8 +12,9 @@ All routes mounted in the admin API pass through server-side Auth0 authenticatio
 verified against the configured issuer and audience, using RS256 signatures. Individual routes
 then require the permission for the requested operation; hiding a button is not the access control.
 
-Running the current queue requires `run:queue`. Reading the whole guest database or a historical
-session requires `export:guest-data`. Aggregate reports require `read:reports`, while an export
+Running the current queue requires `run:queue`. Reading the whole guest database requires
+`read:guest-profiles`, held by admins and team leaders; reading a historical session's roster
+requires `export:guest-data`. Aggregate reports require `read:reports`, while an export
 that identifies guests requires `export:guest-data`. This separates day-to-day service from access
 to personal records across visits.
 

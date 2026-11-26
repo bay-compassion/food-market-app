@@ -11,7 +11,7 @@ describe('AdminNavigation', () => {
 				'manage:sessions',
 				'run:queue',
 				'read:reports',
-				'export:guest-data',
+				'read:guest-profiles',
 				'manage:demo-data',
 			]),
 		);
@@ -87,7 +87,7 @@ describe('AdminNavigation', () => {
 				'manage:sessions',
 				'run:queue',
 				'read:reports',
-				'export:guest-data',
+				'read:guest-profiles',
 				'manage:demo-data',
 			]),
 		);

@@ -18,6 +18,10 @@ resourceServers:
         description: The reports screen — aggregates, no names
       - value: export:guest-data
         description: The visit export, with names and phone numbers
+      - value: read:guest-profiles
+        description: >-
+          The guest database and each guest's profile — visits across sessions and
+          staff notes
       - value: delete:guest-data
         description: >-
           Permanently delete a guest and everything about them, for a guest who
@@ -273,6 +277,8 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: print:name-tags
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:guest-profiles
+        resource_server_identifier: https://thebaycompassion.org
       - permission_name: read:reports
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: run:queue
@@ -321,6 +327,8 @@ roles:
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: print:name-tags
         resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:guest-profiles
+        resource_server_identifier: https://thebaycompassion.org
       - permission_name: read:reports
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: run:queue
@@ -334,8 +342,8 @@ roles:
     type: tenant
   - name: team-leader
     description: >-
-      Runs the market like an admin, but cannot manage workers or read or export
-      the guest database
+      Runs the market like an admin and looks guests up in the guest database,
+      but cannot manage workers or export guest data
     permissions:
       - permission_name: manage:guest-access
         resource_server_identifier: https://thebaycompassion.org
@@ -344,6 +352,8 @@ roles:
       - permission_name: manage:sessions
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: print:name-tags
+        resource_server_identifier: https://thebaycompassion.org
+      - permission_name: read:guest-profiles
         resource_server_identifier: https://thebaycompassion.org
       - permission_name: read:reports
         resource_server_identifier: https://thebaycompassion.org

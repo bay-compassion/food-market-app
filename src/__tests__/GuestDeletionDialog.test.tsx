@@ -92,7 +92,7 @@ afterEach(() => {
 describe('Permanent guest deletion', () => {
 	it('is not offered without delete:guest-data', async () => {
 		// Act
-		await renderWith(['run:queue', 'export:guest-data']);
+		await renderWith(['run:queue', 'read:guest-profiles']);
 
 		// Assert
 		expect(screen.queryByRole('menuitem', { name: t.guestDeleteShow })).toBeNull();
@@ -100,7 +100,7 @@ describe('Permanent guest deletion', () => {
 
 	it('is not offered outside the guest database', async () => {
 		// Act
-		await renderWith(['export:guest-data', 'delete:guest-data'], previewWith(), {
+		await renderWith(['read:guest-profiles', 'delete:guest-data'], previewWith(), {
 			offerDeletion: false,
 		});
 
@@ -110,7 +110,7 @@ describe('Permanent guest deletion', () => {
 
 	it('deletes only once the guest’s phone number is typed', async () => {
 		// Arrange
-		const { api } = await renderWith(['export:guest-data', 'delete:guest-data']);
+		const { api } = await renderWith(['read:guest-profiles', 'delete:guest-data']);
 
 		await userEvent.click(screen.getByRole('menuitem', { name: t.guestDeleteShow }));
 		const confirm = await screen.findByRole('button', { name: t.guestDeleteConfirm });
@@ -133,7 +133,7 @@ describe('Permanent guest deletion', () => {
 	it('offers no way to delete a guest in a session that has not ended', async () => {
 		// Arrange
 		await renderWith(
-			['export:guest-data', 'delete:guest-data'],
+			['read:guest-profiles', 'delete:guest-data'],
 			previewWith({ inOpenSession: true }),
 		);
 

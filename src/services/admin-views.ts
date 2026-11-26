@@ -44,7 +44,7 @@ export const viewPermissions: Record<AdminView, Permission> = {
 	broadcast: 'manage:sessions',
 	'question-bank': 'manage:sessions',
 	'note-categories': 'manage:guest-notes',
-	'guest-database': 'export:guest-data',
+	'guest-database': 'read:guest-profiles',
 	'session-history': 'run:queue',
 	reports: 'read:reports',
 	workers: 'manage:workers',

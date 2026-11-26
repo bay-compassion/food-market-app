@@ -6,15 +6,15 @@ explanation and nothing else.
 
 ## The roles
 
-| Role              | Who it is for                                      | Holds                                                                                                     |
-| ----------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `worker`          | Volunteers running the market                      | `run:queue`, `print:name-tags`                                                                            |
-| `admin`           | Whoever is responsible for the market and its data | the first five permissions, `print:name-tags`, `manage:workers`, `manage:guest-notes`                     |
-| `owner`           | Organization custodian; managed only in Auth0      | Same as `admin`                                                                                           |
-| `team-leader`     | Trusted people who lead a market day               | `admin`'s permissions except `manage:workers` and `export:guest-data` (so including `manage:guest-notes`) |
-| `print-station`   | The account a print-station desktop signs in as    | `print:name-tags` only                                                                                    |
-| `data-steward`    | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`                                                          |
-| `lottery-steward` | Named people trusted to raise a guest's draw odds  | `read:stewardship`, `manage:stewardship`, held alongside `admin` or `worker`                              |
+| Role              | Who it is for                                      | Holds                                                                                                                               |
+| ----------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `worker`          | Volunteers running the market                      | `run:queue`, `print:name-tags`                                                                                                      |
+| `admin`           | Whoever is responsible for the market and its data | the first five permissions, `read:guest-profiles`, `print:name-tags`, `manage:workers`, `manage:guest-notes`                        |
+| `owner`           | Organization custodian; managed only in Auth0      | Same as `admin`                                                                                                                     |
+| `team-leader`     | Trusted people who lead a market day               | `admin`'s permissions except `manage:workers` and `export:guest-data` (so including `read:guest-profiles` and `manage:guest-notes`) |
+| `print-station`   | The account a print-station desktop signs in as    | `print:name-tags` only                                                                                                              |
+| `data-steward`    | The named person who answers guest data requests   | `delete:guest-data` only, held alongside `admin`                                                                                    |
+| `lottery-steward` | Named people trusted to raise a guest's draw odds  | `read:stewardship`, `manage:stewardship`, held alongside `admin` or `worker`                                                        |
 
 The worker/admin split exists because the risk being managed is volunteer turnover: people who run
 the table for a season should not be able to reset a session, push a notification to every guest,
@@ -25,10 +25,10 @@ during service, Close Session, which their role allows; the controls that steer 
 out, and the server refuses them regardless. Opening `/admin` lands a worker on the Queue during
 service, and on Today otherwise.
 
-A team leader steers sessions, edits the schedule, sends broadcasts, reads reports, and can put any
-guest on a phone. They cannot manage staff, and because `export:guest-data` gates every read across
-sessions, they get neither the export nor the Guest Database screen, which is offered only to
-holders of that permission. The Workers screen treats a `team-leader` account as read-only, so the
+A team leader steers sessions, edits the schedule, sends broadcasts, reads reports, can put any
+guest on a phone, and looks guests up in the Guest Database (`read:guest-profiles`). They cannot
+manage staff or take guest data off the screen: the visit export, the grid's own export and print,
+and an ended session's roster stay on `export:guest-data`. The Workers screen treats a `team-leader` account as read-only, so the
 role is assigned only in Auth0. Push the role to Auth0 before assigning it.
 
 ## Managing Workers
@@ -94,19 +94,20 @@ operations. Preserve these through a log drain if long-term audit retention is n
 
 ## The permissions
 
-| Permission            | Allows                                                                                                   |
-| --------------------- | -------------------------------------------------------------------------------------------------------- |
-| `run:queue`           | Call guests, change a visit's status, add a guest by hand, close the day's session, read session history |
-| `manage:sessions`     | The schedule, the question bank, the registration lifecycle, the lottery, broadcasts                     |
-| `read:reports`        | The reports screen — counts and rates, never a guest's name                                              |
-| `export:guest-data`   | The visit export, the Guest Database, and an ended session's participants, including correcting a status |
-| `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it   |
-| `delete:guest-data`   | Permanently deleting a guest and everything about them, after typing their phone number to confirm       |
-| `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point     |
-| `print:name-tags`     | The `/printing-station` page — prints the name tags volunteers send: first name and last initial only    |
-| `read:stewardship`    | The `/steward` area: draw odds, temperature, draw history, and the record of odds changes                |
-| `manage:stewardship`  | Changing a guest's odds in `/steward`, or raising them when adding them to the draw by hand              |
-| `manage:guest-notes`  | Changing or deleting any staff note, including an ended session's, and the Note Categories screen        |
+| Permission            | Allows                                                                                                                      |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `run:queue`           | Call guests, change a visit's status, add a guest by hand, close the day's session, read session history                    |
+| `manage:sessions`     | The schedule, the question bank, the registration lifecycle, the lottery, broadcasts                                        |
+| `read:reports`        | The reports screen — counts and rates, never a guest's name                                                                 |
+| `export:guest-data`   | The visit export, the Guest Database's export and print, and an ended session's participants, including correcting a status |
+| `read:guest-profiles` | The Guest Database: everyone on record, one row each, with their visits across sessions and their notes                     |
+| `manage:guest-access` | A QR code that puts any guest on a phone — including one already on another phone, which then loses it                      |
+| `delete:guest-data`   | Permanently deleting a guest and everything about them, after typing their phone number to confirm                          |
+| `manage:demo-data`    | The Dev Mode screen — replaces the current session with fake data staged at a chosen lifecycle point                        |
+| `print:name-tags`     | The `/printing-station` page — prints the name tags volunteers send: first name and last initial only                       |
+| `read:stewardship`    | The `/steward` area: draw odds, temperature, draw history, and the record of odds changes                                   |
+| `manage:stewardship`  | Changing a guest's odds in `/steward`, or raising them when adding them to the draw by hand                                 |
+| `manage:guest-notes`  | Changing or deleting any staff note, including an ended session's, and the Note Categories screen                           |
 
 The first five sit behind two roles on purpose. Splitting out a third role later — a board member
 or grant writer who should read reports but never see a name, holding `read:reports` alone — is
@@ -142,41 +143,42 @@ change only their own notes from the open session, like any volunteer.
 
 ## What each endpoint requires
 
-| Endpoint                                                 | Requires                                                           |
-| -------------------------------------------------------- | ------------------------------------------------------------------ |
-| `/api/admin/workers`, `/api/admin/workers/:id`           | `manage:workers` plus a current admin or owner role                |
-| `GET /api/market`                                        | nothing — the guest app depends on it                              |
-| `POST /api/guest-information`                            | nothing — saves guest identity only                                |
-| `POST /api/lottery-registration`                         | nothing — public self-service lottery entry                        |
-| `POST /api/kiosk/unlock`                                 | nothing but a current unlock code                                  |
-| `GET /api/kiosk/board`                                   | a kiosk token, not Auth0 — see the room display below              |
-| `GET /api/admin/market?view=history`                     | `run:queue`                                                        |
-| `POST /api/admin/market`                                 | `manage:sessions`, except `close_session` → `run:queue`            |
-| `/api/admin/schedule` (every method)                     | `manage:sessions`                                                  |
-| `POST`, `PATCH /api/admin/guests`                        | `run:queue`; plus `manage:stewardship` to raise odds               |
-| `GET /api/admin/guests` (current session)                | `run:queue`                                                        |
-| `GET /api/admin/guests` (`scope=all` or another session) | `export:guest-data`                                                |
-| `POST /api/admin/queue`                                  | `run:queue`                                                        |
-| `POST /api/admin/broadcast`                              | `manage:sessions`                                                  |
-| `/api/steward/*`                                         | `read:stewardship`                                                 |
-| `POST /api/steward/people/:id/odds`                      | `read:stewardship` and `manage:stewardship`                        |
-| `POST /api/admin/guest-claims`                           | `run:queue`; plus `manage:guest-access` to override                |
-| `GET /api/admin/reports`                                 | `read:reports`; plus `read:stewardship` for lottery outcomes       |
-| `GET /api/admin/reports?view=export`                     | `export:guest-data`; plus `read:stewardship` for `lottery_weight`  |
-| `GET /api/admin/guests/:id/deletion`                     | `delete:guest-data`                                                |
-| `DELETE /api/admin/guests/:id`                           | `delete:guest-data`                                                |
-| `PATCH /api/admin/sessions/:id/visits/:visitId`          | `export:guest-data`                                                |
-| `GET`, `POST /api/admin/demo-data`                       | `manage:demo-data` — and, for `POST`, an env flag too              |
-| `POST /api/admin/kiosk/unlock-codes`                     | `run:queue`                                                        |
-| `GET /api/admin/visits/:id/events`                       | `run:queue`                                                        |
-| `GET`, `POST /api/admin/guests/:id/notes`                | `run:queue`                                                        |
-| `PATCH`, `DELETE /api/admin/guest-notes/:id`             | `run:queue`; plus `manage:guest-notes` for another's or a past one |
-| `GET /api/admin/guest-note-categories`                   | `run:queue`                                                        |
-| `POST`, `PATCH /api/admin/guest-note-categories`         | `manage:guest-notes`                                               |
-| `POST /api/admin/print-jobs`                             | `run:queue`                                                        |
-| `GET /api/admin/print-station`                           | `run:queue`                                                        |
-| `GET /api/admin/print-jobs`                              | `print:name-tags`                                                  |
-| `DELETE /api/admin/print-jobs/:id`                       | `print:name-tags`                                                  |
+| Endpoint                                         | Requires                                                           |
+| ------------------------------------------------ | ------------------------------------------------------------------ |
+| `/api/admin/workers`, `/api/admin/workers/:id`   | `manage:workers` plus a current admin or owner role                |
+| `GET /api/market`                                | nothing — the guest app depends on it                              |
+| `POST /api/guest-information`                    | nothing — saves guest identity only                                |
+| `POST /api/lottery-registration`                 | nothing — public self-service lottery entry                        |
+| `POST /api/kiosk/unlock`                         | nothing but a current unlock code                                  |
+| `GET /api/kiosk/board`                           | a kiosk token, not Auth0 — see the room display below              |
+| `GET /api/admin/market?view=history`             | `run:queue`                                                        |
+| `POST /api/admin/market`                         | `manage:sessions`, except `close_session` → `run:queue`            |
+| `/api/admin/schedule` (every method)             | `manage:sessions`                                                  |
+| `POST`, `PATCH /api/admin/guests`                | `run:queue`; plus `manage:stewardship` to raise odds               |
+| `GET /api/admin/guests` (current session)        | `run:queue`                                                        |
+| `GET /api/admin/guests` (`scope=all`)            | `read:guest-profiles`                                              |
+| `GET /api/admin/guests` (another session)        | `export:guest-data`                                                |
+| `POST /api/admin/queue`                          | `run:queue`                                                        |
+| `POST /api/admin/broadcast`                      | `manage:sessions`                                                  |
+| `/api/steward/*`                                 | `read:stewardship`                                                 |
+| `POST /api/steward/people/:id/odds`              | `read:stewardship` and `manage:stewardship`                        |
+| `POST /api/admin/guest-claims`                   | `run:queue`; plus `manage:guest-access` to override                |
+| `GET /api/admin/reports`                         | `read:reports`; plus `read:stewardship` for lottery outcomes       |
+| `GET /api/admin/reports?view=export`             | `export:guest-data`; plus `read:stewardship` for `lottery_weight`  |
+| `GET /api/admin/guests/:id/deletion`             | `delete:guest-data`                                                |
+| `DELETE /api/admin/guests/:id`                   | `delete:guest-data`                                                |
+| `PATCH /api/admin/sessions/:id/visits/:visitId`  | `export:guest-data`                                                |
+| `GET`, `POST /api/admin/demo-data`               | `manage:demo-data` — and, for `POST`, an env flag too              |
+| `POST /api/admin/kiosk/unlock-codes`             | `run:queue`                                                        |
+| `GET /api/admin/visits/:id/events`               | `run:queue`                                                        |
+| `GET`, `POST /api/admin/guests/:id/notes`        | `run:queue`                                                        |
+| `PATCH`, `DELETE /api/admin/guest-notes/:id`     | `run:queue`; plus `manage:guest-notes` for another's or a past one |
+| `GET /api/admin/guest-note-categories`           | `run:queue`                                                        |
+| `POST`, `PATCH /api/admin/guest-note-categories` | `manage:guest-notes`                                               |
+| `POST /api/admin/print-jobs`                     | `run:queue`                                                        |
+| `GET /api/admin/print-station`                   | `run:queue`                                                        |
+| `GET /api/admin/print-jobs`                      | `print:name-tags`                                                  |
+| `DELETE /api/admin/print-jobs/:id`               | `print:name-tags`                                                  |
 
 Two of those are deliberate exceptions. **`close_session`** is a worker action — its button lives
 on the queue screen a worker uses all day, and ending the day is part of running it. **Session
@@ -294,7 +296,7 @@ and nothing else changes.
 `delete:guest-data` answers a guest who asks us to delete their information, as the privacy policy
 promises. It lives on its own `data-steward` role rather than on `admin`, so the person who can
 erase a guest is a named choice, not everyone responsible for the market. Give that role to the
-one or two people who handle data requests, alongside `admin`: it extends `export:guest-data`,
+one or two people who handle data requests, alongside `admin`: it extends `read:guest-profiles`,
 because the guest database it is offered from only loads with that.
 
 In the guest database, a guest's Actions menu offers **Delete Guest Permanently**. The dialog
@@ -439,10 +441,11 @@ print dialog, since no station ever reports in.
 ## What this does not do
 
 Workers still see guest names and phone numbers on the current session's queue and guest screens.
-They have to; that is the job. What `export:guest-data` protects is every path to the history that
-is _not_ today's line: the bulk CSV download, the whole-database view (`scope=all`), and reading a
-finished session's roster by its id. Reading today's line is `run:queue`; reaching across sessions
-is the same exposure as the export, however it is spelled, so it takes the same permission.
+They have to; that is the job. Every path to the history that is _not_ today's line is gated above
+`run:queue`. The whole-database view (`scope=all`) takes `read:guest-profiles`, held by admins and
+team leaders, who look a returning guest up. Taking that history away in bulk takes
+`export:guest-data`: the CSV download, the grid's export and print, and reading a finished
+session's roster by its id.
 
 ## The dev-mode data loader
 

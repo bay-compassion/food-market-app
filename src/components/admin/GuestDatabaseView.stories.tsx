@@ -11,8 +11,8 @@ import { RootStoreProvider } from '../../stores/react/store-context';
 import { RootStore } from '../../stores/root.store';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { GuestDatabaseView } from './GuestDatabaseView';
-import { busyQueue } from './queueGuests.fixture';
-import type { DatabaseGuest } from './types';
+import { guestDatabase } from './guestSummaries.fixture';
+import type { GuestSummary } from './types';
 
 const t = adminTranslations.en;
 
@@ -29,14 +29,14 @@ const t = adminTranslations.en;
 type GuestDatabaseViewArgs = {
 	locale: Locale;
 	admissions: ManualAdmission[];
-	guests: DatabaseGuest[];
+	guests: GuestSummary[];
 };
 
 function View({ locale, admissions, guests }: GuestDatabaseViewArgs) {
 	const [store] = useState(() => {
 		const api = { listAllGuests: () => Promise.resolve(guests) } as unknown as AdminApi;
 		const created = new RootStore({
-			admin: { api, readPermissions: () => Promise.resolve(['export:guest-data']) },
+			admin: { api, readPermissions: () => Promise.resolve(['read:guest-profiles']) },
 		});
 
 		void created.admin.loadPermissions().then(() => created.admin.refreshGuests());
@@ -61,7 +61,7 @@ const meta = {
 	title: 'Admin/Guest Database/Database View',
 	component: View,
 	parameters: { shell: 'admin' },
-	args: { locale: 'en', admissions: manualAdmissionsFor('service_started'), guests: busyQueue },
+	args: { locale: 'en', admissions: manualAdmissionsFor('service_started'), guests: guestDatabase },
 } satisfies Meta<typeof View>;
 
 export default meta;
@@ -73,7 +73,7 @@ export const OnAPhone: Story = {
 	play: async ({ canvas }) => {
 		const list = within(await canvas.findByRole('list', { name: t.allGuests }));
 
-		await expect(list.getAllByRole('listitem')).toHaveLength(busyQueue.length);
+		await expect(list.getAllByRole('listitem')).toHaveLength(guestDatabase.length);
 		await expect(canvas.getByRole('button', { name: t.addGuest })).toBeVisible();
 	},
 };
@@ -91,25 +91,22 @@ export const SearchNarrowsTheList: Story = {
 	},
 };
 
-/** A quick filter narrows the list to one kind of guest. */
+/** A quick filter narrows the list to one kind of guest: here, guests staff have written notes about. */
 export const QuickFilter: Story = {
-	args: {
-		guests: busyQueue.map((guest, index) =>
-			index === 0 ? { ...guest, status: 'not_placed' as const } : guest,
-		),
-	},
 	play: async ({ canvas }) => {
 		await canvas.findByRole('list', { name: t.allGuests });
 
 		const filters = within(canvas.getByRole('group', { name: t.guestFilterLabel }));
 
-		await userEvent.click(filters.getByRole('button', { name: t.guestFilters['not-placed'] }));
+		await userEvent.click(filters.getByRole('button', { name: t.guestFilters['has-notes'] }));
 		await expect(
-			filters.getByRole('button', { name: t.guestFilters['not-placed'] }),
+			filters.getByRole('button', { name: t.guestFilters['has-notes'] }),
 		).toHaveAttribute('aria-pressed', 'true');
-		await expect(
-			within(canvas.getByRole('list', { name: t.allGuests })).getAllByRole('listitem'),
-		).toHaveLength(1);
+
+		const list = within(canvas.getByRole('list', { name: t.allGuests }));
+
+		await expect(list.getAllByRole('listitem')).toHaveLength(1);
+		await expect(list.getByText('Escalate to Lead')).toBeVisible();
 	},
 };
 

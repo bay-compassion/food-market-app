@@ -115,8 +115,23 @@ export type UnvisitedGuest = Omit<
 	track: null;
 };
 
-/** One row of the guest database: a visit, or a guest who has none yet. */
+/** A guest's latest visit, or the guest alone when they have none: what a database row acts on. */
 export type DatabaseGuest = QueueGuest | UnvisitedGuest;
+
+/** What a guest's whole record adds up to, across every visit and staff note. */
+export type GuestRecordTotals = {
+	visitCount: number;
+	servedCount: number;
+	noShowCount: number;
+	/** The `YYYY-MM-DD` date of the guest's latest visit; null for a guest who has had none. */
+	lastVisitDate: string | null;
+	noteCount: number;
+	/** The category of the guest's newest note; null when it has none, or they have no notes. */
+	latestNoteCategory: string | null;
+};
+
+/** One row of the guest database: a guest, their latest visit (if any), and their totals. */
+export type GuestSummary = (AdminGuest | UnvisitedGuest) & GuestRecordTotals;
 
 /**
  * A code a worker shows as a QR code. `expiresAt` is an ISO timestamp; `replacesDevice` says the
@@ -181,15 +196,15 @@ export class AdminApi {
 		this.request = options.request ?? ((input, init) => fetch(input, init));
 	}
 
-	/** Every visit on record, plus every guest with none, optionally narrowed by a free-text search. */
-	async listAllGuests(search = ''): Promise<DatabaseGuest[]> {
+	/** Every guest on record, one summary each, optionally narrowed by a free-text search. */
+	async listAllGuests(search = ''): Promise<GuestSummary[]> {
 		const params = new URLSearchParams({ scope: 'all' });
 
 		if (search.trim()) {
 			params.set('q', search.trim());
 		}
 
-		return this.readJson<DatabaseGuest[]>(await this.get(`/api/admin/guests?${params}`), 'guests');
+		return this.readJson<GuestSummary[]>(await this.get(`/api/admin/guests?${params}`), 'guests');
 	}
 
 	/** The guests attached to one session. */

@@ -479,6 +479,16 @@ export interface AdminTranslation {
 	householdColumn: string;
 	languageColumn: string;
 	statusColumn: string;
+	lastVisitColumn: string;
+	visitsColumn: string;
+	notesColumn: string;
+	/** A guest's visit count in the phone list, as "7 visits"; `{count}` is the number. */
+	visitCount: string;
+	/** The same for exactly one visit. */
+	visitCountOne: string;
+	/** The flag on a guest whose newest note has no category, as "2 notes". */
+	noteCount: string;
+	noteCountOne: string;
 	actionsColumn: string;
 	served: string;
 	settingsHelp: string;
@@ -1082,6 +1092,7 @@ export const adminTranslations = {
 			all: 'All',
 			'in-session': 'In Today’s Session',
 			'not-placed': 'Not Placed',
+			'has-notes': 'Has Notes',
 		},
 		broadcastConfirm: 'Send this announcement to every subscribed guest in the current session?',
 		broadcastHelp: 'The message will be sent exactly as written to all subscribed guests.',
@@ -1471,6 +1482,13 @@ export const adminTranslations = {
 		householdColumn: 'Household',
 		languageColumn: 'Language',
 		statusColumn: 'Status',
+		lastVisitColumn: 'Last Visit',
+		visitsColumn: 'Visits',
+		notesColumn: 'Notes',
+		visitCount: '{count} visits',
+		visitCountOne: '1 visit',
+		noteCount: '{count} notes',
+		noteCountOne: '1 note',
 		actionsColumn: 'Actions',
 		served: 'Served',
 		settingsHelp: 'Set the window and maximum number of guests who receive a queue spot.',

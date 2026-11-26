@@ -11,9 +11,9 @@
 import { SessionTimeline } from '../../../src/models/session-timeline.ts';
 import type {
 	AdminGuest,
-	DatabaseGuest,
 	HistoricalEvent,
-	UnvisitedGuest,
+	GuestRecordTotals,
+	GuestSummary,
 } from '../../../src/services/admin-api.ts';
 import type { ReportRow } from '../../../src/services/reports.ts';
 import type {
@@ -64,6 +64,16 @@ const json = (body: unknown, status = 200) =>
 	new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 const iso = (ms: number) => new Date(ms).toISOString();
+
+/** A guide guest's record adds up to nothing beyond what the scene shows. */
+const noHistory: GuestRecordTotals = {
+	visitCount: 0,
+	servedCount: 0,
+	noShowCount: 0,
+	lastVisitDate: null,
+	noteCount: 0,
+	latestNoteCategory: null,
+};
 /** The `YYYY-MM-DD` of a moment, in the frame's own time zone. */
 const localDate = (ms: number) => {
 	const date = new Date(ms);
@@ -165,9 +175,9 @@ export class AdminServer {
 	}
 
 	/** Every guest on record: today's visits, then guests who have none, as the database lists them. */
-	private allGuests(search: string): DatabaseGuest[] {
+	private allGuests(search: string): GuestSummary[] {
 		const returning = RETURNING.map(
-			([firstName, lastName, phone], i): UnvisitedGuest => ({
+			([firstName, lastName, phone], i): GuestSummary => ({
 				id: null,
 				guestId: `guide-returning-${i}`,
 				firstName,
@@ -184,10 +194,16 @@ export class AdminServer {
 				queueOrder: null,
 				calledAt: null,
 				marketEventId: null,
+				...noHistory,
 			}),
 		);
-		const everyone: DatabaseGuest[] = [
-			...this.scene.guests.map((guest) => this.visitOf(guest)),
+		const everyone: GuestSummary[] = [
+			...this.scene.guests.map((guest) => ({
+				...this.visitOf(guest),
+				...noHistory,
+				visitCount: 1,
+				lastVisitDate: iso(this.scene.market.opensAt).slice(0, 10),
+			})),
 			...returning,
 		];
 		const query = search.toLowerCase();

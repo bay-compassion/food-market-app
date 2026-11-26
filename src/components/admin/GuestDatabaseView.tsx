@@ -70,13 +70,14 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 	onAddGuest,
 }: GuestDatabaseViewProps) {
 	const t = adminTranslations.en;
-	const { admin } = useRootStore();
+	const { admin, session } = useRootStore();
 	const isWide = useMediaQuery(wideLayoutQuery);
 	const [filter, setFilter] = useState<GuestDatabaseFilter>('all');
 	const [search, setSearch] = useState('');
+	const currentEventId = session.currentState?.event?.id ?? null;
 	const rows = useMemo(
-		() => new GuestDatabaseRows(admin.guests, statusLabels, t.noVisit),
-		[admin.guests, statusLabels, t.noVisit],
+		() => new GuestDatabaseRows(admin.guests, statusLabels, t.noVisit, currentEventId),
+		[admin.guests, statusLabels, t.noVisit, currentEventId],
 	);
 	const shown = useMemo(() => rows.matching(filter, search), [rows, filter, search]);
 	// Composed here rather than through `AddGuestSection` so the button sits beside the search,

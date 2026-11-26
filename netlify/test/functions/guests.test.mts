@@ -60,6 +60,65 @@ describe('guests handler GET (admin: requires Auth0)', () => {
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toEqual([]);
 	});
+
+	it('lists the whole database one guest per row, counting nothing for a guest with no record', async () => {
+		// Arrange
+		vi.mocked(requirePermission).mockResolvedValueOnce(null);
+		queueResult([
+			{
+				id: 'visit-9',
+				guestId: 'guest-1',
+				marketEventId: 'event-1',
+				firstName: 'Maria',
+				lastName: 'Lopez',
+				calledAt: new Date('2026-11-26T18:48:00Z'),
+				status: 'called',
+				visitCount: 7,
+				servedCount: 5,
+				noShowCount: 1,
+				lastVisitDate: '2026-11-26',
+				noteCount: 2,
+				latestNoteCategory: 'Escalate to Lead',
+			},
+			{
+				id: null,
+				guestId: 'guest-2',
+				marketEventId: null,
+				firstName: 'Rosa',
+				lastName: 'Gutierrez',
+				calledAt: null,
+				status: null,
+				visitCount: null,
+				servedCount: null,
+				noShowCount: null,
+				lastVisitDate: null,
+				noteCount: null,
+				latestNoteCategory: null,
+			},
+		]);
+
+		// Act
+		const response = await handler(request('GET', { path: '?scope=all' }));
+
+		// Assert
+		await expect(response.json()).resolves.toEqual([
+			expect.objectContaining({
+				guestId: 'guest-1',
+				calledAt: '2026-11-26T18:48:00.000Z',
+				visitCount: 7,
+				noteCount: 2,
+				latestNoteCategory: 'Escalate to Lead',
+			}),
+			expect.objectContaining({
+				guestId: 'guest-2',
+				visitCount: 0,
+				servedCount: 0,
+				noShowCount: 0,
+				noteCount: 0,
+				lastVisitDate: null,
+			}),
+		]);
+	});
 });
 
 describe('guests handler PATCH (admin: requires Auth0)', () => {

@@ -64,6 +64,7 @@ const adminToken = accessTokenWith([
 	'manage:sessions',
 	'read:reports',
 	'export:guest-data',
+	'read:guest-profiles',
 ]);
 
 async function renderApp(initialPath = '/', flags: Record<string, StaticFlagValue> = {}) {
