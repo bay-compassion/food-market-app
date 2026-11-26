@@ -4,6 +4,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { adminTranslations } from '../../adminLocales';
 import type { Locale } from '../../locales';
+import type { GuestProfileRecord } from '../../models/guest-profile';
 import type { AdminApi } from '../../services/admin-api';
 import { manualAdmissionsFor, type ManualAdmission } from '../../services/guestAdmission';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
@@ -30,11 +31,34 @@ type GuestDatabaseViewArgs = {
 	locale: Locale;
 	admissions: ManualAdmission[];
 	guests: GuestSummary[];
+	onOpenGuest: (guestId?: string) => void;
 };
 
-function View({ locale, admissions, guests }: GuestDatabaseViewArgs) {
+/** A guest's record as their profile reads it, from the summary the list has. */
+function profileOf(guest: GuestSummary): GuestProfileRecord {
+	return {
+		guestId: guest.guestId,
+		firstName: guest.firstName,
+		lastName: guest.lastName,
+		pronunciation: guest.pronunciation,
+		phone: guest.phone,
+		locale: guest.locale,
+		createdAt: '2025-03-12T17:00:00.000Z',
+		onPhone: true,
+		textAlerts: false,
+		visits: [],
+	};
+}
+
+function View({ locale, admissions, guests, onOpenGuest }: GuestDatabaseViewArgs) {
 	const [store] = useState(() => {
-		const api = { listAllGuests: () => Promise.resolve(guests) } as unknown as AdminApi;
+		const api = {
+			listAllGuests: () => Promise.resolve(guests),
+			getGuestProfile: async (guestId: string) =>
+				profileOf(guests.find((guest) => guest.guestId === guestId)!),
+			listGuestNotes: async () => [],
+			listGuestNoteCategories: async () => [],
+		} as unknown as AdminApi;
 		const created = new RootStore({
 			admin: { api, readPermissions: () => Promise.resolve(['read:guest-profiles']) },
 		});
@@ -51,7 +75,7 @@ function View({ locale, admissions, guests }: GuestDatabaseViewArgs) {
 				admissions={admissions}
 				onRun={fn()}
 				onAddGuest={fn()}
-				onOpenGuest={fn()}
+				onOpenGuest={onOpenGuest}
 			/>
 			<ConfirmationDrawer />
 		</RootStoreProvider>
@@ -62,7 +86,12 @@ const meta = {
 	title: 'Admin/Guest Database/Database View',
 	component: View,
 	parameters: { shell: 'admin' },
-	args: { locale: 'en', admissions: manualAdmissionsFor('service_started'), guests: guestDatabase },
+	args: {
+		locale: 'en',
+		admissions: manualAdmissionsFor('service_started'),
+		guests: guestDatabase,
+		onOpenGuest: fn(),
+	},
 } satisfies Meta<typeof View>;
 
 export default meta;
@@ -131,5 +160,39 @@ export const BetweenSessions: Story = {
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole('button', { name: t.addGuest })).toBeInTheDocument();
 		await expect(await canvas.findByText(t.noGuests)).toBeInTheDocument();
+	},
+};
+
+/**
+ * On a desk, picking a guest in the grid opens a short profile beside it, so a worker can look
+ * someone up without leaving the list. Open Full Profile goes to the whole profile.
+ */
+export const DeskSidePanel: Story = {
+	globals: { viewport: { value: 'ipad12p', isRotated: false } },
+	play: async ({ args, canvas }) => {
+		await userEvent.click(await canvas.findByText('Linh Nguyen'));
+
+		const panel = within(
+			await canvas.findByRole('complementary', { name: t.guestProfile.panelLabel }),
+		);
+
+		await expect(await panel.findByRole('heading', { name: 'Linh Nguyen' })).toBeVisible();
+		await userEvent.click(panel.getByRole('button', { name: t.guestProfile.openFullProfile }));
+		await expect(args.onOpenGuest).toHaveBeenCalledOnce();
+
+		await userEvent.click(panel.getByRole('button', { name: t.guestProfile.closePanel }));
+		await expect(
+			canvas.queryByRole('complementary', { name: t.guestProfile.panelLabel }),
+		).not.toBeInTheDocument();
+	},
+};
+
+/** On a phone, a guest opens their full profile directly: there is no room beside the list. */
+export const PhoneOpensTheProfile: Story = {
+	play: async ({ args, canvas }) => {
+		const list = within(await canvas.findByRole('list', { name: t.allGuests }));
+
+		await userEvent.click(list.getByRole('button', { name: /^Linh Nguyen/ }));
+		await expect(args.onOpenGuest).toHaveBeenCalledOnce();
 	},
 };

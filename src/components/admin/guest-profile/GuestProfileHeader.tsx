@@ -67,14 +67,15 @@ export function GuestProfileHeader({
 	onBack,
 }: {
 	profile: GuestProfile;
-	onBack: () => void;
+	/** The way back to the list; the desk's side panel, which sits beside the list, has none. */
+	onBack?: () => void;
 }) {
 	const t = adminTranslations.en.guestProfile;
 	const since = profile.createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
 	return (
 		<Header>
-			<BackButton label={t.back} onClick={onBack} />
+			{onBack ? <BackButton label={t.back} onClick={onBack} /> : null}
 			<div className="who">
 				<span className="initials" aria-hidden="true">
 					{profile.initials}
