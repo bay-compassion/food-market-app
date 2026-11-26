@@ -17,6 +17,7 @@ import { AddGuestFab } from './AddGuestFab';
 import { useManualGuestForm } from './AddGuestSection';
 import { wideLayoutQuery } from './admin-layout';
 import { ChoiceChips } from './ChoiceChips';
+import { GuestProfilePanel } from './guest-profile/GuestProfilePanel';
 import { GuestProfileView } from './guest-profile/GuestProfileView';
 import { GuestDatabaseGrid } from './GuestDatabaseGrid';
 import { GuestDatabaseList } from './GuestDatabaseList';
@@ -55,6 +56,18 @@ const Section = styled.section`
 		margin-inline-start: auto;
 	}
 
+	/* On a desk, the guest picked in the grid opens in a panel beside it. */
+	.guest-desk {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 16px;
+		align-items: start;
+	}
+
+	.guest-desk[data-panel='true'] {
+		grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+	}
+
 	/* The grid draws its own frame; this gives it the card edge the other admin screens have. */
 	.guest-grid {
 		overflow: hidden;
@@ -64,7 +77,8 @@ const Section = styled.section`
 `;
 
 /**
- * Every guest on record, and — when the route names one — that guest's profile. Search and the
+ * Every guest on record, and — when the route names one — that guest's profile. On a desk, picking
+ * a guest in the grid first opens a short profile in a panel beside it. Search and the
  * quick filters sit above the list and serve both of its forms: on a desk the full grid, which keeps sorting, the filter panel, the column picker and
  * export; on a phone, a list of rows, since a grid shows a column and a half at that width.
  */
@@ -92,6 +106,9 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 	const addGuestForm = useManualGuestForm(admissions);
 	// Stable, since the profile leaves through it from an effect once its guest is deleted.
 	const backToList = useCallback(() => onOpenGuest(), [onOpenGuest]);
+	// On a desk, the guest picked in the grid, shown in the panel beside it.
+	const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
+	const panelGuestId = isWide && selectedGuestId !== admin.deletedGuestId ? selectedGuestId : null;
 
 	function addGuest(guest: ManualGuest) {
 		addGuestForm.close();
@@ -125,15 +142,26 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 				onChange={setFilter}
 			/>
 			{isWide ? (
-				<div className="guest-grid">
-					<GuestDatabaseGrid
-						rows={rows}
-						shown={shown}
-						canExport={admin.can('export:guest-data')}
-						busy={admin.isBusy}
-						onRun={onRun}
-						onOpenGuest={onOpenGuest}
-					/>
+				<div className="guest-desk" data-panel={panelGuestId !== null}>
+					<div className="guest-grid">
+						<GuestDatabaseGrid
+							rows={rows}
+							shown={shown}
+							canExport={admin.can('export:guest-data')}
+							busy={admin.isBusy}
+							selectedGuestId={panelGuestId}
+							onRun={onRun}
+							onOpenGuest={setSelectedGuestId}
+						/>
+					</div>
+					{panelGuestId !== null ? (
+						<GuestProfilePanel
+							key={panelGuestId}
+							guestId={panelGuestId}
+							onClose={() => setSelectedGuestId(null)}
+							onOpenProfile={() => onOpenGuest(panelGuestId)}
+						/>
+					) : null}
 				</div>
 			) : (
 				<GuestDatabaseList

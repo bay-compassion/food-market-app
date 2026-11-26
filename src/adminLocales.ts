@@ -200,6 +200,10 @@ export interface GuestProfileTranslation {
 	visitsTab: string;
 	notesTab: string;
 	recordsTab: string;
+	/** Names the desk's side panel, which shows the guest picked in the grid. */
+	panelLabel: string;
+	closePanel: string;
+	openFullProfile: string;
 	sameTitle: string;
 	/** Under the title: how records are linked. */
 	sameHelp: string;
@@ -1412,6 +1416,9 @@ export const adminTranslations = {
 			visitsTab: 'Visits',
 			notesTab: 'Notes',
 			recordsTab: 'Records',
+			panelLabel: 'Selected guest',
+			closePanel: 'Close',
+			openFullProfile: 'Open Full Profile',
 			sameTitle: 'Other Records',
 			sameHelp:
 				'Linked by a phone number this record or one of its visits used. The same name in the same household is likely the same person.',

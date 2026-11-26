@@ -18,7 +18,9 @@ export type GuestDatabaseGridProps = {
 	canExport: boolean;
 	busy?: boolean;
 	onRun: (guest: QueueGuest, command: VisitCommand) => void;
-	/** Opens a guest's profile; a click anywhere on their row but the actions menu. */
+	/** The guest open in the panel beside the grid, whose row is marked; `null` for none. */
+	selectedGuestId?: string | null;
+	/** Opens a guest; a click anywhere on their row but the actions menu, or Enter on a cell. */
 	onOpenGuest: (guestId: string) => void;
 };
 
@@ -41,9 +43,14 @@ const Grid = styled(DataGrid)`
 	 * which turns the queue's pill-shaped action button into a circle. Centring the cell with flex
 	 * instead lets the line height go back to normal for everything inside it.
 	 */
-	/* A row opens the guest's profile. */
+	/* A row opens the guest, and the one open beside the grid is marked. */
 	.MuiDataGrid-row {
 		cursor: pointer;
+	}
+
+	.MuiDataGrid-row.selected-guest {
+		background: var(--color-surface-soft);
+		box-shadow: inset 3px 0 0 var(--color-brand);
 	}
 
 	.MuiDataGrid-cell {
@@ -96,6 +103,7 @@ export function GuestDatabaseGrid({
 	canExport,
 	busy,
 	onRun,
+	selectedGuestId = null,
 	onOpenGuest,
 }: GuestDatabaseGridProps) {
 	const t = adminTranslations.en;
@@ -125,6 +133,7 @@ export function GuestDatabaseGrid({
 				loading={busy}
 				rowHeight={56}
 				disableRowSelectionOnClick
+				getRowClassName={({ id }) => (id === selectedGuestId ? 'selected-guest' : '')}
 				onCellClick={({ field, row }) => {
 					if (field !== 'actions') {
 						onOpenGuest(row.id);
