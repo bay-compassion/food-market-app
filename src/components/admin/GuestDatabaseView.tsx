@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { Button, TextField } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import { GuestDatabaseRows } from '../../models/guest-database-rows';
@@ -90,6 +90,8 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 	// Composed here rather than through `AddGuestSection` so the button sits beside the search,
 	// where a worker meets it before scrolling the list.
 	const addGuestForm = useManualGuestForm(admissions);
+	// Stable, since the profile leaves through it from an effect once its guest is deleted.
+	const backToList = useCallback(() => onOpenGuest(), [onOpenGuest]);
 
 	function addGuest(guest: ManualGuest) {
 		addGuestForm.close();
@@ -97,7 +99,7 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 	}
 
 	if (guestId !== undefined) {
-		return <GuestProfileView guestId={guestId} onBack={() => onOpenGuest()} />;
+		return <GuestProfileView guestId={guestId} onBack={backToList} onOpenGuest={onOpenGuest} />;
 	}
 
 	return (

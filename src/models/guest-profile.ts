@@ -40,7 +40,28 @@ export type GuestProfileRecord = {
 	phone: string;
 	locale: Locale;
 	createdAt: string;
+	/** Whether the guest's record is on a phone, which a claim code would replace. */
+	onPhone: boolean;
+	/** Whether the guest gets text alerts: they consented and have not since opted out. */
+	textAlerts: boolean;
 	visits: GuestProfileVisit[];
+};
+
+/**
+ * Another guest record that is likely the same person, or someone in the same household: linked by
+ * a phone number this record or one of its visits used, and — for the same person — the same name.
+ * See `GuestReconciliation`.
+ */
+export type RelatedGuestRecord = {
+	guestId: string;
+	firstName: string;
+	lastName: string;
+	phone: string;
+	createdAt: string;
+	visitCount: number;
+	/** The `YYYY-MM-DD` date of the record's latest visit; null when it has none. */
+	lastVisitDate: string | null;
+	relation: 'same-person' | 'household';
 };
 
 /** The household as a visit recorded it. */
@@ -65,6 +86,14 @@ export class GuestProfile {
 		return this.record.guestId;
 	}
 
+	get firstName(): string {
+		return this.record.firstName;
+	}
+
+	get lastName(): string {
+		return this.record.lastName;
+	}
+
 	get name(): string {
 		return `${this.record.firstName} ${this.record.lastName}`.trim();
 	}
@@ -86,6 +115,14 @@ export class GuestProfile {
 
 	get locale(): Locale {
 		return this.record.locale;
+	}
+
+	get onPhone(): boolean {
+		return this.record.onPhone;
+	}
+
+	get textAlerts(): boolean {
+		return this.record.textAlerts;
 	}
 
 	/** When the guest was first put on record. */

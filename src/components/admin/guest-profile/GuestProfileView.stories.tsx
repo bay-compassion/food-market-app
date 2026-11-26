@@ -4,8 +4,13 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { adminTranslations } from '../../../adminLocales';
 import type { GuestNoteRecord } from '../../../models/guest-note';
-import type { GuestProfileRecord, GuestProfileVisit } from '../../../models/guest-profile';
+import type {
+	GuestProfileRecord,
+	GuestProfileVisit,
+	RelatedGuestRecord,
+} from '../../../models/guest-profile';
 import type { AdminApi } from '../../../services/admin-api';
+import type { Permission } from '../../../services/permissions';
 import { SessionStatusEnum } from '../../../services/sessionStateMachine';
 import type { VisitEvent } from '../../../services/visit-events';
 import type { SessionOverview } from '../../../stores/market-session.store';
@@ -58,6 +63,8 @@ const regular: GuestProfileRecord = {
 	phone: '(415) 555-0142',
 	locale: 'es',
 	createdAt: '2025-03-12T17:00:00.000Z',
+	onPhone: true,
+	textAlerts: true,
 	visits: [
 		visit({
 			id: 'today',
@@ -156,14 +163,38 @@ const events: VisitEvent[] = [
 	},
 ];
 
+const related: RelatedGuestRecord[] = [
+	{
+		guestId: 'guest-maria-by-hand',
+		firstName: 'Maria',
+		lastName: 'Lopez',
+		phone: '(415) 555-0142',
+		createdAt: '2025-06-04T17:00:00.000Z',
+		visitCount: 1,
+		lastVisitDate: '2025-06-04',
+		relation: 'same-person',
+	},
+	{
+		guestId: 'guest-ana',
+		firstName: 'Ana',
+		lastName: 'Lopez',
+		phone: '(415) 555-0199',
+		createdAt: '2026-01-10T17:00:00.000Z',
+		visitCount: 2,
+		lastVisitDate: '2026-11-12',
+		relation: 'household',
+	},
+];
+
 type GuestProfileViewArgs = {
+	permissions: Permission[];
 	record: GuestProfileRecord;
 	notes: GuestNoteRecord[];
 	inSession: boolean;
 	loadFails: boolean;
 };
 
-function View({ record, notes, inSession, loadFails }: GuestProfileViewArgs) {
+function View({ permissions, record, notes, inSession, loadFails }: GuestProfileViewArgs) {
 	const [store] = useState(() => {
 		const api = {
 			getGuestProfile: async () => {
@@ -175,6 +206,7 @@ function View({ record, notes, inSession, loadFails }: GuestProfileViewArgs) {
 			},
 			listGuestNotes: async () => notes,
 			listVisitEvents: async () => events,
+			listRelatedGuests: async () => related,
 			listGuestNoteCategories: async () => [],
 			listAllGuests: async () => [],
 			listSessionGuests: async () => [],
@@ -193,7 +225,7 @@ function View({ record, notes, inSession, loadFails }: GuestProfileViewArgs) {
 			counts: {},
 		};
 		const created = new RootStore({
-			admin: { api, readPermissions: async () => ['run:queue', 'read:guest-profiles'] },
+			admin: { api, readPermissions: async () => permissions },
 			session: { fetch: async () => Response.json(overview) },
 		});
 
@@ -205,7 +237,7 @@ function View({ record, notes, inSession, loadFails }: GuestProfileViewArgs) {
 
 	return (
 		<RootStoreProvider store={store}>
-			<GuestProfileView guestId={record.guestId} onBack={fn()} />
+			<GuestProfileView guestId={record.guestId} onBack={fn()} onOpenGuest={fn()} />
 			<ConfirmationDrawer />
 			<NotificationToasts />
 		</RootStoreProvider>
@@ -216,7 +248,13 @@ const meta = {
 	title: 'Admin/Guest Database/Guest Profile',
 	component: View,
 	parameters: { shell: 'admin' },
-	args: { record: regular, notes, inSession: true, loadFails: false },
+	args: {
+		permissions: ['run:queue', 'read:guest-profiles'],
+		record: regular,
+		notes,
+		inSession: true,
+		loadFails: false,
+	},
 } satisfies Meta<typeof View>;
 
 export default meta;
@@ -284,6 +322,54 @@ export const Notes: Story = {
 		await userEvent.click(filters.getByRole('button', { name: 'Accessibility · 1' }));
 		await expect(canvas.getByText(/knee trouble/)).toBeVisible();
 		await expect(canvas.queryByText(/delivering to a neighbor/)).not.toBeInTheDocument();
+	},
+};
+
+/**
+ * The Records tab for a team leader: the other records linked to this guest by phone — likely the
+ * same person first — and whether their record is on a phone. Nothing here is theirs to change.
+ */
+export const Records: Story = {
+	play: async ({ canvas }) => {
+		const t = adminTranslations.en.guestProfile;
+
+		await canvas.findByRole('heading', { name: 'Maria Lopez' });
+		await userEvent.click(canvas.getByRole('tab', { name: t.recordsTab }));
+
+		const linked = within(await canvas.findByRole('list', { name: t.sameTitle }));
+
+		await expect(linked.getAllByRole('listitem')[0]).toHaveTextContent(t.samePerson);
+		await expect(linked.getAllByRole('listitem')[1]).toHaveTextContent(t.sameHousehold);
+		await expect(canvas.getByText(t.onPhone)).toBeVisible();
+		await expect(canvas.queryByRole('button', { name: t.moveToPhone })).not.toBeInTheDocument();
+		await expect(canvas.queryByText(t.oddsTitle)).not.toBeInTheDocument();
+	},
+};
+
+/**
+ * The same tab for an admin who is also a lottery steward and the data steward: the QR code that
+ * moves the record to a new phone, the way to the guest's odds, and permanent deletion.
+ */
+export const RecordsForAStewardAdmin: Story = {
+	args: {
+		permissions: [
+			'run:queue',
+			'read:guest-profiles',
+			'manage:guest-access',
+			'read:stewardship',
+			'delete:guest-data',
+		],
+	},
+	play: async ({ canvas }) => {
+		const t = adminTranslations.en;
+
+		await canvas.findByRole('heading', { name: 'Maria Lopez' });
+		await userEvent.click(canvas.getByRole('tab', { name: t.guestProfile.recordsTab }));
+		await expect(
+			await canvas.findByRole('button', { name: t.guestProfile.moveToPhone }),
+		).toBeVisible();
+		await expect(canvas.getByRole('link', { name: t.guestProfile.openStewardArea })).toBeVisible();
+		await expect(canvas.getByRole('button', { name: t.guestDeleteShow })).toBeVisible();
 	},
 };
 

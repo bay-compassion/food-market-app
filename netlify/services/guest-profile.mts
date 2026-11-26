@@ -1,7 +1,7 @@
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 
 import type { db as appDatabase } from '../../db/index.mjs';
-import { guests, visits } from '../../db/schema.mjs';
+import { guests, smsOptOuts, smsSubscriptions, visits } from '../../db/schema.mjs';
 import type { GuestProfileRecord } from '../../src/models/guest-profile.js';
 
 /**
@@ -22,6 +22,12 @@ export class GuestProfileReader {
 				phone: guests.phone,
 				locale: guests.locale,
 				createdAt: guests.createdAt,
+				// Whether a phone holds the record — only the hash of its credential is stored.
+				onPhone: sql<boolean>`${guests.deviceTokenHash} is not null`,
+				// Consented to texts, and has not since sent STOP (re-consenting clears the opt-out). The
+				// outer id is written out in full: drizzle leaves a one-table query's columns unqualified,
+				// and a bare "id" inside the subquery would be the subscription's own.
+				textAlerts: sql<boolean>`exists (select 1 from ${smsSubscriptions} where ${smsSubscriptions.guestId} = "guests"."id") and not exists (select 1 from ${smsOptOuts} where ${smsOptOuts.guestId} = "guests"."id")`,
 			})
 			.from(guests)
 			.where(eq(guests.id, guestId))

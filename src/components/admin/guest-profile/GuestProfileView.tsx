@@ -10,11 +10,12 @@ import { TicketGuestNotes } from '../../queue/TicketGuestNotes';
 import { BackButton } from '../BackButton';
 import { GuestProfileHeader } from './GuestProfileHeader';
 import { GuestProfileOverview } from './GuestProfileOverview';
+import { GuestProfileRecords } from './GuestProfileRecords';
 import { GuestProfileStats } from './GuestProfileStats';
 import { GuestProfileVisits } from './GuestProfileVisits';
 
 /** The tabs of a guest's profile, in order. The first is where a profile opens. */
-export const guestProfileTabs = ['overview', 'visits', 'notes'] as const;
+export const guestProfileTabs = ['overview', 'visits', 'notes', 'records'] as const;
 
 export type GuestProfileTab = (typeof guestProfileTabs)[number];
 
@@ -52,19 +53,23 @@ export type GuestProfileViewProps = {
 	/** The guest the route names. */
 	guestId: string;
 	onBack: () => void;
+	/** Opens another guest's profile — a record linked to this one. */
+	onOpenGuest: (guestId: string) => void;
 };
 
 /**
  * The guest database's subview: one guest's profile. Who they are and their record in four numbers
- * lead, over tabs for the Overview, every visit, and every note. The open tab is in the address (`?tab=visits`),
+ * lead, over tabs for the Overview, every visit, every note, and the records linked to them. The open tab is in the address (`?tab=visits`),
  * so going back from elsewhere returns to it.
  */
 export const GuestProfileView = observer(function GuestProfileView({
 	guestId,
 	onBack,
+	onOpenGuest,
 }: GuestProfileViewProps) {
 	const t = adminTranslations.en.guestProfile;
-	const store = useRootStore().admin.guestProfile;
+	const { admin } = useRootStore();
+	const store = admin.guestProfile;
 	const profile = store.profile;
 	const [searchParams, setSearchParams] = useSearchParams();
 	const requested = searchParams.get('tab');
@@ -75,6 +80,15 @@ export const GuestProfileView = observer(function GuestProfileView({
 
 		return () => store.close();
 	}, [store, guestId]);
+
+	// Deleted from the Records tab: there is nothing left to show, so go back to every guest.
+	const isDeleted = admin.deletedGuestId === guestId;
+
+	useEffect(() => {
+		if (isDeleted) {
+			onBack();
+		}
+	}, [isDeleted, onBack]);
 
 	function openTab(next: GuestProfileTab) {
 		setSearchParams(next === 'overview' ? {} : { tab: next }, { replace: true });
@@ -129,6 +143,12 @@ export const GuestProfileView = observer(function GuestProfileView({
 					id="guest-profile-tab-notes"
 					aria-controls="guest-profile-panel"
 				/>
+				<Tab
+					value="records"
+					label={t.recordsTab}
+					id="guest-profile-tab-records"
+					aria-controls="guest-profile-panel"
+				/>
 			</Tabs>
 			<div
 				className="panel"
@@ -144,9 +164,11 @@ export const GuestProfileView = observer(function GuestProfileView({
 					/>
 				) : tab === 'visits' ? (
 					<GuestProfileVisits profile={profile} />
-				) : (
+				) : tab === 'notes' ? (
 					// Keyed by guest, so another profile reads its own notes.
 					<TicketGuestNotes key={profile.guestId} guestId={profile.guestId} filterable />
+				) : (
+					<GuestProfileRecords profile={profile} onOpenGuest={onOpenGuest} />
 				)}
 			</div>
 		</Layout>

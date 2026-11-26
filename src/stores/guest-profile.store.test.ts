@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { adminTranslations } from '../adminLocales.ts';
-import type { GuestProfileRecord } from '../models/guest-profile.ts';
+import type { GuestProfileRecord, RelatedGuestRecord } from '../models/guest-profile.ts';
 import { AdminRequestError } from '../services/admin-api.ts';
 import type { VisitEvent } from '../services/visit-events.ts';
 import { GuestProfileStore, type GuestProfileApi } from './guest-profile.store.ts';
@@ -16,6 +16,8 @@ function record(guestId: string): GuestProfileRecord {
 		phone: '(415) 555-0142',
 		locale: 'es',
 		createdAt: '2025-03-12T17:00:00.000Z',
+		onPhone: true,
+		textAlerts: true,
 		visits: [],
 	};
 }
@@ -23,10 +25,14 @@ function record(guestId: string): GuestProfileRecord {
 function setup(
 	getGuestProfile: GuestProfileApi['getGuestProfile'],
 	listVisitEvents: GuestProfileApi['listVisitEvents'] = async () => [],
+	listRelatedGuests: GuestProfileApi['listRelatedGuests'] = async () => [],
 ) {
 	const notifications = new NotificationStore();
 	const error = vi.spyOn(notifications, 'error');
-	const store = new GuestProfileStore({ getGuestProfile, listVisitEvents }, notifications);
+	const store = new GuestProfileStore(
+		{ getGuestProfile, listVisitEvents, listRelatedGuests },
+		notifications,
+	);
 
 	return { store, error };
 }
@@ -164,5 +170,64 @@ describe('GuestProfileStore', () => {
 		// Assert
 		expect(store.openVisitHistory).toBeNull();
 		resolve([]);
+	});
+
+	it('reads the records linked to the open guest', async () => {
+		// Arrange
+		const linked: RelatedGuestRecord = {
+			guestId: 'guest-2',
+			firstName: 'Maria',
+			lastName: 'Lopez',
+			phone: '(415) 555-0142',
+			createdAt: '2025-06-04T17:00:00.000Z',
+			visitCount: 1,
+			lastVisitDate: '2025-06-04',
+			relation: 'same-person',
+		};
+		const listRelatedGuests = vi.fn(async () => [linked]);
+		const { store } = setup(async (guestId) => record(guestId), undefined, listRelatedGuests);
+
+		await store.load('guest-1');
+
+		// Act
+		await store.loadRelated();
+
+		// Assert
+		expect(listRelatedGuests).toHaveBeenCalledWith('guest-1');
+		expect(store.related).toEqual([linked]);
+	});
+
+	it('forgets the linked records when another guest opens', async () => {
+		// Arrange
+		const { store } = setup(async (guestId) => record(guestId));
+
+		await store.load('guest-1');
+		await store.loadRelated();
+
+		// Act
+		await store.load('guest-2');
+
+		// Assert
+		expect(store.related).toBeNull();
+	});
+
+	it('says so when the linked records could not be read', async () => {
+		// Arrange
+		const { store } = setup(
+			async (guestId) => record(guestId),
+			undefined,
+			async () => {
+				throw new Error('network');
+			},
+		);
+
+		await store.load('guest-1');
+
+		// Act
+		await store.loadRelated();
+
+		// Assert
+		expect(store.relatedFailed).toBe(true);
+		expect(store.related).toBeNull();
 	});
 });
