@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import type { QueueGuest } from '../../services/admin-api';
 import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { TicketFacts } from '../queue/TicketFacts';
+import { TicketGuestNotes } from '../queue/TicketGuestNotes';
 import { TicketHistory } from '../queue/TicketHistory';
 import { TicketSummary } from '../queue/TicketSummary';
 import { StatusCorrectionActions } from './StatusCorrectionActions';
@@ -27,7 +28,8 @@ const Details = styled.div`
 
 /**
  * An ended session's open ticket, laid out like the queue's: the number and how the visit
- * finished, who the guest is, correcting the status, and what happened, correction included.
+ * finished, who the guest is, correcting the status, staff notes about the guest, and what
+ * happened, correction included.
  */
 export const ParticipantTicket = observer(function ParticipantTicket({
 	guest,
@@ -45,6 +47,8 @@ export const ParticipantTicket = observer(function ParticipantTicket({
 				<TicketFacts guest={guest} />
 			</div>
 			<StatusCorrectionActions guest={guest} />
+			{/* Keyed by guest, so another ticket reads its own notes. */}
+			<TicketGuestNotes key={guest.guestId} guestId={guest.guestId} />
 			<TicketHistory />
 		</Details>
 	);

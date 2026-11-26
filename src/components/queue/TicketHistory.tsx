@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { adminTranslations } from '../../adminLocales';
 import { VisitHistoryEntry } from '../../models/visit-history-entry';
+import { formatTicketTime } from '../../services/ticket-time';
 import { useTicketList } from './ticket-list-context';
 
 const Panel = styled.section`
@@ -63,24 +64,6 @@ const Panel = styled.section`
 	}
 `;
 
-const timeFormat = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
-const dateTimeFormat = new Intl.DateTimeFormat('en-US', {
-	month: 'short',
-	day: 'numeric',
-	hour: 'numeric',
-	minute: '2-digit',
-});
-
-/**
- * The time alone for today's entries, as the queue's always are; the date too for any other day —
- * an ended session's ticket, or a correction made days after it.
- */
-function formatWhen(at: Date, today: Date): string {
-	return at.toDateString() === today.toDateString()
-		? timeFormat.format(at)
-		: dateTimeFormat.format(at);
-}
-
 /**
  * What has happened to the open ticket's visit, newest first: each change, who made it, and when.
  * Nothing is drawn until the history has loaded, so the sheet does not flash an empty state.
@@ -105,7 +88,7 @@ export const TicketHistory = observer(function TicketHistory() {
 						<li key={entry.id}>
 							<span className="title">{entry.title}</span>
 							<span className="byline">{entry.byline}</span>
-							<time dateTime={entry.at.toISOString()}>{formatWhen(entry.at, today)}</time>
+							<time dateTime={entry.at.toISOString()}>{formatTicketTime(entry.at, today)}</time>
 						</li>
 					))}
 				</ol>

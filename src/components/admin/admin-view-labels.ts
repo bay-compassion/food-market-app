@@ -11,6 +11,7 @@ export const adminViewLabels: Record<AdminView, string> = {
 	broadcast: t.broadcastTitle,
 	schedule: t.schedule,
 	'question-bank': t.questionBank,
+	'note-categories': t.noteCategoriesTitle,
 	'guest-database': t.guestDatabase,
 	'session-history': t.historySessions,
 	reports: t.reports,

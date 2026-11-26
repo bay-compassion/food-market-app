@@ -132,7 +132,10 @@ export const guests = pgTable(
 		lastName: text('last_name').notNull(),
 		/** How to say the guest's name, written by the guest or a worker; null when neither has. */
 		pronunciation: text('pronunciation'),
-		/** What workers want to remember about a guest. Never sent to the guest's own device. */
+		/**
+		 * The single staff note guests had before `guest_notes`, copied there by the migration that
+		 * added it. Nothing reads or writes it now; it stays until a later backfill-then-drop removes it.
+		 */
 		staffNotes: text('staff_notes'),
 		/** Still present for the pending backfill-then-drop follow-up; superseded by `ageRange`. */
 		age: integer('age'),

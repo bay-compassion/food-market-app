@@ -218,6 +218,9 @@ export interface AdminTranslation {
 	today: TodayTranslations;
 	/** The navigation's headings. */
 	viewGroups: Record<AdminViewGroup, string>;
+	/** The note categories screen's title and body. */
+	noteCategoriesTitle: string;
+	noteCategories: NoteCategoriesTranslation;
 	/** The app bar menu's way out of the dashboard. */
 	backToGuestView: string;
 	/** The tab, and the sheet it opens, holding the screens with no tab of their own on a phone. */
@@ -783,19 +786,86 @@ export interface QueueDeskTranslation {
 	elapsedJustNow: string;
 	history: VisitHistoryTranslation;
 	guestDetails: GuestDetailsTranslation;
+	guestNotes: GuestNotesTranslation;
 }
 
-/** The open ticket's editor for how to say a guest's name and what staff note about them. */
+/** The open ticket's editor for how to say a guest's name. */
 export interface GuestDetailsTranslation {
 	title: string;
 	pronunciation: string;
 	pronunciationHelp: string;
-	staffNotes: string;
-	/** Under the notes: who can read them. */
-	staffNotesHelp: string;
 	save: string;
 	saving: string;
 	saved: string;
+	saveFailed: string;
+}
+
+/** A guest's staff notes on an open ticket: the list, adding one, and changing one. */
+export interface GuestNotesTranslation {
+	title: string;
+	/** Under the title: who can read them. */
+	help: string;
+	empty: string;
+	loadFailed: string;
+	note: string;
+	/** The add-a-note dialog's title. */
+	addTitle: string;
+	editTitle: string;
+	/** Names a note's action menu for a screen reader. */
+	actions: string;
+	/** The split button's arrow, which opens the quick notes. */
+	moreAddOptions: string;
+	category: string;
+	noCategory: string;
+	add: string;
+	adding: string;
+	added: string;
+	addFailed: string;
+	edit: string;
+	save: string;
+	saving: string;
+	saved: string;
+	saveFailed: string;
+	cancel: string;
+	delete: string;
+	deleteConfirm: string;
+	deleteConfirmDetails: string;
+	deleted: string;
+	deleteFailed: string;
+	/** A note carried over from the single notes field, which recorded no author. */
+	unknownAuthor: string;
+	/** After the time when a note was changed after it was written. */
+	edited: string;
+	/** Why a note shows no edit controls. */
+	lockedHelp: string;
+	screenshotNotice: {
+		/** The split button's menu item recording that the guest was told. */
+		record: string;
+		recorded: string;
+		/** How a recorded notice reads in the list. */
+		entry: string;
+		/** The running count. `{count}` is a whole number. */
+		count: string;
+		countOne: string;
+	};
+}
+
+/** The dashboard screen where admins add and retire note categories. */
+export interface NoteCategoriesTranslation {
+	offered: string;
+	retired: string;
+	empty: string;
+	newCategory: string;
+	add: string;
+	added: string;
+	rename: string;
+	save: string;
+	cancel: string;
+	retire: string;
+	retireHelp: string;
+	restore: string;
+	saved: string;
+	loadFailed: string;
 	saveFailed: string;
 }
 
@@ -949,6 +1019,7 @@ export const adminTranslations = {
 			broadcast: 'Send one message to every guest who turned on notifications.',
 			schedule: 'Set when the market runs and add one-off sessions.',
 			'question-bank': 'The questions a session can ask guests when they register.',
+			'note-categories': 'The categories staff can file a note about a guest under.',
 			'guest-database': 'Everyone who has registered or been added by staff.',
 			'session-history': 'Past sessions, and guests served outside the app.',
 			workers: 'Add staff and manage worker and admin access.',
@@ -960,6 +1031,25 @@ export const adminTranslations = {
 			today: 'Today',
 			plan: 'Plan',
 			records: 'Records',
+		},
+		noteCategoriesTitle: 'Note Categories',
+		noteCategories: {
+			offered: 'Offered',
+			retired: 'Retired',
+			empty: 'No categories yet.',
+			newCategory: 'New category',
+			add: 'Add Category',
+			added: 'Category added.',
+			rename: 'Rename',
+			save: 'Save',
+			cancel: 'Cancel',
+			retire: 'Retire',
+			retireHelp:
+				'A retired category is no longer offered. Notes already filed under it keep its name.',
+			restore: 'Restore',
+			saved: 'Category saved.',
+			loadFailed: 'The categories couldn’t be loaded.',
+			saveFailed: 'The category couldn’t be saved. Try again.',
 		},
 		backToGuestView: 'Back to Guest View',
 		moreViews: 'More',
@@ -1491,12 +1581,49 @@ export const adminTranslations = {
 				title: 'Guest details',
 				pronunciation: 'Pronunciation',
 				pronunciationHelp: 'How to say their name, the way it sounds.',
-				staffNotes: 'Staff notes',
-				staffNotesHelp: 'Only staff see these. The guest never does.',
 				save: 'Save details',
 				saving: 'Saving…',
 				saved: 'Guest details saved.',
 				saveFailed: 'The guest details couldn’t be saved. Try again.',
+			},
+			guestNotes: {
+				title: 'Staff Notes',
+				help: 'Only staff see these. The guest never does.',
+				empty: 'No notes about this guest yet.',
+				loadFailed: 'The notes couldn’t be loaded.',
+				note: 'Note',
+				addTitle: 'Add a Note',
+				editTitle: 'Edit Note',
+				actions: 'Note actions',
+				moreAddOptions: 'More ways to add a note',
+				category: 'Category',
+				noCategory: 'None',
+				add: 'Add Note',
+				adding: 'Adding…',
+				added: 'Note added.',
+				addFailed: 'The note couldn’t be added. Try again.',
+				edit: 'Edit',
+				save: 'Save',
+				saving: 'Saving…',
+				saved: 'Note saved.',
+				saveFailed: 'The note couldn’t be saved. Try again.',
+				cancel: 'Cancel',
+				delete: 'Delete',
+				deleteConfirm: 'Delete this note?',
+				deleteConfirmDetails: 'It is removed for everyone, and can’t be brought back.',
+				deleted: 'Note deleted.',
+				deleteFailed: 'The note couldn’t be deleted. Try again.',
+				unknownAuthor: 'Earlier notes',
+				edited: 'edited',
+				lockedHelp:
+					'Only a team leader can change notes from another worker or an earlier session.',
+				screenshotNotice: {
+					record: 'Warn About Screenshots',
+					recorded: 'Recorded that they were told.',
+					entry: 'Told screenshots aren’t accepted',
+					count: 'Told {count} times that screenshots aren’t accepted',
+					countOne: 'Told once that screenshots aren’t accepted',
+				},
 			},
 			history: {
 				title: 'History',

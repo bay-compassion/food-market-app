@@ -1,3 +1,9 @@
+import type {
+	GuestNoteCategoryRecord,
+	GuestNoteDraft,
+	GuestNoteRecord,
+	GuestNoteRevision,
+} from '../../models/guest-note';
 import { LineOrder } from '../../models/line-order';
 import type { AdminApi, AdminGuest, GuestDetails } from '../../services/admin-api';
 import type { QueuePlacement } from '../../services/guestAdmission';
@@ -42,6 +48,54 @@ const matt = {
 	id: 'auth0|story-worker',
 	name: 'Matt',
 } as const;
+
+/** The categories every story's note form offers, as the migration seeds them. */
+export const categories: GuestNoteCategoryRecord[] = [
+	{ id: 'category-warning', label: 'Warning', archivedAt: null },
+	{ id: 'category-escalate', label: 'Escalate to Lead', archivedAt: null },
+	{ id: 'category-accommodation', label: 'Accommodation', archivedAt: null },
+];
+
+/**
+ * Notes already on record for the first guest called: one from an earlier session, which only a
+ * team leader may change, and a screenshot notice from today, which its author may.
+ */
+function seededNotes(): GuestNoteRecord[] {
+	const guestId = numberedQueue.find(({ id }) => id === 'guest-called-1')!.guestId;
+	const earlier = new Date(Date.now() - 14 * 86_400_000).toISOString();
+	const today = new Date(Date.now() - 20 * 60_000).toISOString();
+
+	return [
+		{
+			id: 'note-earlier',
+			guestId,
+			marketEventId: 'story-earlier-event',
+			kind: 'text',
+			body: 'Uses a cane; offer a chair while she waits.',
+			categoryId: 'category-accommodation',
+			categoryLabel: 'Accommodation',
+			authorId: 'auth0|story-lead',
+			authorName: 'Dana',
+			createdAt: earlier,
+			updatedAt: earlier,
+			editable: false,
+		},
+		{
+			id: 'note-today',
+			guestId,
+			marketEventId: seededEventId,
+			kind: 'screenshot_notice',
+			body: null,
+			categoryId: null,
+			categoryLabel: null,
+			authorId: matt.id,
+			authorName: matt.name,
+			createdAt: today,
+			updatedAt: today,
+			editable: true,
+		},
+	];
+}
 
 /**
  * A plausible history for a guest in the story line: drawn in the lottery, then whatever brought
@@ -168,6 +222,8 @@ export function seededQueueStore({
 		});
 	}
 
+	let notes = seededNotes();
+
 	const api = {
 		householdServiceEntries: async () => households,
 		recordHouseholdService: async (submission: {
@@ -210,6 +266,42 @@ export function seededQueueStore({
 
 			return updated;
 		},
+		listGuestNotes: async (guestId: string) => notes.filter((note) => note.guestId === guestId),
+		addGuestNote: async (guestId: string, draft: GuestNoteDraft) => {
+			const at = new Date().toISOString();
+			const note: GuestNoteRecord = {
+				...draft,
+				id: `note-${notes.length + 1}`,
+				guestId,
+				marketEventId: seededEventId,
+				categoryLabel: categories.find(({ id }) => id === draft.categoryId)?.label ?? null,
+				authorId: matt.id,
+				authorName: matt.name,
+				createdAt: at,
+				updatedAt: at,
+				editable: true,
+			};
+
+			notes = [...notes, note];
+
+			return note;
+		},
+		reviseGuestNote: async (noteId: string, revision: GuestNoteRevision) => {
+			const revised = {
+				...notes.find(({ id }) => id === noteId)!,
+				...revision,
+				categoryLabel: categories.find(({ id }) => id === revision.categoryId)?.label ?? null,
+				updatedAt: new Date().toISOString(),
+			};
+
+			notes = notes.map((note) => (note.id === noteId ? revised : note));
+
+			return revised;
+		},
+		deleteGuestNote: async (noteId: string) => {
+			notes = notes.filter(({ id }) => id !== noteId);
+		},
+		listGuestNoteCategories: async () => categories,
 		listSessionGuests: async () => roster,
 		listVisitEvents: async (visitId: string) => historyFor(roster.find(({ id }) => id === visitId)),
 		runGuestCommand: async (visitId: string, command: VisitCommand, placement?: QueuePlacement) => {
@@ -225,11 +317,7 @@ export function seededQueueStore({
 		updateGuestDetails: async (guestId: string, details: GuestDetails) => {
 			roster = roster.map((guest) =>
 				guest.guestId === guestId
-					? {
-							...guest,
-							pronunciation: details.pronunciation || null,
-							staffNotes: details.staffNotes || null,
-						}
+					? { ...guest, pronunciation: details.pronunciation || null }
 					: guest,
 			);
 		},

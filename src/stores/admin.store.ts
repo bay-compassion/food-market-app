@@ -31,6 +31,8 @@ import type { VisitEvent } from '../services/visit-events.ts';
 import type { VisitCommand, VisitStatus } from '../services/visitStateMachine.ts';
 import { visitCommandTarget } from '../services/visitStateMachine.ts';
 import { DemoStore } from './demo.store';
+import { GuestNoteCategoriesStore } from './guest-note-categories.store.ts';
+import { GuestNotesStore } from './guest-notes.store.ts';
 import { HouseholdServiceStore } from './household-service.store';
 import type { MarketSessionStore } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
@@ -97,10 +99,17 @@ export class AdminStore {
 	readonly sessionDeletion: SessionDeletionStore;
 	/** An ended session's guests, and correcting their statuses, from the same menu. */
 	readonly sessionParticipants: SessionParticipantsStore;
+	/** The categories staff notes are filed under, shared by every ticket and their own screen. */
+	readonly noteCategories: GuestNoteCategoriesStore;
 
 	/** A screen-local recorder using the same authenticated API as the queue. */
 	createHouseholdServiceStore(marketEventId: string): HouseholdServiceStore {
 		return new HouseholdServiceStore(marketEventId, this.api);
+	}
+
+	/** One guest's staff notes, for as long as their ticket is open. */
+	createGuestNotesStore(guestId: string): GuestNotesStore {
+		return new GuestNotesStore(guestId, this.api, this.notifications);
 	}
 
 	get guests(): DatabaseGuest[] {
@@ -202,6 +211,7 @@ export class AdminStore {
 			this.refreshHistory(),
 		);
 		this.sessionParticipants = new SessionParticipantsStore(this.api, this.notifications);
+		this.noteCategories = new GuestNoteCategoriesStore(this.api, this.notifications);
 
 		return makeReactive(this, {
 			api: false,
@@ -209,6 +219,7 @@ export class AdminStore {
 			notifications: false,
 			sessionDeletion: false,
 			sessionParticipants: false,
+			noteCategories: false,
 			session: false,
 			pendingGuestCommands: false,
 			sessionGuestsRevision: false,

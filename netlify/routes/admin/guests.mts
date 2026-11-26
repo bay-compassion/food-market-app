@@ -103,7 +103,6 @@ async function listGuests(request: Request) {
 					firstName: guests.firstName,
 					lastName: guests.lastName,
 					pronunciation: guests.pronunciation,
-					staffNotes: guests.staffNotes,
 					ageRange: visits.ageRange,
 					householdSize: visits.householdSize,
 					childrenCount: visits.childrenCount,

@@ -45,7 +45,6 @@ function guest(
 		firstName: name[0],
 		lastName: name[1],
 		pronunciation: null,
-		staffNotes: null,
 		phone: '5105550100',
 		householdSize,
 		locale: 'en',
@@ -118,6 +117,11 @@ function SeededView({ refuse }: SessionParticipantsViewArgs) {
 							)
 						: Response.json({ id: visitId, status }),
 				);
+			}
+
+			// An ended session's ticket reads the guest's staff notes; these guests have none.
+			if (input.includes('/notes') || input.includes('/guest-note-categories')) {
+				return Promise.resolve(Response.json([]));
 			}
 
 			if (input.includes('/events')) {

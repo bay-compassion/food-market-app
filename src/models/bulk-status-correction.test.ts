@@ -11,7 +11,6 @@ function visit(id: string, status: VisitStatus): QueueGuest {
 		firstName: 'Ana',
 		lastName: 'Reyes',
 		pronunciation: null,
-		staffNotes: null,
 		phone: '5105550100',
 		householdSize: 2,
 		locale: 'en',

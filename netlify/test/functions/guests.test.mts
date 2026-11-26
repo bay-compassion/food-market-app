@@ -299,7 +299,7 @@ describe('guests handler PATCH /guests/:guestId (staff details)', () => {
 		const response = await handler(
 			request('PATCH', {
 				path: `/${guestId}`,
-				body: { pronunciation: 'shi-VAWN', staffNotes: 'Uses a cane.' },
+				body: { pronunciation: 'shi-VAWN' },
 			}),
 		);
 
@@ -308,25 +308,25 @@ describe('guests handler PATCH /guests/:guestId (staff details)', () => {
 		expect(db.update).not.toHaveBeenCalled();
 	});
 
-	it('saves trimmed details, storing empty ones as null', async () => {
+	it('saves a trimmed pronunciation, ignoring the retired notes field', async () => {
 		// Arrange
 		vi.mocked(requirePermission).mockResolvedValueOnce(null);
-		queueResult([{ pronunciation: 'shi-VAWN', staffNotes: null }]);
+		queueResult([{ pronunciation: 'shi-VAWN' }]);
 
 		// Act
 		const response = await handler(
 			request('PATCH', {
 				path: `/${guestId}`,
-				body: { pronunciation: ' shi-VAWN ', staffNotes: '   ' },
+				body: { pronunciation: ' shi-VAWN ', staffNotes: 'Notes have their own endpoints.' },
 			}),
 		);
 
 		// Assert
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ pronunciation: 'shi-VAWN', staffNotes: null });
+		await expect(response.json()).resolves.toEqual({ pronunciation: 'shi-VAWN' });
 		const update = vi.mocked(db.update).mock.results[0]!.value as { set: ReturnType<typeof vi.fn> };
 
-		expect(update.set).toHaveBeenCalledWith({ pronunciation: 'shi-VAWN', staffNotes: null });
+		expect(update.set).toHaveBeenCalledWith({ pronunciation: 'shi-VAWN' });
 	});
 
 	it('answers 404 for a guest that does not exist', async () => {
@@ -338,7 +338,7 @@ describe('guests handler PATCH /guests/:guestId (staff details)', () => {
 		const response = await handler(
 			request('PATCH', {
 				path: `/${guestId}`,
-				body: { pronunciation: '', staffNotes: '' },
+				body: { pronunciation: '' },
 			}),
 		);
 
@@ -346,18 +346,18 @@ describe('guests handler PATCH /guests/:guestId (staff details)', () => {
 		expect(response.status).toBe(404);
 	});
 
-	it('rejects an id that is not a guest id, and notes longer than the field allows', async () => {
+	it('rejects an id that is not a guest id, and a pronunciation longer than the field allows', async () => {
 		// Arrange
 		vi.mocked(requirePermission).mockResolvedValue(null);
 
 		// Act
 		const badId = await handler(
-			request('PATCH', { path: '/visit-1', body: { pronunciation: '', staffNotes: '' } }),
+			request('PATCH', { path: '/visit-1', body: { pronunciation: '' } }),
 		);
 		const tooLong = await handler(
 			request('PATCH', {
 				path: `/${guestId}`,
-				body: { pronunciation: '', staffNotes: 'a'.repeat(2_001) },
+				body: { pronunciation: 'a'.repeat(101) },
 			}),
 		);
 

@@ -6,6 +6,7 @@ import { adminVisitStatusLabels } from '../../services/visitStatusLabels';
 import { TicketActions } from './TicketActions';
 import { TicketFacts } from './TicketFacts';
 import { TicketGuestDetails } from './TicketGuestDetails';
+import { TicketGuestNotes } from './TicketGuestNotes';
 import { TicketHistory } from './TicketHistory';
 import { TicketNameTag } from './TicketNameTag';
 import { TicketSummary } from './TicketSummary';
@@ -30,6 +31,7 @@ export const TicketDetails = observer(function TicketDetails({ guest }: { guest:
 			<TicketActions guest={guest} />
 			{/* Keyed by guest, so opening another ticket starts its form afresh. */}
 			<TicketGuestDetails key={guest.guestId} guest={guest} />
+			<TicketGuestNotes key={`notes-${guest.guestId}`} guestId={guest.guestId} />
 			<TicketHistory />
 		</Details>
 	);

@@ -18,7 +18,6 @@ function guestWith(overrides: Partial<AdminGuest> = {}): AdminGuest {
 		firstName: 'Ada',
 		lastName: 'Lovelace',
 		pronunciation: null,
-		staffNotes: null,
 		phone: '5105550123',
 		householdSize: 2,
 		locale: 'en',
@@ -444,7 +443,7 @@ describe('QueueDeskStore', () => {
 		// Arrange
 		const { desk, admin, notifications } = deskWith();
 		const guest = admin.sessionGuests[0]!;
-		const details = { pronunciation: 'AY-duh', staffNotes: 'Brings a friend.' };
+		const details = { pronunciation: 'AY-duh' };
 
 		// Act
 		const saving = desk.saveGuestDetails(guest, details);
@@ -468,7 +467,6 @@ describe('QueueDeskStore', () => {
 		// Act
 		const saved = await desk.saveGuestDetails(admin.sessionGuests[0]!, {
 			pronunciation: '',
-			staffNotes: '',
 		});
 
 		// Assert

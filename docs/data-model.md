@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=f0acad269998 -->
+<!-- diagram-sources: db/schema.mts=2c7f4dddc4b8 -->
 
 # Database structure
 
@@ -92,7 +92,7 @@ erDiagram
         text first_name
         text last_name
         text pronunciation "nullable; how to say the guest's name"
-        text staff_notes "nullable; workers only, never sent to the guest"
+        text staff_notes "nullable; superseded by guest_notes, dropped in a later migration"
         integer age "nullable; superseded by age_range, dropped in a later migration"
         text phone
         text normalized_phone

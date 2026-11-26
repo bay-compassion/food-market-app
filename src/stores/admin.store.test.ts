@@ -31,7 +31,6 @@ function guestWith(overrides: Partial<AdminGuest> = {}): AdminGuest {
 		firstName: 'Ada',
 		lastName: 'Lovelace',
 		pronunciation: null,
-		staffNotes: null,
 		phone: '5105550123',
 		householdSize: 2,
 		locale: 'en',

@@ -214,11 +214,8 @@ export async function saveGuestInformation(
 	return { ok: true, status: existingGuest ? 200 : 201, body: result };
 }
 
-/** What a worker can change about a guest from the queue screen. Both are optional free text. */
-export const staffGuestDetailsSchema = z.object({
-	pronunciation: pronunciationSchema,
-	staffNotes: optionalTextSchema(2_000),
-});
+/** What a worker can change about a guest from the queue screen. Notes have their own endpoints. */
+export const staffGuestDetailsSchema = z.object({ pronunciation: pronunciationSchema });
 
 export type StaffGuestDetails = z.infer<typeof staffGuestDetailsSchema>;
 
@@ -232,7 +229,7 @@ export async function updateStaffGuestDetails(
 			.update(guests)
 			.set(details)
 			.where(eq(guests.id, guestId))
-			.returning({ pronunciation: guests.pronunciation, staffNotes: guests.staffNotes }),
+			.returning({ pronunciation: guests.pronunciation }),
 	);
 
 	return updated ?? null;

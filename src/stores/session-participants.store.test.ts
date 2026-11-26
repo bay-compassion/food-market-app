@@ -18,7 +18,6 @@ const guest: AdminGuest = {
 	firstName: 'Ana',
 	lastName: 'Reyes',
 	pronunciation: null,
-	staffNotes: null,
 	phone: '5105550123',
 	householdSize: 3,
 	locale: 'en',
