@@ -982,14 +982,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		);
 	}
 
-	function confirmHtml(s: Pick<DeskState, 'tap' | 'spot'>, outstanding: number) {
+	function confirmHtml(
+		s: Pick<DeskState, 'tap' | 'spot'>,
+		outstanding: { called: number; waiting: number },
+	) {
 		return (
 			'<h2>' +
 			esc(T.confirmCloseSession) +
 			'</h2>' +
-			(outstanding
+			(outstanding.called
 				? '<p>' +
-					esc(T.confirmCloseSessionOutstanding.replace('{count}', String(outstanding))) +
+					esc(T.confirmCloseSessionCalled.replace('{count}', String(outstanding.called))) +
+					'</p>'
+				: '') +
+			(outstanding.waiting
+				? '<p>' +
+					esc(T.confirmCloseSessionWaiting.replace('{count}', String(outstanding.waiting))) +
 					'</p>'
 				: '') +
 			'<div class="buttons"><span class="go' +
@@ -1100,13 +1108,13 @@ document.addEventListener('DOMContentLoaded', () => {
 			put(overlayEl, overlayHtml(s, s.dialog));
 		}
 		deskEl.classList.toggle('confirm-open', s.confirm);
-		put(confirmEl, confirmHtml(s, 0));
+		put(confirmEl, confirmHtml(s, { called: 0, waiting: 0 }));
 		put(toastEl, s.toast ? '<div class="toast">' + esc(s.toast) + '</div>' : '');
 		calloutEl.classList.toggle('on', s.callout);
 		put(
 			calloutEl,
 			'<div class="from">From the ⋮ menu, with guests left</div><div class="confirm">' +
-				confirmHtml({ tap: null, spot: null }, 3) +
+				confirmHtml({ tap: null, spot: null }, { called: 1, waiting: 2 }) +
 				'</div>',
 		);
 	}

@@ -26,7 +26,7 @@ export type VisitEventKind =
 	| 'no_show'
 	/** Put back in line after a no-show or a call made by mistake. */
 	| 'returned'
-	/** Cancelled by the guest, or because the session ended with them still in line. */
+	/** Cancelled by the guest, or because the session ended before they were called. */
 	| 'cancelled'
 	/** A volunteer sent the guest's name tag to the print station. */
 	| 'tag_sent'
@@ -77,7 +77,7 @@ export type VisitEventDetails = {
 	queuePosition?: number;
 	/** The priority-series number (`P1`, …) a guest a worker put at the front was given. */
 	priorityNumber?: number;
-	/** Why a visit was cancelled without anyone cancelling it. */
+	/** Why a visit was cancelled or marked a no-show without anyone doing it. */
 	cause?: 'session_ended';
 	/** The status a `corrected` visit was in before the correction. */
 	fromStatus?: VisitStatus;

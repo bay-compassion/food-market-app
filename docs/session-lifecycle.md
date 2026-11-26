@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=c6525b5020ee -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=a383fb6649a2 -->
 
 # Session lifecycle
 
@@ -131,9 +131,9 @@ stateDiagram-v2
     waiting --> cancelled : cancel (by the guest),<br/>or the session ends
 
     called --> served : serve
-    called --> no_show : mark_no_show
+    called --> no_show : mark_no_show,<br/>or the session ends
     called --> waiting : return_to_queue
-    called --> cancelled : the session ends
+    called --> cancelled : the session is reset
 
     no_show --> waiting : return_to_queue
 
@@ -161,9 +161,12 @@ Who owns each transition matters:
   draw a plain even shuffle unless a worker deliberately raised someone's odds.
 - **The guest** owns `cancel`, from their own status screen, and only while `registered` or
   `waiting`.
-- **The session ending** cancels every visit still `registered`, `waiting`, or `called`. It is the
-  only way a `called` visit becomes `cancelled`, and it is applied by the server, never offered as a
-  command.
+- **The session ending** resolves every visit still in line, on the server, never as a command. A
+  guest `called` when the market closes — by a worker or the auto-close timer — was asked to come
+  and did not, and becomes a `no_show`, recorded with the cause `session_ended`. A guest still
+  `waiting` or `registered` was never called, so the market ended their visit and it is
+  `cancelled`. A reset is a do-over rather than a market day, so it cancels everyone and leaves no
+  no-show on anyone's record; it is the only way a `called` visit becomes `cancelled`.
 - **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the four
   the admin UI offers for the line, and it offers only the ones legal from a visit's current status.
   A premarket volunteer is `served` from the moment they join, with no number and outside the draw,

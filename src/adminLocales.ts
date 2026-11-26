@@ -79,6 +79,7 @@ type TodayTranslations = {
 	somethingWrong: string;
 	keepServing: string;
 	closeAndMarkNoShow: string;
+	closeAndCancelWaiting: string;
 	closeEndsService: string;
 };
 
@@ -508,10 +509,15 @@ export interface AdminTranslation {
 	placeNext: string;
 	placeEnd: string;
 	/**
-	 * Added under `confirmCloseSession` when guests are still waiting; `{count}` is how many
-	 * closing would mark as a no show.
+	 * Added under `confirmCloseSession` when guests have been called but not served; `{count}` is
+	 * how many closing would mark as a no show.
 	 */
-	confirmCloseSessionOutstanding: string;
+	confirmCloseSessionCalled: string;
+	/**
+	 * Added under `confirmCloseSession` when guests are still waiting to be called; `{count}` is how
+	 * many visits closing would cancel.
+	 */
+	confirmCloseSessionWaiting: string;
 	questionBank: string;
 	questions: string;
 	registered: string;
@@ -1102,6 +1108,7 @@ export const adminTranslations = {
 			somethingWrong: 'Something Went Wrong?',
 			keepServing: 'Keep Serving',
 			closeAndMarkNoShow: 'Close Session and Mark {count} No Show',
+			closeAndCancelWaiting: 'Close Session and Cancel {count} Waiting',
 			closeEndsService:
 				'Service ends and the queue closes. The next session is set up from the schedule.',
 		},
@@ -1360,8 +1367,10 @@ export const adminTranslations = {
 		queuePlacement: 'Place in the queue',
 		placeNext: 'Next up',
 		placeEnd: 'End of the queue',
-		confirmCloseSessionOutstanding:
-			'{count} guests have not been served yet. Closing marks them as a no show.',
+		confirmCloseSessionCalled:
+			'{count} called guests have not been served yet. Closing marks them as a no show.',
+		confirmCloseSessionWaiting:
+			'{count} guests are still waiting to be called. Closing cancels their visits.',
 		questionBank: 'Question Bank',
 		questions: 'Registration questions',
 		registered: 'Registered',

@@ -28,9 +28,9 @@ export type EndedSession = {
  * Ends a session, whichever way it ends, in the caller's transaction.
  *
  * The row is locked and its status compared with the one the caller read, so a worker pressing
- * Close Session while the auto-close timer fires ends it once. Every guest still in line —
- * registered, waiting, or called — is resolved to `cancelled`: the market ended their visit, so it
- * never counts as a no-show. Unless the session was reset, the recurrence pattern then creates the
+ * Close Session while the auto-close timer fires ends it once. Every guest still in line is
+ * resolved (see `resolveOutstandingVisits`): one called becomes a no-show, unless the session was
+ * reset, and anyone not yet called is cancelled. Unless the session was reset, the recurrence pattern then creates the
  * next session.
  */
 export async function endSession(
@@ -54,7 +54,7 @@ export async function endSession(
 		.update(marketEvents)
 		.set({ status: 'ended' })
 		.where(and(eq(marketEvents.id, event.id), eq(marketEvents.status, locked.status)));
-	await resolveOutstandingVisits(tx, event.id);
+	await resolveOutstandingVisits(tx, event.id, ending);
 
 	const nextSession =
 		ending === 'reset' ? null : await createNextSession(tx, locked.locationId, now);

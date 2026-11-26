@@ -119,7 +119,8 @@ describe('remaining session actions: one legal and one illegal transition each',
 	it('closeSession: a started session can close; a scheduled session cannot', async () => {
 		queueResult([baseEvent({ status: 'service_started' })]); // endSession locks the session
 		queueResult(undefined); // ending it
-		queueResult([]); // resolveOutstandingVisits — nobody left in line
+		queueResult([]); // resolveOutstandingVisits: no no-shows
+		queueResult([]); // resolveOutstandingVisits: nobody cancelled
 		queueResult([]); // no recurrence pattern, so no next session
 		await expect(closeSession(baseEvent({ status: 'service_started' }))).resolves.toEqual({
 			ok: true,
@@ -131,10 +132,11 @@ describe('remaining session actions: one legal and one illegal transition each',
 		});
 	});
 
-	it('closeSession: cancels guests still in line so nobody is stranded or marked a no-show', async () => {
+	it('closeSession: marks guests still in line as no-shows so nobody is stranded', async () => {
 		queueResult([baseEvent({ status: 'service_started' })]);
 		queueResult(undefined);
-		queueResult([{ id: 'visit-1' }, { id: 'visit-2' }]);
+		queueResult([{ id: 'visit-1' }, { id: 'visit-2' }]); // waiting or called
+		queueResult([]); // nobody registered
 		queueResult([]); // no recurrence pattern
 
 		await expect(closeSession(baseEvent({ status: 'service_started' }))).resolves.toEqual({
@@ -145,7 +147,7 @@ describe('remaining session actions: one legal and one illegal transition each',
 			.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
 			.flatMap(({ set }) => set.mock.calls.map(([changes]) => changes?.status));
 
-		expect(statuses).toEqual(['ended', 'cancelled']);
+		expect(statuses).toEqual(['ended', 'no_show', 'cancelled']);
 	});
 
 	it('closeSession: refuses a session another request already ended', async () => {
@@ -176,7 +178,8 @@ describe('session timers and the scheduled lottery', () => {
 
 		queueResult([baseEvent({ status: 'service_started' })]); // lock
 		queueResult(undefined); // end
-		queueResult([]); // nobody in line
+		queueResult([]); // nobody waiting or called
+		queueResult([]); // nobody registered
 		queueResult([pattern]);
 		queueResult([{ id: 'location-1', name: 'The Bay Church', timeZone: 'America/Los_Angeles' }]);
 		queueResult([next]); // insert ... returning

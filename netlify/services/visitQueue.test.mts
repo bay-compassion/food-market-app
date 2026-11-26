@@ -14,7 +14,7 @@ vi.mock('./visit-events.mjs', () => ({
 
 import type { VisitEventActor } from '../../src/services/visit-events.js';
 import { recordVisitEvents } from './visit-events.mjs';
-import { runVisitCommand } from './visitQueue.mjs';
+import { resolveOutstandingVisits, runVisitCommand } from './visitQueue.mjs';
 
 const actor: VisitEventActor = { kind: 'worker', id: 'auth0|worker', name: 'Matt' };
 
@@ -196,5 +196,48 @@ describe('runVisitCommand history', () => {
 		await runVisitCommand('visit-1', 'serve', { actor });
 
 		expect(recordVisitEvents).not.toHaveBeenCalled();
+	});
+});
+
+describe('resolveOutstandingVisits', () => {
+	/** The status each `update(...).set(...)` wrote, in order. */
+	function statusesWritten() {
+		return db.update.mock.results.map(
+			({ value }) => (value as { set: ReturnType<typeof vi.fn> }).set.mock.calls[0]![0].status,
+		);
+	}
+
+	it('records called guests as no-shows and cancels the rest when a session closes', async () => {
+		// Arrange
+		queueResult([{ id: 'visit-called' }]);
+		queueResult([{ id: 'visit-waiting' }, { id: 'visit-registered' }]);
+
+		// Act
+		const resolved = await resolveOutstandingVisits(db as never, 'event-1', 'close');
+
+		// Assert
+		expect(resolved).toBe(3);
+		expect(statusesWritten()).toEqual(['no_show', 'cancelled']);
+		expect(vi.mocked(recordVisitEvents).mock.calls[0]![1]).toEqual([
+			{
+				visitId: 'visit-called',
+				kind: 'no_show',
+				toStatus: 'no_show',
+				actor: { kind: 'system' },
+				details: { cause: 'session_ended' },
+			},
+		]);
+	});
+
+	it('cancels everyone, recording no no-shows, when a session is reset', async () => {
+		// Arrange
+		queueResult([{ id: 'visit-waiting' }]);
+
+		// Act
+		const resolved = await resolveOutstandingVisits(db as never, 'event-1', 'reset');
+
+		// Assert
+		expect(resolved).toBe(1);
+		expect(statusesWritten()).toEqual(['cancelled']);
 	});
 });

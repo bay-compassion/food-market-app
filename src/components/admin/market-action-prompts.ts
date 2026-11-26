@@ -6,17 +6,23 @@ import type { ConfirmationRequest } from '../../stores/confirmation.store';
  * What a worker is asked before a session action they cannot undo from the same screen.
  *
  * Built from the session's state rather than taking it per lookup: closing names the guests it is
- * about to mark as a no show, and that count is the difference between a routine end-of-day step
- * and one worth stopping over.
+ * about to mark as a no show or cancel, and those counts are the difference between a routine
+ * end-of-day step and one worth stopping over.
  */
+/**
+ * The guests a session still has in line, by what closing does to them: a called guest who never
+ * came is marked a no show, and a guest still waiting to be called has their visit cancelled.
+ */
+export type OutstandingGuests = { called: number; waiting: number };
+
 export class MarketActionPrompts {
 	/** Actions that take something away, and so open with the way out focused. */
 	static readonly destructive: readonly MarketAction[] = ['close_session', 'reset_session'];
 
 	constructor(
 		private readonly t: AdminTranslation,
-		/** Guests still waiting or called, whom closing the session would mark as a no show. */
-		private readonly outstandingCount: number,
+		/** Guests still in line, whom closing the session resolves. */
+		private readonly outstanding: OutstandingGuests,
 	) {}
 
 	for(action: MarketAction): ConfirmationRequest {
@@ -48,22 +54,28 @@ export class MarketActionPrompts {
 			return this.t.confirmContinue;
 		}
 
-		return this.outstandingCount > 0
-			? this.t.today.closeAndMarkNoShow.replace('{count}', String(this.outstandingCount))
+		const { called, waiting } = this.outstanding;
+
+		if (called > 0) {
+			return this.t.today.closeAndMarkNoShow.replace('{count}', String(called));
+		}
+
+		return waiting > 0
+			? this.t.today.closeAndCancelWaiting.replace('{count}', String(waiting))
 			: this.t.closeSession;
 	}
 
 	/** The consequences worth naming, for the two actions that have any. */
 	private detailsFor(action: MarketAction): string[] | undefined {
 		if (action === 'close_session') {
+			const { called, waiting } = this.outstanding;
+
 			return [
-				...(this.outstandingCount > 0
-					? [
-							this.t.confirmCloseSessionOutstanding.replace(
-								'{count}',
-								String(this.outstandingCount),
-							),
-						]
+				...(called > 0
+					? [this.t.confirmCloseSessionCalled.replace('{count}', String(called))]
+					: []),
+				...(waiting > 0
+					? [this.t.confirmCloseSessionWaiting.replace('{count}', String(waiting))]
 					: []),
 				this.t.today.closeEndsService,
 			];

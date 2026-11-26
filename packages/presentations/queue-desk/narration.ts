@@ -189,7 +189,7 @@ export const lines: NarrationLine[] = [
 	{
 		id: 'close',
 		pause: 0.5,
-		text: 'Tap it and confirm to end the day. The menu at the top can close the session early, too: if anyone is still waiting or called, it says how many, because closing marks them as no-shows.',
+		text: 'Tap it and confirm to end the day. The menu at the top can close the session early, too: if anyone is still waiting or called, it says how many, because closing marks called guests as no-shows and cancels the rest.',
 	},
 	{
 		id: 'thanks',
