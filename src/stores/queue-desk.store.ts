@@ -3,6 +3,7 @@ import { reaction, runInAction, type IReactionDisposer } from 'mobx';
 import { adminTranslations } from '../adminLocales.ts';
 import { QueueNumber } from '../models/queue-number.ts';
 import { QueueSearch } from '../models/queue-search.ts';
+import { TicketOrder, type TicketOrderKey } from '../models/ticket-order.ts';
 import type { GuestDetails, QueueGuest } from '../services/admin-api.ts';
 import {
 	manualAdmissionsFor,
@@ -18,7 +19,7 @@ import type { VisitCommand } from '../services/visitStateMachine.ts';
 import type { AdminStore } from './admin.store.ts';
 import type { MarketSessionStore } from './market-session.store.ts';
 import { NotificationStore } from './notification.store.ts';
-import type { TicketList } from './ticket-list.ts';
+import type { TicketList, TicketSearchResult } from './ticket-list.ts';
 
 export type QueueDeskStoreOptions = {
 	pollIntervalMs?: number;
@@ -62,6 +63,7 @@ export class QueueDeskStore implements TicketList {
 	private _savingDetailsFor: string | null = null;
 	private _searchQuery = '';
 	private _isSearching = false;
+	private _orderKey: TicketOrderKey = 'queue';
 	private readonly _collapsed = new Set<QueueSectionId>();
 
 	constructor(
@@ -158,6 +160,33 @@ export class QueueDeskStore implements TicketList {
 		return new QueueRoster(this.guests);
 	}
 
+	/**
+	 * The line's sections as the lists show them, in the order the volunteer chose to read them —
+	 * except those waiting, who always read as the line, top to bottom, so nobody mistakes a name
+	 * at the top for the next to be called. Display only, like `searchResults`: the call button and
+	 * every other decision read `roster`.
+	 */
+	get listed(): Record<TicketSectionId, QueueGuest[]> {
+		const { roster, order } = this;
+
+		return {
+			called: order.apply(roster.called),
+			waiting: roster.waiting,
+			noShows: order.apply(roster.noShows),
+			notPlaced: order.apply(roster.notPlaced),
+			done: order.apply(roster.done),
+			premarket: order.apply(roster.premarket),
+		};
+	}
+
+	get order(): TicketOrder {
+		return new TicketOrder(this._orderKey);
+	}
+
+	setOrder(key: TicketOrderKey): void {
+		this._orderKey = key;
+	}
+
 	get search(): QueueSearch {
 		return new QueueSearch(this._searchQuery);
 	}
@@ -185,26 +214,28 @@ export class QueueDeskStore implements TicketList {
 	 * The tickets the search finds, grouped as the lists group them and in the same order — or none
 	 * until something is typed. A display-only reading: the line the desk acts on is `roster`.
 	 */
-	get searchResults(): { section: TicketSectionId; guests: QueueGuest[] }[] {
-		const { search, roster } = this;
+	get searchResults(): (TicketSearchResult & { section: TicketSectionId })[] {
+		const { search, listed } = this;
+		const t = adminTranslations.en.queueDesk;
 
 		if (!search.isActive) {
 			return [];
 		}
 
-		const sections: [TicketSectionId, QueueGuest[]][] = [
-			['called', roster.called],
-			['waiting', roster.waiting],
-			['noShows', roster.noShows],
-			['notPlaced', roster.notPlaced],
-			['done', roster.done],
-			['premarket', roster.premarket],
-		];
+		const titles: Record<TicketSectionId, string> = {
+			called: t.called,
+			waiting: t.waiting,
+			noShows: t.noShows,
+			notPlaced: t.notPlaced,
+			done: t.done,
+			premarket: t.premarket,
+		};
 
-		return sections
-			.map(([section, guests]) => ({
+		return (Object.keys(titles) as TicketSectionId[])
+			.map((section) => ({
 				section,
-				guests: guests.filter((guest) => search.matches(guest)),
+				title: titles[section],
+				guests: listed[section].filter((guest) => search.matches(guest)),
 			}))
 			.filter(({ guests }) => guests.length > 0);
 	}

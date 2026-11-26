@@ -70,7 +70,7 @@ export const StatusCorrectionActions = observer(function StatusCorrectionActions
 					<button
 						key={status}
 						type="button"
-						disabled={participants.correctingVisitId !== null}
+						disabled={participants.isCorrecting}
 						onClick={() => void correct(status)}
 					>
 						{t.participants.changeTo.replace('{status}', labels[status])}

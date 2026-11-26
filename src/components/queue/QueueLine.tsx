@@ -12,11 +12,11 @@ import { QueueCallBarActions } from './QueueCallBarActions';
 import { QueueCallButton } from './QueueCallButton';
 import { QueueDeskHeader } from './QueueDeskHeader';
 import { QueueLists } from './QueueLists';
-import { QueueSearchDialog } from './QueueSearchDialog';
 import { QueueToolbar } from './QueueToolbar';
 import { TicketDetails } from './TicketDetails';
 import { TicketPane } from './TicketPane';
 import { TicketPanes } from './TicketPanes';
+import { TicketSearchDialog } from './TicketSearchDialog';
 import { TicketSheet } from './TicketSheet';
 
 const Layout = styled.div`
@@ -150,7 +150,7 @@ export const QueueLine = observer(function QueueLine({ embedded = false }: Queue
 				</>
 			)}
 			{embedded ? null : <GuestClaimDialog />}
-			<QueueSearchDialog />
+			<TicketSearchDialog />
 		</Layout>
 	);
 });

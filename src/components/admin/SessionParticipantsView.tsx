@@ -9,10 +9,13 @@ import { useRootStore } from '../../stores/react/store-context';
 import { TicketListProvider } from '../queue/ticket-list-context';
 import { TicketPane } from '../queue/TicketPane';
 import { TicketPanes } from '../queue/TicketPanes';
+import { TicketSearchDialog } from '../queue/TicketSearchDialog';
 import { TicketSheet } from '../queue/TicketSheet';
 import { tabBarHeight, wideLayoutQuery } from './admin-layout';
+import { BulkCorrectionBar } from './BulkCorrectionBar';
 import { ParticipantTicket } from './ParticipantTicket';
 import { SessionParticipantLists } from './SessionParticipantLists';
+import { SessionParticipantsHeader } from './SessionParticipantsHeader';
 
 const Layout = styled.div`
 	display: grid;
@@ -27,6 +30,11 @@ const Layout = styled.div`
 		padding-bottom: 75dvh;
 	}
 
+	/* Room to scroll the last tickets up past the docked bar of what to do with the selection. */
+	&[data-layout='phone'][data-selecting='true'] {
+		padding-bottom: 240px;
+	}
+
 	/* Desk: the list and the open ticket side by side, filling the height the dashboard gives. */
 	&[data-layout='desk'] {
 		grid-template-rows: auto minmax(0, 1fr);
@@ -37,52 +45,10 @@ const Layout = styled.div`
 		grid-row: -2;
 	}
 
-	header {
-		display: grid;
-		gap: 4px;
-		justify-items: start;
-	}
-
-	/* Back to the sessions, as a quiet link above what it leads back from. */
-	.back {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		min-height: 40px;
-		/*
-		 * Pulled up and in by the room the 40px tap target leaves around its text, so the text lines
-		 * up with where every screen's content starts, under the dashboard's heading.
-		 */
-		margin-block: -8px -4px;
-		margin-inline-start: -8px;
-		padding: 0 10px;
-		border: 0;
-		border-radius: var(--radius-pill);
-		color: var(--color-brand);
-		background: transparent;
-		font: inherit;
-		font-weight: 700;
-		cursor: pointer;
-	}
-
-	.back:hover {
-		background: var(--color-surface-soft);
-	}
-
-	h2 {
-		margin: 0;
-		font-family: var(--font-heading);
-		font-size: 22px;
-	}
-
-	header p,
 	.message {
 		margin: 0;
 		color: var(--color-text-muted);
 		font-size: 14px;
-	}
-
-	.message {
 		display: grid;
 		gap: 12px;
 		justify-items: start;
@@ -100,7 +66,9 @@ export type SessionParticipantsViewProps = {
  * The session history's subview: who took part in one ended session, laid out as the queue is. On a
  * phone, tickets in folding sections fill the screen and a tapped ticket opens as a sheet on the tab
  * bar; on a desk, the open ticket sits in a pane to the right. The ticket is where a status that was
- * recorded wrong on the day is corrected.
+ * recorded wrong on the day is corrected. Selecting instead picks out several guests to correct
+ * together, from a bar docked on the tab bar or, on a desk, under the list. Searching finds a
+ * guest anywhere in the session, and the sections can be read by name rather than number.
  */
 export const SessionParticipantsView = observer(function SessionParticipantsView({
 	sessionId,
@@ -140,7 +108,7 @@ export const SessionParticipantsView = observer(function SessionParticipantsView
 	) : participants.count === 0 ? (
 		<p className="message">{t.empty}</p>
 	) : (
-		<SessionParticipantLists participants={participants} />
+		<SessionParticipantLists />
 	);
 
 	return (
@@ -149,20 +117,11 @@ export const SessionParticipantsView = observer(function SessionParticipantsView
 				className="session-participants"
 				data-layout={isDesk ? 'desk' : 'phone'}
 				data-ticket-open={store.selected !== null}
+				data-selecting={store.isSelecting}
 			>
-				<header>
-					<button type="button" className="back" onClick={onBack}>
-						<span aria-hidden="true">←</span>
-						{t.back}
-					</button>
-					{when ? <h2>{when}</h2> : null}
-					<p>
-						{participants ? `${t.count.replace('{count}', String(participants.count))} · ` : ''}
-						{t.intro}
-					</p>
-				</header>
+				<SessionParticipantsHeader when={when} onBack={onBack} />
 				{isDesk ? (
-					<TicketPanes list={list}>
+					<TicketPanes list={list} footer={<BulkCorrectionBar docked={false} />}>
 						<TicketPane emptyText={t.noTicketOpen}>
 							{(guest) => <ParticipantTicket guest={guest} />}
 						</TicketPane>
@@ -170,9 +129,11 @@ export const SessionParticipantsView = observer(function SessionParticipantsView
 				) : (
 					<>
 						{list}
+						<BulkCorrectionBar docked />
 						<TicketSheet>{(guest) => <ParticipantTicket guest={guest} />}</TicketSheet>
 					</>
 				)}
+				<TicketSearchDialog />
 			</Layout>
 		</TicketListProvider>
 	);
