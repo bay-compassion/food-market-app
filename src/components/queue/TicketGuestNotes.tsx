@@ -4,9 +4,13 @@ import { useEffect, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
 import { useRootStore } from '../../stores/react/store-context';
+import { ChoiceChips } from '../admin/ChoiceChips';
 import { AddNoteButton } from './AddNoteButton';
 import { GuestNoteDialog } from './GuestNoteDialog';
 import { GuestNoteItem } from './GuestNoteItem';
+
+/** The filter value for every note: a label no category can have, as labels are never empty. */
+const allCategories = '';
 
 const Panel = styled.section`
 	display: grid;
@@ -57,14 +61,24 @@ const Panel = styled.section`
  */
 export const TicketGuestNotes = observer(function TicketGuestNotes({
 	guestId,
+	filterable = false,
 }: {
 	guestId: string;
+	/**
+	 * Offers a row of filters, one per category the notes are filed under, over the list — for a
+	 * guest's profile, where every note they have is read rather than glanced at.
+	 */
+	filterable?: boolean;
 }) {
 	const t = adminTranslations.en.queueDesk.guestNotes;
 	const { admin } = useRootStore();
 	const [store] = useState(() => admin.createGuestNotesStore(guestId));
 	const [isAdding, setIsAdding] = useState(false);
+	const [category, setCategory] = useState<string | null>(null);
 	const notes = store.notes;
+	const categories = notes?.categories ?? [];
+	// A filter whose last note was deleted or refiled falls back to every note.
+	const shownCategory = categories.some(({ label }) => label === category) ? category : null;
 
 	useEffect(() => {
 		void store.load();
@@ -90,13 +104,27 @@ export const TicketGuestNotes = observer(function TicketGuestNotes({
 						: t.screenshotNotice.count.replace('{count}', String(noticeCount))}
 				</p>
 			) : null}
+			{filterable && notes && categories.length > 0 ? (
+				<ChoiceChips
+					label={t.filterLabel}
+					options={[
+						{ value: allCategories, label: t.allNotes.replace('{count}', String(notes.count)) },
+						...categories.map(({ label, count }) => ({
+							value: label,
+							label: t.categoryFilter.replace('{label}', label).replace('{count}', String(count)),
+						})),
+					]}
+					value={shownCategory ?? allCategories}
+					onChange={(value) => setCategory(value === allCategories ? null : value)}
+				/>
+			) : null}
 			{store.loadFailed ? (
 				<p className="empty">{t.loadFailed}</p>
 			) : notes === null ? null : notes.isEmpty ? (
 				<p className="empty">{t.empty}</p>
 			) : (
 				<ol>
-					{notes.newestFirst.map((note) => (
+					{notes.filedUnder(shownCategory).map((note) => (
 						<GuestNoteItem key={note.id} note={note} store={store} />
 					))}
 				</ol>

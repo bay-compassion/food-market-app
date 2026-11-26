@@ -198,6 +198,11 @@ export interface GuestProfileTranslation {
 	tabsLabel: string;
 	overviewTab: string;
 	visitsTab: string;
+	notesTab: string;
+	/** Hands over from the Overview's newest note to the Notes tab; `{count}` is every note. */
+	seeAllNotes: string;
+	/** The same, for a guest with one note or none, where adding one is the likelier next step. */
+	openNotes: string;
 	noVisitsYet: string;
 	historyLoading: string;
 }
@@ -854,6 +859,12 @@ export interface GuestDetailsTranslation {
 
 /** A guest's staff notes on an open ticket: the list, adding one, and changing one. */
 export interface GuestNotesTranslation {
+	/** Names the row of category filters on a guest's profile. */
+	filterLabel: string;
+	/** The filter that shows every note; `{count}` is how many there are. */
+	allNotes: string;
+	/** A category's filter; `{label}` is the category, `{count}` its notes. */
+	categoryFilter: string;
 	title: string;
 	/** Under the title: who can read them. */
 	help: string;
@@ -1374,6 +1385,9 @@ export const adminTranslations = {
 			tabsLabel: 'Guest profile',
 			overviewTab: 'Overview',
 			visitsTab: 'Visits',
+			notesTab: 'Notes',
+			seeAllNotes: 'All {count} Notes',
+			openNotes: 'Open Notes',
 			noVisitsYet: 'No visits yet.',
 			historyLoading: 'Loading what happened…',
 		},
@@ -1679,6 +1693,9 @@ export const adminTranslations = {
 				saveFailed: 'The guest details couldn’t be saved. Try again.',
 			},
 			guestNotes: {
+				filterLabel: 'Show notes',
+				allNotes: 'All · {count}',
+				categoryFilter: '{label} · {count}',
 				title: 'Staff Notes',
 				help: 'Only staff see these. The guest never does.',
 				empty: 'No notes about this guest yet.',

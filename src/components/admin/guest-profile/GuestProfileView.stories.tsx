@@ -88,13 +88,13 @@ const regular: GuestProfileRecord = {
 	],
 };
 
-const notes: GuestNoteRecord[] = [
-	{
-		id: 'note-1',
+function note(overrides: Partial<GuestNoteRecord>): GuestNoteRecord {
+	return {
+		id: 'note',
 		guestId: regular.guestId,
 		marketEventId: null,
 		kind: 'text',
-		body: 'Prefers the shorter line at the produce table — knee trouble.',
+		body: null,
 		categoryId: null,
 		categoryLabel: null,
 		authorId: 'auth0|priya',
@@ -102,7 +102,31 @@ const notes: GuestNoteRecord[] = [
 		createdAt: '2026-10-22T18:00:00.000Z',
 		updatedAt: '2026-10-22T18:00:00.000Z',
 		editable: true,
-	},
+		...overrides,
+	};
+}
+
+const notes: GuestNoteRecord[] = [
+	note({
+		id: 'note-escalate',
+		body: 'Asked twice about delivering to a neighbor who can’t come in. Talk with her before calling.',
+		categoryId: 'escalate',
+		categoryLabel: 'Escalate to Lead',
+		authorName: 'Jamie K.',
+		createdAt: '2026-11-19T18:00:00.000Z',
+		editable: false,
+	}),
+	note({
+		id: 'note-knee',
+		body: 'Prefers the shorter line at the produce table — knee trouble.',
+		categoryId: 'access',
+		categoryLabel: 'Accessibility',
+	}),
+	note({
+		id: 'note-screenshot',
+		kind: 'screenshot_notice',
+		createdAt: '2026-09-24T18:00:00.000Z',
+	}),
 ];
 
 const events: VisitEvent[] = [
@@ -236,6 +260,30 @@ export const Visits: Story = {
 		await expect(
 			await canvas.findByRole('region', { name: adminTranslations.en.queueDesk.history.title }),
 		).toHaveTextContent('Priya S.');
+	},
+};
+
+/**
+ * The Notes tab: every note, newest first, with a filter for each category they are filed under,
+ * and how many times the guest has been told screenshots are not accepted. The Overview shows only
+ * the newest.
+ */
+export const Notes: Story = {
+	play: async ({ canvas }) => {
+		const notesCopy = adminTranslations.en.queueDesk.guestNotes;
+
+		await canvas.findByRole('heading', { name: 'Maria Lopez' });
+		await userEvent.click(await canvas.findByRole('button', { name: 'All 3 Notes' }));
+		await expect(canvas.getByRole('tab', { name: t.notesTab })).toHaveAttribute(
+			'aria-selected',
+			'true',
+		);
+
+		const filters = within(await canvas.findByRole('group', { name: notesCopy.filterLabel }));
+
+		await userEvent.click(filters.getByRole('button', { name: 'Accessibility · 1' }));
+		await expect(canvas.getByText(/knee trouble/)).toBeVisible();
+		await expect(canvas.queryByText(/delivering to a neighbor/)).not.toBeInTheDocument();
 	},
 };
 

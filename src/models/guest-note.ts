@@ -100,6 +100,10 @@ export class GuestNotes {
 		return this.records.length === 0;
 	}
 
+	get count(): number {
+		return this.records.length;
+	}
+
 	/** Whether any note is one this worker cannot change, which the ticket explains once. */
 	get hasLockedNotes(): boolean {
 		return this.records.some((note) => !note.editable);
@@ -108,6 +112,34 @@ export class GuestNotes {
 	/** How many times the guest has been told screenshots are not accepted. */
 	get screenshotNoticeCount(): number {
 		return this.records.filter((note) => note.kind === 'screenshot_notice').length;
+	}
+
+	/** The newest note, which a profile's Overview shows; `null` when there are none. */
+	get latest(): GuestNoteRecord | null {
+		return this.newestFirst[0] ?? null;
+	}
+
+	/**
+	 * The categories the guest's notes are filed under, each with how many, in the order their
+	 * newest note was written. Read from the notes' own labels, so a retired category still shows.
+	 */
+	get categories(): { label: string; count: number }[] {
+		const counts = new Map<string, number>();
+
+		for (const { categoryLabel } of this.newestFirst) {
+			if (categoryLabel !== null) {
+				counts.set(categoryLabel, (counts.get(categoryLabel) ?? 0) + 1);
+			}
+		}
+
+		return [...counts].map(([label, count]) => ({ label, count }));
+	}
+
+	/** The notes filed under `categoryLabel`, newest first; every note for `null`. */
+	filedUnder(categoryLabel: string | null): GuestNoteRecord[] {
+		return categoryLabel === null
+			? this.newestFirst
+			: this.newestFirst.filter((note) => note.categoryLabel === categoryLabel);
 	}
 }
 
