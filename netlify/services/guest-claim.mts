@@ -159,7 +159,7 @@ export async function redeemGuestClaim(
 					firstName: guests.firstName,
 					lastName: guests.lastName,
 					phone: guests.phone,
-					// The guest's own details. Never `staffNotes`: those are for workers only.
+					// The guest's own details. Never staff notes: those are for workers only.
 					pronunciation: guests.pronunciation,
 				});
 

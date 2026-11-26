@@ -38,11 +38,11 @@ const Form = styled.form`
 `;
 
 function detailsOf(guest: QueueGuest): GuestDetails {
-	return { pronunciation: guest.pronunciation ?? '', staffNotes: guest.staffNotes ?? '' };
+	return { pronunciation: guest.pronunciation ?? '' };
 }
 
 /**
- * How to say the open ticket's name, and what staff keep about the guest, editable in place.
+ * How to say the open ticket's name, editable in place. Staff notes are `TicketGuestNotes`.
  *
  * The fields edit a draft rather than the guest: the line is reread every few seconds and replaces
  * the guest wholesale, which would otherwise wipe what the volunteer is typing. Render it with
@@ -67,10 +67,7 @@ export const TicketGuestDetails = observer(function TicketGuestDetails({
 	const save = async (event: FormEvent) => {
 		event.preventDefault();
 
-		const details = {
-			pronunciation: draft.pronunciation.trim(),
-			staffNotes: draft.staffNotes.trim(),
-		};
+		const details = { pronunciation: draft.pronunciation.trim() };
 
 		if (await desk.saveGuestDetails(guest, details)) {
 			setDraft(details);
@@ -88,16 +85,6 @@ export const TicketGuestDetails = observer(function TicketGuestDetails({
 				onChange={(event) => edit({ pronunciation: event.target.value })}
 				slotProps={{ htmlInput: { maxLength: 100 } }}
 				autoComplete="off"
-				size="small"
-			/>
-			<TextField
-				label={t.staffNotes}
-				helperText={t.staffNotesHelp}
-				value={draft.staffNotes}
-				onChange={(event) => edit({ staffNotes: event.target.value })}
-				slotProps={{ htmlInput: { maxLength: 2_000 } }}
-				multiline
-				minRows={2}
 				size="small"
 			/>
 			<button type="submit" disabled={!isEdited || isSaving}>

@@ -10,7 +10,6 @@ function guest(id: string, overrides: Partial<QueueGuest>): QueueGuest {
 		firstName: 'Pat',
 		lastName: id,
 		pronunciation: null,
-		staffNotes: null,
 		phone: '5105550100',
 		householdSize: 2,
 		locale: 'en',

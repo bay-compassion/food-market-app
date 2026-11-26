@@ -174,6 +174,7 @@ const preview: Preview = {
 						'Broadcast',
 						'Schedule',
 						'Question Bank',
+						'Note Categories',
 						'Guest Database',
 						['Database View', 'Guest Grid'],
 						'Session History',

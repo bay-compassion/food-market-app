@@ -1,4 +1,10 @@
 import type { Locale } from '../locales.ts';
+import type {
+	GuestNoteCategoryRecord,
+	GuestNoteDraft,
+	GuestNoteRecord,
+	GuestNoteRevision,
+} from '../models/guest-note.ts';
 import type { SessionOverview } from '../stores/market-session.store.ts';
 import type { AgeRange } from './ageRanges.ts';
 import type { DemoRoster } from './demo-preview';
@@ -32,8 +38,6 @@ export type QueueGuest = {
 	lastName: string;
 	/** How to say the guest's name, as the guest or a worker wrote it. */
 	pronunciation: string | null;
-	/** What workers keep about the guest. Never shown to the guest. */
-	staffNotes: string | null;
 	phone: string;
 	householdSize: number;
 	locale: Locale;
@@ -52,8 +56,8 @@ export type QueueGuest = {
 /** A queue guest together with the session they belong to, as the admin endpoints return them. */
 export type AdminGuest = QueueGuest & { marketEventId: string | null };
 
-/** What a worker can change about a guest from an open ticket. Empty text clears a field. */
-export type GuestDetails = { pronunciation: string; staffNotes: string };
+/** What a worker can change about a guest from an open ticket. Empty text clears it. */
+export type GuestDetails = { pronunciation: string };
 
 /** One registration question, as the question bank edits it. */
 export type Question = {
@@ -303,6 +307,70 @@ export class AdminApi {
 		);
 	}
 
+	/** A guest's staff notes, oldest first, each saying whether this worker may change it. */
+	async listGuestNotes(guestId: string): Promise<GuestNoteRecord[]> {
+		return this.readJson<GuestNoteRecord[]>(
+			await this.get(`/api/admin/guests/${encodeURIComponent(guestId)}/notes`),
+			'guest_notes',
+		);
+	}
+
+	async addGuestNote(guestId: string, draft: GuestNoteDraft): Promise<GuestNoteRecord> {
+		return this.readOrRefuse<GuestNoteRecord>(
+			await this.send('POST', `/api/admin/guests/${encodeURIComponent(guestId)}/notes`, draft),
+			'guest_note',
+		);
+	}
+
+	async reviseGuestNote(noteId: string, revision: GuestNoteRevision): Promise<GuestNoteRecord> {
+		return this.readOrRefuse<GuestNoteRecord>(
+			await this.send('PATCH', `/api/admin/guest-notes/${encodeURIComponent(noteId)}`, revision),
+			'guest_note',
+		);
+	}
+
+	async deleteGuestNote(noteId: string): Promise<void> {
+		const response = await this.send(
+			'DELETE',
+			`/api/admin/guest-notes/${encodeURIComponent(noteId)}`,
+			{},
+		);
+
+		if (!response.ok) {
+			throw await AdminRequestError.from(response, 'guest_note');
+		}
+	}
+
+	/** Every note category, offered ones first. */
+	async listGuestNoteCategories(): Promise<GuestNoteCategoryRecord[]> {
+		return this.readJson<GuestNoteCategoryRecord[]>(
+			await this.get('/api/admin/guest-note-categories'),
+			'guest_note_categories',
+		);
+	}
+
+	async addGuestNoteCategory(label: string): Promise<GuestNoteCategoryRecord> {
+		return this.readOrRefuse<GuestNoteCategoryRecord>(
+			await this.send('POST', '/api/admin/guest-note-categories', { label }),
+			'guest_note_category',
+		);
+	}
+
+	/** Renames a category, or retires (`archived: true`) or restores it. */
+	async changeGuestNoteCategory(
+		categoryId: string,
+		change: { label?: string; archived?: boolean },
+	): Promise<GuestNoteCategoryRecord> {
+		return this.readOrRefuse<GuestNoteCategoryRecord>(
+			await this.send(
+				'PATCH',
+				`/api/admin/guest-note-categories/${encodeURIComponent(categoryId)}`,
+				change,
+			),
+			'guest_note_category',
+		);
+	}
+
 	/** What permanently deleting a guest would remove, for the admin to read before confirming. */
 	async previewGuestDeletion(guestId: string): Promise<GuestDeletionPreview> {
 		return this.readJson<GuestDeletionPreview>(
@@ -492,6 +560,15 @@ export class AdminApi {
 		if (!response.ok) {
 			throw new Error(label);
 		}
+	}
+
+	/** Like `readJson`, but a refusal carries the server's reason as an `AdminRequestError`. */
+	private async readOrRefuse<T>(response: Response, label: string): Promise<T> {
+		if (!response.ok) {
+			throw await AdminRequestError.from(response, label);
+		}
+
+		return (await response.json()) as T;
 	}
 
 	private async readJson<T>(response: Response, label: string): Promise<T> {

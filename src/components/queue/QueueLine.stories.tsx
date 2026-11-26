@@ -158,10 +158,7 @@ export const TicketOpen: Story = {
 	},
 };
 
-/**
- * How to say the guest's name — as they wrote it on their phone — and the notes staff keep about
- * them, edited from the open ticket. The guest never sees the notes.
- */
+/** How to say the guest's name — as they wrote it on their phone — edited from the open ticket. */
 export const EditingGuestDetails: Story = {
 	args: {
 		guests: numberedQueue.map((guest) =>
@@ -174,17 +171,85 @@ export const EditingGuestDetails: Story = {
 		const details = within(await ticket.findByRole('form', { name: t.guestDetails.title }));
 		const save = details.getByRole('button', { name: t.guestDetails.save });
 
-		await expect(details.getByLabelText(t.guestDetails.pronunciation)).toHaveValue('mah-REE-ah');
+		const pronunciation = details.getByLabelText(t.guestDetails.pronunciation);
+
+		await expect(pronunciation).toHaveValue('mah-REE-ah');
 		await expect(save).toBeDisabled();
 
-		await userEvent.type(
-			details.getByLabelText(t.guestDetails.staffNotes),
-			'Prefers to be called by her first name.',
-		);
+		await userEvent.clear(pronunciation);
+		await userEvent.type(pronunciation, 'mah-REE-uh');
 		await userEvent.click(save);
 
 		await expect(await within(document.body).findByText(t.guestDetails.saved)).toBeVisible();
 		await expect(save).toBeDisabled();
+	},
+};
+
+/**
+ * The staff notes on an open ticket, newest first. A note from an earlier session is locked to
+ * team leaders, so it has no action menu; today's screenshot notice, written by this volunteer,
+ * does, and editing from it opens the same dialog as adding.
+ * Add Note opens the note form in a dialog; the split button's menu warns about screenshots in one
+ * tap, which raises the count.
+ */
+export const KeepingStaffNotes: Story = {
+	args: { openVisitId: 'guest-called-1' },
+	play: async () => {
+		const notes = within(
+			await (await openTicket()).findByRole('region', { name: t.guestNotes.title }),
+		);
+
+		await expect(
+			await notes.findByText('Uses a cane; offer a chair while she waits.'),
+		).toBeVisible();
+		await expect(notes.getByText(t.guestNotes.screenshotNotice.countOne)).toBeVisible();
+		await expect(notes.getAllByRole('button', { name: t.guestNotes.actions })).toHaveLength(1);
+		await expect(notes.getByText(t.guestNotes.lockedHelp)).toBeVisible();
+
+		await userEvent.click(notes.getByRole('button', { name: t.guestNotes.add }));
+
+		const dialog = within(await within(document.body).findByRole('dialog'));
+
+		await userEvent.type(
+			dialog.getByRole('textbox', { name: t.guestNotes.note }),
+			'Prefers to be called by her first name.',
+		);
+		await userEvent.selectOptions(
+			dialog.getByRole('combobox', { name: t.guestNotes.category }),
+			'Accommodation',
+		);
+		await userEvent.click(dialog.getByRole('button', { name: t.guestNotes.add }));
+
+		await expect(await notes.findByText('Prefers to be called by her first name.')).toBeVisible();
+		await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
+
+		// The newest note is first, so its menu is the first one.
+		await userEvent.click(notes.getAllByRole('button', { name: t.guestNotes.actions })[0]!);
+		await userEvent.click(
+			await within(document.body).findByRole('menuitem', { name: t.guestNotes.edit }),
+		);
+
+		const editing = within(await within(document.body).findByRole('dialog'));
+		const body = editing.getByRole('textbox', { name: t.guestNotes.note });
+
+		await expect(body).toHaveValue('Prefers to be called by her first name.');
+		await userEvent.clear(body);
+		await userEvent.type(body, 'Prefers to be called Mari.');
+		await userEvent.click(editing.getByRole('button', { name: t.guestNotes.save }));
+
+		await expect(await notes.findByText('Prefers to be called Mari.')).toBeVisible();
+		await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
+
+		await userEvent.click(notes.getByRole('button', { name: t.guestNotes.moreAddOptions }));
+		await userEvent.click(
+			await within(document.body).findByRole('menuitem', {
+				name: t.guestNotes.screenshotNotice.record,
+			}),
+		);
+
+		await expect(
+			await notes.findByText(t.guestNotes.screenshotNotice.count.replace('{count}', '2')),
+		).toBeVisible();
 	},
 };
 

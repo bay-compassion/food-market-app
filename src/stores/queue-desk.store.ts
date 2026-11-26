@@ -385,7 +385,7 @@ export class QueueDeskStore implements TicketList {
 	}
 
 	/**
-	 * Saves a guest's pronunciation and staff notes. Resolves to whether it worked, so the ticket
+	 * Saves how to say a guest's name. Resolves to whether it worked, so the ticket
 	 * can keep the volunteer's draft on screen to try again when it did not.
 	 */
 	async saveGuestDetails(guest: QueueGuest, details: GuestDetails): Promise<boolean> {

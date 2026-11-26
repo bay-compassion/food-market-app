@@ -16,6 +16,7 @@ import { DevModeView } from './admin/DevModeView';
 import { GuestDatabaseView } from './admin/GuestDatabaseView';
 import { HelpView } from './admin/HelpView';
 import { MarketActionPrompts } from './admin/market-action-prompts';
+import { NoteCategoriesView } from './admin/NoteCategoriesView';
 import { QueueView } from './admin/QueueView';
 import { ReportsView } from './admin/ReportsView';
 import { SessionBroadcastForm } from './admin/SessionBroadcastForm';
@@ -199,6 +200,8 @@ export const AdminDashboard = observer(function AdminDashboard({
 				/>
 			) : activeView === 'question-bank' ? (
 				<PatternQuestionBank />
+			) : activeView === 'note-categories' ? (
+				<NoteCategoriesView />
 			) : activeView === 'reports' ? (
 				<ReportsView
 					getAccessToken={getAccessToken}

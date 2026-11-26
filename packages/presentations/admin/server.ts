@@ -24,6 +24,13 @@ import { SessionStatusEnum } from '../../../src/services/sessionStateMachine.ts'
 import type { SessionEvent, SessionOverview } from '../../../src/stores/market-session.store.ts';
 import type { AdminScene, AdminSceneGuest } from './scene.ts';
 
+/** The note categories the migration seeds, which a guide's ticket offers. */
+const guideNoteCategories = [
+	{ id: 'guide-category-warning', label: 'Warning', archivedAt: null },
+	{ id: 'guide-category-escalate', label: 'Escalate to Lead', archivedAt: null },
+	{ id: 'guide-category-accommodation', label: 'Accommodation', archivedAt: null },
+];
+
 const PATTERN_ID = 'guide-pattern';
 const LOCATION = 'guide-location';
 /** The same local time `weeks` weeks on, across any change of the clocks (a fixed 7 × 24 hours is not). */
@@ -143,7 +150,6 @@ export class AdminServer {
 			firstName: guest.first,
 			lastName: guest.last,
 			pronunciation: null,
-			staffNotes: null,
 			phone: guest.phone,
 			householdSize: guest.household,
 			locale: guest.locale,
@@ -167,7 +173,6 @@ export class AdminServer {
 				firstName,
 				lastName,
 				pronunciation: null,
-				staffNotes: null,
 				phone,
 				locale: 'en',
 				status: null,
@@ -311,7 +316,14 @@ export class AdminServer {
 		const { pathname, searchParams } = new URL(url, 'https://market.invalid');
 		const route = `${method.toUpperCase()} ${pathname}`;
 
+		// A ticket reads its guest's staff notes; the guide's guests have none.
+		if (/^GET \/api\/admin\/guests\/[^/]+\/notes$/.test(route)) {
+			return json([]);
+		}
+
 		switch (route) {
+			case 'GET /api/admin/guest-note-categories':
+				return json(guideNoteCategories);
 			case 'GET /api/admin/market/overview':
 				return json(this.overview);
 			case 'GET /api/admin/market':
