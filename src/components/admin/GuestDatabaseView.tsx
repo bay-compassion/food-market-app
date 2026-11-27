@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useMemo, useState } from 'react';
 
 import { adminTranslations } from '../../adminLocales';
+import { GuestDatabaseOrder } from '../../models/guest-database-order';
 import { GuestDatabaseRows } from '../../models/guest-database-rows';
 import {
 	guestDatabaseFilters,
@@ -22,6 +23,7 @@ import { GuestProfileView } from './guest-profile/GuestProfileView';
 import { GuestDatabaseGrid } from './GuestDatabaseGrid';
 import { GuestDatabaseList } from './GuestDatabaseList';
 import { ManualGuestDialog } from './ManualGuestDialog';
+import { SortMenu } from './SortMenu';
 import type { ManualGuest, QueueGuest } from './types';
 
 export type GuestDatabaseViewProps = {
@@ -79,8 +81,10 @@ const Section = styled.section`
 /**
  * Every guest on record, and — when the route names one — that guest's profile. On a desk, picking
  * a guest in the grid first opens a short profile in a panel beside it. Search and the
- * quick filters sit above the list and serve both of its forms: on a desk the full grid, which keeps sorting, the filter panel, the column picker and
- * export; on a phone, a list of rows, since a grid shows a column and a half at that width.
+ * quick filters sit above the list and serve both of its forms: on a desk the full grid, which keeps
+ * sorting, the filter panel, the column picker and export; on a phone, a list of rows, since a grid
+ * shows a column and a half at that width, with a sort menu beside the search in place of the
+ * grid's column headers.
  */
 export const GuestDatabaseView = observer(function GuestDatabaseView({
 	guestId,
@@ -95,6 +99,7 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 	const isWide = useMediaQuery(wideLayoutQuery);
 	const [filter, setFilter] = useState<GuestDatabaseFilter>('all');
 	const [search, setSearch] = useState('');
+	const [order, setOrder] = useState(() => new GuestDatabaseOrder());
 	const currentEventId = session.currentState?.event?.id ?? null;
 	const rows = useMemo(
 		() => new GuestDatabaseRows(admin.guests, statusLabels, t.noVisit, currentEventId),
@@ -129,6 +134,16 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 					onChange={(event) => setSearch(event.target.value)}
 					slotProps={{ htmlInput: { 'aria-label': t.searchGuests } }}
 				/>
+				{isWide ? null : (
+					<SortMenu
+						label={t.guestSortLabel.replace('{order}', t.guestOrders[order.key])}
+						keys={GuestDatabaseOrder.keys}
+						labels={t.guestOrders}
+						value={order.key}
+						active={!order.isDefault}
+						onChange={(key) => setOrder(new GuestDatabaseOrder(key))}
+					/>
+				)}
 				{addGuestForm.canAdd && isWide ? (
 					<Button type="button" onClick={addGuestForm.open}>
 						{t.addGuest}
@@ -165,7 +180,7 @@ export const GuestDatabaseView = observer(function GuestDatabaseView({
 				</div>
 			) : (
 				<GuestDatabaseList
-					rows={shown}
+					rows={order.apply(shown)}
 					busy={admin.isBusy}
 					onRun={onRun}
 					onOpenGuest={onOpenGuest}
