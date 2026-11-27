@@ -196,3 +196,33 @@ export const PhoneOpensTheProfile: Story = {
 		await expect(args.onOpenGuest).toHaveBeenCalledOnce();
 	},
 };
+
+/**
+ * On a phone there are no column headers to sort by, so a sort menu sits beside the search. The
+ * button fills in while the list is in any order but by name.
+ */
+export const PhoneSortsTheList: Story = {
+	play: async ({ canvas }) => {
+		await canvas.findByRole('list', { name: t.allGuests });
+
+		await userEvent.click(
+			canvas.getByRole('button', {
+				name: t.guestSortLabel.replace('{order}', t.guestOrders.name),
+			}),
+		);
+		await userEvent.click(
+			await within(document.body).findByRole('menuitemradio', { name: t.guestOrders.noteCount }),
+		);
+
+		const [first] = within(canvas.getByRole('list', { name: t.allGuests })).getAllByRole(
+			'listitem',
+		);
+
+		await expect(first).toHaveTextContent('Escalate to Lead');
+		await expect(
+			canvas.getByRole('button', {
+				name: t.guestSortLabel.replace('{order}', t.guestOrders.noteCount),
+			}),
+		).toBeVisible();
+	},
+};

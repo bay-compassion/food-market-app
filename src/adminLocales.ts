@@ -1,4 +1,5 @@
 import type { GuestFormCopy } from './locales.ts';
+import type { GuestDatabaseOrderKey } from './models/guest-database-order.ts';
 import type { MilestoneKind } from './models/session-milestones.ts';
 import type { SnapshotKind } from './models/snapshot-schedule.ts';
 import type { TicketOrderKey } from './models/ticket-order.ts';
@@ -318,6 +319,9 @@ export interface AdminTranslation {
 	/** Names the row of quick filters over the guest database. */
 	guestFilterLabel: string;
 	guestFilters: Record<GuestDatabaseFilter, string>;
+	/** Names the phone list's sort button; `{order}` is the order chosen now. */
+	guestSortLabel: string;
+	guestOrders: Record<GuestDatabaseOrderKey, string>;
 	broadcastConfirm: string;
 	broadcastHelp: string;
 	broadcastMessageLabel: string;
@@ -1182,6 +1186,13 @@ export const adminTranslations = {
 			'in-session': 'In Today’s Session',
 			'not-placed': 'Not Placed',
 			'has-notes': 'Has Notes',
+		},
+		guestSortLabel: 'Sort Guests, by {order} Now',
+		guestOrders: {
+			name: 'Name',
+			lastVisit: 'Last Visit',
+			visitCount: 'Most Visits',
+			noteCount: 'Most Notes',
 		},
 		broadcastConfirm: 'Send this announcement to every subscribed guest in the current session?',
 		broadcastHelp: 'The message will be sent exactly as written to all subscribed guests.',
