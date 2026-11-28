@@ -255,3 +255,32 @@ export const RightToLeft: Story = {
 		await userEvent.click(sheet.getByRole('button', { name: copy.cancelDismiss }));
 	},
 };
+
+/**
+ * On the standby list: their S number, which the worker reads out with their name, and no count of
+ * who's ahead or "now calling" row. Standby promises nothing.
+ */
+export const StandbyWaiting: Story = {
+	args: { visitStatus: 'waiting', standbyNumber: 4 },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const copy = translations.en.guestView.visitStatus;
+
+		await expect(await canvas.findByText(copy.standby.waitingHeader)).toBeVisible();
+		await expect(canvas.getByText('S4')).toBeVisible();
+		await expect(canvas.queryByText(copy.waiting.nowCallingLabel)).toBeNull();
+	},
+};
+
+/** Admitted from standby: come to the desk now. No warming board; the desk is a few steps away. */
+export const StandbyCalled: Story = {
+	args: { visitStatus: 'called', standbyNumber: 4, calledMinutesAgo: 12 },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const copy = translations.en.guestView.visitStatus;
+
+		await expect(await canvas.findByText(copy.standby.calledHeader)).toBeVisible();
+		await expect(canvas.getByText(copy.standby.calledDetails)).toBeVisible();
+		await expect(canvas.queryByText(copy.called.headerLate)).toBeNull();
+	},
+};

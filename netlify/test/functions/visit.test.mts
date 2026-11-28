@@ -174,6 +174,34 @@ describe('visit handler GET', () => {
 		});
 	});
 
+	it('sends a standby guest their S number, and none of the line’s numbers', async () => {
+		const visit = {
+			id: 'visit-1',
+			status: 'waiting',
+			track: 'postmarket',
+			marketEventId: 'event-1',
+			queuePosition: null,
+			priorityNumber: null,
+			standbyNumber: 4,
+			calledAt: null,
+			sessionStatus: 'service_started',
+		};
+
+		// A standby visit holds no place in the line, so nobody is counted ahead of it.
+		queueResult([{ ...visit, queueFront: false, queueOrder: null }]);
+
+		const response = await handler(request('GET', { token: validToken }));
+
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({
+			...visit,
+			aheadOfYou: null,
+			nowCalling: null,
+			called: [],
+			calledPriority: [],
+		});
+	});
+
 	it('returns 410 when the visit belongs to an ended session', async () => {
 		queueResult([
 			{ id: 'visit-1', status: 'served', marketEventId: 'event-1', sessionStatus: 'ended' },

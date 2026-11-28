@@ -58,6 +58,18 @@ export interface VisitStatusTranslations {
 		nowCallingLabel: string;
 		nowCallingNone: string;
 	};
+	/**
+	 * A standby guest's card, while on the list and once called. Standby is never advertised: only a
+	 * guest already on the list sees this. Their S number shows under `yourNumberLabel`.
+	 */
+	standby: {
+		waitingHeader: string;
+		waitingDetails: string;
+		calledHeader: string;
+		calledDetails: string;
+		/** Asked before a standby guest leaves the list; replaces `cancelConfirmation`. */
+		cancelConfirmation: string;
+	};
 	called: {
 		/** The card's masthead, over the larger `header`. */
 		eyebrow: string;
@@ -1027,6 +1039,14 @@ export const translations = {
 					details:
 						'You won’t be called today. If this happened by mistake, please see a team member.',
 				},
+				standby: {
+					waitingHeader: 'You’re on the Standby List',
+					waitingDetails:
+						'If food is left after the line, standby guests shop in order. It isn’t guaranteed. Stay near the check-in desk and listen for your name and number.',
+					calledHeader: 'Come to Check-In Now',
+					calledDetails: 'Your name was called. Bring this phone to the check-in desk.',
+					cancelConfirmation: 'Leave the standby list? You’ll lose your place.',
+				},
 				cancelAction: 'Cancel this visit',
 				cancelConfirmation: 'Cancel your place in the queue for this visit?',
 				cancelConfirm: 'Yes, cancel my visit',
@@ -1606,6 +1626,14 @@ export const translations = {
 					header: 'Su visita está cancelada',
 					details: 'Hoy no le llamaremos. Si esto fue un error, hable con un miembro del equipo.',
 				},
+				standby: {
+					waitingHeader: 'Está en la lista de espera',
+					waitingDetails:
+						'Si queda comida después de la fila, las personas en la lista de espera compran en orden. No está garantizado. Quédese cerca de la mesa de registro y esté atento a su nombre y número.',
+					calledHeader: 'Acérquese al registro ahora',
+					calledDetails: 'Dijeron su nombre. Traiga este teléfono a la mesa de registro.',
+					cancelConfirmation: '¿Salir de la lista de espera? Perderá su lugar.',
+				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: '¿Cancelar su lugar en la fila para esta visita?',
 				cancelConfirm: 'Sí, cancelar mi visita',
@@ -2180,6 +2208,14 @@ export const translations = {
 					header: 'بازدید شما لغو شده است',
 					details:
 						'امروز شمارهٔ شما فراخوانده نمی‌شود. اگر این اشتباهی رخ داده است، لطفاً با یکی از اعضای تیم صحبت کنید.',
+				},
+				standby: {
+					waitingHeader: 'شما در فهرست انتظار هستید',
+					waitingDetails:
+						'اگر پس از صف غذا باقی بماند، افراد فهرست انتظار به ترتیب خرید می‌کنند. این تضمینی نیست. نزدیک میز پذیرش بمانید و منتظر شنیدن نام و شمارهٔ خود باشید.',
+					calledHeader: 'همین حالا به پذیرش بیایید',
+					calledDetails: 'نام شما خوانده شد. همین گوشی را به میز پذیرش بیاورید.',
+					cancelConfirmation: 'از فهرست انتظار خارج می‌شوید؟ جای خود را از دست می‌دهید.',
 				},
 				cancelAction: 'لغو این بازدید',
 				cancelConfirmation: 'جای خود را در صف این بازدید لغو می‌کنید؟',
@@ -2762,6 +2798,15 @@ export const translations = {
 					details:
 						'Hindi na po kayo tatawagin ngayong araw. Kung nagkamali ito, makipag-usap po sa isang miyembro ng pangkat.',
 				},
+				standby: {
+					waitingHeader: 'Nasa standby list na kayo',
+					waitingDetails:
+						'Kung may matitirang pagkain pagkatapos ng pila, mamimili nang sunud-sunod ang mga nasa standby. Hindi ito garantisado. Manatili malapit sa mesa ng check-in at pakinggan ang inyong pangalan at numero.',
+					calledHeader: 'Pumunta na sa check-in ngayon',
+					calledDetails:
+						'Tinawag na ang inyong pangalan. Dalhin ang teleponong ito sa mesa ng check-in.',
+					cancelConfirmation: 'Umalis sa standby list? Mawawala ang inyong puwesto.',
+				},
 				cancelAction: 'Kanselahin ang pagbisitang ito',
 				cancelConfirmation: 'Kanselahin ang iyong puwesto sa pila para sa pagbisitang ito?',
 				cancelConfirm: 'Oo, kanselahin ang pagbisita ko',
@@ -3335,6 +3380,14 @@ export const translations = {
 					header: 'Lượt của bạn đã bị hủy',
 					details: 'Hôm nay bạn sẽ không được gọi. Nếu có nhầm lẫn, vui lòng gặp nhân viên.',
 				},
+				standby: {
+					waitingHeader: 'Bạn có tên trong danh sách chờ',
+					waitingDetails:
+						'Nếu còn thực phẩm sau khi hết hàng, những người trong danh sách chờ sẽ được mua theo thứ tự. Điều này không được đảm bảo. Hãy ở gần bàn tiếp nhận và chú ý nghe tên và số của bạn.',
+					calledHeader: 'Hãy đến bàn tiếp nhận ngay',
+					calledDetails: 'Tên của bạn đã được gọi. Hãy mang theo điện thoại này đến bàn tiếp nhận.',
+					cancelConfirmation: 'Rời khỏi danh sách chờ? Bạn sẽ mất vị trí của mình.',
+				},
 				cancelAction: 'Hủy lượt ghé này',
 				cancelConfirmation: 'Hủy vị trí của bạn trong hàng đợi cho lượt ghé này?',
 				cancelConfirm: 'Có, hủy lượt ghé của tôi',
@@ -3889,6 +3942,14 @@ export const translations = {
 				cancelled: {
 					header: '您的到访已取消',
 					details: '今天不会再叫您的号码。如果这是误操作，请联系工作人员。',
+				},
+				standby: {
+					waitingHeader: '您已在候补名单上',
+					waitingDetails:
+						'如果排队结束后还有食物，候补名单上的人会按顺序购物。这并不保证。请留在签到台附近，注意听您的名字和号码。',
+					calledHeader: '请现在到签到台',
+					calledDetails: '已叫到您的名字。请带着这部手机到签到台。',
+					cancelConfirmation: '要退出候补名单吗？您将失去您的位置。',
 				},
 				cancelAction: '取消本次到访',
 				cancelConfirmation: '要取消本次到访的排队位置吗？',
@@ -4446,6 +4507,14 @@ export const translations = {
 					header: 'زيارتك ملغاة',
 					details:
 						'لن يتم النداء عليك اليوم. إذا حدث هذا عن طريق الخطأ، يرجى التحدث مع أحد أعضاء الفريق.',
+				},
+				standby: {
+					waitingHeader: 'أنت على قائمة الانتظار الاحتياطية',
+					waitingDetails:
+						'إذا تبقّى طعام بعد انتهاء الطابور، يتسوّق من على قائمة الانتظار بالترتيب. هذا غير مضمون. ابقَ قريبًا من مكتب تسجيل الوصول واستمع إلى اسمك ورقمك.',
+					calledHeader: 'تعال إلى تسجيل الوصول الآن',
+					calledDetails: 'تم النداء على اسمك. أحضر هذا الهاتف إلى مكتب تسجيل الوصول.',
+					cancelConfirmation: 'هل تريد مغادرة قائمة الانتظار؟ ستفقد مكانك.',
 				},
 				cancelAction: 'إلغاء هذه الزيارة',
 				cancelConfirmation: 'هل تريد إلغاء مكانك في قائمة انتظار هذه الزيارة؟',
@@ -5023,6 +5092,14 @@ export const translations = {
 					header: 'Votre visite est annulée',
 					details:
 						'Vous ne serez pas appelé aujourd’hui. S’il s’agit d’une erreur, adressez-vous à un membre de l’équipe.',
+				},
+				standby: {
+					waitingHeader: 'Vous êtes sur la liste d’attente',
+					waitingDetails:
+						'S’il reste de la nourriture après la file, les personnes sur la liste d’attente font leurs courses dans l’ordre. Ce n’est pas garanti. Restez près de l’accueil et écoutez votre nom et votre numéro.',
+					calledHeader: 'Présentez-vous à l’accueil',
+					calledDetails: 'Votre nom a été appelé. Apportez ce téléphone à l’accueil.',
+					cancelConfirmation: 'Quitter la liste d’attente ? Vous perdrez votre place.',
 				},
 				cancelAction: 'Annuler cette visite',
 				cancelConfirmation: 'Annuler votre place dans la file pour cette visite ?',
@@ -5603,6 +5680,14 @@ export const translations = {
 					details:
 						'Você não será chamado hoje. Se isso aconteceu por engano, fale com um membro da equipe.',
 				},
+				standby: {
+					waitingHeader: 'Você está na lista de espera',
+					waitingDetails:
+						'Se sobrar comida depois da fila, as pessoas da lista de espera fazem compras em ordem. Não é garantido. Fique perto do balcão de atendimento e preste atenção ao seu nome e número.',
+					calledHeader: 'Venha ao atendimento agora',
+					calledDetails: 'Seu nome foi chamado. Traga este celular ao balcão de atendimento.',
+					cancelConfirmation: 'Sair da lista de espera? Você perderá seu lugar.',
+				},
 				cancelAction: 'Cancelar esta visita',
 				cancelConfirmation: 'Cancelar seu lugar na fila para esta visita?',
 				cancelConfirm: 'Sim, cancelar minha visita',
@@ -6177,6 +6262,14 @@ export const translations = {
 				cancelled: {
 					header: 'Ваш визит отменён',
 					details: 'Сегодня вас не вызовут. Если это произошло по ошибке, обратитесь к сотруднику.',
+				},
+				standby: {
+					waitingHeader: 'Вы в листе ожидания',
+					waitingDetails:
+						'Если после очереди останутся продукты, люди из листа ожидания делают покупки по порядку. Это не гарантировано. Оставайтесь рядом со стойкой регистрации и слушайте своё имя и номер.',
+					calledHeader: 'Подойдите к регистрации',
+					calledDetails: 'Назвали ваше имя. Возьмите этот телефон с собой к стойке регистрации.',
+					cancelConfirmation: 'Выйти из листа ожидания? Вы потеряете своё место.',
 				},
 				cancelAction: 'Отменить этот визит',
 				cancelConfirmation: 'Отменить ваше место в очереди для этого визита?',

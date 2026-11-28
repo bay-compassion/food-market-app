@@ -153,6 +153,34 @@ describe('VisitStore', () => {
 			expect(store.currentVisit).toEqual(currentRegisteredVisit);
 		});
 
+		it('reads a standby visit: its S number, no late board, and no lottery timetable', async () => {
+			// Arrange
+			window.localStorage.setItem(visitTokenKey, 'token-1');
+			const lookupCurrentVisit = vi.fn().mockResolvedValue({
+				found: true,
+				visit: {
+					...currentRegisteredVisit,
+					status: 'called',
+					track: 'postmarket',
+					priorityNumber: null,
+					standbyNumber: 4,
+					calledAt: '2026-01-01T12:00:00.000Z',
+					called: [],
+					calledPriority: [],
+				},
+			});
+			const store = createVisitStore({ lookupCurrentVisit });
+
+			// Act
+			await store.refresh();
+
+			// Assert
+			expect(store.isStandby).toBe(true);
+			expect(store.queueNumber?.label).toBe('S4');
+			expect(store.lateArrival).toBeNull();
+			expect(store.saturdayProgress).toBeNull();
+		});
+
 		it('discards a visit from another market when the session loads first', async () => {
 			// Arrange
 			window.localStorage.setItem(visitTokenKey, 'token-1');

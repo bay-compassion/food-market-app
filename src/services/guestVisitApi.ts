@@ -1,5 +1,6 @@
 import type { GuestFormState } from '../components/types';
 import type { RaceEthnicityAnswer } from '../models/race-ethnicity';
+import type { VisitTrack } from './visit-track';
 import type { VisitStatus } from './visitStateMachine';
 
 /**
@@ -11,9 +12,13 @@ export type CurrentVisit = {
 	id: string;
 	marketEventId: string;
 	status: VisitStatus;
-	/** With `priorityNumber`, the guest's number — read it through `QueueNumber.of`. */
+	/** How the guest takes part; absent from older responses, which were all on the lottery's. */
+	track?: VisitTrack;
+	/** With `priorityNumber` and `standbyNumber`, the guest's number — read it through `QueueNumber.of`. */
 	queuePosition: number | null;
 	priorityNumber: number | null;
+	/** A standby guest's S number; absent from older responses. */
+	standbyNumber?: number | null;
 	aheadOfYou: number | null;
 	/** When the guest was called, as an ISO timestamp; `null` until then, and after a return to the queue. */
 	calledAt: string | null;
