@@ -277,6 +277,12 @@ describe('endpoint permissions', () => {
 			'run:queue',
 		],
 		[
+			'reading the standby code for its poster',
+			kioskHandler,
+			json('https://x/api/admin/standby-code', 'GET'),
+			'manage:sessions',
+		],
+		[
 			'adding a staff note',
 			guestNotesHandler,
 			json('https://x/api/admin/guests/7d1e1f4a-2c3b-4d5e-8f90-1a2b3c4d5e6f/notes', 'POST', {

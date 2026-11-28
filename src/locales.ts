@@ -430,6 +430,8 @@ export interface StandbyTranslations {
 	unreachableHeading: string;
 	unreachableDetails: string;
 	retry: string;
+	/** Under the title on the standby QR code poster an admin prints for the market. */
+	posterDescription: string;
 }
 
 export interface ClaimViewTranslations {
@@ -1163,6 +1165,8 @@ export const translations = {
 			unreachableHeading: 'Couldn’t Connect',
 			unreachableDetails: 'Check your connection and try again.',
 			retry: 'Try Again',
+			posterDescription:
+				'Scan this code with your phone camera to join today’s standby list. It isn’t guaranteed: if food is left after the line, guests are admitted in order.',
 		},
 		kiosk: {
 			nowCalling: 'Now calling',
@@ -1772,6 +1776,8 @@ export const translations = {
 			unreachableHeading: 'No se pudo conectar',
 			unreachableDetails: 'Revise su conexión e inténtelo de nuevo.',
 			retry: 'Intentar de nuevo',
+			posterDescription:
+				'Escanee este código con la cámara de su teléfono para unirse a la lista de espera de hoy. No está garantizado: si queda comida después de la fila, se atiende a las personas en orden.',
 		},
 		kiosk: {
 			nowCalling: 'Llamando ahora',
@@ -2375,6 +2381,8 @@ export const translations = {
 			unreachableHeading: 'اتصال برقرار نشد',
 			unreachableDetails: 'اتصال خود را بررسی کنید و دوباره امتحان کنید.',
 			retry: 'دوباره امتحان کنید',
+			posterDescription:
+				'برای پیوستن به فهرست انتظار امروز، این کد را با دوربین گوشی خود اسکن کنید. این تضمینی نیست: اگر پس از صف غذا باقی بماند، افراد به ترتیب پذیرفته می‌شوند.',
 		},
 		kiosk: {
 			nowCalling: 'در حال فراخوانی',
@@ -2988,6 +2996,8 @@ export const translations = {
 			unreachableHeading: 'Hindi Makakonekta',
 			unreachableDetails: 'Suriin ang iyong koneksyon at subukang muli.',
 			retry: 'Subukang Muli',
+			posterDescription:
+				'I-scan ang code na ito gamit ang camera ng inyong telepono para sumali sa standby list ngayong araw. Hindi ito garantisado: kung may matitirang pagkain pagkatapos ng pila, papapasukin ang mga tao nang sunud-sunod.',
 		},
 		kiosk: {
 			nowCalling: 'Tinatawag ngayon',
@@ -3589,6 +3599,8 @@ export const translations = {
 			unreachableHeading: 'Không kết nối được',
 			unreachableDetails: 'Hãy kiểm tra kết nối và thử lại.',
 			retry: 'Thử lại',
+			posterDescription:
+				'Quét mã này bằng máy ảnh điện thoại để tham gia danh sách chờ hôm nay. Điều này không được đảm bảo: nếu còn thực phẩm sau khi hết hàng, mọi người sẽ được vào theo thứ tự.',
 		},
 		kiosk: {
 			nowCalling: 'Đang gọi số',
@@ -4168,6 +4180,8 @@ export const translations = {
 			unreachableHeading: '无法连接',
 			unreachableDetails: '请检查网络连接后重试。',
 			retry: '重试',
+			posterDescription:
+				'用手机相机扫描此二维码，加入今天的候补名单。这并不保证：如果排队结束后还有食物，会按顺序让大家进入。',
 		},
 		kiosk: {
 			nowCalling: '正在叫号',
@@ -4758,6 +4772,8 @@ export const translations = {
 			unreachableHeading: 'تعذّر الاتصال',
 			unreachableDetails: 'تحقق من اتصالك وحاول مرة أخرى.',
 			retry: 'حاول مرة أخرى',
+			posterDescription:
+				'امسح هذا الرمز بكاميرا هاتفك للانضمام إلى قائمة الانتظار اليوم. هذا غير مضمون: إذا تبقّى طعام بعد انتهاء الطابور، يدخل الناس بالترتيب.',
 		},
 		kiosk: {
 			nowCalling: 'الرقم الحالي',
@@ -5370,6 +5386,8 @@ export const translations = {
 			unreachableHeading: 'Connexion impossible',
 			unreachableDetails: 'Vérifiez votre connexion et réessayez.',
 			retry: 'Réessayer',
+			posterDescription:
+				'Scannez ce code avec l’appareil photo de votre téléphone pour rejoindre la liste d’attente du jour. Ce n’est pas garanti : s’il reste de la nourriture après la file, les personnes passent dans l’ordre.',
 		},
 		kiosk: {
 			nowCalling: 'Numéro appelé',
@@ -5976,6 +5994,8 @@ export const translations = {
 			unreachableHeading: 'Não foi possível conectar',
 			unreachableDetails: 'Verifique sua conexão e tente de novo.',
 			retry: 'Tentar de novo',
+			posterDescription:
+				'Escaneie este código com a câmera do celular para entrar na lista de espera de hoje. Não é garantido: se sobrar comida depois da fila, as pessoas entram em ordem.',
 		},
 		kiosk: {
 			nowCalling: 'Chamando agora',
@@ -6578,6 +6598,8 @@ export const translations = {
 			unreachableHeading: 'Не удалось подключиться',
 			unreachableDetails: 'Проверьте подключение и попробуйте ещё раз.',
 			retry: 'Попробовать снова',
+			posterDescription:
+				'Отсканируйте этот код камерой телефона, чтобы встать в лист ожидания на сегодня. Это не гарантировано: если после очереди останутся продукты, людей пропускают по порядку.',
 		},
 		kiosk: {
 			nowCalling: 'Сейчас вызывают',

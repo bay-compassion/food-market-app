@@ -1,10 +1,14 @@
 import { Auth0Context, initialContext } from '@auth0/auth0-react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import { expect, fn, waitFor, within } from 'storybook/test';
 
 import { adminTranslations } from '../../../adminLocales';
 import { authReturnUrl } from '../../../auth';
 import { translations, type Locale } from '../../../locales';
+import type { Permission } from '../../../services/permissions';
+import { RootStoreProvider } from '../../../stores/react/store-context';
+import { RootStore } from '../../../stores/root.store';
 import { AppBar } from './AppBar';
 
 const logout = fn().mockResolvedValue(undefined);
@@ -170,4 +174,74 @@ export const InDashboard: Story = {
 
 export const SignedInWithoutPhoto: Story = {
 	parameters: { signedIn: true },
+};
+
+/** The app bar with a store that has read these permissions, as a signed-in screen does. */
+function WithPermissions({ permissions }: { permissions: Permission[] }) {
+	const [store] = useState(() => {
+		const root = new RootStore();
+
+		root.setPermissionReader(() => Promise.resolve(permissions));
+		void root.admin.loadPermissions();
+
+		return root;
+	});
+
+	return (
+		<RootStoreProvider store={store}>
+			<AppBar />
+		</RootStoreProvider>
+	);
+}
+
+/**
+ * An admin's menu: the QR code entry opens a submenu with the market's poster, the premarket's,
+ * and the current session's standby poster.
+ */
+export const AdminQrCodes: Story = {
+	parameters: { signedIn: true },
+	render: () => <WithPermissions permissions={['manage:sessions']} />,
+	play: async ({ canvas, userEvent, globals }) => {
+		const t = translations[globals.locale as Locale].appBar;
+		const posters = adminTranslations.en.qrPosters;
+
+		await userEvent.click(canvas.getByRole('button', { name: t.accountMenu }));
+		const page = within(document.body);
+
+		await userEvent.click(await page.findByRole('menuitem', { name: posters.menu }));
+		const submenu = within(await page.findByRole('menu', { name: posters.menu }));
+
+		await expect(submenu.getByRole('menuitem', { name: posters.market })).toHaveAttribute(
+			'href',
+			'/qr-code',
+		);
+		await expect(submenu.getByRole('menuitem', { name: posters.premarket })).toHaveAttribute(
+			'href',
+			'/admin/premarket-code',
+		);
+		await expect(submenu.getByRole('menuitem', { name: posters.standby })).toHaveAttribute(
+			'href',
+			'/admin/standby-code',
+		);
+	},
+};
+
+/** A worker without session powers keeps the single market QR code item. */
+export const WorkerQrCode: Story = {
+	parameters: { signedIn: true },
+	render: () => <WithPermissions permissions={['run:queue']} />,
+	play: async ({ canvas, userEvent, globals }) => {
+		const t = translations[globals.locale as Locale].appBar;
+
+		await userEvent.click(canvas.getByRole('button', { name: t.accountMenu }));
+		const menu = within(await within(document.body).findByRole('menu'));
+
+		await expect(menu.getByRole('menuitem', { name: t.qrCode })).toHaveAttribute(
+			'href',
+			'/qr-code',
+		);
+		await expect(
+			menu.queryByRole('menuitem', { name: adminTranslations.en.qrPosters.menu }),
+		).not.toBeInTheDocument();
+	},
 };

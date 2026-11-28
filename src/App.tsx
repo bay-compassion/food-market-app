@@ -9,6 +9,7 @@ import { ConfirmationDrawer } from './components/ui/ConfirmationDrawer';
 import { NotificationToasts } from './components/ui/NotificationToasts';
 import { isAdminPath } from './services/admin-views';
 import { premarketPosterPath } from './services/premarket';
+import { standbyPosterPath } from './services/qr-posters';
 import { useRootStore } from './stores/react/store-context';
 import { useTranslation } from './stores/react/use-translation';
 
@@ -27,7 +28,8 @@ export const App = observer(function App() {
 	const { error } = useAuth0();
 	const { pathname } = useLocation();
 	// A poster prints as the poster alone, without the bar above it.
-	const isQrPoster = pathname === '/qr-code' || pathname === premarketPosterPath;
+	const isQrPoster =
+		pathname === '/qr-code' || pathname === premarketPosterPath || pathname === standbyPosterPath;
 
 	return (
 		<main className={`app-shell${isQrPoster ? ' app-shell--print-qr' : ''}`} dir={translations.dir}>

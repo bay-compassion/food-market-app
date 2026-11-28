@@ -85,6 +85,37 @@ describe('unlock code handler', () => {
 	});
 });
 
+describe('standby code handler', () => {
+	function standbyCodeRequest() {
+		return new Request('https://example.com/api/admin/standby-code');
+	}
+
+	it('gives an admin the current session’s standby code, which the code reads back', async () => {
+		// Arrange
+		currentEvent('lottery_pending');
+
+		// Act
+		const response = await adminHandler(standbyCodeRequest());
+
+		// Assert
+		expect(response.status).toBe(200);
+		await expect(response.json()).resolves.toEqual({
+			code: expect.stringMatching(/^event-1\.[\w-]{22}$/),
+		});
+	});
+
+	it('has no code to give with no session running', async () => {
+		// Arrange
+		currentEvent('ended');
+
+		// Act
+		const response = await adminHandler(standbyCodeRequest());
+
+		// Assert
+		await expect(response.json()).resolves.toEqual({ code: null });
+	});
+});
+
 describe('unlock handler', () => {
 	it('trades a correct code for a token the board accepts', async () => {
 		// Arrange
