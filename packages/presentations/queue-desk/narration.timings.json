@@ -56,7 +56,7 @@
     },
     "offline": {
       "text": "If the print station is offline, the button says so. Write the tag by hand instead.",
-      "duration": 5.101
+      "duration": 5.132
     },
     "serve": {
       "text": "When the guest has checked in, tap Serve and call next. That finishes their visit and calls the next guest, in one step.",
@@ -100,7 +100,7 @@
     },
     "addForm": {
       "text": "Enter their details, choose Give them a spot, and pick where they go: the end of the queue, or next up.",
-      "duration": 6.125
+      "duration": 6.135
     },
     "addPriority": {
       "text": "Someone you put next up gets a P number, like P1, so nobody else’s number changes.",
@@ -119,8 +119,8 @@
       "duration": 3.765
     },
     "close": {
-      "text": "Tap it and confirm to end the day. The menu at the top can close the session early, too: if anyone is still waiting or called, it says how many, because closing marks them as no-shows.",
-      "duration": 12.097
+      "text": "Tap it and confirm to end the day. The menu at the top can close the session early, too: if anyone is still waiting or called, it says how many, because closing marks called guests as no-shows and cancels the rest.",
+      "duration": 14.217
     },
     "thanks": {
       "text": "That’s the queue desk. Thank you for helping every neighbor get served.",

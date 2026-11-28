@@ -16,7 +16,7 @@
     },
     "schedule": {
       "text": "Market days come from the Schedule. The recurring pattern sets when registration opens each week, how long it stays open, and how many places there are.",
-      "duration": 9.517
+      "duration": 9.507
     },
     "upcoming": {
       "text": "Below it is the next session the pattern created. When a session ends, the next one is created automatically.",
@@ -44,7 +44,7 @@
     },
     "overrides": {
       "text": "If guests need more time, extend registration by a few minutes. You can also change the queue capacity: how many places the lottery fills.",
-      "duration": 9.352
+      "duration": 9.322
     },
     "closeEarly": {
       "text": "Registration closes on its own when the window ends. Close early ends it now, once you confirm.",
@@ -103,8 +103,8 @@
       "duration": 6.111
     },
     "close": {
-      "text": "When nobody is left to call, Close session takes the place of Call next. Closing sooner, from the Queue actions menu, marks anyone still waiting as a no show.",
-      "duration": 9.995
+      "text": "When nobody is left to call, Close session takes the place of Call next. Closing sooner, from the Queue actions menu, marks anyone already called as a no show and cancels anyone still waiting.",
+      "duration": 12.213
     },
     "next": {
       "text": "The day moves to Session history, and the schedule’s next market is ready, a week away.",
