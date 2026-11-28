@@ -522,6 +522,8 @@ export async function registerGuest(
 								// no number and no place in it.
 								queuePosition: null,
 								priorityNumber: null,
+								// Only a standby visit may hold an S number, which the database checks.
+								standbyNumber: null,
 								queueFront: false,
 								queueOrder: null,
 								lotteryWeight: 1,
@@ -537,7 +539,11 @@ export async function registerGuest(
 									// A live premarket visit stays one if its guest later enters the draw. A cancelled one —
 									// a volunteer a worker removed — enters the draw like anyone else, on the lottery's track.
 									...(existingVisit.status === 'cancelled'
-										? { status: 'registered' as const, track: 'lottery' as const }
+										? {
+												status: 'registered' as const,
+												track: 'lottery' as const,
+												standbyNumber: null,
+											}
 										: { status: existingVisit.status }),
 								})
 								.where(eq(visits.id, existingVisit.id))

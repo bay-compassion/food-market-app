@@ -231,7 +231,9 @@ A stack of PRs. Each one ships and works on its own.
    first PR that creates standby visits.
 4. **Tickets and the code.** The code, the iPad screen, the ticket table (a migration), `/standby`
    and the form, the server-side check that standby is open, and moving a `not_placed` visit onto
-   standby.
+   standby. Check first whether the steward and draw ledgers read `not_placed` to raise a guest's
+   odds the next week: if they do, moving a guest who wasn't drawn onto standby would quietly drop
+   that.
 5. **The guest's standby card.** "You're on the standby list", the card changing when the guest is
    admitted, and cancelling from the phone. The copy goes into every language.
 

@@ -15,7 +15,7 @@ vi.mock('./visit-events.mjs', () => ({
 
 import type { VisitEventActor } from '../../src/services/visit-events.js';
 import { recordVisitEvents } from './visit-events.mjs';
-import { resolveOutstandingVisits, runVisitCommand } from './visitQueue.mjs';
+import { callNextVisits, resolveOutstandingVisits, runVisitCommand } from './visitQueue.mjs';
 
 const actor: VisitEventActor = { kind: 'worker', id: 'auth0|worker', name: 'Matt' };
 
@@ -67,6 +67,53 @@ describe('runVisitCommand timestamps', () => {
 		await runVisitCommand('visit-1', 'mark_no_show', { actor });
 
 		expect(lastUpdateValues()).toEqual({ status: 'no_show' });
+	});
+});
+
+/** A Drizzle condition or fragment as the SQL and parameters it renders to. */
+function rendered(fragment: unknown) {
+	return new PgDialect().sqlToQuery(fragment as Parameters<PgDialect['sqlToQuery']>[0]);
+}
+
+/** Every condition passed to a `select(...)` chain's `where`, rendered. */
+function selectConditions() {
+	return db.select.mock.results.flatMap(({ value }) =>
+		(value as { where: ReturnType<typeof vi.fn> }).where.mock.calls.map(([condition]) =>
+			rendered(condition),
+		),
+	);
+}
+
+describe('the line leaves standby alone', () => {
+	it('calls only the line’s next guests, never a standby guest', async () => {
+		// Arrange
+		queueResult([{ id: 'visit-1' }]);
+
+		// Act
+		await callNextVisits('event-1', 1, actor);
+
+		// Assert
+		const [next] = selectConditions();
+
+		expect(next?.sql).toContain('"track" = $');
+		expect(next?.params).toEqual(expect.arrayContaining(['waiting', 'lottery']));
+	});
+
+	it('counts only the line when it places a returning guest', async () => {
+		// Arrange
+		queueResult([
+			{ status: 'no_show', marketEventId: 'event-1', queuePosition: 4, priorityNumber: null },
+		]);
+		queueLine({ highestNumber: 12, highestOrder: 12, othersWaiting: 5 });
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		// Act
+		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
+
+		// Assert
+		const [fields] = db.select.mock.calls.at(-1) as unknown as [{ othersWaiting: unknown }];
+
+		expect(rendered(fields.othersWaiting).sql).toContain(`"track" = 'lottery'`);
 	});
 });
 
