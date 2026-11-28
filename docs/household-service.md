@@ -48,5 +48,6 @@ prepare this change.
 
 1. [Phase 1 — count-only recording](https://github.com/bay-compassion/food-market-app/issues/302).
 2. [Phase 2 — standby](https://github.com/bay-compassion/food-market-app/issues/51), depends on Phase 1.
+   Design: [standby.md](standby.md).
 3. [Phase 3 — QR entry](https://github.com/bay-compassion/food-market-app/issues/303), depends on Phase 2.
 4. [Phase 4 — shared iPads](https://github.com/bay-compassion/food-market-app/issues/304), depends on Phase 3.
