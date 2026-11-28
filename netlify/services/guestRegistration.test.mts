@@ -1421,4 +1421,108 @@ describe('registerGuest onto standby', () => {
 		expect(result.ok).toBe(false);
 		expect(db.insert).not.toHaveBeenCalled();
 	});
+
+	describe('scanning in with a ticket', () => {
+		const servingDay = { id: 'event-1', locationId: 'location-1', status: 'service_started' };
+		const ticket = 'a-standby-ticket-from-the-ipad-code-1234567890';
+
+		function setRows() {
+			return db.update.mock.results
+				.map(({ value }) => value as { set: ReturnType<typeof vi.fn> })
+				.flatMap(({ set }) => set.mock.calls.map(([row]) => row));
+		}
+
+		it('spends the ticket and puts a new guest on standby with its S number', async () => {
+			// Arrange
+			vi.mocked(recordVisitEvents).mockClear();
+			queueResult([servingDay]); // the session, read
+			queueResult([servingDay]); // the session, locked
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+			queueResult([{ id: 'ticket-1', standbyNumber: 7 }]); // the ticket, spent
+			queueResult([{ id: 'visit-1', status: 'waiting' }]); // insert visits
+			queueResult(undefined); // the ticket, tied to the visit
+			const submission = parseSubmission(selfSubmission())!;
+
+			// Act
+			const result = await registerGuest(submission, { kind: 'guest' }, { standbyTicket: ticket });
+
+			// Assert
+			expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'waiting' } });
+			expect(insertedVisit()).toMatchObject({
+				track: 'postmarket',
+				status: 'waiting',
+				standbyNumber: 7,
+				queuePosition: null,
+			});
+			expect(vi.mocked(recordVisitEvents).mock.calls.at(-1)![1]).toEqual([
+				expect.objectContaining({ kind: 'standby_joined', details: { standbyNumber: 7 } }),
+			]);
+		});
+
+		it('moves a guest the draw passed over onto standby, keeping their visit', async () => {
+			// Arrange
+			queueResult([servingDay]); // the session, read
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+			queueResult([{ id: 'visit-1', status: 'not_placed' }]); // existing visit lookup
+			queueResult([servingDay]); // the session, locked
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+			queueResult([{ id: 'ticket-1', standbyNumber: 3 }]); // the ticket, spent
+			queueResult([{ id: 'visit-1', status: 'waiting' }]); // tx.update visits returning
+			queueResult(undefined); // the ticket, tied to the visit
+			const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+			// Act
+			const result = await registerGuest(submission, { kind: 'guest' }, { standbyTicket: ticket });
+
+			// Assert
+			expect(result).toMatchObject({ ok: true, status: 200 });
+			expect(db.insert).not.toHaveBeenCalled();
+			expect(setRows().find((row) => row?.accessTokenHash)).toMatchObject({
+				track: 'postmarket',
+				status: 'waiting',
+				standbyNumber: 3,
+				queuePosition: null,
+				priorityNumber: null,
+				queueOrder: null,
+			});
+		});
+
+		it('leaves a guest still in the line where they are, and the ticket unspent', async () => {
+			// Arrange
+			queueResult([servingDay]); // the session, read
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // device credential lookup
+			queueResult([{ id: 'visit-1', status: 'waiting' }]); // existing visit lookup
+			queueResult([servingDay]); // the session, locked
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // tx.update guest returning
+			queueResult([{ id: 'visit-1', status: 'waiting' }]); // tx.update visits returning
+			const submission = parseSubmission(selfSubmission({ deviceToken: savedDeviceToken }))!;
+
+			// Act
+			const result = await registerGuest(submission, { kind: 'guest' }, { standbyTicket: ticket });
+
+			// Assert
+			expect(result).toMatchObject({ ok: true, status: 200 });
+			expect(setRows().find((row) => row?.usedAt)).toBeUndefined();
+			expect(setRows().find((row) => row?.track)).toBeUndefined();
+		});
+
+		it('refuses a ticket that has already been spent', async () => {
+			// Arrange
+			queueResult([servingDay]); // the session, read
+			queueResult([servingDay]); // the session, locked
+			queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+			queueResult([]); // the ticket: nothing left to spend
+			const submission = parseSubmission(selfSubmission())!;
+
+			// Act
+			const result = await registerGuest(submission, { kind: 'guest' }, { standbyTicket: ticket });
+
+			// Assert
+			expect(result).toEqual({
+				ok: false,
+				status: 409,
+				error: 'This standby ticket has already been used.',
+			});
+		});
+	});
 });

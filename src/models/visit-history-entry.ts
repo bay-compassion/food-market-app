@@ -37,7 +37,13 @@ export class VisitHistoryEntry {
 			standbyNumber: details.standbyNumber ?? null,
 		});
 
-		if ((kind === 'drawn' || kind === 'added' || kind === 'tag_printed') && number) {
+		if (
+			(kind === 'drawn' ||
+				kind === 'added' ||
+				kind === 'standby_joined' ||
+				kind === 'tag_printed') &&
+			number
+		) {
 			return `${title} · #${number.label}`;
 		}
 

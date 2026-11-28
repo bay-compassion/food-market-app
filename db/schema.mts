@@ -10,6 +10,7 @@ import {
 	text,
 	time,
 	timestamp,
+	unique,
 	uniqueIndex,
 	uuid,
 } from 'drizzle-orm/pg-core';
@@ -483,6 +484,28 @@ export const smsOptOuts = pgTable(
 );
 
 /** Anonymous completed shopping: one row per household, never a fabricated guest or visit. */
+/**
+ * A place on the standby list, pulled by scanning the session's code at the market before the
+ * guest fills in their details. It holds the next S number, so the list keeps scan order, and it is
+ * spent once, when the form arrives. Only the token's hash is stored. See `docs/standby.md`.
+ */
+export const standbyTickets = pgTable(
+	'standby_tickets',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		marketEventId: uuid('market_event_id')
+			.notNull()
+			.references(() => marketEvents.id, { onDelete: 'cascade' }),
+		tokenHash: text('token_hash').notNull().unique(),
+		standbyNumber: integer('standby_number').notNull(),
+		issuedAt: timestamp('issued_at', { withTimezone: true }).notNull().defaultNow(),
+		/** When the guest's form spent it; null while it is still waiting for one. */
+		usedAt: timestamp('used_at', { withTimezone: true }),
+		visitId: uuid('visit_id').references(() => visits.id, { onDelete: 'set null' }),
+	},
+	(table) => [unique('standby_tickets_number_unique').on(table.marketEventId, table.standbyNumber)],
+);
+
 export const householdServiceEntries = pgTable(
 	'household_service_entries',
 	{

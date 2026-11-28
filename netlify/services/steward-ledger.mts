@@ -18,6 +18,7 @@ import type {
 import { tracedQuery } from '../lib/sentry.mjs';
 import {
 	hasDrawEventSql,
+	wasDrawnSql,
 	hasHistorySql,
 	readDrawLedger,
 	readGuestIdentities,
@@ -200,7 +201,7 @@ export function buildStewardLedger(input: StewardLedgerInput): StewardLedgerResp
 				spots: event?.capacity ?? 0,
 				tiers: tiers(
 					entered.map(({ lotteryWeight }) => lotteryWeight),
-					entered.map(({ status }) => status !== 'not_placed'),
+					entered.map((visit) => new DrawEntry(visit).won),
 				),
 				suggestedTiers: tiers(
 					entered.flatMap(({ suggestedLotteryWeight }) =>
@@ -314,6 +315,7 @@ export async function readStewardLedger(now = new Date()): Promise<StewardLedger
 								source: visits.source,
 								queuePosition: visits.queuePosition,
 								hasDrawEvent: hasDrawEventSql,
+								wasDrawn: wasDrawnSql,
 								hasHistory: hasHistorySql,
 								lotteryWeight: visits.lotteryWeight,
 								suggestedLotteryWeight: visits.suggestedLotteryWeight,

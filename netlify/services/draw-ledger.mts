@@ -17,6 +17,12 @@ export const hasDrawEventSql = sql<boolean>`exists (
 		and ${visitEvents.kind} in ('drawn', 'not_drawn')
 )`;
 
+/** Whether a visit's history records the draw drawing it. */
+export const wasDrawnSql = sql<boolean>`exists (
+	select 1 from ${visitEvents}
+	where ${visitEvents.visitId} = ${visits.id} and ${visitEvents.kind} = 'drawn'
+)`;
+
 /** Whether a visit has any history at all. Visits older than the history have none. */
 export const hasHistorySql = sql<boolean>`exists (
 	select 1 from ${visitEvents} where ${visitEvents.visitId} = ${visits.id}
@@ -88,6 +94,7 @@ export async function readDrawLedger(
 			source: visits.source,
 			queuePosition: visits.queuePosition,
 			hasDrawEvent: hasDrawEventSql,
+			wasDrawn: wasDrawnSql,
 			hasHistory: hasHistorySql,
 		})
 		.from(visits)

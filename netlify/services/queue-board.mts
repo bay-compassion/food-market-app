@@ -5,6 +5,8 @@ import { visits } from '../../db/schema.mjs';
 import type { QueueBoardState } from '../../src/models/queue-board.js';
 import { tracedQuery } from '../lib/sentry.mjs';
 import { getCurrentEvent } from './marketSession.mjs';
+import { StandbyCode } from './standby-code.mjs';
+import { standbyIsOpen } from './standby.mjs';
 
 /**
  * The main-series number the "now calling" board shows: the highest one called this session — the
@@ -89,10 +91,15 @@ export async function queueBoard(): Promise<QueueBoardState> {
 			),
 	);
 
+	const standbyCodes = StandbyCode.fromEnvironment();
+	const standbyCode =
+		standbyCodes && (await standbyIsOpen(db, event.id)) ? standbyCodes.codeFor(event.id) : null;
+
 	return {
 		sessionStatus: event.status,
 		nowCalling: await highestCalledNumber(event.id),
 		...called,
 		waitingCount: waiting?.count ?? 0,
+		standbyCode,
 	};
 }

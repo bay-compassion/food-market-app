@@ -239,10 +239,11 @@ A stack of PRs. Each one ships and works on its own.
    QR code back on for standby, which PR 3 held back.
 5. **Tickets and the code.** The code, the iPad screen, the ticket table (a migration), `/standby`
    and the form, the server-side check that standby is open, and moving a `not_placed` visit onto
-   standby. The draw odds read the draw's own events, so moving a guest who wasn't drawn doesn't
-   change their odds. The steward's per-draw statistics, though, read the visit's current status
-   (`status !== 'not_placed'` in `steward-ledger.mts`), so a moved guest would count as placed:
-   read the draw's outcome from its event there instead.
+   standby. Moving a guest who wasn't drawn leaves their visit `waiting`, then `served`, like a
+   winner's, so everything that asks whether a guest was drawn reads the draw's own event instead
+   of the status: `DrawEntry.won` (which the automatic odds and the steward's per-draw statistics
+   use) and the lottery report's placement count. Ships as two PRs: 5a, the server, and 5b, the
+   iPad display and the `/standby` page.
 
 Before each migration PR, follow the checklist in [migrations.md](migrations.md). A person reviews
 and merges it.

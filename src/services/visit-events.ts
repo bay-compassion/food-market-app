@@ -17,6 +17,8 @@ export type VisitEventKind =
 	 * the draw or after it, new or moved from a lottery entry.
 	 */
 	| 'premarket_check_in'
+	/** The guest joined the standby list by scanning the session's code at the market. */
+	| 'standby_joined'
 	/** The lottery drew the guest and gave them a place in line. */
 	| 'drawn'
 	/** The lottery did not draw the guest. */
@@ -39,6 +41,7 @@ export const visitEventKinds: VisitEventKind[] = [
 	'registered',
 	'added',
 	'premarket_check_in',
+	'standby_joined',
 	'drawn',
 	'not_drawn',
 	'called',

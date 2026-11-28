@@ -215,14 +215,22 @@ function guestDemographics({ start, end }: ReportRange) {
  * and neither has a visit still `registered`.
  */
 function lotteryOutcomes({ start, end }: ReportRange) {
+	// How the draw came out, from its own history where there is one — a guest it passed over can
+	// later join standby, leaving their visit looking like a winner's — and from the status otherwise.
+	const placedSql = sql`CASE
+		WHEN EXISTS (
+			SELECT 1 FROM visit_events ve WHERE ve.visit_id = v.id AND ve.kind IN ('drawn', 'not_drawn')
+		) THEN EXISTS (SELECT 1 FROM visit_events ve WHERE ve.visit_id = v.id AND ve.kind = 'drawn')
+		ELSE v.status <> 'not_placed'
+	END`;
+
 	return sql`
 		SELECT
 			v.lottery_weight::int AS "weight",
 			count(*)::int AS "entries",
-			count(*) FILTER (WHERE v.status <> 'not_placed')::int AS "placed",
-			round(
-				count(*) FILTER (WHERE v.status <> 'not_placed')::numeric * 100 / count(*), 1
-			)::float8 AS "placementRate"
+			count(*) FILTER (WHERE ${placedSql})::int AS "placed",
+			round(count(*) FILTER (WHERE ${placedSql})::numeric * 100 / count(*), 1)::float8
+				AS "placementRate"
 		FROM market_events e
 		JOIN visits v ON v.market_event_id = e.id
 		WHERE e.registration_opens_at >= ${start} AND e.registration_opens_at < ${end}

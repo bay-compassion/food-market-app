@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=1d8b1b67864b -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=75f73bdfe5b9 -->
 
 # Session lifecycle
 
@@ -136,6 +136,9 @@ stateDiagram-v2
     called --> cancelled : the session is reset,<br/>or a worker takes a standby<br/>guest off the list
 
     no_show --> waiting : return_to_queue
+    not_placed --> waiting : the guest scans in<br/>to standby
+    no_show --> waiting : the guest scans in<br/>to standby
+    cancelled --> waiting : the guest scans in<br/>to standby
 
     served --> cancelled : cancel (a worker removes<br/>a premarket volunteer)
     served --> [*]
