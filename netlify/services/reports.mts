@@ -38,7 +38,16 @@ function sessionSummary({ start, end }: ReportRange) {
     count(*) FILTER (WHERE status = 'served')::int AS served,
     coalesce(sum(household_size) FILTER (WHERE status = 'served'), 0)::int AS members,
     count(*) FILTER (WHERE status = 'no_show')::int AS no_shows,
-    count(*) FILTER (WHERE status = 'not_placed')::int AS not_placed,
+    -- The draw's own word where there is one: a guest it passed over can join standby afterwards.
+    count(*) FILTER (WHERE CASE
+     WHEN EXISTS (
+      SELECT 1 FROM visit_events ve
+      WHERE ve.visit_id = visits.id AND ve.kind IN ('drawn', 'not_drawn')
+     ) THEN EXISTS (
+      SELECT 1 FROM visit_events ve WHERE ve.visit_id = visits.id AND ve.kind = 'not_drawn'
+     )
+     ELSE status = 'not_placed'
+    END)::int AS not_placed,
     count(*) FILTER (WHERE source = 'admin' AND track = 'lottery')::int AS walk_ins,
     count(*) FILTER (WHERE status = 'served' AND track = 'premarket')::int AS premarket,
     coalesce(sum(household_size) FILTER (WHERE status = 'served' AND track = 'premarket'), 0)::int
