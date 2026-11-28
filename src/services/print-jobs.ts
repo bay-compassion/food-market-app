@@ -15,6 +15,8 @@ export type NameTagPrintJob = {
 	pronunciation: string | null;
 	queuePosition: number | null;
 	priorityNumber: number | null;
+	/** A standby guest's S number. */
+	standbyNumber: number | null;
 	/** A premarket volunteer's tag shows `V` in place of a number. */
 	track: VisitTrack;
 	locale: Locale;

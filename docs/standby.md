@@ -229,6 +229,9 @@ A stack of PRs. Each one ships and works on its own.
    hand (allocating S numbers), S numbers on name tags, the client side of the status sweep (the
    queue desk's roster and session progress), and the standby subtotals in reports. This is the
    first PR that creates standby visits.
+   - **Follow-up:** a ticket command that puts a guest the draw didn't place onto standby, keeping
+     their visit. Adding them through the dialog today creates a second guest record, the known
+     duplicate-guest problem with worker-added visits.
 4. **Tickets and the code.** The code, the iPad screen, the ticket table (a migration), `/standby`
    and the form, the server-side check that standby is open, and moving a `not_placed` visit onto
    standby. Check first whether the steward and draw ledgers read `not_placed` to raise a guest's

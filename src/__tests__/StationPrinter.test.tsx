@@ -16,6 +16,7 @@ const maria: NameTagPrintJob = {
 	pronunciation: null,
 	queuePosition: 14,
 	priorityNumber: null,
+	standbyNumber: null,
 	track: 'lottery' as const,
 	locale: 'es',
 	requestedAt: '2026-10-05T18:00:00.000Z',

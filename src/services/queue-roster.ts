@@ -12,9 +12,14 @@ import { finishedVisitStatuses } from './visitStateMachine.ts';
 export class QueueRoster {
 	constructor(private readonly guests: readonly QueueGuest[]) {}
 
+	/** The main line's guests: standby keeps a list of its own, in `standby`. */
+	private get line(): QueueGuest[] {
+		return this.guests.filter((guest) => guest.track !== 'postmarket');
+	}
+
 	/** At the entrance, longest-called first — the order a worker should get to them in. */
 	get called(): QueueGuest[] {
-		return this.guests
+		return this.line
 			.filter((guest) => guest.status === 'called')
 			.sort((first, second) => (first.calledAt ?? '').localeCompare(second.calledAt ?? ''));
 	}
@@ -29,7 +34,20 @@ export class QueueRoster {
 
 	/** Still in line, in the order they will be called. */
 	get waiting(): QueueGuest[] {
-		return this.guests.filter((guest) => guest.status === 'waiting').sort(LineOrder.compare);
+		return this.line.filter((guest) => guest.status === 'waiting').sort(LineOrder.compare);
+	}
+
+	/**
+	 * On standby and not yet through: waiting on the list, or admitted and on their way to the
+	 * desk — in S order, the order they joined and are admitted in.
+	 */
+	get standby(): QueueGuest[] {
+		return this.guests
+			.filter(
+				(guest) =>
+					guest.track === 'postmarket' && (guest.status === 'waiting' || guest.status === 'called'),
+			)
+			.sort((first, second) => (first.standbyNumber ?? 0) - (second.standbyNumber ?? 0));
 	}
 
 	/**
@@ -46,15 +64,16 @@ export class QueueRoster {
 	}
 
 	/**
-	 * Through for the day: served, or cancelled by themselves or by the session ending — in ticket
-	 * number order, with any guest who never had a number last. Premarket volunteers are listed
-	 * apart, in `premarket`: they were never in the line.
+	 * Through for the day: served, or cancelled by themselves, a worker, or the session ending — in
+	 * ticket number order (main, then P, then S), with any guest who never had a number last.
+	 * Premarket volunteers are listed apart, in `premarket`: they were never in the line.
 	 */
 	get done(): QueueGuest[] {
 		return this.guests
 			.filter(
 				(guest) =>
-					guest.track === 'lottery' && (guest.status === 'served' || guest.status === 'cancelled'),
+					guest.track !== 'premarket' &&
+					(guest.status === 'served' || guest.status === 'cancelled'),
 			)
 			.sort(QueueRoster.byNumber);
 	}

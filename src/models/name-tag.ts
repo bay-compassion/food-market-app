@@ -78,7 +78,8 @@ export class NameTag {
 	static readonly volunteerMark = 'V';
 
 	/**
-	 * What the number block reads: `V` for a premarket volunteer, the queue number for anyone else,
+	 * What the number block reads: `V` for a premarket volunteer, the queue number (`42`, `P1`, or a
+	 * standby guest's `S1`) for anyone else,
 	 * or `null` for a visit the draw has not placed. The queue desk's tickets read it too, so a
 	 * ticket and its tag agree.
 	 */

@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 
 import { adminTranslations } from '../../adminLocales';
+import type { VisitTrack } from '../../services/visit-track';
 import {
 	visitCommandsFrom,
 	type VisitCommand,
@@ -16,19 +17,23 @@ export type VisitCommandButtonsProps = {
 /** The command a worker is most likely to want from a given status, drawn as the filled button. */
 export const primaryVisitCommands: VisitCommand[] = ['call', 'serve'];
 
-/** What each command is called on a button or in a menu. */
-export function visitCommandLabels(): Record<VisitCommand, string> {
+/**
+ * What each command is called on a button or in a menu, for a visit on `track`. A standby guest is
+ * admitted rather than called, and a worker's `cancel` takes them off the list; for anyone else the
+ * only `cancel` a worker is offered removes a premarket volunteer (see `VisitCommands`).
+ */
+export function visitCommandLabels(track: VisitTrack = 'lottery'): Record<VisitCommand, string> {
 	const t = adminTranslations.en;
+	const standby = track === 'postmarket';
 
 	return {
 		select: t.waiting,
 		skip: t.notPlaced,
-		call: t.callGuest,
+		call: standby ? t.admitFromStandby : t.callGuest,
 		serve: t.markServed,
 		mark_no_show: t.markNoShow,
 		return_to_queue: t.returnToQueue,
-		// The only `cancel` a worker is offered: removing a premarket volunteer (see `VisitCommands`).
-		cancel: t.removeFromPremarket,
+		cancel: standby ? t.takeOffStandby : t.removeFromPremarket,
 	};
 }
 

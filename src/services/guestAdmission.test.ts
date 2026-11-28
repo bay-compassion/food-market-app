@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	admissionCreatesVisit,
 	admissionOffersPhoneClaim,
+	admissionTakesStandbyNumber,
+	admissionTrack,
+	admissionVisitStatus,
 	manualAdmissionsFor,
 } from './guestAdmission';
 
@@ -33,5 +36,29 @@ describe('saving details only', () => {
 		// Assert
 		expect(createsVisit).toBe(false);
 		expect(offersClaim).toBe(true);
+	});
+});
+
+describe('the standby admission', () => {
+	it('is offered only once the draw has run', () => {
+		// Act
+		const beforeDraw = manualAdmissionsFor('lottery_pending');
+		const afterDraw = manualAdmissionsFor('service_started');
+
+		// Assert
+		expect(beforeDraw).not.toContain('standby');
+		expect(afterDraw).toEqual(['queue', 'standby', 'premarket', 'profile']);
+	});
+
+	it('puts the guest on the postmarket track, waiting, with an S number', () => {
+		// Act
+		const placed = [
+			admissionTrack('standby'),
+			admissionVisitStatus('standby'),
+			admissionTakesStandbyNumber('standby'),
+		];
+
+		// Assert
+		expect(placed).toEqual(['postmarket', 'waiting', true]);
 	});
 });

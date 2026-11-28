@@ -46,6 +46,8 @@ const jobSchema = z.object({
 	queuePosition: z.number().int().nullable(),
 	// Defaulted for a tag a phone sent before priority numbers existed, still in the store.
 	priorityNumber: z.number().int().nullable().default(null),
+	// Defaulted for a tag a phone sent before standby existed, still in the store.
+	standbyNumber: z.number().int().nullable().default(null),
 	// Defaulted for a tag a phone sent before the premarket existed, still in the store.
 	track: z.custom<VisitTrack>(isVisitTrack).default('lottery'),
 	locale: z.custom<Locale>(isLocale),
@@ -75,6 +77,7 @@ export class PrintQueue {
 		pronunciation: 'PRIN-ter test',
 		queuePosition: 0,
 		priorityNumber: null,
+		standbyNumber: null,
 		track: 'lottery',
 		locale: 'en',
 	};
@@ -186,6 +189,7 @@ export async function nameTagFor(
 				pronunciation: guests.pronunciation,
 				queuePosition: visits.queuePosition,
 				priorityNumber: visits.priorityNumber,
+				standbyNumber: visits.standbyNumber,
 				track: visits.track,
 				locale: guests.locale,
 			})
@@ -206,6 +210,7 @@ export async function nameTagFor(
 		pronunciation: row.pronunciation?.trim() || null,
 		queuePosition: row.queuePosition,
 		priorityNumber: row.priorityNumber,
+		standbyNumber: row.standbyNumber,
 		track: row.track,
 		locale: isLocale(row.locale) ? row.locale : 'en',
 	};

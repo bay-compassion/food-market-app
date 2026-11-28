@@ -120,6 +120,7 @@ async function listGuests(request: Request) {
 					track: visits.track,
 					queuePosition: visits.queuePosition,
 					priorityNumber: visits.priorityNumber,
+					standbyNumber: visits.standbyNumber,
 					queueFront: visits.queueFront,
 					queueOrder: visits.queueOrder,
 					calledAt: visits.calledAt,

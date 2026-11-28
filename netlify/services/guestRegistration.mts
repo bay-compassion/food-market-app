@@ -21,6 +21,7 @@ import { SessionTimeline } from '../../src/models/session-timeline.js';
 import { ageRanges } from '../../src/services/ageRanges.js';
 import {
 	admissionNeedsQueuePosition,
+	admissionTakesStandbyNumber,
 	admissionTakesLotteryWeight,
 	admissionTrack,
 	admissionVisitStatus,
@@ -41,7 +42,7 @@ import {
 import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
 import { locationById } from './marketLocation.mjs';
 import { recordVisitEvents } from './visit-events.mjs';
-import { placeInLine } from './visitQueue.mjs';
+import { nextStandbyNumber, placeInLine } from './visitQueue.mjs';
 
 /**
  * A household count as it arrives. Coercing here would read an empty field as `0`, so the counts
@@ -488,14 +489,15 @@ export async function registerGuest(
 					information: submission,
 					deviceTokenHash: deviceCredential?.tokenHash ?? null,
 				});
-				// Only a guest going straight into the line needs a number now. Everyone else is either
-				// still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
+				// Only a guest going straight into the line, or onto standby, needs a number now. Everyone
+				// else is either still pre-lottery and gets theirs from `runLottery`, or is not queued at all.
+				const addsByHand = !existingVisit && submission.source === 'admin';
 				const slot =
-					!existingVisit &&
-					submission.source === 'admin' &&
-					admissionNeedsQueuePosition(submission.admission)
+					addsByHand && admissionNeedsQueuePosition(submission.admission)
 						? await placeInLine(tx, submission.marketEventId!, submission.queuePlacement)
-						: null;
+						: addsByHand && admissionTakesStandbyNumber(submission.admission)
+							? (await nextStandbyNumber(tx, submission.marketEventId!)).toSource()
+							: null;
 				const number = slot ? QueueNumber.of(slot) : null;
 				const household = {
 					answers: submission.answers,

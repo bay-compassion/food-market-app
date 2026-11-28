@@ -40,6 +40,7 @@ const tag = {
 	pronunciation: null,
 	queuePosition: 14,
 	priorityNumber: null,
+	standbyNumber: null,
 	track: 'lottery' as const,
 	locale: 'es' as const,
 };

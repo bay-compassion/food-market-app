@@ -224,4 +224,21 @@ describe('QueueRoster', () => {
 		// Assert
 		expect(complete).toBe(true);
 	});
+
+	it('lists standby guests apart from the line, in S order, until they are through', () => {
+		// Arrange
+		const lineGuest = guest('line', 'waiting', { queuePosition: 3, queueOrder: 3 });
+		const second = guest('second', 'waiting', { track: 'postmarket', standbyNumber: 2 });
+		const first = guest('first', 'called', { track: 'postmarket', standbyNumber: 1 });
+		const served = guest('served', 'served', { track: 'postmarket', standbyNumber: 3 });
+
+		// Act
+		const roster = new QueueRoster([second, lineGuest, served, first]);
+
+		// Assert
+		expect(roster.standby.map(({ id }) => id)).toEqual(['first', 'second']);
+		expect(roster.waiting.map(({ id }) => id)).toEqual(['line']);
+		expect(roster.called).toEqual([]);
+		expect(roster.done.map(({ id }) => id)).toEqual(['served']);
+	});
 });

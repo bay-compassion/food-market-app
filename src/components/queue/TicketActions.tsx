@@ -22,7 +22,7 @@ import { TicketActionBar } from './TicketActionBar';
 export const TicketActions = observer(function TicketActions({ guest }: { guest: QueueGuest }) {
 	const t = adminTranslations.en;
 	const desk = useQueueDesk();
-	const labels = visitCommandLabels();
+	const labels = visitCommandLabels(guest.track);
 	const showGuestClaim = useShowGuestClaim();
 	const offersServeAndCallNext = desk.canServeAndCallNext(guest);
 	// The combined step takes the filled style when it is offered; there is only ever one.
