@@ -1,3 +1,4 @@
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
@@ -14,7 +15,7 @@ vi.mock('./visit-events.mjs', () => ({
 
 import type { VisitEventActor } from '../../src/services/visit-events.js';
 import { recordVisitEvents } from './visit-events.mjs';
-import { resolveOutstandingVisits, runVisitCommand } from './visitQueue.mjs';
+import { callNextVisits, resolveOutstandingVisits, runVisitCommand } from './visitQueue.mjs';
 
 const actor: VisitEventActor = { kind: 'worker', id: 'auth0|worker', name: 'Matt' };
 
@@ -69,6 +70,53 @@ describe('runVisitCommand timestamps', () => {
 	});
 });
 
+/** A Drizzle condition or fragment as the SQL and parameters it renders to. */
+function rendered(fragment: unknown) {
+	return new PgDialect().sqlToQuery(fragment as Parameters<PgDialect['sqlToQuery']>[0]);
+}
+
+/** Every condition passed to a `select(...)` chain's `where`, rendered. */
+function selectConditions() {
+	return db.select.mock.results.flatMap(({ value }) =>
+		(value as { where: ReturnType<typeof vi.fn> }).where.mock.calls.map(([condition]) =>
+			rendered(condition),
+		),
+	);
+}
+
+describe('the line leaves standby alone', () => {
+	it('calls only the line’s next guests, never a standby guest', async () => {
+		// Arrange
+		queueResult([{ id: 'visit-1' }]);
+
+		// Act
+		await callNextVisits('event-1', 1, actor);
+
+		// Assert
+		const [next] = selectConditions();
+
+		expect(next?.sql).toContain('"track" = $');
+		expect(next?.params).toEqual(expect.arrayContaining(['waiting', 'lottery']));
+	});
+
+	it('counts only the line when it places a returning guest', async () => {
+		// Arrange
+		queueResult([
+			{ status: 'no_show', marketEventId: 'event-1', queuePosition: 4, priorityNumber: null },
+		]);
+		queueLine({ highestNumber: 12, highestOrder: 12, othersWaiting: 5 });
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		// Act
+		await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
+
+		// Assert
+		const [fields] = db.select.mock.calls.at(-1) as unknown as [{ othersWaiting: unknown }];
+
+		expect(rendered(fields.othersWaiting).sql).toContain(`"track" = 'lottery'`);
+	});
+});
+
 /** The session's line as `placeInLine` reads it, after taking the session lock. */
 function queueLine(line: {
 	highestNumber: number | null;
@@ -96,9 +144,28 @@ describe('runVisitCommand return_to_queue placement', () => {
 			calledAt: null,
 			queuePosition: 4,
 			priorityNumber: null,
+			standbyNumber: null,
 			queueFront: false,
 			queueOrder: 13,
 		});
+	});
+
+	it('puts a returning standby guest back on the list, ignoring any placement', async () => {
+		queueResult([
+			{
+				status: 'called',
+				track: 'postmarket',
+				marketEventId: 'event-1',
+				queuePosition: null,
+				priorityNumber: null,
+			},
+		]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
+
+		expect(result.ok).toBe(true);
+		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null });
 	});
 
 	it('puts a returning guest at the front without renumbering anyone', async () => {
@@ -115,6 +182,7 @@ describe('runVisitCommand return_to_queue placement', () => {
 			calledAt: null,
 			queuePosition: 4,
 			priorityNumber: null,
+			standbyNumber: null,
 			queueFront: true,
 			queueOrder: 13,
 		});
@@ -227,6 +295,26 @@ describe('resolveOutstandingVisits', () => {
 				details: { cause: 'session_ended' },
 			},
 		]);
+	});
+
+	it('marks only the line’s called guests no-shows; a called standby guest is cancelled', async () => {
+		// Arrange
+		queueResult([{ id: 'visit-called' }]);
+		queueResult([{ id: 'standby-called' }]);
+
+		// Act
+		await resolveOutstandingVisits(db as never, 'event-1', 'close');
+
+		// Assert
+		const [noShows, cancelled] = db.update.mock.results.map(({ value }) =>
+			new PgDialect().sqlToQuery(
+				(value as { where: ReturnType<typeof vi.fn> }).where.mock.calls[0]![0],
+			),
+		);
+
+		expect(noShows?.sql).toContain('"track" = $');
+		expect(noShows?.params).toContain('lottery');
+		expect(cancelled?.sql).not.toContain('"track"');
 	});
 
 	it('cancels everyone, recording no no-shows, when a session is reset', async () => {

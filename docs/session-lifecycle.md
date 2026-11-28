@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=a383fb6649a2 -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=aa86f33d091a -->
 
 # Session lifecycle
 
@@ -133,7 +133,7 @@ stateDiagram-v2
     called --> served : serve
     called --> no_show : mark_no_show,<br/>or the session ends
     called --> waiting : return_to_queue
-    called --> cancelled : the session is reset
+    called --> cancelled : the session is reset,<br/>or a worker takes a standby<br/>guest off the list
 
     no_show --> waiting : return_to_queue
 
@@ -165,8 +165,9 @@ Who owns each transition matters:
   guest `called` when the market closes — by a worker or the auto-close timer — was asked to come
   and did not, and becomes a `no_show`, recorded with the cause `session_ended`. A guest still
   `waiting` or `registered` was never called, so the market ended their visit and it is
-  `cancelled`. A reset is a do-over rather than a market day, so it cancels everyone and leaves no
-  no-show on anyone's record; it is the only way a `called` visit becomes `cancelled`.
+  `cancelled`. A standby guest (the `postmarket` track) is never a no-show: standby promised
+  nothing, so a called standby guest is `cancelled` when the session ends. A reset is a do-over
+  rather than a market day, so it cancels everyone and leaves no no-show on anyone's record.
 - **A worker** owns `call`, `serve`, `mark_no_show`, and `return_to_queue`. These are the four
   the admin UI offers for the line, and it offers only the ones legal from a visit's current status.
   A premarket volunteer is `served` from the moment they join, with no number and outside the draw,
@@ -174,6 +175,10 @@ Who owns each transition matters:
   `served_at`. `VisitCommands` (`src/models/visit-commands.ts`) is that rule, shared by the server
   and the screens. A removed volunteer who then registers for the lottery enters the draw on the
   lottery's track, like anyone who cancelled.
+  A standby guest (the `postmarket` track, see [standby.md](standby.md)) moves through `waiting`,
+  `called` and `served` like the line, but is never marked a no-show: a worker takes them off the
+  list with `cancel` instead, from `waiting` or `called`. Calling one sends no text or push, and
+  `return_to_queue` puts them back on the list in their S order rather than in the line.
 
 Three of those also write a timestamp. `call` stamps `called_at`, which is what the queue screen
 counts up from to show how long a guest has been standing at the table — the signal for deciding a

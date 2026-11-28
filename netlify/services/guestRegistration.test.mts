@@ -1236,6 +1236,8 @@ describe('registerGuest for the premarket', () => {
 				status: 'served',
 				queuePosition: null,
 				priorityNumber: null,
+				// A standby guest checking in for the premarket gives up their S number.
+				standbyNumber: null,
 				queueFront: false,
 				queueOrder: null,
 				lotteryWeight: 1,
