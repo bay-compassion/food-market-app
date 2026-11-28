@@ -14,8 +14,14 @@ printed. It still has to be tried on the iMac and the LabelWriter before a marke
   `CheckInWindow`: the queue desk, and a 360-pixel panel for the station, whose page is laid out for
   a phone. **Window → Show Printing Station** (Shift-Command-P) folds the panel away and back.
 - **One sign-in.** The two pages share one session, so signing in at the queue desk signs the
-  station in too. If the station started before anyone had signed in, its panel stays folded while
-  it waits at the sign-in page, and it reloads once the queue desk comes back from signing in.
+  station in too. Only the queue desk ever goes to the sign-in page: two pages starting a sign-in at
+  once in one session trip over each other, and Auth0 answers one of them with its own error page.
+  If the station starts before anyone has signed in, it stays on its page with its panel folded, and
+  reloads once the queue desk comes back from signing in.
+- **A way out of the sign-in.** The window has no browser buttons, so while the queue desk is off
+  the app (on Auth0's pages) or its page failed to load, a bar across its top offers **Back** and
+  **Start Over**. Start Over opens the queue desk and the station afresh, as at launch, which starts
+  a new sign-in; reloading Auth0's error page would only show it again. The View menu has both too.
 - **The station keeps running.** Folded or not, and with the window out of sight, it isn't slowed
   down, and the app keeps macOS's App Nap from slowing it. Closing the window only hides it; quit
   the app to stop the station.

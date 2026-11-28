@@ -27,6 +27,21 @@ export class PrintStation {
 			this.onSite = new URL(url).origin === settings.site;
 			onChange();
 		});
+
+		// Only the queue desk signs in. Two views opening Auth0's sign-in at once, in the one session
+		// they share, trip over each other's sign-in, and Auth0 answers the loser with its own error
+		// page, which has no way back. So the station stays on its page, folded, and `afterSignIn`
+		// tries it again once the queue desk has signed in for both.
+		const stayOffSignIn = (event: Electron.Event<{ url: string }>) => {
+			if (URL.canParse(event.url) && new URL(event.url).origin === settings.signIn) {
+				event.preventDefault();
+				this.onSite = false;
+				onChange();
+			}
+		};
+
+		this.view.webContents.on('will-navigate', stayOffSignIn);
+		this.view.webContents.on('will-redirect', stayOffSignIn);
 	}
 
 	/** Starts the station, and answers its page's requests to print. Once per app. */
@@ -50,8 +65,13 @@ export class PrintStation {
 	 */
 	afterSignIn(): void {
 		if (!this.onSite) {
-			void this.view.webContents.loadURL(this.settings.printStation);
+			this.restart();
 		}
+	}
+
+	/** Opens the station's page afresh, as at launch. */
+	restart(): void {
+		void this.view.webContents.loadURL(this.settings.printStation);
 	}
 
 	private print(event: IpcMainInvokeEvent, label: unknown): Promise<void> {
