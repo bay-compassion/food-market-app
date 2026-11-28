@@ -13,6 +13,8 @@ const paths = [
 	'/api/guest-claim',
 	'/api/premarket-status',
 	'/api/premarket-registration',
+	'/api/standby-ticket',
+	'/api/standby-registration',
 ];
 /** Every path but the premarket status, which only reads. */
 const writePaths = paths.filter((path) => path !== '/api/premarket-status');
@@ -27,6 +29,8 @@ const invalidBodyErrors: Record<string, unknown> = {
 	'/api/premarket-registration': expect.objectContaining({
 		fields: expect.objectContaining({ firstName: 'required' }),
 	}),
+	'/api/standby-ticket': { error: 'Please provide a valid code.' },
+	'/api/standby-registration': { error: 'Please provide a valid standby ticket.' },
 };
 
 afterEach(() => {

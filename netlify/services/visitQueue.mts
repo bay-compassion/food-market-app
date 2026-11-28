@@ -380,9 +380,10 @@ async function resolveVisits(
 }
 
 /**
- * The next number in the session's standby series, `S1` for the first guest on the list. Locks the
- * session row first, as `placeInLine` does, so two workers adding at once can't both hand out the
- * same number; the partial unique index on `(market_event_id, standby_number)` backs that up.
+ * The next number in the session's standby series, `S1` for the first guest on the list — past any
+ * held by a ticket a guest pulled and hasn't filled in yet. Locks the session row first, as
+ * `placeInLine` does, so two workers adding at once can't both hand out the same number; the unique
+ * indexes on visits and tickets back that up.
  */
 export async function nextStandbyNumber(tx: Transaction, marketEventId: string) {
 	return tracedQuery('visit.next_standby_number', async () => {
@@ -393,7 +394,13 @@ export async function nextStandbyNumber(tx: Transaction, marketEventId: string) 
 			.for('update');
 
 		const [list] = await tx
-			.select({ highest: sql<number | null>`max(${visits.standbyNumber})` })
+			.select({
+				highest: sql<number | null>`greatest(
+					max(${visits.standbyNumber}),
+					(SELECT max(t.standby_number) FROM standby_tickets t
+						WHERE t.market_event_id = ${marketEventId})
+				)`,
+			})
 			.from(visits)
 			.where(eq(visits.marketEventId, marketEventId));
 

@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=510fa5a99a48 -->
+<!-- diagram-sources: db/schema.mts=4b546534851e -->
 
 # Database structure
 
@@ -22,6 +22,8 @@ erDiagram
     market_events ||--o{ registration_questions : "asks"
     market_events ||--o{ visits : "hosts"
     market_events ||--o{ household_service_entries : "counts anonymous shopping"
+    market_events ||--o{ standby_tickets : "holds standby places for"
+    visits |o--o| standby_tickets : "spent a"
     guests ||--o{ visits : "attends"
     visits ||--o| push_subscriptions : "notifies"
     guests ||--o| sms_subscriptions : "consents"
@@ -193,6 +195,16 @@ erDiagram
         timestamptz updated_at
         timestamptz voided_at "nullable; undone entries excluded from totals"
         integer version "optimistic correction guard"
+    }
+
+    standby_tickets {
+        uuid id PK
+        uuid market_event_id FK "cascade delete"
+        text token_hash "unique; SHA-256 of the ticket the guest's phone holds"
+        integer standby_number "the S number it holds; unique per session"
+        timestamptz issued_at "when the guest scanned the code"
+        timestamptz used_at "nullable; when their form spent it"
+        uuid visit_id FK "nullable; the visit it became"
     }
 
     push_subscriptions {

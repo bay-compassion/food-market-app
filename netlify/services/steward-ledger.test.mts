@@ -30,6 +30,7 @@ const visit = {
 	source: 'self',
 	queuePosition: null,
 	hasDrawEvent: true,
+	wasDrawn: false,
 	hasHistory: true,
 	lotteryWeight: 1,
 	suggestedLotteryWeight: 1,

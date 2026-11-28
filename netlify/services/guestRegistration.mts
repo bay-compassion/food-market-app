@@ -41,6 +41,7 @@ import {
 } from './guest-information.mjs';
 import { issueDeviceToken, issueVisitToken, normalizePhone } from './guestCredentials.mjs';
 import { locationById } from './marketLocation.mjs';
+import { recordTicketVisit, spendStandbyTicket } from './standby.mjs';
 import { recordVisitEvents } from './visit-events.mjs';
 import { nextStandbyNumber, placeInLine } from './visitQueue.mjs';
 
@@ -285,7 +286,22 @@ export type RegisterGuestOptions = {
 	 * a worker says `admission: 'premarket'` instead.
 	 */
 	premarket?: boolean;
+	/**
+	 * The standby ticket a guest pulled by scanning the session's code at the market. The caller has
+	 * resolved the session. The ticket is spent with the registration, and holds the guest's S
+	 * number. Only meaningful for a self submission: a worker says `admission: 'standby'` instead.
+	 */
+	standbyTicket?: string;
 };
+
+/**
+ * The statuses a guest's own visit can be moved onto standby from: those that are through without
+ * having shopped. A guest still in line keeps their place there, and their ticket is left unspent.
+ */
+const standbyConvertible: VisitStatus[] = ['not_placed', 'cancelled', 'no_show'];
+
+/** Thrown inside the registration's transaction when its standby ticket can't be spent. */
+class StandbyTicketRefused extends Error {}
 
 /**
  * The statuses a guest's own visit can be moved to the premarket from: every one but `served`. A
@@ -323,8 +339,11 @@ export async function registerGuest(
 			? submission.admission
 			: options.premarket
 				? 'premarket'
-				: 'lottery';
+				: options.standbyTicket
+					? 'standby'
+					: 'lottery';
 	const isPremarket = admission === 'premarket';
+	const standbyTicket = submission.source === 'self' ? options.standbyTicket : undefined;
 	// Only a self premarket registration reads the market's local date, so only it needs the location.
 	let premarketLocation: Awaited<ReturnType<typeof locationById>> | null = null;
 
@@ -375,7 +394,12 @@ export async function registerGuest(
 
 		const now = new Date();
 
-		if (isPremarket) {
+		if (standbyTicket) {
+			// The ticket was only issued once standby opened; the session has to still be running.
+			if (event.status !== 'service_started') {
+				return { ok: false, status: 409, error: 'Standby isn’t open.' };
+			}
+		} else if (isPremarket) {
 			premarketLocation = await locationById(db, event.locationId);
 
 			if (!new PremarketWindow(event, premarketLocation).isOpenAt(now)) {
@@ -387,19 +411,21 @@ export async function registerGuest(
 			return { ok: false, status: 409, error: 'Registration is not open.' };
 		}
 
-		// The session's questions are asked of guests entering the draw; a volunteer is not entering it.
-		const questions = isPremarket
-			? []
-			: await tracedQuery('registration.read_questions', () =>
-					db
-						.select({
-							id: registrationQuestions.id,
-							type: registrationQuestions.type,
-							required: registrationQuestions.required,
-						})
-						.from(registrationQuestions)
-						.where(eq(registrationQuestions.marketEventId, marketEventId)),
-				);
+		// The session's questions are asked of guests entering the draw; a volunteer, or a guest on
+		// standby, is not entering it.
+		const questions =
+			isPremarket || standbyTicket
+				? []
+				: await tracedQuery('registration.read_questions', () =>
+						db
+							.select({
+								id: registrationQuestions.id,
+								type: registrationQuestions.type,
+								required: registrationQuestions.required,
+							})
+							.from(registrationQuestions)
+							.where(eq(registrationQuestions.marketEventId, marketEventId)),
+					);
 
 		for (const question of questions) {
 			const answer = submission.answers[question.id];
@@ -476,9 +502,11 @@ export async function registerGuest(
 				const stillOpen =
 					submission.source === 'admin'
 						? canAdmitGuest(event?.status ?? 'ended', submission.admission)
-						: premarketLocation
-							? new PremarketWindow(event!, premarketLocation).isOpenAt(new Date())
-							: new SessionTimeline(event!).acceptsSelfRegistration(new Date());
+						: standbyTicket
+							? event?.status === 'service_started'
+							: premarketLocation
+								? new PremarketWindow(event!, premarketLocation).isOpenAt(new Date())
+								: new SessionTimeline(event!).acceptsSelfRegistration(new Date());
 
 				if (!event || !stillOpen) {
 					throw new Error('INVALID_REGISTRATION_STATE');
@@ -498,7 +526,26 @@ export async function registerGuest(
 						: addsByHand && admissionTakesStandbyNumber(submission.admission)
 							? (await nextStandbyNumber(tx, submission.marketEventId!)).toSource()
 							: null;
-				const number = slot ? QueueNumber.of(slot) : null;
+				// A guest scanning in onto standby spends their ticket for its S number — unless they are
+				// still in the line, which they keep, leaving the ticket for nobody.
+				const joinsStandby =
+					standbyTicket !== undefined &&
+					(existingVisit === null || standbyConvertible.includes(existingVisit.status));
+				const standbyNumber = joinsStandby
+					? await spendStandbyTicket(tx, standbyTicket, submission.marketEventId!)
+					: null;
+
+				if (joinsStandby && standbyNumber === null) {
+					throw new StandbyTicketRefused();
+				}
+
+				const standbySlot =
+					standbyNumber === null ? null : QueueNumber.standby(standbyNumber).toSource();
+				const number = slot
+					? QueueNumber.of(slot)
+					: standbySlot
+						? QueueNumber.of(standbySlot)
+						: null;
 				const household = {
 					answers: submission.answers,
 					ageRange: submission.ageRange,
@@ -511,71 +558,101 @@ export async function registerGuest(
 					isPremarket &&
 					existingVisit !== null &&
 					premarketConvertible.includes(existingVisit.status);
-				const [visit] = joinsPremarket
-					? await tx
-							.update(visits)
-							.set({
-								...household,
-								accessTokenHash: visitCredential.tokenHash,
-								track: 'premarket',
-								status: 'served',
-								servedAt: new Date(),
-								// The draw or a worker may have placed the guest in line; a premarket place takes
-								// no number and no place in it.
-								queuePosition: null,
-								priorityNumber: null,
-								// Only a standby visit may hold an S number, which the database checks.
-								standbyNumber: null,
-								queueFront: false,
-								queueOrder: null,
-								lotteryWeight: 1,
-							})
-							.where(eq(visits.id, existingVisit!.id))
-							.returning({ id: visits.id, status: visits.status })
-					: existingVisit
+				const [visit] =
+					joinsStandby && existingVisit
 						? await tx
 								.update(visits)
 								.set({
 									...household,
 									accessTokenHash: visitCredential.tokenHash,
-									// A live premarket visit stays one if its guest later enters the draw. A cancelled one —
-									// a volunteer a worker removed — enters the draw like anyone else, on the lottery's track.
-									...(existingVisit.status === 'cancelled'
-										? {
-												status: 'registered' as const,
-												track: 'lottery' as const,
-												standbyNumber: null,
-											}
-										: { status: existingVisit.status }),
+									track: 'postmarket',
+									status: 'waiting',
+									...standbySlot,
+									// Off the line for good: no place in it, and no call or service of its own yet.
+									queueFront: false,
+									queueOrder: null,
+									calledAt: null,
+									servedAt: null,
 								})
 								.where(eq(visits.id, existingVisit.id))
 								.returning({ id: visits.id, status: visits.status })
-						: await tx
-								.insert(visits)
-								.values({
-									guestId: guest.id,
-									marketEventId: submission.marketEventId!,
-									status: admissionVisitStatus(admission),
-									track: admissionTrack(admission),
-									servedAt: isPremarket ? new Date() : null,
-									...slot,
-									...household,
-									source: submission.source,
-									accessTokenHash: visitCredential.tokenHash,
-									isFirstVisit,
-									// Only a guest actually entering the draw can carry anything but the default odds.
-									lotteryWeight:
-										submission.source === 'admin' &&
-										admissionTakesLotteryWeight(submission.admission)
-											? submission.lotteryWeight
-											: 1,
-								})
-								.returning({ id: visits.id, status: visits.status });
+						: joinsPremarket
+							? await tx
+									.update(visits)
+									.set({
+										...household,
+										accessTokenHash: visitCredential.tokenHash,
+										track: 'premarket',
+										status: 'served',
+										servedAt: new Date(),
+										// The draw or a worker may have placed the guest in line; a premarket place takes
+										// no number and no place in it.
+										queuePosition: null,
+										priorityNumber: null,
+										// Only a standby visit may hold an S number, which the database checks.
+										standbyNumber: null,
+										queueFront: false,
+										queueOrder: null,
+										lotteryWeight: 1,
+									})
+									.where(eq(visits.id, existingVisit!.id))
+									.returning({ id: visits.id, status: visits.status })
+							: existingVisit
+								? await tx
+										.update(visits)
+										.set({
+											...household,
+											accessTokenHash: visitCredential.tokenHash,
+											// A live premarket visit stays one if its guest later enters the draw. A cancelled one —
+											// a volunteer a worker removed — enters the draw like anyone else, on the lottery's track.
+											...(existingVisit.status === 'cancelled'
+												? {
+														status: 'registered' as const,
+														track: 'lottery' as const,
+														standbyNumber: null,
+													}
+												: { status: existingVisit.status }),
+										})
+										.where(eq(visits.id, existingVisit.id))
+										.returning({ id: visits.id, status: visits.status })
+								: await tx
+										.insert(visits)
+										.values({
+											guestId: guest.id,
+											marketEventId: submission.marketEventId!,
+											status: admissionVisitStatus(admission),
+											track: admissionTrack(admission),
+											servedAt: isPremarket ? new Date() : null,
+											...slot,
+											...standbySlot,
+											...household,
+											source: submission.source,
+											accessTokenHash: visitCredential.tokenHash,
+											isFirstVisit,
+											// Only a guest actually entering the draw can carry anything but the default odds.
+											lotteryWeight:
+												submission.source === 'admin' &&
+												admissionTakesLotteryWeight(submission.admission)
+													? submission.lotteryWeight
+													: 1,
+										})
+										.returning({ id: visits.id, status: visits.status });
 
 				// A new visit starts its history; an existing one only gains an entry when a guest who
 				// had cancelled registers again, or checks in for the premarket. Updating the details of a
 				// live visit changes no status.
-				if (joinsPremarket) {
+				if (joinsStandby) {
+					await recordTicketVisit(tx, standbyTicket!, visit!.id);
+					await recordVisitEvents(tx, [
+						{
+							visitId: visit!.id,
+							kind: 'standby_joined',
+							toStatus: visit!.status,
+							actor,
+							details: number ? number.toDetails() : undefined,
+						},
+					]);
+				} else if (joinsPremarket) {
 					await recordVisitEvents(tx, [
 						{ visitId: visit!.id, kind: 'premarket_check_in', toStatus: 'served', actor },
 					]);
@@ -613,9 +690,17 @@ export async function registerGuest(
 					return null;
 				}
 
+				if (cause instanceof StandbyTicketRefused) {
+					return 'ticket_spent' as const;
+				}
+
 				throw cause;
 			}),
 	);
+
+	if (registration === 'ticket_spent') {
+		return { ok: false, status: 409, error: 'This standby ticket has already been used.' };
+	}
 
 	if (!registration) {
 		return {
@@ -626,7 +711,9 @@ export async function registerGuest(
 					? 'That way of adding a guest is not available while the session is in this state.'
 					: isPremarket
 						? 'The premarket is not open.'
-						: 'Registration is not open.',
+						: standbyTicket
+							? 'Standby isn’t open.'
+							: 'Registration is not open.',
 		};
 	}
 

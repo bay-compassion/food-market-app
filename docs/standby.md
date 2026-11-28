@@ -43,6 +43,9 @@ The **postmarket track**, **standby** and the **S series** are one feature, name
 - **The guest's phone says "You're on the standby list"** with their S number, since that's what
   the worker reads out, but no count of who's ahead and no "now calling" row. When the guest is
   admitted, the card changes on its own with no text or push. Guests listen for their name.
+- **Odds reflect lottery luck only.** The automatic odds, the steward's statistics and the lottery
+  report read whether the draw picked a guest from the draw's own record. Shopping some other way,
+  from standby or by a worker's later status correction, doesn't count as a win.
 - **A standby guest is never marked a no-show.** A guest who doesn't come up when called is
   cancelled. Guests can also cancel themselves.
 
@@ -85,14 +88,17 @@ Standby visits take none of the session's capacity, just as premarket visits don
    premarket check-in does). A phone that has registered before only confirms its household.
    Submitting uses up the ticket and creates the visit with its S number, in one transaction.
 4. If the guest already has a visit in this session, the server checks what it is:
-   - `not_placed` (wasn't drawn) or `cancelled`: it moves onto the postmarket track with the
+   - `not_placed` (wasn't drawn), `cancelled` (including a guest a worker took off standby, who
+     rejoins at the end of the list) or `no_show`: it moves onto the postmarket track with the
      ticket's S number, the way a premarket check-in takes over a guest's lottery entry. The move
      clears `queue_position`, `priority_number` and the line-order columns. Otherwise
      `QueueNumber.of` would still show the old main number, and reports would still count the
      visit as placed.
-   - `served`, including a premarket volunteer: refused.
-   - `no_show`: undecided; see Open Questions.
-   - still in line: it stays as it is, and the ticket isn't used up.
+   - still in line, or already `served` (including a premarket volunteer): it stays as it is, and
+     the ticket isn't used up. Their phone shows the card they already have.
+5. **The phone keeps the ticket it was given** and never asks for a second: every ticket takes the
+   next S number, so asking again on a reload would move the guest back down the list. A ticket
+   lasts until the session ends.
 
 **Allocating S numbers.** A ticket and a hand-added standby guest both need one, so the counter
 can't live in the ticket table alone. Both paths allocate the next number the way P numbers are
@@ -202,10 +208,6 @@ These are proposals that haven't been agreed yet:
 
 ## Open Questions
 
-- **How long a ticket lasts.** Until the session ends, or a fixed time like the old branch's 20
-  minutes? A guest who scans and fills in the form an hour later still holds their place.
-- **A no-show scanning in.** Should a guest who was called in the main line and never came be
-  allowed onto standby?
 - **The kiosk board.** Should called S numbers appear in Now Calling (for example as a pill, like
   P numbers), or nowhere? The design above shows them nowhere.
 - **Showing a short list of names on the kiosk**, the way airport gate screens do. This needs the
@@ -239,10 +241,11 @@ A stack of PRs. Each one ships and works on its own.
    QR code back on for standby, which PR 3 held back.
 5. **Tickets and the code.** The code, the iPad screen, the ticket table (a migration), `/standby`
    and the form, the server-side check that standby is open, and moving a `not_placed` visit onto
-   standby. The draw odds read the draw's own events, so moving a guest who wasn't drawn doesn't
-   change their odds. The steward's per-draw statistics, though, read the visit's current status
-   (`status !== 'not_placed'` in `steward-ledger.mts`), so a moved guest would count as placed:
-   read the draw's outcome from its event there instead.
+   standby. Moving a guest who wasn't drawn leaves their visit `waiting`, then `served`, like a
+   winner's, so everything that asks whether a guest was drawn reads the draw's own event instead
+   of the status: `DrawEntry.won` (which the automatic odds and the steward's per-draw statistics
+   use) and the lottery report's placement count. Ships as two PRs: 5a, the server, and 5b, the
+   iPad display and the `/standby` page.
 
 Before each migration PR, follow the checklist in [migrations.md](migrations.md). A person reviews
 and merges it.

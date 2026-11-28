@@ -8,6 +8,7 @@ TRUNCATE TABLE
 	public.push_subscriptions,
 	public.sms_subscriptions,
 	public.guest_claims,
+	public.standby_tickets,
 	public.visits,
 	public.registration_questions,
 	public.market_events,

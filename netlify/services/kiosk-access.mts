@@ -17,7 +17,8 @@ import type { KioskUnlockCode } from '../../src/services/kiosk-unlock.js';
  *
  * Neither check touches the database, so a passer-by trying codes — or a stale tab polling
  * without a token — never wakes it. That, more than secrecy, is the point: the board's data is
- * public queue numbers, but polling it keeps the backend running.
+ * public queue numbers (and, once standby opens, the standby code the iPads show), but polling it
+ * keeps the backend running.
  */
 export class KioskAccess {
 	static readonly codeDigits = 6;

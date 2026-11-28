@@ -7,6 +7,8 @@ export type DrawEntryVisit = {
 	queuePosition: number | null;
 	/** Whether its history records the draw drawing it or passing it over. */
 	hasDrawEvent: boolean;
+	/** Whether its history records the draw drawing it. */
+	wasDrawn: boolean;
 	/** Whether it has any history at all. Visits older than the history have none. */
 	hasHistory: boolean;
 };
@@ -19,6 +21,9 @@ export type DrawEntryVisit = {
  * than the history have none at all, so those count when the guest registered themselves and the
  * visit reached a state only the draw would normally put it in. `lotteryOutcomes` in
  * `netlify/services/reports.mts` applies this same definition in SQL.
+ *
+ * How it came out is read from the history too, where there is one: a guest the draw passed over
+ * can later join standby, which leaves their visit `waiting` and then `served` like a winner's.
  */
 export class DrawEntry {
 	private static readonly placedStatuses: readonly VisitStatus[] = [
@@ -47,6 +52,10 @@ export class DrawEntry {
 	}
 
 	get won(): boolean {
+		if (this.visit.hasDrawEvent) {
+			return this.visit.wasDrawn;
+		}
+
 		return this.entered && this.visit.status !== 'not_placed';
 	}
 }

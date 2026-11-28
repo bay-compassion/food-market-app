@@ -1846,6 +1846,7 @@ export const adminTranslations = {
 					registered: 'Registered',
 					added: 'Added by hand',
 					premarket_check_in: 'Checked in for the premarket',
+					standby_joined: 'Joined standby',
 					drawn: 'Drawn in the lottery',
 					not_drawn: 'Not drawn',
 					called: 'Called',

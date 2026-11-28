@@ -369,6 +369,11 @@ characters, e.g. `openssl rand -base64 32` — and nothing about either is store
 **To relock every display at once, for a lost tablet say, change `KIOSK_SECRET`** and redeploy.
 Without the variable, no code can be issued and no display unlocked.
 
+The same secret signs each session's standby code (see [standby.md](standby.md)), which the board
+carries once standby has opened. Changing it mid-session changes that code too: a guest holding a
+ticket keeps it, but a photo of the old code stops working, and the iPads show the new one on
+their next poll.
+
 Neither `/api/kiosk/unlock` nor `/api/kiosk/board` reads the database until the token checks out,
 so a stray browser polling without one, or someone guessing codes, never keeps the database awake.
 An unlocked display reads the board every 5 seconds from the moment registration opens until the

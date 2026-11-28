@@ -8,6 +8,7 @@ function entry(overrides: Partial<DrawEntryVisit>) {
 		source: 'self',
 		queuePosition: 4,
 		hasDrawEvent: true,
+		wasDrawn: true,
 		hasHistory: true,
 		...overrides,
 	});
@@ -25,7 +26,7 @@ describe('DrawEntry', () => {
 
 	it('counts a miss as an entry without a number', () => {
 		// Act
-		const result = entry({ status: 'not_placed', queuePosition: null });
+		const result = entry({ status: 'not_placed', queuePosition: null, wasDrawn: false });
 
 		// Assert
 		expect(result.entered).toBe(true);
@@ -71,5 +72,14 @@ describe('DrawEntry', () => {
 		// Assert
 		expect(result.entered).toBe(true);
 		expect(result.won).toBe(true);
+	});
+
+	it('counts a guest the draw passed over as a miss, even once they shopped from standby', () => {
+		// Act
+		const result = entry({ status: 'served', queuePosition: null, wasDrawn: false });
+
+		// Assert
+		expect(result.entered).toBe(true);
+		expect(result.won).toBe(false);
 	});
 });

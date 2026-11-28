@@ -199,6 +199,7 @@ describe('board handler', () => {
 			{ queuePosition: 3, priorityNumber: null },
 		]);
 		queueResult([{ count: 12 }]);
+		queueResult([{ status: 'service_started', called: true }]); // standby has opened
 		queueResult([{ queuePosition: 8 }]);
 
 		// Act
@@ -212,6 +213,7 @@ describe('board handler', () => {
 			called: [8, 7, 3],
 			calledPriority: [1],
 			waitingCount: 12,
+			standbyCode: expect.stringMatching(/^event-1\.[\w-]{22}$/),
 		});
 	});
 });

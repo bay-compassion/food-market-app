@@ -16,6 +16,11 @@ export type QueueBoardState = {
 	calledPriority: number[];
 	/** How many guests are still in line, not yet called. */
 	waitingCount: number;
+	/**
+	 * The code a guest scans on the iPads to join standby, once standby has opened; `null` before
+	 * then, and when the server has no secret to sign one. Optional for an older server.
+	 */
+	standbyCode?: string | null;
 };
 
 /** Which screen the room display shows. */
