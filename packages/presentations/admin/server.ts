@@ -125,6 +125,7 @@ export class AdminServer {
 			autoCloseAfterMinutes: timing.autoCloseAfterMinutes,
 			lotteryDrawsAt: timeline.lotteryDrawsAt?.toISOString() ?? null,
 			autoClosesAt: timeline.autoClosesAt?.toISOString() ?? null,
+			shoppingStartsAt: iso(timing.registrationOpensAt.valueOf() + guideShoppingOffsetMs),
 		};
 	}
 
@@ -251,7 +252,7 @@ export class AdminServer {
 			capacity: event.capacity,
 			lotteryDelayMinutes: event.lotteryDelayMinutes ?? null,
 			autoCloseAfterMinutes: event.autoCloseAfterMinutes ?? null,
-			shoppingStartsAt: iso(market.opensAt + guideShoppingOffsetMs),
+			shoppingStartsAt: event.shoppingStartsAt ?? null,
 			lotteryDrawsAt: event.lotteryDrawsAt ?? null,
 			autoClosesAt: event.autoClosesAt ?? null,
 			hasVisits: event.id === 'guide-session' && this.scene.guests.length > 0,

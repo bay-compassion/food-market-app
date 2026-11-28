@@ -34,6 +34,12 @@ const input = {
 };
 const pattern = { id: 'pattern-1', locationId: 'location-1', ...input };
 
+function insertedPattern() {
+	const values = db.insert.mock.results[0]!.value.values as ReturnType<typeof vi.fn>;
+
+	return values.mock.calls[0]![0];
+}
+
 afterEach(() => {
 	resetDbStub();
 	vi.clearAllMocks();
@@ -61,6 +67,7 @@ describe('savePattern', () => {
 
 		// Assert
 		expect(result).toEqual({ ok: true });
+		expect(insertedPattern()).toMatchObject({ shoppingStartsAt: '12:15' });
 		expect(createNextSession).toHaveBeenCalledOnce();
 		expect(scheduleSessionTimers).toHaveBeenCalledWith(next, ['registration_close', 'auto_close']);
 	});

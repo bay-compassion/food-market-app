@@ -48,14 +48,34 @@ export function draftFrom(
 	};
 }
 
-/** The template a draft describes, or null while a required field is empty or half-typed. */
+/** Minutes past midnight of a picker's wall-clock time. */
+function minuteOfDay(time: DateTime): number {
+	return time.hour * 60 + time.minute;
+}
+
+/**
+ * Whether the draft's shopping time comes no later than registration closes, which the server
+ * refuses. Unknowable, and so false, while either time is missing or half-typed.
+ */
+export function shoppingStartsTooEarly(draft: TemplateDraft): boolean {
+	const { registrationOpensAt: opens, shoppingStartsAt: shopping } = draft;
+
+	if (!opens?.isValid || !shopping?.isValid || draft.registrationDurationMinutes === '') {
+		return false;
+	}
+
+	return minuteOfDay(shopping) <= minuteOfDay(opens) + draft.registrationDurationMinutes;
+}
+
+/** The template a draft describes, or null while a field is empty, half-typed, or out of order. */
 export function templateFrom(draft: TemplateDraft): Omit<SessionTemplate, 'questions'> | null {
 	if (
 		!draft.registrationOpensAt?.isValid ||
 		draft.registrationDurationMinutes === '' ||
 		draft.capacity === '' ||
 		// Optional, but a half-typed time is not the same as none.
-		(draft.shoppingStartsAt !== null && !draft.shoppingStartsAt.isValid)
+		(draft.shoppingStartsAt !== null && !draft.shoppingStartsAt.isValid) ||
+		shoppingStartsTooEarly(draft)
 	) {
 		return null;
 	}
@@ -83,6 +103,7 @@ export function SessionTemplateFields({ draft, timeZone, onChange }: SessionTemp
 	const update = (patch: Partial<TemplateDraft>) => onChange({ ...draft, ...patch });
 	const stepLabels = { decrementLabel: t.scheduleDecrease, incrementLabel: t.scheduleIncrease };
 	const asCount = (value: number | string) => (value === '' ? '' : Number(value));
+	const shoppingTooEarly = shoppingStartsTooEarly(draft);
 
 	return (
 		<>
@@ -131,7 +152,12 @@ export function SessionTemplateFields({ draft, timeZone, onChange }: SessionTemp
 				onChange={(value) => update({ shoppingStartsAt: value })}
 				slotProps={{
 					field: { clearable: true },
-					textField: { helperText: t.scheduleShoppingStartsHelp },
+					textField: {
+						error: shoppingTooEarly,
+						helperText: shoppingTooEarly
+							? t.scheduleShoppingStartsTooEarly
+							: t.scheduleShoppingStartsHelp,
+					},
 				}}
 			/>
 			<NumberSpinner

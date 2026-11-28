@@ -19,8 +19,8 @@ import type { NotificationStore } from './notification.store.ts';
 export type OneOffBlock = 'active-session' | 'pending-session';
 
 /**
- * A new market's starting point: registration at 10:30 for an hour, drawn by hand, shopping at
- * 11:30, closing itself after 12 hours.
+ * A new market's starting point: registration at 10:30 for an hour, drawn by hand, closing itself
+ * after 12 hours. It publishes no shopping time until the market sets one.
  */
 const newTemplate: SessionTemplate = {
 	registrationOpensAt: '10:30',
@@ -28,7 +28,7 @@ const newTemplate: SessionTemplate = {
 	capacity: 50,
 	lotteryDelayMinutes: null,
 	autoCloseAfterMinutes: 720,
-	shoppingStartsAt: '11:30',
+	shoppingStartsAt: null,
 	questions: [],
 };
 

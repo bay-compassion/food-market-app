@@ -22,6 +22,7 @@ const pattern = {
 	capacity: 30,
 	lotteryDelayMinutes: null,
 	autoCloseAfterMinutes: 720,
+	shoppingStartsAt: '12:15:00',
 	createdAt: new Date(),
 	updatedAt: new Date(),
 };
@@ -78,6 +79,7 @@ describe('endSession', () => {
 			autoCloseAfterMinutes: 720,
 			registrationOpensAt: new Date('2026-10-03T17:30:00.000Z'),
 			registrationClosesAt: new Date('2026-10-03T18:30:00.000Z'),
+			shoppingStartsAt: new Date('2026-10-03T19:15:00.000Z'),
 		});
 	});
 

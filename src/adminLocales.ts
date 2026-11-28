@@ -462,6 +462,7 @@ export interface AdminTranslation {
 	scheduleAutoCloseHelp: string;
 	scheduleShoppingStarts: string;
 	scheduleShoppingStartsHelp: string;
+	scheduleShoppingStartsTooEarly: string;
 	scheduleLotteryManual: string;
 	scheduleAutoCloseNever: string;
 	scheduleClearLotteryDelay: string;
@@ -1329,6 +1330,7 @@ export const adminTranslations = {
 		scheduleShoppingStarts: 'Shopping starts',
 		scheduleShoppingStartsHelp:
 			'The time guests are told shopping begins. It doesn’t start anything; calling the first number does.',
+		scheduleShoppingStartsTooEarly: 'Shopping has to start after registration closes.',
 		scheduleLotteryManual: 'By hand',
 		scheduleAutoCloseNever: 'Never',
 		scheduleClearLotteryDelay: 'Clear the automatic lottery draw',

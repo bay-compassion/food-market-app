@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { describe, expect, it } from 'vitest';
 
-import { draftFrom, templateFrom } from './SessionTemplateFields';
+import { draftFrom, shoppingStartsTooEarly, templateFrom } from './SessionTemplateFields';
 
 const zone = 'America/Los_Angeles';
 const template = {
@@ -44,6 +44,18 @@ describe('session template drafts', () => {
 		const saved = templateFrom(draft);
 
 		// Assert
+		expect(saved).toBeNull();
+	});
+
+	it('refuses a shopping time that isn’t after registration closes', () => {
+		// Arrange
+		const draft = draftFrom({ ...template, shoppingStartsAt: '10:45' }, zone);
+
+		// Act
+		const saved = templateFrom(draft);
+
+		// Assert
+		expect(shoppingStartsTooEarly(draft)).toBe(true);
 		expect(saved).toBeNull();
 	});
 });

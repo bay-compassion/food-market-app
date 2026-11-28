@@ -182,6 +182,17 @@ describe('ScheduleStore', () => {
 		expect(input?.shoppingStartsAt).toBeNull();
 	});
 
+	it('starts a market with no pattern with no shopping time', async () => {
+		// Arrange
+		const store = await loadedStore(payload({ pattern: null }));
+
+		// Act
+		const defaults = store.templateDefaults;
+
+		// Assert
+		expect(defaults.shoppingStartsAt).toBeNull();
+	});
+
 	it('starts a new session from the pattern’s shopping time', async () => {
 		// Arrange
 		const store = await loadedStore(payload());
