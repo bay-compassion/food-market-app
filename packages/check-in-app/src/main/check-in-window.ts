@@ -3,6 +3,7 @@ import { app, BaseWindow } from 'electron';
 import type { PrintStation } from './print-station.ts';
 import type { QueueDesk } from './queue-desk.ts';
 import type { Settings } from './settings.ts';
+import { SignInBar, signInBarHeight } from './sign-in-bar.ts';
 
 /** The print station's panel, beside the queue desk. The station's page is laid out for a phone. */
 const panelWidth = 360;
@@ -20,12 +21,17 @@ export class CheckInWindow {
 	private readonly window: BaseWindow;
 	private readonly queueDesk: QueueDesk;
 	private readonly printStation: PrintStation;
+	private readonly signInBar: SignInBar;
 	private panelWanted = true;
 	private quitting = false;
 
 	constructor(settings: Settings, queueDesk: QueueDesk, printStation: PrintStation) {
 		this.queueDesk = queueDesk;
 		this.printStation = printStation;
+		this.signInBar = new SignInBar({
+			back: () => this.goBack(),
+			startOver: () => this.startOver(),
+		});
 		this.window = new BaseWindow({
 			title: settings.name,
 			width: 1440,
@@ -36,6 +42,7 @@ export class CheckInWindow {
 		});
 		this.window.contentView.addChildView(queueDesk.view);
 		this.window.contentView.addChildView(printStation.view);
+		this.window.contentView.addChildView(this.signInBar.view);
 		this.window.on('resize', () => this.layout());
 		this.window.on('close', (event) => {
 			if (!this.quitting) {
@@ -80,19 +87,45 @@ export class CheckInWindow {
 		this.window.focus();
 	}
 
+	/** Takes the queue desk back a page, for a volunteer stranded on Auth0's pages. */
+	goBack(): void {
+		if (this.queueDesk.canGoBack) {
+			this.queueDesk.goBack();
+		}
+	}
+
+	/**
+	 * Opens the queue desk and the station afresh, as at launch: the way out of a sign-in Auth0 has
+	 * given up on, which a reload would only show again.
+	 */
+	startOver(): void {
+		this.queueDesk.startOver();
+		this.printStation.restart();
+	}
+
 	/** Shows or folds away the print station's panel. */
 	setPanelWanted(wanted: boolean): void {
 		this.panelWanted = wanted;
 		this.layout();
 	}
 
-	/** Places the two views; call whenever the window's size or the panel's state changes. */
+	/**
+	 * Places the views; call whenever the window's size, the panel's state, or where the queue desk
+	 * is changes. The sign-in bar sits above the desk only while the desk is stranded off the app.
+	 */
 	layout(): void {
 		const { width, height } = this.window.getContentBounds();
 		const panel = this.isPanelOpen ? panelWidth : 0;
 		const deskWidth = panel ? width - panel - divider : width;
+		const bar = this.queueDesk.isStranded ? signInBarHeight : 0;
 
-		this.queueDesk.view.setBounds({ x: 0, y: 0, width: deskWidth, height });
+		if (bar) {
+			this.signInBar.update({ canGoBack: this.queueDesk.canGoBack });
+		}
+
+		this.signInBar.view.setBounds({ x: 0, y: 0, width: deskWidth, height: bar });
+		this.signInBar.view.setVisible(bar > 0);
+		this.queueDesk.view.setBounds({ x: 0, y: bar, width: deskWidth, height: height - bar });
 		this.printStation.view.setBounds({ x: width - panel, y: 0, width: panel, height });
 		this.printStation.view.setVisible(panel > 0);
 	}

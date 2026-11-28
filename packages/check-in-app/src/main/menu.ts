@@ -66,6 +66,16 @@ export class ApplicationMenu {
 			{
 				label: 'View',
 				submenu: [
+					{
+						label: 'Back',
+						accelerator: 'CmdOrCtrl+[',
+						click: () => this.window.goBack(),
+					},
+					{
+						label: 'Start Over',
+						click: () => this.window.startOver(),
+					},
+					{ type: 'separator' },
 					{ role: 'reload' },
 					{ role: 'forceReload' },
 					{ role: 'toggleDevTools' },

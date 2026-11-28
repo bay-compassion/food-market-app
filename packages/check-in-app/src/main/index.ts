@@ -34,7 +34,10 @@ function start(): void {
 
 	// The views need the app to be ready, and each needs the window to lay it out again.
 	const printStation = new PrintStation(settings, () => window.layout());
-	const queueDesk = new QueueDesk(settings, () => printStation.afterSignIn());
+	const queueDesk = new QueueDesk(settings, {
+		onSignedIn: () => printStation.afterSignIn(),
+		onChange: () => window.layout(),
+	});
 	const window = new CheckInWindow(settings, queueDesk, printStation);
 	const updates = new Updates(settings, () => menu.install());
 	const menu = new ApplicationMenu(settings, saved, window, updates);
