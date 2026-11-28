@@ -40,7 +40,8 @@ The **postmarket track**, **standby** and the **S series** are one feature, name
   nothing.
 - **The S series follows join order.** A worker calls "S7, Maria". The room is small, and guests
   gather near the queue desk at the end.
-- **The guest's phone says "You're on the standby list"** and shows no position. When the guest is
+- **The guest's phone says "You're on the standby list"** with their S number, since that's what
+  the worker reads out, but no count of who's ahead and no "now calling" row. When the guest is
   admitted, the card changes on its own with no text or push. Guests listen for their name.
 - **A standby guest is never marked a no-show.** A guest who doesn't come up when called is
   cancelled. Guests can also cancel themselves.
@@ -232,15 +233,16 @@ A stack of PRs. Each one ships and works on its own.
    - **Follow-up:** a ticket command that puts a guest the draw didn't place onto standby, keeping
      their visit. Adding them through the dialog today creates a second guest record, the known
      duplicate-guest problem with worker-added visits.
-4. **Tickets and the code.** The code, the iPad screen, the ticket table (a migration), `/standby`
+4. **The guest's standby card.** Built before scan-in, so a guest who joins lands on a finished
+   card. "You're on the standby list" with their S number, the card changing when the guest is
+   admitted, and cancelling from the phone. The copy goes into every language. It turns the phone
+   QR code back on for standby, which PR 3 held back.
+5. **Tickets and the code.** The code, the iPad screen, the ticket table (a migration), `/standby`
    and the form, the server-side check that standby is open, and moving a `not_placed` visit onto
-   standby. Check first whether the steward and draw ledgers read `not_placed` to raise a guest's
-   odds the next week: if they do, moving a guest who wasn't drawn onto standby would quietly drop
-   that.
-5. **The guest's standby card.** "You're on the standby list", the card changing when the guest is
-   admitted, and cancelling from the phone. The copy goes into every language.
-   Turn the phone QR code back on for standby (`admissionOffersPhoneClaim` and the claim on
-   standby tickets), which PR 3 holds back until this card exists.
+   standby. The draw odds read the draw's own events, so moving a guest who wasn't drawn doesn't
+   change their odds. The steward's per-draw statistics, though, read the visit's current status
+   (`status !== 'not_placed'` in `steward-ledger.mts`), so a moved guest would count as placed:
+   read the draw's outcome from its event there instead.
 
 Before each migration PR, follow the checklist in [migrations.md](migrations.md). A person reviews
 and merges it.

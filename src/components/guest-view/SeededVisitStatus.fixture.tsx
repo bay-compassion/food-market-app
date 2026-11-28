@@ -36,6 +36,8 @@ export type GuestVisitStatusArgs = {
 	visitStatus: VisitStatus;
 	queuePosition: number | null;
 	priorityNumber: number | null;
+	/** A standby guest's S number; set, it puts the visit on the postmarket track. */
+	standbyNumber: number | null;
 	aheadOfYou: number | null;
 	/** How long ago a called guest was called, in minutes; `null` for not called. */
 	calledMinutesAgo: number | null;
@@ -52,6 +54,7 @@ function seededStore({
 	visitStatus,
 	queuePosition,
 	priorityNumber,
+	standbyNumber,
 	aheadOfYou,
 	calledMinutesAgo,
 	nowCalling,
@@ -88,8 +91,10 @@ function seededStore({
 					id: 'story-visit',
 					marketEventId: 'story-market',
 					status: visitStatus,
+					track: standbyNumber === null ? 'lottery' : 'postmarket',
 					queuePosition,
 					priorityNumber,
+					standbyNumber,
 					aheadOfYou,
 					calledAt:
 						calledMinutesAgo === null
@@ -171,6 +176,7 @@ export const defaultVisitStatusArgs: GuestVisitStatusArgs = {
 	visitStatus: 'registered',
 	queuePosition: null,
 	priorityNumber: null,
+	standbyNumber: null,
 	aheadOfYou: null,
 	calledMinutesAgo: null,
 	nowCalling: null,

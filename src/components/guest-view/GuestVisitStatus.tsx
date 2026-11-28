@@ -5,6 +5,7 @@ import { useTranslation } from '../../stores/react/use-translation';
 import { CalledVisitStatus } from './visit-status/CalledVisitStatus';
 import { CompletedVisitStatus } from './visit-status/CompletedVisitStatus';
 import { RegisteredVisitStatus } from './visit-status/RegisteredVisitStatus';
+import { StandbyVisitStatus } from './visit-status/StandbyVisitStatus';
 import { WaitingVisitStatus } from './visit-status/WaitingVisitStatus';
 
 /** Chooses the focused presentation for the guest's current visit state. */
@@ -16,6 +17,10 @@ export const GuestVisitStatus = observer(function GuestVisitStatus() {
 
 	if (!status) {
 		return null;
+	}
+
+	if (visit.isStandby && (status === 'waiting' || status === 'called')) {
+		return <StandbyVisitStatus copy={copy} status={status} queueNumber={visit.queueNumber} />;
 	}
 
 	switch (status) {

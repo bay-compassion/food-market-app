@@ -1,7 +1,6 @@
 import styled from '@emotion/styled';
 import { observer } from 'mobx-react-lite';
 
-import { SaturdayProgress } from '../../models/saturday-progress';
 import { useRootStore } from '../../stores/react/store-context';
 import { CancelVisitAction } from './CancelVisitAction';
 import { GuestSaturdayTimeline } from './GuestSaturdayTimeline';
@@ -17,8 +16,7 @@ const State = styled.div`
 /** Current-visit card, then today's progress and the standalone cancel action, kept outside it. */
 export const GuestVisitState = observer(function GuestVisitState() {
 	const { visit } = useRootStore();
-	const status = visit.currentVisit?.status;
-	const progress = status ? SaturdayProgress.forVisit(status) : null;
+	const progress = visit.saturdayProgress;
 
 	return (
 		<State>

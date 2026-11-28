@@ -6,6 +6,7 @@ import type { SessionOverview } from '@/stores/market-session.store.ts';
 import { LateArrival } from '../models/late-arrival';
 import { NowCalling } from '../models/now-calling';
 import { QueueNumber } from '../models/queue-number';
+import { SaturdayProgress } from '../models/saturday-progress';
 import {
 	cancelCurrentVisit,
 	type CurrentVisit,
@@ -95,10 +96,27 @@ export class VisitStore {
 	}
 
 	/** How long a called guest has kept the check-in desk waiting, once they are called. */
+	/** Whether the guest is on the standby list, after the line, rather than in it. */
+	get isStandby(): boolean {
+		return this._currentVisit?.track === 'postmarket';
+	}
+
+	/**
+	 * Where the guest stands on today's timetable, or `null` when it has nothing to tell them. The
+	 * timetable is the lottery's path — register, draw, travel, shopping — which a standby guest,
+	 * already at the market and on a list of their own, has stepped off.
+	 */
+	get saturdayProgress(): SaturdayProgress | null {
+		const status = this._currentVisit?.status;
+
+		return status && !this.isStandby ? SaturdayProgress.forVisit(status) : null;
+	}
+
 	get lateArrival(): LateArrival | null {
 		const visit = this._currentVisit;
 
-		return visit?.status === 'called' && visit.calledAt
+		// A standby guest is admitted at the desk by name: there is no board to warm.
+		return visit?.status === 'called' && visit.calledAt && !this.isStandby
 			? new LateArrival(new Date(visit.calledAt))
 			: null;
 	}

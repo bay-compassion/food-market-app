@@ -36,9 +36,11 @@ async function authorizedVisit(request: Request) {
 			.select({
 				id: visits.id,
 				status: visits.status,
+				track: visits.track,
 				marketEventId: visits.marketEventId,
 				queuePosition: visits.queuePosition,
 				priorityNumber: visits.priorityNumber,
+				standbyNumber: visits.standbyNumber,
 				queueFront: visits.queueFront,
 				queueOrder: visits.queueOrder,
 				calledAt: visits.calledAt,
@@ -92,8 +94,9 @@ async function guestsAhead(visit: {
  * either series — a batch, and any `P` numbers — which a guest sees beside it. Sent while the guest
  * waits, and once they are called, so a guest who is late can see how far the line has moved on.
  */
-async function nowCalling(visit: { status: string; marketEventId: string }) {
-	if (visit.status !== 'waiting' && visit.status !== 'called') {
+async function nowCalling(visit: { status: string; track: string; marketEventId: string }) {
+	// A standby guest listens for their name; the line's numbers mean nothing to them.
+	if ((visit.status !== 'waiting' && visit.status !== 'called') || visit.track === 'postmarket') {
 		return { nowCalling: null, called: [], calledPriority: [] };
 	}
 

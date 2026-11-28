@@ -92,8 +92,7 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 				/>
 			) : null}
 			<a href={`tel:${guest.phone.replace(/[^\d+]/g, '')}`}>{t.phoneGuest}</a>
-			{/* A standby guest's phone has no standby card to show yet. */}
-			{showGuestClaim && guest.track !== 'postmarket' ? (
+			{showGuestClaim ? (
 				<button type="button" disabled={desk.isBusy} onClick={() => void showGuestClaim(guest)}>
 					{t.guestClaimShow}
 				</button>

@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/App.tsx=5339c3ce86fc, src/components/guest-view/GuestView.tsx=611b9876241f, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=003cdb0ce8ee, src/stores/registration.store.ts=417eca042ee3, src/services/guestVisitApi.ts=56530c15fc1c, src/stores/visit.store.ts=8cc51ad9c7e1, src/stores/root.store.ts=1f84973c8469, src/stores/market-session.store.ts=f8ec3dd0ab6a, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=b00996f17b27, netlify/services/guestRegistration.mts=18370593a4a5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=7c37df77700f, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=f78ee096ba7e, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/premarket/PremarketPage.tsx=3b8e51502a43, src/stores/premarket-entry.store.ts=b02fa43fa33f, netlify/routes/guests/premarket-registration.mts=63c736a40935, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=756295e3baf4, src/components/guest-view/GuestVisitState.tsx=be14343a3ac3, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
+<!-- diagram-sources: src/App.tsx=5339c3ce86fc, src/components/guest-view/GuestView.tsx=611b9876241f, src/components/routes/SignupView.tsx=1c07d6f24789, src/stores/guest.store.ts=003cdb0ce8ee, src/stores/registration.store.ts=417eca042ee3, src/services/guestVisitApi.ts=8d76fd02a564, src/stores/visit.store.ts=c6c2a801d493, src/stores/root.store.ts=1f84973c8469, src/stores/market-session.store.ts=f8ec3dd0ab6a, src/services/page-visibility-poller.ts=723686dcbca6, netlify/services/guest-information.mts=b00996f17b27, netlify/services/guestRegistration.mts=18370593a4a5, netlify/routes/guests/guest-information.mts=965fe205abe3, netlify/routes/guests/lottery-registration.mts=788f06510a30, netlify/routes/guests/visit.mts=f944335b9808, netlify/routes/notifications/sms-subscription.mts=ae75f502e673, src/components/routes/ClaimView.tsx=b1b51dad524d, src/components/guest-view/identity/GuestClaimCard.tsx=69e4db8bdc17, src/stores/guest-claim.store.ts=16719fddc94b, netlify/services/guest-claim.mts=f78ee096ba7e, netlify/routes/guests/guest-claim.mts=4f0c2115353d, src/components/premarket/PremarketPage.tsx=3b8e51502a43, src/stores/premarket-entry.store.ts=b02fa43fa33f, netlify/routes/guests/premarket-registration.mts=63c736a40935, src/components/guest-view/identity/GuestIdentityMenu.tsx=915e535d4cc2, src/components/ui/app-bar/AppBarMenu.tsx=756295e3baf4, src/components/guest-view/GuestVisitState.tsx=3df5aa71fcd2, src/components/guest-view/home-screen/HomeScreenOffer.tsx=c16731649706, src/components/hooks/use-home-screen-install-enabled.ts=2437fef0de4b, src/stores/pwa-install.store.ts=3d3a41ed7e7b, src/pwa/install-environment.ts=ad27bec13e49, src/pwa/home-screen-handoff.ts=ef2edb856809, public/manifest.webmanifest=28377ddc5af4 -->
 
 # Guest journey
 
@@ -159,6 +159,11 @@ flowchart TD
     called --> noShow([no_show])
     noShow -. "worker returns them<br/>to the queue" .-> waiting
 
+    standbyAdd([A worker puts a guest on standby<br/>at the queue desk, and they<br/>scan its phone QR code]) --> standby[standby card: their S number,<br/>no 'now calling' row and<br/>no Saturday timeline]
+    standby --> standbyAdmitted["Worker admits them: card switches<br/>to 'come to check-in now';<br/>no push or text"]
+    standbyAdmitted --> served
+    standbyAdmitted -. "worker takes them<br/>off standby" .-> cancelled
+
     status -. "guest taps cancel while<br/>registered or waiting" .-> confirmCancel{Confirm giving up<br/>their place?}
     confirmCancel -- no --> status
     confirmCancel -- yes --> cancelled[cancelled]
@@ -289,6 +294,12 @@ visit when Safari creates a separate storage area. Unsupported browsers keep the
   `RegistrationClock`: counting down to opening in the last ten minutes before it, "opening…" until
   the server agrees (asked again every second), "Registration is open" for ten seconds, then
   counting down to closing.
+- **A standby guest sees a card of their own** (`StandbyVisitStatus`, see
+  [standby.md](standby.md)). `/api/visit` sends their `track` and `standby_number`, and no "now
+  calling" numbers. The card shows their S number, which the worker reads out with their name, says
+  plainly that standby isn't guaranteed, and turns green with "come to check-in now" when they are
+  admitted. No text or push is sent, and the Saturday timeline is left off: it is the lottery's path,
+  which they have stepped off.
 - **A waiting guest is told where they stand.** `/api/visit` returns their number — `queue_position`,
   or `priority_number` (`P1`, …) for a guest a worker put at the front — and how many waiting guests
   are ahead of them, so they can judge whether to stay by the door or sit down. It also returns

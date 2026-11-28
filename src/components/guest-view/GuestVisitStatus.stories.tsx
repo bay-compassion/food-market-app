@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { translations } from '../../locales';
 import { EARLIER_CALLED_NUMBERS_FLAG_KEY } from '../hooks/use-earlier-called-numbers';
@@ -253,5 +253,49 @@ export const RightToLeft: Story = {
 
 		await expect(sheet.getByRole('heading', { name: copy.cancelConfirmation })).toBeInTheDocument();
 		await userEvent.click(sheet.getByRole('button', { name: copy.cancelDismiss }));
+	},
+};
+
+/**
+ * On the standby list: their S number, which the worker reads out with their name, and no count of
+ * who's ahead or "now calling" row. Standby promises nothing.
+ */
+export const StandbyWaiting: Story = {
+	args: { visitStatus: 'waiting', standbyNumber: 4 },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const copy = translations.en.guestView.visitStatus;
+
+		await expect(await canvas.findByText(copy.standby.waitingHeader)).toBeVisible();
+		await expect(canvas.getByText('S4')).toBeVisible();
+		await expect(canvas.queryByText(copy.waiting.nowCallingLabel)).toBeNull();
+	},
+};
+
+/** Admitted from standby: come to the desk now. No warming board; the desk is a few steps away. */
+export const StandbyCalled: Story = {
+	args: { visitStatus: 'called', standbyNumber: 4, calledMinutesAgo: 12 },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const copy = translations.en.guestView.visitStatus;
+
+		await expect(await canvas.findByText(copy.standby.calledHeader)).toBeVisible();
+		await expect(canvas.getByText(copy.standby.calledDetails)).toBeVisible();
+		await expect(canvas.queryByText(copy.called.headerLate)).toBeNull();
+	},
+};
+
+/** Leaving standby asks in standby's own words: the guest gives up their place on the list. */
+export const StandbyLeaving: Story = {
+	args: { visitStatus: 'waiting', standbyNumber: 4 },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const copy = translations.en.guestView.visitStatus;
+
+		await userEvent.click(await canvas.findByRole('button', { name: copy.cancelAction }));
+
+		const dialog = within(await within(document.body).findByRole('alertdialog'));
+
+		await expect(dialog.getByText(copy.standby.cancelConfirmation)).toBeVisible();
 	},
 };

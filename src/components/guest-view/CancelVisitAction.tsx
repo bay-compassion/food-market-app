@@ -32,7 +32,7 @@ export const CancelVisitAction = observer(function CancelVisitAction() {
 
 	async function cancelVisit() {
 		const confirmed = await confirmation.ask({
-			question: copy.cancelConfirmation,
+			question: visit.isStandby ? copy.standby.cancelConfirmation : copy.cancelConfirmation,
 			confirmLabel: copy.cancelConfirm,
 			dismissLabel: copy.cancelDismiss,
 			destructive: true,
