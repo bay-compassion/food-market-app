@@ -13,6 +13,7 @@ export function baseEvent(overrides: Partial<MarketEventRow> = {}): MarketEventR
 		registrationGraceEndsAt: null,
 		lotteryDelayMinutes: null,
 		autoCloseAfterMinutes: null,
+		shoppingStartsAt: null,
 		createdAt: new Date(),
 		...overrides,
 	};

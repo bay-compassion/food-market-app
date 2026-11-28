@@ -31,6 +31,8 @@ export type SessionEvent = {
 	lotteryDrawsAt?: string | null;
 	/** When the session ends on its own; null when it never does. */
 	autoClosesAt?: string | null;
+	/** When shopping is published to start; null when no time is set, absent from older responses. */
+	shoppingStartsAt?: string | null;
 };
 
 export type MarketEventTiming = Pick<SessionEvent, 'id' | 'status'> & {
@@ -163,6 +165,7 @@ export class MarketSessionStore {
 				: null,
 			lotteryDelayMinutes: event.lotteryDelayMinutes,
 			lotteryDrawsAt: event.lotteryDrawsAt ? new Date(event.lotteryDrawsAt) : null,
+			shoppingStartsAt: event.shoppingStartsAt ? new Date(event.shoppingStartsAt) : null,
 		});
 	}
 

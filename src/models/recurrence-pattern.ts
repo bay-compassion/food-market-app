@@ -12,6 +12,8 @@ export type RecurrencePatternRecord = {
 	capacity: number;
 	lotteryDelayMinutes: number | null;
 	autoCloseAfterMinutes: number | null;
+	/** When shopping starts on each occurrence, in the location's wall-clock time. */
+	shoppingStartsAt: LocalTime | null;
 };
 
 /** One date the pattern produces, with its registration window as instants. */
@@ -28,6 +30,7 @@ export type PatternSessionValues = Occurrence & {
 	capacity: number;
 	lotteryDelayMinutes: number | null;
 	autoCloseAfterMinutes: number | null;
+	shoppingStartsAt: Date | null;
 };
 
 const minuteMs = 60_000;
@@ -72,6 +75,11 @@ export class RecurrencePattern {
 
 	get autoCloseAfterMinutes(): number | null {
 		return this.record.autoCloseAfterMinutes;
+	}
+
+	/** `HH:mm`, trimmed of the seconds Postgres returns a `time` with. */
+	get shoppingStartsAt(): LocalTime | null {
+		return this.record.shoppingStartsAt?.slice(0, 5) ?? null;
 	}
 
 	/** The ISO weekday the pattern occurs on: 1 is Monday, 7 is Sunday. */
@@ -157,6 +165,9 @@ export class RecurrencePattern {
 			capacity: this.capacity,
 			lotteryDelayMinutes: this.lotteryDelayMinutes,
 			autoCloseAfterMinutes: this.autoCloseAfterMinutes,
+			shoppingStartsAt: this.shoppingStartsAt
+				? this.location.instantAt(date, this.shoppingStartsAt)
+				: null,
 		};
 	}
 }

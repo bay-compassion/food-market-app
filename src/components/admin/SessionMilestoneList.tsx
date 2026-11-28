@@ -92,8 +92,10 @@ export const SessionMilestoneList = observer(function SessionMilestoneList() {
 	const t = adminTranslations.en.today;
 	const { admin, session, translations } = useRootStore();
 
-	function name({ kind, state }: SessionMilestone) {
-		const started = kind === 'service_starts' && state === 'current';
+	function name({ kind, state, at }: SessionMilestone) {
+		// With a published time, the milestone reads ahead until the session is over: the draw puts the
+		// session at it long before shopping actually starts.
+		const started = kind === 'service_starts' && state === 'current' && at === null;
 
 		return state === 'done' || started ? t.milestones[kind].done : t.milestones[kind].next;
 	}

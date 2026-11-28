@@ -29,6 +29,7 @@ const input = {
 	capacity: 30,
 	lotteryDelayMinutes: null,
 	autoCloseAfterMinutes: 720,
+	shoppingStartsAt: '12:15',
 	questions: [{ prompt: 'Household size?', type: 'text' as const, required: true }],
 };
 const pattern = { id: 'pattern-1', locationId: 'location-1', ...input };

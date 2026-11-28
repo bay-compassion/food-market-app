@@ -19,6 +19,7 @@ const saturdays = new RecurrencePattern(
 		capacity: 30,
 		lotteryDelayMinutes: 15,
 		autoCloseAfterMinutes: 720,
+		shoppingStartsAt: '12:15:00',
 	},
 	concord,
 );

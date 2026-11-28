@@ -64,6 +64,8 @@ const json = (body: unknown, status = 200) =>
 	new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 const iso = (ms: number) => new Date(ms).toISOString();
+/** Shopping an hour after registration opens, as on the market's own Saturdays (10:30 to 11:30). */
+const guideShoppingOffsetMs = 60 * 60_000;
 
 /** A guide guest's record adds up to nothing beyond what the scene shows. */
 const noHistory: GuestRecordTotals = {
@@ -249,6 +251,7 @@ export class AdminServer {
 			capacity: event.capacity,
 			lotteryDelayMinutes: event.lotteryDelayMinutes ?? null,
 			autoCloseAfterMinutes: event.autoCloseAfterMinutes ?? null,
+			shoppingStartsAt: iso(market.opensAt + guideShoppingOffsetMs),
 			lotteryDrawsAt: event.lotteryDrawsAt ?? null,
 			autoClosesAt: event.autoClosesAt ?? null,
 			hasVisits: event.id === 'guide-session' && this.scene.guests.length > 0,
@@ -270,6 +273,7 @@ export class AdminServer {
 				capacity: market.capacity,
 				lotteryDelayMinutes: market.lotteryDelayMinutes,
 				autoCloseAfterMinutes: 720,
+				shoppingStartsAt: localTime(market.opensAt + guideShoppingOffsetMs),
 				questions: QUESTIONS,
 			},
 			sessions: [session],

@@ -64,6 +64,8 @@ export const recurrencePatterns = pgTable(
 		lotteryDelayMinutes: integer('lottery_delay_minutes'),
 		/** Minutes after registration opens the session ends on its own; null never does. */
 		autoCloseAfterMinutes: integer('auto_close_after_minutes').default(720),
+		/** When shopping starts, as local wall-clock time; null when the market has published none. */
+		shoppingStartsAt: time('shopping_starts_at'),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 	},
@@ -102,6 +104,8 @@ export const marketEvents = pgTable(
 		lotteryDelayMinutes: integer('lottery_delay_minutes'),
 		/** Minutes after registration opens the session ends on its own; null never does. */
 		autoCloseAfterMinutes: integer('auto_close_after_minutes'),
+		/** When shopping starts, for display only: it gates nothing. Null when none is published. */
+		shoppingStartsAt: timestamp('shopping_starts_at', { withTimezone: true }),
 		status: text('status').$type<SessionStatus>().notNull().default('scheduled'),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},

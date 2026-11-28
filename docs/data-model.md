@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=2c7f4dddc4b8 -->
+<!-- diagram-sources: db/schema.mts=7457a25dcff8 -->
 
 # Database structure
 
@@ -51,6 +51,7 @@ erDiagram
         integer capacity
         integer lottery_delay_minutes "nullable; null draws by hand"
         integer auto_close_after_minutes "nullable; null never closes automatically"
+        time shopping_starts_at "nullable; local wall-clock time shopping is published to start"
         timestamptz created_at
         timestamptz updated_at
     }
@@ -74,6 +75,7 @@ erDiagram
         integer capacity
         integer lottery_delay_minutes "nullable; minutes after the grace deadline"
         integer auto_close_after_minutes "nullable; minutes after registration opens"
+        timestamptz shopping_starts_at "nullable; published time only, gates nothing"
         text status "see session-lifecycle.md"
         timestamptz created_at
     }

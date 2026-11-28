@@ -22,6 +22,8 @@ export type SessionTemplate = {
 	lotteryDelayMinutes: number | null;
 	/** Minutes after registration opens the session ends on its own; null never does. */
 	autoCloseAfterMinutes: number | null;
+	/** When shopping starts, for display only; null when the market publishes no time. */
+	shoppingStartsAt: LocalTime | null;
 	questions: ScheduleQuestion[];
 };
 
@@ -45,6 +47,7 @@ export type ScheduleSessionPayload = {
 	capacity: number;
 	lotteryDelayMinutes: number | null;
 	autoCloseAfterMinutes: number | null;
+	shoppingStartsAt: string | null;
 	lotteryDrawsAt: string | null;
 	autoClosesAt: string | null;
 	/** Whether anyone has joined; a session with visits cannot be deleted or replaced. */

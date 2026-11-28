@@ -19,8 +19,8 @@ import type { NotificationStore } from './notification.store.ts';
 export type OneOffBlock = 'active-session' | 'pending-session';
 
 /**
- * A new market's starting point: registration at 10:30 for an hour, drawn by hand, closing itself
- * after 12 hours.
+ * A new market's starting point: registration at 10:30 for an hour, drawn by hand, shopping at
+ * 11:30, closing itself after 12 hours.
  */
 const newTemplate: SessionTemplate = {
 	registrationOpensAt: '10:30',
@@ -28,6 +28,7 @@ const newTemplate: SessionTemplate = {
 	capacity: 50,
 	lotteryDelayMinutes: null,
 	autoCloseAfterMinutes: 720,
+	shoppingStartsAt: '11:30',
 	questions: [],
 };
 
@@ -207,6 +208,7 @@ export class ScheduleStore {
 					capacity: pattern.capacity,
 					lotteryDelayMinutes: pattern.lotteryDelayMinutes,
 					autoCloseAfterMinutes: pattern.autoCloseAfterMinutes,
+					shoppingStartsAt: pattern.shoppingStartsAt,
 					questions: pattern.questions,
 				}
 			: newTemplate;
@@ -247,6 +249,9 @@ export class ScheduleStore {
 			capacity: session.capacity,
 			lotteryDelayMinutes: session.lotteryDelayMinutes,
 			autoCloseAfterMinutes: session.autoCloseAfterMinutes,
+			shoppingStartsAt: session.shoppingStartsAt
+				? location.formatWallClock(new Date(session.shoppingStartsAt))
+				: null,
 			questions: session.questions,
 		};
 	}

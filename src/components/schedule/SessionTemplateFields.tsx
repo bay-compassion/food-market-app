@@ -16,6 +16,8 @@ export type TemplateDraft = {
 	capacity: number | '';
 	lotteryDelayMinutes: number | '';
 	autoCloseAfterHours: number | '';
+	/** Null when the market publishes no shopping time. */
+	shoppingStartsAt: DateTime | null;
 };
 
 /**
@@ -24,20 +26,25 @@ export type TemplateDraft = {
  */
 const timeReferenceDate = '2000-01-01';
 
+/** A wall-clock `HH:mm` as the picker's value. */
+function pickerTime(time: string, timeZone: string): DateTime {
+	return DateTime.fromISO(`${timeReferenceDate}T${time.slice(0, 5)}`, { zone: timeZone });
+}
+
 export function draftFrom(
 	template: Omit<SessionTemplate, 'questions'>,
 	timeZone: string,
 ): TemplateDraft {
 	return {
-		registrationOpensAt: DateTime.fromISO(
-			`${timeReferenceDate}T${template.registrationOpensAt.slice(0, 5)}`,
-			{ zone: timeZone },
-		),
+		registrationOpensAt: pickerTime(template.registrationOpensAt, timeZone),
 		registrationDurationMinutes: template.registrationDurationMinutes,
 		capacity: template.capacity,
 		lotteryDelayMinutes: template.lotteryDelayMinutes ?? '',
 		autoCloseAfterHours:
 			template.autoCloseAfterMinutes === null ? '' : template.autoCloseAfterMinutes / 60,
+		shoppingStartsAt: template.shoppingStartsAt
+			? pickerTime(template.shoppingStartsAt, timeZone)
+			: null,
 	};
 }
 
@@ -46,7 +53,9 @@ export function templateFrom(draft: TemplateDraft): Omit<SessionTemplate, 'quest
 	if (
 		!draft.registrationOpensAt?.isValid ||
 		draft.registrationDurationMinutes === '' ||
-		draft.capacity === ''
+		draft.capacity === '' ||
+		// Optional, but a half-typed time is not the same as none.
+		(draft.shoppingStartsAt !== null && !draft.shoppingStartsAt.isValid)
 	) {
 		return null;
 	}
@@ -58,6 +67,7 @@ export function templateFrom(draft: TemplateDraft): Omit<SessionTemplate, 'quest
 		lotteryDelayMinutes: draft.lotteryDelayMinutes === '' ? null : draft.lotteryDelayMinutes,
 		autoCloseAfterMinutes:
 			draft.autoCloseAfterHours === '' ? null : Math.round(draft.autoCloseAfterHours * 60),
+		shoppingStartsAt: draft.shoppingStartsAt?.toFormat('HH:mm') ?? null,
 	};
 }
 
@@ -113,6 +123,16 @@ export function SessionTemplateFields({ draft, timeZone, onChange }: SessionTemp
 				max={120}
 				value={draft.lotteryDelayMinutes}
 				onChange={(value) => update({ lotteryDelayMinutes: asCount(value) })}
+			/>
+			<TimePicker
+				label={t.scheduleShoppingStarts}
+				timezone={timeZone}
+				value={draft.shoppingStartsAt}
+				onChange={(value) => update({ shoppingStartsAt: value })}
+				slotProps={{
+					field: { clearable: true },
+					textField: { helperText: t.scheduleShoppingStartsHelp },
+				}}
 			/>
 			<NumberSpinner
 				{...stepLabels}

@@ -70,4 +70,27 @@ describe('SessionMilestones', () => {
 		// Assert
 		expect(drawsAt).toBeNull();
 	});
+
+	it('gives shopping the session’s published time', () => {
+		// Arrange
+		const shoppingStartsAt = new Date('2026-10-31T18:30:00Z');
+		const session = milestones('service_started', { shoppingStartsAt });
+
+		// Act
+		const shopping = session.list.find((milestone) => milestone.kind === 'service_starts');
+
+		// Assert
+		expect(shopping?.at).toEqual(shoppingStartsAt);
+	});
+
+	it('gives shopping no time when the session publishes none', () => {
+		// Arrange
+		const session = milestones('service_started');
+
+		// Act
+		const shopping = session.list.find((milestone) => milestone.kind === 'service_starts');
+
+		// Assert
+		expect(shopping?.at).toBeNull();
+	});
 });
