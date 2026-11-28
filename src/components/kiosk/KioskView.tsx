@@ -14,6 +14,7 @@ import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
 import { KioskFullscreenButton } from './KioskFullscreenButton';
 import { KioskLockedScreen } from './KioskLockedScreen';
+import { StandbyCodeScreen } from './StandbyCodeScreen';
 
 const english = new KioskLanguage('en');
 
@@ -39,9 +40,15 @@ const rotation = LanguageRotation.evenly<Locale>(
  * touches the language saved for the app on this device. The layout stays left-to-right
  * throughout; Arabic and Farsi lines still run right-to-left within themselves (`dir="auto"`), but
  * the screen does not flip every few seconds.
+ *
+ * `?screen=standby` turns a display into a standby iPad: once standby opens it shows the session's
+ * standby code for guests at the market to scan, and before then says when it will. It unlocks
+ * and polls exactly as the room display does. See `docs/standby.md`.
  */
 export const KioskView = observer(function KioskView() {
-	const lang = useSearchParams()[0].get('lang');
+	const [searchParams] = useSearchParams();
+	const lang = searchParams.get('lang');
+	const isStandbyScreen = searchParams.get('screen') === 'standby';
 	const activeRotation = useMemo(
 		() => (isLanguage(lang) ? LanguageRotation.fixed<Locale>(lang) : rotation),
 		[lang],
@@ -85,9 +92,17 @@ export const KioskView = observer(function KioskView() {
 	} else if (!board) {
 		content = <KioskMessage message={(copy) => copy.reconnecting} />;
 	} else if (board.phase === 'not_started') {
-		content = <KioskMessage message={(copy) => copy.notStarted} />;
+		content = (
+			<KioskMessage message={(copy) => (isStandbyScreen ? copy.standbyNotOpen : copy.notStarted)} />
+		);
 	} else if (board.phase === 'ended') {
 		content = <KioskMessage message={(copy) => copy.ended} />;
+	} else if (isStandbyScreen) {
+		content = board.standbyCode ? (
+			<StandbyCodeScreen code={board.standbyCode} />
+		) : (
+			<KioskMessage message={(copy) => copy.standbyNotOpen} />
+		);
 	} else {
 		content = <KioskBoard board={board} reconnecting={store.isReconnecting} />;
 	}

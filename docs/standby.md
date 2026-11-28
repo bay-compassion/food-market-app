@@ -152,6 +152,15 @@ Session and monthly reports get standby subtotals next to the premarket and coun
 households and household members served from standby. The served totals already include them,
 since they're `served` visits.
 
+### Setting Up the iPads
+
+1. On each iPad, open `/kiosk?screen=standby` and unlock it with a code from the queue desk, as for
+   the room display (see [roles.md](roles.md)).
+2. Before the first number is called it says "Standby opens when shopping starts". Within a few
+   seconds of the first call it shows the session's QR code, and keeps showing it until the session
+   ends.
+3. A guest scans it with their own phone, which opens `/standby` and holds their place at once.
+
 ## Shopping Starts
 
 - `recurrence_patterns.shopping_starts_at` stores a local wall-clock `time`, like

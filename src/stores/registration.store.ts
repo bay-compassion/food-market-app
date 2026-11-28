@@ -255,12 +255,16 @@ export class RegistrationStore {
 		context: 'queue' | 'early',
 		marketEventId: string | null,
 		locale: string,
-		/** For a volunteer checking in for the premarket rather than entering the lottery. */
-		options: { premarket?: boolean } = {},
+		/**
+		 * For a volunteer checking in for the premarket, or a guest joining standby with the ticket
+		 * they pulled at the market, rather than entering the lottery.
+		 */
+		options: { premarket?: boolean; standbyTicket?: string } = {},
 	): Promise<RegistrationSubmitResult> {
 		// Signing up early collects no household, so counts left over on this device must not block it.
 		// Only a guest entering the lottery is asked how they describe themselves.
-		const raceEthnicity = context === 'queue' && !options.premarket ? this.raceEthnicity : null;
+		const entersLottery = !options.premarket && !options.standbyTicket;
+		const raceEthnicity = context === 'queue' && entersLottery ? this.raceEthnicity : null;
 
 		if (
 			!this.hasValidNames ||
@@ -297,6 +301,7 @@ export class RegistrationStore {
 				raceEthnicity: raceEthnicity?.answer,
 				source: 'self',
 				...(options.premarket ? { premarket: true } : {}),
+				...(options.standbyTicket ? { standbyTicket: options.standbyTicket } : {}),
 			});
 
 			// Kept only to prefill the lottery-entry fields next time — never sent as part of identity.

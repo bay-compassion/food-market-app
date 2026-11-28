@@ -48,6 +48,15 @@ export const router = createInstrumentedBrowserRouter([
 						}),
 					},
 					{
+						// A guest reaches this only by scanning the standby iPads' QR code at the market, so it
+						// is lazily loaded, out of the guest download, and linked from nowhere: standby is
+						// never advertised.
+						path: '/standby',
+						lazy: async () => ({
+							Component: (await import('./components/standby/StandbyPage')).StandbyPage,
+						}),
+					},
+					{
 						path: '/help',
 						lazy: async () => ({
 							Component: (await import('./components/help/HelpPage')).HelpPage,

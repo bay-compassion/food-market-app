@@ -407,6 +407,31 @@ export interface PremarketTranslations {
 	retry: string;
 }
 
+/**
+ * The `/standby` page, where the standby iPads' QR code lands at the market. Standby is never
+ * advertised: only a guest who scanned the code there sees this. See `docs/standby.md`.
+ */
+export interface StandbyTranslations {
+	title: string;
+	/** Labels the S number the guest's ticket holds while they fill in their details. */
+	heldLabel: string;
+	description: string;
+	/** Heads the household fields, in place of the lottery's own legend. */
+	householdLegend: string;
+	submit: string;
+	submitting: string;
+	checking: string;
+	notOpenHeading: string;
+	notOpenDetails: string;
+	closedHeading: string;
+	closedDetails: string;
+	invalidHeading: string;
+	invalidDetails: string;
+	unreachableHeading: string;
+	unreachableDetails: string;
+	retry: string;
+}
+
 export interface ClaimViewTranslations {
 	title: string;
 	description: string;
@@ -434,6 +459,12 @@ export interface KioskTranslations {
 	reconnecting: string;
 	/** The full screen button's accessible name; the button itself is only an icon. */
 	fullscreen: string;
+	/**
+	 * The standby iPads (`/kiosk?screen=standby`), shown only at the market: over the QR code once
+	 * standby opens, and in its place before then.
+	 */
+	standbyScan: string;
+	standbyNotOpen: string;
 }
 
 /** The `/help` page: how a market Saturday works, step by step, matching the printed flyer. */
@@ -591,6 +622,7 @@ export interface Translation {
 	signupView: SignupViewTranslations;
 	claimView: ClaimViewTranslations;
 	premarket: PremarketTranslations;
+	standby: StandbyTranslations;
 	kiosk: KioskTranslations;
 	help: HelpTranslations;
 	admin: string;
@@ -1113,6 +1145,25 @@ export const translations = {
 			unreachableDetails: 'Check your connection and try again.',
 			retry: 'Try Again',
 		},
+		standby: {
+			title: 'Standby List',
+			heldLabel: 'Your place on standby',
+			description:
+				'Your place on the list is held. Fill in your details to keep it. Standby isn’t guaranteed: if food is left after the line, guests are admitted in order.',
+			householdLegend: 'Your household',
+			submit: 'Join Standby',
+			submitting: 'Joining…',
+			checking: 'Holding your place…',
+			notOpenHeading: 'Standby Isn’t Open Yet',
+			notOpenDetails: 'It opens when shopping starts. Scan the code again then.',
+			closedHeading: 'Standby Has Closed',
+			closedDetails: 'Today’s market has ended. Thank you for coming.',
+			invalidHeading: 'This Code Didn’t Work',
+			invalidDetails: 'Scan the code on the iPad at the market again.',
+			unreachableHeading: 'Couldn’t Connect',
+			unreachableDetails: 'Check your connection and try again.',
+			retry: 'Try Again',
+		},
 		kiosk: {
 			nowCalling: 'Now calling',
 			nowCallingNone: 'No numbers called yet',
@@ -1124,6 +1175,8 @@ export const translations = {
 			loading: 'Loading the line…',
 			reconnecting: 'Reconnecting…',
 			fullscreen: 'Full Screen',
+			standbyScan: 'Standby: scan to join the list',
+			standbyNotOpen: 'Standby opens when shopping starts',
 		},
 		help: {
 			title: 'How it works',
@@ -1700,6 +1753,26 @@ export const translations = {
 			unreachableDetails: 'Revise su conexión e inténtelo de nuevo.',
 			retry: 'Intentar de nuevo',
 		},
+		standby: {
+			title: 'Lista de espera',
+			heldLabel: 'Su lugar en la lista de espera',
+			description:
+				'Su lugar en la lista está reservado. Complete sus datos para conservarlo. La lista de espera no está garantizada: si queda comida después de la fila, se atiende a las personas en orden.',
+			householdLegend: 'Su hogar',
+			submit: 'Unirse a la lista',
+			submitting: 'Uniéndose…',
+			checking: 'Reservando su lugar…',
+			notOpenHeading: 'La lista de espera aún no está abierta',
+			notOpenDetails:
+				'Se abre cuando empiezan las compras. Escanee el código otra vez en ese momento.',
+			closedHeading: 'La lista de espera se cerró',
+			closedDetails: 'El mercado de hoy terminó. Gracias por venir.',
+			invalidHeading: 'Este código no funcionó',
+			invalidDetails: 'Escanee otra vez el código del iPad en el mercado.',
+			unreachableHeading: 'No se pudo conectar',
+			unreachableDetails: 'Revise su conexión e inténtelo de nuevo.',
+			retry: 'Intentar de nuevo',
+		},
 		kiosk: {
 			nowCalling: 'Llamando ahora',
 			nowCallingNone: 'Aún no se ha llamado ningún número',
@@ -1711,6 +1784,8 @@ export const translations = {
 			loading: 'Cargando la fila…',
 			reconnecting: 'Reconectando…',
 			fullscreen: 'Pantalla completa',
+			standbyScan: 'Lista de espera: escanee para unirse',
+			standbyNotOpen: 'La lista de espera se abre cuando empiezan las compras',
 		},
 		help: {
 			title: 'Cómo funciona',
@@ -2282,6 +2357,25 @@ export const translations = {
 			unreachableDetails: 'اتصال خود را بررسی کنید و دوباره امتحان کنید.',
 			retry: 'دوباره امتحان کنید',
 		},
+		standby: {
+			title: 'فهرست انتظار',
+			heldLabel: 'جای شما در فهرست انتظار',
+			description:
+				'جای شما در فهرست نگه داشته شده است. برای حفظ آن، اطلاعات خود را وارد کنید. فهرست انتظار تضمینی نیست: اگر پس از صف غذا باقی بماند، افراد به ترتیب پذیرفته می‌شوند.',
+			householdLegend: 'خانوار شما',
+			submit: 'پیوستن به فهرست انتظار',
+			submitting: 'در حال پیوستن…',
+			checking: 'در حال نگه داشتن جای شما…',
+			notOpenHeading: 'فهرست انتظار هنوز باز نشده است',
+			notOpenDetails: 'وقتی خرید شروع شود باز می‌شود. آن موقع دوباره کد را اسکن کنید.',
+			closedHeading: 'فهرست انتظار بسته شده است',
+			closedDetails: 'بازار امروز تمام شده است. از آمدنتان سپاسگزاریم.',
+			invalidHeading: 'این کد کار نکرد',
+			invalidDetails: 'کد روی آی‌پد در بازار را دوباره اسکن کنید.',
+			unreachableHeading: 'اتصال برقرار نشد',
+			unreachableDetails: 'اتصال خود را بررسی کنید و دوباره امتحان کنید.',
+			retry: 'دوباره امتحان کنید',
+		},
 		kiosk: {
 			nowCalling: 'در حال فراخوانی',
 			nowCallingNone: 'هنوز شماره‌ای فراخوانده نشده است',
@@ -2293,6 +2387,8 @@ export const translations = {
 			loading: 'در حال بارگیری صف…',
 			reconnecting: 'در حال اتصال دوباره…',
 			fullscreen: 'تمام‌صفحه',
+			standbyScan: 'فهرست انتظار: برای پیوستن اسکن کنید',
+			standbyNotOpen: 'فهرست انتظار وقتی خرید شروع شود باز می‌شود',
 		},
 		help: {
 			title: 'چطور کار می‌کند',
@@ -2873,6 +2969,26 @@ export const translations = {
 			unreachableDetails: 'Suriin ang iyong koneksyon at subukang muli.',
 			retry: 'Subukang Muli',
 		},
+		standby: {
+			title: 'Standby List',
+			heldLabel: 'Ang inyong puwesto sa standby',
+			description:
+				'Nakareserba na ang inyong puwesto sa listahan. Punan ang inyong detalye para mapanatili ito. Hindi garantisado ang standby: kung may matitirang pagkain pagkatapos ng pila, papapasukin ang mga tao nang sunud-sunod.',
+			householdLegend: 'Ang iyong sambahayan',
+			submit: 'Sumali sa Standby',
+			submitting: 'Sumasali…',
+			checking: 'Inirereserba ang inyong puwesto…',
+			notOpenHeading: 'Hindi pa bukas ang standby',
+			notOpenDetails:
+				'Magbubukas ito kapag nagsimula na ang pamimili. I-scan muli ang code pagdating ng oras na iyon.',
+			closedHeading: 'Sarado na ang standby',
+			closedDetails: 'Tapos na ang market ngayong araw. Salamat sa pagpunta.',
+			invalidHeading: 'Hindi gumana ang code na ito',
+			invalidDetails: 'I-scan muli ang code sa iPad sa market.',
+			unreachableHeading: 'Hindi Makakonekta',
+			unreachableDetails: 'Suriin ang iyong koneksyon at subukang muli.',
+			retry: 'Subukang Muli',
+		},
 		kiosk: {
 			nowCalling: 'Tinatawag ngayon',
 			nowCallingNone: 'Wala pang tinatawag na numero',
@@ -2884,6 +3000,8 @@ export const translations = {
 			loading: 'Nilo-load ang pila…',
 			reconnecting: 'Kumokonekta muli…',
 			fullscreen: 'Buong screen',
+			standbyScan: 'Standby: i-scan para sumali sa listahan',
+			standbyNotOpen: 'Magbubukas ang standby kapag nagsimula na ang pamimili',
 		},
 		help: {
 			title: 'Paano ito gumagana',
@@ -3453,6 +3571,25 @@ export const translations = {
 			unreachableDetails: 'Hãy kiểm tra kết nối và thử lại.',
 			retry: 'Thử lại',
 		},
+		standby: {
+			title: 'Danh sách chờ',
+			heldLabel: 'Vị trí của bạn trong danh sách chờ',
+			description:
+				'Vị trí của bạn trong danh sách đã được giữ. Hãy điền thông tin để giữ vị trí này. Danh sách chờ không được đảm bảo: nếu còn thực phẩm sau khi hết hàng, mọi người sẽ được vào theo thứ tự.',
+			householdLegend: 'Hộ gia đình của bạn',
+			submit: 'Tham gia danh sách chờ',
+			submitting: 'Đang tham gia…',
+			checking: 'Đang giữ vị trí của bạn…',
+			notOpenHeading: 'Danh sách chờ chưa mở',
+			notOpenDetails: 'Danh sách sẽ mở khi bắt đầu mua sắm. Hãy quét mã lại lúc đó.',
+			closedHeading: 'Danh sách chờ đã đóng',
+			closedDetails: 'Phiên chợ hôm nay đã kết thúc. Cảm ơn bạn đã đến.',
+			invalidHeading: 'Mã này không dùng được',
+			invalidDetails: 'Hãy quét lại mã trên iPad tại chợ.',
+			unreachableHeading: 'Không kết nối được',
+			unreachableDetails: 'Hãy kiểm tra kết nối và thử lại.',
+			retry: 'Thử lại',
+		},
 		kiosk: {
 			nowCalling: 'Đang gọi số',
 			nowCallingNone: 'Chưa gọi số nào',
@@ -3464,6 +3601,8 @@ export const translations = {
 			loading: 'Đang tải hàng chờ…',
 			reconnecting: 'Đang kết nối lại…',
 			fullscreen: 'Toàn màn hình',
+			standbyScan: 'Danh sách chờ: quét mã để tham gia',
+			standbyNotOpen: 'Danh sách chờ sẽ mở khi bắt đầu mua sắm',
 		},
 		help: {
 			title: 'Cách thức hoạt động',
@@ -4011,6 +4150,25 @@ export const translations = {
 			unreachableDetails: '请检查网络连接后重试。',
 			retry: '重试',
 		},
+		standby: {
+			title: '候补名单',
+			heldLabel: '您的候补位置',
+			description:
+				'您在名单上的位置已保留。请填写您的信息以保留这个位置。候补并不保证：如果排队结束后还有食物，会按顺序让大家进入。',
+			householdLegend: '您的家庭',
+			submit: '加入候补',
+			submitting: '正在加入…',
+			checking: '正在保留您的位置…',
+			notOpenHeading: '候补名单尚未开放',
+			notOpenDetails: '开始购物时开放。届时请再次扫描二维码。',
+			closedHeading: '候补名单已关闭',
+			closedDetails: '今天的市场已经结束。感谢您的光临。',
+			invalidHeading: '此二维码无效',
+			invalidDetails: '请在市场再次扫描iPad上的二维码。',
+			unreachableHeading: '无法连接',
+			unreachableDetails: '请检查网络连接后重试。',
+			retry: '重试',
+		},
 		kiosk: {
 			nowCalling: '正在叫号',
 			nowCallingNone: '尚未叫号',
@@ -4022,6 +4180,8 @@ export const translations = {
 			loading: '正在加载队列…',
 			reconnecting: '正在重新连接…',
 			fullscreen: '全屏',
+			standbyScan: '候补名单：扫码加入',
+			standbyNotOpen: '开始购物时候补名单开放',
 		},
 		help: {
 			title: '使用说明',
@@ -4580,6 +4740,25 @@ export const translations = {
 			unreachableDetails: 'تحقق من اتصالك وحاول مرة أخرى.',
 			retry: 'حاول مرة أخرى',
 		},
+		standby: {
+			title: 'قائمة الانتظار',
+			heldLabel: 'مكانك على قائمة الانتظار',
+			description:
+				'تم حجز مكانك على القائمة. املأ بياناتك للاحتفاظ به. قائمة الانتظار غير مضمونة: إذا تبقّى طعام بعد انتهاء الطابور، يدخل الناس بالترتيب.',
+			householdLegend: 'أسرتك',
+			submit: 'الانضمام إلى قائمة الانتظار',
+			submitting: 'جارٍ الانضمام…',
+			checking: 'جارٍ حجز مكانك…',
+			notOpenHeading: 'قائمة الانتظار غير مفتوحة بعد',
+			notOpenDetails: 'تُفتح عند بدء التسوق. امسح الرمز مرة أخرى حينها.',
+			closedHeading: 'أُغلقت قائمة الانتظار',
+			closedDetails: 'انتهى سوق اليوم. شكرًا لحضورك.',
+			invalidHeading: 'لم يعمل هذا الرمز',
+			invalidDetails: 'امسح الرمز على جهاز iPad في السوق مرة أخرى.',
+			unreachableHeading: 'تعذّر الاتصال',
+			unreachableDetails: 'تحقق من اتصالك وحاول مرة أخرى.',
+			retry: 'حاول مرة أخرى',
+		},
 		kiosk: {
 			nowCalling: 'الرقم الحالي',
 			nowCallingNone: 'لم يتم النداء على أي رقم بعد',
@@ -4591,6 +4770,8 @@ export const translations = {
 			loading: 'جارٍ تحميل الطابور…',
 			reconnecting: 'جارٍ إعادة الاتصال…',
 			fullscreen: 'ملء الشاشة',
+			standbyScan: 'قائمة الانتظار: امسح الرمز للانضمام',
+			standbyNotOpen: 'تُفتح قائمة الانتظار عند بدء التسوق',
 		},
 		help: {
 			title: 'كيف يعمل',
@@ -5170,6 +5351,26 @@ export const translations = {
 			unreachableDetails: 'Vérifiez votre connexion et réessayez.',
 			retry: 'Réessayer',
 		},
+		standby: {
+			title: 'Liste d’attente',
+			heldLabel: 'Votre place sur la liste d’attente',
+			description:
+				'Votre place sur la liste est réservée. Remplissez vos informations pour la garder. La liste d’attente n’est pas garantie : s’il reste de la nourriture après la file, les personnes passent dans l’ordre.',
+			householdLegend: 'Votre foyer',
+			submit: 'Rejoindre la liste',
+			submitting: 'Inscription…',
+			checking: 'Réservation de votre place…',
+			notOpenHeading: 'La liste d’attente n’est pas encore ouverte',
+			notOpenDetails:
+				'Elle ouvre quand les courses commencent. Scannez à nouveau le code à ce moment-là.',
+			closedHeading: 'La liste d’attente est fermée',
+			closedDetails: 'Le marché d’aujourd’hui est terminé. Merci d’être venu.',
+			invalidHeading: 'Ce code n’a pas fonctionné',
+			invalidDetails: 'Scannez à nouveau le code sur l’iPad au marché.',
+			unreachableHeading: 'Connexion impossible',
+			unreachableDetails: 'Vérifiez votre connexion et réessayez.',
+			retry: 'Réessayer',
+		},
 		kiosk: {
 			nowCalling: 'Numéro appelé',
 			nowCallingNone: 'Aucun numéro appelé pour l’instant',
@@ -5181,6 +5382,8 @@ export const translations = {
 			loading: 'Chargement de la file…',
 			reconnecting: 'Reconnexion…',
 			fullscreen: 'Plein écran',
+			standbyScan: 'Liste d’attente : scannez pour vous inscrire',
+			standbyNotOpen: 'La liste d’attente ouvre quand les courses commencent',
 		},
 		help: {
 			title: 'Comment ça marche',
@@ -5755,6 +5958,26 @@ export const translations = {
 			unreachableDetails: 'Verifique sua conexão e tente de novo.',
 			retry: 'Tentar de novo',
 		},
+		standby: {
+			title: 'Lista de espera',
+			heldLabel: 'Seu lugar na lista de espera',
+			description:
+				'Seu lugar na lista está reservado. Preencha seus dados para mantê-lo. A lista de espera não é garantida: se sobrar comida depois da fila, as pessoas entram em ordem.',
+			householdLegend: 'Sua família',
+			submit: 'Entrar na lista',
+			submitting: 'Entrando…',
+			checking: 'Reservando seu lugar…',
+			notOpenHeading: 'A lista de espera ainda não abriu',
+			notOpenDetails:
+				'Ela abre quando as compras começam. Escaneie o código de novo nesse momento.',
+			closedHeading: 'A lista de espera fechou',
+			closedDetails: 'O mercado de hoje terminou. Obrigado por vir.',
+			invalidHeading: 'Este código não funcionou',
+			invalidDetails: 'Escaneie de novo o código no iPad do mercado.',
+			unreachableHeading: 'Não foi possível conectar',
+			unreachableDetails: 'Verifique sua conexão e tente de novo.',
+			retry: 'Tentar de novo',
+		},
 		kiosk: {
 			nowCalling: 'Chamando agora',
 			nowCallingNone: 'Nenhum número chamado ainda',
@@ -5766,6 +5989,8 @@ export const translations = {
 			loading: 'Carregando a fila…',
 			reconnecting: 'Reconectando…',
 			fullscreen: 'Tela cheia',
+			standbyScan: 'Lista de espera: escaneie para entrar',
+			standbyNotOpen: 'A lista de espera abre quando as compras começam',
 		},
 		help: {
 			title: 'Como funciona',
@@ -6336,6 +6561,25 @@ export const translations = {
 			unreachableDetails: 'Проверьте подключение и попробуйте ещё раз.',
 			retry: 'Попробовать снова',
 		},
+		standby: {
+			title: 'Лист ожидания',
+			heldLabel: 'Ваше место в листе ожидания',
+			description:
+				'Ваше место в списке закреплено. Заполните свои данные, чтобы сохранить его. Лист ожидания не гарантирован: если после очереди останутся продукты, людей пропускают по порядку.',
+			householdLegend: 'Ваша семья',
+			submit: 'Встать в лист ожидания',
+			submitting: 'Записываем…',
+			checking: 'Закрепляем ваше место…',
+			notOpenHeading: 'Лист ожидания ещё не открыт',
+			notOpenDetails: 'Он откроется, когда начнутся покупки. Тогда отсканируйте код ещё раз.',
+			closedHeading: 'Лист ожидания закрыт',
+			closedDetails: 'Сегодняшний рынок закончился. Спасибо, что пришли.',
+			invalidHeading: 'Этот код не сработал',
+			invalidDetails: 'Отсканируйте код на iPad на рынке ещё раз.',
+			unreachableHeading: 'Не удалось подключиться',
+			unreachableDetails: 'Проверьте подключение и попробуйте ещё раз.',
+			retry: 'Попробовать снова',
+		},
 		kiosk: {
 			nowCalling: 'Сейчас вызывают',
 			nowCallingNone: 'Номера ещё не вызывались',
@@ -6347,6 +6591,8 @@ export const translations = {
 			loading: 'Загрузка очереди…',
 			reconnecting: 'Повторное подключение…',
 			fullscreen: 'Полный экран',
+			standbyScan: 'Лист ожидания: отсканируйте, чтобы записаться',
+			standbyNotOpen: 'Лист ожидания откроется, когда начнутся покупки',
 		},
 		help: {
 			title: 'Как это работает',

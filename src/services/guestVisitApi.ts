@@ -49,6 +49,8 @@ export type GuestRegistrationInput = Omit<GuestFormState, 'pronunciation'> &
 		source: 'self';
 		/** A volunteer checking in for the premarket rather than entering the lottery. The server chooses the session. */
 		premarket?: boolean;
+		/** The standby ticket a guest pulled at the market: they join the standby list instead. */
+		standbyTicket?: string;
 	};
 
 export type GuestRegistrationPayload = GuestRegistrationInput & { deviceToken: string | null };
@@ -69,13 +71,19 @@ export type GuestRegistrationResult = {
 export async function submitGuestRegistration(
 	payload: GuestRegistrationPayload,
 ): Promise<GuestRegistrationResult> {
-	const { premarket, ...registration } = payload;
+	const { premarket, standbyTicket, ...registration } = payload;
 	const response = await fetch(
-		premarket ? '/api/premarket-registration' : '/api/lottery-registration',
+		standbyTicket
+			? '/api/standby-registration'
+			: premarket
+				? '/api/premarket-registration'
+				: '/api/lottery-registration',
 		{
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(registration),
+			body: JSON.stringify(
+				standbyTicket ? { ...registration, ticket: standbyTicket } : registration,
+			),
 		},
 	);
 
