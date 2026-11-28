@@ -11,6 +11,7 @@ import { KioskLanguage, KioskLanguagesProvider } from './kiosk-languages';
 import { KioskBoard } from './KioskBoard';
 import { KioskFrame, KioskMessage } from './KioskFrame';
 import { KioskLockedScreen } from './KioskLockedScreen';
+import { StandbyCodeScreen } from './StandbyCodeScreen';
 
 type Args = QueueBoardState & { reconnecting: boolean; secondary: Locale };
 
@@ -253,5 +254,39 @@ export const EnglishOnly: Story = {
 		await expect(canvasElement.querySelector('[lang="es"]')).toBeNull();
 		await expect(canvasElement.querySelector('ol')).toBeNull();
 		await expect(within(canvasElement).getByText(translations.en.kiosk.nowCalling)).toBeVisible();
+	},
+};
+
+/**
+ * A standby iPad (`/kiosk?screen=standby`) once standby has opened: the session's code, for guests
+ * at the market to scan with their own phones. See `docs/standby.md`.
+ */
+export const StandbyCode: Story = {
+	render: ({ secondary }) => (
+		<Display locale={secondary}>
+			<StandbyCodeScreen code="story-session.story-signature-abcdefg" />
+		</Display>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		await expect(canvas.getByText(translations.en.kiosk.standbyScan)).toBeVisible();
+		await expect(
+			canvas.getByRole('img', { name: translations.en.kiosk.standbyScan }),
+		).toBeVisible();
+	},
+};
+
+/** A standby iPad before the first number is called: no code yet, and when there will be one. */
+export const StandbyNotOpen: Story = {
+	render: ({ secondary }) => (
+		<Display locale={secondary}>
+			<KioskMessage message={(copy) => copy.standbyNotOpen} />
+		</Display>
+	),
+	play: async ({ canvasElement }) => {
+		await expect(
+			within(canvasElement).getByText(translations.en.kiosk.standbyNotOpen),
+		).toBeVisible();
 	},
 };

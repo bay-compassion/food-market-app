@@ -47,6 +47,11 @@ export class QueueBoard {
 		}
 	}
 
+	/** The code the iPads show for guests to join standby, or `null` until standby opens. */
+	get standbyCode(): string | null {
+		return this.state.standbyCode ?? null;
+	}
+
 	/**
 	 * Whether nothing is going to change for a while: no session, one not yet open, or one over.
 	 * A display can check in rarely then. Registration is not idle — guests' phones are reading
