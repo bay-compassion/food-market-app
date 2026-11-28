@@ -1369,3 +1369,56 @@ describe('registerGuest for the premarket', () => {
 		expect(recordedKinds()).toEqual(['premarket_check_in']);
 	});
 });
+
+describe('registerGuest onto standby', () => {
+	/** The row handed to `insert(visits).values(...)`, dug out of the stubbed insert calls. */
+	function insertedVisit() {
+		return db.insert.mock.results
+			.map(({ value }) => value as { values: ReturnType<typeof vi.fn> })
+			.flatMap(({ values }) => values.mock.calls.map(([row]) => row))
+			.find((row) => row?.guestId);
+	}
+
+	it('lets a worker put a guest on standby with the next S number', async () => {
+		// Arrange
+		queueResult([{ status: 'service_started' }]); // admin event status check
+		queueResult([{ status: 'service_started' }]); // locked event eligibility recheck
+		queueResult([{ id: 'guest-1', firstName: 'Ari' }]); // insert guests
+		queueResult([{ id: 'event-1' }]); // session lock for the S number
+		queueResult([{ highest: 4 }]); // the session's highest S number
+		queueResult([{ id: 'visit-1', status: 'waiting' }]); // insert visits
+		const submission = parseSubmission(
+			selfSubmission({ source: 'admin', admission: 'standby', lotteryWeight: 5 }),
+		)!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(result).toMatchObject({ ok: true, status: 201, body: { status: 'waiting' } });
+		expect(insertedVisit()).toMatchObject({
+			track: 'postmarket',
+			status: 'waiting',
+			standbyNumber: 5,
+			queuePosition: null,
+			priorityNumber: null,
+			lotteryWeight: 1,
+		});
+		expect(vi.mocked(recordVisitEvents).mock.calls.at(-1)![1]).toEqual([
+			expect.objectContaining({ kind: 'added', details: { standbyNumber: 5 } }),
+		]);
+	});
+
+	it('refuses standby before the draw has run', async () => {
+		// Arrange
+		queueResult([{ status: 'lottery_pending' }]); // admin event status check
+		const submission = parseSubmission(selfSubmission({ source: 'admin', admission: 'standby' }))!;
+
+		// Act
+		const result = await registerGuest(submission, { kind: 'guest' });
+
+		// Assert
+		expect(result.ok).toBe(false);
+		expect(db.insert).not.toHaveBeenCalled();
+	});
+});

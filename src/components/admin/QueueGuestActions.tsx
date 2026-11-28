@@ -77,9 +77,9 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 	const commands = guest.status === null ? [] : new VisitCommands(guest).offered;
 	const primary = menuOnly ? undefined : commands.find((c) => primaryVisitCommands.includes(c));
 	const secondary = commands.filter((command) => command !== primary);
-	const labels = visitCommandLabels();
+	const labels = visitCommandLabels(guest.track ?? undefined);
 	const shortLabels: Partial<Record<VisitCommand, string>> = {
-		call: t.callShort,
+		call: guest.track === 'postmarket' ? t.admitFromStandby : t.callShort,
 		serve: t.serveShort,
 	};
 	const guestName = `${guest.firstName} ${guest.lastName}`;
@@ -124,7 +124,7 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 						>
 							{t.phoneGuest} {guest.phone}
 						</MenuItem>
-						{showGuestClaim ? (
+						{showGuestClaim && guest.track !== 'postmarket' ? (
 							<MenuItem
 								onClick={() => {
 									closeMenu();

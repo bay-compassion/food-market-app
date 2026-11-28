@@ -1,4 +1,4 @@
-<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=aa86f33d091a -->
+<!-- diagram-sources: src/services/sessionStateMachine.ts=2fd5e9473bd2, netlify/services/marketSession.mts=7eaf19a66108, src/services/visitStateMachine.ts=dd4faf447f36, netlify/services/visitQueue.mts=1d8b1b67864b -->
 
 # Session lifecycle
 
@@ -119,7 +119,7 @@ mis-tap cannot move a served guest back into the queue.
 ```mermaid
 stateDiagram-v2
     [*] --> registered : guest registers, or a worker<br/>enters them in the draw
-    [*] --> waiting : worker gives a guest<br/>a spot in the line
+    [*] --> waiting : worker gives a guest<br/>a spot in the line,<br/>or puts them on standby
     [*] --> served : worker records someone<br/>served outside the app,<br/>or a volunteer joins the premarket
 
     registered --> waiting : select (lottery win)

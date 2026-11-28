@@ -22,7 +22,7 @@ import { TicketActionBar } from './TicketActionBar';
 export const TicketActions = observer(function TicketActions({ guest }: { guest: QueueGuest }) {
 	const t = adminTranslations.en;
 	const desk = useQueueDesk();
-	const labels = visitCommandLabels();
+	const labels = visitCommandLabels(guest.track);
 	const showGuestClaim = useShowGuestClaim();
 	const offersServeAndCallNext = desk.canServeAndCallNext(guest);
 	// The combined step takes the filled style when it is offered; there is only ever one.
@@ -70,7 +70,19 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 					{labels[command]}
 				</button>
 			))}
-			{available.includes('return_to_queue') ? (
+			{available.includes('return_to_queue') && guest.track === 'postmarket' ? (
+				// A standby guest goes back to their place in S order; there is no front or back to pick.
+				<button
+					type="button"
+					disabled={desk.isBusy}
+					onClick={() => {
+						desk.dismiss();
+						void desk.run(guest, 'return_to_queue');
+					}}
+				>
+					{t.backOnStandby}
+				</button>
+			) : available.includes('return_to_queue') ? (
 				<ReturnToQueueButton
 					disabled={desk.isBusy}
 					onReturn={(placement) => {
@@ -80,7 +92,8 @@ export const TicketActions = observer(function TicketActions({ guest }: { guest:
 				/>
 			) : null}
 			<a href={`tel:${guest.phone.replace(/[^\d+]/g, '')}`}>{t.phoneGuest}</a>
-			{showGuestClaim ? (
+			{/* A standby guest's phone has no standby card to show yet. */}
+			{showGuestClaim && guest.track !== 'postmarket' ? (
 				<button type="button" disabled={desk.isBusy} onClick={() => void showGuestClaim(guest)}>
 					{t.guestClaimShow}
 				</button>

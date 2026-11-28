@@ -15,13 +15,22 @@ import type { VisitStatus } from './visitStateMachine';
  *   nothing taken from the line's capacity. Recorded as served the moment they are added, since a
  *   volunteer is added as they start shopping. Offered while the session runs, before and after the
  *   draw.
+ * - `standby` — a guest on the standby list after the main line: an S number in the order they
+ *   joined, no guarantee of food, and nothing taken from the line's capacity. Offered once the draw
+ *   has run (see `docs/standby.md`).
  */
-export type GuestAdmission = 'lottery' | 'queue' | 'served' | 'premarket';
+export type GuestAdmission = 'lottery' | 'queue' | 'served' | 'premarket' | 'standby';
 
 /** Where in the waiting line a `queue` admission lands. */
 export type QueuePlacement = 'next' | 'end';
 
-export const guestAdmissions: GuestAdmission[] = ['lottery', 'queue', 'served', 'premarket'];
+export const guestAdmissions: GuestAdmission[] = [
+	'lottery',
+	'queue',
+	'served',
+	'premarket',
+	'standby',
+];
 
 /**
  * Which admissions a session accepts, by how far it has progressed. The lottery stops being an
@@ -32,7 +41,7 @@ const admissionsByStatus: Record<SessionStatus, GuestAdmission[]> = {
 	registration_open: ['lottery', 'queue', 'premarket'],
 	registration_closed: ['lottery', 'queue', 'premarket'],
 	lottery_pending: ['queue', 'premarket'],
-	service_started: ['queue', 'premarket'],
+	service_started: ['queue', 'standby', 'premarket'],
 	ended: ['served'],
 };
 
@@ -41,6 +50,7 @@ const visitStatusByAdmission: Record<GuestAdmission, VisitStatus> = {
 	queue: 'waiting',
 	served: 'served',
 	premarket: 'served',
+	standby: 'waiting',
 };
 
 export function admissionsFor(status: SessionStatus) {
@@ -56,9 +66,21 @@ export function admissionVisitStatus(admission: GuestAdmission): VisitStatus {
 	return visitStatusByAdmission[admission];
 }
 
-/** Only a `premarket` admission joins the premarket; every other one is on the lottery's track. */
+/** A `premarket` admission joins the premarket, `standby` the postmarket; the rest, the lottery's. */
 export function admissionTrack(admission: GuestAdmission): VisitTrack {
-	return admission === 'premarket' ? 'premarket' : 'lottery';
+	switch (admission) {
+		case 'premarket':
+			return 'premarket';
+		case 'standby':
+			return 'postmarket';
+		default:
+			return 'lottery';
+	}
+}
+
+/** Only a `standby` admission takes an S number, the next in the session's standby series. */
+export function admissionTakesStandbyNumber(admission: GuestAdmission) {
+	return admission === 'standby';
 }
 
 /** Only a `queue` admission takes a place in line; the others are ordered later or not at all. */
@@ -93,10 +115,11 @@ export function admissionCreatesVisit(admission: ManualAdmission): admission is 
 
 /**
  * Whether the worker is offered a QR code that puts the new record on the guest's phone. A `served`
- * record is written after the fact, when the guest is no longer at the table to scan it.
+ * record is written after the fact, when the guest is no longer at the table to scan it. A standby
+ * guest's phone has no standby card to show yet (see `docs/standby.md`), so it isn't offered either.
  */
 export function admissionOffersPhoneClaim(admission: ManualAdmission) {
-	return admission !== 'served';
+	return admission !== 'served' && admission !== 'standby';
 }
 
 export function isGuestAdmission(value: unknown): value is GuestAdmission {

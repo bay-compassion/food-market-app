@@ -42,15 +42,20 @@ export type QueueGuest = {
 	phone: string;
 	householdSize: number;
 	locale: Locale;
-	/** With `priorityNumber`, the guest's number — read it through `QueueNumber.of`. */
+	/** With `priorityNumber` and `standbyNumber`, the guest's number — read it through `QueueNumber.of`. */
 	queuePosition: number | null;
 	priorityNumber: number | null;
+	/** A standby guest's S number; absent from older responses. */
+	standbyNumber?: number | null;
 	/** Where the guest stands in line — sort with `LineOrder.compare`. */
 	queueFront: boolean;
 	queueOrder: number | null;
 	calledAt: string | null;
 	status: VisitStatus;
-	/** A `premarket` volunteer shopped before the line: served, with no number, outside the draw. */
+	/**
+	 * A `premarket` volunteer shopped before the line: served, with no number, outside the draw. A
+	 * `postmarket` guest is on standby, after the line.
+	 */
 	track: VisitTrack;
 };
 

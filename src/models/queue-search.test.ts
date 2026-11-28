@@ -105,4 +105,15 @@ describe('QueueSearch', () => {
 		// Assert
 		expect(found).toBe(false);
 	});
+
+	it('finds a standby number with or without its capital, but not by its digits alone', () => {
+		// Arrange
+		const standby = ticket({ queuePosition: null, priorityNumber: null, standbyNumber: 2 });
+
+		// Act
+		const found = ['S2', 's2', '2'].map((query) => new QueueSearch(query).matches(standby));
+
+		// Assert
+		expect(found).toEqual([true, true, false]);
+	});
 });

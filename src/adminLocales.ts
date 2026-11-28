@@ -287,6 +287,8 @@ export interface AdminTranslation {
 	admitToLotteryHelp: string;
 	admitToPremarket: string;
 	admitToPremarketHelp: string;
+	admitToStandby: string;
+	admitToStandbyHelp: string;
 	admitToQueue: string;
 	admitToQueueHelp: string;
 	/** One line under each screen's title saying what the screen is for. */
@@ -340,6 +342,12 @@ export interface AdminTranslation {
 	removeFromPremarketQuestion: string;
 	removeFromPremarketDetails: string;
 	keepInPremarket: string;
+	admitFromStandby: string;
+	takeOffStandby: string;
+	takeOffStandbyQuestion: string;
+	takeOffStandbyDetails: string;
+	keepOnStandby: string;
+	backOnStandby: string;
 	/** The overview's count of volunteers who shopped before the line. */
 	premarketVolunteers: string;
 	/** Heads Today's list of them, and says when it is empty. */
@@ -819,6 +827,7 @@ export interface QueueDeskTranslation {
 	done: string;
 	/** Volunteers who shopped before the line opened, outside it. */
 	premarket: string;
+	standby: string;
 	noneCalled: string;
 	noneWaiting: string;
 	noneDone: string;
@@ -1039,6 +1048,9 @@ export const adminTranslations = {
 		admitToPremarket: 'Premarket volunteer',
 		admitToPremarketHelp:
 			'A volunteer shopping before the line opens. They skip the lottery, get no number, and take none of the session’s spots. Recorded as served now.',
+		admitToStandby: 'Put them on standby',
+		admitToStandbyHelp:
+			'Adds them to the standby list with the next S number. Standby guests are admitted after the main line, in order, while food lasts — nothing is guaranteed. It takes none of the session’s spots.',
 		admitToQueue: 'Give them a spot',
 		admitToQueueHelp:
 			'The guest skips the lottery and goes straight into the line. This uses one of the session’s spots.',
@@ -1215,6 +1227,13 @@ export const adminTranslations = {
 		removeFromPremarketDetails:
 			'Their visit is cancelled and no longer counts as served. They can still register for the lottery.',
 		keepInPremarket: 'Keep Them',
+		admitFromStandby: 'Admit',
+		takeOffStandby: 'Take Off Standby',
+		takeOffStandbyQuestion: 'Take {name} off standby?',
+		takeOffStandbyDetails:
+			'Their visit is cancelled and they lose their place on the list. Standby guests are never marked as no-shows.',
+		keepOnStandby: 'Keep Them',
+		backOnStandby: 'Back on Standby',
 		premarketVolunteers: 'Premarket',
 		premarketHeading: 'Premarket',
 		noPremarketVolunteers: 'No volunteers have checked in for the premarket.',
@@ -1617,6 +1636,8 @@ export const adminTranslations = {
 			placementRate: 'Placed rate',
 			premarketHouseholds: 'Premarket households',
 			premarketMembers: 'Premarket people served (with repeats)',
+			standbyHouseholds: 'Standby households',
+			standbyMembers: 'Standby people served (with repeats)',
 			served: 'Households served',
 			sessionDate: 'Session',
 			sessions: 'Sessions',
@@ -1707,6 +1728,7 @@ export const adminTranslations = {
 			notPlaced: 'Not placed',
 			done: 'Done',
 			premarket: 'Premarket',
+			standby: 'Standby',
 			noneCalled: 'Nobody has been called yet.',
 			noneWaiting: 'Nobody is left in line.',
 			noneDone: 'Nobody has finished yet.',

@@ -6,7 +6,7 @@ import { adminTranslations } from '../../adminLocales';
 import type { AdminGuest } from '../../services/admin-api';
 import { QueueDeskStore } from '../../stores/queue-desk.store';
 import { RootStoreProvider } from '../../stores/react/store-context';
-import { finishedQueue } from '../admin/queueGuests.fixture';
+import { finishedQueue, queueGuest } from '../admin/queueGuests.fixture';
 import { visitCommandLabels } from '../admin/VisitCommandButtons';
 import { ConfirmationDrawer } from '../ui/ConfirmationDrawer';
 import { NotificationToasts } from '../ui/NotificationToasts';
@@ -108,6 +108,97 @@ export const DuringService: Story = {
 		await expect(notPlaced.getByText('Tomás Rivera')).toBeVisible();
 		await expect(done.getByText('James Okafor')).toBeVisible();
 		await expect(done.queryByText('Amira Haddad')).toBeNull();
+	},
+};
+
+/** Standby guests in their own section, in S order. Calling next still calls the line. */
+const withStandby: AdminGuest[] = [
+	...numberedQueue,
+	{
+		...queueGuest({
+			id: 'guest-standby-1',
+			firstName: 'Ama',
+			lastName: 'Owusu',
+			status: 'called',
+			queuePosition: null,
+			calledAt: new Date(Date.now() - 60_000).toISOString(),
+		}),
+		track: 'postmarket',
+		standbyNumber: 1,
+		marketEventId: seededEventId,
+	},
+	{
+		...queueGuest({
+			id: 'guest-standby-2',
+			firstName: 'Kenji',
+			lastName: 'Sato',
+			status: 'waiting',
+			queuePosition: null,
+		}),
+		track: 'postmarket',
+		standbyNumber: 2,
+		marketEventId: seededEventId,
+	},
+];
+
+/**
+ * Standby has a section of its own after the line, in S order. Calling next still calls the
+ * line's next number; standby guests are admitted from their own tickets.
+ */
+export const Standby: Story = {
+	args: { guests: withStandby },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const standby = within(await canvas.findByRole('region', { name: t.standby }));
+
+		await expect(
+			standby.getByRole('button', {
+				name: t.openTicket.replace('{number}', 'S1').replace('{name}', 'Ama Owusu'),
+			}),
+		).toBeVisible();
+		await expect(
+			standby.getByRole('button', {
+				name: t.openTicket.replace('{number}', 'S2').replace('{name}', 'Kenji Sato'),
+			}),
+		).toBeVisible();
+		await expect(
+			canvas.getByRole('button', { name: t.callNextNumber.replace('{number}', '3') }),
+		).toBeEnabled();
+		await expect(
+			within(canvas.getByRole('region', { name: t.called })).queryByText('Ama Owusu'),
+		).toBeNull();
+	},
+};
+
+/** A waiting standby guest is admitted, never marked a no-show. */
+export const AdmittingFromStandby: Story = {
+	args: { guests: withStandby, openVisitId: 'guest-standby-2' },
+	play: async () => {
+		const page = within(document.body);
+		const labels = visitCommandLabels('postmarket');
+
+		await expect(await page.findByRole('button', { name: labels.call })).toBeVisible();
+		await expect(page.queryByRole('button', { name: labels.mark_no_show })).toBeNull();
+		await expect(page.queryByRole('button', { name: t.returnOptions })).toBeNull();
+	},
+};
+
+/** Taking a called standby guest off the list asks first, then cancels their visit. */
+export const TakingAGuestOffStandby: Story = {
+	args: { guests: withStandby, openVisitId: 'guest-standby-1' },
+	play: async ({ canvasElement }) => {
+		const page = within(document.body);
+		const labels = visitCommandLabels('postmarket');
+
+		await userEvent.click(await page.findByRole('button', { name: labels.cancel }));
+
+		const dialog = within(await page.findByRole('alertdialog'));
+
+		await userEvent.click(dialog.getByRole('button', { name: labels.cancel }));
+
+		const done = within(await within(canvasElement).findByRole('region', { name: t.done }));
+
+		await expect(await done.findByText('Ama Owusu')).toBeVisible();
 	},
 };
 

@@ -30,8 +30,8 @@ const Lists = styled.div`
 `;
 
 /**
- * The line's tickets: the called and waiting numbers; then no-shows, guests the draw did not
- * place, and the finished ones, each in their own section — with adding a guest by hand from the
+ * The line's tickets: the called and waiting numbers; then standby, no-shows, guests the draw did
+ * not place, and the finished ones, each in their own section — with adding a guest by hand from the
  * waiting list's heading on a desk. On a phone that sits in the call bar's menu.
  */
 export const QueueLists = observer(function QueueLists() {
@@ -71,6 +71,8 @@ export const QueueLists = observer(function QueueLists() {
 					) : null
 				}
 			/>
+			{/* Standby comes after the line: admitted one by one, in S order, while food lasts. */}
+			<TicketSection id="standby" title={t.queueDesk.standby} guests={listed.standby} now={now} />
 			{/* Called guests who never came up are, in effect, at the back of the line. */}
 			<TicketSection id="noShows" title={t.queueDesk.noShows} guests={listed.noShows} now={now} />
 			<TicketSection

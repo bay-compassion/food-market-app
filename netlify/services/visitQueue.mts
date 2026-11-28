@@ -380,6 +380,28 @@ async function resolveVisits(
 }
 
 /**
+ * The next number in the session's standby series, `S1` for the first guest on the list. Locks the
+ * session row first, as `placeInLine` does, so two workers adding at once can't both hand out the
+ * same number; the partial unique index on `(market_event_id, standby_number)` backs that up.
+ */
+export async function nextStandbyNumber(tx: Transaction, marketEventId: string) {
+	return tracedQuery('visit.next_standby_number', async () => {
+		await tx
+			.select({ id: marketEvents.id })
+			.from(marketEvents)
+			.where(eq(marketEvents.id, marketEventId))
+			.for('update');
+
+		const [list] = await tx
+			.select({ highest: sql<number | null>`max(${visits.standbyNumber})` })
+			.from(visits)
+			.where(eq(visits.marketEventId, marketEventId));
+
+		return QueueNumber.standby((list?.highest ?? 0) + 1);
+	});
+}
+
+/**
  * Places a guest in the session's line — a new one a worker is adding, or one being returned to the
  * queue, who keeps the number they `hold` — and returns the columns to write. The rules are
  * `LineOrder`'s; this reads the line they need.

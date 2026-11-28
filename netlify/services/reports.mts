@@ -42,7 +42,10 @@ function sessionSummary({ start, end }: ReportRange) {
     count(*) FILTER (WHERE source = 'admin' AND track = 'lottery')::int AS walk_ins,
     count(*) FILTER (WHERE status = 'served' AND track = 'premarket')::int AS premarket,
     coalesce(sum(household_size) FILTER (WHERE status = 'served' AND track = 'premarket'), 0)::int
-     AS premarket_members
+     AS premarket_members,
+    count(*) FILTER (WHERE status = 'served' AND track = 'postmarket')::int AS standby,
+    coalesce(sum(household_size) FILTER (WHERE status = 'served' AND track = 'postmarket'), 0)::int
+     AS standby_members
    FROM visits GROUP BY market_event_id
   ), anonymous AS (
    SELECT market_event_id, count(*)::int AS households, sum(household_size)::int AS members
@@ -56,11 +59,15 @@ function sessionSummary({ start, end }: ReportRange) {
    coalesce(a.members, 0)::int AS "countOnlyMembers",
    coalesce(v.premarket, 0)::int AS "premarketHouseholds",
    coalesce(v.premarket_members, 0)::int AS "premarketMembers",
+   coalesce(v.standby, 0)::int AS "standbyHouseholds",
+   coalesce(v.standby_members, 0)::int AS "standbyMembers",
    coalesce(v.no_shows, 0)::int AS "noShows", coalesce(v.not_placed, 0)::int AS "notPlaced",
    coalesce(v.walk_ins, 0)::int AS "walkIns",
-   -- Premarket volunteers take none of the line's spots, so they never count toward filling it.
+   -- Premarket volunteers and standby guests take none of the line's spots, so they never count
+   -- toward filling it.
    CASE WHEN e.capacity > 0 THEN round(
-    (coalesce(v.served, 0) - coalesce(v.premarket, 0) + coalesce(a.households, 0))::numeric * 100
+    (coalesce(v.served, 0) - coalesce(v.premarket, 0) - coalesce(v.standby, 0)
+     + coalesce(a.households, 0))::numeric * 100
      / e.capacity, 1
    )::float8 END AS "fillRate"
   FROM market_events e
@@ -112,7 +119,11 @@ function peopleServed({ start, end }: ReportRange) {
    (SELECT count(*)::int FROM served v WHERE v.month = s.month AND v.track = 'premarket')
     AS "premarketHouseholds",
    (SELECT coalesce(sum(v.household_size), 0)::int FROM served v
-    WHERE v.month = s.month AND v.track = 'premarket') AS "premarketMembers"
+    WHERE v.month = s.month AND v.track = 'premarket') AS "premarketMembers",
+   (SELECT count(*)::int FROM served v WHERE v.month = s.month AND v.track = 'postmarket')
+    AS "standbyHouseholds",
+   (SELECT coalesce(sum(v.household_size), 0)::int FROM served v
+    WHERE v.month = s.month AND v.track = 'postmarket') AS "standbyMembers"
   FROM all_service s GROUP BY s.month ORDER BY s.month DESC
  `;
 }

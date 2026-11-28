@@ -31,7 +31,14 @@ export type QueueDeskStoreOptions = {
 export type QueueSectionId = TicketSectionId | 'households';
 
 /** The sections that hold tickets, which is where a search looks. */
-export type TicketSectionId = 'called' | 'waiting' | 'noShows' | 'notPlaced' | 'done' | 'premarket';
+export type TicketSectionId =
+	| 'called'
+	| 'waiting'
+	| 'standby'
+	| 'noShows'
+	| 'notPlaced'
+	| 'done'
+	| 'premarket';
 
 /** Which screen the queue desk shows. */
 export type QueueDeskPhase = 'loading' | 'not_permitted' | 'not_started' | 'serving' | 'ended';
@@ -172,6 +179,8 @@ export class QueueDeskStore implements TicketList {
 		return {
 			called: order.apply(roster.called),
 			waiting: roster.waiting,
+			// S order is the list's own order, like the line's.
+			standby: roster.standby,
 			noShows: order.apply(roster.noShows),
 			notPlaced: order.apply(roster.notPlaced),
 			done: order.apply(roster.done),
@@ -225,6 +234,7 @@ export class QueueDeskStore implements TicketList {
 		const titles: Record<TicketSectionId, string> = {
 			called: t.called,
 			waiting: t.waiting,
+			standby: t.standby,
 			noShows: t.noShows,
 			notPlaced: t.notPlaced,
 			done: t.done,
