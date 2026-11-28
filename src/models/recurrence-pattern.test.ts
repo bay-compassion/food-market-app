@@ -20,6 +20,7 @@ function pattern(overrides: Partial<RecurrencePatternRecord> = {}) {
 			capacity: 30,
 			lotteryDelayMinutes: null,
 			autoCloseAfterMinutes: 720,
+			shoppingStartsAt: '12:15',
 			...overrides,
 		},
 		concord,
@@ -167,6 +168,7 @@ describe('RecurrencePattern', () => {
 			capacity: 30,
 			lotteryDelayMinutes: 15,
 			autoCloseAfterMinutes: 720,
+			shoppingStartsAt: new Date('2026-09-26T19:15:00.000Z'),
 		});
 	});
 });

@@ -14,7 +14,10 @@ export type MilestoneState = 'done' | 'current' | 'upcoming';
 export type SessionMilestone = {
 	kind: MilestoneKind;
 	state: MilestoneState;
-	/** When it happens. Null for what has no set time: service, and a draw run by hand. */
+	/**
+	 * When it happens. Null for what has no set time: a draw run by hand, and shopping when the
+	 * session publishes no time for it.
+	 */
 	at: Date | null;
 };
 
@@ -49,7 +52,12 @@ const currentIndexByStatus: Record<SessionStatus, number> = {
 export class SessionMilestones {
 	private readonly timeline: SessionTimeline;
 
-	constructor(private readonly session: SessionTiming & { lotteryDrawsAt?: Date | null }) {
+	constructor(
+		private readonly session: SessionTiming & {
+			lotteryDrawsAt?: Date | null;
+			shoppingStartsAt?: Date | null;
+		},
+	) {
 		this.timeline = new SessionTimeline(session);
 	}
 
@@ -70,7 +78,8 @@ export class SessionMilestones {
 			registration_opens: this.session.registrationOpensAt,
 			registration_closes: this.session.registrationClosesAt,
 			lottery_draw: this.lotteryDrawsAt,
-			service_starts: null,
+			// The published time only: shopping actually starts when the first number is called.
+			service_starts: this.session.shoppingStartsAt ?? null,
 		};
 
 		return order.map((kind, index) => ({

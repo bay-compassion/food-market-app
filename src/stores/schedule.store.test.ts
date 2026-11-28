@@ -18,6 +18,7 @@ const pattern = {
 	capacity: 30,
 	lotteryDelayMinutes: null,
 	autoCloseAfterMinutes: 720,
+	shoppingStartsAt: '12:15',
 	questions: [],
 };
 
@@ -32,6 +33,8 @@ function session(overrides: Partial<ScheduleSessionPayload> = {}): ScheduleSessi
 		capacity: 30,
 		lotteryDelayMinutes: null,
 		autoCloseAfterMinutes: 720,
+		// 12:15 PM Pacific.
+		shoppingStartsAt: '2026-09-26T19:15:00.000Z',
 		lotteryDrawsAt: null,
 		autoClosesAt: '2026-09-27T05:30:00.000Z',
 		hasVisits: false,
@@ -164,7 +167,41 @@ describe('ScheduleStore', () => {
 			date: '2026-09-26',
 			registrationOpensAt: '10:30',
 			registrationDurationMinutes: 60,
+			shoppingStartsAt: '12:15',
 		});
+	});
+
+	it('prefills an edit of a session with no shopping time with none', async () => {
+		// Arrange
+		const store = await loadedStore(payload({ sessions: [session({ shoppingStartsAt: null })] }));
+
+		// Act
+		const input = store.sessionInputFor('session-1');
+
+		// Assert
+		expect(input?.shoppingStartsAt).toBeNull();
+	});
+
+	it('starts a market with no pattern with no shopping time', async () => {
+		// Arrange
+		const store = await loadedStore(payload({ pattern: null }));
+
+		// Act
+		const defaults = store.templateDefaults;
+
+		// Assert
+		expect(defaults.shoppingStartsAt).toBeNull();
+	});
+
+	it('starts a new session from the pattern’s shopping time', async () => {
+		// Arrange
+		const store = await loadedStore(payload());
+
+		// Act
+		const defaults = store.templateDefaults;
+
+		// Assert
+		expect(defaults.shoppingStartsAt).toBe('12:15');
 	});
 
 	it('keeps the previous schedule and reports the server’s reason when a write is refused', async () => {

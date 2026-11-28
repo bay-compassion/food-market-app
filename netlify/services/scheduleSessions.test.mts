@@ -31,6 +31,7 @@ const input = {
 	capacity: 20,
 	lotteryDelayMinutes: 10,
 	autoCloseAfterMinutes: 240,
+	shoppingStartsAt: '18:30',
 	questions: [],
 };
 
@@ -79,6 +80,7 @@ describe('addOneOffSession', () => {
 			registrationClosesAt: new Date('2026-09-24T00:45:00.000Z'),
 			lotteryDelayMinutes: 10,
 			autoCloseAfterMinutes: 240,
+			shoppingStartsAt: new Date('2026-09-24T01:30:00.000Z'),
 		});
 		expect(scheduleSessionTimers).toHaveBeenCalledWith(created, [
 			'registration_close',

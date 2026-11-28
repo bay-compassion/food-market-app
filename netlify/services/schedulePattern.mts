@@ -47,6 +47,7 @@ export async function savePattern(input: PatternInput, now = new Date()): Promis
 				capacity: input.capacity,
 				lotteryDelayMinutes: input.lotteryDelayMinutes,
 				autoCloseAfterMinutes: input.autoCloseAfterMinutes,
+				shoppingStartsAt: input.shoppingStartsAt,
 			};
 			const [pattern] = existing
 				? await tx

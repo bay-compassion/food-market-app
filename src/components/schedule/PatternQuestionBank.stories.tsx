@@ -46,6 +46,7 @@ export const WithPattern: Story = {
 				capacity: 50,
 				lotteryDelayMinutes: null,
 				autoCloseAfterMinutes: 720,
+				shoppingStartsAt: '12:15',
 				questions: [
 					{ prompt: 'How many people are you shopping for?', type: 'text', required: true },
 				],

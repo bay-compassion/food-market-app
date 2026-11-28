@@ -34,6 +34,7 @@ const pattern = {
 	capacity: 30,
 	lotteryDelayMinutes: null,
 	autoCloseAfterMinutes: 720,
+	shoppingStartsAt: '12:15',
 	questions: [],
 };
 
@@ -100,6 +101,31 @@ describe('schedule routes', () => {
 		// Assert
 		expect(response.status).toBe(400);
 		expect(savePattern).not.toHaveBeenCalled();
+	});
+
+	it('rejects a shopping time before registration closes', async () => {
+		// Act
+		const response = await handler(
+			request('PUT', '/pattern', { ...pattern, shoppingStartsAt: '11:30' }),
+		);
+
+		// Assert
+		expect(response.status).toBe(400);
+		expect(savePattern).not.toHaveBeenCalled();
+	});
+
+	it('saves a pattern with no shopping time', async () => {
+		// Arrange
+		vi.mocked(savePattern).mockResolvedValueOnce({ ok: true });
+		vi.mocked(getSchedule).mockResolvedValueOnce(payload);
+		const untimed = { ...pattern, shoppingStartsAt: null };
+
+		// Act
+		const response = await handler(request('PUT', '/pattern', untimed));
+
+		// Assert
+		expect(response.status).toBe(200);
+		expect(savePattern).toHaveBeenCalledWith(untimed);
 	});
 
 	it('saves a pattern and answers with the refreshed schedule', async () => {

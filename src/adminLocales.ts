@@ -460,6 +460,9 @@ export interface AdminTranslation {
 	scheduleLotteryDelayHelp: string;
 	scheduleAutoClose: string;
 	scheduleAutoCloseHelp: string;
+	scheduleShoppingStarts: string;
+	scheduleShoppingStartsHelp: string;
+	scheduleShoppingStartsTooEarly: string;
 	scheduleLotteryManual: string;
 	scheduleAutoCloseNever: string;
 	scheduleClearLotteryDelay: string;
@@ -1060,7 +1063,7 @@ export const adminTranslations = {
 				registration_opens: { done: 'Registration Opened', next: 'Registration Opens' },
 				registration_closes: { done: 'Registration Closed', next: 'Registration Closes' },
 				lottery_draw: { done: 'Lottery Drawn', next: 'Lottery Draw' },
-				service_starts: { done: 'Service Started', next: 'Service Starts' },
+				service_starts: { done: 'Shopping Started', next: 'Shopping Starts' },
 			},
 			afterTheDraw: 'After the Draw',
 			whenYouRunIt: 'When You Run It',
@@ -1324,6 +1327,10 @@ export const adminTranslations = {
 		scheduleLotteryDelayHelp: 'Clear it to draw the lottery by hand.',
 		scheduleAutoClose: 'Close the session automatically (hours after registration opens)',
 		scheduleAutoCloseHelp: 'Clear it to never close the session automatically.',
+		scheduleShoppingStarts: 'Shopping starts',
+		scheduleShoppingStartsHelp:
+			'The time guests are told shopping begins. It doesn’t start anything; calling the first number does.',
+		scheduleShoppingStartsTooEarly: 'Shopping has to start after registration closes.',
 		scheduleLotteryManual: 'By hand',
 		scheduleAutoCloseNever: 'Never',
 		scheduleClearLotteryDelay: 'Clear the automatic lottery draw',

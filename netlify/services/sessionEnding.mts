@@ -97,6 +97,7 @@ export async function createNextSession(
 			capacity: values.capacity,
 			lotteryDelayMinutes: values.lotteryDelayMinutes,
 			autoCloseAfterMinutes: values.autoCloseAfterMinutes,
+			shoppingStartsAt: values.shoppingStartsAt,
 			status: 'scheduled',
 		})
 		.onConflictDoNothing({ target: marketEvents.locationId, where: sql`status <> 'ended'` })

@@ -28,6 +28,7 @@ const templateShape = {
 	capacity: capacitySchema,
 	lotteryDelayMinutes: z.coerce.number().int().min(0).max(120).nullable(),
 	autoCloseAfterMinutes: z.coerce.number().int().min(1).nullable(),
+	shoppingStartsAt: localTimeSchema.nullable(),
 	questions: z.array(questionSchema).max(50),
 };
 
@@ -49,13 +50,43 @@ const autoCloseError = {
 	error: 'Auto-close must come after registration closes and the lottery draws.',
 };
 
+/** Minutes past midnight of a wall-clock `HH:mm`. */
+function minutesOf(time: string) {
+	const [hours = 0, minutes = 0] = time.split(':').map(Number);
+
+	return hours * 60 + minutes;
+}
+
+/**
+ * Shopping has to start after registration closes, on the same day. Postponements aren't checked:
+ * the published time is a promise to guests, and a late draw doesn't move it.
+ */
+function shoppingFollowsRegistration(template: {
+	registrationOpensAt: string;
+	registrationDurationMinutes: number;
+	shoppingStartsAt: string | null;
+}) {
+	return (
+		template.shoppingStartsAt === null ||
+		minutesOf(template.shoppingStartsAt) >
+			minutesOf(template.registrationOpensAt) + template.registrationDurationMinutes
+	);
+}
+
+const shoppingError = {
+	path: ['shoppingStartsAt'],
+	error: 'Shopping must start after registration closes.',
+};
+
 const patternSchema = z
 	.object({ ...templateShape, startsOn: localDateSchema })
-	.refine(autoCloseLeavesRoom, autoCloseError);
+	.refine(autoCloseLeavesRoom, autoCloseError)
+	.refine(shoppingFollowsRegistration, shoppingError);
 
 const sessionSchema = z
 	.object({ ...templateShape, date: localDateSchema })
-	.refine(autoCloseLeavesRoom, autoCloseError);
+	.refine(autoCloseLeavesRoom, autoCloseError)
+	.refine(shoppingFollowsRegistration, shoppingError);
 
 export function parsePatternInput(value: unknown): PatternInput | null {
 	return patternSchema.safeParse(value).data ?? null;

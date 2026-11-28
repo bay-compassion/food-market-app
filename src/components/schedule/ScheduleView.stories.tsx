@@ -31,6 +31,7 @@ const pattern = {
 	capacity: 50,
 	lotteryDelayMinutes: null,
 	autoCloseAfterMinutes: 720,
+	shoppingStartsAt: '12:15',
 	questions: [
 		{ prompt: 'How many people are you shopping for?', type: 'text' as const, required: true },
 	],
@@ -46,6 +47,7 @@ function session(overrides: Partial<ScheduleSessionPayload> = {}): ScheduleSessi
 		capacity: 50,
 		lotteryDelayMinutes: null,
 		autoCloseAfterMinutes: 720,
+		shoppingStartsAt: opensAt.plus({ hours: 1, minutes: 45 }).toUTC().toISO()!,
 		lotteryDrawsAt: null,
 		autoClosesAt: opensAt.plus({ hours: 12 }).toUTC().toISO()!,
 		hasVisits: false,

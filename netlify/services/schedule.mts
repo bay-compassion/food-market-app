@@ -83,6 +83,7 @@ export async function getSchedule(): Promise<SchedulePayload> {
 						capacity: pattern.capacity,
 						lotteryDelayMinutes: pattern.lotteryDelayMinutes,
 						autoCloseAfterMinutes: pattern.autoCloseAfterMinutes,
+						shoppingStartsAt: pattern.shoppingStartsAt?.slice(0, 5) ?? null,
 						questions: questionsOf(patternQuestions),
 					}
 				: null,
@@ -98,6 +99,7 @@ export async function getSchedule(): Promise<SchedulePayload> {
 					capacity: session.capacity,
 					lotteryDelayMinutes: session.lotteryDelayMinutes,
 					autoCloseAfterMinutes: session.autoCloseAfterMinutes,
+					shoppingStartsAt: session.shoppingStartsAt?.toISOString() ?? null,
 					lotteryDrawsAt: timeline.lotteryDrawsAt?.toISOString() ?? null,
 					autoClosesAt: timeline.autoClosesAt?.toISOString() ?? null,
 					hasVisits: visitCounts.some((row) => row.marketEventId === session.id && row.visits > 0),
@@ -160,6 +162,9 @@ export function sessionValuesFrom(location: MarketLocation, input: SessionInput)
 		capacity: input.capacity,
 		lotteryDelayMinutes: input.lotteryDelayMinutes,
 		autoCloseAfterMinutes: input.autoCloseAfterMinutes,
+		shoppingStartsAt: input.shoppingStartsAt
+			? location.instantAt(input.date, input.shoppingStartsAt)
+			: null,
 	};
 }
 

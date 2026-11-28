@@ -16,6 +16,8 @@ export type TemplateDraft = {
 	capacity: number | '';
 	lotteryDelayMinutes: number | '';
 	autoCloseAfterHours: number | '';
+	/** Null when the market publishes no shopping time. */
+	shoppingStartsAt: DateTime | null;
 };
 
 /**
@@ -24,29 +26,56 @@ export type TemplateDraft = {
  */
 const timeReferenceDate = '2000-01-01';
 
+/** A wall-clock `HH:mm` as the picker's value. */
+function pickerTime(time: string, timeZone: string): DateTime {
+	return DateTime.fromISO(`${timeReferenceDate}T${time.slice(0, 5)}`, { zone: timeZone });
+}
+
 export function draftFrom(
 	template: Omit<SessionTemplate, 'questions'>,
 	timeZone: string,
 ): TemplateDraft {
 	return {
-		registrationOpensAt: DateTime.fromISO(
-			`${timeReferenceDate}T${template.registrationOpensAt.slice(0, 5)}`,
-			{ zone: timeZone },
-		),
+		registrationOpensAt: pickerTime(template.registrationOpensAt, timeZone),
 		registrationDurationMinutes: template.registrationDurationMinutes,
 		capacity: template.capacity,
 		lotteryDelayMinutes: template.lotteryDelayMinutes ?? '',
 		autoCloseAfterHours:
 			template.autoCloseAfterMinutes === null ? '' : template.autoCloseAfterMinutes / 60,
+		shoppingStartsAt: template.shoppingStartsAt
+			? pickerTime(template.shoppingStartsAt, timeZone)
+			: null,
 	};
 }
 
-/** The template a draft describes, or null while a required field is empty or half-typed. */
+/** Minutes past midnight of a picker's wall-clock time. */
+function minuteOfDay(time: DateTime): number {
+	return time.hour * 60 + time.minute;
+}
+
+/**
+ * Whether the draft's shopping time comes no later than registration closes, which the server
+ * refuses. Unknowable, and so false, while either time is missing or half-typed.
+ */
+export function shoppingStartsTooEarly(draft: TemplateDraft): boolean {
+	const { registrationOpensAt: opens, shoppingStartsAt: shopping } = draft;
+
+	if (!opens?.isValid || !shopping?.isValid || draft.registrationDurationMinutes === '') {
+		return false;
+	}
+
+	return minuteOfDay(shopping) <= minuteOfDay(opens) + draft.registrationDurationMinutes;
+}
+
+/** The template a draft describes, or null while a field is empty, half-typed, or out of order. */
 export function templateFrom(draft: TemplateDraft): Omit<SessionTemplate, 'questions'> | null {
 	if (
 		!draft.registrationOpensAt?.isValid ||
 		draft.registrationDurationMinutes === '' ||
-		draft.capacity === ''
+		draft.capacity === '' ||
+		// Optional, but a half-typed time is not the same as none.
+		(draft.shoppingStartsAt !== null && !draft.shoppingStartsAt.isValid) ||
+		shoppingStartsTooEarly(draft)
 	) {
 		return null;
 	}
@@ -58,6 +87,7 @@ export function templateFrom(draft: TemplateDraft): Omit<SessionTemplate, 'quest
 		lotteryDelayMinutes: draft.lotteryDelayMinutes === '' ? null : draft.lotteryDelayMinutes,
 		autoCloseAfterMinutes:
 			draft.autoCloseAfterHours === '' ? null : Math.round(draft.autoCloseAfterHours * 60),
+		shoppingStartsAt: draft.shoppingStartsAt?.toFormat('HH:mm') ?? null,
 	};
 }
 
@@ -73,6 +103,7 @@ export function SessionTemplateFields({ draft, timeZone, onChange }: SessionTemp
 	const update = (patch: Partial<TemplateDraft>) => onChange({ ...draft, ...patch });
 	const stepLabels = { decrementLabel: t.scheduleDecrease, incrementLabel: t.scheduleIncrease };
 	const asCount = (value: number | string) => (value === '' ? '' : Number(value));
+	const shoppingTooEarly = shoppingStartsTooEarly(draft);
 
 	return (
 		<>
@@ -113,6 +144,21 @@ export function SessionTemplateFields({ draft, timeZone, onChange }: SessionTemp
 				max={120}
 				value={draft.lotteryDelayMinutes}
 				onChange={(value) => update({ lotteryDelayMinutes: asCount(value) })}
+			/>
+			<TimePicker
+				label={t.scheduleShoppingStarts}
+				timezone={timeZone}
+				value={draft.shoppingStartsAt}
+				onChange={(value) => update({ shoppingStartsAt: value })}
+				slotProps={{
+					field: { clearable: true },
+					textField: {
+						error: shoppingTooEarly,
+						helperText: shoppingTooEarly
+							? t.scheduleShoppingStartsTooEarly
+							: t.scheduleShoppingStartsHelp,
+					},
+				}}
 			/>
 			<NumberSpinner
 				{...stepLabels}
