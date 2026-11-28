@@ -7,6 +7,7 @@ import { SignupView } from './components/routes/SignupView';
 import { homeScreenStartPath } from './pwa/home-screen-handoff';
 import { createInstrumentedBrowserRouter } from './sentry';
 import { premarketPosterPath } from './services/premarket';
+import { standbyPosterPath } from './services/qr-posters';
 
 /**
  * Everything a guest does lives in the initial chunk; everything else is loaded on demand.
@@ -80,6 +81,13 @@ export const router = createInstrumentedBrowserRouter([
 						lazy: async () => ({
 							Component: (await import('./components/admin/PremarketPosterRoute'))
 								.PremarketPosterRoute,
+						}),
+					},
+					{
+						// Static too, for the same reason.
+						path: standbyPosterPath,
+						lazy: async () => ({
+							Component: (await import('./components/admin/StandbyPosterRoute')).StandbyPosterRoute,
 						}),
 					},
 					{

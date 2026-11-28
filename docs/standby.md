@@ -28,13 +28,14 @@ The **postmarket track**, **standby** and the **S series** are one feature, name
 - **A guest's place is secured when they pull a ticket**, by scanning a standby QR code at the
   market. They fill in their details afterwards, while they wait.
 - **The code is the same for the whole session**, valid for that session only, and shown on spare
-  iPads (and possibly the kiosk). It is not printed and does not change while the session runs.
-  Guests can't reach the shopping area before shopping starts, so a photo of the code texted
-  off-site isn't worth stopping completely.
+  iPads. An admin can also print it as a poster for that day (see below). It doesn't change while
+  the session runs. Guests can't reach the shopping area before shopping starts, so a photo of the
+  code texted off-site isn't worth stopping completely.
 - **Guests have to be at the market to join.** Standby is never mentioned in printed or online
   materials (see the guest messaging policy). Workers tell guests about it on-site.
-- **Standby opens when shopping actually starts**, which is when the first number is called. That is
-  also when someone is at the queue desk. No clock, button or extra state is involved.
+- **Standby opens as soon as the lottery has drawn** and handed out numbers, when the session moves
+  to `service_started`, and stays open until it ends. (Changed on 2026-11-28; it first opened at the
+  first call.) No clock, button or extra state is involved.
 - **The scheduled Shopping Starts time is for display only.** Each session gets an explicit, configurable time
   for printed materials, guest copy and the dashboard (and, later, for other markets). It gates
   nothing.
@@ -79,7 +80,7 @@ Standby visits take none of the session's capacity, just as premarket visits don
 ### Pulling a Ticket
 
 1. The iPad shows the session's standby code as a QR code, which opens `/standby#<code>`. Before
-   standby opens, it shows "Standby opens when shopping starts" instead.
+   standby opens, it shows "Standby opens after the lottery draw" instead.
 2. Scanning checks the code and that standby is open, then issues a **ticket**. The ticket is a
    single-use random token, stored as a hash, carrying the session, the next S number and the time
    it was issued. Handing out the S number here, rather than when the form is submitted, is what
@@ -116,20 +117,12 @@ code comes with the board data the display already reads.
 
 ### When Standby Opens
 
-The rule: **standby is open while the session is `service_started` and its visit history records at
-least one call since the session's latest draw.** Counting only calls since the latest draw matters
-because `reset_session` cancels visits but leaves their history. Without it, a session that was
-reset and drawn again would open standby before anyone had been called.
+The rule: **standby is open while the session is `service_started`**, from the moment the lottery
+has drawn until the session ends (`standbyIsOpen` in `netlify/services/standby.mts`). A reset moves
+the session back before the draw, so it closes standby until the next draw.
 
-The rule reads the visit history (`visit_events`), not `visits.called_at`. `return_to_queue` clears
-`called_at`, so if the only called guest is put back in line, a rule based on `called_at` would
-close standby again with guests already on it. The visit history only ever grows, so standby opens
-once and stays open, with no column or state to store. An accidental early call does open standby.
-The design accepts that.
-
-The rule only applies to guests scanning in. As proposed, a worker can add a standby guest by hand
-once the draw has run, using a new `standby` admission (`src/services/guestAdmission.ts`). That also
-covers a day when nobody is in the main line to call.
+Workers can add a standby guest by hand from the same moment, using the `standby` admission
+(`src/services/guestAdmission.ts`).
 
 ### On the Queue Desk
 
@@ -156,10 +149,19 @@ since they're `served` visits.
 
 1. On each iPad, open `/kiosk?screen=standby` and unlock it with a code from the queue desk, as for
    the room display (see [roles.md](roles.md)).
-2. Before the first number is called it says "Standby opens when shopping starts". Within a few
-   seconds of the first call it shows the session's QR code, and keeps showing it until the session
-   ends.
+2. Before the lottery draws it says "Standby opens after the lottery draw". Within a few seconds of
+   the draw it shows the session's QR code, and keeps showing it until the session ends.
 3. A guest scans it with their own phone, which opens `/standby` and holds their place at once.
+
+### Printed Posters
+
+Admins (anyone holding `manage:sessions`, so team leaders too) get a **QR Codes** submenu in the app
+bar's menu, with the market's own poster (`/qr-code`), the premarket's (`/admin/premarket-code`)
+and the standby poster (`/admin/standby-code`). Everyone else keeps the single QR Code item.
+The standby poster carries the current session's code, read from `GET /api/admin/standby-code`, so
+it is printed each market day. It can go up before the draw: scanning it then says standby isn't
+open yet. Its words are in the viewer's language, like the `/qr-code` poster, since guests read
+them. It hangs at the market only, so it doesn't break the rule against advertising standby.
 
 ## Shopping Starts
 

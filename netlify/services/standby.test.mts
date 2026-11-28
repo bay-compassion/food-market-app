@@ -26,8 +26,7 @@ describe('issueStandbyTicket', () => {
 	it('holds the next S number for a guest who scanned once standby has opened', async () => {
 		// Arrange
 		vi.stubEnv('KIOSK_SECRET', secret);
-		queueResult([{ status: 'service_started' }]); // the session, locked
-		queueResult([{ status: 'service_started', called: true }]); // standby has opened
+		queueResult([{ status: 'service_started' }]); // the session, locked: drawn, so standby is open
 		queueResult([{ id: 'event-1' }]); // the session lock for the S number
 		queueResult([{ highest: 6 }]); // the highest S number given or held
 		queueResult(undefined); // the ticket inserted
@@ -49,11 +48,10 @@ describe('issueStandbyTicket', () => {
 		});
 	});
 
-	it('refuses before the first number has been called', async () => {
+	it('refuses before the lottery has drawn', async () => {
 		// Arrange
 		vi.stubEnv('KIOSK_SECRET', secret);
-		queueResult([{ status: 'service_started' }]);
-		queueResult([{ status: 'service_started', called: false }]);
+		queueResult([{ status: 'lottery_pending' }]);
 
 		// Act
 		const result = await issueStandbyTicket(code);

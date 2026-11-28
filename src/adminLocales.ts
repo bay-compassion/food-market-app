@@ -619,6 +619,7 @@ export interface AdminTranslation {
 	devProgressNearlyDone: string;
 	queueDesk: QueueDeskTranslation;
 	kioskUnlock: KioskUnlockTranslation;
+	qrPosters: QrPostersTranslation;
 	printStationCard: PrintStationCardTranslation;
 	checklist: ChecklistTranslation;
 	help: HelpTranslation;
@@ -778,6 +779,21 @@ export interface PrintStationCardTranslation {
 	setupGroups: { title: string; steps: string[] }[];
 	setupCommandLabel: string;
 	guide: string;
+}
+
+/** The QR code posters admins print, and the app bar's submenu that opens them. */
+export interface QrPostersTranslation {
+	/** The app bar item holding the posters, shown to admins in place of the single QR code item. */
+	menu: string;
+	market: string;
+	premarket: string;
+	standby: string;
+	loading: string;
+	notPermitted: string;
+	/** On the standby poster when no session is running, so there is no code to print. */
+	noSession: string;
+	failed: string;
+	backToDashboard: string;
 }
 
 /** The code a worker reads off their phone to unlock a room display at `/kiosk`. */
@@ -1867,6 +1883,18 @@ export const adminTranslations = {
 				bySessionEnding: 'Session ended',
 				bySystem: 'Automatically',
 			},
+		},
+		qrPosters: {
+			menu: 'QR Codes',
+			market: 'Market QR Code',
+			premarket: 'Premarket QR Code',
+			standby: 'Standby QR Code',
+			loading: 'Loading…',
+			notPermitted: 'Only admins can print the market’s QR code posters.',
+			noSession:
+				'There’s no session right now, so there’s no standby code to print. Each session has its own.',
+			failed: 'The standby code couldn’t be loaded. Try again.',
+			backToDashboard: 'Back to the Dashboard',
 		},
 		kioskUnlock: {
 			open: 'Unlock a room display',

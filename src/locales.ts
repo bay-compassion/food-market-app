@@ -430,6 +430,8 @@ export interface StandbyTranslations {
 	unreachableHeading: string;
 	unreachableDetails: string;
 	retry: string;
+	/** Under the title on the standby QR code poster an admin prints for the market. */
+	posterDescription: string;
 }
 
 export interface ClaimViewTranslations {
@@ -461,7 +463,7 @@ export interface KioskTranslations {
 	fullscreen: string;
 	/**
 	 * The standby iPads (`/kiosk?screen=standby`), shown only at the market: over the QR code once
-	 * standby opens, and in its place before then.
+	 * the lottery has drawn and standby opens, and in its place before then.
 	 */
 	standbyScan: string;
 	standbyNotOpen: string;
@@ -1155,7 +1157,7 @@ export const translations = {
 			submitting: 'Joining…',
 			checking: 'Holding your place…',
 			notOpenHeading: 'Standby Isn’t Open Yet',
-			notOpenDetails: 'It opens when shopping starts. Scan the code again then.',
+			notOpenDetails: 'It opens after the lottery draw. Scan the code again then.',
 			closedHeading: 'Standby Has Closed',
 			closedDetails: 'Today’s market has ended. Thank you for coming.',
 			invalidHeading: 'This Code Didn’t Work',
@@ -1163,6 +1165,8 @@ export const translations = {
 			unreachableHeading: 'Couldn’t Connect',
 			unreachableDetails: 'Check your connection and try again.',
 			retry: 'Try Again',
+			posterDescription:
+				'Scan this code with your phone camera to join today’s standby list. It isn’t guaranteed: if food is left after the line, guests are admitted in order.',
 		},
 		kiosk: {
 			nowCalling: 'Now calling',
@@ -1176,7 +1180,7 @@ export const translations = {
 			reconnecting: 'Reconnecting…',
 			fullscreen: 'Full Screen',
 			standbyScan: 'Standby: scan to join the list',
-			standbyNotOpen: 'Standby opens when shopping starts',
+			standbyNotOpen: 'Standby opens after the lottery draw',
 		},
 		help: {
 			title: 'How it works',
@@ -1764,7 +1768,7 @@ export const translations = {
 			checking: 'Reservando su lugar…',
 			notOpenHeading: 'La lista de espera aún no está abierta',
 			notOpenDetails:
-				'Se abre cuando empiezan las compras. Escanee el código otra vez en ese momento.',
+				'Se abre después del sorteo de la lotería. Escanee el código otra vez en ese momento.',
 			closedHeading: 'La lista de espera se cerró',
 			closedDetails: 'El mercado de hoy terminó. Gracias por venir.',
 			invalidHeading: 'Este código no funcionó',
@@ -1772,6 +1776,8 @@ export const translations = {
 			unreachableHeading: 'No se pudo conectar',
 			unreachableDetails: 'Revise su conexión e inténtelo de nuevo.',
 			retry: 'Intentar de nuevo',
+			posterDescription:
+				'Escanee este código con la cámara de su teléfono para unirse a la lista de espera de hoy. No está garantizado: si queda comida después de la fila, se atiende a las personas en orden.',
 		},
 		kiosk: {
 			nowCalling: 'Llamando ahora',
@@ -1785,7 +1791,7 @@ export const translations = {
 			reconnecting: 'Reconectando…',
 			fullscreen: 'Pantalla completa',
 			standbyScan: 'Lista de espera: escanee para unirse',
-			standbyNotOpen: 'La lista de espera se abre cuando empiezan las compras',
+			standbyNotOpen: 'La lista de espera se abre después del sorteo de la lotería',
 		},
 		help: {
 			title: 'Cómo funciona',
@@ -2367,7 +2373,7 @@ export const translations = {
 			submitting: 'در حال پیوستن…',
 			checking: 'در حال نگه داشتن جای شما…',
 			notOpenHeading: 'فهرست انتظار هنوز باز نشده است',
-			notOpenDetails: 'وقتی خرید شروع شود باز می‌شود. آن موقع دوباره کد را اسکن کنید.',
+			notOpenDetails: 'پس از قرعه‌کشی باز می‌شود. آن موقع دوباره کد را اسکن کنید.',
 			closedHeading: 'فهرست انتظار بسته شده است',
 			closedDetails: 'بازار امروز تمام شده است. از آمدنتان سپاسگزاریم.',
 			invalidHeading: 'این کد کار نکرد',
@@ -2375,6 +2381,8 @@ export const translations = {
 			unreachableHeading: 'اتصال برقرار نشد',
 			unreachableDetails: 'اتصال خود را بررسی کنید و دوباره امتحان کنید.',
 			retry: 'دوباره امتحان کنید',
+			posterDescription:
+				'برای پیوستن به فهرست انتظار امروز، این کد را با دوربین گوشی خود اسکن کنید. این تضمینی نیست: اگر پس از صف غذا باقی بماند، افراد به ترتیب پذیرفته می‌شوند.',
 		},
 		kiosk: {
 			nowCalling: 'در حال فراخوانی',
@@ -2388,7 +2396,7 @@ export const translations = {
 			reconnecting: 'در حال اتصال دوباره…',
 			fullscreen: 'تمام‌صفحه',
 			standbyScan: 'فهرست انتظار: برای پیوستن اسکن کنید',
-			standbyNotOpen: 'فهرست انتظار وقتی خرید شروع شود باز می‌شود',
+			standbyNotOpen: 'فهرست انتظار پس از قرعه‌کشی باز می‌شود',
 		},
 		help: {
 			title: 'چطور کار می‌کند',
@@ -2980,7 +2988,7 @@ export const translations = {
 			checking: 'Inirereserba ang inyong puwesto…',
 			notOpenHeading: 'Hindi pa bukas ang standby',
 			notOpenDetails:
-				'Magbubukas ito kapag nagsimula na ang pamimili. I-scan muli ang code pagdating ng oras na iyon.',
+				'Magbubukas ito pagkatapos ng bunutan ng lottery. I-scan muli ang code pagdating ng oras na iyon.',
 			closedHeading: 'Sarado na ang standby',
 			closedDetails: 'Tapos na ang market ngayong araw. Salamat sa pagpunta.',
 			invalidHeading: 'Hindi gumana ang code na ito',
@@ -2988,6 +2996,8 @@ export const translations = {
 			unreachableHeading: 'Hindi Makakonekta',
 			unreachableDetails: 'Suriin ang iyong koneksyon at subukang muli.',
 			retry: 'Subukang Muli',
+			posterDescription:
+				'I-scan ang code na ito gamit ang camera ng inyong telepono para sumali sa standby list ngayong araw. Hindi ito garantisado: kung may matitirang pagkain pagkatapos ng pila, papapasukin ang mga tao nang sunud-sunod.',
 		},
 		kiosk: {
 			nowCalling: 'Tinatawag ngayon',
@@ -3001,7 +3011,7 @@ export const translations = {
 			reconnecting: 'Kumokonekta muli…',
 			fullscreen: 'Buong screen',
 			standbyScan: 'Standby: i-scan para sumali sa listahan',
-			standbyNotOpen: 'Magbubukas ang standby kapag nagsimula na ang pamimili',
+			standbyNotOpen: 'Magbubukas ang standby pagkatapos ng bunutan ng lottery',
 		},
 		help: {
 			title: 'Paano ito gumagana',
@@ -3581,7 +3591,7 @@ export const translations = {
 			submitting: 'Đang tham gia…',
 			checking: 'Đang giữ vị trí của bạn…',
 			notOpenHeading: 'Danh sách chờ chưa mở',
-			notOpenDetails: 'Danh sách sẽ mở khi bắt đầu mua sắm. Hãy quét mã lại lúc đó.',
+			notOpenDetails: 'Danh sách sẽ mở sau khi xổ số. Hãy quét mã lại lúc đó.',
 			closedHeading: 'Danh sách chờ đã đóng',
 			closedDetails: 'Phiên chợ hôm nay đã kết thúc. Cảm ơn bạn đã đến.',
 			invalidHeading: 'Mã này không dùng được',
@@ -3589,6 +3599,8 @@ export const translations = {
 			unreachableHeading: 'Không kết nối được',
 			unreachableDetails: 'Hãy kiểm tra kết nối và thử lại.',
 			retry: 'Thử lại',
+			posterDescription:
+				'Quét mã này bằng máy ảnh điện thoại để tham gia danh sách chờ hôm nay. Điều này không được đảm bảo: nếu còn thực phẩm sau khi hết hàng, mọi người sẽ được vào theo thứ tự.',
 		},
 		kiosk: {
 			nowCalling: 'Đang gọi số',
@@ -3602,7 +3614,7 @@ export const translations = {
 			reconnecting: 'Đang kết nối lại…',
 			fullscreen: 'Toàn màn hình',
 			standbyScan: 'Danh sách chờ: quét mã để tham gia',
-			standbyNotOpen: 'Danh sách chờ sẽ mở khi bắt đầu mua sắm',
+			standbyNotOpen: 'Danh sách chờ sẽ mở sau khi xổ số',
 		},
 		help: {
 			title: 'Cách thức hoạt động',
@@ -4160,7 +4172,7 @@ export const translations = {
 			submitting: '正在加入…',
 			checking: '正在保留您的位置…',
 			notOpenHeading: '候补名单尚未开放',
-			notOpenDetails: '开始购物时开放。届时请再次扫描二维码。',
+			notOpenDetails: '抽签后开放。届时请再次扫描二维码。',
 			closedHeading: '候补名单已关闭',
 			closedDetails: '今天的市场已经结束。感谢您的光临。',
 			invalidHeading: '此二维码无效',
@@ -4168,6 +4180,8 @@ export const translations = {
 			unreachableHeading: '无法连接',
 			unreachableDetails: '请检查网络连接后重试。',
 			retry: '重试',
+			posterDescription:
+				'用手机相机扫描此二维码，加入今天的候补名单。这并不保证：如果排队结束后还有食物，会按顺序让大家进入。',
 		},
 		kiosk: {
 			nowCalling: '正在叫号',
@@ -4181,7 +4195,7 @@ export const translations = {
 			reconnecting: '正在重新连接…',
 			fullscreen: '全屏',
 			standbyScan: '候补名单：扫码加入',
-			standbyNotOpen: '开始购物时候补名单开放',
+			standbyNotOpen: '抽签后候补名单开放',
 		},
 		help: {
 			title: '使用说明',
@@ -4750,7 +4764,7 @@ export const translations = {
 			submitting: 'جارٍ الانضمام…',
 			checking: 'جارٍ حجز مكانك…',
 			notOpenHeading: 'قائمة الانتظار غير مفتوحة بعد',
-			notOpenDetails: 'تُفتح عند بدء التسوق. امسح الرمز مرة أخرى حينها.',
+			notOpenDetails: 'تُفتح بعد سحب القرعة. امسح الرمز مرة أخرى حينها.',
 			closedHeading: 'أُغلقت قائمة الانتظار',
 			closedDetails: 'انتهى سوق اليوم. شكرًا لحضورك.',
 			invalidHeading: 'لم يعمل هذا الرمز',
@@ -4758,6 +4772,8 @@ export const translations = {
 			unreachableHeading: 'تعذّر الاتصال',
 			unreachableDetails: 'تحقق من اتصالك وحاول مرة أخرى.',
 			retry: 'حاول مرة أخرى',
+			posterDescription:
+				'امسح هذا الرمز بكاميرا هاتفك للانضمام إلى قائمة الانتظار اليوم. هذا غير مضمون: إذا تبقّى طعام بعد انتهاء الطابور، يدخل الناس بالترتيب.',
 		},
 		kiosk: {
 			nowCalling: 'الرقم الحالي',
@@ -4771,7 +4787,7 @@ export const translations = {
 			reconnecting: 'جارٍ إعادة الاتصال…',
 			fullscreen: 'ملء الشاشة',
 			standbyScan: 'قائمة الانتظار: امسح الرمز للانضمام',
-			standbyNotOpen: 'تُفتح قائمة الانتظار عند بدء التسوق',
+			standbyNotOpen: 'تُفتح قائمة الانتظار بعد سحب القرعة',
 		},
 		help: {
 			title: 'كيف يعمل',
@@ -5362,7 +5378,7 @@ export const translations = {
 			checking: 'Réservation de votre place…',
 			notOpenHeading: 'La liste d’attente n’est pas encore ouverte',
 			notOpenDetails:
-				'Elle ouvre quand les courses commencent. Scannez à nouveau le code à ce moment-là.',
+				'Elle ouvre après le tirage au sort. Scannez à nouveau le code à ce moment-là.',
 			closedHeading: 'La liste d’attente est fermée',
 			closedDetails: 'Le marché d’aujourd’hui est terminé. Merci d’être venu.',
 			invalidHeading: 'Ce code n’a pas fonctionné',
@@ -5370,6 +5386,8 @@ export const translations = {
 			unreachableHeading: 'Connexion impossible',
 			unreachableDetails: 'Vérifiez votre connexion et réessayez.',
 			retry: 'Réessayer',
+			posterDescription:
+				'Scannez ce code avec l’appareil photo de votre téléphone pour rejoindre la liste d’attente du jour. Ce n’est pas garanti : s’il reste de la nourriture après la file, les personnes passent dans l’ordre.',
 		},
 		kiosk: {
 			nowCalling: 'Numéro appelé',
@@ -5383,7 +5401,7 @@ export const translations = {
 			reconnecting: 'Reconnexion…',
 			fullscreen: 'Plein écran',
 			standbyScan: 'Liste d’attente : scannez pour vous inscrire',
-			standbyNotOpen: 'La liste d’attente ouvre quand les courses commencent',
+			standbyNotOpen: 'La liste d’attente ouvre après le tirage au sort',
 		},
 		help: {
 			title: 'Comment ça marche',
@@ -5968,8 +5986,7 @@ export const translations = {
 			submitting: 'Entrando…',
 			checking: 'Reservando seu lugar…',
 			notOpenHeading: 'A lista de espera ainda não abriu',
-			notOpenDetails:
-				'Ela abre quando as compras começam. Escaneie o código de novo nesse momento.',
+			notOpenDetails: 'Ela abre depois do sorteio. Escaneie o código de novo nesse momento.',
 			closedHeading: 'A lista de espera fechou',
 			closedDetails: 'O mercado de hoje terminou. Obrigado por vir.',
 			invalidHeading: 'Este código não funcionou',
@@ -5977,6 +5994,8 @@ export const translations = {
 			unreachableHeading: 'Não foi possível conectar',
 			unreachableDetails: 'Verifique sua conexão e tente de novo.',
 			retry: 'Tentar de novo',
+			posterDescription:
+				'Escaneie este código com a câmera do celular para entrar na lista de espera de hoje. Não é garantido: se sobrar comida depois da fila, as pessoas entram em ordem.',
 		},
 		kiosk: {
 			nowCalling: 'Chamando agora',
@@ -5990,7 +6009,7 @@ export const translations = {
 			reconnecting: 'Reconectando…',
 			fullscreen: 'Tela cheia',
 			standbyScan: 'Lista de espera: escaneie para entrar',
-			standbyNotOpen: 'A lista de espera abre quando as compras começam',
+			standbyNotOpen: 'A lista de espera abre depois do sorteio',
 		},
 		help: {
 			title: 'Como funciona',
@@ -6571,7 +6590,7 @@ export const translations = {
 			submitting: 'Записываем…',
 			checking: 'Закрепляем ваше место…',
 			notOpenHeading: 'Лист ожидания ещё не открыт',
-			notOpenDetails: 'Он откроется, когда начнутся покупки. Тогда отсканируйте код ещё раз.',
+			notOpenDetails: 'Он откроется после жеребьёвки. Тогда отсканируйте код ещё раз.',
 			closedHeading: 'Лист ожидания закрыт',
 			closedDetails: 'Сегодняшний рынок закончился. Спасибо, что пришли.',
 			invalidHeading: 'Этот код не сработал',
@@ -6579,6 +6598,8 @@ export const translations = {
 			unreachableHeading: 'Не удалось подключиться',
 			unreachableDetails: 'Проверьте подключение и попробуйте ещё раз.',
 			retry: 'Попробовать снова',
+			posterDescription:
+				'Отсканируйте этот код камерой телефона, чтобы встать в лист ожидания на сегодня. Это не гарантировано: если после очереди останутся продукты, людей пропускают по порядку.',
 		},
 		kiosk: {
 			nowCalling: 'Сейчас вызывают',
@@ -6592,7 +6613,7 @@ export const translations = {
 			reconnecting: 'Повторное подключение…',
 			fullscreen: 'Полный экран',
 			standbyScan: 'Лист ожидания: отсканируйте, чтобы записаться',
-			standbyNotOpen: 'Лист ожидания откроется, когда начнутся покупки',
+			standbyNotOpen: 'Лист ожидания откроется после жеребьёвки',
 		},
 		help: {
 			title: 'Как это работает',

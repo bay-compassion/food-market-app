@@ -29,9 +29,9 @@ import { LogoutIcon } from '../icons/LogoutIcon';
 import { MoreVertIcon } from '../icons/MoreVertIcon';
 import { OpenExternalIcon } from '../icons/OpenExternalIcon';
 import { PrivacyIcon } from '../icons/PrivacyIcon';
-import { QrCodeIcon } from '../icons/QrCodeIcon';
 import { SmartphoneIcon } from '../icons/SmartphoneIcon';
 import { StorefrontIcon } from '../icons/StorefrontIcon';
+import { AppBarQrCodes } from './AppBarQrCodes';
 import { ColorModeDialog } from './ColorModeDialog';
 import { DeviceDetailsDialog } from './DeviceDetailsDialog';
 
@@ -170,12 +170,7 @@ export const AppBarMenu = observer(function AppBarMenu() {
 						{t.takeTour}
 					</MenuItem>
 				) : null}
-				<MenuItem component={Link} to="/qr-code" onClick={close}>
-					<ListItemIcon>
-						<QrCodeIcon fontSize="small" />
-					</ListItemIcon>
-					{t.qrCode}
-				</MenuItem>
+				<AppBarQrCodes onNavigate={close} />
 				<MenuItem onClick={openColorModeDialog}>
 					<ListItemIcon>
 						<ContrastIcon fontSize="small" />
