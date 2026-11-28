@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { translations } from '../../locales';
 import { EARLIER_CALLED_NUMBERS_FLAG_KEY } from '../hooks/use-earlier-called-numbers';
@@ -282,5 +282,20 @@ export const StandbyCalled: Story = {
 		await expect(await canvas.findByText(copy.standby.calledHeader)).toBeVisible();
 		await expect(canvas.getByText(copy.standby.calledDetails)).toBeVisible();
 		await expect(canvas.queryByText(copy.called.headerLate)).toBeNull();
+	},
+};
+
+/** Leaving standby asks in standby's own words: the guest gives up their place on the list. */
+export const StandbyLeaving: Story = {
+	args: { visitStatus: 'waiting', standbyNumber: 4 },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const copy = translations.en.guestView.visitStatus;
+
+		await userEvent.click(await canvas.findByRole('button', { name: copy.cancelAction }));
+
+		const dialog = within(await within(document.body).findByRole('alertdialog'));
+
+		await expect(dialog.getByText(copy.standby.cancelConfirmation)).toBeVisible();
 	},
 };
