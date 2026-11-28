@@ -179,6 +179,7 @@ export const AdmittingFromStandby: Story = {
 
 		await expect(await page.findByRole('button', { name: labels.call })).toBeVisible();
 		await expect(page.queryByRole('button', { name: labels.mark_no_show })).toBeNull();
+		await expect(page.queryByRole('button', { name: t.returnOptions })).toBeNull();
 	},
 };
 

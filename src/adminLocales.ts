@@ -347,6 +347,7 @@ export interface AdminTranslation {
 	takeOffStandbyQuestion: string;
 	takeOffStandbyDetails: string;
 	keepOnStandby: string;
+	backOnStandby: string;
 	/** The overview's count of volunteers who shopped before the line. */
 	premarketVolunteers: string;
 	/** Heads Today's list of them, and says when it is empty. */
@@ -1232,6 +1233,7 @@ export const adminTranslations = {
 		takeOffStandbyDetails:
 			'Their visit is cancelled and they lose their place on the list. Standby guests are never marked as no-shows.',
 		keepOnStandby: 'Keep Them',
+		backOnStandby: 'Back on Standby',
 		premarketVolunteers: 'Premarket',
 		premarketHeading: 'Premarket',
 		noPremarketVolunteers: 'No volunteers have checked in for the premarket.',

@@ -115,10 +115,11 @@ export function admissionCreatesVisit(admission: ManualAdmission): admission is 
 
 /**
  * Whether the worker is offered a QR code that puts the new record on the guest's phone. A `served`
- * record is written after the fact, when the guest is no longer at the table to scan it.
+ * record is written after the fact, when the guest is no longer at the table to scan it. A standby
+ * guest's phone has no standby card to show yet (see `docs/standby.md`), so it isn't offered either.
  */
 export function admissionOffersPhoneClaim(admission: ManualAdmission) {
-	return admission !== 'served';
+	return admission !== 'served' && admission !== 'standby';
 }
 
 export function isGuestAdmission(value: unknown): value is GuestAdmission {

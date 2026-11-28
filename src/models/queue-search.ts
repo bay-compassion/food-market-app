@@ -5,7 +5,7 @@ import { QueueNumber } from './queue-number.ts';
 /** The fields of a ticket a volunteer can search the line by. */
 export type QueueSearchable = Pick<
 	QueueGuest,
-	'id' | 'firstName' | 'lastName' | 'phone' | 'queuePosition' | 'priorityNumber'
+	'id' | 'firstName' | 'lastName' | 'phone' | 'queuePosition' | 'priorityNumber' | 'standbyNumber'
 >;
 
 /** The fewest digits that are read as part of a phone number rather than a queue number. */
@@ -59,9 +59,11 @@ export class QueueSearch {
 		);
 	}
 
-	/** `12` or `p2` — a word written the way a queue number is, once folded. */
+	/** `12`, `p2` or `s3` — a word written the way a queue number is, once folded. */
 	private static isNumber(term: string): boolean {
-		return new RegExp(`^${QueueNumber.priorityPrefix.toLowerCase()}?\\d+$`).test(term);
+		const prefixes = `${QueueNumber.priorityPrefix}${QueueNumber.standbyPrefix}`.toLowerCase();
+
+		return new RegExp(`^[${prefixes}]?\\d+$`).test(term);
 	}
 
 	/** Lower case without accents, so a search needn't match either. */

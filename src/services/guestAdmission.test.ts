@@ -61,4 +61,12 @@ describe('the standby admission', () => {
 		// Assert
 		expect(placed).toEqual(['postmarket', 'waiting', true]);
 	});
+
+	it('offers no phone QR code until standby has a card of its own', () => {
+		// Act
+		const offersClaim = admissionOffersPhoneClaim('standby');
+
+		// Assert
+		expect(offersClaim).toBe(false);
+	});
 });

@@ -239,6 +239,8 @@ A stack of PRs. Each one ships and works on its own.
    that.
 5. **The guest's standby card.** "You're on the standby list", the card changing when the guest is
    admitted, and cancelling from the phone. The copy goes into every language.
+   Turn the phone QR code back on for standby (`admissionOffersPhoneClaim` and the claim on
+   standby tickets), which PR 3 holds back until this card exists.
 
 Before each migration PR, follow the checklist in [migrations.md](migrations.md). A person reviews
 and merges it.

@@ -124,7 +124,7 @@ export const QueueGuestActions = observer(function QueueGuestActions({
 						>
 							{t.phoneGuest} {guest.phone}
 						</MenuItem>
-						{showGuestClaim ? (
+						{showGuestClaim && guest.track !== 'postmarket' ? (
 							<MenuItem
 								onClick={() => {
 									closeMenu();
