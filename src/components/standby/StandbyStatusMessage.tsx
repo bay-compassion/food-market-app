@@ -12,7 +12,7 @@ import { CloseIcon } from '../ui/icons/CloseIcon';
 import { ScheduleIcon } from '../ui/icons/ScheduleIcon';
 import { TicketIcon } from '../ui/icons/TicketIcon';
 
-type MessageState = Exclude<StandbyEntryState, 'held' | 'joined'>;
+type MessageState = Exclude<StandbyEntryState, 'held' | 'joined' | 'has_visit'>;
 
 /** Every way the page can stand other than showing the form: pulling a ticket, or why it can't. */
 export const StandbyStatusMessage = observer(function StandbyStatusMessage({

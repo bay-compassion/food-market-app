@@ -53,7 +53,7 @@ const Standby = observer(function Standby({ result }: Args) {
 
 	return entry.state === 'held' ? (
 		<StandbyForm entry={entry} />
-	) : entry.state === 'joined' ? null : (
+	) : entry.state === 'joined' || entry.state === 'has_visit' ? null : (
 		<StandbyStatusMessage state={entry.state} onRetry={() => void entry.start(ticket.code)} />
 	);
 });

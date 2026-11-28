@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { StandbyTicketResult } from '../services/standby.ts';
+import type { VisitStatus } from '../services/visitStateMachine.ts';
 import { heldStandbyTicketKey, StandbyEntryStore } from './standby-entry.store.ts';
 
 const ticket = {
@@ -14,6 +15,8 @@ function entryStore(options: {
 	pullTicket?: (code: string) => Promise<StandbyTicketResult>;
 	saved?: Map<string, string>;
 	registered?: boolean;
+	/** The visit this phone already holds for the session, by status. */
+	visitStatus?: VisitStatus;
 }) {
 	const saved = options.saved ?? new Map<string, string>();
 	const registration = {
@@ -26,7 +29,13 @@ function entryStore(options: {
 					},
 		),
 	};
-	const visit = { submit: vi.fn() };
+	const visit = {
+		submit: vi.fn(),
+		refresh: vi.fn().mockResolvedValue(undefined),
+		belongsTo: (marketEventId: string | null | undefined) =>
+			options.visitStatus !== undefined && marketEventId === 'event-1',
+		status: options.visitStatus ?? null,
+	};
 	const pullTicket = vi.fn(
 		options.pullTicket ?? (() => Promise.resolve({ kind: 'ticket' as const, ticket })),
 	);
@@ -142,5 +151,44 @@ describe('StandbyEntryStore', () => {
 		// Assert
 		expect(store.state).toBe('held');
 		expect(saved.has(heldStandbyTicketKey)).toBe(true);
+	});
+
+	it.each(['waiting', 'called', 'served'] as const)(
+		'sends a guest whose visit is already %s home to their card, without pulling a ticket',
+		async (visitStatus) => {
+			// Arrange
+			const { store, pullTicket } = entryStore({ visitStatus });
+
+			// Act
+			await store.start(ticket.code);
+
+			// Assert
+			expect(store.state).toBe('has_visit');
+			expect(pullTicket).not.toHaveBeenCalled();
+		},
+	);
+
+	it('lets a guest the draw passed over pull a ticket', async () => {
+		// Arrange
+		const { store, pullTicket } = entryStore({ visitStatus: 'not_placed' });
+
+		// Act
+		await store.start(ticket.code);
+
+		// Assert
+		expect(pullTicket).toHaveBeenCalledOnce();
+		expect(store.state).toBe('held');
+	});
+
+	it('pulls once when started twice at the same time', async () => {
+		// Arrange
+		const { store, pullTicket } = entryStore({});
+
+		// Act
+		await Promise.all([store.start(ticket.code), store.start(ticket.code)]);
+
+		// Assert
+		expect(pullTicket).toHaveBeenCalledOnce();
+		expect(store.state).toBe('held');
 	});
 });

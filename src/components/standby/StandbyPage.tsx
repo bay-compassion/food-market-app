@@ -35,8 +35,8 @@ export const StandbyPage = observer(function StandbyPage() {
 		void entry.start(code);
 	}, [entry, code]);
 
-	// Joined: the home screen shows the standby card, as it would for any guest with a visit.
-	if (entry.state === 'joined') {
+	// Joined, or already in today's line or on the list: the home screen shows the card they have.
+	if (entry.state === 'joined' || entry.state === 'has_visit') {
 		return <Navigate to="/" replace />;
 	}
 
