@@ -1,4 +1,4 @@
-<!-- diagram-sources: db/schema.mts=7457a25dcff8 -->
+<!-- diagram-sources: db/schema.mts=510fa5a99a48 -->
 
 # Database structure
 
@@ -112,9 +112,10 @@ erDiagram
         uuid market_event_id FK
         uuid guest_id FK
         text status "see session-lifecycle.md"
-        text track "lottery | premarket: a volunteer shopping first, with no number"
+        text track "lottery | premarket: a volunteer shopping first, with no number | postmarket: standby"
         integer queue_position "the guest's number; never changes once given"
         integer priority_number "P1, P2, ... for a guest a worker put at the front"
+        integer standby_number "S1, S2, ... for a standby guest, in the order they joined"
         boolean queue_front "put at the front: called before everyone else"
         integer queue_order "call order within queue_front; never shown"
         integer lottery_weight "relative odds the draw used; 1 unless a steward raised them"

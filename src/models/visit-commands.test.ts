@@ -31,4 +31,48 @@ describe('VisitCommands', () => {
 		// Assert
 		expect(allows).toBe(false);
 	});
+
+	it.each([
+		['waiting', ['call', 'cancel']],
+		['called', ['serve', 'return_to_queue', 'cancel']],
+		['served', []],
+		['cancelled', []],
+	] as const)('offers a %s standby guest everything but a no-show', (status, expected) => {
+		// Act
+		const offered = new VisitCommands({ status, track: 'postmarket' }).offered;
+
+		// Assert
+		expect(offered).toEqual(expected);
+	});
+
+	it('never marks a standby guest a no-show', () => {
+		// Arrange
+		const commands = new VisitCommands({ status: 'called', track: 'postmarket' });
+
+		// Act
+		const allows = commands.allows('mark_no_show');
+
+		// Assert
+		expect(allows).toBe(false);
+	});
+
+	it('lets a worker cancel a called standby guest, which the line never allows', () => {
+		// Act
+		const standby = new VisitCommands({ status: 'called', track: 'postmarket' });
+		const line = new VisitCommands({ status: 'called', track: 'lottery' });
+
+		// Assert
+		expect(standby.allows('cancel')).toBe(true);
+		expect(line.allows('cancel')).toBe(false);
+	});
+
+	it('neither notifies a called standby guest nor gives a returned one a place in line', () => {
+		// Act
+		const standby = new VisitCommands({ status: 'called', track: 'postmarket' });
+		const line = new VisitCommands({ status: 'called', track: 'lottery' });
+
+		// Assert
+		expect([standby.notifiesWhenCalled, standby.returnsToAPlaceInLine]).toEqual([false, false]);
+		expect([line.notifiesWhenCalled, line.returnsToAPlaceInLine]).toEqual([true, true]);
+	});
 });

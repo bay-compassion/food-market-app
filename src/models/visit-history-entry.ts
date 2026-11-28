@@ -34,6 +34,7 @@ export class VisitHistoryEntry {
 		const number = QueueNumber.of({
 			queuePosition: details.queuePosition ?? null,
 			priorityNumber: details.priorityNumber ?? null,
+			standbyNumber: details.standbyNumber ?? null,
 		});
 
 		if ((kind === 'drawn' || kind === 'added' || kind === 'tag_printed') && number) {

@@ -79,7 +79,14 @@ export async function queueBoard(): Promise<QueueBoardState> {
 		db
 			.select({ count: sql<number>`count(*)::int` })
 			.from(visits)
-			.where(and(eq(visits.marketEventId, event.id), eq(visits.status, 'waiting'))),
+			.where(
+				and(
+					eq(visits.marketEventId, event.id),
+					eq(visits.status, 'waiting'),
+					// The board counts the line; standby is a list of its own.
+					eq(visits.track, 'lottery'),
+				),
+			),
 	);
 
 	return {

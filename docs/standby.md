@@ -223,9 +223,12 @@ A stack of PRs. Each one ships and works on its own.
 2. **The postmarket track and the S series.** `postmarket` in `VisitTrack`, the `S` series in
    `QueueNumber` with its own `standby_number` column (not `queue_position`, which other code
    reads), the `VisitCommands` branch, the session-close change, and the status-selection sweep
-   above. The migration drops and re-adds `visits_track_check`, so it is not purely additive.
-3. **Standby on the queue desk.** The Standby section, and the `standby` admission for adding a
-   guest by hand.
+   above, on the server. The migration drops and re-adds `visits_track_check`, so it is not purely
+   additive.
+3. **Standby on the queue desk.** The Standby section, the `standby` admission for adding a guest by
+   hand (allocating S numbers), S numbers on name tags, the client side of the status sweep (the
+   queue desk's roster and session progress), and the standby subtotals in reports. This is the
+   first PR that creates standby visits.
 4. **Tickets and the code.** The code, the iPad screen, the ticket table (a migration), `/standby`
    and the form, the server-side check that standby is open, and moving a `not_placed` visit onto
    standby.

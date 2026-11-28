@@ -87,7 +87,7 @@ export async function runLottery(
 				// already `waiting`, so they use capacity and the winners queue behind them.
 				const [line] = await tx
 					.select({
-						waiting: sql<number>`count(*) FILTER (WHERE ${visits.status} = 'waiting')::int`,
+						waiting: sql<number>`count(*) FILTER (WHERE ${visits.status} = 'waiting' AND ${visits.track} = 'lottery')::int`,
 						highestNumber: sql<number | null>`max(${visits.queuePosition})`,
 						highestOrder: sql<number | null>`max(${visits.queueOrder})`,
 					})

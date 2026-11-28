@@ -1,3 +1,4 @@
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { db, queueResult, resetDbStub } from '../test/dbStub.mjs';
@@ -96,9 +97,28 @@ describe('runVisitCommand return_to_queue placement', () => {
 			calledAt: null,
 			queuePosition: 4,
 			priorityNumber: null,
+			standbyNumber: null,
 			queueFront: false,
 			queueOrder: 13,
 		});
+	});
+
+	it('puts a returning standby guest back on the list, ignoring any placement', async () => {
+		queueResult([
+			{
+				status: 'called',
+				track: 'postmarket',
+				marketEventId: 'event-1',
+				queuePosition: null,
+				priorityNumber: null,
+			},
+		]);
+		queueResult([{ id: 'visit-1', status: 'waiting' }]);
+
+		const result = await runVisitCommand('visit-1', 'return_to_queue', { placement: 'end', actor });
+
+		expect(result.ok).toBe(true);
+		expect(lastUpdateValues()).toEqual({ status: 'waiting', calledAt: null });
 	});
 
 	it('puts a returning guest at the front without renumbering anyone', async () => {
@@ -115,6 +135,7 @@ describe('runVisitCommand return_to_queue placement', () => {
 			calledAt: null,
 			queuePosition: 4,
 			priorityNumber: null,
+			standbyNumber: null,
 			queueFront: true,
 			queueOrder: 13,
 		});
@@ -227,6 +248,26 @@ describe('resolveOutstandingVisits', () => {
 				details: { cause: 'session_ended' },
 			},
 		]);
+	});
+
+	it('marks only the line’s called guests no-shows; a called standby guest is cancelled', async () => {
+		// Arrange
+		queueResult([{ id: 'visit-called' }]);
+		queueResult([{ id: 'standby-called' }]);
+
+		// Act
+		await resolveOutstandingVisits(db as never, 'event-1', 'close');
+
+		// Assert
+		const [noShows, cancelled] = db.update.mock.results.map(({ value }) =>
+			new PgDialect().sqlToQuery(
+				(value as { where: ReturnType<typeof vi.fn> }).where.mock.calls[0]![0],
+			),
+		);
+
+		expect(noShows?.sql).toContain('"track" = $');
+		expect(noShows?.params).toContain('lottery');
+		expect(cancelled?.sql).not.toContain('"track"');
 	});
 
 	it('cancels everyone, recording no no-shows, when a session is reset', async () => {

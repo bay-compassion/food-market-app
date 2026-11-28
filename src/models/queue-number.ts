@@ -1,11 +1,15 @@
-/** The two number columns a visit carries; at most one of them is set. */
+/**
+ * The number columns a visit carries; at most one of them is set. `standbyNumber` is optional
+ * because most sources predate standby, or never hold a standby guest.
+ */
 export type QueueNumberSource = {
 	queuePosition: number | null;
 	priorityNumber: number | null;
+	standbyNumber?: number | null;
 };
 
 /** Which run of numbers a queue number belongs to. */
-export type QueueNumberSeries = 'main' | 'priority';
+export type QueueNumberSeries = 'main' | 'priority' | 'standby';
 
 /**
  * The number a guest carries through the day — on their phone, in their text, on their name tag —
@@ -23,6 +27,18 @@ export class QueueNumber {
 	/** The letter that marks the priority series. Kept in Latin script in every language. */
 	static readonly priorityPrefix = 'P';
 
+	/** The letter that marks the standby series, `S1`, `S2`, …. Latin script in every language. */
+	static readonly standbyPrefix = 'S';
+
+	private static readonly prefixes: Record<QueueNumberSeries, string> = {
+		main: '',
+		priority: QueueNumber.priorityPrefix,
+		standby: QueueNumber.standbyPrefix,
+	};
+
+	/** The order series sort in when a list isn't the line's own order. */
+	private static readonly seriesOrder: QueueNumberSeries[] = ['main', 'priority', 'standby'];
+
 	private constructor(
 		readonly series: QueueNumberSeries,
 		readonly value: number,
@@ -38,6 +54,10 @@ export class QueueNumber {
 			return new QueueNumber('priority', source.priorityNumber);
 		}
 
+		if (typeof source.standbyNumber === 'number') {
+			return new QueueNumber('standby', source.standbyNumber);
+		}
+
 		return typeof source.queuePosition === 'number'
 			? new QueueNumber('main', source.queuePosition)
 			: null;
@@ -51,11 +71,19 @@ export class QueueNumber {
 		return new QueueNumber('priority', value);
 	}
 
+	static standby(value: number): QueueNumber {
+		return new QueueNumber('standby', value);
+	}
+
 	get isPriority(): boolean {
 		return this.series === 'priority';
 	}
 
-	/** `42`, or `P1`. */
+	get isStandby(): boolean {
+		return this.series === 'standby';
+	}
+
+	/** `42`, `P1`, or `S1`. */
 	get label(): string {
 		return this.format(String);
 	}
@@ -65,21 +93,28 @@ export class QueueNumber {
 	 * so a priority number reads `P۱` for a guest who reads Persian digits.
 	 */
 	format(digits: (value: number) => string): string {
-		return this.isPriority
-			? `${QueueNumber.priorityPrefix}${digits(this.value)}`
-			: digits(this.value);
+		return `${QueueNumber.prefixes[this.series]}${digits(this.value)}`;
 	}
 
 	/** The columns this number is stored in. */
-	toSource(): QueueNumberSource {
-		return this.isPriority
-			? { queuePosition: null, priorityNumber: this.value }
-			: { queuePosition: this.value, priorityNumber: null };
+	toSource(): Required<QueueNumberSource> {
+		return {
+			queuePosition: this.series === 'main' ? this.value : null,
+			priorityNumber: this.isPriority ? this.value : null,
+			standbyNumber: this.isStandby ? this.value : null,
+		};
 	}
 
 	/** The number as a visit's history records it. */
-	toDetails(): { queuePosition: number } | { priorityNumber: number } {
-		return this.isPriority ? { priorityNumber: this.value } : { queuePosition: this.value };
+	toDetails(): { queuePosition: number } | { priorityNumber: number } | { standbyNumber: number } {
+		switch (this.series) {
+			case 'priority':
+				return { priorityNumber: this.value };
+			case 'standby':
+				return { standbyNumber: this.value };
+			default:
+				return { queuePosition: this.value };
+		}
 	}
 
 	equals(other: QueueNumber | null): boolean {
@@ -87,12 +122,16 @@ export class QueueNumber {
 	}
 
 	/**
-	 * Main numbers first, each series in counting order: the order a list of numbers reads in when
-	 * it is not the line's order — the kiosk's tiles, a guest's row of numbers being called.
+	 * Main numbers first, then priority, then standby, each series in counting order: the order a
+	 * list of numbers reads in when it is not the line's order — the kiosk's tiles, a guest's row
+	 * of numbers being called.
 	 */
 	static compare(this: void, first: QueueNumber, second: QueueNumber): number {
 		if (first.series !== second.series) {
-			return first.isPriority ? 1 : -1;
+			return (
+				QueueNumber.seriesOrder.indexOf(first.series) -
+				QueueNumber.seriesOrder.indexOf(second.series)
+			);
 		}
 
 		return first.value - second.value;

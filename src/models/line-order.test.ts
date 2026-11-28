@@ -22,6 +22,7 @@ describe('LineOrder', () => {
 		expect(placement).toEqual({
 			queuePosition: 41,
 			priorityNumber: null,
+			standbyNumber: null,
 			queueFront: false,
 			queueOrder: 41,
 		});
@@ -38,6 +39,7 @@ describe('LineOrder', () => {
 		expect(placement).toEqual({
 			queuePosition: null,
 			priorityNumber: 2,
+			standbyNumber: null,
 			queueFront: true,
 			queueOrder: 41,
 		});

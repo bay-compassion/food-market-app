@@ -7,6 +7,7 @@ import { QueueNumber } from '../../src/models/queue-number.js';
 import { VisitCommands } from '../../src/models/visit-commands.js';
 import type { QueuePlacement } from '../../src/services/guestAdmission.js';
 import { visitCommandEvents, type VisitEventActor } from '../../src/services/visit-events.js';
+import type { VisitTrack } from '../../src/services/visit-track.js';
 import {
 	outstandingVisitStatuses,
 	visitCommandTarget,
@@ -130,11 +131,15 @@ export async function runVisitCommand(
 		return { ok: false, status: 404, error: 'Visit not found.' };
 	}
 
-	if (!new VisitCommands(current).allows(command)) {
+	const commands = new VisitCommands(current);
+
+	if (!commands.allows(command)) {
 		return transitionRefused;
 	}
 
-	const placement = command === 'return_to_queue' ? options.placement : undefined;
+	const placement =
+		command === 'return_to_queue' && commands.returnsToAPlaceInLine ? options.placement : undefined;
+	const notifies = command === 'call' && commands.notifiesWhenCalled;
 
 	let updated: { id: string; status: string };
 
@@ -176,7 +181,7 @@ export async function runVisitCommand(
 					]);
 				}
 
-				if (command === 'call') {
+				if (notifies) {
 					await queueCalledNotifications(tx, [visit.id]);
 				}
 
@@ -191,7 +196,7 @@ export async function runVisitCommand(
 		throw error;
 	}
 
-	if (command === 'call') {
+	if (notifies) {
 		await deliverCalledNotifications([updated.id]);
 	}
 
@@ -218,7 +223,14 @@ async function callNextInTransaction(
 				tx
 					.select({ id: visits.id })
 					.from(visits)
-					.where(and(eq(visits.marketEventId, marketEventId), eq(visits.status, 'waiting')))
+					.where(
+						and(
+							eq(visits.marketEventId, marketEventId),
+							eq(visits.status, 'waiting'),
+							// Standby waits for the line; a worker admits it one guest at a time.
+							eq(visits.track, 'lottery'),
+						),
+					)
 					.orderBy(...lineOrder)
 					.limit(count),
 			),
@@ -307,10 +319,12 @@ export async function serveAndCallNext(
  * Resolves every visit still in line when a session ends, inside `endSession`'s transaction, so
  * ending a session never strands a guest in a status that implies service is still coming.
  *
- * A guest who was called and never came to be served is recorded as a no-show, as a worker would
- * have. Everyone else still in line — waiting to be called, or `registered` and never given a place
- * — was never asked to come, so the market ended their visit and it is cancelled. A reset is a
- * do-over rather than a market day, so it cancels everyone and leaves no no-show on anyone's record.
+ * A guest in the line who was called and never came to be served is recorded as a no-show, as a
+ * worker would have. Everyone else still in line — waiting to be called, or `registered` and never
+ * given a place — was never asked to come, so the market ended their visit and it is cancelled. A
+ * standby guest is never a no-show, called or not: standby promised nothing, so they are cancelled
+ * too. A reset is a do-over rather than a market day, so it cancels everyone and leaves no no-show
+ * on anyone's record.
  */
 export async function resolveOutstandingVisits(
 	tx: Transaction,
@@ -319,24 +333,36 @@ export async function resolveOutstandingVisits(
 ) {
 	return tracedQuery('visit.resolve_outstanding', async () => {
 		const noShows =
-			ending === 'reset' ? [] : await resolveVisits(tx, marketEventId, ['called'], 'no_show');
+			ending === 'reset'
+				? []
+				: await resolveVisits(tx, marketEventId, ['called'], 'no_show', 'lottery');
 		const cancelled = await resolveVisits(tx, marketEventId, stillInLineStatuses, 'cancelled');
 
 		return noShows.length + cancelled.length;
 	});
 }
 
-/** Moves a session's visits in `from` to `to`, recording the session's ending as the cause. */
+/**
+ * Moves a session's visits in `from` to `to` — only those on `track`, when given — recording the
+ * session's ending as the cause.
+ */
 async function resolveVisits(
 	tx: Transaction,
 	marketEventId: string,
 	from: VisitStatus[],
 	to: 'no_show' | 'cancelled',
+	track?: VisitTrack,
 ) {
 	const resolved = await tx
 		.update(visits)
 		.set({ status: to })
-		.where(and(eq(visits.marketEventId, marketEventId), inArray(visits.status, from)))
+		.where(
+			and(
+				eq(visits.marketEventId, marketEventId),
+				inArray(visits.status, from),
+				track ? eq(visits.track, track) : undefined,
+			),
+		)
 		.returning({ id: visits.id });
 
 	await recordVisitEvents(
@@ -374,9 +400,8 @@ export async function placeInLine(
 			.where(eq(marketEvents.id, marketEventId))
 			.for('update');
 
-		const othersWaiting = visit
-			? sql`${visits.status} = 'waiting' AND ${visits.id} <> ${visit.id}`
-			: sql`${visits.status} = 'waiting'`;
+		const inLine = sql`${visits.status} = 'waiting' AND ${visits.track} = 'lottery'`;
+		const othersWaiting = visit ? sql`${inLine} AND ${visits.id} <> ${visit.id}` : inLine;
 		const [line] = await tx
 			.select({
 				highestNumber: sql<number | null>`max(${visits.queuePosition})`,

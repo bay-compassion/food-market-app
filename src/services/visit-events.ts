@@ -77,6 +77,8 @@ export type VisitEventDetails = {
 	queuePosition?: number;
 	/** The priority-series number (`P1`, …) a guest a worker put at the front was given. */
 	priorityNumber?: number;
+	/** The standby-series number (`S1`, …) a guest on standby was given. */
+	standbyNumber?: number;
 	/** Why a visit was cancelled or marked a no-show without anyone doing it. */
 	cause?: 'session_ended';
 	/** The status a `corrected` visit was in before the correction. */

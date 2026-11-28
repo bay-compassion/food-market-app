@@ -218,8 +218,9 @@ export const visits = pgTable(
 			.references(() => guests.id),
 		status: text('status').$type<VisitStatus>().notNull().default('registered'),
 		/**
-		 * How the guest takes part: through the lottery and the line, or in the premarket before it — a
-		 * volunteer who shops first, with a guaranteed place and no number.
+		 * How the guest takes part: through the lottery and the line; in the premarket before it — a
+		 * volunteer who shops first, with a guaranteed place and no number; or on standby after it,
+		 * the postmarket, with no guarantee at all.
 		 */
 		track: text('track').$type<VisitTrack>().notNull().default('lottery'),
 		/**
@@ -230,6 +231,8 @@ export const visits = pgTable(
 		queuePosition: integer('queue_position'),
 		/** The number of a guest a worker put at the front ahead of others, shown as `P1`, `P2`, …. */
 		priorityNumber: integer('priority_number'),
+		/** A standby guest's number, shown as `S1`, `S2`, …, in the order they joined. */
+		standbyNumber: integer('standby_number'),
 		/** Whether a worker put this guest at the front: called before everyone else, in `queueOrder`. */
 		queueFront: boolean('queue_front').notNull().default(false),
 		/** The order the line is called in, within `queueFront`. Null for a visit not in the line. */
@@ -257,7 +260,16 @@ export const visits = pgTable(
 		isFirstVisit: boolean('is_first_visit').notNull().default(false),
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 	},
-	(table) => [check('visits_track_check', sql`${table.track} IN ('lottery', 'premarket')`)],
+	(table) => [
+		check('visits_track_check', sql`${table.track} IN ('lottery', 'premarket', 'postmarket')`),
+		check(
+			'visits_standby_number_check',
+			sql`${table.standbyNumber} IS NULL OR ${table.track} = 'postmarket'`,
+		),
+		uniqueIndex('visits_standby_number_idx')
+			.on(table.marketEventId, table.standbyNumber)
+			.where(sql`${table.standbyNumber} IS NOT NULL`),
+	],
 );
 
 /**

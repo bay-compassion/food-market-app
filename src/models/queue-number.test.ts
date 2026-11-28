@@ -79,4 +79,29 @@ describe('QueueNumber', () => {
 		// Assert
 		expect(sorted).toEqual(['4', '9', 'P1', 'P2']);
 	});
+
+	it('reads and labels a standby number', () => {
+		// Act
+		const number = QueueNumber.of({ queuePosition: null, priorityNumber: null, standbyNumber: 7 });
+
+		// Assert
+		expect(number?.label).toBe('S7');
+		expect(number?.toSource()).toEqual({
+			queuePosition: null,
+			priorityNumber: null,
+			standbyNumber: 7,
+		});
+		expect(number?.toDetails()).toEqual({ standbyNumber: 7 });
+	});
+
+	it('sorts standby numbers after the line’s', () => {
+		// Arrange
+		const numbers = [QueueNumber.standby(1), QueueNumber.priority(1), QueueNumber.main(9)];
+
+		// Act
+		const sorted = [...numbers].sort(QueueNumber.compare).map((number) => number.label);
+
+		// Assert
+		expect(sorted).toEqual(['9', 'P1', 'S1']);
+	});
 });
