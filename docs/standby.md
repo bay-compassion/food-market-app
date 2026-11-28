@@ -43,6 +43,9 @@ The **postmarket track**, **standby** and the **S series** are one feature, name
 - **The guest's phone says "You're on the standby list"** with their S number, since that's what
   the worker reads out, but no count of who's ahead and no "now calling" row. When the guest is
   admitted, the card changes on its own with no text or push. Guests listen for their name.
+- **Odds reflect lottery luck only.** The automatic odds, the steward's statistics and the lottery
+  report read whether the draw picked a guest from the draw's own record. Shopping some other way,
+  from standby or by a worker's later status correction, doesn't count as a win.
 - **A standby guest is never marked a no-show.** A guest who doesn't come up when called is
   cancelled. Guests can also cancel themselves.
 
@@ -205,10 +208,6 @@ These are proposals that haven't been agreed yet:
 
 ## Open Questions
 
-- **A worker's status correction and the draw.** A correction on an ended session can set a visit
-  to `not_placed` or `served`. Since PR 5a, the automatic odds, the steward's statistics and the
-  lottery report read whether the guest was drawn from the draw's own event, so a correction no
-  longer changes that. Should it?
 - **The kiosk board.** Should called S numbers appear in Now Calling (for example as a pill, like
   P numbers), or nowhere? The design above shows them nowhere.
 - **Showing a short list of names on the kiosk**, the way airport gate screens do. This needs the
