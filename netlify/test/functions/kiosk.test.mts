@@ -199,7 +199,7 @@ describe('board handler', () => {
 			{ queuePosition: 3, priorityNumber: null },
 		]);
 		queueResult([{ count: 12 }]);
-		queueResult([{ status: 'service_started', called: true }]); // standby has opened
+		queueResult([{ status: 'service_started' }]); // standby is open once the draw has run
 		queueResult([{ queuePosition: 8 }]);
 
 		// Act

@@ -11,32 +11,18 @@ type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Executor = typeof db | Transaction;
 
 /**
- * Whether a session's standby list takes guests scanning in: once shopping has actually started,
- * which is when the first number is called. Read from the visit history rather than `called_at`,
- * which `return_to_queue` clears, so standby opens once and stays open — counting only calls since
- * the session's latest draw, because a reset leaves the history of the run it undid.
- *
- * Workers can add guests to standby by hand whether or not it is open; this gates scanning in.
+ * Whether a session's standby list takes guests scanning in: as soon as the lottery has drawn and
+ * handed out numbers, which is when the session moves to `service_started`, until it ends. Workers
+ * can add guests to standby by hand at the same point; see `admissionsFor`.
  */
 export async function standbyIsOpen(executor: Executor, marketEventId: string): Promise<boolean> {
-	// Aliased throughout: `created_at` is a column of all three tables these queries touch.
-	const latestDraw = sql`
-		SELECT max(d.created_at) FROM visit_events d JOIN visits dv ON dv.id = d.visit_id
-		WHERE dv.market_event_id = ${marketEventId} AND d.kind IN ('drawn', 'not_drawn')`;
 	const [row] = await executor
-		.select({
-			status: marketEvents.status,
-			called: sql<boolean>`EXISTS (
-				SELECT 1 FROM visit_events c JOIN visits cv ON cv.id = c.visit_id
-				WHERE cv.market_event_id = ${marketEventId} AND c.kind = 'called'
-					AND c.created_at > coalesce((${latestDraw}), '-infinity'::timestamptz)
-			)`,
-		})
+		.select({ status: marketEvents.status })
 		.from(marketEvents)
 		.where(eq(marketEvents.id, marketEventId))
 		.limit(1);
 
-	return row?.status === 'service_started' && Boolean(row.called);
+	return row?.status === 'service_started';
 }
 
 export type StandbyTicketResult =
@@ -46,7 +32,7 @@ export type StandbyTicketResult =
 /**
  * Pulls a ticket on the standby list for a guest who scanned a session's code: the next S number,
  * held for them while they fill in their details. Refused for a code this server never signed, a
- * session that has ended, or a list that hasn't opened yet. Only the ticket's hash is kept.
+ * session that has ended, or one whose lottery hasn't drawn yet. Only the ticket's hash is kept.
  */
 export async function issueStandbyTicket(code: string): Promise<StandbyTicketResult> {
 	const codes = StandbyCode.fromEnvironment();
@@ -75,7 +61,8 @@ export async function issueStandbyTicket(code: string): Promise<StandbyTicketRes
 				return { ok: false as const, status: 410, error: 'This standby list has closed.' };
 			}
 
-			if (!(await standbyIsOpen(tx, marketEventId))) {
+			// The same rule as `standbyIsOpen`, read from the row this transaction holds locked.
+			if (event.status !== 'service_started') {
 				return { ok: false as const, status: 409, error: 'Standby isn’t open yet.' };
 			}
 

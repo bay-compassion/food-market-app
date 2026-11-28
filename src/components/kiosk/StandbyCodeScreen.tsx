@@ -17,12 +17,22 @@ const Layout = styled.section`
 	text-align: center;
 
 	h1 {
-		max-width: 24ch;
 		margin: 0;
-		font-size: clamp(1.8rem, 6vmin, 5rem);
+		/* Sized to the screen's width so the English line fits on one line on any iPad. */
+		font-size: clamp(1.4rem, 4.4vw, 4.5rem);
 		font-weight: 700;
 		line-height: 1.2;
 		text-align: center;
+	}
+
+	/* The English line never wraps; the rotating language under it may. */
+	h1 > span:first-of-type {
+		white-space: nowrap;
+	}
+
+	h1 > span:not(:first-of-type) {
+		max-width: 32ch;
+		margin-inline: auto;
 	}
 `;
 
